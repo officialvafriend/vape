@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0">
+<title>베이프렌드 신입직원 평가</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f0f2f8;color:#1a1a1a}
+.app{max-width:520px;margin:0 auto;padding:0 0 60px}
+.cover{background:linear-gradient(135deg,#2e3a8c,#4a42b0);padding:28px 20px;color:#fff;text-align:center}
+.cover h1{font-size:20px;font-weight:700;margin-bottom:6px}
+.cover p{font-size:12px;opacity:.8;margin-bottom:20px}
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;max-width:360px;margin:0 auto}
+.info-field{background:rgba(255,255,255,.15);border-radius:10px;padding:10px 14px}
+.info-label{font-size:11px;opacity:.7;margin-bottom:4px}
+.info-field input{background:none;border:none;border-bottom:1px solid rgba(255,255,255,.5);color:#fff;font-size:14px;width:100%;outline:none;padding-bottom:2px}
+.info-field input::placeholder{color:rgba(255,255,255,.4)}
+.progress-wrap{background:#fff;padding:12px 16px;position:sticky;top:0;z-index:10;border-bottom:1px solid #eee;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.progress-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.progress-label{font-size:12px;color:#666}
+.progress-score{font-size:12px;font-weight:600;color:#2e3a8c}
+.progress-bar{height:5px;background:#e8e8e8;border-radius:3px;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,#2e3a8c,#6c63e0);border-radius:3px;transition:width .3s}
+.section{margin:12px 12px 0;background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.section-header{background:#f7f8ff;padding:12px 16px;border-bottom:1px solid #eeecfc;display:flex;align-items:center;justify-content:space-between}
+.section-title{font-size:14px;font-weight:700;color:#2e3a8c}
+.section-sub{font-size:11px;color:#888}
+.question{padding:14px 16px;border-bottom:1px solid #f5f5f5}
+.question:last-child{border-bottom:none}
+.q-num{display:inline-block;background:#2e3a8c;color:#fff;font-size:11px;font-weight:700;padding:2px 7px;border-radius:12px;margin-bottom:7px}
+.q-text{font-size:13px;line-height:1.6;color:#222;margin-bottom:10px}
+.q-scenario{background:#f0f2f8;border-radius:8px;padding:9px 11px;font-size:12px;color:#444;line-height:1.6;margin-bottom:10px;border-left:3px solid #4a42b0}
+.choices{display:flex;flex-direction:column;gap:7px}
+.choice-label{display:flex;align-items:flex-start;gap:9px;padding:9px 11px;border:1.5px solid #e8e8e8;border-radius:10px;cursor:pointer;transition:all .15s}
+.choice-label:hover{border-color:#4a42b0;background:#f7f8ff}
+.choice-label.selected{border-color:#4a42b0;background:#eeecfc}
+.choice-label.correct{border-color:#2a9d5c;background:#e8f8ef}
+.choice-label.wrong{border-color:#e53935;background:#fff0f0}
+.choice-label input[type=radio]{display:none}
+.choice-circle{width:24px;height:24px;flex-shrink:0;border-radius:50%;border:2px solid #ccc;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#888}
+.choice-label.selected .choice-circle{border-color:#4a42b0;background:#4a42b0;color:#fff}
+.choice-label.correct .choice-circle{border-color:#2a9d5c;background:#2a9d5c;color:#fff}
+.choice-label.wrong .choice-circle{border-color:#e53935;background:#e53935;color:#fff}
+.choice-text{font-size:12px;color:#333;line-height:1.5;padding-top:3px}
+.feedback{display:none;margin-top:8px;padding:7px 10px;border-radius:8px;font-size:11px;line-height:1.5}
+.feedback.correct-fb{background:#e8f8ef;color:#1a7a40;border-left:3px solid #2a9d5c;display:block}
+.feedback.wrong-fb{background:#fff0f0;color:#b71c1c;border-left:3px solid #e53935;display:block}
+.submit-wrap{padding:20px 16px 0;text-align:center}
+.btn-submit{background:linear-gradient(135deg,#2e3a8c,#4a42b0);color:#fff;border:none;border-radius:12px;padding:14px 0;font-size:15px;font-weight:700;cursor:pointer;width:100%;max-width:360px}
+.btn-submit:disabled{background:#bbb;cursor:not-allowed}
+.result-screen{display:none;padding:12px 12px 40px}
+.result-card{background:#fff;border-radius:18px;padding:28px 20px;text-align:center;box-shadow:0 4px 16px rgba(0,0,0,.08)}
+.result-score{font-size:60px;font-weight:800;color:#2e3a8c;line-height:1}
+.result-total{font-size:16px;color:#888;margin-bottom:12px}
+.result-badge{display:inline-block;font-size:14px;font-weight:700;padding:7px 18px;border-radius:18px;margin-bottom:16px}
+.badge-pass{background:#e8f8ef;color:#1a7a40}
+.badge-fail{background:#fff0f0;color:#b71c1c}
+.result-msg{font-size:13px;color:#555;line-height:1.7;margin-bottom:20px}
+.btn-retry{background:#f0f2f8;color:#2e3a8c;border:none;border-radius:10px;padding:11px 24px;font-size:13px;font-weight:600;cursor:pointer;margin-right:8px}
+.btn-print{background:#2e3a8c;color:#fff;border:none;border-radius:10px;padding:11px 24px;font-size:13px;font-weight:600;cursor:pointer}
+.wrong-note{background:#fff;border-radius:14px;padding:16px;margin-top:10px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.wrong-note h3{font-size:14px;font-weight:700;color:#e53935;margin-bottom:12px}
+.wrong-item{border-left:3px solid #e53935;padding:8px 10px;margin-bottom:8px;background:#fff8f8;border-radius:0 8px 8px 0}
+.wrong-item-q{font-size:12px;color:#333;margin-bottom:3px;font-weight:600}
+.wrong-item-ans{font-size:11px;color:#1a7a40;line-height:1.5}
+</style>
+</head>
+<body>
+<div class="app" id="examApp">
+  <div class="cover">
+    <h1>&#x26A1; 베이프렌드 신입직원 평가</h1>
+    <p>코일 &amp; 팟 호환표 이해도 시험 · 30문항 · 100점 만점 · 합격 80점</p>
+    <div class="info-grid">
+      <div class="info-field"><div class="info-label">이름</div><input type="text" id="nameInput" placeholder="이름 입력"></div>
+      <div class="info-field"><div class="info-label">소속 지점</div><input type="text" id="branchInput" placeholder="지점명 입력"></div>
+    </div>
+  </div>
+
+  <div class="progress-wrap">
+    <div class="progress-top">
+      <span class="progress-label" id="progressLabel">0 / 30 문항 완료</span>
+      <span class="progress-score" id="progressScore"></span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+  </div>
+
+  <!-- PART 1: 기기 기본 지식 -->
+  <div class="section">
+    <div class="section-header"><div class="section-title">PART 1. 기기 기본 지식</div><div class="section-sub">Q1~Q10 · 각 3점</div></div>
+
+    <div class="question" data-qid="q1" data-answer="3">
+      <span class="q-num">Q1</span>
+      <div class="q-text">디오 X 기기의 전원을 끄는 방법은?</div>
+      <div class="choices">
+        <label class="choice-label"><input type="radio" name="q1" value="1"><div class="choice-circle">①</div><span class="choice-text">버튼 3번 연속 클릭</span></label>
+        <label class="choice-label"><input type="radio" name="q1" value="2"><div class="choice-circle">②</div><span class="choice-text">버튼 길게 2초 누르기</span></label>
+        <label class="choice-label"><input type="radio" name="q1" value="3"><div class="choice-circle">③</div><span class="choice-text">버튼 5번 연속 클릭</span></label>
+        <label class="choice-label"><input type="radio" name="q1" value="4"><div class="choice-circle">④</div><span class="choice-text">팟을 빼면 자동으로 꺼짐</span></label>
+      </div>
+      <div class="feedback" id="fb-q1"></div>
+    </div>
+
+    <div class="question" data-qid="q2" data-answer="1">
+      <span class="q-num">Q2</span>
+      <div class="q-text">하복 SE에서 폐호흡 코일의 옴수는?</div>
+      <div class="choices">
+        <label class="choice-label"><input type="radio" name="q2" value="1"><div class="choice-circle">①</div><span class="choice-text">0.25Ω</span></label>
+        <label class="choice-label"><input type="radio" name="q2" value="2"><div class="choice-circle">②</div><span class="choice-text">0.4Ω</span></label>
+        <label class="choice-label"><input type="radio" name="q2" value="3"><div class="choice-circle">③</div><span class="choice-text">0.6Ω</span></label>
+        <label class="choice-label"><input type="radio" name="q2" value="4"><div class="choice-circle">④</div><span class="choice-text">1.0Ω</span></label>
+      </div>
+      <div class="feedback" id="fb-q2"></div>
+    </div>
+
+    <div class="question" data-qid="q3" data-answer="2">
+      <span class="q-num">Q3</span>
+      <div class="q-text">발라리안 에어에서 배터리 잔량을 확인하는 방법은?</div>
+      <div class="choices">
+        <label class="choice-label"><input type="radio" name="q3" value="1"><div class="choice-circle">①</div><span class="choice-text">화면에 배터리 표시 확인</span></label>
+        <label class="choice-label"><input type="radio" name="q3" value="2"><div class="choice-circle">②</div><span class="choice-text">버튼 3번 클릭 후 LED 색상 확인</span></label>
+        <label class="choice-label"><input type="radio" name="q3" value="3"><div class="choice-circle">③</div><span class="choice-text">팟을 빼면 배터리 잔량 표시됨</span></label>
+        <label class="choice-label"><input type="radio" name="q3" value="4"><div class="choice-circle">④</div><span class="choice-text">앱으로 확인 가능</span></label>
+      </div>
+      <div class="feedback" id="fb-q3"></div>
+    </div>
+
+    <div class="question" data-qid="q4" data-answer="4">
+      <span class="q-num">Q4</span>
+      <div class="q-text">닷모드 닷파티 팟 구매 후 손님이 "입에 대는 부분이 없어요"라고 할 때 올바른 안내는?</div>
+      <div class="choices">
+        <label class="choice-label"><input type="radio" name="q4" value="1"><div class="choice-circle">①</div><span class="choice-text">불량품이니 즉시 교환해드림</span></label>
+        <label class="choice-label"><input type="radio" name="q4" value="2"><div class="choice-circle">②</div><span class="choice-text">드립팁은 별도 구매 필요하다고 안내</span></label>
+        <label class="choice-label"><input type="radio" name="q4" value="3"><div class="choice-circle">③</div><span class="choice-text">팟 상단 뚜껑을 열면 있다고 안내</span></label>
+        <label class="choice-label"><input type="radio" name="q4" value="4"><div class="choice-circle">④</div><span class="choice-text">닷파티 팟은 드립팁 미포함이며 기기 본체 드립팁을 뽑아 새 팟에 끼워 사용한다고 안내</span></label>
+      </div>
+      <div class="feedback" id="fb-q4"></div>
+    </div>
+
+    <div class="question" data-qid="q5" data-answer="2">
+      <span class="q-num">Q5</span>
+      <div class="q-text">아스트로 MK.3에서 단맛을 더 진하게 즐기고 싶은 손님에게 추천할 팟은?</div>
+      <div class="choices">
+        <label class="choice-label"><input type="radio" name="q5" value="1"><div class="choice-circle">①</div><span class="choice-text">블랙팟 (밸런스 향)</span></label>
+        <label class="choice-label"><input type="radio" name="q5" value="2"><div class="choice-circle">②</div><span class="choice-text">레드팟 (단맛 부스팅)</span></label>
+        <label class="choice-label"><input type="radio" name="q5" value="3"><div class="choice-circle">③</div><span class="choice-text">두 팟이 동일하여 아무거나</span></label>
+        <label class="choice-label"><input type="radio" name="q5" value="4"><div class="choice-circle">④</div><span class="choice-text">0.4Ω 팟 권장</span></label>
+      </div>
+      <div class="feedback" id="fb-q5"></div>
+    </div>
+
+    <div class="question" data-qid="q6" data-answer="1">
+      <span class="q-num">Q6</span>
+      <div class="q-text">플렉서스 에이펙스(APEX) 소모품의 정확한 명칭은?</div>
+      <div class="choices">
+        <label class="choice-label"><input type="radio" name="q6" value="1"><div class="choice-circle">①</div><span class="choice-text">에이펙스 전용 팟</span></label>
+        <label class="choice-label"><input type="radio" name="q6" value="2"><div class="choice-circle">②</div><span class="choice-text">AF 코일</span></label>
+        <label class="choice-label"><input type="radio" name="q6" value="3"><div class="choice-circle">③</div><span class="choice-text">플렉서스 팟</span></label>
+        <label class="choice-label"><input type="radio" name="q6" value="4"><div class="choice-circle">④</div><span class="choice-text">아스파이어 코일</span></label>
+      </div>
+      <div class="feedback" id="fb-q6"></div>
+    </div>
+
+    <div class="question" data-qid="q7" data-answer="3">
+      <span class="q-num">Q7</span>
+      <div class="q-text">클라우드 플라스크에 일반 입호흡 액상을 넣으면 어떤 문제가 발생하나요?</div>
+      <div class="choices">
+        <label class="choice-label"><input type="radio" name="q7" value="1"><div class="choice-circle">①</div><span class="choice-text">기기가 꺼진다</span></label>
+        <label class="choice-label"><input type="radio" name="q7" value="2"><div class="choice-circle">②</div><span class="choice-text">코일이 즉시 탄다</span></label>
+        <label class="choice-label"><input type="radio" name="q7" value="3"><div class="choice-circle">③</div><span class="choice-text">에어홀로 액상이 심하게 누수된다</span></label>
+        <label class="choice-label"><input type="radio" name="q7" value="4"><div class="choice-circle">④</div><span class="choice-text">배터리가 과열된다</span></label>
+      </div>
+      <div class="feedback" id="fb-q7"></div>
+    </div>
+
+    <div class="question" data-qid="q8" data-answer="4">
+      <span class="q-num">Q8</span>
+      <div class="q-text">긱베이프 썬더Q 손님에게 드릴 수 있는 팟은?</div>
+      <div class="choices">
+        <label class="choice-label"><input type="radio" name="q8" value="1"><div class="choice-circle">①</div><span class="choice-text">긱베이프 소울 팟</span></label>
+        <label class="choice-label"><input type="radio" name="q8" value="2"><div class="choice-circle">②</div><span class="choice-text">크로스 팟</span></label>
+        <label class="choice-label"><input type="radio" name="q8" value="3"><div class="choice-circle">③</div><span class="choice-text">발라리안 에어 팟</span></label>
+        <label class="choice-label"><input type="radio" name="q8" value="4"><div class="choice-circle">④</div><span class="choice-text">위넥스Q 팟</span></label>
+      </div>
+      <div class="feedback" id="fb-q8"></div>
+    </div>
+
+    <div class="question" data-qid="q9" data-answer="2">
+      <span class="q-num">Q9</span>
+      <div class="q-text">발라리안 DV와 발라리안 R 팟은 서로 호환되나요?</div>
+      <div class="choices">
+        <label class="choice-label"><input type="radio" name="q9" value="1"><div class="choice-circle">①</div><span class="choice-text">같은 발라리안 브랜드라 호환됨</span></label>
+        <label class="choice-label"><input type="radio" name="q9" value="2"><div class="choice-circle">②</div><span class="choice-text">팟 규격이 달라 절대 호환 불가</span></label>
+        <label class="choice-label"><input type="radio" name="q9" value="3"><div class="choice-circle">③</div><span class="choice-text">0.6Ω이면 호환됨</span></label>
+        <label class="choice-label"><input type="radio" name="q9" value="4"><div class="choice-circle">④</div><span class="choice-text">코일만 호환되고 팟은 안 됨</span></label>
+      </div>
+      <div class="feedback" id="fb-q9"></div>
+    </div>
+
+    <div class="question" data-qid="q10" data-answer="3">
+      <span class="q-num">Q10</span>
+      <div class="q-text">이지스 레전드에 액상 주입 시 올바른 방법은?</div>
+      <div class="choices">
+        <label class="choice-label"><input type="radio" name="q10" value="1"><div class="choice-circle">①</div><span class="choice-text">탱크 중앙 구멍에 주입</span></label>
+        <label class="choice-label"><input type="radio" name="q10" value="2"><div class="choice-circle">②</div><span class="choice-text">코일 위에 직접 주입</span></label>
+        <label class="choice-label"><input type="radio" name="q10" value="3"><div class="choice-circle">③</div><span class="choice-text">탱크 양쪽 주입구로만 주입</span></label>
+        <label class="choice-label"><input type="radio" name="q10" value="4"><div class="choice-circle">④</div><span class="choice-text">어느 구멍이든 상관없음</span></label>
+      </div>
+      <div class="feedback" id="fb-q10"></div>
+    </div>
+  </div>
+
+  <!-- PART 2: 호환 및 소모품 -->
+  <div class="section">
+    <div class="section-header"><div class="section-title">PART 2. 호환 및 소모품</div><div class="section-sub">Q11~Q20 · 각 3점</div></div>
+
+    <div class="question" data-qid="q11" data-answer="1">
+      <span class="q-num">Q11</span>
+      <div class="q-text">젤로와 젤로 맥스 팟이 호환되지 않는 이유는?</div>
+      <div class="choices">
+        <label class="choice-label"><input type="radio" name="q11" value="1"><div class="choice-circle">①</div><span class="choice-text">기기 두께가 달라 팟 규격이 다름</span></label>
+        <label class="choice-label"><input type="radio" name="q11" value="2"><div class="choice-circle">②</div><span class="choice-text">브랜드가 다르기 때문</span></label>
+        <label class="choice-label"><input type="radio" name="q11" value="3"><div class="choice-circle">③</div><span class="choice-text">옴수가 다르기 때문</span></label>
+        <label class="choice-label"><input type="radio" name="q11" value="4"><div class="choice-circle">④</div><span class="choice-text">배터리 전압이 달라서</span></label>
+      </div>
+      <div class="feedback" id="fb-q11"></div>
+    </div>
+
+    <div class="question" data-qid="q12" data-answer="3">
+      <span class="q-num">Q12</span>
+      <div class="q-text">크로스6 손님에게 재고에 있는 크로스3 팟을 드려도 되나요?</div>
+      <div class="choices">
+        <label class="choice-label"><input type="radio" name="q12" value="1"><div class="choice-circle">①</div><span class="choice-text">안 됨. 모델이 다르면 호환 안 됨</span></label>
+        <label class="choice-label"><input type="radio" name="q12" value="2"><div class="choice-circle">②</div><span class="choice-text">0.8Ω끼리는 호환됨</span></label>
+        <label class="choice-label"><input type="radio" name="q12" value="3"><div class="choice-circle">③</div><span class="choice-text">됨. 크로스 시리즈는 전 모델 팟 통합 호환</span></label>
+        <label class="choice-label"><input type="radio" name="q12" value="4"><div class="choice-circle">④</div><span class="choice-text">신형 기기에만 구형 팟 사용 가능</span></label>
+      </div>
+      <div class="feedback" id="fb-q12"></div>
+    </div>
+
+    <div class="question" data-qid="q13" data-answer="4">
+      <span class="q-num">Q13</span>
+      <div class="q-text">발라리안 DV와 발라리안 MAX의 코일 호환 관계로 옳은 것은?</div>
+      <div class="choices">
+        <label class="choice-label"><input type="radio" name="q13" value="1"><div class="choice-circle">①</div><span class="choice-text">공팟도 코일도 모두 호환 불가</span></label>
+        <label class="choice-label"><input type="radio" name="q13" value="2"><div class="choice-circle">②</div><span class="choice-text">공팟과 코일 모두 완전 호환</span></label>
+        <label class="choice-label"><input type="radio" name="q13" value="3"><div class="choice-circle">③</div><span class="choice-text">공팟만 호환되고 코일은 불가</span></label>
+        <label class="choice-label"><input type="radio" name="q13" value="4"><div class="choice-circle">④</div><span class="choice-text">공팟 규격은 다르지만 코일(0.6Ω, 1.0Ω)은 전 시리즈 호환</span></label>
+      </div>
+      <div class="feedback" id="fb-q13"></div>
+    </div>
+
+    <div class="question" data-qid="q14" data-answer="2">
+      <span class="q-num">Q14</span>
+      <div class="q-text">팬텀 시리즈 손님에게 발라리안 클리어 공팟을 드려도 되나요?</div>
+      <div class="choices">
+        <label class="choice-label"><input type="radio" name="q14" value="1"><div class="choice-circle">①</div><span class="choice-text">안 됨. 브랜드가 달라 절대 호환 불가</span></label>
+        <label class="choice-label"><input type="radio" name="q14" value="2"><div class="choice-circle">②</div><span class="choice-text">됨. 팬텀 시리즈는 발라리안 클리어 공팟 호환 가능</span></label>
+        <label class="choice-label"><input type="radio" name="q14" value="3"><div class="choice-circle">③</div><span class="choice-text">팬텀 마크원에만 호환됨</span></label>
+        <label class="choice-label"><input type="radio" name="q14" value="4"><div class="choice-circle">④</div><span class="choice-text">0.6Ω 코일만 호환됨</span></label>
+      </div>
+      <div class="feedback" id="fb-q14"></div>
+    </div>
+
+    <div class="question" data-qid="q15" data-answer="1">
+      <span class="q-num">Q15</span>
+      <div class="q-text">발라리안 맥스프로 올인원팟(부스터팟)의 옴수는?</div>
+      <div class="choices">
+        <label class="choice-label"><input type="radio" name="q15" value="1"><div class="choice-circle">①</div><span class="choice-text">0.5Ω</span></label>
+        <label class="choice-label"><input type="radio" name="q15" value="2"><div class="choice-circle">②</div><span class="choice-text">0.6Ω</span></label>
+        <label class="choice-label"><input type="radio" name="q15" value="3"><div class="choice-circle">③</div><span class="choice-text">0.8Ω</span></label>
+        <label class="choice-label"><input type="radio" name="q15" value="4"><div class="choice-circle">④</div><span class="choice-text">1.0Ω</span></label>
+      </div>
+      <div class="feedback" id="fb-q15"></div>
+    </div>
+
+    <div class="question" data-qid="q16" data-answer="3">
+      <span class="q-num">Q16</span>
+      <div class="q-text">브이메이트 E2 손님이 팟을 사러 왔습니다. 창고에 브이스루 팟이 있을 때 드려도 되나요?</div>
+      <div class="choices">
+        <label class="choice-label"><input type="radio" name="q16" value="1"><div class="choice-circle">①</div><span class="choice-text">안 됨. 모델명이 달라 호환 불가</span></label>
+        <label class="choice-label"><input type="radio" name="q16" value="2"><div class="choice-circle">②</div><span class="choice-text">0.7Ω 팟이면 됨</span></label>
+        <label class="choice-label"><input type="radio" name="q16" value="3"><div class="choice-circle">③</div><span class="choice-text">됨. 브이스루·브이메이트 시리즈는 팟 통합 호환</span></label>
+        <label class="choice-label"><input type="radio" name="q16" value="4"><div class="choice-circle">④</div><span class="choice-text">부피포 브랜드면 모두 호환됨</span></label>
+      </div>
+      <div class="feedback" id="fb-q16"></div>
+    </div>
+
+    <div class="question" data-qid="q17" data-answer="2">
+      <span class="q-num">Q17</span>
+      <div class="q-text">말론과 말론 S의 팟은 서로 호환되나요?</div>
+      <div class="choices">
+        <label class="choice-label"><input type="radio" name="q17" value="1"><div class="choice-circle">①</div><span class="choice-text">됨. 같은 말론 브랜드라 호환됨</span></label>
+        <label class="choice-label"><input type="radio" name="q17" value="2"><div class="choice-circle">②</div><span class="choice-text">안 됨. 기기 규격이 달라 호환 불가</span></label>
+        <label class="choice-label"><input type="radio" name="q17" value="3"><div class="choice-circle">③</div><span class="choice-text">0.6Ω끼리는 호환됨</span></label>
+        <label class="choice-label"><input type="radio" name="q17" value="4"><div class="choice-circle">④</div><span class="choice-text">말론 S가 더 작아서 말론 팟이 들어감</span></label>
+      </div>
+      <div class="feedback" id="fb-q17"></div>
+    </div>
+
+    <div class="question" data-qid="q18" data-answer="4">
+      <span class="q-num">Q18</span>
+      <div class="q-text">발라리안 R에서 흡입이 잘 안 될 때 팟 교체 전 먼저 해야 할 조치는?</div>
+      <div class="choices">
+        <label class="choice-label"><input type="radio" name="q18" value="1"><div class="choice-circle">①</div><span class="choice-text">배터리 완전 방전 후 충전</span></label>
+        <label class="choice-label"><input type="radio" name="q18" value="2"><div class="choice-circle">②</div><span class="choice-text">에어플로우 다이얼 조절</span></label>
+        <label class="choice-label"><input type="radio" name="q18" value="3"><div class="choice-circle">③</div><span class="choice-text">기기 초기화</span></label>
+        <label class="choice-label"><input type="radio" name="q18" value="4"><div class="choice-circle">④</div><span class="choice-text">팟 제거 후 기기 단자를 마른 휴지로 닦아 결로 제거</span></label>
+      </div>
+      <div class="feedback" id="fb-q18"></div>
+    </div>
+
+    <div class="question" data-qid="q19" data-answer="1">
+      <span class="q-num">Q19</span>
+      <div class="q-text">새 코일 장착 후 바로 흡입하면 안 되는 이유는?</div>
+      <div class="choices">
+        <label class="choice-label"><input type="radio" name="q19" value="1"><div class="choice-circle">①</div><span class="choice-text">코일 심지에 액상이 충분히 스며들지 않아 탄 냄새 발생</span></label>
+        <label class="choice-label"><input type="radio" name="q19" value="2"><div class="choice-circle">②</div><span class="choice-text">배터리가 과열될 수 있음</span></label>
+        <label class="choice-label"><input type="radio" name="q19" value="3"><div class="choice-circle">③</div><span class="choice-text">코일이 기기에 고정되지 않음</span></label>
+        <label class="choice-label"><input type="radio" name="q19" value="4"><div class="choice-circle">④</div><span class="choice-text">액상이 역류할 수 있음</span></label>
+      </div>
+      <div class="feedback" id="fb-q19"></div>
+    </div>
+
+    <div class="question" data-qid="q20" data-answer="3">
+      <span class="q-num">Q20</span>
+      <div class="q-text">호라이즌 팔콘 시리즈에서 가장 기본적으로 많이 사용하는 코일은?</div>
+      <div class="choices">
+        <label class="choice-label"><input type="radio" name="q20" value="1"><div class="choice-circle">①</div><span class="choice-text">AF 코일</span></label>
+        <label class="choice-label"><input type="radio" name="q20" value="2"><div class="choice-circle">②</div><span class="choice-text">Z 코일</span></label>
+        <label class="choice-label"><input type="radio" name="q20" value="3"><div class="choice-circle">③</div><span class="choice-text">M1 코일</span></label>
+        <label class="choice-label"><input type="radio" name="q20" value="4"><div class="choice-circle">④</div><span class="choice-text">발라리안 코일</span></label>
+      </div>
+      <div class="feedback" id="fb-q20"></div>
+    </div>
+  </div>
+
+  <!-- PART 3: 실전 상황 대처 -->
+  <div class="section">
+    <div class="section-header"><div class="section-title">PART 3. 실전 상황 대처</div><div class="section-sub">Q21~Q30 · 각 4점</div></div>
+
+    <div class="question" data-qid="q21" data-answer="3">
+      <span class="q-num">Q21</span>
+      <div class="q-scenario">손님이 "발라리안 팟 주세요"라고 했습니다. 재고에 발라리안 에어팟, 발라리안 R팟, 발라리안 DV코일이 있습니다.</div>
+      <div class="q-text">가장 올바른 대응은?</div>
+      <div class="choices">
+        <label class="choice-label"><input type="radio" name="q21" value="1"><div class="choice-circle">①</div><span class="choice-text">발라리안은 모두 호환이니 에어 팟 드림</span></label>
+        <label class="choice-label"><input type="radio" name="q21" value="2"><div class="choice-circle">②</div><span class="choice-text">가장 최신 모델인 R팟 드림</span></label>
+        <label class="choice-label"><input type="radio" name="q21" value="3"><div class="choice-circle">③</div><span class="choice-text">어떤 발라리안 기기인지 직접 확인 후 맞는 소모품 제공</span></label>
+        <label class="choice-label"><input type="radio" name="q21" value="4"><div class="choice-circle">④</div><span class="choice-text">DV 코일을 드림 (코일은 다 호환이니까)</span></label>
+      </div>
+      <div class="feedback" id="fb-q21"></div>
+    </div>
+
+    <div class="question" data-qid="q22" data-answer="4">
+      <span class="q-num">Q22</span>
+      <div class="q-scenario">손님이 젤로맥스 기기를 들고 와서 "어제 여기서 산 팟이 안 맞아요. 환불해주세요"라고 했습니다. 확인해보니 젤로 기본형 팟이었고 이미 개봉된 상태입니다.</div>
+      <div class="q-text">올바른 대처는?</div>
+      <div class="choices">
+        <label class="choice-label"><input type="radio" name="q22" value="1"><div class="choice-circle">①</div><span class="choice-text">개봉했어도 환불 처리해드림</span></label>
+        <label class="choice-label"><input type="radio" name="q22" value="2"><div class="choice-circle">②</div><span class="choice-text">젤로팟이 맞다며 다시 끼워보라고 함</span></label>
+        <label class="choice-label"><input type="radio" name="q22" value="3"><div class="choice-circle">③</div><span class="choice-text">젤로맥스팟으로 그냥 교환해드림</span></label>
+        <label class="choice-label"><input type="radio" name="q22" value="4"><div class="choice-circle">④</div><span class="choice-text">젤로·젤로맥스 팟 호환 불가 설명, 개봉 후 환불 불가 원칙 안내, 향후 기기 지참 요청</span></label>
+      </div>
+      <div class="feedback" id="fb-q22"></div>
+    </div>
+
+    <div class="question" data-qid="q23" data-answer="2">
+      <span class="q-num">Q23</span>
+      <div class="q-scenario">클라우드 플라스크 X를 구매하러 온 손님이 우리 매장 일반 입호흡 액상도 같이 구매하려 합니다.</div>
+      <div class="q-text">올바른 안내는?</div>
+      <div class="choices">
+        <label class="choice-label"><input type="radio" name="q23" value="1"><div class="choice-circle">①</div><span class="choice-text">아무 액상이나 괜찮다고 함께 판매</span></label>
+        <label class="choice-label"><input type="radio" name="q23" value="2"><div class="choice-circle">②</div><span class="choice-text">플라스크는 폐호흡 전용이라 일반 입호흡 액상 사용 시 누수 위험 설명, 폐호흡 전용 액상 안내</span></label>
+        <label class="choice-label"><input type="radio" name="q23" value="3"><div class="choice-circle">③</div><span class="choice-text">니코틴 함량 낮은 액상이면 괜찮다고 안내</span></label>
+        <label class="choice-label"><input type="radio" name="q23" value="4"><div class="choice-circle">④</div><span class="choice-text">VG 함량만 확인하면 된다고 안내</span></label>
+      </div>
+      <div class="feedback" id="fb-q23"></div>
+    </div>
+
+    <div class="question" data-qid="q24" data-answer="1">
+      <span class="q-num">Q24</span>
+      <div class="q-scenario">하복 SE 코일을 교체해드린 손님이 5분 후 "탄 냄새 나요"라고 돌아왔습니다.</div>
+      <div class="q-text">가장 가능성 높은 원인은?</div>
+      <div class="choices">
+        <label class="choice-label"><input type="radio" name="q24" value="1"><div class="choice-circle">①</div><span class="choice-text">코일 교체 후 프라이밍(5분 대기) 없이 바로 흡입</span></label>
+        <label class="choice-label"><input type="radio" name="q24" value="2"><div class="choice-circle">②</div><span class="choice-text">코일 불량품</span></label>
+        <label class="choice-label"><input type="radio" name="q24" value="3"><div class="choice-circle">③</div><span class="choice-text">액상 불량</span></label>
+        <label class="choice-label"><input type="radio" name="q24" value="4"><div class="choice-circle">④</div><span class="choice-text">배터리 출력이 너무 높아서</span></label>
+      </div>
+      <div class="feedback" id="fb-q24"></div>
+    </div>
+
+    <div class="question" data-qid="q25" data-answer="3">
+      <span class="q-num">Q25</span>
+      <div class="q-scenario">60대 손님이 팬텀 기기를 들고 와서 "소모품 주세요"라고 했는데 어떤 모델인지 본인도 모릅니다.</div>
+      <div class="q-text">올바른 대처는?</div>
+      <div class="choices">
+        <label class="choice-label"><input type="radio" name="q25" value="1"><div class="choice-circle">①</div><span class="choice-text">팬텀은 다 똑같으니 아무 팟이나 드림</span></label>
+        <label class="choice-label"><input type="radio" name="q25" value="2"><div class="choice-circle">②</div><span class="choice-text">모델을 모르면 드릴 수 없다고 함</span></label>
+        <label class="choice-label"><input type="radio" name="q25" value="3"><div class="choice-circle">③</div><span class="choice-text">기기를 직접 확인해드리고 팬텀 레드팟 또는 발라리안 클리어 공팟 제공, 천천히 쉽게 설명</span></label>
+        <label class="choice-label"><input type="radio" name="q25" value="4"><div class="choice-circle">④</div><span class="choice-text">모델명을 알아온 뒤 다시 오라고 함</span></label>
+      </div>
+      <div class="feedback" id="fb-q25"></div>
+    </div>
+
+    <div class="question" data-qid="q26" data-answer="4">
+      <span class="q-num">Q26</span>
+      <div class="q-scenario">발라리안 에어 손님이 "기기가 갑자기 안 켜져요"라고 왔습니다.</div>
+      <div class="q-text">가장 먼저 해볼 조치는?</div>
+      <div class="choices">
+        <label class="choice-label"><input type="radio" name="q26" value="1"><div class="choice-circle">①</div><span class="choice-text">팟을 새 것으로 교체</span></label>
+        <label class="choice-label"><input type="radio" name="q26" value="2"><div class="choice-circle">②</div><span class="choice-text">충전 후 재시도 안내</span></label>
+        <label class="choice-label"><input type="radio" name="q26" value="3"><div class="choice-circle">③</div><span class="choice-text">AS 접수 안내</span></label>
+        <label class="choice-label"><input type="radio" name="q26" value="4"><div class="choice-circle">④</div><span class="choice-text">버튼 5번 연속 클릭으로 전원 ON 시도</span></label>
+      </div>
+      <div class="feedback" id="fb-q26"></div>
+    </div>
+
+    <div class="question" data-qid="q27" data-answer="2">
+      <span class="q-num">Q27</span>
+      <div class="q-scenario">손님이 "젤로 소모품 주세요"라고 했습니다. 재고에 젤로 팟(0.8Ω)과 젤로맥스 팟(0.6Ω)이 모두 있습니다.</div>
+      <div class="q-text">올바른 대응은?</div>
+      <div class="choices">
+        <label class="choice-label"><input type="radio" name="q27" value="1"><div class="choice-circle">①</div><span class="choice-text">젤로 팟과 젤로맥스 팟은 호환되니 아무거나 드림</span></label>
+        <label class="choice-label"><input type="radio" name="q27" value="2"><div class="choice-circle">②</div><span class="choice-text">기기를 직접 보거나 "기기가 얇으세요, 두꺼우세요?" 여쭤보고 드림</span></label>
+        <label class="choice-label"><input type="radio" name="q27" value="3"><div class="choice-circle">③</div><span class="choice-text">더 인기 있는 젤로맥스 팟 추천</span></label>
+        <label class="choice-label"><input type="radio" name="q27" value="4"><div class="choice-circle">④</div><span class="choice-text">옴수를 물어보고 맞는 팟 드림</span></label>
+      </div>
+      <div class="feedback" id="fb-q27"></div>
+    </div>
+
+    <div class="question" data-qid="q28" data-answer="1">
+      <span class="q-num">Q28</span>
+      <div class="q-scenario">이지스 레전드 손님이 "우리 매장 액상 추천해달라"고 합니다.</div>
+      <div class="q-text">가장 먼저 확인해야 할 사항은?</div>
+      <div class="choices">
+        <label class="choice-label"><input type="radio" name="q28" value="1"><div class="choice-circle">①</div><span class="choice-text">이지스 레전드는 폐호흡 전용이므로 VG 함량 높은 폐호흡 전용 액상인지 먼저 확인</span></label>
+        <label class="choice-label"><input type="radio" name="q28" value="2"><div class="choice-circle">②</div><span class="choice-text">선호하는 향 계열 확인</span></label>
+        <label class="choice-label"><input type="radio" name="q28" value="3"><div class="choice-circle">③</div><span class="choice-text">니코틴 함량 선호도 확인</span></label>
+        <label class="choice-label"><input type="radio" name="q28" value="4"><div class="choice-circle">④</div><span class="choice-text">예산 확인</span></label>
+      </div>
+      <div class="feedback" id="fb-q28"></div>
+    </div>
+
+    <div class="question" data-qid="q29" data-answer="3">
+      <span class="q-num">Q29</span>
+      <div class="q-scenario">디오 X 손님이 "팟이 자꾸 타요"라고 왔습니다.</div>
+      <div class="q-text">가장 먼저 확인해야 할 사항은?</div>
+      <div class="choices">
+        <label class="choice-label"><input type="radio" name="q29" value="1"><div class="choice-circle">①</div><span class="choice-text">사용하는 액상이 맞는지 확인</span></label>
+        <label class="choice-label"><input type="radio" name="q29" value="2"><div class="choice-circle">②</div><span class="choice-text">기기 배터리 상태 확인</span></label>
+        <label class="choice-label"><input type="radio" name="q29" value="3"><div class="choice-circle">③</div><span class="choice-text">주머니에서 파이어 버튼이 눌리진 않는지 확인, 전원 오프(버튼 5번) 사용법 안내</span></label>
+        <label class="choice-label"><input type="radio" name="q29" value="4"><div class="choice-circle">④</div><span class="choice-text">팟 교체 권유</span></label>
+      </div>
+      <div class="feedback" id="fb-q29"></div>
+    </div>
+
+    <div class="question" data-qid="q30" data-answer="4">
+      <span class="q-num">Q30</span>
+      <div class="q-scenario">발라리안 맥스프로 구형 모델 손님이 기기 조작법을 물어봤는데 신입 직원인 나는 구형 조작법을 잘 모릅니다.</div>
+      <div class="q-text">가장 올바른 대처는?</div>
+      <div class="choices">
+        <label class="choice-label"><input type="radio" name="q30" value="1"><div class="choice-circle">①</div><span class="choice-text">신형 조작법으로 안내해드림 (비슷하니까)</span></label>
+        <label class="choice-label"><input type="radio" name="q30" value="2"><div class="choice-circle">②</div><span class="choice-text">모르겠다고 솔직히 말하고 돌려보냄</span></label>
+        <label class="choice-label"><input type="radio" name="q30" value="3"><div class="choice-circle">③</div><span class="choice-text">대충 아는 대로 설명해드림</span></label>
+        <label class="choice-label"><input type="radio" name="q30" value="4"><div class="choice-circle">④</div><span class="choice-text">잠시 양해 구하고 선임 직원이나 매니저에게 확인 후 정확히 안내</span></label>
+      </div>
+      <div class="feedback" id="fb-q30"></div>
+    </div>
+  </div>
+
+  <div class="submit-wrap">
+    <button class="btn-submit" id="submitBtn" onclick="submitExam()">&#x1F4CB; 채점하기</button>
+  </div>
+
+  <div class="result-screen" id="resultScreen">
+    <div class="result-card">
+      <div style="font-size:13px;color:#888;margin-bottom:4px" id="resultName"></div>
+      <div class="result-score" id="resultScore">--</div>
+      <div class="result-total">/ 100점</div>
+      <div class="result-badge" id="resultBadge"></div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px">
+        <div style="background:#f7f8ff;border-radius:10px;padding:10px 6px;text-align:center"><div style="font-size:10px;color:#888;margin-bottom:3px">기본지식 (30점)</div><div style="font-size:18px;font-weight:700;color:#2e3a8c" id="bd1">-</div></div>
+        <div style="background:#f7f8ff;border-radius:10px;padding:10px 6px;text-align:center"><div style="font-size:10px;color:#888;margin-bottom:3px">호환지식 (30점)</div><div style="font-size:18px;font-weight:700;color:#2e3a8c" id="bd2">-</div></div>
+        <div style="background:#f7f8ff;border-radius:10px;padding:10px 6px;text-align:center"><div style="font-size:10px;color:#888;margin-bottom:3px">실전대처 (40점)</div><div style="font-size:18px;font-weight:700;color:#2e3a8c" id="bd3">-</div></div>
+      </div>
+      <div class="result-msg" id="resultMsg"></div>
+      <button class="btn-retry" onclick="location.reload()">&#x1F504; 다시 풀기</button>
+      <button class="btn-print" onclick="window.print()">&#x1F5A8; 인쇄</button>
+    </div>
+    <div class="wrong-note" id="wrongNote" style="display:none">
+      <h3>&#x274C; 오답노트</h3>
+      <div id="wrongList"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+var A={
+  q1:{c:3,pt:3,s:1,e:"디오X 전원 오프는 버튼 5번 연속 클릭이에요. 스틱형이라 주머니에서 눌릴 수 있어요!"},
+  q2:{c:1,pt:3,s:1,e:"하복 SE 폐호흡 코일은 0.25Ω, 입호흡은 0.6Ω이에요."},
+  q3:{c:2,pt:3,s:1,e:"발라리안 에어는 화면이 없어요. 버튼 3번 클릭 후 LED 색상으로 배터리 확인해요."},
+  q4:{c:4,pt:3,s:1,e:"닷파티 팟은 드립팁 미포함! 기기 본체 드립팁을 뽑아 새 팟에 끼워 사용해요."},
+  q5:{c:2,pt:3,s:1,e:"레드팟=단맛 부스팅, 블랙팟=밸런스 향이에요. 단맛 원하면 레드팟!"},
+  q6:{c:1,pt:3,s:1,e:"우리 매장은 에이펙스 전용 팟을 취급해요! AF코일이 아닌 에이펙스 전용 팟이에요."},
+  q7:{c:3,pt:3,s:1,e:"플라스크는 폐호흡 전용! 입호흡 액상 넣으면 에어홀로 심하게 새요."},
+  q8:{c:4,pt:3,s:1,e:"긱베이프 Q 시리즈(썬더Q·위넥스Q)는 팟을 공유해요!"},
+  q9:{c:2,pt:3,s:1,e:"발라리안 R은 하부 에어플로우 구조로 기존 발라리안 시리즈와 팟 규격이 완전히 달라요."},
+  q10:{c:3,pt:3,s:1,e:"이지스 레전드는 탱크 양쪽 주입구로만 액상 주입! 중앙 에어홀에 넣으면 코일 손상돼요."},
+  q11:{c:1,pt:3,s:2,e:"젤로와 젤로맥스는 기기 두께가 달라 팟 규격이 완전히 달라요. 반드시 기기 확인!"},
+  q12:{c:3,pt:3,s:2,e:"크로스 시리즈는 구형/신형, 모델 불문 전 모델 팟 통합 호환이에요!"},
+  q13:{c:4,pt:3,s:2,e:"DV·MAX 공팟 규격은 달라 교차 사용 불가. 하지만 코일(0.6·1.0Ω)은 전 시리즈 공통 호환!"},
+  q14:{c:2,pt:3,s:2,e:"팬텀 시리즈는 발라리안 클리어 공팟과 호환 가능해요. 브랜드 달라도 OK!"},
+  q15:{c:1,pt:3,s:2,e:"발라리안 맥스프로 부스터팟은 0.5Ω이에요. 일반 오프팟은 0.6Ω."},
+  q16:{c:3,pt:3,s:2,e:"브이스루·브이메이트 시리즈는 팟 통합 호환이에요. 어떤 V시리즈 팟이든 드리면 돼요!"},
+  q17:{c:2,pt:3,s:2,e:"말론과 말론S는 기기 규격이 달라 팟 호환 불가예요. 박스에서 'S' 표기 꼭 확인!"},
+  q18:{c:4,pt:3,s:2,e:"발라리안 R은 하부 에어플로우 구조라 단자 결로가 잦아요. 팟 빼고 휴지로 닦으면 90% 해결!"},
+  q19:{c:1,pt:3,s:2,e:"새 코일은 액상 충전 후 5~10분 대기(프라이밍) 필수! 안 하면 심지가 타서 탄 냄새 나요."},
+  q20:{c:3,pt:3,s:2,e:"팔콘 시리즈는 M1 코일이 가장 기본이에요. M1+(강화), M-Triple(무화량多)도 있어요."},
+  q21:{c:3,pt:4,s:3,e:"발라리안 시리즈는 모델마다 팟 규격이 달라요. 반드시 기기 직접 확인 후 제공!"},
+  q22:{c:4,pt:4,s:3,e:"젤로·젤로맥스 팟 호환 불가 설명 + 개봉 후 환불 불가 원칙 + 향후 기기 지참 요청이 정석이에요."},
+  q23:{c:2,pt:4,s:3,e:"플라스크는 폐호흡 전용! 일반 액상 넣으면 누수 심각. 폐호흡 전용 액상 안내 필수!"},
+  q24:{c:1,pt:4,s:3,e:"코일 교체 후 프라이밍(5~10분 대기) 없이 바로 흡입하면 탄 냄새 나요. 가장 흔한 클레임 원인!"},
+  q25:{c:3,pt:4,s:3,e:"기기 직접 확인 + 팬텀 레드팟 또는 발라리안 클리어 공팟 제공 + 중장년층이니 친절히 천천히 설명!"},
+  q26:{c:4,pt:4,s:3,e:"발라리안 에어는 화면 없어 전원 상태 모르는 경우 많아요. 버튼 5번으로 전원 ON 먼저 확인!"},
+  q27:{c:2,pt:4,s:3,e:"젤로·젤로맥스 팟 호환 불가! 반드시 기기 확인하거나 두께 질문 후 드려야 해요."},
+  q28:{c:1,pt:4,s:3,e:"이지스 레전드는 폐호흡 전용! 액상 추천 전 폐호흡 전용 고점도 액상 여부 먼저 확인!"},
+  q29:{c:3,pt:4,s:3,e:"디오X 스틱형이라 주머니에서 버튼 눌림이 가장 흔한 원인이에요. 전원 오프 사용법 안내 필수!"},
+  q30:{c:4,pt:4,s:3,e:"모르면 정직하게 인정하고 선임에게 확인 후 정확히 안내하는 게 최고예요!"}
+};
+
+var answered={};
+var submitted=false;
+
+document.querySelectorAll(".choices").forEach(function(choices){
+  choices.querySelectorAll(".choice-label").forEach(function(label){
+    label.addEventListener("click",function(){
+      if(submitted) return;
+      var radio=this.querySelector("input[type=radio]");
+      var qid=this.closest(".question").dataset.qid;
+      choices.querySelectorAll(".choice-label").forEach(function(l){l.classList.remove("selected");});
+      this.classList.add("selected");
+      answered[qid]=parseInt(radio.value);
+      updateProgress();
+    });
+  });
+});
+
+function updateProgress(){
+  var done=Object.keys(answered).length;
+  document.getElementById("progressLabel").textContent=done+" / 30 문항 완료";
+  document.getElementById("progressFill").style.width=(done/30*100)+"%";
+}
+
+function submitExam(){
+  var name=document.getElementById("nameInput").value.trim()||"미입력";
+  var branch=document.getElementById("branchInput").value.trim()||"미입력";
+  var s1=0,s2=0,s3=0;
+  var wrongItems=[];
+
+  Object.keys(A).forEach(function(qid){
+    var q=A[qid];
+    var qEl=document.querySelector("[data-qid="+qid+"]");
+    var userAns=answered[qid];
+    var labels=qEl.querySelectorAll(".choice-label");
+    var fb=document.getElementById("fb-"+qid);
+    labels.forEach(function(l){
+      var v=parseInt(l.querySelector("input").value);
+      if(v===q.c) l.classList.add("correct");
+      if(userAns&&v===userAns&&userAns!==q.c) l.classList.add("wrong");
+    });
+    if(userAns===q.c){
+      if(q.s===1) s1+=q.pt;
+      else if(q.s===2) s2+=q.pt;
+      else s3+=q.pt;
+      fb.className="feedback correct-fb";
+      fb.textContent="✅ 정답! "+q.e;
+    } else {
+      fb.className="feedback wrong-fb";
+      fb.textContent="❌ 오답. "+q.e;
+      wrongItems.push({qid:qid,e:q.e});
+    }
+    qEl.querySelectorAll("input[type=radio]").forEach(function(r){r.disabled=true;});
+  });
+
+  var total=s1+s2+s3;
+  var pass=total>=80;
+
+  document.getElementById("resultName").textContent=branch+" · "+name;
+  document.getElementById("resultScore").textContent=total;
+  var badge=document.getElementById("resultBadge");
+  badge.textContent=pass?"🎉 합격 (80점 이상)":"📚 불합격 (재시험 필요)";
+  badge.className="result-badge "+(pass?"badge-pass":"badge-fail");
+  document.getElementById("bd1").textContent=s1+"점";
+  document.getElementById("bd2").textContent=s2+"점";
+  document.getElementById("bd3").textContent=s3+"점";
+
+  var msgs=pass
+    ?["완벽해요! 실전에서도 이 실력 발휘해주세요 🎯","훌륭해요! 자신있게 손님 응대할 수 있겠네요 💪"]
+    :["오답노트 확인하고 호환표 앱 다시 공부해보세요 📖","기기별 팟 규격 차이를 다시 정리해보세요 💪"];
+  document.getElementById("resultMsg").textContent=msgs[Math.floor(Math.random()*msgs.length)];
+
+  if(wrongItems.length>0){
+    document.getElementById("wrongNote").style.display="block";
+    document.getElementById("wrongList").innerHTML=wrongItems.map(function(w){
+      return '<div class="wrong-item"><div class="wrong-item-q">Q'+w.qid.replace("q","")+" 오답</div>"+'<div class="wrong-item-ans">💡 '+w.e+"</div></div>";
+    }).join("");
+  }
+
+  document.getElementById("resultScreen").style.display="block";
+  document.getElementById("submitBtn").disabled=true;
+  submitted=true;
+  setTimeout(function(){document.getElementById("resultScreen").scrollIntoView({behavior:"smooth"});},200);
+}
+</script>
+</body>
+</html>

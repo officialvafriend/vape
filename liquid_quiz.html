@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0">
+<title>베이프렌드 액상 시험</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f0f2f8;color:#1a1a1a}
+.app{max-width:480px;margin:0 auto;min-height:100vh}
+.hd{background:linear-gradient(135deg,#2e3a8c,#1a2460);padding:20px 16px;color:#fff;text-align:center}
+.hd h1{font-size:18px;font-weight:700;margin-bottom:4px}
+.hd p{font-size:12px;opacity:.8}
+.progress-bar{background:rgba(255,255,255,.2);height:4px;border-radius:2px;margin-top:14px}
+.progress-fill{background:#fff;height:4px;border-radius:2px;transition:width .3s}
+.score-bar{display:flex;justify-content:space-between;font-size:11px;opacity:.8;margin-top:6px}
+.body{padding:12px}
+.q-card{background:#fff;border-radius:16px;padding:16px;margin-bottom:10px;box-shadow:0 2px 8px rgba(0,0,0,.07)}
+.q-num{font-size:10px;font-weight:700;color:#2e3a8c;text-transform:uppercase;margin-bottom:6px}
+.q-type{display:inline-block;font-size:10px;padding:2px 8px;border-radius:10px;margin-bottom:8px;font-weight:600}
+.qt-flavor{background:#e8f0ff;color:#2e3a8c}
+.qt-brand{background:#e8f8ef;color:#1a7a40}
+.qt-cat{background:#fff0e0;color:#b05a00}
+.qt-type{background:#f0e8ff;color:#6a1a9a}
+.q-text{font-size:14px;font-weight:600;color:#1a1a1a;line-height:1.5;margin-bottom:12px}
+.opts{display:flex;flex-direction:column;gap:8px}
+.opt{display:flex;align-items:center;padding:10px 14px;border-radius:12px;border:1.5px solid #e8e8e8;background:#fff;cursor:pointer;transition:all .15s;-webkit-tap-highlight-color:transparent}
+.opt:active{transform:scale(.98)}
+.opt.selected{border-color:#2e3a8c;background:#f0f3ff}
+.opt.correct{border-color:#2a9d5c;background:#e8f8ef}
+.opt.wrong{border-color:#e03030;background:#fff0f0}
+.opt-check{width:20px;height:20px;border-radius:6px;border:1.5px solid #ddd;flex-shrink:0;margin-right:10px;display:flex;align-items:center;justify-content:center;font-size:12px}
+.opt.selected .opt-check{border-color:#2e3a8c;background:#2e3a8c;color:#fff}
+.opt.correct .opt-check{border-color:#2a9d5c;background:#2a9d5c;color:#fff}
+.opt.wrong .opt-check{border-color:#e03030;background:#e03030;color:#fff}
+.opt-text{font-size:13px;color:#333}
+.feedback{margin-top:8px;padding:8px 12px;border-radius:10px;font-size:12px;display:none}
+.feedback.show{display:block}
+.feedback.ok{background:#e8f8ef;color:#1a7a40}
+.feedback.ng{background:#fff0f0;color:#c03030}
+.btn-row{padding:0 12px 30px;display:flex;flex-direction:column;gap:8px}
+.btn{width:100%;padding:14px;border-radius:14px;border:none;font-size:15px;font-weight:700;cursor:pointer}
+.btn-submit{background:#2e3a8c;color:#fff}
+.btn-submit:disabled{background:#ccc;cursor:default}
+.btn-retry{background:#fff;color:#2e3a8c;border:2px solid #2e3a8c}
+.result-card{background:#fff;border-radius:20px;padding:24px;margin:12px;text-align:center;box-shadow:0 4px 16px rgba(0,0,0,.1)}
+.result-emoji{font-size:48px;margin-bottom:12px}
+.result-score{font-size:36px;font-weight:800;color:#2e3a8c;margin-bottom:4px}
+.result-msg{font-size:14px;color:#666;margin-bottom:16px}
+.result-detail{display:flex;justify-content:center;gap:24px;padding:16px;background:#f8f8f8;border-radius:12px;margin-bottom:16px}
+.result-detail div{text-align:center}
+.result-detail .num{font-size:20px;font-weight:700}
+.result-detail .lbl{font-size:11px;color:#888;margin-top:2px}
+.wrong-list{text-align:left;margin-top:12px}
+.wrong-list h3{font-size:13px;font-weight:700;color:#c03030;margin-bottom:8px}
+.wrong-item{background:#fff0f0;border-radius:10px;padding:10px;margin-bottom:6px;font-size:12px}
+.wrong-item .wq{color:#333;margin-bottom:3px;font-weight:600}
+.wrong-item .wa{color:#2a9d5c}
+.wrong-item .wm{color:#c03030}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="hd">
+    <h1>🧪 베이프렌드 액상 시험</h1>
+    <p>랜덤 30문제 · 4지선다</p>
+    <div class="progress-bar"><div class="progress-fill" id="prog" style="width:0%"></div></div>
+    <div class="score-bar"><span id="prog-txt">0 / 30</span><span id="score-txt">0점</span></div>
+  </div>
+  <div class="body" id="body"></div>
+  <div class="btn-row" id="btn-row">
+    <button class="btn btn-submit" id="btn-submit" onclick="submitAll()" disabled>채점하기</button>
+  </div>
+</div>
+<script>
+var D=[
+  {n:"VF 홀리",b:"VF",c:"프리미엄 라인",t:"일반",f:"멜론+유자"},
+  {n:"VF 핑크샤크",b:"VF",c:"프리미엄 라인",t:"일반",f:"복숭아+레몬"},
+  {n:"VF 체리캔디",b:"VF",c:"프리미엄 라인",t:"일반",f:"체리사탕"},
+  {n:"VF 소다레몬",b:"VF",c:"프리미엄 라인",t:"일반",f:"소다+레몬"},
+  {n:"VF 알로에소다",b:"VF",c:"프리미엄 라인",t:"일반",f:"알로에+소다"},
+  {n:"VF 빌런 석류",b:"VF",c:"프리미엄 라인",t:"일반",f:"석류"},
+  {n:"VF 빌런 레몬",b:"VF",c:"프리미엄 라인",t:"일반",f:"레몬"},
+  {n:"VF 빌런 청포도",b:"VF",c:"프리미엄 라인",t:"일반",f:"청포도"},
+  {n:"VF 빌런 파인애플",b:"VF",c:"프리미엄 라인",t:"일반",f:"파인애플"},
+  {n:"VF 빌런 자두",b:"VF",c:"프리미엄 라인",t:"일반",f:"자두"},
+  {n:"VF 릭 청포도",b:"VF",c:"프리미엄 라인",t:"노멘솔",f:"청포도"},
+  {n:"VF 릭 석류",b:"VF",c:"프리미엄 라인",t:"노멘솔",f:"석류"},
+  {n:"VF 릭 레몬",b:"VF",c:"프리미엄 라인",t:"노멘솔",f:"레몬"},
+  {n:"팜팜 포카리",b:"팜팜",c:"프리미엄 라인",t:"일반",f:"포카리"},
+  {n:"팜팜 라임사이다",b:"팜팜",c:"프리미엄 라인",t:"일반",f:"라임+사이다"},
+  {n:"팜팜 체리콕",b:"팜팜",c:"프리미엄 라인",t:"일반",f:"체리+콜라"},
+  {n:"팜팜 베리미",b:"팜팜",c:"프리미엄 라인",t:"일반",f:"라즈베리+블루베리"},
+  {n:"팜팜 그린애플",b:"팜팜",c:"프리미엄 라인",t:"일반",f:"그린애플"},
+  {n:"순수 복숭아",b:"순수",c:"프리미엄 라인",t:"일반",f:"복숭아"},
+  {n:"순수 포도",b:"순수",c:"프리미엄 라인",t:"일반",f:"포도"},
+  {n:"순수 레몬",b:"순수",c:"프리미엄 라인",t:"일반",f:"레몬"},
+  {n:"순수 청포도",b:"순수",c:"프리미엄 라인",t:"일반",f:"청포도"},
+  {n:"순수 무화과",b:"순수",c:"프리미엄 라인",t:"일반",f:"무화과"},
+  {n:"순수 리프",b:"순수",c:"프리미엄 라인",t:"노멘솔",f:"부드러운 시가"},
+  {n:"순수 시가",b:"순수",c:"프리미엄 라인",t:"노멘솔",f:"묵직한 시가"},
+  {n:"순수 블랙멘솔",b:"순수",c:"프리미엄 라인",t:"일반",f:"단일멘솔"},
+  {n:"베이퍼 프루아",b:"베이퍼",c:"프리미엄 라인",t:"일반",f:"자두+소다"},
+  {n:"베이퍼 플로이",b:"베이퍼",c:"프리미엄 라인",t:"일반",f:"사과+석류"},
+  {n:"베이퍼 렘드",b:"베이퍼",c:"프리미엄 라인",t:"일반",f:"레몬"},
+  {n:"베이퍼 욜",b:"베이퍼",c:"프리미엄 라인",t:"일반",f:"청포도+알로에"},
+  {n:"베이퍼 모모",b:"베이퍼",c:"프리미엄 라인",t:"일반",f:"복숭아"},
+  {n:"베이퍼 톨리",b:"베이퍼",c:"프리미엄 라인",t:"일반",f:"수박+소다"},
+  {n:"베이퍼 시가812",b:"베이퍼",c:"프리미엄 라인",t:"노멘솔",f:"구수한 시가"},
+  {n:"베이퍼 찰스",b:"베이퍼",c:"프리미엄 라인",t:"일반",f:"살구+복숭아"},
+  {n:"베이퍼 체체",b:"베이퍼",c:"프리미엄 라인",t:"일반",f:"체리"},
+  {n:"베이퍼 알로",b:"베이퍼",c:"프리미엄 라인",t:"일반",f:"알로에"},
+  {n:"투엑스 포카인",b:"투엑스",c:"프리미엄 라인",t:"일반",f:"포카리+사과"},
+  {n:"투엑스 싸와디캅",b:"투엑스",c:"프리미엄 라인",t:"노멘솔",f:"크림+시가"},
+  {n:"투엑스 구찌",b:"투엑스",c:"프리미엄 라인",t:"노멘솔",f:"녹차"},
+  {n:"투엑스 돌체라떼",b:"투엑스",c:"프리미엄 라인",t:"노멘솔",f:"커피맛"},
+  {n:"투엑스 빠빠코코낫",b:"투엑스",c:"프리미엄 라인",t:"노멘솔",f:"빠다코코넛"},
+  {n:"투엑스 세븐",b:"투엑스",c:"프리미엄 라인",t:"노멘솔",f:"마일드세븐"},
+  {n:"투엑스 엑쎄",b:"투엑스",c:"프리미엄 라인",t:"노멘솔",f:"에쎄"},
+  {n:"댕댕이 포카리레몬",b:"댕댕이",c:"프리미엄 라인",t:"일반",f:"포카리+레몬"},
+  {n:"댕댕이 스피아민트",b:"댕댕이",c:"프리미엄 라인",t:"일반",f:"민트"},
+  {n:"(한) 와 블루레몬",b:"제이코리아",c:"프리미엄 라인",t:"일반",f:"블루레몬+백향과"},
+  {n:"(한) 와 라즈베리",b:"제이코리아",c:"프리미엄 라인",t:"일반",f:"라즈베리+백향과"},
+  {n:"(한) 와 오가닉",b:"제이코리아",c:"프리미엄 라인",t:"일반",f:"패션후르츠"},
+  {n:"(한) 레드포카리",b:"제이코리아",c:"프리미엄 라인",t:"일반",f:"자몽+포카리"},
+  {n:"(한) 화이트 파인애플",b:"화이트아웃",c:"프리미엄 라인",t:"일반",f:"파인애플"},
+  {n:"(한) 화이트 워터멜론",b:"화이트아웃",c:"프리미엄 라인",t:"일반",f:"수박"},
+  {n:"(한) 화이트 블루레몬",b:"화이트아웃",c:"프리미엄 라인",t:"일반",f:"블루레몬에이드"},
+  {n:"(한) 화이트 피치",b:"화이트아웃",c:"프리미엄 라인",t:"일반",f:"복숭아"},
+  {n:"(한) 마피아퀸",b:"퀸즈시리즈",c:"프리미엄 라인",t:"일반",f:"구아바+키위"},
+  {n:"(한) 사무라이퀸",b:"퀸즈시리즈",c:"프리미엄 라인",t:"일반",f:"딸기+블루베리"},
+  {n:"(한) 크루세이더퀸",b:"퀸즈시리즈",c:"프리미엄 라인",t:"일반",f:"레몬+콜라"},
+  {n:"(한) 아마조네스퀸",b:"퀸즈시리즈",c:"프리미엄 라인",t:"일반",f:"복숭아+리치"},
+  {n:"(한) 크레이지 딸기",b:"크레이지",c:"프리미엄 라인",t:"일반",f:"딸기"},
+  {n:"(한) 라입 쿨링민트",b:"라입시리즈",c:"프리미엄 라인",t:"일반",f:"민트"},
+  {n:"(한) 라입 쿨링피치",b:"라입시리즈",c:"프리미엄 라인",t:"일반",f:"복숭아"},
+  {n:"(한) 라입 쿨링라임",b:"라입시리즈",c:"프리미엄 라인",t:"일반",f:"라임"},
+  {n:"(한) 라입 제로타바코",b:"라입시리즈",c:"프리미엄 라인",t:"노멘솔",f:"타바코"},
+  {n:"(한) 라입 제로피치",b:"라입시리즈",c:"프리미엄 라인",t:"노멘솔",f:"복숭아"},
+  {n:"(한) 라입 제로레몬",b:"라입시리즈",c:"프리미엄 라인",t:"노멘솔",f:"레몬"},
+  {n:"(한) 얌 레몬",b:"얌시리즈",c:"프리미엄 라인",t:"일반",f:"레몬"},
+  {n:"(한) 얌 포도",b:"얌시리즈",c:"프리미엄 라인",t:"일반",f:"포도"},
+  {n:"(한) 얌 수박",b:"얌시리즈",c:"프리미엄 라인",t:"일반",f:"수박"},
+  {n:"(한) 얌 복숭아",b:"얌시리즈",c:"프리미엄 라인",t:"일반",f:"복숭아"},
+  {n:"(한) 얌 샤인머스캣",b:"얌시리즈",c:"프리미엄 라인",t:"일반",f:"샤인머스캣"},
+  {n:"(한) 얌멘솔",b:"제이코리아",c:"프리미엄 라인",t:"일반",f:"멘솔"},
+  {n:"(한) 크래유자",b:"크래프트",c:"프리미엄 라인",t:"일반",f:"유자"},
+  {n:"(한) 크래피치",b:"크래프트",c:"프리미엄 라인",t:"일반",f:"복숭아"},
+  {n:"(한) 크래레몬",b:"크래프트",c:"프리미엄 라인",t:"일반",f:"레몬사탕"},
+  {n:"(한) 블링크 포도",b:"블링크",c:"프리미엄 라인",t:"일반",f:"포도"},
+  {n:"(한) 블링크 레몬",b:"블링크",c:"프리미엄 라인",t:"일반",f:"레몬"},
+  {n:"(한) 블링크 자몽",b:"블링크",c:"프리미엄 라인",t:"일반",f:"자몽"},
+  {n:"(한) 블링크 카푸치노",b:"블링크",c:"프리미엄 라인",t:"노멘솔",f:"커피"},
+  {n:"(한) 블링크 버블껌",b:"블링크",c:"프리미엄 라인",t:"일반",f:"풍선껌"},
+  {n:"(한) 블링크 쿼드베리",b:"블링크",c:"프리미엄 라인",t:"일반",f:"4가지 베리맛"},
+  {n:"(한) 트리플라임",b:"제이코리아",c:"프리미엄 라인",t:"일반",f:"라임"},
+  {n:"(한) 블루스카이",b:"제이코리아",c:"프리미엄 라인",t:"일반",f:"레몬+라임"},
+  {n:"(한) 젤라또알로에",b:"제이코리아",c:"프리미엄 라인",t:"일반",f:"알로에"},
+  {n:"(한) 블루블러드",b:"제이코리아",c:"프리미엄 라인",t:"일반",f:"파인애플+소다"},
+  {n:"(한) 샤크",b:"제이코리아",c:"프리미엄 라인",t:"일반",f:"죠스바"},
+  {n:"(한) 스위트피치망고",b:"제이코리아",c:"프리미엄 라인",t:"일반",f:"복숭아+망고"},
+  {n:"(한) 골든알로에",b:"제이코리아",c:"프리미엄 라인",t:"일반",f:"알로에"},
+  {n:"(한) 로스트토바코",b:"제이코리아",c:"프리미엄 라인",t:"노멘솔",f:"부드러운 토바코"},
+  {n:"(한) 토바코샷",b:"제이코리아",c:"프리미엄 라인",t:"노멘솔",f:"묵직한 토바코"},
+  {n:"무디 푸라보노",b:"무디",c:"프리미엄 라인",t:"일반",f:"후라보노(껌)"},
+  {n:"무디 아카시아",b:"무디",c:"프리미엄 라인",t:"일반",f:"아카시아(껌)"},
+  {n:"무디 크랜베리",b:"무디",c:"프리미엄 라인",t:"일반",f:"크랜베리"},
+  {n:"무디 그린애플",b:"무디",c:"프리미엄 라인",t:"일반",f:"그린애플"},
+  {n:"디오 레몬",b:"디오",c:"프리미엄 라인",t:"일반",f:"레몬+라임"},
+  {n:"디오 샤인",b:"디오",c:"프리미엄 라인",t:"일반",f:"샤인머스캣"},
+  {n:"디오 블루마린",b:"디오",c:"프리미엄 라인",t:"일반",f:"이온음료"},
+  {n:"디오 딸기망고",b:"디오",c:"프리미엄 라인",t:"일반",f:"딸기+망고"},
+  {n:"디오 콜라",b:"디오",c:"프리미엄 라인",t:"일반",f:"콜라"},
+  {n:"디오 블랙티",b:"디오",c:"프리미엄 라인",t:"노멘솔",f:"홍차"},
+  {n:"디오 알포",b:"디오",c:"프리미엄 라인",t:"일반",f:"알로에+포도"},
+  {n:"디오 로젤하트",b:"디오",c:"프리미엄 라인",t:"노멘솔",f:"히비스커스티"},
+  {n:"디오 멜론",b:"디오",c:"프리미엄 라인",t:"일반",f:"멜론"},
+  {n:"레드보틀 청포도",b:"레드보틀",c:"프리미엄 라인",t:"일반",f:"청포도사탕"},
+  {n:"레드보틀 초코피넛",b:"레드보틀",c:"프리미엄 라인",t:"노멘솔",f:"초콜릿+땅콩버터"},
+  {n:"레드보틀 자몽",b:"레드보틀",c:"프리미엄 라인",t:"일반",f:"자몽"},
+  {n:"레드보틀 민트캔디",b:"레드보틀",c:"프리미엄 라인",t:"일반",f:"민트사탕"},
+  {n:"오구오구 파인알로",b:"오구오구",c:"프리미엄 라인",t:"일반",f:"파인애플+알로에"},
+  {n:"오구오구 레몬자몽",b:"오구오구",c:"프리미엄 라인",t:"일반",f:"레몬+자몽"},
+  {n:"오구오구 리치알로에",b:"오구오구",c:"프리미엄 라인",t:"일반",f:"리치+알로에"},
+  {n:"오구오구 수박라즈",b:"오구오구",c:"프리미엄 라인",t:"일반",f:"수박+라즈베리"},
+  {n:"델리 오렌타",b:"델리",c:"프리미엄 라인",t:"일반",f:"오렌지"},
+  {n:"델리 백향과",b:"델리",c:"프리미엄 라인",t:"일반",f:"백향과"},
+  {n:"델리 포도",b:"델리",c:"프리미엄 라인",t:"일반",f:"포도"},
+  {n:"델리사과",b:"델리",c:"프리미엄 라인",t:"일반",f:"사과"},
+  {n:"수 골든포인트",b:"수리퀴드",c:"프라임 라인",t:"노멘솔",f:"구수한 시가"},
+  {n:"수 블랙멘솔",b:"수리퀴드",c:"프라임 라인",t:"일반",f:"멘솔"},
+  {n:"수 섹스어필",b:"수리퀴드",c:"프라임 라인",t:"노멘솔",f:"복분자"},
+  {n:"수 스노우청포도",b:"수리퀴드",c:"프라임 라인",t:"일반",f:"청포도"},
+  {n:"수 러브청포도",b:"수리퀴드",c:"프라임 라인",t:"노멘솔",f:"청포도"},
+  {n:"수 스노우피치",b:"수리퀴드",c:"프라임 라인",t:"일반",f:"복숭아"},
+  {n:"수 러브피치",b:"수리퀴드",c:"프라임 라인",t:"노멘솔",f:"복숭아"},
+  {n:"수 스노우민트",b:"수리퀴드",c:"프라임 라인",t:"일반",f:"민트"},
+  {n:"수 스노우사이다",b:"수리퀴드",c:"프라임 라인",t:"일반",f:"사이다"},
+  {n:"수 아메리카노",b:"수리퀴드",c:"프라임 라인",t:"노멘솔",f:"커피"},
+  {n:"수 예티",b:"수리퀴드",c:"프라임 라인",t:"일반",f:"수박+라즈베리"},
+  {n:"수 피코",b:"수리퀴드",c:"프라임 라인",t:"일반",f:"자두+살구"},
+  {n:"수 루기",b:"수리퀴드",c:"프라임 라인",t:"일반",f:"석류+자두"},
+  {n:"수 마이트",b:"수리퀴드",c:"프라임 라인",t:"일반",f:"레몬"},
+  {n:"수 더스트",b:"수리퀴드",c:"프라임 라인",t:"일반",f:"멜론+소다"},
+  {n:"수 잭워터멜론",b:"수리퀴드",c:"프라임 라인",t:"일반",f:"수박"},
+  {n:"수 잭알그레이프",b:"수리퀴드",c:"프라임 라인",t:"일반",f:"포도"},
+  {n:"츄잉 에너제틱",b:"츄잉",c:"프라임 라인",t:"일반",f:"에너지드링크"},
+  {n:"츄잉 모니모니",b:"츄잉",c:"프라임 라인",t:"일반",f:"레모나"},
+  {n:"츄잉 미스후라보노",b:"츄잉",c:"프라임 라인",t:"일반",f:"후라보노껌"},
+  {n:"츄잉 커피껌",b:"츄잉",c:"프라임 라인",t:"노멘솔",f:"커피껌"},
+  {n:"츄잉 박하사탕",b:"츄잉",c:"프라임 라인",t:"일반",f:"박하사탕"},
+  {n:"스위든 멘솔마스터",b:"스위든",c:"프라임 라인",t:"일반",f:"멘솔"},
+  {n:"스위든 쿠반시가",b:"스위든",c:"프라임 라인",t:"노멘솔",f:"깔끔한 시가"},
+  {n:"스위든 체어맨",b:"스위든",c:"프라임 라인",t:"노멘솔",f:"묵직한 시가"},
+  {n:"스위든 그린티",b:"스위든",c:"프라임 라인",t:"노멘솔",f:"녹차"},
+  {n:"스위든 아이스그린티",b:"스위든",c:"프라임 라인",t:"일반",f:"녹차"},
+  {n:"스위든 선인장",b:"스위든",c:"프라임 라인",t:"일반",f:"멜론+알로에"},
+  {n:"스위든 아이스바인",b:"스위든",c:"프라임 라인",t:"일반",f:"청포도+화이트와인"},
+  {n:"마샤 샤인",b:"마샤",c:"프라임 라인",t:"일반",f:"샤인머스캣"},
+  {n:"마샤 블랙",b:"마샤",c:"프라임 라인",t:"일반",f:"블랙사파이어"},
+  {n:"마샤 유자",b:"마샤",c:"프라임 라인",t:"일반",f:"유자"},
+  {n:"마샤 딸기",b:"마샤",c:"프라임 라인",t:"일반",f:"딸기"},
+  {n:"마샤 더블샤인",b:"마샤",c:"프라임 라인",t:"일반",f:"샤인머스캣X2"},
+  {n:"마르키사",b:"마르키사",c:"프라임 라인",t:"일반",f:"패션후르츠"},
+  {n:"마르키사 라즈",b:"마르키사",c:"프라임 라인",t:"일반",f:"패션후르츠+라즈베리"},
+  {n:"톡스 알베리",b:"톡스",c:"프라임 라인",t:"일반",f:"알로에+베리류"},
+  {n:"톡스 로젤하트",b:"톡스",c:"프라임 라인",t:"일반",f:"히비스커스"},
+  {n:"노보 그린펀치",b:"노보",c:"프라임 라인",t:"일반",f:"청포도"},
+  {n:"노보 블루펀치",b:"노보",c:"프라임 라인",t:"일반",f:"블루베리"},
+  {n:"노보 타박멘솔",b:"노보",c:"프라임 라인",t:"일반",f:"타바코+멘솔"},
+  {n:"노보 블랙멘솔",b:"노보",c:"프라임 라인",t:"일반",f:"멘솔"},
+  {n:"용트림체리",b:"용트림",c:"프라임 라인",t:"일반",f:"체리"},
+  {n:"용트림알로에",b:"용트림",c:"프라임 라인",t:"일반",f:"알로에"},
+  {n:"용트림수박",b:"용트림",c:"프라임 라인",t:"일반",f:"수박"},
+  {n:"몬테 세븐",b:"몬테",c:"프라임 라인",t:"노멘솔",f:"마일드세븐"},
+  {n:"몬테 스카디레인보우",b:"몬테",c:"프라임 라인",t:"일반",f:"후르츠믹스"},
+  {n:"슈퍼쿨 그레이프",b:"슈퍼쿨",c:"프라임 라인",t:"일반",f:"포도"},
+  {n:"슈퍼쿨 폴로",b:"슈퍼쿨",c:"프라임 라인",t:"일반",f:"민트"},
+  {n:"메즈멜론",b:"메즈",c:"프라임 라인",t:"일반",f:"멜론"},
+  {n:"메즈망고",b:"메즈",c:"프라임 라인",t:"일반",f:"망고"},
+  {n:"히든 알베",b:"히든",c:"프라임 라인",t:"일반",f:"알로에베라"},
+  {n:"갱쥬스 알베",b:"갱쥬스",c:"프라임 라인",t:"일반",f:"알로에베라"},
+  {n:"리얼자몽",b:"기타",c:"프라임 라인",t:"일반",f:"자몽"},
+  {n:"돔페피치",b:"기타",c:"프라임 라인",t:"일반",f:"복숭아"},
+  {n:"코베 텍사스시가",b:"코베",c:"프라임 라인",t:"노멘솔",f:"시가"},
+  {n:"버블몬 아쿠아",b:"버블몬",c:"프라임 라인",t:"일반",f:"열대과일"},
+  {n:"버블몬 오몽",b:"버블몬",c:"프라임 라인",t:"일반",f:"망고"},
+  {n:"버블몬 스타",b:"버블몬",c:"프라임 라인",t:"일반",f:"딸기"},
+  {n:"버블몬 쿨블루",b:"버블몬",c:"프라임 라인",t:"일반",f:"블루베리"},
+  {n:"버블몬 폴라",b:"버블몬",c:"프라임 라인",t:"일반",f:"청포도"},
+  {n:"버블몬 멘솔",b:"버블몬",c:"프라임 라인",t:"일반",f:"멘솔"},
+  {n:"버블몬 알포",b:"버블몬",c:"프라임 라인",t:"일반",f:"알로에+포도"},
+  {n:"한야 포도",b:"한야",c:"프라임 라인",t:"일반",f:"포도"},
+  {n:"민트 피치망고",b:"크로닉",c:"프라임 라인",t:"일반",f:"복숭아+망고"},
+  {n:"민트 레드불",b:"크로닉",c:"프라임 라인",t:"일반",f:"레드불"},
+  {n:"민트 블랙커런트",b:"크로닉",c:"프라임 라인",t:"일반",f:"블루베리"},
+  {n:"모코 블루베리사워",b:"모코",c:"프라임 라인",t:"일반",f:"블루베리"},
+  {n:"모코 스트로베리사워",b:"모코",c:"프라임 라인",t:"일반",f:"딸기"},
+  {n:"모코 그레이프사워",b:"모코",c:"프라임 라인",t:"일반",f:"포도"},
+  {n:"모코 더블망고",b:"모코",c:"프라임 라인",t:"일반",f:"망고X2"},
+  {n:"모코 더블샤인",b:"모코",c:"프라임 라인",t:"일반",f:"샤인머스캣X2"},
+  {n:"모코 하와이",b:"모코",c:"프라임 라인",t:"일반",f:"레몬"},
+  {n:"크로닉 리치",b:"크로닉",c:"프라임 라인",t:"일반",f:"리치"},
+  {n:"설향 딸기",b:"설향",c:"프라임 라인",t:"일반",f:"딸기"},
+  {n:"설향 라임",b:"설향",c:"프라임 라인",t:"일반",f:"라임"},
+  {n:"설향 자두",b:"설향",c:"프라임 라인",t:"일반",f:"자두+살구"},
+  {n:"쿠모카시 파인",b:"쿠모카시",c:"프라임 라인",t:"일반",f:"파인애플"},
+  {n:"쿠모카시 블루베리",b:"쿠모카시",c:"프라임 라인",t:"일반",f:"블루베리"},
+  {n:"쿠모카시 포도",b:"쿠모카시",c:"프라임 라인",t:"일반",f:"포도"},
+  {n:"쿠모카시 멜론",b:"쿠모카시",c:"프라임 라인",t:"일반",f:"멜론"},
+  {n:"쿠모카시 딸기",b:"쿠모카시",c:"프라임 라인",t:"일반",f:"딸기"},
+  {n:"쿠모카시 청사과",b:"쿠모카시",c:"프라임 라인",t:"일반",f:"그린애플"},
+  {n:"쿠모카시 오렌지",b:"쿠모카시",c:"프라임 라인",t:"일반",f:"오렌지"},
+  {n:"야쿠자르트",b:"마르키사",c:"프라임 라인",t:"일반",f:"야쿠르트"},
+  {n:"라임알로에",b:"펠릭스",c:"프라임 라인",t:"일반",f:"라임+알로에"},
+  {n:"더블라임",b:"펠릭스",c:"프라임 라인",t:"일반",f:"라임"},
+  {n:"더블슬블",b:"기타",c:"프라임 라인",t:"일반",f:"파인애플+소다"},
+  {n:"칠링피치티",b:"기타",c:"프라임 라인",t:"일반",f:"복숭아아이스티"},
+  {n:"슴오크쿠반",b:"기타",c:"프라임 라인",t:"노멘솔",f:"묵직한 시가"},
+  {n:"엑스온더비치",b:"기타",c:"프라임 라인",t:"일반",f:"오렌지칵테일"},
+  {n:"치즈칩스",b:"기타",c:"프라임 라인",t:"노멘솔",f:"치즈"},
+  {n:"미슐랭블루",b:"기타",c:"프라임 라인",t:"일반",f:"포도+콜라"},
+  {n:"모모라즈슬러쉬",b:"고스트",c:"프라임 라인",t:"일반",f:"복숭아+라즈베리"},
+  {n:"적포도슬러쉬",b:"고스트",c:"프라임 라인",t:"일반",f:"적포도"},
+  {n:"파이 토트",b:"파이",c:"프라임 라인",t:"노멘솔",f:"묵직한 시가"},
+  {n:"파이 아이스멘솔",b:"파이",c:"프라임 라인",t:"일반",f:"멘솔"},
+  {n:"프라임 파워멘솔",b:"프라임",c:"프라임 라인",t:"일반",f:"멘솔"},
+  {n:"프라임 아이스레몬",b:"프라임",c:"프라임 라인",t:"일반",f:"레몬"},
+  {n:"프라임 쿨툰드라",b:"프라임",c:"프라임 라인",t:"일반",f:"베리향"}
+];
+
+// 문제 유형 정의
+function makeQ(item, all) {
+  var r = Math.random();
+  var others = all.filter(function(x){return x.n !== item.n;});
+  function rnd(arr,n){var a=arr.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}return a.slice(0,n);}
+
+  if (r < 0.4) {
+    // 맛 설명 → 액상명
+    var wrongs = rnd(others,3).map(function(x){return x.n;});
+    var opts = rnd([item.n].concat(wrongs),4);
+    return {q:"🍬 맛: <b>"+item.f+"</b><br>이 맛의 액상명은?", ans:item.n, opts:opts, type:"맛→이름", tc:"qt-flavor"};
+  } else if (r < 0.7) {
+    // 액상명 → 맛 설명
+    var wrongs = rnd(others.map(function(x){return x.f;}),3);
+    var opts = rnd([item.f].concat(wrongs),4);
+    return {q:"📦 <b>"+item.n+"</b><br>이 액상의 맛은?", ans:item.f, opts:opts, type:"이름→맛", tc:"qt-brand"};
+  } else if (r < 0.85) {
+    // 브랜드 → 대표 액상
+    var sameB = all.filter(function(x){return x.b===item.b && x.n!==item.n;});
+    if(sameB.length < 1) {
+      var wrongs = rnd(others,3).map(function(x){return x.n;});
+      var opts = rnd([item.n].concat(wrongs),4);
+      return {q:"🍬 맛: <b>"+item.f+"</b><br>이 맛의 액상명은?", ans:item.n, opts:opts, type:"맛→이름", tc:"qt-flavor"};
+    }
+    var wrongBrands = [...new Set(others.filter(function(x){return x.b!==item.b;}).map(function(x){return x.b;}))];
+    var wb = rnd(wrongBrands,3);
+    var opts = rnd([item.b].concat(wb),4);
+    return {q:"📋 <b>"+item.n+"</b><br>이 액상의 브랜드는?", ans:item.b, opts:opts, type:"이름→브랜드", tc:"qt-brand"};
+  } else {
+    // 프리미엄/프라임 구분
+    var wrongCat = item.c === "프리미엄 라인" ? "프라임 라인" : "프리미엄 라인";
+    var opts = ["프리미엄 라인","프라임 라인","프리미엄 라인 (한정)","프라임 라인 (시즌)"];
+    return {q:"🏷 <b>"+item.n+"</b><br>이 액상은 어느 라인?", ans:item.c, opts:rnd(opts,4), type:"라인구분", tc:"qt-cat"};
+  }
+}
+
+// 랜덤 30문제 생성
+function shuffle(arr){var a=arr.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}return a;}
+
+var pool = shuffle(D).slice(0,30);
+var Qs = pool.map(function(item){return makeQ(item,D);});
+var answers = {};
+var submitted = false;
+
+function buildUI(){
+  var html = "";
+  Qs.forEach(function(q,i){
+    html += "<div class='q-card' id='qc"+i+"'>";
+    html += "<div class='q-num'>Q"+( i+1)+"</div>";
+    html += "<span class='q-type "+q.tc+"'>"+q.type+"</span>";
+    html += "<div class='q-text'>"+q.q+"</div>";
+    html += "<div class='opts' id='opts"+i+"'>";
+    q.opts.forEach(function(opt,j){
+      html += "<div class='opt' id='opt"+i+"_"+j+"' data-q='"+i+"' data-opt='"+opt.replace(/'/g,"&#39;")+"'>";
+      html += "<div class='opt-check' id='chk"+i+"_"+j+"'></div>";
+      html += "<span class='opt-text'>"+opt+"</span></div>";
+    });
+    html += "</div>";
+    html += "<div class='feedback' id='fb"+i+"'></div>";
+    html += "</div>";
+  });
+  document.getElementById("body").innerHTML = html;
+
+  // 이벤트 등록
+  document.getElementById("body").addEventListener("click", function(e){
+    if(submitted) return;
+    var el = e.target.closest(".opt");
+    if(!el) return;
+    var qi = parseInt(el.dataset.q);
+    var opt = el.dataset.opt;
+    // 같은 문제 이전 선택 해제
+    document.querySelectorAll("#opts"+qi+" .opt").forEach(function(o){o.className="opt";o.querySelector(".opt-check").textContent="";});
+    el.className = "opt selected";
+    el.querySelector(".opt-check").textContent = "✓";
+    answers[qi] = opt;
+    // 제출 버튼 활성화 여부
+    document.getElementById("btn-submit").disabled = Object.keys(answers).length < 30;
+    updateProgress();
+  });
+}
+
+function updateProgress(){
+  var cnt = Object.keys(answers).length;
+  document.getElementById("prog").style.width = (cnt/30*100)+"%";
+  document.getElementById("prog-txt").textContent = cnt+" / 30";
+}
+
+function submitAll(){
+  if(submitted) return;
+  submitted = true;
+  var correct = 0;
+  Qs.forEach(function(q,i){
+    var ua = answers[i];
+    var isOk = ua === q.ans;
+    if(isOk) correct++;
+    // 옵션 색칠
+    document.querySelectorAll("#opts"+i+" .opt").forEach(function(o){
+      var ov = o.dataset.opt;
+      if(ov===q.ans){o.className="opt correct";o.querySelector(".opt-check").textContent="✓";}
+      else if(ov===ua&&!isOk){o.className="opt wrong";o.querySelector(".opt-check").textContent="✗";}
+    });
+    // 피드백
+    var fb = document.getElementById("fb"+i);
+    if(isOk){fb.className="feedback show ok";fb.textContent="✅ 정답!";}
+    else{fb.className="feedback show ng";fb.textContent="❌ 정답: "+q.ans;}
+  });
+
+  var score = Math.round(correct/30*100);
+  var emoji = score>=90?"🏆":score>=70?"😊":score>=50?"😅":"😢";
+  var msg = score>=90?"완벽해요! 액상 마스터!":score>=70?"잘 하셨어요!":score>=50?"조금 더 공부해봐요!":"다시 한번 도전해보세요!";
+
+  document.getElementById("score-txt").textContent = correct+"점";
+  document.getElementById("btn-row").innerHTML =
+    "<div class='result-card'><div class='result-emoji'>"+emoji+"</div>"+
+    "<div class='result-score'>"+correct+" / 30</div>"+
+    "<div class='result-msg'>"+msg+"</div>"+
+    "<div class='result-detail'>"+
+    "<div><div class='num' style='color:#2a9d5c'>"+correct+"</div><div class='lbl'>정답</div></div>"+
+    "<div><div class='num' style='color:#e03030'>"+(30-correct)+"</div><div class='lbl'>오답</div></div>"+
+    "<div><div class='num' style='color:#2e3a8c'>"+score+"%</div><div class='lbl'>점수</div></div>"+
+    "</div></div>"+
+    "<button class='btn btn-retry' onclick='location.reload()'>🔄 다시 풀기</button>";
+}
+
+buildUI();
+</script>
+</body>
+</html>
