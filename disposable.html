@@ -1,1 +1,185 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0">
+<title>베이프렌드 일회용제품</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f0f2f8;color:#1a1a1a}
+.app{max-width:480px;margin:0 auto;min-height:100vh}
+.hd{background:linear-gradient(135deg,#1a1a2e,#16213e);padding:20px 16px 16px;color:#fff;position:sticky;top:0;z-index:10;box-shadow:0 2px 12px rgba(0,0,0,.2)}
+.hd h1{font-size:17px;font-weight:700;margin-bottom:3px}
+.hd p{font-size:11px;opacity:.7;margin-bottom:12px}
+.sw{position:relative}
+.sw input{width:100%;padding:9px 12px 9px 34px;font-size:13px;border-radius:10px;border:none;background:rgba(255,255,255,.15);color:#fff;outline:none}
+.sw input::placeholder{color:rgba(255,255,255,.5)}
+.si{position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:14px}
+.body{padding:12px}
+.card{background:#fff;border-radius:16px;margin-bottom:10px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.07)}
+.card-hd{display:flex;align-items:center;padding:14px 16px;cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none}
+.card-img{width:64px;height:64px;border-radius:12px;object-fit:cover;margin-right:12px;flex-shrink:0;background:#f0f0f0}
+.card-title{flex:1;min-width:0}
+.card-name{font-size:14px;font-weight:700;color:#1a1a1a}
+.card-sub{font-size:11px;color:#888;margin-top:2px}
+.card-badges{display:flex;gap:4px;margin-top:5px;flex-wrap:wrap}
+.badge{font-size:10px;padding:2px 8px;border-radius:8px;font-weight:600}
+.badge-event{background:#fff3cd;color:#856404}
+.badge-nonc{background:#e8f8ef;color:#1a7a40}
+.badge-bat{background:#fff0f0;color:#c03030}
+.card-arr{font-size:18px;color:#ccc;margin-left:6px;transition:transform .2s;flex-shrink:0}
+.card-arr.open{transform:rotate(90deg)}
+.card-body{display:none;border-top:1px solid #f5f5f5}
+.card-body.open{display:block}
+.card-bigimg{width:100%;max-height:220px;object-fit:contain;background:#fafafa;padding:12px}
+.info-wrap{padding:10px 16px 16px}
+.info-row{display:flex;align-items:flex-start;padding:7px 0;border-bottom:1px solid #f8f8f8}
+.info-row:last-child{border-bottom:none}
+.info-label{font-size:11px;color:#999;font-weight:600;width:68px;flex-shrink:0;padding-top:1px}
+.info-val{font-size:13px;color:#333;flex:1;line-height:1.5}
+.flavor-grid{display:flex;flex-wrap:wrap;gap:5px;margin-top:4px}
+.flavor-chip{font-size:11px;padding:3px 9px;background:#f0f2f8;border-radius:8px;color:#444}
+.warn{background:#fff3cd;border-radius:8px;padding:8px 10px;font-size:11px;color:#856404;margin-top:8px}
+.empty{text-align:center;padding:3rem 1rem;color:#aaa;font-size:14px}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="hd">
+    <h1>🚬 베이프렌드 일회용제품</h1>
+    <p>총 14종 취급중 · 탭으로 상세정보 확인</p>
+    <div class="sw"><span class="si">🔍</span><input type="text" id="qi" placeholder="제품명 또는 맛 검색..."/></div>
+  </div>
+  <div class="body" id="body"></div>
+</div>
+<script>
+var IMGS = {
+  "팜팜바": "product_1_1.png",
+  "모스바": "product_2_2.png",
+  "드래곤바": "product_3_3.png",
+  "엘프바1": "product_4_4.png",
+  "엘프바5": "product_5_5.png",
+  "네스티원팟": "product_6_6.png",
+  "네스티원스타터킷": "product_7_7.png",
+  "네스티원배터리": "product_8_8.png",
+  "네스티바5": "product_9_9.png",
+  "립클링배터리": "product_10_10.png",
+  "립클링1": "product_11_11.png",
+  "립클링2": "product_12_12.png",
+  "말론바": "product_13_13.png",
+  "말론바한정판": "product_14_14.png",
+};
 
+var products = [
+  {key:"팜팜바", name:"팜팜바", pumps:"30,000펌프", price:"24,900원", event:"3+1",
+   feature:"멘솔량 조절 가능 / 과일의 자연스러운 맛", nicotine:"일반", battery:false,
+   flavors:["딸기","레몬","샤인머스캣","복숭아","자두","그린애플","라임","배","알로에","체리콜라"]},
+  {key:"모스바", name:"모스바", pumps:"30,000펌프", price:"25,000원", event:"3+1",
+   feature:"크기가 작아서 휴대성이 좋음", nicotine:"일반", battery:false,
+   flavors:["수박체리","파인애플","멘솔","마르키사(패션후르츠)","알로에포도","망고"]},
+  {key:"드래곤바", name:"드래곤바", pumps:"40,000펌프", price:"35,000원", event:"없음",
+   feature:"액상용량 30mL로 지금까지 나온 제품 중 가장 큼", nicotine:"일반", battery:false,
+   flavors:["아이스와인","애플알로에","백향과","블루라즈","바나나우유","담배","스피아민트","크오크"]},
+  {key:"엘프바1", name:"엘프바 1%", pumps:"25,000펌프", price:"28,000원", event:"5+1",
+   feature:"멘솔량 <strong>5단계</strong> 조절 가능", nicotine:"일반", battery:false,
+   flavors:["샤인머스캣","블루라즈","딸기키위","유자","수박","복숭아","사과","민트","포도체리"],
+   img:"엘프바1_15.png"},
+  {key:"엘프바5", name:"엘프바 5%", pumps:"25,000펌프", price:"34,000원", event:"5+1",
+   feature:"<strong>고농도 5%</strong>", nicotine:"일반", battery:false,
+   flavors:["샤인머스캣","민트","포카리","피치","파인애플","딸기키위","포도체리","수박","유자","블루라즈베리","자스민티"],
+   img:"엘프바5_16.png"},
+  {key:"네스티원팟", name:"네스티원 팟", pumps:"40,000펌프", price:"23,400원", event:"5+1",
+   feature:"⚠️ 네스티원 배터리가 있어야 사용 가능", nicotine:"일반", battery:true, batteryNote:"네스티원 배터리 필요",
+   flavors:["빔토불(에너지드링크)","콜라","리치","피치","자몽","알로에그레이프","더블슬블(파인애플+소다)","민트","바나나","멜론"]},
+  {key:"네스티원스타터킷", name:"네스티원 스타터킷", pumps:"40,000펌프", price:"40,900원", event:"없음",
+   feature:"배터리 1개 + 팟 1개 세트 구성", nicotine:"일반", battery:false,
+   flavors:["레몬민트","콜라","자몽","더블슬블(파인애플+소다)"]},
+  {key:"네스티원배터리", name:"네스티원 배터리", pumps:"배터리 단품", price:"23,400원", event:"없음",
+   feature:"네스티원 팟을 구매 후 같이 사용해야 함", nicotine:"배터리", battery:false, flavors:[]},
+  {key:"네스티바5", name:"네스티바 5%", pumps:"30,000펌프", price:"31,900원", event:"5+1",
+   feature:"고농도 5%", nicotine:"5%", battery:false,
+   flavors:["민트","샤인머스캣","그린애플","콜라","복숭아","자몽","알로에포도","더블슬블(파인애플+소다)"]},
+  {key:"립클링배터리", name:"립클링 배터리", pumps:"배터리 단품", price:"9,900원", event:"없음",
+   feature:"립클링 팟을 구매 후 사용 가능", nicotine:"배터리", battery:false, flavors:[]},
+  {key:"립클링1", name:"립클링 1%", pumps:"20,000펌프", price:"16,500원", event:"5+1",
+   feature:"⚠️ 배터리 없으면 사용 불가", nicotine:"1%", battery:true, batteryNote:"립클링 배터리 필요",
+   flavors:["레드그린애플","블루블러드","스위트피치망고","애플피치","샤크","뱅뱅","아이스샷","이온레드","골든알로에","로스트토바코","멜론","살구","와블루레몬","토마토","젤라또피치","블루스카이","크림토바코","센쿨포도","샤인","트리플라임"]},
+  {key:"립클링2", name:"립클링 2%", pumps:"20,000펌프", price:"17,500원", event:"5+1",
+   feature:"고농도 / ⚠️ 배터리 없으면 사용 불가", nicotine:"2%", battery:true, batteryNote:"립클링 배터리 필요",
+   flavors:["레드그린애플","블루블러드","스위트피치망고","애플피치","샤크","뱅뱅","아이스샷","이온레드","골든알로에","로스트토바코"]},
+  {key:"말론바", name:"말론바 (무니코틴)", pumps:"35,000펌프", price:"28,000원", event:"없음",
+   feature:"무니코틴 제품", nicotine:"무니코틴", battery:false,
+   flavors:["콜라","블루베리","스피아민트","애플","멜론","피치","샤인"]},
+  {key:"말론바한정판", name:"말론바 한정판 (무니코틴)", pumps:"35,000펌프", price:"30,000원", event:"없음",
+   feature:"무니코틴 한정판", nicotine:"무니코틴", battery:false,
+   flavors:["딸기요거트","피치우롱티"]}
+];
+
+function getBadges(p) {
+  var b = "";
+  if(p.event !== "없음") b += "<span class='badge badge-event'>🎁 "+p.event+"</span>";
+  if(p.nicotine==="무니코틴") b += "<span class='badge badge-nonc'>무니코틴</span>";
+  else if(p.nicotine==="5%") b += "<span class='badge' style='background:#ffebee;color:#c62828'>고농도 5%</span>";
+  else if(p.nicotine==="2%") b += "<span class='badge' style='background:#fce4ec;color:#c62828'>2%</span>";
+  else if(p.nicotine==="1%") b += "<span class='badge' style='background:#f3e5f5;color:#6a1a9a'>1%</span>";
+  else if(p.nicotine==="배터리") b += "<span class='badge' style='background:#e8eaf6;color:#3949ab'>배터리</span>";
+  if(p.battery) b += "<span class='badge badge-bat'>배터리 필요</span>";
+  return b;
+}
+
+function buildCard(p, i) {
+  var imgSrc = IMGS[p.key] || "";
+  var badges = getBadges(p);
+  var sub = p.pumps + " · " + p.price;
+  var html = "<div class='card' id='card"+i+"'>";
+  html += "<div class='card-hd' id='hd"+i+"'>";
+  html += "<img class='card-img' src='"+imgSrc+"' alt='"+p.name+"'/>";
+  html += "<div class='card-title'>";
+  html += "<div class='card-name'>"+p.name+"</div>";
+  html += "<div class='card-sub'>"+sub+"</div>";
+  html += "<div class='card-badges'>"+badges+"</div>";
+  html += "</div>";
+  html += "<div class='card-arr' id='arr"+i+"'>›</div>";
+  html += "</div>";
+  html += "<div class='card-body' id='body"+i+"'>";
+  html += "<img class='card-bigimg' src='"+imgSrc+"' alt='"+p.name+"'/>";
+  html += "<div class='info-wrap'>";
+  html += "<div class='info-row'><div class='info-label'>💰 가격</div><div class='info-val'><b>"+p.price+"</b></div></div>";
+  html += "<div class='info-row'><div class='info-label'>💨 펌프</div><div class='info-val'>"+p.pumps+"</div></div>";
+  if(p.event!=="없음") html += "<div class='info-row'><div class='info-label'>🎁 이벤트</div><div class='info-val'><b style='color:#b05a00'>"+p.event+"</b></div></div>";
+  html += "<div class='info-row'><div class='info-label'>⭐ 특징</div><div class='info-val'>"+p.feature+"</div></div>";
+  if(p.flavors.length > 0) {
+    html += "<div class='info-row'><div class='info-label'>🍬 맛</div><div class='info-val'><div class='flavor-grid'>";
+    p.flavors.forEach(function(f){ html += "<span class='flavor-chip'>"+f+"</span>"; });
+    html += "</div></div></div>";
+  }
+  if(p.battery) html += "<div class='warn'>⚠️ "+p.batteryNote+" — 단품 사용 불가</div>";
+  html += "</div></div></div>";
+  return html;
+}
+
+function render(q) {
+  var filtered = products.filter(function(p){
+    if(!q) return true;
+    var s = q.toLowerCase();
+    return p.name.toLowerCase().indexOf(s)>=0 || p.flavors.some(function(f){return f.toLowerCase().indexOf(s)>=0}) || p.feature.toLowerCase().indexOf(s)>=0;
+  });
+  if(!filtered.length){document.getElementById("body").innerHTML="<div class='empty'>검색 결과가 없어요</div>";return;}
+  var html = "";
+  filtered.forEach(function(p,i){ html += buildCard(p,i); });
+  document.getElementById("body").innerHTML = html;
+  filtered.forEach(function(p,i){
+    document.getElementById("hd"+i).addEventListener("click", function(){
+      var b = document.getElementById("body"+i);
+      var a = document.getElementById("arr"+i);
+      if(b.classList.contains("open")){b.classList.remove("open");a.classList.remove("open");}
+      else{b.classList.add("open");a.classList.add("open");}
+    });
+  });
+}
+
+document.getElementById("qi").addEventListener("input", function(){ render(this.value); });
+render("");
+</script>
+</body>
+</html>
