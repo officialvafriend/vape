@@ -78,7 +78,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f0f2f8;
   <div id="gt"></div>
 </div>
 <script>
-var D=[
+var SCRIPT_URL="https://script.google.com/macros/s/AKfycby7_3DBk_st-ALx7rKQw3A19C79PH3ZOmHyehJNXPaateeL5vdtJTuKW9JAIvBbo-A/exec";
+var D=[];
+var D_FALLBACK=[
 {n:"디오 X",dp:"59,000원",cp:"팟 4,500원",b:"1,600mAh",f:"코일 일체형 팟 / 3.5mL",o:"0.6Ω",br:"디오",dtl:false,img:"디오X.png",
 desc:"입호흡 전용 스틱형 기기예요. 팟을 기기에 꽂아서 사용하며 코일을 따로 교체할 필요 없이 팟 전체를 교체해요.\n\n핵심: 스틱형이라 주머니에 넣으면 파이어 버튼이 눌려 팟이 탈 수 있어요.\n\n소모품 교체 시기: 탄 냄새 나거나 흡입량 줄면 팟 전체 교체",
 tip:"✅ 디오X 전용 팟만 사용 — 타 브랜드 팟 호환 안 됨\n✅ 결제 전 전원 오프(버튼 5번) 안내 필수\n✅ 탄 맛 나면 즉시 팟 교체 안내\n💡 팟 뽑을 때 살짝 비틀면서 당기면 잘 빠져요"},
@@ -197,7 +199,10 @@ var G=[
 {t:"고점도 액상",d:"폐호흡 기기용 VG 함량 높고 걸쭉한 액상. 일반 입호흡 액상보다 점도가 높아요."}
 ];
 var br=["전체"],seen={};
-for(var i=0;i<D.length;i++){if(!seen[D[i].br]){seen[D[i].br]=1;br.push(D[i].br);}}
+function buildBrands(){
+  br=["전체"];seen={};
+  for(var i=0;i<D.length;i++){if(!seen[D[i].br]){seen[D[i].br]=1;br.push(D[i].br);}}
+}
 var ab="전체",oi=-1;
 function st(t){
   document.getElementById("gg").style.display=t?"none":"block";
@@ -243,7 +248,22 @@ function rc(){
   }
   cc.innerHTML=h;
 }
-bf();rc();
+function normalizeDtl(arr){
+  for(var i=0;i<arr.length;i++){arr[i].dtl=(arr[i].dtl===true||arr[i].dtl==="Y"||arr[i].dtl==="true");}
+  return arr;
+}
+function startApp(list){
+  D=normalizeDtl(list);
+  buildBrands();
+  bf();rc();
+}
+document.getElementById("cc").innerHTML='<div class="em">불러오는 중...</div>';
+fetch(SCRIPT_URL).then(function(r){return r.json();}).then(function(list){
+  if(!list||!list.length){throw new Error("empty");}
+  startApp(list);
+}).catch(function(){
+  startApp(D_FALLBACK);
+});
 </script>
 </body>
 </html>

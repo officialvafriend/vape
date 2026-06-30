@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0">
+<title>베이프렌드 기기 관리자</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f0f2f8;color:#1a1a1a}
+.app{max-width:480px;margin:0 auto;background:#fff;min-height:100vh}
+.hd{padding:14px 16px;background:#2e3a8c;color:#fff;position:sticky;top:0;z-index:10}
+.hd h1{font-size:16px;font-weight:700}
+.hd p{font-size:11px;opacity:.8;margin-top:2px}
+.tabs{display:flex;border-bottom:1px solid #eee}
+.tab{flex:1;text-align:center;padding:12px 0;font-size:13px;font-weight:600;color:#aaa;cursor:pointer;border-bottom:2px solid transparent}
+.tab.ac{color:#2e3a8c;border-bottom-color:#2e3a8c}
+.sec{display:none;padding:14px 16px 40px}
+.sec.ac{display:block}
+.row{margin-bottom:12px}
+.row label{display:block;font-size:12px;font-weight:700;color:#555;margin-bottom:5px}
+.row input,.row textarea{width:100%;padding:10px 12px;font-size:14px;border-radius:10px;border:1.5px solid #e8e8e8;background:#f8f8f8;outline:none;font-family:inherit}
+.row textarea{min-height:70px;resize:vertical}
+.row .hint{font-size:11px;color:#999;margin-top:3px}
+.btnrow{display:flex;gap:8px;margin-top:18px}
+.btn{flex:1;padding:13px;font-size:14px;font-weight:700;border:none;border-radius:10px;cursor:pointer}
+.btn.save{background:#2e3a8c;color:#fff}
+.btn.del{background:#fff;color:#c62828;border:1.5px solid #c62828}
+.btn.new{background:#2e3a8c;color:#fff;margin:14px 16px;width:calc(100% - 32px)}
+.list{padding:8px 16px 40px}
+.item{background:#fff;border:1.5px solid #eee;border-radius:12px;padding:12px 14px;margin-bottom:8px;cursor:pointer;display:flex;justify-content:space-between;align-items:center}
+.item:active{background:#f8f8f8}
+.item .n{font-size:14px;font-weight:700}
+.item .br{font-size:11px;color:#999;margin-top:2px}
+.item .arrow{color:#ccc}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1a1a1a;color:#fff;padding:10px 18px;border-radius:20px;font-size:13px;z-index:100;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.show{opacity:1}
+.empty{text-align:center;color:#aaa;font-size:13px;padding:40px 0}
+.loading{text-align:center;color:#aaa;font-size:13px;padding:40px 0}
+.search{padding:10px 16px 0}
+.search input{width:100%;padding:10px 12px;font-size:14px;border-radius:10px;border:1.5px solid #e8e8e8;background:#f8f8f8;outline:none}
+.dtlwrap{display:flex;align-items:center;gap:8px}
+.dtlwrap input[type=checkbox]{width:18px;height:18px}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="hd">
+    <h1>⚙️ 베이프렌드 기기 관리자</h1>
+    <p>빈칸을 채우면 사이트에 바로 반영돼요</p>
+  </div>
+  <div class="tabs">
+    <div class="tab ac" id="t0">목록</div>
+    <div class="tab" id="t1">새로 추가</div>
+  </div>
+
+  <div class="sec ac" id="s0">
+    <div class="search"><input id="q" placeholder="기기명 검색"></div>
+    <div class="list" id="list"><div class="loading">불러오는 중...</div></div>
+  </div>
+
+  <div class="sec" id="s1">
+    <div class="row"><label>기기명 *</label><input id="f_n" placeholder="예: 플러키"></div>
+    <div class="row"><label>브랜드</label><input id="f_br" placeholder="예: 플러키"></div>
+    <div class="row"><label>기기 가격</label><input id="f_dp" placeholder="예: 49,000원"></div>
+    <div class="row"><label>소모품 가격</label><input id="f_cp" placeholder="예: 0.6Ω 팟 4,500원"></div>
+    <div class="row"><label>배터리</label><input id="f_b" placeholder="예: 1,200mAh"></div>
+    <div class="row"><label>소모품 형태</label><input id="f_f" placeholder="예: 코일 일체형 / 3mL"></div>
+    <div class="row"><label>호환 옴수</label><input id="f_o" placeholder="예: 0.6Ω"></div>
+    <div class="row"><label>이미지 파일명</label><input id="f_img" placeholder="예: 플러키.png"><div class="hint">GitHub에 업로드된 이미지 파일명과 똑같이 입력하세요</div></div>
+    <div class="row"><label>초보자 설명</label><textarea id="f_desc" placeholder="줄바꿈은 그대로 입력하시면 돼요"></textarea></div>
+    <div class="row"><label>신입 필수 체크 포인트</label><textarea id="f_tip" placeholder="✅ 항목1&#10;✅ 항목2"></textarea></div>
+    <div class="row dtlwrap"><input type="checkbox" id="f_dtl"><label style="margin:0">폐호흡 전용 기기</label></div>
+    <div class="btnrow">
+      <button class="btn save" id="saveBtn">저장</button>
+      <button class="btn del" id="delBtn" style="display:none">삭제</button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+var SCRIPT_URL = "https://script.google.com/macros/s/AKfycby7_3DBk_st-ALx7rKQw3A19C79PH3ZOmHyehJNXPaateeL5vdtJTuKW9JAIvBbo-A/exec";
+var DATA = [];
+var editId = null;
+
+function toast(msg){
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show';
+  setTimeout(function(){ t.className = 'toast'; }, 2000);
+}
+
+function showTab(n){
+  document.getElementById('t0').className = 'tab' + (n===0?' ac':'');
+  document.getElementById('t1').className = 'tab' + (n===1?' ac':'');
+  document.getElementById('s0').className = 'sec' + (n===0?' ac':'');
+  document.getElementById('s1').className = 'sec' + (n===1?' ac':'');
+}
+document.getElementById('t0').addEventListener('click', function(){ showTab(0); });
+document.getElementById('t1').addEventListener('click', function(){ clearForm(); showTab(1); });
+
+function clearForm(){
+  editId = null;
+  ['n','br','dp','cp','b','f','o','img','desc','tip'].forEach(function(k){
+    document.getElementById('f_'+k).value = '';
+  });
+  document.getElementById('f_dtl').checked = false;
+  document.getElementById('delBtn').style.display = 'none';
+}
+
+function fillForm(d){
+  editId = d.id;
+  document.getElementById('f_n').value = d.n || '';
+  document.getElementById('f_br').value = d.br || '';
+  document.getElementById('f_dp').value = d.dp || '';
+  document.getElementById('f_cp').value = d.cp || '';
+  document.getElementById('f_b').value = d.b || '';
+  document.getElementById('f_f').value = d.f || '';
+  document.getElementById('f_o').value = d.o || '';
+  document.getElementById('f_img').value = d.img || '';
+  document.getElementById('f_desc').value = d.desc || '';
+  document.getElementById('f_tip').value = d.tip || '';
+  document.getElementById('f_dtl').checked = d.dtl === 'Y';
+  document.getElementById('delBtn').style.display = 'block';
+  showTab(1);
+}
+
+function renderList(){
+  var q = document.getElementById('q').value.toLowerCase();
+  var box = document.getElementById('list');
+  var filtered = DATA.filter(function(d){
+    return !q || (d.n||'').toLowerCase().indexOf(q) >= 0 || (d.br||'').toLowerCase().indexOf(q) >= 0;
+  });
+  if(!filtered.length){ box.innerHTML = '<div class="empty">기기가 없어요</div>'; return; }
+  var h = '';
+  for(var i=0;i<filtered.length;i++){
+    var d = filtered[i];
+    h += '<div class="item" data-id="'+d.id+'"><div><div class="n">'+d.n+'</div><div class="br">'+(d.br||'')+'</div></div><div class="arrow">›</div></div>';
+  }
+  box.innerHTML = h;
+  Array.prototype.forEach.call(box.querySelectorAll('.item'), function(el){
+    el.addEventListener('click', function(){
+      var id = el.getAttribute('data-id');
+      var d = DATA.find(function(x){ return x.id === id; });
+      if(d) fillForm(d);
+    });
+  });
+}
+document.getElementById('q').addEventListener('input', renderList);
+
+async function loadData(){
+  try{
+    var res = await fetch(SCRIPT_URL);
+    DATA = await res.json();
+    renderList();
+  }catch(e){
+    document.getElementById('list').innerHTML = '<div class="empty">불러오기 실패. 새로고침 해보세요.</div>';
+  }
+}
+loadData();
+
+document.getElementById('saveBtn').addEventListener('click', async function(){
+  var n = document.getElementById('f_n').value.trim();
+  if(!n){ toast('기기명을 입력해주세요'); return; }
+  var item = {
+    id: editId || ('id_' + Date.now()),
+    n: n,
+    br: document.getElementById('f_br').value.trim(),
+    dp: document.getElementById('f_dp').value.trim(),
+    cp: document.getElementById('f_cp').value.trim(),
+    b: document.getElementById('f_b').value.trim(),
+    f: document.getElementById('f_f').value.trim(),
+    o: document.getElementById('f_o').value.trim(),
+    img: document.getElementById('f_img').value.trim(),
+    desc: document.getElementById('f_desc').value,
+    tip: document.getElementById('f_tip').value,
+    dtl: document.getElementById('f_dtl').checked ? 'Y' : ''
+  };
+  this.disabled = true;
+  this.textContent = '저장 중...';
+  try{
+    var res = await fetch(SCRIPT_URL, { method:'POST', body: JSON.stringify({action:'save', item:item}) });
+    var json = await res.json();
+    if(json.ok){
+      toast('저장됐어요!');
+      await loadData();
+      showTab(0);
+    } else {
+      toast('저장 실패했어요');
+    }
+  }catch(e){
+    toast('오류: ' + e.message);
+  }
+  this.disabled = false;
+  this.textContent = '저장';
+});
+
+document.getElementById('delBtn').addEventListener('click', async function(){
+  if(!editId) return;
+  if(!confirm('정말 삭제하시겠어요?')) return;
+  this.disabled = true;
+  try{
+    var res = await fetch(SCRIPT_URL, { method:'POST', body: JSON.stringify({action:'delete', id:editId}) });
+    var json = await res.json();
+    if(json.ok){
+      toast('삭제됐어요');
+      await loadData();
+      showTab(0);
+    } else {
+      toast('삭제 실패했어요');
+    }
+  }catch(e){
+    toast('오류: ' + e.message);
+  }
+  this.disabled = false;
+});
+</script>
+</body>
+</html>
