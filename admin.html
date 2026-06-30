@@ -66,7 +66,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f0f2f8;
     <div class="row"><label>배터리</label><input id="f_b" placeholder="예: 1,200mAh"></div>
     <div class="row"><label>소모품 형태</label><input id="f_f" placeholder="예: 코일 일체형 / 3mL"></div>
     <div class="row"><label>호환 옴수</label><input id="f_o" placeholder="예: 0.6Ω"></div>
-    <div class="row"><label>이미지 파일명</label><input id="f_img" placeholder="예: 플러키.png"><div class="hint">GitHub에 업로드된 이미지 파일명과 똑같이 입력하세요</div></div>
+    <div class="row"><label>사진</label>
+      <div id="imgPreviewWrap" style="margin-bottom:8px;display:none"><img id="imgPreview" style="width:100%;border-radius:10px;max-height:180px;object-fit:contain;background:#f8f8f8"></div>
+      <input type="file" id="f_imgfile" accept="image/*">
+      <input type="hidden" id="f_img">
+      <div class="hint" id="imgStatus"></div>
+    </div>
     <div class="row"><label>초보자 설명</label><textarea id="f_desc" placeholder="줄바꿈은 그대로 입력하시면 돼요"></textarea></div>
     <div class="row"><label>신입 필수 체크 포인트</label><textarea id="f_tip" placeholder="✅ 항목1&#10;✅ 항목2"></textarea></div>
     <div class="row dtlwrap"><input type="checkbox" id="f_dtl"><label style="margin:0">폐호흡 전용 기기</label></div>
@@ -101,9 +106,13 @@ document.getElementById('t1').addEventListener('click', function(){ clearForm();
 
 function clearForm(){
   editId = null;
-  ['n','br','dp','cp','b','f','o','img','desc','tip'].forEach(function(k){
+  ['n','br','dp','cp','b','f','o','desc','tip'].forEach(function(k){
     document.getElementById('f_'+k).value = '';
   });
+  document.getElementById('f_img').value = '';
+  document.getElementById('f_imgfile').value = '';
+  document.getElementById('imgPreviewWrap').style.display = 'none';
+  document.getElementById('imgStatus').textContent = '';
   document.getElementById('f_dtl').checked = false;
   document.getElementById('delBtn').style.display = 'none';
 }
@@ -118,12 +127,50 @@ function fillForm(d){
   document.getElementById('f_f').value = d.f || '';
   document.getElementById('f_o').value = d.o || '';
   document.getElementById('f_img').value = d.img || '';
+  document.getElementById('f_imgfile').value = '';
+  document.getElementById('imgStatus').textContent = '';
+  if(d.img){
+    document.getElementById('imgPreview').src = d.img;
+    document.getElementById('imgPreviewWrap').style.display = 'block';
+  } else {
+    document.getElementById('imgPreviewWrap').style.display = 'none';
+  }
   document.getElementById('f_desc').value = d.desc || '';
   document.getElementById('f_tip').value = d.tip || '';
   document.getElementById('f_dtl').checked = d.dtl === 'Y';
   document.getElementById('delBtn').style.display = 'block';
   showTab(1);
 }
+
+document.getElementById('f_imgfile').addEventListener('change', async function(e){
+  var file = e.target.files[0];
+  if(!file) return;
+  var status = document.getElementById('imgStatus');
+  status.textContent = '업로드 중...';
+  try{
+    var base64 = await new Promise(function(resolve, reject){
+      var reader = new FileReader();
+      reader.onload = function(){ resolve(reader.result.split(',')[1]); };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+    var res = await fetch(SCRIPT_URL, {
+      method:'POST',
+      body: JSON.stringify({action:'uploadImage', data:base64, mimeType:file.type, filename:file.name})
+    });
+    var json = await res.json();
+    if(json.ok && json.url){
+      document.getElementById('f_img').value = json.url;
+      document.getElementById('imgPreview').src = json.url;
+      document.getElementById('imgPreviewWrap').style.display = 'block';
+      status.textContent = '업로드 완료!';
+    } else {
+      status.textContent = '업로드 실패했어요';
+    }
+  }catch(err){
+    status.textContent = '오류: ' + err.message;
+  }
+});
 
 function renderList(){
   var q = document.getElementById('q').value.toLowerCase();
