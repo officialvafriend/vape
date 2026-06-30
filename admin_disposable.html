@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0">
+<title>베이프렌드 일회용 관리자</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f0f2f8;color:#1a1a1a}
+.app{max-width:480px;margin:0 auto;background:#fff;min-height:100vh}
+.hd{padding:14px 16px;background:#2e3a8c;color:#fff;position:sticky;top:0;z-index:10}
+.hd h1{font-size:16px;font-weight:700}
+.hd p{font-size:11px;opacity:.8;margin-top:2px}
+.tabs{display:flex;border-bottom:1px solid #eee}
+.tab{flex:1;text-align:center;padding:12px 0;font-size:13px;font-weight:600;color:#aaa;cursor:pointer;border-bottom:2px solid transparent}
+.tab.ac{color:#2e3a8c;border-bottom-color:#2e3a8c}
+.sec{display:none;padding:14px 16px 40px}
+.sec.ac{display:block}
+.row{margin-bottom:12px}
+.row label{display:block;font-size:12px;font-weight:700;color:#555;margin-bottom:5px}
+.row input,.row textarea{width:100%;padding:10px 12px;font-size:14px;border-radius:10px;border:1.5px solid #e8e8e8;background:#f8f8f8;outline:none;font-family:inherit}
+.row textarea{min-height:60px;resize:vertical}
+.row .hint{font-size:11px;color:#999;margin-top:3px}
+.dtlwrap{display:flex;align-items:center;gap:8px}
+.dtlwrap input[type=checkbox]{width:18px;height:18px}
+.btnrow{display:flex;gap:8px;margin-top:18px}
+.btn{flex:1;padding:13px;font-size:14px;font-weight:700;border:none;border-radius:10px;cursor:pointer}
+.btn.save{background:#2e3a8c;color:#fff}
+.btn.del{background:#fff;color:#c62828;border:1.5px solid #c62828}
+.list{padding:8px 16px 40px}
+.item{background:#fff;border:1.5px solid #eee;border-radius:12px;padding:12px 14px;margin-bottom:8px;cursor:pointer;display:flex;justify-content:space-between;align-items:center}
+.item:active{background:#f8f8f8}
+.item .n{font-size:14px;font-weight:700}
+.item .meta{font-size:11px;color:#999;margin-top:2px}
+.item .arrow{color:#ccc}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1a1a1a;color:#fff;padding:10px 18px;border-radius:20px;font-size:13px;z-index:100;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.show{opacity:1}
+.empty{text-align:center;color:#aaa;font-size:13px;padding:40px 0}
+.search{padding:10px 16px 0}
+.search input{width:100%;padding:10px 12px;font-size:14px;border-radius:10px;border:1.5px solid #e8e8e8;background:#f8f8f8;outline:none}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="hd">
+    <h1>⚙️ 베이프렌드 일회용 관리자</h1>
+    <p>빈칸을 채우면 사이트에 바로 반영돼요</p>
+  </div>
+  <div class="tabs">
+    <div class="tab ac" id="t0">목록</div>
+    <div class="tab" id="t1">새로 추가</div>
+  </div>
+
+  <div class="sec ac" id="s0">
+    <div class="search"><input id="q" placeholder="제품명 검색"></div>
+    <div class="list" id="list"><div class="empty">불러오는 중...</div></div>
+  </div>
+
+  <div class="sec" id="s1">
+    <div class="row"><label>제품명 *</label><input id="f_name" placeholder="예: 팜팜바"></div>
+    <div class="row"><label>펌프 수</label><input id="f_pumps" placeholder="예: 30,000펌프"></div>
+    <div class="row"><label>가격</label><input id="f_price" placeholder="예: 24,900원"></div>
+    <div class="row"><label>이벤트</label><input id="f_event" placeholder="예: 3+1 (없으면 '없음')"></div>
+    <div class="row"><label>니코틴 농도</label><input id="f_nicotine" placeholder="예: 일반 / 1% / 5% / 무니코틴 / 배터리"></div>
+    <div class="row"><label>특징</label><textarea id="f_feature" placeholder="예: 멘솔량 조절 가능"></textarea></div>
+    <div class="row"><label>맛 목록 (쉼표로 구분)</label><textarea id="f_flavors" placeholder="예: 딸기,레몬,샤인머스캣"></textarea></div>
+    <div class="row dtlwrap"><input type="checkbox" id="f_battery"><label style="margin:0">배터리 필요 제품</label></div>
+    <div class="row" id="batteryNoteWrap" style="display:none"><label>배터리 안내 문구</label><input id="f_batteryNote" placeholder="예: 네스티원 배터리 필요"></div>
+    <div class="row"><label>사진</label>
+      <div id="imgPreviewWrap" style="margin-bottom:8px;display:none"><img id="imgPreview" style="width:100%;border-radius:10px;max-height:180px;object-fit:contain;background:#f8f8f8"></div>
+      <input type="file" id="f_imgfile" accept="image/*">
+      <input type="hidden" id="f_img">
+      <div class="hint" id="imgStatus"></div>
+    </div>
+    <div class="btnrow">
+      <button class="btn save" id="saveBtn">저장</button>
+      <button class="btn del" id="delBtn" style="display:none">삭제</button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+var SCRIPT_URL = "https://script.google.com/macros/s/AKfycby7_3DBk_st-ALx7rKQw3A19C79PH3ZOmHyehJNXPaateeL5vdtJTuKW9JAIvBbo-A/exec";
+var DATA = [];
+var editId = null;
+
+function toast(msg){
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show';
+  setTimeout(function(){ t.className = 'toast'; }, 2000);
+}
+
+function showTab(n){
+  document.getElementById('t0').className = 'tab' + (n===0?' ac':'');
+  document.getElementById('t1').className = 'tab' + (n===1?' ac':'');
+  document.getElementById('s0').className = 'sec' + (n===0?' ac':'');
+  document.getElementById('s1').className = 'sec' + (n===1?' ac':'');
+}
+document.getElementById('t0').addEventListener('click', function(){ showTab(0); });
+document.getElementById('t1').addEventListener('click', function(){ clearForm(); showTab(1); });
+
+document.getElementById('f_battery').addEventListener('change', function(){
+  document.getElementById('batteryNoteWrap').style.display = this.checked ? 'block' : 'none';
+});
+
+function clearForm(){
+  editId = null;
+  ['name','pumps','price','event','nicotine','feature','flavors','batteryNote'].forEach(function(k){
+    document.getElementById('f_'+k).value = '';
+  });
+  document.getElementById('f_battery').checked = false;
+  document.getElementById('batteryNoteWrap').style.display = 'none';
+  document.getElementById('f_img').value = '';
+  document.getElementById('f_imgfile').value = '';
+  document.getElementById('imgPreviewWrap').style.display = 'none';
+  document.getElementById('imgStatus').textContent = '';
+  document.getElementById('delBtn').style.display = 'none';
+}
+
+function fillForm(d){
+  editId = d.id;
+  document.getElementById('f_name').value = d.name || '';
+  document.getElementById('f_pumps').value = d.pumps || '';
+  document.getElementById('f_price').value = d.price || '';
+  document.getElementById('f_event').value = d.event || '';
+  document.getElementById('f_nicotine').value = d.nicotine || '';
+  document.getElementById('f_feature').value = d.feature || '';
+  document.getElementById('f_flavors').value = d.flavors || '';
+  document.getElementById('f_battery').checked = d.battery === 'Y';
+  document.getElementById('batteryNoteWrap').style.display = d.battery === 'Y' ? 'block' : 'none';
+  document.getElementById('f_batteryNote').value = d.batteryNote || '';
+  document.getElementById('f_img').value = d.img || '';
+  document.getElementById('f_imgfile').value = '';
+  document.getElementById('imgStatus').textContent = '';
+  if(d.img){
+    document.getElementById('imgPreview').src = d.img;
+    document.getElementById('imgPreviewWrap').style.display = 'block';
+  } else {
+    document.getElementById('imgPreviewWrap').style.display = 'none';
+  }
+  document.getElementById('delBtn').style.display = 'block';
+  showTab(1);
+}
+
+document.getElementById('f_imgfile').addEventListener('change', async function(e){
+  var file = e.target.files[0];
+  if(!file) return;
+  var status = document.getElementById('imgStatus');
+  status.textContent = '업로드 중...';
+  try{
+    var base64 = await new Promise(function(resolve, reject){
+      var reader = new FileReader();
+      reader.onload = function(){ resolve(reader.result.split(',')[1]); };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+    var res = await fetch(SCRIPT_URL, {
+      method:'POST',
+      body: JSON.stringify({action:'uploadImage', data:base64, mimeType:file.type, filename:file.name})
+    });
+    var json = await res.json();
+    if(json.ok && json.url){
+      document.getElementById('f_img').value = json.url;
+      document.getElementById('imgPreview').src = json.url;
+      document.getElementById('imgPreviewWrap').style.display = 'block';
+      status.textContent = '업로드 완료!';
+    } else {
+      status.textContent = '업로드 실패했어요';
+    }
+  }catch(err){
+    status.textContent = '오류: ' + err.message;
+  }
+});
+
+function renderList(){
+  var q = document.getElementById('q').value.toLowerCase();
+  var box = document.getElementById('list');
+  var filtered = DATA.filter(function(d){
+    return !q || (d.name||'').toLowerCase().indexOf(q) >= 0;
+  });
+  if(!filtered.length){ box.innerHTML = '<div class="empty">제품이 없어요</div>'; return; }
+  var h = '';
+  for(var i=0;i<filtered.length;i++){
+    var d = filtered[i];
+    h += '<div class="item" data-id="'+d.id+'"><div><div class="n">'+d.name+'</div><div class="meta">'+(d.price||'')+'</div></div><div class="arrow">›</div></div>';
+  }
+  box.innerHTML = h;
+  Array.prototype.forEach.call(box.querySelectorAll('.item'), function(el){
+    el.addEventListener('click', function(){
+      var id = el.getAttribute('data-id');
+      var d = DATA.find(function(x){ return x.id === id; });
+      if(d) fillForm(d);
+    });
+  });
+}
+document.getElementById('q').addEventListener('input', renderList);
+
+async function loadData(){
+  try{
+    var res = await fetch(SCRIPT_URL + '?sheet=disposable');
+    DATA = await res.json();
+    renderList();
+  }catch(e){
+    document.getElementById('list').innerHTML = '<div class="empty">불러오기 실패. 새로고침 해보세요.</div>';
+  }
+}
+loadData();
+
+document.getElementById('saveBtn').addEventListener('click', async function(){
+  var name = document.getElementById('f_name').value.trim();
+  if(!name){ toast('제품명을 입력해주세요'); return; }
+  var item = {
+    id: editId || ('disp_' + Date.now()),
+    key: name,
+    name: name,
+    pumps: document.getElementById('f_pumps').value.trim(),
+    price: document.getElementById('f_price').value.trim(),
+    event: document.getElementById('f_event').value.trim() || '없음',
+    nicotine: document.getElementById('f_nicotine').value.trim(),
+    feature: document.getElementById('f_feature').value.trim(),
+    flavors: document.getElementById('f_flavors').value.trim(),
+    battery: document.getElementById('f_battery').checked ? 'Y' : '',
+    batteryNote: document.getElementById('f_batteryNote').value.trim(),
+    img: document.getElementById('f_img').value.trim()
+  };
+  this.disabled = true;
+  this.textContent = '저장 중...';
+  try{
+    var res = await fetch(SCRIPT_URL, { method:'POST', body: JSON.stringify({action:'save', sheet:'disposable', item:item}) });
+    var json = await res.json();
+    if(json.ok){
+      toast('저장됐어요!');
+      await loadData();
+      showTab(0);
+    } else {
+      toast('저장 실패했어요');
+    }
+  }catch(e){
+    toast('오류: ' + e.message);
+  }
+  this.disabled = false;
+  this.textContent = '저장';
+});
+
+document.getElementById('delBtn').addEventListener('click', async function(){
+  if(!editId) return;
+  if(!confirm('정말 삭제하시겠어요?')) return;
+  this.disabled = true;
+  try{
+    var res = await fetch(SCRIPT_URL, { method:'POST', body: JSON.stringify({action:'delete', sheet:'disposable', id:editId}) });
+    var json = await res.json();
+    if(json.ok){
+      toast('삭제됐어요');
+      await loadData();
+      showTab(0);
+    } else {
+      toast('삭제 실패했어요');
+    }
+  }catch(e){
+    toast('오류: ' + e.message);
+  }
+  this.disabled = false;
+});
+</script>
+</body>
+</html>
