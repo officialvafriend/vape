@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>일회용 데이터 마이그레이션</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f0f2f8;color:#1a1a1a;padding:20px}
+.app{max-width:480px;margin:0 auto}
+h1{font-size:18px;margin-bottom:10px}
+p{font-size:13px;color:#666;margin-bottom:16px;line-height:1.5}
+button{width:100%;padding:14px;font-size:15px;font-weight:700;border:none;border-radius:12px;background:#2e3a8c;color:#fff;cursor:pointer}
+button:disabled{background:#aaa}
+#log{margin-top:16px;font-size:12px;background:#fff;border-radius:10px;padding:12px;white-space:pre-line;max-height:60vh;overflow-y:auto;border:1px solid #eee}
+.ok{color:#2e7d32}
+.err{color:#c62828}
+</style>
+</head>
+<body>
+<div class="app">
+<h1>⚙️ 일회용 데이터 → 시트 이전</h1>
+<p>이 버튼을 누르면 코드에 박혀있던 기존 일회용 제품 14개가 구글 시트(disposable 탭)로 자동 저장돼요. <b>한 번만</b> 누르시면 됩니다 (다시 누르면 중복 저장돼요).</p>
+<button id="run">이전 시작하기</button>
+<div id="log"></div>
+</div>
+<script>
+var SCRIPT_URL = "https://script.google.com/macros/s/AKfycby7_3DBk_st-ALx7rKQw3A19C79PH3ZOmHyehJNXPaateeL5vdtJTuKW9JAIvBbo-A/exec";
+var DATA = [{"key":"팜팜바","name":"팜팜바","pumps":"30,000펌프","price":"24,900원","event":"3+1","feature":"멘솔량 조절 가능 / 과일의 자연스러운 맛","nicotine":"일반","battery":false,"flavors":["딸기","레몬","샤인머스캣","복숭아","자두","그린애플","라임","배","알로에","체리콜라"],"img":"product_1_1.png"},{"key":"모스바","name":"모스바","pumps":"30,000펌프","price":"25,000원","event":"3+1","feature":"크기가 작아서 휴대성이 좋음","nicotine":"일반","battery":false,"flavors":["수박체리","파인애플","멘솔","마르키사(패션후르츠)","알로에포도","망고"],"img":"product_2_2.png"},{"key":"드래곤바","name":"드래곤바","pumps":"40,000펌프","price":"35,000원","event":"없음","feature":"액상용량 30mL로 지금까지 나온 제품 중 가장 큼","nicotine":"일반","battery":false,"flavors":["아이스와인","애플알로에","백향과","블루라즈","바나나우유","담배","스피아민트","크오크"],"img":"product_3_3.png"},{"key":"엘프바1","name":"엘프바 1%","pumps":"25,000펌프","price":"28,000원","event":"5+1","feature":"멘솔량 5단계 조절 가능","nicotine":"일반","battery":false,"flavors":["샤인머스캣","블루라즈","딸기키위","유자","수박","복숭아","사과","민트","포도체리"],"img":"엘프바1_15.png"},{"key":"엘프바5","name":"엘프바 5%","pumps":"25,000펌프","price":"34,000원","event":"5+1","feature":"고농도 5%","nicotine":"일반","battery":false,"flavors":["샤인머스캣","민트","포카리","피치","파인애플","딸기키위","포도체리","수박","유자","블루라즈베리","자스민티"],"img":"엘프바5_16.png"},{"key":"네스티원팟","name":"네스티원 팟","pumps":"40,000펌프","price":"23,400원","event":"5+1","feature":"⚠️ 네스티원 배터리가 있어야 사용 가능","nicotine":"일반","battery":true,"batteryNote":"네스티원 배터리 필요","flavors":["빔토불(에너지드링크)","콜라","리치","피치","자몽","알로에그레이프","더블슬블(파인애플+소다)","민트","바나나","멜론"],"img":"product_6_6.png"},{"key":"네스티원스타터킷","name":"네스티원 스타터킷","pumps":"40,000펌프","price":"40,900원","event":"없음","feature":"배터리 1개 + 팟 1개 세트 구성","nicotine":"일반","battery":false,"flavors":["레몬민트","콜라","자몽","더블슬블(파인애플+소다)"],"img":"product_7_7.png"},{"key":"네스티원배터리","name":"네스티원 배터리","pumps":"배터리 단품","price":"23,400원","event":"없음","feature":"네스티원 팟을 구매 후 같이 사용해야 함","nicotine":"배터리","battery":false,"flavors":[],"img":"product_8_8.png"},{"key":"네스티바5","name":"네스티바 5%","pumps":"30,000펌프","price":"31,900원","event":"5+1","feature":"고농도 5%","nicotine":"5%","battery":false,"flavors":["민트","샤인머스캣","그린애플","콜라","복숭아","자몽","알로에포도","더블슬블(파인애플+소다)"],"img":"product_9_9.png"},{"key":"립클링배터리","name":"립클링 배터리","pumps":"배터리 단품","price":"9,900원","event":"없음","feature":"립클링 팟을 구매 후 사용 가능","nicotine":"배터리","battery":false,"flavors":[],"img":"product_10_10.png"},{"key":"립클링1","name":"립클링 1%","pumps":"20,000펌프","price":"16,500원","event":"5+1","feature":"⚠️ 배터리 없으면 사용 불가","nicotine":"1%","battery":true,"batteryNote":"립클링 배터리 필요","flavors":["레드그린애플","블루블러드","스위트피치망고","애플피치","샤크","뱅뱅","아이스샷","이온레드","골든알로에","로스트토바코","멜론","살구","와블루레몬","토마토","젤라또피치","블루스카이","크림토바코","센쿨포도","샤인","트리플라임"],"img":"product_11_11.png"},{"key":"립클링2","name":"립클링 2%","pumps":"20,000펌프","price":"17,500원","event":"5+1","feature":"고농도 / ⚠️ 배터리 없으면 사용 불가","nicotine":"2%","battery":true,"batteryNote":"립클링 배터리 필요","flavors":["레드그린애플","블루블러드","스위트피치망고","애플피치","샤크","뱅뱅","아이스샷","이온레드","골든알로에","로스트토바코"],"img":"product_12_12.png"},{"key":"말론바","name":"말론바 (무니코틴)","pumps":"35,000펌프","price":"28,000원","event":"없음","feature":"무니코틴 제품","nicotine":"무니코틴","battery":false,"flavors":["콜라","블루베리","스피아민트","애플","멜론","피치","샤인"],"img":"product_13_13.png"},{"key":"말론바한정판","name":"말론바 한정판 (무니코틴)","pumps":"35,000펌프","price":"30,000원","event":"없음","feature":"무니코틴 한정판","nicotine":"무니코틴","battery":false,"flavors":["딸기요거트","피치우롱티"],"img":"product_14_14.png"}];
+
+function logMsg(t, cls){
+  var el = document.createElement('div');
+  if(cls) el.className = cls;
+  el.textContent = t;
+  document.getElementById('log').appendChild(el);
+  el.scrollIntoView();
+}
+
+document.getElementById('run').addEventListener('click', async function(){
+  this.disabled = true;
+  logMsg('시작합니다... 총 ' + DATA.length + '개');
+  var ok = 0, fail = 0;
+  for(var i=0;i<DATA.length;i++){
+    var d = DATA[i];
+    var item = {
+      id: 'disp_' + Date.now() + '_' + i,
+      key: d.key, name: d.name, pumps: d.pumps, price: d.price, event: d.event,
+      feature: d.feature, nicotine: d.nicotine,
+      battery: d.battery ? 'Y' : '',
+      batteryNote: d.batteryNote || '',
+      flavors: (d.flavors||[]).join(','),
+      img: d.img || ''
+    };
+    try{
+      var res = await fetch(SCRIPT_URL, {
+        method: 'POST',
+        body: JSON.stringify({action:'save', sheet:'disposable', item:item})
+      });
+      var json = await res.json();
+      if(json.ok){ ok++; logMsg('✅ ' + d.name, 'ok'); }
+      else { fail++; logMsg('❌ ' + d.name + ' 실패', 'err'); }
+    }catch(e){
+      fail++;
+      logMsg('❌ ' + d.name + ' 오류: ' + e.message, 'err');
+    }
+  }
+  logMsg('--- 완료: 성공 ' + ok + ' / 실패 ' + fail + ' ---');
+});
+</script>
+</body>
+</html>
