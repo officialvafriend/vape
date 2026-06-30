@@ -68,7 +68,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f0f2f8;
   <div class="list" id="list"></div>
 </div>
 <script>
-var D = [
+var SCRIPT_URL="https://script.google.com/macros/s/AKfycby7_3DBk_st-ALx7rKQw3A19C79PH3ZOmHyehJNXPaateeL5vdtJTuKW9JAIvBbo-A/exec";
+var D=[];
+var D_FALLBACK = [
 {"n":"제로닉 거봉","b":"무무","c":"프리미엄 라인","t":["무니코틴"],"f":"포도"},
 {"n":"제로닉 노멘솔 자몽","b":"무무","c":"프리미엄 라인","t":["무니코틴","노멘솔"],"f":"자몽"},
 {"n":"제로닉 노멘솔 체리","b":"무무","c":"프리미엄 라인","t":["무니코틴","노멘솔"],"f":"체리"},
@@ -383,13 +385,16 @@ var D = [
 {"n":"VF 릭 바나나","b":"VF","c":"프리미엄 라인","t":["노멘솔"],"f":"바나나+사이다"}
 ];
 
-document.getElementById("total-count").textContent = "총 " + D.length + "종 취급중";
+document.getElementById("total-count").textContent = "불러오는 중...";
 
-var allBrands = ["전체"].concat([...new Set(D.map(function(d){return d.b}))].sort());
-var premBrands = ["전체"].concat([...new Set(D.filter(function(d){return d.c==="프리미엄 라인"}).map(function(d){return d.b}))].sort());
-var primeBrands = ["전체"].concat([...new Set(D.filter(function(d){return d.c==="프라임 라인"}).map(function(d){return d.b}))].sort());
-
+var allBrands = ["전체"], premBrands = ["전체"], primeBrands = ["전체"];
 var cTab="all", cTypes=[], cBrand="전체";
+
+function buildBrandLists(){
+  allBrands = ["전체"].concat([...new Set(D.map(function(d){return d.b}))].sort());
+  premBrands = ["전체"].concat([...new Set(D.filter(function(d){return d.c==="프리미엄 라인"}).map(function(d){return d.b}))].sort());
+  primeBrands = ["전체"].concat([...new Set(D.filter(function(d){return d.c==="프라임 라인"}).map(function(d){return d.b}))].sort());
+}
 
 function render() {
   var q = document.getElementById("qi").value.toLowerCase();
@@ -474,8 +479,28 @@ document.getElementById("bc").addEventListener("click", function(e) {
 
 document.getElementById("qi").addEventListener("input", render);
 
-buildBrands();
-render();
+function normalizeT(arr){
+  for(var i=0;i<arr.length;i++){
+    if(typeof arr[i].t === "string"){ arr[i].t = arr[i].t ? arr[i].t.split(",") : []; }
+    if(!arr[i].t) arr[i].t = [];
+  }
+  return arr;
+}
+
+function startApp(list){
+  D = normalizeT(list);
+  document.getElementById("total-count").textContent = "총 " + D.length + "종 취급중";
+  buildBrandLists();
+  buildBrands();
+  render();
+}
+
+fetch(SCRIPT_URL + "?sheet=liquid").then(function(r){return r.json();}).then(function(list){
+  if(!list || !list.length){ throw new Error("empty"); }
+  startApp(list);
+}).catch(function(){
+  startApp(D_FALLBACK);
+});
 </script>
 </body>
 </html>
