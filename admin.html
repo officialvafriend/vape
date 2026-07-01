@@ -145,31 +145,7 @@ function fillForm(d){
 document.getElementById('f_imgfile').addEventListener('change', async function(e){
   var file = e.target.files[0];
   if(!file) return;
-  var status = document.getElementById('imgStatus');
-  status.textContent = '업로드 중...';
-  try{
-    var base64 = await new Promise(function(resolve, reject){
-      var reader = new FileReader();
-      reader.onload = function(){ resolve(reader.result.split(',')[1]); };
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
-    var res = await fetch(SCRIPT_URL, {
-      method:'POST',
-      body: JSON.stringify({action:'uploadImage', data:base64, mimeType:file.type, filename:file.name})
-    });
-    var json = await res.json();
-    if(json.ok && json.url){
-      document.getElementById('f_img').value = json.url;
-      document.getElementById('imgPreview').src = json.url;
-      document.getElementById('imgPreviewWrap').style.display = 'block';
-      status.textContent = '업로드 완료!';
-    } else {
-      status.textContent = '업로드 실패했어요';
-    }
-  }catch(err){
-    status.textContent = '오류: ' + err.message;
-  }
+  await uploadImageToGitHub(file);
 });
 
 function renderList(){
@@ -261,6 +237,62 @@ document.getElementById('delBtn').addEventListener('click', async function(){
   }
   this.disabled = false;
 });
+
+
+
+function getGitHubToken(){
+  var token = localStorage.getItem('vafe_gh_token');
+  if(!token){
+    token = prompt('GitHub 토큰을 입력해주세요 (최초 1회만):');
+    if(token) localStorage.setItem('vafe_gh_token', token);
+  }
+  return token;
+}
+
+async function uploadImageToGitHub(file) {
+  var status = document.getElementById('imgStatus');
+  status.textContent = '업로드 중...';
+  var token = getGitHubToken();
+  if(!token){ status.textContent = '토큰이 없어요'; return; }
+  try {
+    var base64 = await new Promise(function(resolve, reject){
+      var reader = new FileReader();
+      reader.onload = function(){ resolve(reader.result.split(',')[1]); };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+    var filename = Date.now() + '_' + file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+    var url = 'https://api.github.com/repos/officialvafriend/vape/contents/' + filename;
+    var res = await fetch(url, {
+      method: 'PUT',
+      headers: {
+        'Authorization': 'token ' + token,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        message: '이미지 업로드: ' + filename,
+        content: base64
+      })
+    });
+    var json = await res.json();
+    if(json.content && json.content.download_url){
+      document.getElementById('f_img').value = json.content.download_url;
+      document.getElementById('imgPreview').src = json.content.download_url;
+      document.getElementById('imgPreviewWrap').style.display = 'block';
+      status.textContent = '업로드 완료!';
+    } else {
+      if(json.message && json.message.includes('Bad credentials')){
+        localStorage.removeItem('vafe_gh_token');
+        status.textContent = '토큰 오류 — 다시 시도해주세요';
+      } else {
+        status.textContent = '업로드 실패: ' + (json.message || '알 수 없는 오류');
+      }
+    }
+  } catch(err) {
+    status.textContent = '오류: ' + err.message;
+  }
+}
+
 </script>
 </body>
 </html>
