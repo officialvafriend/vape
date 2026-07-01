@@ -147,7 +147,12 @@ function fillForm(d){
 document.getElementById('f_imgfile').addEventListener('change', async function(e){
   var file = e.target.files[0];
   if(!file) return;
+  var saveBtn = document.getElementById('saveBtn');
+  saveBtn.disabled = true;
+  saveBtn.textContent = '사진 업로드 중...';
   await uploadImageToGitHub(file);
+  saveBtn.disabled = false;
+  saveBtn.textContent = '저장';
 });
 
 function renderList(){
