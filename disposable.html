@@ -70,7 +70,9 @@ var IMGS = {
   "말론바한정판": "product_14_14.png",
 };
 
-var products = [
+var SCRIPT_URL="https://script.google.com/macros/s/AKfycby7_3DBk_st-ALx7rKQw3A19C79PH3ZOmHyehJNXPaateeL5vdtJTuKW9JAIvBbo-A/exec";
+var products=[];
+var products_FALLBACK = [
   {key:"팜팜바", name:"팜팜바", pumps:"30,000펌프", price:"24,900원", event:"3+1",
    feature:"멘솔량 조절 가능 / 과일의 자연스러운 맛", nicotine:"일반", battery:false,
    flavors:["딸기","레몬","샤인머스캣","복숭아","자두","그린애플","라임","배","알로에","체리콜라"]},
@@ -128,7 +130,7 @@ function getBadges(p) {
 }
 
 function buildCard(p, i) {
-  var imgSrc = IMGS[p.key] || "";
+  var imgSrc = p.img || IMGS[p.key] || "";
   var badges = getBadges(p);
   var sub = p.pumps + " · " + p.price;
   var html = "<div class='card' id='card"+i+"'>";
@@ -179,7 +181,30 @@ function render(q) {
 }
 
 document.getElementById("qi").addEventListener("input", function(){ render(this.value); });
-render("");
+
+function normalizeProducts(arr){
+  for(var i=0;i<arr.length;i++){
+    var p = arr[i];
+    if(typeof p.flavors === "string"){ p.flavors = p.flavors ? p.flavors.split(",") : []; }
+    if(!p.flavors) p.flavors = [];
+    p.battery = (p.battery === true || p.battery === "Y" || p.battery === "true");
+    if(!p.event) p.event = "없음";
+  }
+  return arr;
+}
+
+function startApp(list){
+  products = normalizeProducts(list);
+  render("");
+}
+
+document.getElementById("body").innerHTML = "<div class='empty'>불러오는 중...</div>";
+fetch(SCRIPT_URL + "?sheet=disposable").then(function(r){return r.json();}).then(function(list){
+  if(!list || !list.length){ throw new Error("empty"); }
+  startApp(list);
+}).catch(function(){
+  startApp(products_FALLBACK);
+});
 </script>
 </body>
 </html>
