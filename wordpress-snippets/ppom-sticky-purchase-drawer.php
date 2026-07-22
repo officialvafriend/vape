@@ -5,23 +5,21 @@
  * Code Snippets 플러그인에 "Only run on site front-end" 로 등록해서 사용.
  * 요구사항 반영:
  *   1) 상품(구매) 페이지에서만 하단 고정 "맛 선택/구매하기" 버튼을 노출
- *   2) 액상 이벤트 상품마다 다른 "채우기" 수량을 상품별로 지정 가능
- *   3) 서랍장 UI/UX 개선 (진행률 표시, 스와이프로 닫기, 접근성, 성능)
+ *   2) 액상 이벤트 상품마다 다른 "채우기" 수량을 상품별로 지정 가능 (자동 감지)
+ *   3) 세로 1열 흐름 + 큰 글씨/버튼 + 버튼에 직접 안내 문구 표시로 UX 개선
  */
 
 if (!defined('ABSPATH')) exit;
 
 /* -----------------------------------------------------------------------
- * 0. 상품별 "필수 선택 수량" 설정 필드
- *    - 상품 편집 화면 > 일반 탭에 입력란 추가
- *    - 비워두면(0) 해당 상품은 수량 제한 없이 1개 이상만 선택하면 활성화
+ * 0. 상품별 "필수 선택 수량" 설정 필드 (자동 감지가 틀렸을 때의 수동 보정용)
  * --------------------------------------------------------------------- */
 add_action('woocommerce_product_options_general_product_data', 'vf_drawer_required_qty_field');
 function vf_drawer_required_qty_field() {
     woocommerce_wp_text_input([
         'id'                => '_vf_drawer_required_qty',
         'label'             => '서랍장 필수 선택 수량',
-        'description'       => '이벤트 액상 수량(예: 3+1=4, 2+3=5)을 입력하면 그 수량 이상 선택해야 구매 버튼이 활성화됩니다. 비워두면 1병 이상 선택 시 바로 활성화됩니다.',
+        'description'       => '보통은 "4가지 맛을 골라주세요" 같은 문구에서 자동으로 인식됩니다. 자동 인식이 틀렸을 때만 여기에 값을 넣어 덮어쓰세요. 비워두면 자동 인식 값을 사용합니다.',
         'desc_tip'          => true,
         'type'              => 'number',
         'custom_attributes' => ['step' => '1', 'min' => '0'],
@@ -35,7 +33,7 @@ function vf_drawer_save_required_qty($post_id) {
 }
 
 /* -----------------------------------------------------------------------
- * 1. CSS — PPOM 회색 요약 박스 제거 + 2분할 서랍장 UI
+ * 1. CSS — PPOM 회색 요약 박스 제거 + 세로 1열 서랍장 UI
  * --------------------------------------------------------------------- */
 add_action('wp_head', 'vf_ppom_drawer_css', 9999);
 function vf_ppom_drawer_css() {
@@ -89,13 +87,13 @@ function vf_ppom_drawer_css() {
         }
         .vf-sticky-trigger-bar button {
             width: 100%;
-            height: 50px;
+            height: 54px;
             background: #18181b;
             color: #fff;
-            font-size: 15px;
+            font-size: 16px;
             font-weight: 800;
             border: none;
-            border-radius: 10px;
+            border-radius: 12px;
             cursor: pointer;
             -webkit-tap-highlight-color: transparent;
             transition: transform 0.15s ease, background 0.15s ease;
@@ -130,8 +128,8 @@ function vf_ppom_drawer_css() {
             left: 0 !important;
             bottom: 0 !important;
             width: 100% !important;
-            height: 82vh !important;
-            max-height: 82vh !important;
+            height: 85vh !important;
+            max-height: 85vh !important;
             background: #ffffff !important;
             z-index: 99998 !important;
             box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.2) !important;
@@ -142,104 +140,115 @@ function vf_ppom_drawer_css() {
             border-top-right-radius: 22px !important;
             overflow: hidden !important;
             transform: translateY(100%) !important;
-            transition: transform 0.32s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+            transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1) !important;
             touch-action: pan-y !important;
         }
         .woocommerce div.product form.cart.vf-drawer-open {
             transform: translateY(0) !important;
         }
 
-        .vf-drawer-drag-handle {
+        /* 헤더: 드래그 핸들 + 제목 + 큼직한 닫기 버튼 (열고닫기를 더 쉽게) */
+        .vf-drawer-header {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
-            height: 38px;
+            height: 54px;
             display: flex;
             align-items: center;
             justify-content: center;
             background: #ffffff;
-            z-index: 3;
+            border-bottom: 1px solid #f4f4f5;
+            z-index: 5;
             cursor: grab;
             touch-action: none;
         }
-        .vf-drawer-drag-handle::after {
+        .vf-drawer-header::before {
             content: '';
+            position: absolute;
+            top: 8px;
+            left: 50%;
+            transform: translateX(-50%);
             width: 40px;
             height: 5px;
             border-radius: 3px;
             background: #d4d4d8;
         }
+        .vf-drawer-title {
+            font-size: 14px;
+            font-weight: 800;
+            color: #18181b;
+        }
         .vf-drawer-close {
             position: absolute;
-            top: 6px;
-            right: 10px;
-            width: 28px;
-            height: 28px;
+            top: 7px;
+            right: 8px;
+            width: 40px;
+            height: 40px;
             border: none;
-            background: transparent;
-            color: #a1a1aa;
-            font-size: 18px;
+            background: #f4f4f5;
+            border-radius: 50%;
+            color: #52525b;
+            font-size: 20px;
             line-height: 1;
             cursor: pointer;
-            z-index: 4;
+            z-index: 6;
         }
 
-        .vf-drawer-split {
+        /* 본문: 세로 1열 스크롤 (옵션 -> 선택 요약 -> 총액) */
+        .vf-drawer-body {
             position: absolute;
-            top: 38px;
-            bottom: 76px;
+            top: 54px;
+            bottom: 80px;
             left: 0;
             width: 100%;
-            display: flex;
-            gap: 10px;
-            padding: 8px 14px;
+            padding: 14px 16px;
             box-sizing: border-box;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
             touch-action: pan-y;
         }
 
-        .vf-drawer-options {
-            width: 58%;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
         .vf-drawer-summary {
-            width: 42%;
-            align-self: flex-start;
+            margin-top: 16px;
             background: #f8f8f9;
             border: 1px solid #ececef;
-            border-radius: 12px;
-            padding: 10px;
+            border-radius: 14px;
+            padding: 14px;
             box-sizing: border-box;
-            display: flex;
-            flex-direction: column;
-            min-height: 150px;
-            max-height: 100%;
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
         }
 
-        .vf-summary-title {
-            font-size: 11px;
-            font-weight: 800;
-            color: #71717a;
-            text-transform: uppercase;
-            border-bottom: 1px solid #e4e4e7;
-            padding-bottom: 6px;
+        .vf-summary-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
             margin-bottom: 8px;
+        }
+        .vf-summary-title {
+            font-size: 13px;
+            font-weight: 800;
+            color: #52525b;
+        }
+        .vf-summary-count {
+            font-size: 13px;
+            font-weight: 800;
+            color: #ff5c35;
+            background: #fff1ec;
+            border-radius: 20px;
+            padding: 3px 10px;
+        }
+        .vf-summary-count.is-ready {
+            color: #16a34a;
+            background: #e8f8ee;
         }
 
         .vf-progress-track {
             width: 100%;
-            height: 5px;
+            height: 6px;
             border-radius: 3px;
             background: #e4e4e7;
             overflow: hidden;
-            margin-bottom: 6px;
+            margin-bottom: 10px;
         }
         .vf-progress-fill {
             height: 100%;
@@ -248,88 +257,81 @@ function vf_ppom_drawer_css() {
             border-radius: 3px;
             transition: width 0.25s ease;
         }
-        .vf-progress-text {
-            font-size: 10.5px;
-            font-weight: 700;
-            color: #52525b;
-            margin-bottom: 8px;
-            line-height: 1.4;
-        }
-        .vf-progress-text.is-ready {
-            color: #16a34a;
+        .vf-progress-fill.is-ready {
+            background: #16a34a;
         }
 
         .vf-summary-list {
             display: flex;
             flex-direction: column;
-            gap: 6px;
-            flex: 1;
+            gap: 8px;
         }
         .vf-summary-empty {
-            font-size: 11px;
+            font-size: 13px;
             color: #a1a1aa;
             text-align: center;
-            margin-top: 24px;
+            padding: 16px 0;
             line-height: 1.5;
         }
         .vf-summary-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            font-size: 11px;
+            font-size: 13px;
             font-weight: 700;
             color: #18181b;
             background: #ffffff;
-            padding: 6px 8px;
-            border-radius: 6px;
+            padding: 10px 12px;
+            border-radius: 8px;
             border: 1px solid #e4e4e7;
         }
         .vf-summary-item-qty {
             color: #ff5c35;
             font-weight: 800;
+            white-space: nowrap;
         }
 
         .ppom-wrapper .ppom-input-select label {
-            font-size: 11px;
+            font-size: 13px;
             font-weight: 800;
-            color: #71717a;
-            margin-bottom: 4px;
+            color: #3f3f46;
+            margin-bottom: 6px;
             display: inline-block;
         }
         .ppom-wrapper select {
             width: 100%;
-            height: 38px;
-            padding: 0 20px 0 10px;
-            font-size: 12px;
+            height: 48px;
+            padding: 0 30px 0 14px;
+            font-size: 15px;
             font-weight: 700;
             color: #18181b;
             background-color: #f4f4f5;
             border: 1px solid transparent;
-            border-radius: 8px;
+            border-radius: 10px;
             outline: none;
             background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2371717a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
             background-repeat: no-repeat;
-            background-position: right 8px center;
-            background-size: 12px;
+            background-position: right 12px center;
+            background-size: 16px;
             -webkit-appearance: none;
             appearance: none;
         }
 
-        /* PPOM이 선택 항목마다 만드는 기본 수량(+/-) 박스를 서랍장 톤에 맞게 재도색 */
+        /* PPOM이 선택 항목마다 만드는 기본 수량(+/-) 박스를 서랍장 톤에 맞게, 더 크게 재도색 */
         .ppom-wrapper [class*="selected"],
         .ppom-wrapper [class*="ppom-product"] {
             background: #ffffff;
             border: 1px solid #ececef;
-            border-radius: 10px;
-            padding: 8px 10px;
-            margin-bottom: 8px;
+            border-radius: 12px;
+            padding: 12px;
+            margin-top: 10px;
             box-sizing: border-box;
         }
         .ppom-wrapper .quantity {
             display: inline-flex;
             align-items: center;
             border: 1px solid #e4e4e7;
-            border-radius: 8px;
+            border-radius: 10px;
             overflow: hidden;
             background: #ffffff;
         }
@@ -337,23 +339,23 @@ function vf_ppom_drawer_css() {
         .ppom-wrapper .quantity .plus,
         .ppom-wrapper button.minus,
         .ppom-wrapper button.plus {
-            width: 28px;
-            height: 28px;
+            width: 40px;
+            height: 40px;
             border: none;
             background: #f4f4f5;
-            color: #52525b;
-            font-size: 13px;
+            color: #3f3f46;
+            font-size: 17px;
             font-weight: 800;
             cursor: pointer;
             -webkit-tap-highlight-color: transparent;
         }
         .ppom-wrapper .quantity input.qty,
         .ppom-wrapper input[type="number"] {
-            width: 34px;
-            height: 28px;
+            width: 44px;
+            height: 40px;
             border: none;
             text-align: center;
-            font-size: 12px;
+            font-size: 15px;
             font-weight: 800;
             color: #18181b;
             padding: 0;
@@ -366,9 +368,10 @@ function vf_ppom_drawer_css() {
         }
         .vf-remove-btn {
             color: #a1a1aa;
-            font-size: 13px;
+            font-size: 16px;
             font-weight: 700;
             cursor: pointer;
+            padding: 4px 8px;
         }
 
         .vf-drawer-actions {
@@ -376,8 +379,8 @@ function vf_ppom_drawer_css() {
             left: 0;
             bottom: 0;
             width: 100%;
-            height: 76px;
-            padding: 10px 14px calc(12px + env(safe-area-inset-bottom, 0px)) 14px;
+            height: 80px;
+            padding: 10px 16px calc(14px + env(safe-area-inset-bottom, 0px)) 16px;
             display: flex;
             gap: 8px;
             border-top: 1px solid #f4f4f5;
@@ -391,16 +394,20 @@ function vf_ppom_drawer_css() {
         .woocommerce div.product form.cart .buy_now_button,
         .woocommerce div.product form.cart button {
             flex: 1;
-            height: 50px;
-            line-height: 50px;
-            font-size: 14px;
+            height: 56px;
+            line-height: 1.25;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
             font-weight: 800;
-            border-radius: 10px;
+            border-radius: 12px;
             border: none;
             text-align: center;
             cursor: pointer;
             box-sizing: border-box;
             margin: 0;
+            padding: 4px 6px;
             transition: transform 0.15s ease, opacity 0.15s ease;
             -webkit-tap-highlight-color: transparent;
         }
@@ -431,8 +438,9 @@ function vf_ppom_drawer_css() {
             background: #e4e4e7 !important;
             color: #a1a1aa !important;
             cursor: not-allowed !important;
-            opacity: 0.6 !important;
+            opacity: 0.85 !important;
             pointer-events: none !important;
+            font-size: 13px !important;
         }
         .vf-btn-active {
             opacity: 1 !important;
@@ -491,7 +499,6 @@ function vf_ppom_drawer_js() {
         // 필수 선택 수량 감지
         // 1) 상품 메타에 수동으로 값을 넣었으면 그 값을 최우선으로 사용
         // 2) 없으면 "4가지 맛을 골라주세요", "13종" 같은 PPOM 필드 라벨 문구에서 자동으로 숫자를 추출
-        //    (상품/이벤트가 워낙 많아서 매번 수동 입력하지 않아도 되도록)
         function detectRequiredQtyFromLabels() {
             var text = $ppomWrapper.text();
             var max = 0;
@@ -516,25 +523,29 @@ function vf_ppom_drawer_js() {
         // --- 서랍장 골격 구성 (한 번만) ---
         $cartForm.find('.ppom-drawer-close').remove();
 
-        if (!$cartForm.find('.vf-drawer-drag-handle').length) {
+        if (!$cartForm.find('.vf-drawer-header').length) {
             $cartForm.prepend(
-                '<div class="vf-drawer-drag-handle" role="button" aria-label="서랍장 닫기"></div>' +
-                '<button type="button" class="vf-drawer-close" aria-label="닫기">&times;</button>'
+                '<div class="vf-drawer-header" role="button" aria-label="아래로 끌어서 닫기">' +
+                '  <span class="vf-drawer-title">맛 선택하기</span>' +
+                '  <button type="button" class="vf-drawer-close" aria-label="닫기">&times;</button>' +
+                '</div>'
             );
         }
 
-        if (!$cartForm.find('.vf-drawer-split').length) {
-            var splitHtml =
-                '<div class="vf-drawer-split">' +
+        if (!$cartForm.find('.vf-drawer-body').length) {
+            var bodyHtml =
+                '<div class="vf-drawer-body">' +
                 '  <div class="vf-drawer-options"></div>' +
                 '  <div class="vf-drawer-summary">' +
-                '    <div class="vf-summary-title">선택한 액상 내역</div>' +
+                '    <div class="vf-summary-head">' +
+                '      <span class="vf-summary-title">선택한 액상</span>' +
+                '      <span class="vf-summary-count" id="vf-summary-count">0</span>' +
+                '    </div>' +
                 '    <div class="vf-progress-track"><div class="vf-progress-fill" id="vf-progress-fill"></div></div>' +
-                '    <div class="vf-progress-text" id="vf-progress-text"></div>' +
                 '    <div class="vf-summary-list" id="vf-summary-list"></div>' +
                 '  </div>' +
                 '</div>';
-            $cartForm.find('.vf-drawer-drag-handle').after(splitHtml);
+            $cartForm.find('.vf-drawer-header').after(bodyHtml);
             $ppomWrapper.appendTo($cartForm.find('.vf-drawer-options'));
         }
 
@@ -545,6 +556,14 @@ function vf_ppom_drawer_js() {
                 .not('.vf-drawer-actions *')
                 .appendTo($cartForm.find('.vf-drawer-actions'));
         }
+
+        // 버튼이 비활성화됐을 때 "왜 안 눌리는지"를 버튼 자체에 보여주기 위해 원래 문구를 저장
+        var $actionBtns = $cartForm.find('.vf-drawer-actions button, .vf-drawer-actions a, .vf-drawer-actions input');
+        $actionBtns.each(function () {
+            var $el = $(this);
+            var original = $el.is('input') ? $el.val() : $el.text();
+            $el.data('vfOriginalLabel', original);
+        });
 
         $cartForm.attr({ role: 'dialog', 'aria-modal': 'true', 'aria-hidden': 'true' });
 
@@ -566,26 +585,33 @@ function vf_ppom_drawer_js() {
         }
 
         $(document).on('click', '#vf-trigger-mobile-drawer', openDrawer);
-        $(document).on('click', '.vf-drawer-drag-handle, .vf-drawer-overlay, .vf-drawer-close', closeDrawer);
+        $(document).on('click', '.vf-drawer-header, .vf-drawer-overlay, .vf-drawer-close', closeDrawer);
         $(document).on('keydown.vfDrawer', function (e) {
             if (e.key === 'Escape' && $cartForm.hasClass('vf-drawer-open')) closeDrawer();
         });
         $overlay.on('touchmove', function (e) { e.preventDefault(); });
 
-        // 드래그 핸들을 아래로 끌면 서랍장 닫기
+        // 헤더를 아래로 끌면 서랍장 닫기 (헤더 전체가 손잡이라 잡기 쉬움)
         var dragStartY = null, dragDelta = 0;
-        $cartForm.on('touchstart', '.vf-drawer-drag-handle', function (e) {
+        $cartForm.on('touchstart', '.vf-drawer-header', function (e) {
+            if ($(e.target).is('.vf-drawer-close')) return;
             dragStartY = e.originalEvent.touches[0].clientY;
             $cartForm.css('transition', 'none');
         });
-        $cartForm.on('touchmove', '.vf-drawer-drag-handle', function (e) {
+        $cartForm.on('touchmove', '.vf-drawer-header', function (e) {
             if (dragStartY === null) return;
             dragDelta = e.originalEvent.touches[0].clientY - dragStartY;
             if (dragDelta > 0) $cartForm.css('transform', 'translateY(' + dragDelta + 'px)');
         });
-        $cartForm.on('touchend', '.vf-drawer-drag-handle', function () {
-            $cartForm.css('transition', '').css('transform', '');
-            if (dragDelta > 80) closeDrawer();
+        $cartForm.on('touchend', '.vf-drawer-header', function () {
+            if (dragStartY === null) return;
+            $cartForm.css('transition', '');
+            if (dragDelta > 70) {
+                closeDrawer();
+                $cartForm.css('transform', '');
+            } else {
+                $cartForm.css('transform', '');
+            }
             dragStartY = null;
             dragDelta = 0;
         });
@@ -662,14 +688,12 @@ function vf_ppom_drawer_js() {
                     var titleSource = $row.children().first().length ? $row.children().first().text() : $row.text();
                     var name = cleanLabelText(titleSource) || '선택 항목';
 
-                    // "OO 묶음 이벤트" 같은 패키지 선택 자체는 병수로 세지 않고 목록에만 표시
-                    if (BUNDLE_PICKER_PATTERN.test(name)) {
-                        selectedMap[name] = (selectedMap[name] || 0) + qty;
-                        return;
-                    }
-
                     selectedMap[name] = (selectedMap[name] || 0) + qty;
-                    totalBottles += qty;
+
+                    // "OO 묶음 이벤트" 같은 패키지 선택 자체는 목록에는 보이되 병수로는 세지 않음
+                    if (!BUNDLE_PICKER_PATTERN.test(name)) {
+                        totalBottles += qty;
+                    }
                 });
             } else {
                 // 수량 스테퍼가 없는 단순 드롭다운형 상품을 위한 대비책
@@ -701,18 +725,23 @@ function vf_ppom_drawer_js() {
             var ratio = Math.min(totalBottles / required, 1);
             var isReady = REQUIRED_QTY > 0 ? totalBottles >= required : totalBottles > 0;
 
-            $('#vf-progress-fill').css('width', (ratio * 100) + '%');
-            $('#vf-progress-text')
+            $('#vf-progress-fill').css('width', (ratio * 100) + '%').toggleClass('is-ready', isReady);
+            $('#vf-summary-count')
                 .toggleClass('is-ready', isReady)
-                .text(
-                    isReady
-                        ? '구매하기 준비 완료! (' + totalBottles + '병)'
-                        : (REQUIRED_QTY > 0
-                            ? (required - totalBottles) + '병 더 선택하면 구매할 수 있어요 (' + totalBottles + '/' + required + ')'
-                            : '맛을 선택하면 구매할 수 있어요')
-                  );
+                .text(REQUIRED_QTY > 0 ? (totalBottles + ' / ' + required) : totalBottles);
 
-            var $actionBtns = $cartForm.find('.vf-drawer-actions button, .vf-drawer-actions a, .vf-drawer-actions input');
+            // 활성화 여부뿐 아니라 "왜" 안 눌리는지를 버튼 문구로 직접 알려준다
+            var missing = Math.max(required - totalBottles, 0);
+            var blockedLabel = REQUIRED_QTY > 0
+                ? (missing + '병 더 담아주세요')
+                : '맛을 선택해주세요';
+
+            $actionBtns.each(function () {
+                var $el = $(this);
+                var label = isReady ? $el.data('vfOriginalLabel') : blockedLabel;
+                if ($el.is('input')) $el.val(label); else $el.text(label);
+            });
+
             $actionBtns
                 .prop('disabled', !isReady)
                 .toggleClass('vf-btn-active', isReady)
