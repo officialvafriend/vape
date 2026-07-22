@@ -315,6 +315,62 @@ function vf_ppom_drawer_css() {
             appearance: none;
         }
 
+        /* PPOM이 선택 항목마다 만드는 기본 수량(+/-) 박스를 서랍장 톤에 맞게 재도색 */
+        .ppom-wrapper [class*="selected"],
+        .ppom-wrapper [class*="ppom-product"] {
+            background: #ffffff;
+            border: 1px solid #ececef;
+            border-radius: 10px;
+            padding: 8px 10px;
+            margin-bottom: 8px;
+            box-sizing: border-box;
+        }
+        .ppom-wrapper .quantity {
+            display: inline-flex;
+            align-items: center;
+            border: 1px solid #e4e4e7;
+            border-radius: 8px;
+            overflow: hidden;
+            background: #ffffff;
+        }
+        .ppom-wrapper .quantity .minus,
+        .ppom-wrapper .quantity .plus,
+        .ppom-wrapper button.minus,
+        .ppom-wrapper button.plus {
+            width: 28px;
+            height: 28px;
+            border: none;
+            background: #f4f4f5;
+            color: #52525b;
+            font-size: 13px;
+            font-weight: 800;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .ppom-wrapper .quantity input.qty,
+        .ppom-wrapper input[type="number"] {
+            width: 34px;
+            height: 28px;
+            border: none;
+            text-align: center;
+            font-size: 12px;
+            font-weight: 800;
+            color: #18181b;
+            padding: 0;
+            -moz-appearance: textfield;
+        }
+        .ppom-wrapper input[type="number"]::-webkit-inner-spin-button,
+        .ppom-wrapper input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        .vf-remove-btn {
+            color: #a1a1aa;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
         .vf-drawer-actions {
             position: absolute;
             left: 0;
@@ -432,8 +488,26 @@ function vf_ppom_drawer_js() {
 
         if ($(window).width() >= 768) return; // 데스크톱은 기존 UI 그대로 사용
 
-        // 필수 선택 수량: 상품별로 다르게 설정 가능 (0이면 1병 이상 선택 시 활성화)
-        var REQUIRED_QTY = (window.vfDrawerConfig && window.vfDrawerConfig.requiredQty) || 0;
+        // 필수 선택 수량 감지
+        // 1) 상품 메타에 수동으로 값을 넣었으면 그 값을 최우선으로 사용
+        // 2) 없으면 "4가지 맛을 골라주세요", "13종" 같은 PPOM 필드 라벨 문구에서 자동으로 숫자를 추출
+        //    (상품/이벤트가 워낙 많아서 매번 수동 입력하지 않아도 되도록)
+        function detectRequiredQtyFromLabels() {
+            var text = $ppomWrapper.text();
+            var max = 0;
+            var re = /(\d+)\s*(?:가지|종|개입|병입)/g;
+            var m;
+            while ((m = re.exec(text)) !== null) {
+                max = Math.max(max, parseInt(m[1], 10));
+            }
+            return max;
+        }
+        var MANUAL_REQUIRED_QTY = (window.vfDrawerConfig && window.vfDrawerConfig.requiredQty) || 0;
+        var REQUIRED_QTY = MANUAL_REQUIRED_QTY > 0 ? MANUAL_REQUIRED_QTY : detectRequiredQtyFromLabels();
+
+        // 이벤트/세트 자체를 고르는 필드(예: "OO 3+1 묶음 이벤트")는 그 자체가 "병"이 아니라
+        // 패키지 1개를 고르는 선택이므로, 병수 합산에서는 제외한다.
+        var BUNDLE_PICKER_PATTERN = /이벤트|묶음|세트|번들/;
 
         var $overlay = $('#vf-drawer-overlay');
         var $triggerBar = $('#vf-sticky-trigger-bar');
@@ -521,48 +595,102 @@ function vf_ppom_drawer_js() {
         function killPpomPriceTable() {
             $ppomWrapper.find(PRICE_TABLE_SELECTOR).remove();
         }
+        var summaryRefreshTimer = null;
+        function scheduleSummaryRefresh() {
+            clearTimeout(summaryRefreshTimer);
+            summaryRefreshTimer = setTimeout(function () { updateSummary(); }, 120);
+        }
+
         if (window.MutationObserver) {
             new MutationObserver(function (mutations) {
+                var touchedPriceTable = false;
                 mutations.forEach(function (m) {
                     m.addedNodes && m.addedNodes.forEach(function (node) {
                         if (node.nodeType !== 1) return;
                         if (node.matches && node.matches(PRICE_TABLE_SELECTOR)) {
                             node.remove();
-                        } else {
+                            touchedPriceTable = true;
+                        } else if ($(node).find(PRICE_TABLE_SELECTOR).length) {
                             $(node).find(PRICE_TABLE_SELECTOR).remove();
+                            touchedPriceTable = true;
                         }
                     });
                 });
+                // PPOM이 항목을 새로 추가/삭제했을 가능성이 있으므로 요약을 다시 계산
+                scheduleSummaryRefresh();
+                if (touchedPriceTable) killPpomPriceTable();
             }).observe($ppomWrapper[0], { childList: true, subtree: true });
+        }
+
+        // 이름이 지저분하게 중복 표기된 PPOM 기본 라벨을 정리
+        // 예: "OO 3+1 묶음 이벤트 * *: OO 3+1 묶음 이벤트" -> "OO 3+1 묶음 이벤트"
+        //     "4가지 맛을 골라주세요. *: 샤인머스켓" -> "샤인머스켓"
+        function cleanLabelText(raw) {
+            var text = (raw || '').replace(/\*/g, '');
+            if (text.indexOf(':') !== -1) text = text.split(':').pop();
+            return text.trim();
+        }
+
+        // PPOM이 항목 삭제용으로 넣는 "×" 아이콘을 클래스명과 무관하게 찾아서 스타일 적용
+        function tagRemoveButtons() {
+            $ppomWrapper.find('*').filter(function () {
+                var t = $(this).contents().filter(function () { return this.nodeType === 3; }).text().trim();
+                return (t === '×' || t === 'x' || t === 'X') && $(this).children().length === 0;
+            }).addClass('vf-remove-btn');
         }
 
         // --- 선택 내역 요약 + 필수 수량 기반 버튼 활성화 ---
         function updateSummary() {
             killPpomPriceTable();
+            tagRemoveButtons();
 
             var selectedMap = {};
             var totalBottles = 0;
 
-            $selects.each(function () {
-                var val = $(this).val();
-                var rawText = $(this).find('option:selected').text().trim();
-                if (!val || rawText.indexOf('선택') !== -1) return;
+            // PPOM이 선택 항목마다 만드는 수량(+/-) 박스를 우선 집계
+            // (드롭다운은 항목을 추가하고 나면 다시 "선택해주세요"로 리셋되기 때문에,
+            //  실제 담긴 병 수는 드롭다운 값이 아니라 아래에 쌓인 항목의 수량 스테퍼에서 읽어야 정확하다)
+            var $qtyInputs = $ppomWrapper.find('.quantity input.qty, input[type="number"]').filter(':visible');
 
-                var cleanName = rawText.split('(')[0].replace(/[*:]+/g, '').trim();
-                var $qtyInput = $(this).closest('.ppom-input-option').find('input.ppom-quantity, input.qty');
-                var itemQty = ($qtyInput.length && parseInt($qtyInput.val(), 10) > 0) ? parseInt($qtyInput.val(), 10) : 1;
+            if ($qtyInputs.length) {
+                $qtyInputs.each(function () {
+                    var $input = $(this);
+                    var qty = parseInt($input.val(), 10);
+                    if (!qty || qty < 0) return;
 
-                selectedMap[cleanName] = (selectedMap[cleanName] || 0) + itemQty;
-                totalBottles += itemQty;
-            });
+                    var $row = $input.closest('.quantity').length ? $input.closest('.quantity').parent() : $input.parent();
+                    var titleSource = $row.children().first().length ? $row.children().first().text() : $row.text();
+                    var name = cleanLabelText(titleSource) || '선택 항목';
+
+                    // "OO 묶음 이벤트" 같은 패키지 선택 자체는 병수로 세지 않고 목록에만 표시
+                    if (BUNDLE_PICKER_PATTERN.test(name)) {
+                        selectedMap[name] = (selectedMap[name] || 0) + qty;
+                        return;
+                    }
+
+                    selectedMap[name] = (selectedMap[name] || 0) + qty;
+                    totalBottles += qty;
+                });
+            } else {
+                // 수량 스테퍼가 없는 단순 드롭다운형 상품을 위한 대비책
+                $ppomWrapper.find('select').each(function () {
+                    var val = $(this).val();
+                    var rawText = $(this).find('option:selected').text().trim();
+                    if (!val || rawText.indexOf('선택') !== -1) return;
+
+                    var cleanName = cleanLabelText(rawText.split('(')[0]);
+                    selectedMap[cleanName] = (selectedMap[cleanName] || 0) + 1;
+                    totalBottles += 1;
+                });
+            }
 
             var $list = $('#vf-summary-list');
             $list.empty();
-            if (totalBottles > 0) {
+            if (Object.keys(selectedMap).length) {
                 for (var name in selectedMap) {
                     $list.append(
                         '<div class="vf-summary-item"><span>' + name + '</span>' +
-                        '<span class="vf-summary-item-qty">' + selectedMap[name] + '병</span></div>'
+                        '<span class="vf-summary-item-qty">' + selectedMap[name] + '개</span></div>'
                     );
                 }
             } else {
@@ -571,7 +699,7 @@ function vf_ppom_drawer_js() {
 
             var required = REQUIRED_QTY > 0 ? REQUIRED_QTY : 1;
             var ratio = Math.min(totalBottles / required, 1);
-            var isReady = totalBottles >= required;
+            var isReady = REQUIRED_QTY > 0 ? totalBottles >= required : totalBottles > 0;
 
             $('#vf-progress-fill').css('width', (ratio * 100) + '%');
             $('#vf-progress-text')
@@ -581,7 +709,7 @@ function vf_ppom_drawer_js() {
                         ? '구매하기 준비 완료! (' + totalBottles + '병)'
                         : (REQUIRED_QTY > 0
                             ? (required - totalBottles) + '병 더 선택하면 구매할 수 있어요 (' + totalBottles + '/' + required + ')'
-                            : '최소 1병 이상 선택해주세요')
+                            : '맛을 선택하면 구매할 수 있어요')
                   );
 
             var $actionBtns = $cartForm.find('.vf-drawer-actions button, .vf-drawer-actions a, .vf-drawer-actions input');
