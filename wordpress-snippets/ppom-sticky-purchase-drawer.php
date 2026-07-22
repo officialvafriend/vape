@@ -556,7 +556,7 @@ function vf_ppom_drawer_js() {
 
         // 이벤트/세트 자체를 고르는 필드(예: "OO 3+1 묶음 이벤트")는 그 자체가 "병"이 아니라
         // 패키지 1개를 고르는 선택이므로, 병수 합산에서는 제외한다.
-        var BUNDLE_PICKER_PATTERN = /이벤트|묶음|세트|번들/;
+        var BUNDLE_PICKER_PATTERN = /이벤트|묶음|세트|번들|기획|패키지/;
 
         // 병수 감지를 tag-agnostic 방식(아래 findQuantityElements)으로 다시 짰으므로 활성화.
         // 만약 또 오작동하면 즉시 false로 내려서 구매 버튼부터 살릴 것.
