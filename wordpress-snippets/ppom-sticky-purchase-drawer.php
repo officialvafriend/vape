@@ -725,13 +725,22 @@ function vf_ppom_drawer_js() {
                     if (!qty || qty < 0) return;
 
                     // 수량 요소 자체는 제목이 없을 가능성이 높으므로, 텍스트가 충분히 긴(제목이 포함된)
-                    // 조상 요소를 찾아 그 첫 줄을 항목 이름으로 사용한다
+                    // 조상 요소를 찾는다
                     var $card = $el.parent();
                     for (var i = 0; i < 6 && $card.length && !$card.is($ppomWrapper); i++) {
                         if ($card.text().trim().length > 15) break;
                         $card = $card.parent();
                     }
-                    var titleSource = $card.children().first().length ? $card.children().first().text() : $card.text();
+                    // "첫 번째 자식 요소"가 아니라, 카드를 복제해서 삭제(×)/수량 위젯(−, 숫자, +)/가격을
+                    // 걷어내고 남는 텍스트를 이름으로 쓴다. children().first()로는 title이 텍스트 노드로만
+                    // 있을 때 엉뚱하게 "×"나 "−" 버튼을 이름으로 잡아버리는 문제가 있었다.
+                    var $cardClone = $card.clone();
+                    $cardClone.find('*').filter(function () {
+                        var t = $(this).text().trim();
+                        return /^[×xX]$/.test(t) || /^[-−–]$/.test(t) || /^[+＋]$/.test(t) ||
+                            /^\d+$/.test(t) || /^[\d,]+\s*원$/.test(t);
+                    }).remove();
+                    var titleSource = $cardClone.text();
                     var name = cleanLabelText(titleSource) || '선택 항목';
 
                     selectedMap[name] = (selectedMap[name] || 0) + qty;
