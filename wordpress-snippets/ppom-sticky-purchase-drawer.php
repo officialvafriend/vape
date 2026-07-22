@@ -388,6 +388,7 @@ function vf_ppom_drawer_css() {
             border-top: 1px solid #f4f4f5;
             background: #ffffff;
             box-sizing: border-box;
+            overflow: hidden;
             z-index: 3;
         }
         .vf-drawer-actions button,
@@ -396,6 +397,7 @@ function vf_ppom_drawer_css() {
         .woocommerce div.product form.cart .buy_now_button,
         .woocommerce div.product form.cart button {
             flex: 1;
+            min-width: 0;
             height: 56px;
             line-height: 1.25;
             display: flex;
@@ -595,8 +597,12 @@ function vf_ppom_drawer_js() {
 
         if (!$cartForm.find('.vf-drawer-actions').length) {
             $cartForm.append('<div class="vf-drawer-actions"></div>');
+            // 수량 스테퍼의 −/+ 가 <button> 태그로 만들어진 경우, 얘네까지 실제 구매 버튼과
+            // 같이 하단 액션 줄로 딸려 들어가서 중복 표시되고 줄이 넘치는 문제가 있었다.
+            // 수량 위젯(.quantity) 안에 있는 건 뭐든 제외한다.
             $cartForm.find('button, a.button, input[type="submit"]')
-                .not('.qty-btn, .ppom-drawer-close, .vf-drawer-close')
+                .not('.qty-btn, .minus, .plus, .ppom-drawer-close, .vf-drawer-close')
+                .not('.quantity *')
                 .not('.vf-drawer-actions *')
                 .appendTo($cartForm.find('.vf-drawer-actions'));
         }
