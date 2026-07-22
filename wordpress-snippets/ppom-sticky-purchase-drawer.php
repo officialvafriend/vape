@@ -536,10 +536,20 @@ function vf_ppom_drawer_js() {
         // 상품이 워낙 많고 문구도 제각각이라 위 패턴으로 못 잡는 경우가 있을 수 있다.
         // 그런 상품은 상품 편집 화면의 "서랍장 필수 선택 수량"에 값을 넣어 수동으로 덮어쓰면 된다.
 
-        // 블랙리스트 방식(수동 설정이거나 규칙을 아예 못 찾았을 때)에서 제외할 필드:
-        // 이벤트/세트/기획 패키지 자체를 고르는 필드, "팟, 코일" 같은 기기 액세서리 필드 등
-        // 액상 맛이 아닌 것은 병수에서 제외한다.
-        var BUNDLE_PICKER_PATTERN = /이벤트|묶음|세트|번들|기획|패키지|팟|코일|기기|배터리|충전|무화기|카트리지/;
+        // 실제 결제 금액이 걸려있는 "이벤트/묶음/기획 패키지" 선택 필드. 액상 맛만 담고 이 필드를
+        // 빼먹으면 그 상품은 0원짜리 항목만 장바구니에 들어가 0원 결제 사고로 이어지므로,
+        // 이 필드가 이 상품에 있으면 반드시 선택해야만 구매 버튼이 활성화되게 강제한다.
+        var REQUIRED_PACKAGE_PATTERN = /이벤트|묶음|세트|번들|기획|패키지/;
+
+        // 액상 맛은 아니지만 필수까지는 아닌 기기 액세서리류(팟, 코일 등) - 병수에서만 제외
+        var ACCESSORY_PATTERN = /팟|코일|기기|배터리|충전|무화기|카트리지/;
+
+        // 블랙리스트 방식(수동 설정이거나 규칙을 아예 못 찾았을 때)에서 병수 계산 시 제외할 필드
+        var BUNDLE_PICKER_PATTERN = new RegExp(REQUIRED_PACKAGE_PATTERN.source + '|' + ACCESSORY_PATTERN.source);
+
+        // 이 상품에 "이벤트/묶음/기획 패키지" 필드가 실제로 존재하는지 (정적 라벨 텍스트로 판단,
+        // 아직 아무것도 선택하지 않은 상태에서도 라벨은 항상 보이므로 안정적으로 감지 가능)
+        var HAS_REQUIRED_PACKAGE_FIELD = REQUIRED_PACKAGE_PATTERN.test($ppomWrapper.text());
 
         // 실제 사이트에서 병수 감지가 정확한 것을 확인함 (3+1/기획 상품 제외, 5의 배수 조건 모두 정상).
         // 만약 다른 상품에서 또 오작동하면 즉시 false로 내려서 구매 버튼부터 살릴 것.
@@ -713,6 +723,7 @@ function vf_ppom_drawer_js() {
 
             var selectedMap = {};
             var totalBottles = 0;
+            var packageFieldSelected = false;
 
             // PPOM이 선택 항목마다 만드는 수량(+/-) 박스를 우선 집계
             // (드롭다운은 항목을 추가하고 나면 다시 "선택해주세요"로 리셋되기 때문에,
@@ -770,6 +781,12 @@ function vf_ppom_drawer_js() {
 
                     selectedMap[name] = (selectedMap[name] || 0) + qty;
 
+                    // 실제 결제 금액이 걸린 이벤트/묶음/기획 패키지 필드에서 나온 항목인지 기록
+                    // (액세서리 필드는 여기 포함 안 시킴 - 필수가 아니므로)
+                    if (REQUIRED_PACKAGE_PATTERN.test(fieldLabel)) {
+                        packageFieldSelected = true;
+                    }
+
                     // 어느 필드에서 나온 항목인지로 병수 포함 여부를 판단한다.
                     // - 자동 감지된 규칙이 있으면: "그 규칙 문구가 붙은 필드"에서 나온 항목만 병수로 인정
                     //   (이벤트/기획/팟,코일 같은 다른 필드에서 나온 건 선택값이 뭐든 상관없이 제외)
@@ -808,30 +825,38 @@ function vf_ppom_drawer_js() {
                 $list.append('<div class="vf-summary-empty">맛을 선택하면<br>여기에 내역이 쌓입니다.</div>');
             }
 
-            var meetsCondition, ratio, countLabel, blockedLabel;
+            var flavorConditionMet, ratio, countLabel, blockedLabel;
 
             if (RULE_MODE === 'multiple') {
                 // "5병 단위로만 구매 가능" 같은 상품: 정확히 N의 배수여야 함 (5는 되고 6은 안 됨)
                 var remainder = totalBottles % RULE_VALUE;
-                meetsCondition = totalBottles > 0 && remainder === 0;
-                ratio = meetsCondition ? 1 : remainder / RULE_VALUE;
+                flavorConditionMet = totalBottles > 0 && remainder === 0;
+                ratio = flavorConditionMet ? 1 : remainder / RULE_VALUE;
                 countLabel = totalBottles + '병 (' + RULE_VALUE + '병 단위)';
                 blockedLabel = totalBottles === 0
                     ? '맛을 선택해주세요'
                     : (RULE_VALUE - remainder) + '병 더 담아서 ' + RULE_VALUE + '병 단위로 맞춰주세요';
             } else if (RULE_MODE === 'atleast') {
-                meetsCondition = totalBottles >= RULE_VALUE;
+                flavorConditionMet = totalBottles >= RULE_VALUE;
                 ratio = Math.min(totalBottles / RULE_VALUE, 1);
                 countLabel = totalBottles + ' / ' + RULE_VALUE;
                 var missing = Math.max(RULE_VALUE - totalBottles, 0);
                 blockedLabel = missing > 0 ? (missing + '병 더 담아주세요') : '맛을 선택해주세요';
             } else {
-                meetsCondition = totalBottles > 0;
-                ratio = meetsCondition ? 1 : 0;
+                flavorConditionMet = totalBottles > 0;
+                ratio = flavorConditionMet ? 1 : 0;
                 countLabel = String(totalBottles);
                 blockedLabel = '맛을 선택해주세요';
             }
 
+            // 액상 조건을 다 채워도, 실제 결제 금액이 걸린 이벤트/묶음/기획 패키지를
+            // 선택하지 않았으면 여전히 막는다 (안 그러면 액상만 담고 0원으로 결제되는 사고가 남)
+            var needsPackage = HAS_REQUIRED_PACKAGE_FIELD && !packageFieldSelected;
+            if (flavorConditionMet && needsPackage) {
+                blockedLabel = '이벤트/기획 상품을 먼저 선택해주세요';
+            }
+
+            var meetsCondition = flavorConditionMet && !needsPackage;
             var isReady = GATE_ENABLED ? meetsCondition : true;
 
             $('#vf-progress-fill').css('width', (ratio * 100) + '%').toggleClass('is-ready', meetsCondition);
