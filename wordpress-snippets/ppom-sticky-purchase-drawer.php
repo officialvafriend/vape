@@ -497,10 +497,6 @@ function vf_ppom_drawer_js() {
 
         if ($(window).width() >= 768) return; // 데스크톱은 기존 UI 그대로 사용
 
-        // 액상 "맛" 필드를 가리키는 문구 패턴 (필요 수량 규칙도 이 패턴에서 추출한다)
-        // "5병을 선택해주세요"처럼 뒤에 특별한 단위 없이 그냥 "병"만 붙는 경우도 포함한다.
-        var QUANTITY_FIELD_PATTERN = /(\d+)\s*병\s*단위|(\d+)\s*(?:가지|종|개입|병입|병)/;
-
         // 필요 수량 규칙 감지
         // 1) 상품 메타에 수동으로 값을 넣었으면 "정확히 N개" 규칙으로 최우선 사용
         // 2) 없으면 PPOM 필드 문구에서 자동 추출:
@@ -532,11 +528,6 @@ function vf_ppom_drawer_js() {
         var RULE_MODE = MANUAL_REQUIRED_QTY > 0 ? 'exact' : DETECTED_RULE.mode;
         var RULE_VALUE = MANUAL_REQUIRED_QTY > 0 ? MANUAL_REQUIRED_QTY : DETECTED_RULE.value;
 
-        // 자동으로 감지된 규칙이면, "그 규칙 문구가 실제로 붙어있는 필드에서 나온 항목만"
-        // 병수로 세고(화이트리스트), 그 외 필드(이벤트/기획/팟,코일 등)에서 나온 항목은 전부 제외한다.
-        // 수동으로 값을 덮어쓴 경우엔 특정 필드가 없으므로 기존처럼 블랙리스트 방식을 쓴다.
-        var RULE_IS_FIELD_SPECIFIC = MANUAL_REQUIRED_QTY <= 0 && DETECTED_RULE.mode !== 'none';
-
         // 상품이 워낙 많고 문구도 제각각이라 위 패턴으로 못 잡는 경우가 있을 수 있다.
         // 그런 상품은 상품 편집 화면의 "서랍장 필수 선택 수량"에 값을 넣어 수동으로 덮어쓰면 된다.
 
@@ -548,7 +539,7 @@ function vf_ppom_drawer_js() {
         // 액상 맛은 아니지만 필수까지는 아닌 기기 액세서리류(팟, 코일 등) - 병수에서만 제외
         var ACCESSORY_PATTERN = /팟|코일|기기|배터리|충전|무화기|카트리지/;
 
-        // 블랙리스트 방식(수동 설정이거나 규칙을 아예 못 찾았을 때)에서 병수 계산 시 제외할 필드
+        // 병수 계산 시 제외할 필드 이름 패턴 (아래에서 항목마다 필드 이름을 이 패턴과 대조한다)
         var BUNDLE_PICKER_PATTERN = new RegExp(REQUIRED_PACKAGE_PATTERN.source + '|' + ACCESSORY_PATTERN.source);
 
         // 이 상품에 "이벤트/묶음/기획 패키지" 필드가 실제로 존재하는지 (정적 라벨 텍스트로 판단,
@@ -791,15 +782,12 @@ function vf_ppom_drawer_js() {
                         packageFieldSelected = true;
                     }
 
-                    // 어느 필드에서 나온 항목인지로 병수 포함 여부를 판단한다.
-                    // - 자동 감지된 규칙이 있으면: "그 규칙 문구가 붙은 필드"에서 나온 항목만 병수로 인정
-                    //   (이벤트/기획/팟,코일 같은 다른 필드에서 나온 건 선택값이 뭐든 상관없이 제외)
-                    // - 그 외(수동 설정/규칙 없음)에는 필드 이름 자체가 이벤트/기획/액세서리 종류가 아닐 때만 포함
-                    // 이벤트 필드 라벨 자체에 "액상 5병 증정"처럼 병 수가 같이 적혀있는 경우가 있어서,
-                    // QUANTITY_FIELD_PATTERN에 걸리더라도 이벤트/기획/액세서리 필드면 항상 제외한다.
-                    var countsAsBottle = RULE_IS_FIELD_SPECIFIC
-                        ? QUANTITY_FIELD_PATTERN.test(fieldLabel) && !BUNDLE_PICKER_PATTERN.test(fieldLabel)
-                        : !BUNDLE_PICKER_PATTERN.test(fieldLabel || name);
+                    // 어느 필드에서 나온 항목인지로 병수 포함 여부를 판단한다: 필드 이름이
+                    // 이벤트/묶음/세트/번들/기획/패키지/팟/코일/기기 등에 해당하지 않으면 액상 맛
+                    // 필드로 보고 병수에 포함한다. ("맛 선택을 해주세요"처럼 필드 라벨 자체엔 숫자가
+                    // 전혀 없는 경우도 있어서, "규칙 문구가 붙은 필드만 화이트리스트"로 판단하면
+                    // 오히려 진짜 맛 필드를 놓치는 문제가 있었다 - 블랙리스트 방식이 더 안정적이었다)
+                    var countsAsBottle = !BUNDLE_PICKER_PATTERN.test(fieldLabel || name);
 
                     if (countsAsBottle) {
                         totalBottles += qty;
