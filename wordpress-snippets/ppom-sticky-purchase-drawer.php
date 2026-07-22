@@ -292,32 +292,6 @@ function vf_ppom_drawer_css() {
             white-space: nowrap;
         }
 
-        /* [임시 디버그 패널] 원인 파악되면 통째로 제거할 것 */
-        .vf-debug-box {
-            margin-top: 10px;
-            border: 2px dashed #ef4444;
-            border-radius: 8px;
-            padding: 8px;
-            background: #fff5f5;
-        }
-        .vf-debug-title {
-            font-size: 11px;
-            font-weight: 800;
-            color: #ef4444;
-            margin-bottom: 6px;
-        }
-        .vf-debug-item {
-            font-size: 10.5px;
-            font-family: monospace;
-            color: #3f3f46;
-            word-break: break-all;
-            padding: 6px 0;
-            border-top: 1px dashed #fecaca;
-        }
-        .vf-debug-item:first-child {
-            border-top: none;
-        }
-
         .ppom-wrapper .ppom-input-select label {
             font-size: 13px;
             font-weight: 800;
@@ -558,8 +532,8 @@ function vf_ppom_drawer_js() {
         // 패키지 1개를 고르는 선택이므로, 병수 합산에서는 제외한다.
         var BUNDLE_PICKER_PATTERN = /이벤트|묶음|세트|번들|기획|패키지/;
 
-        // 병수 감지를 tag-agnostic 방식(아래 findQuantityElements)으로 다시 짰으므로 활성화.
-        // 만약 또 오작동하면 즉시 false로 내려서 구매 버튼부터 살릴 것.
+        // 실제 사이트에서 병수 감지가 정확한 것을 확인함 (3+1/기획 상품 제외, 5의 배수 조건 모두 정상).
+        // 만약 다른 상품에서 또 오작동하면 즉시 false로 내려서 구매 버튼부터 살릴 것.
         var GATE_ENABLED = true;
 
         var $overlay = $('#vf-drawer-overlay');
@@ -744,8 +718,6 @@ function vf_ppom_drawer_js() {
                 return MINUS_RE.test(prevText) || PLUS_RE.test(nextText);
             });
 
-            var DEBUG_ITEMS = []; // [임시 디버그] 원인 파악되면 통째로 제거할 것
-
             if ($qtyElements.length) {
                 $qtyElements.each(function () {
                     var $el = $(this);
@@ -773,23 +745,13 @@ function vf_ppom_drawer_js() {
                     }).remove();
                     var titleSource = $cardClone.text();
                     var name = cleanLabelText(titleSource) || '선택 항목';
-                    var isBundle = BUNDLE_PICKER_PATTERN.test(name);
 
                     selectedMap[name] = (selectedMap[name] || 0) + qty;
 
                     // "OO 묶음 이벤트" 같은 패키지 선택 자체는 목록에는 보이되 병수로는 세지 않음
-                    if (!isBundle) {
+                    if (!BUNDLE_PICKER_PATTERN.test(name)) {
                         totalBottles += qty;
                     }
-
-                    // [임시 디버그] 실제로 뭘 읽어오는지 화면에 보여주기 위함
-                    DEBUG_ITEMS.push({
-                        qty: qty,
-                        cardText: $card.text().replace(/\s+/g, ' ').trim(),
-                        strippedText: titleSource.replace(/\s+/g, ' ').trim(),
-                        cleanedName: name,
-                        isBundle: isBundle
-                    });
                 });
             } else {
                 // 수량 스테퍼가 없는 단순 드롭다운형 상품을 위한 대비책
@@ -815,22 +777,6 @@ function vf_ppom_drawer_js() {
                 }
             } else {
                 $list.append('<div class="vf-summary-empty">맛을 선택하면<br>여기에 내역이 쌓입니다.</div>');
-            }
-
-            // [임시 디버그 패널] 원인 파악되면 통째로 제거할 것
-            if (DEBUG_ITEMS.length) {
-                var debugHtml = '<div class="vf-debug-box"><div class="vf-debug-title">🛠 디버그(임시)</div>';
-                DEBUG_ITEMS.forEach(function (d, idx) {
-                    debugHtml +=
-                        '<div class="vf-debug-item">' +
-                        '#' + (idx + 1) + ' qty=' + d.qty + ' bundle=' + d.isBundle + '<br>' +
-                        'card: "' + d.cardText + '"<br>' +
-                        'stripped: "' + d.strippedText + '"<br>' +
-                        'name: "' + d.cleanedName + '"' +
-                        '</div>';
-                });
-                debugHtml += '</div>';
-                $list.append(debugHtml);
             }
 
             var meetsCondition, ratio, countLabel, blockedLabel;
