@@ -599,11 +599,16 @@ function vf_ppom_drawer_js() {
             $cartForm.append('<div class="vf-drawer-actions"></div>');
             // 수량 스테퍼의 −/+ 가 <button> 태그로 만들어진 경우, 얘네까지 실제 구매 버튼과
             // 같이 하단 액션 줄로 딸려 들어가서 중복 표시되고 줄이 넘치는 문제가 있었다.
-            // 수량 위젯(.quantity) 안에 있는 건 뭐든 제외한다.
+            // 테마마다 클래스명이 달라서(.minus/.plus가 아닐 수 있음) 클래스로는 못 걸러서,
+            // 버튼 안 글자가 순수 −/+ 기호 하나뿐인지로 판단한다 (글자 내용은 테마와 무관하게 항상 같음).
             $cartForm.find('button, a.button, input[type="submit"]')
-                .not('.qty-btn, .minus, .plus, .ppom-drawer-close, .vf-drawer-close')
-                .not('.quantity *')
+                .not('.qty-btn, .ppom-drawer-close, .vf-drawer-close')
                 .not('.vf-drawer-actions *')
+                .filter(function () {
+                    var $el = $(this);
+                    var t = ($el.is('input') ? ($el.val() || '') : $el.text()).trim();
+                    return !/^[-−–+＋]$/.test(t);
+                })
                 .appendTo($cartForm.find('.vf-drawer-actions'));
         }
 
