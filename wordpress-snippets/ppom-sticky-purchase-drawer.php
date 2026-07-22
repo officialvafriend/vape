@@ -292,14 +292,14 @@ function vf_ppom_drawer_css() {
             white-space: nowrap;
         }
 
-        .ppom-wrapper .ppom-input-select label {
+        .vf-drawer-options .ppom-input-select label {
             font-size: 13px;
             font-weight: 800;
             color: #3f3f46;
             margin-bottom: 6px;
             display: inline-block;
         }
-        .ppom-wrapper select {
+        .vf-drawer-options select {
             width: 100%;
             height: 48px;
             padding: 0 30px 0 14px;
@@ -318,9 +318,10 @@ function vf_ppom_drawer_css() {
             appearance: none;
         }
 
-        /* PPOM이 선택 항목마다 만드는 기본 수량(+/-) 박스를 서랍장 톤에 맞게, 더 크게 재도색 */
-        .ppom-wrapper [class*="selected"],
-        .ppom-wrapper [class*="ppom-product"] {
+        /* PPOM이 선택 항목마다 만드는 기본 수량(+/-) 박스와, 단순 상품의 기본 수량 박스를
+           서랍장 톤에 맞게 더 크게 재도색 (둘 다 .vf-drawer-options 안에 들어오므로 함께 적용됨) */
+        .vf-drawer-options [class*="selected"],
+        .vf-drawer-options [class*="ppom-product"] {
             background: #ffffff;
             border: 1px solid #ececef;
             border-radius: 12px;
@@ -328,7 +329,7 @@ function vf_ppom_drawer_css() {
             margin-top: 10px;
             box-sizing: border-box;
         }
-        .ppom-wrapper .quantity {
+        .vf-drawer-options .quantity {
             display: inline-flex;
             align-items: center;
             border: 1px solid #e4e4e7;
@@ -336,10 +337,10 @@ function vf_ppom_drawer_css() {
             overflow: hidden;
             background: #ffffff;
         }
-        .ppom-wrapper .quantity .minus,
-        .ppom-wrapper .quantity .plus,
-        .ppom-wrapper button.minus,
-        .ppom-wrapper button.plus {
+        .vf-drawer-options .quantity .minus,
+        .vf-drawer-options .quantity .plus,
+        .vf-drawer-options button.minus,
+        .vf-drawer-options button.plus {
             width: 40px;
             height: 40px;
             border: none;
@@ -350,8 +351,8 @@ function vf_ppom_drawer_css() {
             cursor: pointer;
             -webkit-tap-highlight-color: transparent;
         }
-        .ppom-wrapper .quantity input.qty,
-        .ppom-wrapper input[type="number"] {
+        .vf-drawer-options .quantity input.qty,
+        .vf-drawer-options input[type="number"] {
             width: 44px;
             height: 40px;
             border: none;
@@ -362,8 +363,8 @@ function vf_ppom_drawer_css() {
             padding: 0;
             -moz-appearance: textfield;
         }
-        .ppom-wrapper input[type="number"]::-webkit-inner-spin-button,
-        .ppom-wrapper input[type="number"]::-webkit-outer-spin-button {
+        .vf-drawer-options input[type="number"]::-webkit-inner-spin-button,
+        .vf-drawer-options input[type="number"]::-webkit-outer-spin-button {
             -webkit-appearance: none;
             margin: 0;
         }
@@ -489,11 +490,12 @@ function vf_ppom_drawer_js() {
     <script type="text/javascript">
     jQuery(function ($) {
         var $cartForm = $('form.cart').first();
-        var $ppomWrapper = $('.ppom-wrapper');
-        if (!$cartForm.length || !$ppomWrapper.length) return;
+        if (!$cartForm.length) return;
 
-        var $selects = $ppomWrapper.find('select');
-        if (!$selects.length) return;
+        // PPOM으로 맛을 여러 개 고르는 상품도 있고, 그냥 수량만 고르는 단순 상품도 있다.
+        // 단순 상품은 "선택한 액상" 요약/필수 수량 검증 없이도 서랍장(수량+구매 버튼)은 똑같이 뜬다.
+        var $ppomWrapper = $('.ppom-wrapper');
+        var hasFlavorPicker = $ppomWrapper.length > 0 && $ppomWrapper.find('select').length > 0;
 
         if ($(window).width() >= 768) return; // 데스크톱은 기존 UI 그대로 사용
 
@@ -557,30 +559,38 @@ function vf_ppom_drawer_js() {
         // --- 서랍장 골격 구성 (한 번만) ---
         $cartForm.find('.ppom-drawer-close').remove();
 
-        if (!$cartForm.find('.vf-drawer-header').length) {
+        // 아직 우리 서랍장 구조를 씌우기 전, form.cart 원래 내용물(PPOM 위젯이든 단순 수량+버튼이든)을
+        // 미리 잡아둔다 - 단순 상품도 그대로 서랍장 안으로 옮겨서 보여주기 위함
+        var isFirstSetup = !$cartForm.find('.vf-drawer-header').length;
+        var $originalContent = isFirstSetup ? $cartForm.children() : null;
+
+        if (isFirstSetup) {
             $cartForm.prepend(
                 '<div class="vf-drawer-header" role="button" aria-label="아래로 끌어서 닫기">' +
-                '  <span class="vf-drawer-title">맛 선택하기</span>' +
+                '  <span class="vf-drawer-title">' + (hasFlavorPicker ? '맛 선택하기' : '구매하기') + '</span>' +
                 '  <button type="button" class="vf-drawer-close" aria-label="닫기">&times;</button>' +
                 '</div>'
             );
         }
 
         if (!$cartForm.find('.vf-drawer-body').length) {
+            var summaryHtml = hasFlavorPicker
+                ? '  <div class="vf-drawer-summary">' +
+                  '    <div class="vf-summary-head">' +
+                  '      <span class="vf-summary-title">선택한 액상</span>' +
+                  '      <span class="vf-summary-count" id="vf-summary-count">0</span>' +
+                  '    </div>' +
+                  '    <div class="vf-progress-track"><div class="vf-progress-fill" id="vf-progress-fill"></div></div>' +
+                  '    <div class="vf-summary-list" id="vf-summary-list"></div>' +
+                  '  </div>'
+                : '';
             var bodyHtml =
                 '<div class="vf-drawer-body">' +
                 '  <div class="vf-drawer-options"></div>' +
-                '  <div class="vf-drawer-summary">' +
-                '    <div class="vf-summary-head">' +
-                '      <span class="vf-summary-title">선택한 액상</span>' +
-                '      <span class="vf-summary-count" id="vf-summary-count">0</span>' +
-                '    </div>' +
-                '    <div class="vf-progress-track"><div class="vf-progress-fill" id="vf-progress-fill"></div></div>' +
-                '    <div class="vf-summary-list" id="vf-summary-list"></div>' +
-                '  </div>' +
+                summaryHtml +
                 '</div>';
             $cartForm.find('.vf-drawer-header').after(bodyHtml);
-            $ppomWrapper.appendTo($cartForm.find('.vf-drawer-options'));
+            if ($originalContent) $originalContent.appendTo($cartForm.find('.vf-drawer-options'));
         }
 
         if (!$cartForm.find('.vf-drawer-actions').length) {
@@ -601,8 +611,10 @@ function vf_ppom_drawer_js() {
 
         $cartForm.attr({ role: 'dialog', 'aria-modal': 'true', 'aria-hidden': 'true' });
 
-        // 여기까지 왔다는 건 이 상품에 실제 PPOM 옵션이 있다는 뜻 -> 트리거 바 노출
+        // 여기까지 왔다는 건 이 상품에 실제 구매 폼(form.cart)이 있다는 뜻 -> 트리거 바 노출
+        // (PPOM 맛 선택 상품이든 단순 수량 상품이든 동일하게 노출)
         $triggerBar.addClass('is-visible');
+        $triggerBtn.text(hasFlavorPicker ? '맛 선택 / 구매하기' : '구매하기');
 
         // --- 열기 / 닫기 ---
         function openDrawer() {
@@ -821,7 +833,13 @@ function vf_ppom_drawer_js() {
 
             var flavorConditionMet, ratio, countLabel, blockedLabel;
 
-            if (RULE_MODE === 'multiple') {
+            if (!hasFlavorPicker) {
+                // 맛 선택 자체가 없는 단순 수량 상품 - 병수 조건이 적용될 여지가 없으니 항상 통과
+                flavorConditionMet = true;
+                ratio = 1;
+                countLabel = '';
+                blockedLabel = '';
+            } else if (RULE_MODE === 'multiple') {
                 // "5병 단위로만 구매 가능" 같은 상품: 정확히 N의 배수여야 함 (5는 되고 6은 안 됨)
                 var remainder = totalBottles % RULE_VALUE;
                 flavorConditionMet = totalBottles > 0 && remainder === 0;
