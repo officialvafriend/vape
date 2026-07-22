@@ -752,11 +752,14 @@ function vf_ppom_drawer_js() {
                     var qty = parseInt(elementValue($el), 10);
                     if (!qty || qty < 0) return;
 
-                    // 수량 요소 자체는 제목이 없을 가능성이 높으므로, 텍스트가 충분히 긴(제목이 포함된)
-                    // 조상 요소를 찾는다
+                    // 수량 요소 자체는 제목이 없을 가능성이 높으므로, 한글이 포함된(제목이 들어있는)
+                    // 조상 요소를 찾는다. 실제 마크업이 예상보다 훨씬 깊게 중첩돼 있었으므로
+                    // (6단계/글자수 기준으로는 제목까지 못 올라갔음) 훨씬 넉넉하게 $cartForm까지 올려보고,
+                    // "글자 수"가 아니라 "한글이 등장하는 순간"을 기준으로 멈춘다 (숫자/기호에는 한글이 없으므로
+                    // 제목이 포함되자마자 정확히 그 레벨에서 멈추고, 다른 항목과 섞이기 전에 멈출 수 있다).
                     var $card = $el.parent();
-                    for (var i = 0; i < 6 && $card.length && !$card.is($ppomWrapper); i++) {
-                        if ($card.text().trim().length > 15) break;
+                    for (var i = 0; i < 25 && $card.length && !$card.is($cartForm); i++) {
+                        if (/[가-힣]{2,}/.test($card.text())) break;
                         $card = $card.parent();
                     }
                     // "첫 번째 자식 요소"가 아니라, 카드를 복제해서 삭제(×)/수량 위젯(−, 숫자, +)/가격을
