@@ -497,6 +497,9 @@ function vf_ppom_drawer_js() {
 
         if ($(window).width() >= 768) return; // 데스크톱은 기존 UI 그대로 사용
 
+        // 액상 "맛" 필드를 가리키는 문구 패턴 (필요 수량 규칙도 이 패턴에서 추출한다)
+        var QUANTITY_FIELD_PATTERN = /(\d+)\s*병\s*단위|(\d+)\s*(?:가지|종|개입|병입)/;
+
         // 필요 수량 규칙 감지
         // 1) 상품 메타에 수동으로 값을 넣었으면 "최소 N개 이상" 규칙으로 최우선 사용
         // 2) 없으면 PPOM 필드 문구에서 자동 추출:
@@ -525,12 +528,18 @@ function vf_ppom_drawer_js() {
         var RULE_MODE = MANUAL_REQUIRED_QTY > 0 ? 'atleast' : DETECTED_RULE.mode;
         var RULE_VALUE = MANUAL_REQUIRED_QTY > 0 ? MANUAL_REQUIRED_QTY : DETECTED_RULE.value;
 
-        // 상품이 워낙 많고 문구도 제각각이라 위 두 패턴으로 못 잡는 경우가 있을 수 있다.
+        // 자동으로 감지된 규칙이면, "그 규칙 문구가 실제로 붙어있는 필드에서 나온 항목만"
+        // 병수로 세고(화이트리스트), 그 외 필드(이벤트/기획/팟,코일 등)에서 나온 항목은 전부 제외한다.
+        // 수동으로 값을 덮어쓴 경우엔 특정 필드가 없으므로 기존처럼 블랙리스트 방식을 쓴다.
+        var RULE_IS_FIELD_SPECIFIC = MANUAL_REQUIRED_QTY <= 0 && DETECTED_RULE.mode !== 'none';
+
+        // 상품이 워낙 많고 문구도 제각각이라 위 패턴으로 못 잡는 경우가 있을 수 있다.
         // 그런 상품은 상품 편집 화면의 "서랍장 필수 선택 수량"에 값을 넣어 수동으로 덮어쓰면 된다.
 
-        // 이벤트/세트 자체를 고르는 필드(예: "OO 3+1 묶음 이벤트")는 그 자체가 "병"이 아니라
-        // 패키지 1개를 고르는 선택이므로, 병수 합산에서는 제외한다.
-        var BUNDLE_PICKER_PATTERN = /이벤트|묶음|세트|번들|기획|패키지/;
+        // 블랙리스트 방식(수동 설정이거나 규칙을 아예 못 찾았을 때)에서 제외할 필드:
+        // 이벤트/세트/기획 패키지 자체를 고르는 필드, "팟, 코일" 같은 기기 액세서리 필드 등
+        // 액상 맛이 아닌 것은 병수에서 제외한다.
+        var BUNDLE_PICKER_PATTERN = /이벤트|묶음|세트|번들|기획|패키지|팟|코일|기기|배터리|충전|무화기|카트리지/;
 
         // 실제 사이트에서 병수 감지가 정확한 것을 확인함 (3+1/기획 상품 제외, 5의 배수 조건 모두 정상).
         // 만약 다른 상품에서 또 오작동하면 즉시 false로 내려서 구매 버튼부터 살릴 것.
@@ -677,6 +686,18 @@ function vf_ppom_drawer_js() {
             return text.trim();
         }
 
+        // cleanLabelText와 반대로, 콜론 앞쪽의 "필드 이름"만 뽑아낸다.
+        // 예: "팟, 코일 *: GTI 코일" -> "팟, 코일"  /  "5병 단위로만 구매 가능 하십니다: 화이트 아웃 체리" -> "5병 단위로만 구매 가능 하십니다"
+        // 어떤 필드에서 나온 항목인지 판단할 때 쓴다 (선택된 값 자체가 아니라 필드 이름으로 판단해야
+        // "GTI 코일"처럼 필드와 무관해 보이는 값이 잘못 통과되는 걸 막을 수 있다).
+        function extractFieldLabel(raw) {
+            var text = (raw || '').replace(/\*/g, '');
+            if (text.indexOf(':') === -1) return text.trim();
+            var parts = text.split(':');
+            parts.pop();
+            return parts.join(':').trim();
+        }
+
         // PPOM이 항목 삭제용으로 넣는 "×" 아이콘을 클래스명과 무관하게 찾아서 스타일 적용
         function tagRemoveButtons() {
             $ppomWrapper.find('*').filter(function () {
@@ -745,11 +766,19 @@ function vf_ppom_drawer_js() {
                     }).remove();
                     var titleSource = $cardClone.text();
                     var name = cleanLabelText(titleSource) || '선택 항목';
+                    var fieldLabel = extractFieldLabel(titleSource);
 
                     selectedMap[name] = (selectedMap[name] || 0) + qty;
 
-                    // "OO 묶음 이벤트" 같은 패키지 선택 자체는 목록에는 보이되 병수로는 세지 않음
-                    if (!BUNDLE_PICKER_PATTERN.test(name)) {
+                    // 어느 필드에서 나온 항목인지로 병수 포함 여부를 판단한다.
+                    // - 자동 감지된 규칙이 있으면: "그 규칙 문구가 붙은 필드"에서 나온 항목만 병수로 인정
+                    //   (이벤트/기획/팟,코일 같은 다른 필드에서 나온 건 선택값이 뭐든 상관없이 제외)
+                    // - 그 외(수동 설정/규칙 없음)에는 필드 이름 자체가 이벤트/기획/액세서리 종류가 아닐 때만 포함
+                    var countsAsBottle = RULE_IS_FIELD_SPECIFIC
+                        ? QUANTITY_FIELD_PATTERN.test(fieldLabel)
+                        : !BUNDLE_PICKER_PATTERN.test(fieldLabel || name);
+
+                    if (countsAsBottle) {
                         totalBottles += qty;
                     }
                 });
