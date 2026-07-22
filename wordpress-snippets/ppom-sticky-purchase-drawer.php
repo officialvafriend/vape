@@ -517,6 +517,12 @@ function vf_ppom_drawer_js() {
         // 패키지 1개를 고르는 선택이므로, 병수 합산에서는 제외한다.
         var BUNDLE_PICKER_PATTERN = /이벤트|묶음|세트|번들/;
 
+        // [긴급 안전장치] 병수 감지가 실제 사이트 마크업과 안 맞아 구매 버튼을 잘못 막는 사고를
+        // 막기 위해, 지금은 "병수 조건 충족 여부와 무관하게 버튼은 항상 눌리게" 해둔다.
+        // 요약/진행률 표시는 참고용으로만 계속 보여주고, 실제 구매를 막지는 않는다.
+        // -> 병수 감지 로직을 정확히 고친 뒤에만 true로 바꿀 것.
+        var GATE_ENABLED = false;
+
         var $overlay = $('#vf-drawer-overlay');
         var $triggerBar = $('#vf-sticky-trigger-bar');
         var $triggerBtn = $('#vf-trigger-mobile-drawer');
@@ -728,14 +734,15 @@ function vf_ppom_drawer_js() {
 
             var required = REQUIRED_QTY > 0 ? REQUIRED_QTY : 1;
             var ratio = Math.min(totalBottles / required, 1);
-            var isReady = REQUIRED_QTY > 0 ? totalBottles >= required : totalBottles > 0;
+            var meetsCondition = REQUIRED_QTY > 0 ? totalBottles >= required : totalBottles > 0;
+            var isReady = GATE_ENABLED ? meetsCondition : true;
 
-            $('#vf-progress-fill').css('width', (ratio * 100) + '%').toggleClass('is-ready', isReady);
+            $('#vf-progress-fill').css('width', (ratio * 100) + '%').toggleClass('is-ready', meetsCondition);
             $('#vf-summary-count')
-                .toggleClass('is-ready', isReady)
+                .toggleClass('is-ready', meetsCondition)
                 .text(REQUIRED_QTY > 0 ? (totalBottles + ' / ' + required) : totalBottles);
 
-            // 활성화 여부뿐 아니라 "왜" 안 눌리는지를 버튼 문구로 직접 알려준다
+            // 활성화 여부뿐 아니라 "왜" 안 눌리는지를 버튼 문구로 직접 알려준다 (GATE_ENABLED일 때만)
             var missing = Math.max(required - totalBottles, 0);
             var blockedLabel = REQUIRED_QTY > 0
                 ? (missing + '병 더 담아주세요')
