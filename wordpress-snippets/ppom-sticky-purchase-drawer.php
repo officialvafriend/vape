@@ -127,9 +127,10 @@ function vf_ppom_drawer_css() {
             position: fixed !important;
             left: 0 !important;
             bottom: 0 !important;
+            top: max(72px, 14vh) !important;
             width: 100% !important;
-            height: 85vh !important;
-            max-height: 85vh !important;
+            height: auto !important;
+            max-height: none !important;
             background: #ffffff !important;
             z-index: 99998 !important;
             box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.2) !important;
@@ -676,7 +677,11 @@ function vf_ppom_drawer_js() {
             // PPOM이 선택 항목마다 만드는 수량(+/-) 박스를 우선 집계
             // (드롭다운은 항목을 추가하고 나면 다시 "선택해주세요"로 리셋되기 때문에,
             //  실제 담긴 병 수는 드롭다운 값이 아니라 아래에 쌓인 항목의 수량 스테퍼에서 읽어야 정확하다)
-            var $qtyInputs = $ppomWrapper.find('.quantity input.qty, input[type="number"]').filter(':visible');
+            // 클래스명/타입을 알 수 없으므로 "숫자만 들어있는 보이는 input"을 전부 수량으로 간주한다
+            var $qtyInputs = $ppomWrapper.find('input').filter(function () {
+                var v = ($(this).val() || '').toString().trim();
+                return /^\d+$/.test(v) && $(this).is(':visible');
+            });
 
             if ($qtyInputs.length) {
                 $qtyInputs.each(function () {
@@ -684,7 +689,7 @@ function vf_ppom_drawer_js() {
                     var qty = parseInt($input.val(), 10);
                     if (!qty || qty < 0) return;
 
-                    var $row = $input.closest('.quantity').length ? $input.closest('.quantity').parent() : $input.parent();
+                    var $row = $input.closest('.quantity').length ? $input.closest('.quantity').parent() : $input.closest('div');
                     var titleSource = $row.children().first().length ? $row.children().first().text() : $row.text();
                     var name = cleanLabelText(titleSource) || '선택 항목';
 
@@ -748,7 +753,13 @@ function vf_ppom_drawer_js() {
                 .toggleClass('vf-btn-disabled', !isReady);
         }
 
-        $cartForm.on('change keyup click', '.ppom-wrapper select, .ppom-wrapper input', updateSummary);
+        // PPOM이 +/- 를 button/a/input 중 무엇으로 만들었는지 알 수 없으므로,
+        // 위임 선택자 대신 ppom-wrapper에 직접 바인딩해서 내부에서 버블링되는 모든
+        // 클릭/입력 이벤트를 잡는다
+        $ppomWrapper.on('click input change keyup', updateSummary);
+
+        // PPOM이 자체 스크립트로 값만 바꾸고 별도 이벤트를 안 쏘는 경우를 대비한 안전망
+        setInterval(updateSummary, 500);
 
         updateSummary();
     });
