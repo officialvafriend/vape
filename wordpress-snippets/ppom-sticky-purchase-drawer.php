@@ -497,31 +497,44 @@ function vf_ppom_drawer_js() {
 
         if ($(window).width() >= 768) return; // 데스크톱은 기존 UI 그대로 사용
 
-        // 필수 선택 수량 감지
-        // 1) 상품 메타에 수동으로 값을 넣었으면 그 값을 최우선으로 사용
-        // 2) 없으면 "4가지 맛을 골라주세요", "13종" 같은 PPOM 필드 라벨 문구에서 자동으로 숫자를 추출
-        function detectRequiredQtyFromLabels() {
+        // 필요 수량 규칙 감지
+        // 1) 상품 메타에 수동으로 값을 넣었으면 "최소 N개 이상" 규칙으로 최우선 사용
+        // 2) 없으면 PPOM 필드 문구에서 자동 추출:
+        //    - "5병 단위로만 구매 가능" 처럼 "단위"가 붙으면 -> 정확히 N의 배수여야 함
+        //    - "4가지 맛을 골라주세요", "13종" 처럼 일반 문구면 -> 최소 N개 이상
+        function detectQuantityRule() {
             var text = $ppomWrapper.text();
+
+            var unitMatch = text.match(/(\d+)\s*병\s*단위/);
+            if (unitMatch) {
+                return { mode: 'multiple', value: parseInt(unitMatch[1], 10) };
+            }
+
             var max = 0;
             var re = /(\d+)\s*(?:가지|종|개입|병입)/g;
             var m;
             while ((m = re.exec(text)) !== null) {
                 max = Math.max(max, parseInt(m[1], 10));
             }
-            return max;
+            if (max > 0) return { mode: 'atleast', value: max };
+
+            return { mode: 'none', value: 0 };
         }
         var MANUAL_REQUIRED_QTY = (window.vfDrawerConfig && window.vfDrawerConfig.requiredQty) || 0;
-        var REQUIRED_QTY = MANUAL_REQUIRED_QTY > 0 ? MANUAL_REQUIRED_QTY : detectRequiredQtyFromLabels();
+        var DETECTED_RULE = detectQuantityRule();
+        var RULE_MODE = MANUAL_REQUIRED_QTY > 0 ? 'atleast' : DETECTED_RULE.mode;
+        var RULE_VALUE = MANUAL_REQUIRED_QTY > 0 ? MANUAL_REQUIRED_QTY : DETECTED_RULE.value;
+
+        // 상품이 워낙 많고 문구도 제각각이라 위 두 패턴으로 못 잡는 경우가 있을 수 있다.
+        // 그런 상품은 상품 편집 화면의 "서랍장 필수 선택 수량"에 값을 넣어 수동으로 덮어쓰면 된다.
 
         // 이벤트/세트 자체를 고르는 필드(예: "OO 3+1 묶음 이벤트")는 그 자체가 "병"이 아니라
         // 패키지 1개를 고르는 선택이므로, 병수 합산에서는 제외한다.
         var BUNDLE_PICKER_PATTERN = /이벤트|묶음|세트|번들/;
 
-        // [긴급 안전장치] 병수 감지가 실제 사이트 마크업과 안 맞아 구매 버튼을 잘못 막는 사고를
-        // 막기 위해, 지금은 "병수 조건 충족 여부와 무관하게 버튼은 항상 눌리게" 해둔다.
-        // 요약/진행률 표시는 참고용으로만 계속 보여주고, 실제 구매를 막지는 않는다.
-        // -> 병수 감지 로직을 정확히 고친 뒤에만 true로 바꿀 것.
-        var GATE_ENABLED = false;
+        // 병수 감지를 tag-agnostic 방식(아래 findQuantityElements)으로 다시 짰으므로 활성화.
+        // 만약 또 오작동하면 즉시 false로 내려서 구매 버튼부터 살릴 것.
+        var GATE_ENABLED = true;
 
         var $overlay = $('#vf-drawer-overlay');
         var $triggerBar = $('#vf-sticky-trigger-bar');
@@ -683,20 +696,42 @@ function vf_ppom_drawer_js() {
             // PPOM이 선택 항목마다 만드는 수량(+/-) 박스를 우선 집계
             // (드롭다운은 항목을 추가하고 나면 다시 "선택해주세요"로 리셋되기 때문에,
             //  실제 담긴 병 수는 드롭다운 값이 아니라 아래에 쌓인 항목의 수량 스테퍼에서 읽어야 정확하다)
-            // 클래스명/타입을 알 수 없으므로 "숫자만 들어있는 보이는 input"을 전부 수량으로 간주한다
-            var $qtyInputs = $ppomWrapper.find('input').filter(function () {
-                var v = ($(this).val() || '').toString().trim();
-                return /^\d+$/.test(v) && $(this).is(':visible');
+            //
+            // 클래스명/태그를 알 수 없으므로(input일 수도, span/div일 수도 있음) 태그에 의존하지 않고
+            // "숫자 하나만 들어있고, 바로 옆(앞/뒤)에 −/+ 처럼 보이는 요소가 붙어 있는" 화면상 패턴으로 찾는다
+            function elementValue($el) {
+                return $el.is('input, textarea') ? ($el.val() || '') : $el.text();
+            }
+            var MINUS_RE = /^[-−–]$/;
+            var PLUS_RE = /^[+＋]$/;
+
+            var $qtyElements = $ppomWrapper.find('*').filter(function () {
+                var $el = $(this);
+                if ($el.children().length && !$el.is('input, textarea')) return false; // 리프 노드만
+                if (!$el.is(':visible')) return false;
+
+                var v = elementValue($el).toString().trim();
+                if (!/^\d+$/.test(v)) return false;
+
+                var prevText = $el.prev().length ? elementValue($el.prev()).toString().trim() : '';
+                var nextText = $el.next().length ? elementValue($el.next()).toString().trim() : '';
+                return MINUS_RE.test(prevText) || PLUS_RE.test(nextText);
             });
 
-            if ($qtyInputs.length) {
-                $qtyInputs.each(function () {
-                    var $input = $(this);
-                    var qty = parseInt($input.val(), 10);
+            if ($qtyElements.length) {
+                $qtyElements.each(function () {
+                    var $el = $(this);
+                    var qty = parseInt(elementValue($el), 10);
                     if (!qty || qty < 0) return;
 
-                    var $row = $input.closest('.quantity').length ? $input.closest('.quantity').parent() : $input.closest('div');
-                    var titleSource = $row.children().first().length ? $row.children().first().text() : $row.text();
+                    // 수량 요소 자체는 제목이 없을 가능성이 높으므로, 텍스트가 충분히 긴(제목이 포함된)
+                    // 조상 요소를 찾아 그 첫 줄을 항목 이름으로 사용한다
+                    var $card = $el.parent();
+                    for (var i = 0; i < 6 && $card.length && !$card.is($ppomWrapper); i++) {
+                        if ($card.text().trim().length > 15) break;
+                        $card = $card.parent();
+                    }
+                    var titleSource = $card.children().first().length ? $card.children().first().text() : $card.text();
                     var name = cleanLabelText(titleSource) || '선택 항목';
 
                     selectedMap[name] = (selectedMap[name] || 0) + qty;
@@ -732,21 +767,34 @@ function vf_ppom_drawer_js() {
                 $list.append('<div class="vf-summary-empty">맛을 선택하면<br>여기에 내역이 쌓입니다.</div>');
             }
 
-            var required = REQUIRED_QTY > 0 ? REQUIRED_QTY : 1;
-            var ratio = Math.min(totalBottles / required, 1);
-            var meetsCondition = REQUIRED_QTY > 0 ? totalBottles >= required : totalBottles > 0;
+            var meetsCondition, ratio, countLabel, blockedLabel;
+
+            if (RULE_MODE === 'multiple') {
+                // "5병 단위로만 구매 가능" 같은 상품: 정확히 N의 배수여야 함 (5는 되고 6은 안 됨)
+                var remainder = totalBottles % RULE_VALUE;
+                meetsCondition = totalBottles > 0 && remainder === 0;
+                ratio = meetsCondition ? 1 : remainder / RULE_VALUE;
+                countLabel = totalBottles + '병 (' + RULE_VALUE + '의 배수)';
+                blockedLabel = totalBottles === 0
+                    ? '맛을 선택해주세요'
+                    : (RULE_VALUE - remainder) + '병 더 담아서 ' + RULE_VALUE + '의 배수로 맞춰주세요';
+            } else if (RULE_MODE === 'atleast') {
+                meetsCondition = totalBottles >= RULE_VALUE;
+                ratio = Math.min(totalBottles / RULE_VALUE, 1);
+                countLabel = totalBottles + ' / ' + RULE_VALUE;
+                var missing = Math.max(RULE_VALUE - totalBottles, 0);
+                blockedLabel = missing > 0 ? (missing + '병 더 담아주세요') : '맛을 선택해주세요';
+            } else {
+                meetsCondition = totalBottles > 0;
+                ratio = meetsCondition ? 1 : 0;
+                countLabel = String(totalBottles);
+                blockedLabel = '맛을 선택해주세요';
+            }
+
             var isReady = GATE_ENABLED ? meetsCondition : true;
 
             $('#vf-progress-fill').css('width', (ratio * 100) + '%').toggleClass('is-ready', meetsCondition);
-            $('#vf-summary-count')
-                .toggleClass('is-ready', meetsCondition)
-                .text(REQUIRED_QTY > 0 ? (totalBottles + ' / ' + required) : totalBottles);
-
-            // 활성화 여부뿐 아니라 "왜" 안 눌리는지를 버튼 문구로 직접 알려준다 (GATE_ENABLED일 때만)
-            var missing = Math.max(required - totalBottles, 0);
-            var blockedLabel = REQUIRED_QTY > 0
-                ? (missing + '병 더 담아주세요')
-                : '맛을 선택해주세요';
+            $('#vf-summary-count').toggleClass('is-ready', meetsCondition).text(countLabel);
 
             $actionBtns.each(function () {
                 var $el = $(this);
