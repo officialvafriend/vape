@@ -786,10 +786,10 @@ function vf_ppom_drawer_js() {
                 var remainder = totalBottles % RULE_VALUE;
                 meetsCondition = totalBottles > 0 && remainder === 0;
                 ratio = meetsCondition ? 1 : remainder / RULE_VALUE;
-                countLabel = totalBottles + '병 (' + RULE_VALUE + '의 배수)';
+                countLabel = totalBottles + '병 (' + RULE_VALUE + '병 단위)';
                 blockedLabel = totalBottles === 0
                     ? '맛을 선택해주세요'
-                    : (RULE_VALUE - remainder) + '병 더 담아서 ' + RULE_VALUE + '의 배수로 맞춰주세요';
+                    : (RULE_VALUE - remainder) + '병 더 담아서 ' + RULE_VALUE + '병 단위로 맞춰주세요';
             } else if (RULE_MODE === 'atleast') {
                 meetsCondition = totalBottles >= RULE_VALUE;
                 ratio = Math.min(totalBottles / RULE_VALUE, 1);
