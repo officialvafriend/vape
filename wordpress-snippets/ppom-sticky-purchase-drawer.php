@@ -735,11 +735,21 @@ function vf_ppom_drawer_js() {
         }
 
         // PPOM 드롭다운은 맛을 하나 담고 나면 다시 "선택해주세요"로 리셋되는데, 그 select에
-        // 브라우저 자체 required 속성이 그대로 남아있어서 4개를 다 담아도 "필수 입력" 경고에
-        // 막혀 제출이 안 되는 문제가 있었다. 실제 검증(몇 병 담았는지)은 우리 쪽 버튼 활성화
-        // 로직이 이미 하고 있으므로, 네이티브 required는 걸림돌만 되니 꺼둔다.
+        // required가 그대로 남아있어서 4개를 다 담아도 "필수 입력" 경고에 막혀 제출이 안 되는
+        // 문제가 있었다. 실제 검증(몇 병 담았는지)은 우리 쪽 버튼 활성화 로직이 이미 하고
+        // 있으므로, required는 걸림돌만 되니 꺼둔다. .ppom-wrapper 안으로 범위를 좁혔던 게
+        // 놓친 필드가 있었을 수 있어 $cartForm 전체로 넓히고, prop/attr/aria-required를 모두 끈다.
+        $cartForm.attr('novalidate', 'novalidate');
         function disableNativeRequiredValidation() {
-            $ppomWrapper.find('select[required], input[required]').prop('required', false);
+            $cartForm.find('[required]').each(function () {
+                var $el = $(this);
+                $el.prop('required', false).removeAttr('required').removeAttr('aria-required');
+                // 이 사이트가 jQuery Validation Plugin류를 쓰고 있다면, DOM 속성만 지워선
+                // 안 되고 플러그인 내부에 등록된 규칙도 같이 지워야 한다 (그 플러그인의 공식 API).
+                if (typeof $el.rules === 'function') {
+                    try { $el.rules('remove', 'required'); } catch (e) { /* 이 라이브러리가 아니면 무시 */ }
+                }
+            });
         }
 
         // --- 선택 내역 요약 + 필수 수량 기반 버튼 활성화 ---
