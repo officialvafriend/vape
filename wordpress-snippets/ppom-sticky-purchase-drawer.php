@@ -535,20 +535,41 @@ function vf_ppom_drawer_js() {
         // 상품이 워낙 많고 문구도 제각각이라 위 패턴으로 못 잡는 경우가 있을 수 있다.
         // 그런 상품은 상품 편집 화면의 "서랍장 필수 선택 수량"에 값을 넣어 수동으로 덮어쓰면 된다.
 
-        // 실제 결제 금액이 걸려있는 "이벤트/묶음/기획 패키지" 선택 필드. 액상 맛만 담고 이 필드를
-        // 빼먹으면 그 상품은 0원짜리 항목만 장바구니에 들어가 0원 결제 사고로 이어지므로,
-        // 이 필드가 이 상품에 있으면 반드시 선택해야만 구매 버튼이 활성화되게 강제한다.
-        var REQUIRED_PACKAGE_PATTERN = /이벤트|묶음|세트|번들|기획|패키지/;
+        // 실제 결제 금액이 걸려있는 "이벤트/묶음/기획 패키지"나, 기기 색상처럼 반드시 골라야
+        // 배송이 가능한 필드. 액상 맛만 담고 이런 필드를 빼먹으면 0원 결제 사고로 이어지거나
+        // 어떤 색상/모델을 보내야 할지 알 수 없게 되므로, 이런 필드가 있으면 각각 반드시
+        // 하나씩 선택해야만 구매 버튼이 활성화되게 강제한다.
+        var REQUIRED_PACKAGE_PATTERN = /이벤트|묶음|세트|번들|기획|패키지|기기/;
 
-        // 액상 맛은 아니지만 필수까지는 아닌 기기 액세서리류(팟, 코일 등) - 병수에서만 제외
-        var ACCESSORY_PATTERN = /팟|코일|기기|배터리|충전|무화기|카트리지/;
+        // 액상 맛도 아니고 필수도 아닌 기기 액세서리류(팟, 코일 등) - 병수에서만 제외
+        var ACCESSORY_PATTERN = /팟|코일|배터리|충전|무화기|카트리지/;
 
         // 병수 계산 시 제외할 필드 이름 패턴 (아래에서 항목마다 필드 이름을 이 패턴과 대조한다)
         var BUNDLE_PICKER_PATTERN = new RegExp(REQUIRED_PACKAGE_PATTERN.source + '|' + ACCESSORY_PATTERN.source);
 
-        // 이 상품에 "이벤트/묶음/기획 패키지" 필드가 실제로 존재하는지 (정적 라벨 텍스트로 판단,
-        // 아직 아무것도 선택하지 않은 상태에서도 라벨은 항상 보이므로 안정적으로 감지 가능)
-        var HAS_REQUIRED_PACKAGE_FIELD = REQUIRED_PACKAGE_PATTERN.test($ppomWrapper.text());
+        // 이 상품에 이벤트/기획/기기색상처럼 "각각 하나씩 반드시 골라야 하는" 필드가 몇 개나
+        // 있는지 미리 파악해둔다. PPOM 자체의 required 표시(별표)에 의존하지 않고 - "기기"
+        // 색상 필드처럼 PPOM에선 필수로 안 걸려있어도 우리 쪽에서 반드시 요구해야 하는 경우가
+        // 있어서 - REQUIRED_PACKAGE_PATTERN에 걸리는 필드는 전부 대상으로 본다. 필드마다
+        // 이름이 다르므로(이벤트 필드 vs 기기색상 필드), 하나만 고르고 넘어가지 않도록
+        // "이 패턴에 걸리는 서로 다른 필드 이름이 몇 개인지" 개수로 비교한다.
+        function detectRequiredPackageFieldLabels() {
+            var labels = {};
+            $cartForm.find('select').each(function () {
+                var $card = $(this).parent();
+                for (var i = 0; i < 25 && $card.length && !$card.is($cartForm); i++) {
+                    if (/[가-힣]{2,}/.test($card.text())) break;
+                    $card = $card.parent();
+                }
+                var $clone = $card.clone();
+                $clone.find('select').remove();
+                var label = cleanLabelText($clone.text());
+                if (REQUIRED_PACKAGE_PATTERN.test(label)) labels[label] = true;
+            });
+            return labels;
+        }
+        var REQUIRED_PACKAGE_FIELD_LABELS = detectRequiredPackageFieldLabels();
+        var REQUIRED_PACKAGE_FIELD_COUNT = Object.keys(REQUIRED_PACKAGE_FIELD_LABELS).length;
 
         // 실제 사이트에서 병수 감지가 정확한 것을 확인함 (3+1/기획 상품 제외, 5의 배수 조건 모두 정상).
         // 만약 다른 상품에서 또 오작동하면 즉시 false로 내려서 구매 버튼부터 살릴 것.
@@ -760,7 +781,7 @@ function vf_ppom_drawer_js() {
 
             var selectedMap = {};
             var totalBottles = 0;
-            var packageFieldSelected = false;
+            var packageFieldsSelected = {}; // 이벤트/기획/기기색상처럼 필수인 필드별로 선택 여부를 따로 기록
 
             // PPOM이 선택 항목마다 만드는 수량(+/-) 박스를 우선 집계
             // (드롭다운은 항목을 추가하고 나면 다시 "선택해주세요"로 리셋되기 때문에,
@@ -818,10 +839,11 @@ function vf_ppom_drawer_js() {
 
                     selectedMap[name] = (selectedMap[name] || 0) + qty;
 
-                    // 실제 결제 금액이 걸린 이벤트/묶음/기획 패키지 필드에서 나온 항목인지 기록
+                    // 실제 결제 금액이 걸린 이벤트/묶음/기획 패키지나 기기색상처럼 필수인
+                    // 필드에서 나온 항목인지, 어느 필드인지까지 구분해서 기록한다.
                     // (액세서리 필드는 여기 포함 안 시킴 - 필수가 아니므로)
                     if (REQUIRED_PACKAGE_PATTERN.test(fieldLabel)) {
-                        packageFieldSelected = true;
+                        packageFieldsSelected[fieldLabel] = true;
                     }
 
                     // 어느 필드에서 나온 항목인지로 병수 포함 여부를 판단한다: 필드 이름이
@@ -898,11 +920,12 @@ function vf_ppom_drawer_js() {
                 blockedLabel = '맛을 선택해주세요';
             }
 
-            // 액상 조건을 다 채워도, 실제 결제 금액이 걸린 이벤트/묶음/기획 패키지를
-            // 선택하지 않았으면 여전히 막는다 (안 그러면 액상만 담고 0원으로 결제되는 사고가 남)
-            var needsPackage = HAS_REQUIRED_PACKAGE_FIELD && !packageFieldSelected;
+            // 액상 조건을 다 채워도, 이벤트/기획 패키지나 기기색상처럼 필수인 필드를 하나라도
+            // 안 골랐으면 여전히 막는다 (필드가 여러 개면 그중 하나만 고르고 넘어가지 않도록,
+            // "몇 개나 있는지"와 "몇 개나 실제로 선택했는지"를 개수로 비교한다)
+            var needsPackage = Object.keys(packageFieldsSelected).length < REQUIRED_PACKAGE_FIELD_COUNT;
             if (flavorConditionMet && needsPackage) {
-                blockedLabel = '이벤트/기획 상품을 먼저 선택해주세요';
+                blockedLabel = '이벤트/기획/기기 옵션을 모두 선택해주세요';
             }
 
             var meetsCondition = flavorConditionMet && !needsPackage;
