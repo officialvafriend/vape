@@ -541,6 +541,10 @@ function vf_ppom_drawer_js() {
         // 하나씩 선택해야만 구매 버튼이 활성화되게 강제한다.
         var REQUIRED_PACKAGE_PATTERN = /이벤트|묶음|세트|번들|기획|패키지|기기/;
 
+        // "3+1 묶음 이벤트"를 3개 담으면(세트를 3개 사면) 액상도 3배(4병 -> 12병)가 필요해진다.
+        // "기기"는 색상/모델 선택일 뿐 세트 개수가 아니므로 배수 계산에서는 제외한다.
+        var MULTIPLIER_PACKAGE_PATTERN = /이벤트|묶음|세트|번들|기획|패키지/;
+
         // 액상 맛도 아니고 필수도 아닌 기기 액세서리류(팟, 코일 등) - 병수에서만 제외
         var ACCESSORY_PATTERN = /팟|코일|배터리|충전|무화기|카트리지/;
 
@@ -782,6 +786,7 @@ function vf_ppom_drawer_js() {
             var selectedMap = {};
             var totalBottles = 0;
             var packageFieldsSelected = {}; // 이벤트/기획/기기색상처럼 필수인 필드별로 선택 여부를 따로 기록
+            var packageMultiplierQty = 0; // "3+1 이벤트"를 몇 세트 담았는지 (액상 필요 수량에 곱해짐)
 
             // PPOM이 선택 항목마다 만드는 수량(+/-) 박스를 우선 집계
             // (드롭다운은 항목을 추가하고 나면 다시 "선택해주세요"로 리셋되기 때문에,
@@ -845,6 +850,10 @@ function vf_ppom_drawer_js() {
                     if (REQUIRED_PACKAGE_PATTERN.test(fieldLabel)) {
                         packageFieldsSelected[fieldLabel] = true;
                     }
+                    // "3+1 이벤트"를 몇 세트 담았는지 (기기색상 수량은 세트 수가 아니므로 제외)
+                    if (MULTIPLIER_PACKAGE_PATTERN.test(fieldLabel)) {
+                        packageMultiplierQty += qty;
+                    }
 
                     // 어느 필드에서 나온 항목인지로 병수 포함 여부를 판단한다: 필드 이름이
                     // 이벤트/묶음/세트/번들/기획/패키지/팟/코일/기기 등에 해당하지 않으면 액상 맛
@@ -885,6 +894,10 @@ function vf_ppom_drawer_js() {
 
             var flavorConditionMet, ratio, countLabel, blockedLabel;
 
+            // "3+1 이벤트"를 3세트 담았으면 필요한 액상도 3배가 된다 (기본 4병 -> 12병).
+            // 이벤트/묶음 필드가 없는 상품은 packageMultiplierQty가 0이라 그냥 1배로 취급한다.
+            var RULE_VALUE_SCALED = RULE_VALUE * Math.max(packageMultiplierQty, 1);
+
             if (!hasFlavorPicker) {
                 // 맛 선택 자체가 없는 단순 수량 상품 - 병수 조건이 적용될 여지가 없으니 항상 통과
                 flavorConditionMet = true;
@@ -893,23 +906,23 @@ function vf_ppom_drawer_js() {
                 blockedLabel = '';
             } else if (RULE_MODE === 'multiple') {
                 // "5병 단위로만 구매 가능" 같은 상품: 정확히 N의 배수여야 함 (5는 되고 6은 안 됨)
-                var remainder = totalBottles % RULE_VALUE;
+                var remainder = totalBottles % RULE_VALUE_SCALED;
                 flavorConditionMet = totalBottles > 0 && remainder === 0;
-                ratio = flavorConditionMet ? 1 : remainder / RULE_VALUE;
-                countLabel = totalBottles + '병 (' + RULE_VALUE + '병 단위)';
+                ratio = flavorConditionMet ? 1 : remainder / RULE_VALUE_SCALED;
+                countLabel = totalBottles + '병 (' + RULE_VALUE_SCALED + '병 단위)';
                 blockedLabel = totalBottles === 0
                     ? '맛을 선택해주세요'
-                    : (RULE_VALUE - remainder) + '병 더 담아서 ' + RULE_VALUE + '병 단위로 맞춰주세요';
+                    : (RULE_VALUE_SCALED - remainder) + '병 더 담아서 ' + RULE_VALUE_SCALED + '병 단위로 맞춰주세요';
             } else if (RULE_MODE === 'exact') {
                 // "4가지 맛을 골라주세요", "액상 5병을 선택해주세요" 같은 이벤트/증정 상품:
                 // 최소가 아니라 딱 그 수량이어야 한다 (모자라도, 넘쳐도 안 됨)
-                flavorConditionMet = totalBottles === RULE_VALUE;
-                ratio = Math.min(totalBottles / RULE_VALUE, 1);
-                countLabel = totalBottles + ' / ' + RULE_VALUE;
-                if (totalBottles < RULE_VALUE) {
-                    blockedLabel = (RULE_VALUE - totalBottles) + '병 더 담아주세요';
-                } else if (totalBottles > RULE_VALUE) {
-                    blockedLabel = (totalBottles - RULE_VALUE) + '병 빼서 ' + RULE_VALUE + '병으로 맞춰주세요';
+                flavorConditionMet = totalBottles === RULE_VALUE_SCALED;
+                ratio = Math.min(totalBottles / RULE_VALUE_SCALED, 1);
+                countLabel = totalBottles + ' / ' + RULE_VALUE_SCALED;
+                if (totalBottles < RULE_VALUE_SCALED) {
+                    blockedLabel = (RULE_VALUE_SCALED - totalBottles) + '병 더 담아주세요';
+                } else if (totalBottles > RULE_VALUE_SCALED) {
+                    blockedLabel = (totalBottles - RULE_VALUE_SCALED) + '병 빼서 ' + RULE_VALUE_SCALED + '병으로 맞춰주세요';
                 } else {
                     blockedLabel = '맛을 선택해주세요';
                 }
