@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0">
+<title>베이프렌드 창고 구역 안내</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f0f2f8;color:#1a1a1a;padding-bottom:40px}
+.hd{background:linear-gradient(135deg,#1F3864,#2E75B6);padding:16px;color:#fff;position:sticky;top:0;z-index:10;box-shadow:0 2px 8px rgba(0,0,0,.2)}
+.hd h1{font-size:16px;font-weight:700}
+.hd p{font-size:11px;opacity:.8;margin-top:3px}
+.warn{margin:12px;background:#fff3cd;border-left:4px solid #C00000;border-radius:8px;padding:12px}
+.warn-title{font-size:13px;font-weight:700;color:#C00000;margin-bottom:6px}
+.warn p{font-size:12px;color:#555;line-height:1.6}
+.sw{padding:10px 12px 0}
+.sw-wrap{position:relative}
+.sw-ico{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:16px;color:#aaa;pointer-events:none}
+.sw input{width:100%;padding:10px 12px 10px 36px;font-size:14px;border-radius:12px;border:1.5px solid #e0e0e0;background:#fff;outline:none}
+.tabs{display:flex;margin:10px 12px 0;gap:6px}
+.tab{flex:1;text-align:center;padding:8px 0;font-size:13px;font-weight:600;color:#888;border-radius:20px;cursor:pointer;background:#fff;border:1.5px solid #e0e0e0}
+.tab.on{background:#1F3864;color:#fff;border-color:#1F3864}
+.count{padding:6px 12px 2px;font-size:12px;color:#888}
+.count b{color:#2E75B6}
+.list{padding:8px 12px;display:flex;flex-direction:column;gap:8px}
+.card{background:#fff;border-radius:14px;box-shadow:0 1px 5px rgba(0,0,0,.08);overflow:hidden}
+.card-hd{display:flex;align-items:center;padding:12px 14px;cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none}
+.card-hd.open{border-bottom:1px solid #f0f0f0}
+.zone-badge{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:14px;color:#fff;flex-shrink:0;margin-right:10px}
+.card-info{flex:1;min-width:0}
+.card-code{font-size:16px;font-weight:700;color:#1a1a1a}
+.card-desc{font-size:12px;color:#888;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card-arr{font-size:18px;color:#ccc;transition:transform .2s;flex-shrink:0}
+.card-arr.open{transform:rotate(90deg)}
+.card-body{display:none;padding:12px 14px;background:#fafafa}
+.card-body.open{display:block}
+.info-row{display:flex;align-items:flex-start;padding:6px 0;border-bottom:1px solid #f0f0f0}
+.info-row:last-child{border:none}
+.info-lbl{font-size:11px;color:#aaa;font-weight:600;width:60px;flex-shrink:0;padding-top:1px}
+.info-val{font-size:13px;color:#333;flex:1;line-height:1.5}
+.badge-pos{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:6px;margin-bottom:4px}
+.note-warn{background:#fff3cd;border-radius:6px;padding:6px 10px;font-size:11px;color:#856404;margin-top:6px}
+.empty{text-align:center;padding:3rem;color:#aaa;font-size:14px}
+.loading{text-align:center;padding:3rem;color:#888;font-size:14px}
+</style>
+</head>
+<body>
+<div class="hd">
+  <h1>📦 베이프렌드 창고 구역 안내</h1>
+  <p>본점 창고 — 입출고 시 반드시 확인</p>
+</div>
+
+<div class="warn">
+  <div class="warn-title">⚠️ 주의사항</div>
+  <p>• 대부분의 분배 제품은 <b>레드(R) 선반</b>에 있습니다<br>
+  • B-2, B-3-4: 포스 등록X / 재고 미등록<br>
+  • B-3-5: 포스 등록O / 재고 미등록<br>
+  • 포스 미등록 제품 외 모든 제품은 <b>재고가 잡혀있음</b><br>
+  • <b style="color:#C00000">입출고 시 반드시 재고 수량을 정확히 잡아야 합니다</b></p>
+</div>
+
+<div class="sw">
+  <div class="sw-wrap">
+    <span class="sw-ico">🔍</span>
+    <input type="text" id="qi" placeholder="구역코드 또는 내용 검색..."/>
+  </div>
+</div>
+
+<div class="tabs">
+  <div class="tab on" data-zone="all">전체</div>
+  <div class="tab" data-zone="B">B구역</div>
+  <div class="tab" data-zone="R">R구역</div>
+  <div class="tab" data-zone="W">W구역</div>
+</div>
+
+<div class="count" id="count"></div>
+<div class="list" id="list"><div class="loading">⏳ 데이터 불러오는 중...</div></div>
+
+<script>
+var API = 'https://script.google.com/macros/s/AKfycbwQr3vCiLOH0g-7kc9guFe7J-18JCY301KXUiSGfu_-qVR3-M0l1wdtHdvOHCge0SUc/exec';
+var D = [];
+var curZone = 'all';
+
+// 색상이 밝은지 어두운지 판단 (텍스트 색 결정용)
+function isDark(hex) {
+  if(!hex) return false;
+  hex = hex.replace('#','');
+  var r = parseInt(hex.substr(0,2),16);
+  var g = parseInt(hex.substr(2,2),16);
+  var b = parseInt(hex.substr(4,2),16);
+  return (r*0.299 + g*0.587 + b*0.114) < 128;
+}
+
+function zoneName(z){return z==='B'?'블랙 선반':z==='R'?'레드 선반':'화이트 선반';}
+function defaultColor(z){return z==='B'?'#2E75B6':z==='R'?'#C00000':'#2E7D32';}
+
+function render(){
+  var q = document.getElementById('qi').value.toLowerCase();
+  var fl = D.filter(function(d){
+    if(curZone !== 'all' && d['구역'] !== curZone) return false;
+    if(q &&
+      String(d['코드']).toLowerCase().indexOf(q) < 0 &&
+      String(d['설명']).toLowerCase().indexOf(q) < 0 &&
+      String(d['상세내용']).toLowerCase().indexOf(q) < 0) return false;
+    return true;
+  });
+
+  document.getElementById('count').innerHTML = '<b>'+fl.length+'개</b> 구역 표시중';
+
+  if(!fl.length){
+    document.getElementById('list').innerHTML = "<div class='empty'>검색 결과가 없어요</div>";
+    return;
+  }
+
+  document.getElementById('list').innerHTML = fl.map(function(d, i){
+    var z = d['구역'];
+    var note = d['주의사항'];
+    var color = String(d['색상'] || '').trim();
+    var bgColor = color || defaultColor(z);
+    var textColor = isDark(bgColor) ? '#ffffff' : '#1a1a1a';
+    var badgeBg = color ? color : defaultColor(z);
+    var badgeText = isDark(badgeBg) ? '#fff' : '#111';
+
+    return "<div class='card' id='c"+i+"' style='border-left: 5px solid "+bgColor+"'>"
+      +"<div class='card-hd' onclick='toggle("+i+")'>"
+      +"<div class='zone-badge' style='background:"+bgColor+";color:"+(isDark(bgColor)?'#fff':'#1a1a1a')+"'>"+z+"</div>"
+      +"<div class='card-info'>"
+      +"<div class='card-code'>"+d['코드']+"</div>"
+      +"<div class='card-desc'>"+d['설명']+"</div>"
+      +"</div>"
+      +"<div class='card-arr' id='arr"+i+"'>›</div>"
+      +"</div>"
+      +"<div class='card-body' id='b"+i+"'>"
+      +"<div class='info-row'><div class='info-lbl'>구역</div><div class='info-val'><span class='badge-pos' style='background:"+badgeBg+";color:"+badgeText+"'>"+z+"구역 — "+zoneName(z)+"</span></div></div>"
+      +"<div class='info-row'><div class='info-lbl'>위치</div><div class='info-val'>"+d['코드']+"</div></div>"
+      +"<div class='info-row'><div class='info-lbl'>보관 내용</div><div class='info-val'>"+d['상세내용']+"</div></div>"
+      +(note ? "<div class='note-warn'>⚠️ "+note+"</div>" : "")
+      +"</div>"
+      +"</div>";
+  }).join('');
+}
+
+function toggle(i){
+  var b = document.getElementById('b'+i);
+  var hd = document.querySelector('#c'+i+' .card-hd');
+  var arr = document.getElementById('arr'+i);
+  var open = b.classList.contains('open');
+  b.classList.toggle('open', !open);
+  hd.classList.toggle('open', !open);
+  arr.classList.toggle('open', !open);
+}
+
+document.querySelectorAll('.tab').forEach(function(t){
+  t.addEventListener('click', function(){
+    curZone = this.dataset.zone;
+    document.querySelectorAll('.tab').forEach(function(x){ x.classList.remove('on'); });
+    this.classList.add('on');
+    render();
+  });
+});
+
+document.getElementById('qi').addEventListener('input', render);
+
+fetch(API)
+  .then(function(r){ return r.json(); })
+  .then(function(data){
+    D = data;
+    render();
+  })
+  .catch(function(){
+    document.getElementById('list').innerHTML = "<div class='empty'>❌ 데이터를 불러오지 못했어요. 잠시 후 다시 시도해주세요.</div>";
+  });
+</script>
+</body>
+</html>
