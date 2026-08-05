@@ -1,0 +1,667 @@
+<title>액상덕후 리디자인 — 요헤미티 구조 이식안</title>
+<style>
+/* ═══════════ 페이지 크롬 토큰 (뷰어 테마 대응) ═══════════ */
+:root{
+  --chrome-bg:#EDEBE7;
+  --chrome-surface:#F7F6F3;
+  --chrome-ink:#141414;
+  --chrome-muted:#6F6C67;
+  --chrome-line:#141414;
+  --chrome-hair:rgba(20,20,20,.14);
+  --chrome-accent:#FF2D6F;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --chrome-bg:#131211;
+    --chrome-surface:#1C1B19;
+    --chrome-ink:#F2F0EC;
+    --chrome-muted:#9A968F;
+    --chrome-line:#F2F0EC;
+    --chrome-hair:rgba(242,240,236,.16);
+    --chrome-accent:#FF5C8D;
+  }
+}
+:root[data-theme="dark"]{
+  --chrome-bg:#131211; --chrome-surface:#1C1B19; --chrome-ink:#F2F0EC;
+  --chrome-muted:#9A968F; --chrome-line:#F2F0EC; --chrome-hair:rgba(242,240,236,.16);
+  --chrome-accent:#FF5C8D;
+}
+:root[data-theme="light"]{
+  --chrome-bg:#EDEBE7; --chrome-surface:#F7F6F3; --chrome-ink:#141414;
+  --chrome-muted:#6F6C67; --chrome-line:#141414; --chrome-hair:rgba(20,20,20,.14);
+  --chrome-accent:#FF2D6F;
+}
+
+/* ═══════════ 액상덕후 브랜드 토큰 (목업 내부 — 테마 무관 고정) ═══════════ */
+.brand{
+  --ad-paper:#F3F2EF;      /* 오프화이트 — 기본 지면 */
+  --ad-paper-2:#E7E5E0;    /* 오프화이트 음영 — 구분 섹션 */
+  --ad-ink:#111111;        /* 본문 */
+  --ad-line:#000000;       /* 구조선 — 2px */
+  --ad-pink:#FF2D6F;       /* 포인트 */
+  --ad-pink-deep:#C4005C;  /* 작은 글씨용 포인트 */
+  --ad-night:#141414;      /* 푸터·유틸바 */
+  --ad-mute:#8A8783;
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:var(--chrome-bg);
+  color:var(--chrome-ink);
+  font-family:Pretendard,"Pretendard Variable",-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;
+  font-size:16px;
+  line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+}
+.mono{font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;font-variant-numeric:tabular-nums}
+
+.wrap{max-width:1120px;margin:0 auto;padding:0 24px}
+
+/* ── 문서 헤더 ── */
+.doc-head{padding:72px 0 44px;border-bottom:2px solid var(--chrome-line)}
+.eyebrow{
+  font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--chrome-accent);margin:0 0 14px;
+}
+.doc-head h1{
+  font-size:clamp(30px,5.2vw,52px);line-height:1.14;font-weight:800;
+  letter-spacing:-.022em;margin:0 0 18px;text-wrap:balance;
+}
+.doc-head p{margin:0;max-width:62ch;color:var(--chrome-muted);font-size:17px}
+
+/* ── 섹션 ── */
+section{padding:64px 0;border-bottom:1px solid var(--chrome-hair)}
+.sec-label{
+  font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--chrome-muted);margin:0 0 10px;
+}
+h2{font-size:clamp(23px,3.2vw,32px);line-height:1.25;font-weight:800;letter-spacing:-.018em;margin:0 0 14px;text-wrap:balance}
+h3{font-size:18px;font-weight:700;margin:36px 0 14px;letter-spacing:-.01em}
+p{max-width:66ch}
+.lede{color:var(--chrome-muted);margin:0 0 32px;max-width:64ch}
+
+/* ── 팔레트 ── */
+.swatches{display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:14px;margin:0 0 14px}
+.sw{border:2px solid var(--chrome-line);display:flex;flex-direction:column}
+.sw .chip{height:96px;border-bottom:2px solid var(--chrome-line)}
+.sw .meta{padding:12px 13px;background:var(--chrome-surface)}
+.sw .nm{font-size:13px;font-weight:700;display:block;margin-bottom:3px}
+.sw .hx{font-size:12px;color:var(--chrome-muted)}
+.sw .role{font-size:11.5px;color:var(--chrome-muted);margin-top:6px;display:block;line-height:1.5}
+
+/* ── 표 ── */
+.tbl-scroll{overflow-x:auto;border:2px solid var(--chrome-line);background:var(--chrome-surface)}
+table{border-collapse:collapse;width:100%;min-width:560px;font-size:14.5px}
+th,td{text-align:left;padding:11px 14px;border-bottom:1px solid var(--chrome-hair);vertical-align:top}
+thead th{
+  background:var(--chrome-ink);color:var(--chrome-bg);
+  font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;
+}
+tbody tr:last-child td{border-bottom:0}
+td.num{font-family:ui-monospace,Menlo,monospace;font-variant-numeric:tabular-nums;white-space:nowrap}
+.dot{display:inline-block;width:11px;height:11px;border:1.5px solid var(--chrome-line);vertical-align:-1px;margin-right:7px}
+
+/* ═══════════════════ 목업 프레임 ═══════════════════ */
+.mock-row{display:grid;grid-template-columns:1fr;gap:28px;margin-top:8px}
+@media(min-width:940px){.mock-row{grid-template-columns:1fr 320px;align-items:start}}
+
+.frame{border:2px solid var(--chrome-line);background:var(--ad-paper,#F3F2EF);overflow:hidden}
+.frame-bar{
+  display:flex;align-items:center;gap:7px;padding:9px 12px;
+  background:var(--chrome-ink);border-bottom:2px solid var(--chrome-line);
+}
+.frame-bar b{
+  font-size:10.5px;letter-spacing:.11em;text-transform:uppercase;
+  color:var(--chrome-bg);font-weight:700;margin-left:4px;
+}
+.frame-bar i{width:9px;height:9px;border-radius:50%;background:rgba(255,255,255,.34);display:block}
+.stage{overflow-x:auto;overflow-y:hidden}
+
+/* ── 목업 공통 ── */
+.brand{font-size:15px;color:var(--ad-ink);line-height:1.65}
+.ad-page{background:var(--ad-paper);min-width:0}
+.ad-in{max-width:1080px;margin:0 auto;padding:0 20px}
+
+/* 유틸바 + 헤더 (오버레이) */
+.ad-util{background:var(--ad-night);color:#fff;font-size:11px;height:30px;display:flex;align-items:center}
+.ad-util .ad-in{display:flex;justify-content:space-between;width:100%;letter-spacing:.01em}
+.ad-util em{font-style:normal;color:var(--ad-pink);font-weight:700}
+.ad-nav{background:rgba(243,242,239,.95);border-bottom:2px solid var(--ad-line);height:63px;display:flex;align-items:center}
+.ad-nav .ad-in{display:flex;align-items:center;justify-content:space-between;width:100%;gap:18px}
+.ad-logo{font-weight:800;font-size:19px;letter-spacing:-.03em;white-space:nowrap}
+.ad-logo span{color:var(--ad-pink)}
+.ad-gnb{display:flex;gap:0;list-style:none;margin:0;padding:0}
+.ad-gnb li{position:relative}
+.ad-gnb a{
+  display:block;padding:0 14px;line-height:41px;font-size:14px;font-weight:700;
+  color:#000;text-decoration:none;letter-spacing:0;white-space:nowrap;
+}
+.ad-gnb a:hover,.ad-gnb a.on{color:var(--ad-pink)}
+.ad-gnb a:focus-visible{outline:2px solid var(--ad-pink);outline-offset:-2px}
+.ad-util-r{display:flex;gap:13px;font-size:12.5px;font-weight:700;white-space:nowrap}
+.ad-util-r .cart{color:var(--ad-pink-deep)}
+
+/* 드롭다운 — 각진 2px 검정 (시그니처) */
+.dd{
+  position:absolute;top:100%;left:0;min-width:172px;background:#fff;
+  border:2px solid #000;border-radius:0;box-shadow:none;
+  list-style:none;margin:0;padding:0;display:none;z-index:20;
+}
+.ad-gnb li:hover .dd,.ad-gnb li:focus-within .dd{display:block}
+.dd a{padding:8px 20px;line-height:1.6;font-size:14px;font-weight:700;border-top:2px solid #000;color:#000}
+.dd li:first-child a{border-top:0}
+.dd a:hover{background:var(--ad-pink);color:#fff}
+
+/* 히어로 */
+.ad-hero{
+  position:relative;background:var(--ad-night);color:#fff;
+  min-height:340px;display:flex;align-items:center;overflow:hidden;
+}
+.ad-hero canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.ad-hero .ad-in{position:relative;z-index:2;padding-top:52px;padding-bottom:52px}
+.hero-kick{
+  font-size:11px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--ad-pink);margin:0 0 15px;
+}
+.ad-hero h2{
+  font-size:clamp(26px,4.4vw,44px);line-height:1.16;font-weight:800;
+  letter-spacing:-.028em;margin:0 0 16px;color:#fff;max-width:16ch;
+}
+.ad-hero p{font-size:15px;color:rgba(255,255,255,.7);margin:0 0 26px;max-width:38ch}
+.btn-pink{
+  display:inline-block;background:var(--ad-pink);color:#fff;font-weight:800;font-size:14px;
+  padding:14px 30px;text-decoration:none;border:2px solid var(--ad-pink);
+}
+.btn-pink:hover{background:transparent;color:var(--ad-pink)}
+
+/* 섹션 헤더 (목업 내부) */
+.ad-sec{padding:56px 0}
+.ad-sec.alt{background:var(--ad-paper-2)}
+.ad-sec-hd{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:26px;flex-wrap:wrap}
+.ad-sec-hd h3{
+  font-size:clamp(20px,2.8vw,27px);font-weight:800;letter-spacing:-.022em;
+  margin:0;line-height:1.25;color:var(--ad-ink);
+}
+.ad-sec-hd h3 b{color:var(--ad-pink);font-weight:800}
+.ad-more{font-size:12.5px;font-weight:700;color:var(--ad-ink);text-decoration:none;border-bottom:2px solid var(--ad-line);padding-bottom:2px;white-space:nowrap}
+.ad-more:hover{color:var(--ad-pink);border-color:var(--ad-pink)}
+
+/* 3열 카드 */
+.ad-grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.card{border:2px solid var(--ad-line);background:#fff;text-decoration:none;color:var(--ad-ink);display:flex;flex-direction:column}
+.card:hover{background:var(--ad-pink);color:#fff}
+.card:hover .card-tag{background:#fff;color:var(--ad-pink);border-color:#fff}
+.card:hover .card-price s{color:rgba(255,255,255,.6)}
+.card-vis{
+  height:184px;border-bottom:2px solid var(--ad-line);
+  display:flex;align-items:center;justify-content:center;position:relative;
+  background:var(--ad-paper-2);
+}
+.card:hover .card-vis{border-color:#fff}
+.card-vis span{font-size:12px;font-weight:700;color:var(--ad-mute);letter-spacing:.05em}
+.card-tag{
+  position:absolute;top:10px;left:10px;font-size:10.5px;font-weight:800;letter-spacing:.06em;
+  background:var(--ad-line);color:#fff;padding:3px 9px;border:2px solid var(--ad-line);
+}
+.card-body{padding:15px 16px 17px}
+.card-body h4{margin:0 0 5px;font-size:15px;font-weight:800;letter-spacing:-.012em;line-height:1.4}
+.card-body .desc{margin:0 0 11px;font-size:12.5px;line-height:1.6;opacity:.72}
+.card-price{font-size:15px;font-weight:800;font-variant-numeric:tabular-nums}
+.card-price s{font-size:12.5px;font-weight:600;color:var(--ad-mute);margin-right:7px}
+
+/* 가이드 3×2 */
+.ad-grid6{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.gcard{
+  border:2px solid var(--ad-line);background:#fff;aspect-ratio:1/1;
+  padding:20px;display:flex;flex-direction:column;justify-content:space-between;
+  text-decoration:none;color:var(--ad-ink);
+}
+.gcard:hover{background:var(--ad-line);color:#fff}
+.gcard:hover .gnum{color:var(--ad-pink)}
+.gnum{font-family:ui-monospace,Menlo,monospace;font-size:12px;font-weight:700;color:var(--ad-pink);letter-spacing:.06em}
+.gcard h4{margin:0 0 6px;font-size:17px;font-weight:800;letter-spacing:-.018em;line-height:1.3}
+.gcard p{margin:0;font-size:12.5px;line-height:1.6;opacity:.7}
+
+/* 저널 슬라이더 */
+.ad-slider{display:flex;gap:16px;overflow-x:auto;padding-bottom:6px;scroll-snap-type:x mandatory}
+.jcard{
+  flex:0 0 300px;scroll-snap-align:start;border:2px solid var(--ad-line);
+  background:#fff;text-decoration:none;color:var(--ad-ink);
+}
+.jcard:hover{background:var(--ad-pink);color:#fff}
+.jvis{height:132px;background:var(--ad-paper-2);border-bottom:2px solid var(--ad-line);display:flex;align-items:center;justify-content:center}
+.jcard:hover .jvis{border-color:#fff}
+.jvis span{font-size:11.5px;font-weight:700;color:var(--ad-mute);letter-spacing:.05em}
+.jbody{padding:14px 16px 16px}
+.jbody .date{font-size:11px;font-weight:700;letter-spacing:.08em;opacity:.6;font-family:ui-monospace,Menlo,monospace}
+.jbody h4{margin:6px 0 0;font-size:14.5px;font-weight:800;line-height:1.45;letter-spacing:-.012em}
+.dots{display:flex;gap:7px;justify-content:center;margin-top:22px}
+.dots i{width:9px;height:9px;border:2px solid var(--ad-line);display:block}
+.dots i.on{background:var(--ad-pink);border-color:var(--ad-pink)}
+
+/* 목업 푸터 */
+.ad-foot{background:var(--ad-night);color:#fff;font-size:11px;padding:34px 0 30px;text-align:center;line-height:1.9}
+.ad-foot .fnav{margin-bottom:11px}
+.ad-foot .fnav a{color:#fff;text-decoration:none;padding:0 7.5px;font-size:11px}
+.ad-foot .fnav a.bold{font-weight:800}
+.ad-foot .biz{color:rgba(255,255,255,.62);max-width:none}
+.ad-foot .cr{color:rgba(255,255,255,.45);margin-top:9px}
+
+/* ── 모바일 목업 ── */
+.phone{border:2px solid var(--chrome-line);background:var(--ad-paper);width:320px;max-width:100%;margin:0 auto;overflow:hidden}
+.phone .ad-in{padding:0 16px}
+.phone .ad-util{height:25px;font-size:10px}
+.phone .ad-nav{height:53px}
+.phone .ad-logo{font-size:16px}
+.phone .burger{display:flex;flex-direction:column;gap:4px}
+.phone .burger i{display:block;width:20px;height:2px;background:#000}
+.phone .ad-hero{min-height:0}
+.phone .ad-hero .ad-in{padding-top:38px;padding-bottom:38px}
+.phone .ad-hero h2{font-size:23px}
+.phone .ad-hero p{font-size:13px;margin-bottom:20px}
+.phone .btn-pink{padding:12px 22px;font-size:13px}
+.phone .ad-sec{padding:34px 0}
+.phone .ad-grid3,.phone .ad-grid6{grid-template-columns:repeat(2,1fr);gap:10px}
+.phone .card-vis{height:104px}
+.phone .card-body{padding:11px 12px 13px}
+.phone .card-body h4{font-size:13px}
+.phone .card-body .desc{display:none}
+.phone .card-price{font-size:13px}
+.phone .gcard{padding:13px}
+.phone .gcard h4{font-size:13.5px}
+.phone .gcard p{display:none}
+.phone .ad-sec-hd h3{font-size:18px}
+.phone .ad-foot{padding:24px 0}
+
+/* ── 일정 ── */
+.tl{list-style:none;margin:0;padding:0;display:grid;gap:0}
+.tl li{display:grid;grid-template-columns:88px 1fr;gap:18px;padding:17px 0;border-bottom:1px solid var(--chrome-hair)}
+.tl li:last-child{border-bottom:0}
+.tl .day{font-size:12px;font-weight:800;letter-spacing:.06em;color:var(--chrome-accent);font-family:ui-monospace,Menlo,monospace;padding-top:2px}
+.tl h4{margin:0 0 5px;font-size:16px;font-weight:800;letter-spacing:-.012em}
+.tl p{margin:0;font-size:14px;color:var(--chrome-muted)}
+.who{
+  display:inline-block;font-size:10.5px;font-weight:800;letter-spacing:.06em;
+  padding:2px 8px;border:1.5px solid var(--chrome-line);margin-left:8px;vertical-align:2px;
+}
+.who.me{background:var(--chrome-ink);color:var(--chrome-bg);border-color:var(--chrome-ink)}
+
+/* ── 역할 ── */
+.roles{display:grid;grid-template-columns:1fr;gap:16px}
+@media(min-width:760px){.roles{grid-template-columns:1fr 1fr}}
+.role-box{border:2px solid var(--chrome-line);background:var(--chrome-surface);padding:22px 24px 24px}
+.role-box h4{margin:0 0 4px;font-size:17px;font-weight:800}
+.role-box .sub{font-size:12.5px;color:var(--chrome-muted);margin:0 0 15px}
+.role-box ul{margin:0;padding-left:18px}
+.role-box li{margin-bottom:8px;font-size:14.5px}
+.role-box li:last-child{margin-bottom:0}
+
+.note{
+  border-left:3px solid var(--chrome-accent);padding:2px 0 2px 16px;
+  margin:26px 0 0;color:var(--chrome-muted);font-size:14.5px;max-width:64ch;
+}
+.note b{color:var(--chrome-ink);font-weight:700}
+
+footer.doc-foot{padding:44px 0 72px;color:var(--chrome-muted);font-size:13.5px}
+
+@media(max-width:640px){
+  .ad-gnb,.ad-util-r{display:none}
+  .ad-grid3,.ad-grid6{grid-template-columns:repeat(2,1fr)}
+  .tl li{grid-template-columns:1fr;gap:5px}
+}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+a{transition:background-color .18s ease,color .18s ease,border-color .18s ease}
+</style>
+
+<div class="wrap">
+  <header class="doc-head">
+    <p class="eyebrow">액상덕후 · 리디자인 제안</p>
+    <h1>요헤미티 구조 그대로,<br>블랙 · 오프화이트 · 핑크로.</h1>
+    <p>yohemite.com의 실제 CSS와 DOM을 해체해서 나온 규격을 액상덕후 브랜드 컬러로 옮긴 안입니다. 아래 화면은 설명용 그림이 아니라 실제로 동작하는 마크업이라, GNB에 마우스를 올리면 드롭다운이 그대로 떨어집니다.</p>
+  </header>
+
+  <!-- ── 팔레트 ── -->
+  <section>
+    <p class="sec-label">01 — 팔레트</p>
+    <h2>포인트는 딱 한 곳에만 쓴다</h2>
+    <p class="lede">요헤미티가 세련돼 보이는 이유는 색을 많이 써서가 아니라 <b>거의 안 쓰기</b> 때문입니다. 화면의 95%가 흑백이고 주황은 hover와 active에만 튀어나옵니다. 이 원칙을 그대로 가져왔습니다.</p>
+
+    <div class="swatches">
+      <div class="sw"><div class="chip" style="background:#F3F2EF"></div><div class="meta"><span class="nm">오프화이트</span><span class="hx mono">#F3F2EF</span><span class="role">기본 지면. 순백(#FFF)보다 살짝 눌러서 제품 사진이 뜨게 만듭니다.</span></div></div>
+      <div class="sw"><div class="chip" style="background:#E7E5E0"></div><div class="meta"><span class="nm">오프화이트 음영</span><span class="hx mono">#E7E5E0</span><span class="role">섹션 구분용. 요헤미티 #F4F4F4 자리.</span></div></div>
+      <div class="sw"><div class="chip" style="background:#111111"></div><div class="meta"><span class="nm">잉크</span><span class="hx mono">#111111</span><span class="role">본문 텍스트.</span></div></div>
+      <div class="sw"><div class="chip" style="background:#000000"></div><div class="meta"><span class="nm">구조선</span><span class="hx mono">#000000</span><span class="role">2px 테두리 전용. 순검정이어야 각이 삽니다.</span></div></div>
+      <div class="sw"><div class="chip" style="background:#FF2D6F"></div><div class="meta"><span class="nm">핑크 (포인트)</span><span class="hx mono">#FF2D6F</span><span class="role">hover · active · CTA. 요헤미티 #FF5000 자리.</span></div></div>
+      <div class="sw"><div class="chip" style="background:#C4005C"></div><div class="meta"><span class="nm">핑크 딥</span><span class="hx mono">#C4005C</span><span class="role">작은 글씨용. 대비 5.5:1로 가독성 확보.</span></div></div>
+      <div class="sw"><div class="chip" style="background:#141414"></div><div class="meta"><span class="nm">나이트</span><span class="hx mono">#141414</span><span class="role">푸터 · 상단 유틸바.</span></div></div>
+    </div>
+
+    <h3>요헤미티 → 액상덕후 대응표</h3>
+    <div class="tbl-scroll">
+      <table>
+        <thead><tr><th>역할</th><th>요헤미티</th><th>액상덕후</th><th>비고</th></tr></thead>
+        <tbody>
+          <tr><td>포인트</td><td class="num"><span class="dot" style="background:#FF5000"></span>#FF5000</td><td class="num"><span class="dot" style="background:#FF2D6F"></span>#FF2D6F</td><td>대비 3.3:1 — 원본(3.2:1)과 거의 동일한 강도</td></tr>
+          <tr><td>본문</td><td class="num"><span class="dot" style="background:#212121"></span>#212121</td><td class="num"><span class="dot" style="background:#111111"></span>#111111</td><td>블랙 브랜드라 조금 더 진하게</td></tr>
+          <tr><td>구조선</td><td class="num"><span class="dot" style="background:#000"></span>#000000</td><td class="num"><span class="dot" style="background:#000"></span>#000000</td><td>동일 — 2px 유지</td></tr>
+          <tr><td>지면</td><td class="num"><span class="dot" style="background:#fff"></span>#FFFFFF</td><td class="num"><span class="dot" style="background:#F3F2EF"></span>#F3F2EF</td><td>오프화이트로 교체</td></tr>
+          <tr><td>구분 섹션</td><td class="num"><span class="dot" style="background:#F4F4F4"></span>#F4F4F4</td><td class="num"><span class="dot" style="background:#E7E5E0"></span>#E7E5E0</td><td>지면이 어두워진 만큼 같이 내림</td></tr>
+          <tr><td>푸터</td><td class="num"><span class="dot" style="background:#171717"></span>#171717</td><td class="num"><span class="dot" style="background:#141414"></span>#141414</td><td>사실상 동일</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="note"><b>왜 핑크를 #FF2D6F로 잡았나:</b> 요헤미티 주황은 오프화이트 위에서 대비 3.2:1입니다. 흔한 핑크(#FF80AB 같은)를 쓰면 1.8:1로 떨어져서 배경에 묻히고, 디자인 전체가 흐물흐물해집니다. 채도를 끝까지 밀어야 검정 2px 테두리와 싸워서 이깁니다.</p>
+  </section>
+
+  <!-- ── PC 목업 ── -->
+  <section>
+    <p class="sec-label">02 — PC 화면</p>
+    <h2>홈 화면 시안</h2>
+    <p class="lede">요헤미티 섹션 순서 그대로입니다. 오버레이 헤더(유틸바 30px + 메인 63px) → 히어로 → 제품 3열 → 가이드 3×2 → 저널 슬라이더 → 푸터. <b>GNB "구매하기"에 마우스를 올려보세요.</b></p>
+
+    <div class="frame">
+      <div class="frame-bar"><i></i><i></i><i></i><b>액상덕후.com — PC 1080px</b></div>
+      <div class="stage">
+        <div class="brand ad-page">
+
+          <div class="ad-util">
+            <div class="ad-in"><span>5만원 이상 <em>무료배송</em> · 당일 오후 3시 이전 결제분 당일 출고</span><span>성인인증 필수</span></div>
+          </div>
+
+          <nav class="ad-nav">
+            <div class="ad-in">
+              <span class="ad-logo">액상<span>덕후</span></span>
+              <ul class="ad-gnb">
+                <li><a href="#" class="on">구매하기</a>
+                  <ul class="dd">
+                    <li><a href="#">입호흡 액상</a></li>
+                    <li><a href="#">폐호흡 액상</a></li>
+                    <li><a href="#">일회용 기기</a></li>
+                    <li><a href="#">코일 · 팟</a></li>
+                  </ul>
+                </li>
+                <li><a href="#">액덕 랩</a>
+                  <ul class="dd">
+                    <li><a href="#">기기별 호환표</a></li>
+                    <li><a href="#">액상 추천 테스트</a></li>
+                    <li><a href="#">입문 가이드</a></li>
+                  </ul>
+                </li>
+                <li><a href="#">저널</a></li>
+                <li><a href="#">회원 혜택</a></li>
+                <li><a href="#">브랜드</a></li>
+              </ul>
+              <span class="ad-util-r"><span>로그인</span><span class="cart">장바구니 0</span></span>
+            </div>
+          </nav>
+
+          <div class="ad-hero">
+            <canvas id="haze" aria-hidden="true"></canvas>
+            <div class="ad-in">
+              <p class="hero-kick">Liquid Guide</p>
+              <h2>뭘 사야 할지<br>모르겠으면,<br>물어보세요.</h2>
+              <p>3분 테스트로 취향에 맞는 액상을 찾아드립니다. 기기 호환은 저희가 확인합니다.</p>
+              <a class="btn-pink" href="#">액상 추천 테스트 시작</a>
+            </div>
+          </div>
+
+          <div class="ad-sec">
+            <div class="ad-in">
+              <div class="ad-sec-hd">
+                <h3>이번 주 <b>많이 찾는 액상</b></h3>
+                <a class="ad-more" href="#">전체 보기</a>
+              </div>
+              <div class="ad-grid3">
+                <a class="card" href="#">
+                  <div class="card-vis"><span class="card-tag">입호흡</span><span>제품 이미지 344×464</span></div>
+                  <div class="card-body"><h4>솔티드 니코 30ml</h4><p class="desc">달지 않고 목넘김 부드러운 데일리용</p><p class="card-price"><s>18,000</s>15,000원</p></div>
+                </a>
+                <a class="card" href="#">
+                  <div class="card-vis"><span class="card-tag">폐호흡</span><span>제품 이미지 344×464</span></div>
+                  <div class="card-body"><h4>멘솔 아이스 60ml</h4><p class="desc">무화량 많은 기기용 고점도 액상</p><p class="card-price">22,000원</p></div>
+                </a>
+                <a class="card" href="#">
+                  <div class="card-vis"><span class="card-tag">일회용</span><span>제품 이미지 344×464</span></div>
+                  <div class="card-body"><h4>젤로 크리스탈 팟</h4><p class="desc">0.6Ω 입호흡 · 5mL 대용량</p><p class="card-price">5,000원</p></div>
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <div class="ad-sec alt">
+            <div class="ad-in">
+              <div class="ad-sec-hd">
+                <h3>액덕 랩 — <b>사기 전에 확인하세요</b></h3>
+                <a class="ad-more" href="#">가이드 전체</a>
+              </div>
+              <div class="ad-grid6">
+                <a class="gcard" href="#"><span class="gnum">GUIDE</span><div><h4>기기별 코일·팟 호환표</h4><p>내 기기에 뭐가 맞는지 검색으로 확인</p></div></a>
+                <a class="gcard" href="#"><span class="gnum">GUIDE</span><div><h4>입호흡 vs 폐호흡</h4><p>처음이라면 여기부터</p></div></a>
+                <a class="gcard" href="#"><span class="gnum">GUIDE</span><div><h4>니코틴 함량 고르기</h4><p>연초 개비 수로 환산해서 추천</p></div></a>
+                <a class="gcard" href="#"><span class="gnum">GUIDE</span><div><h4>코일 프라이밍</h4><p>탄 맛 클레임의 90%가 이것 때문</p></div></a>
+                <a class="gcard" href="#"><span class="gnum">GUIDE</span><div><h4>결로 · 누수 해결</h4><p>휴지 한 장으로 끝나는 경우</p></div></a>
+                <a class="gcard" href="#"><span class="gnum">GUIDE</span><div><h4>기기 수명 늘리기</h4><p>배터리 · 보관 · 청소</p></div></a>
+              </div>
+            </div>
+          </div>
+
+          <div class="ad-sec">
+            <div class="ad-in">
+              <div class="ad-sec-hd"><h3>액덕 <b>저널</b></h3><a class="ad-more" href="#">더 읽기</a></div>
+              <div class="ad-slider">
+                <a class="jcard" href="#"><div class="jvis"><span>썸네일</span></div><div class="jbody"><span class="date">2026.07.28</span><h4>신입고 — 여름 한정 멘솔 3종 들어왔습니다</h4></div></a>
+                <a class="jcard" href="#"><div class="jvis"><span>썸네일</span></div><div class="jbody"><span class="date">2026.07.14</span><h4>발라리안 R, 흡입이 안 될 때 확인할 것</h4></div></a>
+                <a class="jcard" href="#"><div class="jvis"><span>썸네일</span></div><div class="jbody"><span class="date">2026.06.30</span><h4>액상 유통기한과 보관법, 정확히 알려드립니다</h4></div></a>
+              </div>
+              <div class="dots"><i class="on"></i><i></i><i></i></div>
+            </div>
+          </div>
+
+          <div class="ad-foot">
+            <div class="ad-in">
+              <p class="fnav"><a href="#">이용약관</a><a href="#" class="bold">개인정보처리방침</a><a href="#">고객센터</a></p>
+              <p class="biz">상호명: 액상덕후 · 대표자: 000 · 사업자등록번호: 000-00-00000 · 통신판매업신고번호: 0000-서울○○-0000 · 호스팅 제공자: (주)아임웹</p>
+              <p class="cr">Copyright ⓒ 2026 액상덕후 All rights reserved.</p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 모바일 ── -->
+  <section>
+    <p class="sec-label">03 — 모바일</p>
+    <h2>모바일은 별도로 만듭니다</h2>
+    <p class="lede">이게 작업량에 제일 크게 영향을 주는 사실입니다. 요헤미티는 반응형으로 하나 만든 게 아니라 <b>PC 전용 섹션 6개와 모바일 전용 섹션 5개를 따로</b> 만들어 놨습니다. 같은 콘텐츠를 두 번 제작한 구조라, 우리도 그렇게 갑니다.</p>
+
+    <div class="mock-row">
+      <div class="phone brand">
+        <div class="ad-util"><div class="ad-in"><span>5만원↑ <em>무료배송</em></span><span>성인인증</span></div></div>
+        <nav class="ad-nav"><div class="ad-in">
+          <span class="burger" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="ad-logo">액상<span>덕후</span></span>
+          <span style="font-size:12px;font-weight:800;color:#C4005C">0</span>
+        </div></nav>
+        <div class="ad-hero"><div class="ad-in">
+          <p class="hero-kick">Liquid Guide</p>
+          <h2>뭘 사야 할지<br>모르겠으면,<br>물어보세요.</h2>
+          <p>3분 테스트로 취향에 맞는 액상을 찾아드립니다.</p>
+          <a class="btn-pink" href="#">테스트 시작</a>
+        </div></div>
+        <div class="ad-sec"><div class="ad-in">
+          <div class="ad-sec-hd"><h3>많이 찾는 <b>액상</b></h3></div>
+          <div class="ad-grid3">
+            <a class="card" href="#"><div class="card-vis"><span class="card-tag">입호흡</span><span>이미지</span></div><div class="card-body"><h4>솔티드 니코 30ml</h4><p class="card-price">15,000원</p></div></a>
+            <a class="card" href="#"><div class="card-vis"><span class="card-tag">폐호흡</span><span>이미지</span></div><div class="card-body"><h4>멘솔 아이스 60ml</h4><p class="card-price">22,000원</p></div></a>
+          </div>
+        </div></div>
+        <div class="ad-sec alt"><div class="ad-in">
+          <div class="ad-sec-hd"><h3>액덕 <b>랩</b></h3></div>
+          <div class="ad-grid6">
+            <a class="gcard" href="#"><span class="gnum">GUIDE</span><div><h4>기기별 호환표</h4></div></a>
+            <a class="gcard" href="#"><span class="gnum">GUIDE</span><div><h4>입호흡 vs 폐호흡</h4></div></a>
+          </div>
+        </div></div>
+        <div class="ad-foot"><div class="ad-in">
+          <p class="fnav"><a href="#">이용약관</a><a href="#" class="bold">개인정보처리방침</a></p>
+          <p class="cr">ⓒ 2026 액상덕후</p>
+        </div></div>
+      </div>
+
+      <div>
+        <h3 style="margin-top:0">모바일 규격</h3>
+        <div class="tbl-scroll">
+          <table style="min-width:0">
+            <tbody>
+              <tr><td>유틸바</td><td class="num">25px</td></tr>
+              <tr><td>헤더</td><td class="num">53px</td></tr>
+              <tr><td>섹션 상하 여백</td><td class="num">80–100px</td></tr>
+              <tr><td>카드 간격</td><td class="num">12–16px</td></tr>
+              <tr><td>좌우 여백</td><td class="num">0 (전폭)</td></tr>
+              <tr><td>슬라이드 메뉴 1depth</td><td class="num">17px</td></tr>
+              <tr><td>슬라이드 메뉴 2depth</td><td class="num">16px</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="note" style="margin-top:20px">모바일 섹션은 아임웹에서 <b>전폭(extend_section)</b>으로 잡고 좌우 여백을 0으로 둡니다. 이미지가 화면 끝까지 닿아야 요헤미티 느낌이 납니다.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 일정 ── -->
+  <section>
+    <p class="sec-label">04 — 일정</p>
+    <h2>2주 계획</h2>
+    <p class="lede">1~2주 넉넉하다고 하셨으니 2주 기준으로 짰습니다. <span class="who me">클로드</span>는 제가, <span class="who">사장님</span>은 아임웹 관리자에서 직접 하셔야 하는 작업입니다.</p>
+
+    <ul class="tl">
+      <li><span class="day">DAY 1–2</span><div>
+        <h4>디자인 설정 복제 <span class="who me">클로드</span> <span class="who">사장님</span></h4>
+        <p>제가 아임웹 관리자 메뉴별 설정값 체크리스트를 드리면, 사장님이 그대로 입력하십니다. 사이트 컬러 · Pretendard · 헤더 오버레이 2단 · 푸터 타입05 · 섹션 폭 1080px.</p>
+      </div></li>
+      <li><span class="day">DAY 2</span><div>
+        <h4>커스텀 CSS 삽입 <span class="who me">클로드</span></h4>
+        <p>각진 2px 검정 드롭다운, 헤더 오버레이 보정, 핑크 포인트 치환. 제가 코드 한 덩어리로 써드리면 [디자인 → 코드 삽입]에 붙여넣기만 하시면 됩니다.</p>
+      </div></li>
+      <li><span class="day">DAY 3–5</span><div>
+        <h4>이미지 제작 — 여기가 전체의 70% <span class="who me">클로드</span></h4>
+        <p>히어로 1064×213, 대형 배너 1064×553, 제품 카드 344×464, 가이드 카드 344×344, 섹션 타이틀. 제가 HTML/SVG로 만들어 PNG로 뽑아드리거나, 연결된 Canva로 바로 제작 가능합니다.</p>
+      </div></li>
+      <li><span class="day">DAY 6–8</span><div>
+        <h4>PC 섹션 조립 <span class="who">사장님</span></h4>
+        <p>이미지 + 여백 위젯만 반복 배치. 위젯별 여백값은 제가 표로 드립니다. 애니메이션은 fadeIn / fadeInUp, 0.6초.</p>
+      </div></li>
+      <li><span class="day">DAY 9–11</span><div>
+        <h4>모바일 섹션 조립 <span class="who">사장님</span></h4>
+        <p>전폭 섹션으로 별도 제작. 여기가 제일 지루한 구간이라 여유를 뒀습니다.</p>
+      </div></li>
+      <li><span class="day">DAY 12–13</span><div>
+        <h4>상품 리스트 · 상세 페이지 <span class="who me">클로드</span> <span class="who">사장님</span></h4>
+        <p>쇼핑몰 핵심 화면입니다. 다만 <b>지금 이 부분 자료가 없습니다</b> — 아래 요청 참고.</p>
+      </div></li>
+      <li><span class="day">DAY 14</span><div>
+        <h4>기기 테스트 · 오픈 <span class="who">사장님</span></h4>
+        <p>아이폰 · 안드로이드 · 노트북에서 확인. 특히 오버레이 헤더가 스크롤 시 제대로 채워지는지.</p>
+      </div></li>
+    </ul>
+  </section>
+
+  <!-- ── 역할 ── -->
+  <section>
+    <p class="sec-label">05 — 역할 분담</p>
+    <h2>제가 할 수 있는 것과, 못 하는 것</h2>
+    <p class="lede">솔직하게 선을 그어두는 게 서로 편합니다.</p>
+
+    <div class="roles">
+      <div class="role-box">
+        <h4>제가 합니다</h4>
+        <p class="sub">코드 · 설계 · 규격 · 이미지 시안</p>
+        <ul>
+          <li>브랜드 팔레트 확정 및 대비 검증</li>
+          <li>아임웹 설정 체크리스트 (메뉴 → 항목 → 입력값)</li>
+          <li>커스텀 CSS 전체 코드</li>
+          <li>섹션별 위젯 배치표 (여백 px 단위까지)</li>
+          <li>이미지 시안 제작 및 PNG 추출</li>
+          <li>카피라이팅 — 배너 문구, 섹션 제목</li>
+          <li>완성 후 화면 검토 및 수정안</li>
+        </ul>
+      </div>
+      <div class="role-box">
+        <h4>사장님이 하셔야 합니다</h4>
+        <p class="sub">아임웹 관리자 접속이 필요한 작업</p>
+        <ul>
+          <li>아임웹 로그인 및 관리자 조작 — 제가 접속할 수 없습니다</li>
+          <li>제품 실사진 촬영 또는 준비</li>
+          <li>이미지 업로드</li>
+          <li>상품 등록 · 가격 · 재고</li>
+          <li>결제 · 배송 설정</li>
+          <li>최종 디자인 승인</li>
+        </ul>
+      </div>
+    </div>
+
+    <p class="note"><b>가장 중요한 제약 하나:</b> 저는 아임웹 관리자에 직접 로그인해서 클릭할 수 없습니다. 그래서 실제 조립은 사장님 손을 거쳐야 합니다. 대신 "어디서 뭘 어떤 값으로" 를 빠짐없이 적어드리면, 그대로 따라 치는 작업이 됩니다.</p>
+  </section>
+
+  <!-- ── 다음 ── -->
+  <section style="border-bottom:0">
+    <p class="sec-label">06 — 다음 단계</p>
+    <h2>지금 필요한 것 두 가지</h2>
+    <ol style="max-width:64ch;padding-left:20px">
+      <li style="margin-bottom:14px"><b>이 팔레트 승인</b> — 위 핑크(#FF2D6F)가 마음에 드시는지. 더 진하게/연하게 조정 가능합니다.</li>
+      <li><b>상품 페이지 저장본</b> — 요헤미티 <span class="mono">/product3</span> 또는 상품 상세 페이지를 메인 때처럼 <span class="mono">Ctrl+S → "웹페이지, 전체"</span>로 저장해서 주세요. 쇼핑몰의 진짜 핵심인 상품 리스트·상세 레이아웃이 메인 페이지에는 안 들어있습니다.</li>
+    </ol>
+    <p class="note">둘 다 주시면 바로 <b>아임웹 설정 체크리스트 + 커스텀 CSS 전체 코드</b>부터 써드리겠습니다.</p>
+  </section>
+
+  <footer class="doc-foot">
+    액상덕후 리디자인 제안 · 2026.08 — yohemite.com 메인 페이지 저장본(HTML 912KB · 인라인 CSS 486KB) 분석 기반
+  </footer>
+</div>
+
+<script>
+(function(){
+  var c=document.getElementById('haze');
+  if(!c)return;
+  var reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var ctx=c.getContext('2d'),w=0,h=0,t=0,raf=null;
+
+  function size(){
+    var r=c.getBoundingClientRect();
+    w=c.width=Math.max(1,Math.floor(r.width));
+    h=c.height=Math.max(1,Math.floor(r.height));
+  }
+
+  function puff(x,y,rad,a){
+    var g=ctx.createRadialGradient(x,y,0,x,y,rad);
+    g.addColorStop(0,'rgba(255,45,111,'+a+')');
+    g.addColorStop(.55,'rgba(255,45,111,'+(a*.28)+')');
+    g.addColorStop(1,'rgba(255,45,111,0)');
+    ctx.fillStyle=g;
+    ctx.beginPath();ctx.arc(x,y,rad,0,Math.PI*2);ctx.fill();
+  }
+
+  function draw(){
+    ctx.clearRect(0,0,w,h);
+    var base=Math.max(w,h);
+    puff(w*(.72+Math.sin(t*.21)*.05), h*(.30+Math.cos(t*.17)*.09), base*.42, .30);
+    puff(w*(.90+Math.cos(t*.13)*.04), h*(.74+Math.sin(t*.23)*.07), base*.30, .20);
+    puff(w*(.52+Math.sin(t*.11)*.03), h*(.90+Math.cos(t*.19)*.06), base*.26, .12);
+  }
+
+  function loop(){ t+=.006; draw(); raf=requestAnimationFrame(loop); }
+
+  function start(){
+    size(); draw();
+    if(raf){cancelAnimationFrame(raf);raf=null;}
+    if(!reduce) loop();
+  }
+
+  window.addEventListener('resize',start);
+  start();
+})();
+</script>

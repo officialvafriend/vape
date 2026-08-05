@@ -1,0 +1,342 @@
+/* ============================================================================
+   액상덕후 — 아임웹 커스텀 CSS
+   ----------------------------------------------------------------------------
+   붙여넣는 곳 : 아임웹 관리자 → [디자인] → [코드 삽입] → HEAD 영역
+   붙여넣는 법 : 아래 전체를 <style> ... </style> 로 감싸서 넣으세요.
+
+   설계 기준   : yohemite.com 메인 페이지 저장본(인라인 CSS 486KB) 실측 분석
+   컬러        : 블랙 / 오프화이트 / 핑크
+
+   [!important 가 많은 이유]
+   아임웹은 디자인 설정을 #w2021xxxxx 같은 "위젯 ID" 선택자로 뽑아냅니다.
+   ID 선택자는 우선순위가 높아서, 클래스로 쓴 우리 코드가 그냥은 안 먹습니다.
+   그래서 덮어써야 하는 곳에만 !important 를 붙였습니다. 의도된 겁니다.
+
+   [주의]
+   아래 §9(쇼핑몰) 는 요헤미티 상품 페이지 저장본을 아직 못 받아서
+   아임웹 공통 클래스 기준으로 잠정 작성했습니다. 상품 페이지 확보 후 확정 예정.
+   ============================================================================ */
+
+
+/* ─────────────────────────────────────────────
+   §1. 브랜드 토큰
+   색을 바꾸고 싶으면 여기 7줄만 고치면 전체가 따라 바뀝니다.
+   ───────────────────────────────────────────── */
+:root{
+  --ad-paper   : #F3F2EF;  /* 오프화이트 — 기본 지면 */
+  --ad-paper-2 : #E7E5E0;  /* 오프화이트 음영 — 구분 섹션 */
+  --ad-ink     : #111111;  /* 본문 텍스트 */
+  --ad-line    : #000000;  /* 구조선 (2px 테두리 전용) */
+  --ad-pink    : #FF2D6F;  /* 포인트 — hover / active / CTA */
+  --ad-pink-dp : #C4005C;  /* 포인트 딥 — 작은 글씨용 (대비 5.5:1) */
+  --ad-night   : #141414;  /* 푸터 / 상단 유틸바 */
+}
+
+
+/* ─────────────────────────────────────────────
+   §2. PC 상단 메뉴 (GNB)
+   요헤미티 실측값: 14px / bold / letter-spacing 0 / padding 0 14px
+   ───────────────────────────────────────────── */
+.doz_sys .viewport-nav > li.dropdown > a,
+.doz_sys .viewport-nav > li.dropdown > .notranslate a{
+  font-size      : 14px !important;
+  font-weight    : 700  !important;
+  letter-spacing : 0    !important;
+  padding        : 0 14px !important;
+  color          : var(--ad-ink) !important;
+}
+
+.doz_sys .viewport-nav > li.dropdown > a:hover,
+.doz_sys .viewport-nav > li.dropdown > .notranslate a:hover,
+.doz_sys .viewport-nav > li.dropdown > a.active,
+.doz_sys .viewport-nav > li.dropdown > .notranslate a.active{
+  color : var(--ad-pink) !important;
+}
+
+/* 현재 페이지 메뉴는 굵게 */
+.doz_sys .viewport-nav > li.dropdown > a.active{
+  font-weight : 800 !important;
+}
+
+
+/* ─────────────────────────────────────────────
+   §3. 드롭다운 — 각진 2px 검정  ★ 이 사이트의 시각적 시그니처
+   둥근 모서리도 그림자도 없이 두꺼운 검정 선으로 각지게 떨어뜨리는 것.
+   아임웹 기본값(라운드 + 그림자)과 정반대라 반드시 코드로 덮어써야 합니다.
+   ───────────────────────────────────────────── */
+.doz_sys .dropdown-menu{
+  background         : #fff !important;
+  border             : 2px solid var(--ad-line) !important;
+  border-radius      : 0 !important;
+  box-shadow         : none !important;
+  -webkit-box-shadow : none !important;
+  padding            : 0 !important;
+  min-width          : 172px !important;
+}
+
+.doz_sys .dropdown-menu > li > a{
+  font-size      : 14px !important;
+  font-weight    : 700 !important;
+  color          : var(--ad-ink) !important;
+  padding        : 8px 20px !important;
+  letter-spacing : 0 !important;
+  border-top     : 2px solid var(--ad-line) !important;
+  border-radius  : 0 !important;
+}
+
+.doz_sys .dropdown-menu > li:first-child > a{
+  border-top : 0 !important;
+}
+
+.doz_sys .dropdown-menu > li > a:hover,
+.doz_sys .dropdown-menu > li > a:focus,
+.doz_sys .dropdown-menu > li > a:active,
+.doz_sys .dropdown-menu > li > a.hover{
+  background-color : var(--ad-pink) !important;
+  color            : #fff !important;
+}
+
+/* 메뉴에서 드롭다운으로 마우스 옮길 때 중간에 끊기는 것 방지 */
+.doz_sys li.dropdown > ul.dropdown-menu::after{
+  content    : "";
+  position   : absolute;
+  inset-inline : 0;
+  inset-block-start : 100%;
+  display    : block;
+  height     : 120px;
+  background : transparent;
+}
+
+
+/* ─────────────────────────────────────────────
+   §4. 버튼
+   ───────────────────────────────────────────── */
+.doz_sys .btn-primary,
+.doz_sys .bg-brand{
+  background-color : var(--ad-pink) !important;
+  border           : 2px solid var(--ad-pink) !important;
+  border-radius    : 0 !important;
+  color            : #fff !important;
+  font-weight      : 800 !important;
+}
+
+.doz_sys .btn-primary:hover,
+.doz_sys .bg-brand:hover{
+  background-color : transparent !important;
+  color            : var(--ad-pink) !important;
+  border-color     : var(--ad-pink) !important;
+}
+
+.doz_sys .btn-primary:hover span{
+  color : var(--ad-pink) !important;
+}
+
+/* 각지게 — 버튼과 입력창만. (프로필 원형 이미지 등은 건드리지 않음) */
+.doz_sys .btn,
+.doz_sys .form-control,
+.doz_sys input[type="text"],
+.doz_sys input[type="password"],
+.doz_sys input[type="email"],
+.doz_sys input[type="tel"],
+.doz_sys input[type="number"],
+.doz_sys input[type="search"],
+.doz_sys select,
+.doz_sys textarea{
+  border-radius : 0 !important;
+}
+
+/* 입력창 포커스 — 접근성상 반드시 보여야 함 */
+.doz_sys .form-control:focus,
+.doz_sys input:focus,
+.doz_sys select:focus,
+.doz_sys textarea:focus{
+  border-color : var(--ad-pink) !important;
+  box-shadow   : none !important;
+  outline      : none;
+}
+
+/* 키보드 탭 이동 시 초점 표시 */
+.doz_sys a:focus-visible,
+.doz_sys button:focus-visible{
+  outline        : 2px solid var(--ad-pink);
+  outline-offset : 2px;
+}
+
+
+/* ─────────────────────────────────────────────
+   §5. 이미지 위젯 hover
+   요헤미티 실측: transition .3s
+   ───────────────────────────────────────────── */
+.doz_sys .widget.image .img_wrap,
+.doz_sys .widget.image ._img_box{
+  transition : opacity .3s ease;
+}
+.doz_sys .widget.image a:hover .img_wrap,
+.doz_sys .widget.image a:hover ._img_box{
+  opacity : .82;
+}
+
+
+/* ─────────────────────────────────────────────
+   §6. 갤러리 슬라이더 (저널 섹션) — 페이징 점
+   ───────────────────────────────────────────── */
+.doz_sys .owl-theme .owl-dots .owl-dot span{
+  width         : 9px !important;
+  height        : 9px !important;
+  border        : 2px solid var(--ad-line) !important;
+  border-radius : 0 !important;
+  background    : transparent !important;
+  margin        : 0 4px !important;
+}
+.doz_sys .owl-theme .owl-dots .owl-dot.active span{
+  background   : var(--ad-pink) !important;
+  border-color : var(--ad-pink) !important;
+}
+
+
+/* ─────────────────────────────────────────────
+   §7. 푸터
+   요헤미티 실측: 배경 #171717 / 흰 글씨 / 11px / 가운데 정렬
+   (클래스명 copryright-area 는 아임웹 원본 오타입니다. 그대로 써야 먹습니다.)
+   ───────────────────────────────────────────── */
+.doz_sys .footer-section{
+  background-color : var(--ad-night) !important;
+  color            : #ffffff !important;
+  font-size        : 11px !important;
+}
+
+.doz_sys .footer-section a{
+  color : #ffffff !important;
+}
+.doz_sys .footer-section a:hover{
+  color : var(--ad-pink) !important;
+}
+
+.doz_sys .footer-section .nav.nav-stacked.footer-all-nav li a{
+  padding   : 3px 7.5px !important;
+  font-size : 11px !important;
+}
+.doz_sys .footer-section .nav.nav-stacked.footer-all-nav li a:hover{
+  background : none !important;
+  opacity    : 1 !important;
+}
+
+.doz_sys .footer-section .footer-company-info{
+  color : rgba(255,255,255,.62) !important;
+}
+
+.doz_sys .footer-section .copryright-area{
+  font-size : 11px !important;
+  color     : rgba(255,255,255,.45) !important;
+}
+
+.doz_sys .footer-section .pc_mode_btn{
+  border-radius : 0 !important;
+  border        : 1px solid rgba(255,255,255,.2) !important;
+  background    : var(--ad-night) !important;
+  color         : #fff !important;
+}
+
+
+/* ─────────────────────────────────────────────
+   §8. 모바일 슬라이드 메뉴 (햄버거)
+   요헤미티 실측: 1depth 17px / 2depth 16px
+   ───────────────────────────────────────────── */
+.mobile_slide_menu_container .mobile_slide_menu,
+.mobile_slide_menu_container .mobile_slide_menu .profile-area{
+  background : var(--ad-paper) !important;
+}
+
+.mobile_slide_menu_container .viewport-nav.mobile li a{
+  color          : var(--ad-ink) !important;
+  letter-spacing : 0 !important;
+}
+
+.mobile_slide_menu_container .viewport-nav.mobile li.depth-01 > a{
+  font-size   : 17px !important;
+  font-weight : 700 !important;
+}
+
+.mobile_slide_menu_container .viewport-nav.mobile li li a{
+  font-size : 16px !important;
+}
+
+.mobile_slide_menu_container .viewport-nav.mobile li a.active-real,
+.mobile_slide_menu_container .viewport-nav.mobile li a.active-real span{
+  background : transparent !important;
+  color      : var(--ad-pink) !important;
+}
+
+.mobile_slide_menu_container .viewport-nav.mobile li.depth-01{
+  border-top : 1px solid rgba(0,0,0,.08) !important;
+}
+.mobile_slide_menu_container .viewport-nav.mobile li.depth-01:last-child{
+  border-bottom : 1px solid rgba(0,0,0,.08) !important;
+}
+
+.im-mobile-slide-footer{
+  background : var(--ad-paper) !important;
+  color      : var(--ad-ink) !important;
+}
+.im-mobile-slide-footer .btn{
+  color : var(--ad-ink) !important;
+}
+
+
+/* ─────────────────────────────────────────────
+   §9. 쇼핑몰 (상품 리스트 / 상세)   ※ 잠정
+   요헤미티 상품 페이지 저장본 확보 후 확정합니다.
+   지금은 아임웹 공통 클래스 기준으로만 잡아둡니다.
+   ───────────────────────────────────────────── */
+.doz_sys .item_money .item_price,
+.doz_sys .prd_price{
+  font-weight            : 800 !important;
+  font-variant-numeric   : tabular-nums;
+}
+
+.doz_sys .item_money .sale_price,
+.doz_sys .item_price_sale{
+  color : var(--ad-pink-dp) !important;
+}
+
+.doz_sys .item_icon span,
+.doz_sys .prd_badge,
+.doz_sys .item_badge{
+  border-radius : 0 !important;
+}
+
+/* 상품 하단 고정 구매바 */
+.doz_sys .buy_footer_fixed{
+  background   : var(--ad-paper) !important;
+  border-top   : 2px solid var(--ad-line) !important;
+}
+
+
+/* ─────────────────────────────────────────────
+   §10. 접근성
+   ───────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce){
+  .doz_sys *,
+  .doz_sys *::before,
+  .doz_sys *::after{
+    animation-duration        : .001s !important;
+    animation-iteration-count : 1 !important;
+    transition-duration       : .001s !important;
+  }
+}
+
+
+/* ─────────────────────────────────────────────
+   §11. [선택] 헤더 스크롤 배경
+   아임웹 관리자에서 직접 지정하는 게 우선입니다.
+   (디자인 모드 → 헤더 섹션 → 스크롤 시 배경색)
+   관리자에서 안 먹을 때만 아래 두 블록의 주석을 푸세요.
+   ───────────────────────────────────────────── */
+/*
+.new_header_overlay .scroll-to-fixed-fixed .section_bg_color{
+  background-color : rgba(243,242,239,.95) !important;
+}
+.new_header_overlay_mobile .scroll-to-fixed-fixed .section_bg_color{
+  background-color : var(--ad-paper) !important;
+}
+*/
