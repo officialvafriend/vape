@@ -1,210 +1,245 @@
 <title>액상덕후 — 무니코틴 액상</title>
 <style>
-/* ══════════════════════════════════════════════════════════
-   액상덕후 · 무니코틴 액상 전문
-   포지션 : "니코틴 없어도 맛있다" → 어둡고 감각적
-   (레딜은 "니코틴 없어서 안전" → 밝고 임상적. 정반대로 잡음)
+/* ══════════════════════════════════════════════════════════════════
+   액상덕후 — 홈
 
-   상품 데이터는 레포 liquid.html 의 실제 13종.
-   카드는 레딜 수준으로 가볍게 — 브랜드 / 이름 / 맛 / 멘솔여부 / 가격.
-   ══════════════════════════════════════════════════════════ */
+   뼈대 : 레딜 홈의 섹션 순서 (무니코틴 브랜드몰 표준 문법)
+   살   : 요헤미티 시각 문법 — border-radius 0, 2px 검정 선, 오프화이트
+   내용 : 레포 liquid.html 의 실제 무니코틴 13종
+
+   ── 레딜과 의도적으로 다르게 둔 것 ──────────────────────────
+   레딜에 이미 있는 것은 가져오지 않는다.
+     ✗ 맛 게이지 3축(달콤함/상큼함/묵직함) + 타격감 뱃지  → 레딜 홈에 있음
+     ✗ 취향 그룹 IMPACT / DAILY / DEEP                → 레딜 홈에 있음
+   대신 레딜이 가질 수 없는 축으로 간다.
+     ✓ 노멘솔 6종        — 레딜엔 이 구분이 없다
+     ✓ 여러 브랜드 큐레이션 — 레딜은 자사 제품만 판다
+   ══════════════════════════════════════════════════════════════════ */
 :root{
-  --void:#0A0A0B; --paper:#F3F2EF; --card:#FFF;
-  --ink:#111; --muted-d:rgba(255,255,255,.52); --muted-l:#7C7972; --muted2:#5F5C57;
-  --line-d:rgba(255,255,255,.11); --line-l:#E2DED7;
-  --pink:#FF2D6F; --pink-dp:#C4005C;
+  --paper:#F3F2EF; --paper2:#E7E5E0; --ink:#111; --line:#000;
+  --pink:#FF2D6F; --pink-dp:#C4005C; --night:#141414;
+  --muted:#6B6862;
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
 body{
-  margin:0;background:var(--void);color:var(--paper);
+  margin:0;background:var(--paper);color:var(--ink);
   font-family:Pretendard,"Pretendard Variable",-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;
-  font-size:16px;line-height:1.62;-webkit-font-smoothing:antialiased;word-break:keep-all;
+  font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased;word-break:keep-all;
 }
 a{color:inherit;text-decoration:none}
 button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
-.wrap{max-width:1200px;margin:0 auto;padding:0 24px}
+.wrap{max-width:1240px;margin:0 auto;padding:0 24px}
 .num{font-variant-numeric:tabular-nums}
 
-.eyebrow{margin:0 0 20px;font-size:11.5px;font-weight:900;letter-spacing:.28em;text-transform:uppercase;color:var(--pink)}
-.display{margin:0;font-weight:950;line-height:.94;letter-spacing:-.052em;font-size:clamp(38px,6.4vw,88px);text-wrap:balance}
-.display span{display:block}
-.display .dim{color:rgba(255,255,255,.34)}
-h2.sec{margin:0;font-weight:950;line-height:1.02;letter-spacing:-.048em;font-size:clamp(32px,4.8vw,64px);text-wrap:balance}
-h2.sec em{font-style:normal;color:var(--pink)}
-.lede{margin:20px 0 0;max-width:52ch;font-size:17px;line-height:1.72}
+.eyebrow{margin:0 0 16px;font-size:11px;font-weight:900;letter-spacing:.3em;text-transform:uppercase}
+h2.sec{margin:0;font-weight:900;line-height:1.0;letter-spacing:-.045em;font-size:clamp(34px,5.4vw,72px);text-wrap:balance}
+h2.sec em{font-style:normal;color:var(--pink-dp)}
+.lede{margin:20px 0 0;max-width:54ch;font-size:16.5px;line-height:1.75;color:var(--muted)}
+section{padding:clamp(64px,8vw,116px) 0;position:relative}
+.shead{margin-bottom:clamp(34px,4.2vw,54px)}
 
-.dark{background:var(--void);color:var(--paper)}
-.dark .lede{color:var(--muted-d)}
-.light{background:var(--paper);color:var(--ink)}
-.light .lede{color:var(--muted-l)}
-.light .eyebrow{color:var(--pink-dp)}
-.light h2.sec em{color:var(--pink-dp)}
-section{padding:clamp(76px,10vw,140px) 0;position:relative;overflow:hidden}
-.shead{margin-bottom:clamp(36px,4.4vw,56px)}
+/* 각진 문법 — 모서리 0, 그림자 없음, 2px 검정 */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;height:56px;padding:0 30px;
+  border:2px solid var(--line);border-radius:0;font-size:15px;font-weight:900;letter-spacing:-.015em;
+  background:#fff;color:var(--ink);transition:background .18s,color .18s,border-color .18s}
+.btn:hover{background:var(--ink);color:#fff}
+.btn--pink{background:var(--pink);border-color:var(--pink);color:#fff}
+.btn--pink:hover{background:transparent;color:var(--pink-dp);border-color:var(--pink)}
+.btn:focus-visible{outline:3px solid var(--pink);outline-offset:2px}
 
-.btn{display:inline-flex;align-items:center;gap:10px;height:58px;padding:0 32px;border-radius:999px;
-  font-size:15px;font-weight:900;letter-spacing:-.015em;border:1px solid transparent;transition:.26s cubic-bezier(.22,.9,.3,1)}
-.btn--pink{background:var(--pink);color:#fff}
-.btn--pink:hover{transform:translateY(-3px);box-shadow:0 18px 44px rgba(255,45,111,.4)}
-.btn--out{border-color:rgba(255,255,255,.26);color:#fff}
-.btn--out:hover{background:#fff;color:var(--void);border-color:#fff}
-.btn:focus-visible{outline:2px solid var(--pink);outline-offset:3px}
-
-.notice{background:#000;color:rgba(255,255,255,.72);font-size:12px;font-weight:700;border-bottom:1px solid var(--line-d)}
-.notice .wrap{display:flex;align-items:center;justify-content:center;height:38px;text-align:center}
-.notice b{color:var(--pink)}
-.hd{position:sticky;top:0;z-index:80;background:rgba(10,10,11,.72);backdrop-filter:blur(18px) saturate(140%);border-bottom:1px solid var(--line-d)}
-.hd .wrap{display:flex;align-items:center;justify-content:space-between;height:68px;gap:20px}
-.logo{font-size:20px;font-weight:950;letter-spacing:-.05em;white-space:nowrap}
-.logo em{font-style:normal;color:var(--pink)}
-.gnb{display:flex;gap:4px;list-style:none;margin:0;padding:0}
-.gnb a{display:block;padding:0 16px;line-height:40px;font-size:14px;font-weight:800;border-radius:999px;color:rgba(255,255,255,.78);transition:.2s}
-.gnb a:hover{color:#fff;background:rgba(255,255,255,.08)}
-.hutil{display:flex;align-items:center;gap:15px;font-size:13.5px;font-weight:800;white-space:nowrap;color:rgba(255,255,255,.8)}
-.badge{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 6px;border-radius:999px;background:var(--pink);color:#fff;font-size:11px;font-weight:900;margin-left:6px}
-@media(max-width:900px){.gnb,.hide-m{display:none}}
+/* ── 상단 유틸바 · 헤더 ── */
+.util{background:var(--night);color:rgba(255,255,255,.74);font-size:12px;font-weight:700}
+.util .wrap{display:flex;align-items:center;justify-content:center;height:36px;text-align:center}
+.util b{color:var(--pink)}
+.hd{position:sticky;top:0;z-index:80;background:var(--paper);border-bottom:2px solid var(--line)}
+.hd .wrap{display:flex;align-items:center;justify-content:space-between;height:66px;gap:20px}
+.logo{font-size:20px;font-weight:900;letter-spacing:-.05em;white-space:nowrap}
+.logo em{font-style:normal;color:var(--pink-dp)}
+.gnb{display:flex;list-style:none;margin:0;padding:0}
+.gnb a{display:block;padding:0 14px;line-height:64px;font-size:14px;font-weight:700;transition:color .18s}
+.gnb a:hover{color:var(--pink)}
+.hutil{display:flex;align-items:center;gap:14px;font-size:13.5px;font-weight:700;white-space:nowrap}
+.badge{display:inline-flex;align-items:center;justify-content:center;min-width:19px;height:19px;padding:0 6px;
+  background:var(--pink);color:#fff;font-size:11px;font-weight:900;margin-left:5px}
+@media(max-width:960px){.gnb,.hide-m{display:none}}
 
 /* ═══ 히어로 ═══ */
-.hero{padding:0;min-height:clamp(560px,84vh,860px);display:flex;align-items:center;position:relative}
-.hero canvas{position:absolute;inset:0;width:100%;height:100%}
-.hero .wrap{position:relative;z-index:2;padding-top:80px;padding-bottom:80px}
-.hero-in{max-width:820px}
-.hero .display{font-size:clamp(42px,8.2vw,116px)}
-.hero-sub{margin:30px 0 0;font-size:clamp(16px,1.9vw,20px);line-height:1.7;color:rgba(255,255,255,.62);max-width:40ch}
-.hero-cta{display:flex;gap:12px;margin-top:42px;flex-wrap:wrap}
-.hero-meta{display:flex;margin-top:64px;border-top:1px solid var(--line-d);flex-wrap:wrap}
-.hm{padding:22px 34px 0 0;margin-right:34px;border-right:1px solid var(--line-d)}
-.hm:last-child{border-right:0}
-.hm b{display:block;font-size:clamp(28px,3.4vw,42px);font-weight:950;letter-spacing:-.05em;line-height:1}
-.hm b em{font-style:normal;color:var(--pink)}
-.hm span{display:block;margin-top:7px;font-size:12.5px;font-weight:700;color:rgba(255,255,255,.44)}
-@media(max-width:560px){.hm{padding-right:22px;margin-right:22px}}
+.hero{border-bottom:2px solid var(--line)}
+.hero .wrap{padding:0}
+.hero-in{display:grid;grid-template-columns:1fr;border-left:2px solid var(--line);border-right:2px solid var(--line)}
+@media(min-width:980px){.hero-in{grid-template-columns:1.35fr .65fr}}
+.hero-l{padding:clamp(52px,7vw,96px) clamp(28px,4vw,64px);display:flex;flex-direction:column;justify-content:center}
+@media(min-width:980px){.hero-l{border-right:2px solid var(--line)}}
+.hero h1{margin:0;font-weight:900;line-height:.92;letter-spacing:-.055em;font-size:clamp(40px,7.4vw,104px)}
+.hero h1 span{display:block}
+.hero h1 .out{color:transparent;-webkit-text-stroke:2px var(--ink)}
+.hero h1 .pk{display:inline;color:var(--pink)}
+.hero-sub{margin:28px 0 0;font-size:clamp(15px,1.8vw,19px);line-height:1.7;color:var(--muted);max-width:38ch}
+.hero-cta{display:flex;margin-top:38px;flex-wrap:wrap}
+.hero-cta .btn+.btn{margin-left:-2px}
+.hero-r{display:grid;grid-template-rows:repeat(3,1fr);border-top:2px solid var(--line)}
+@media(min-width:980px){.hero-r{border-top:0}}
+.hstat{padding:clamp(22px,3vw,34px);border-bottom:2px solid var(--line);display:flex;flex-direction:column;justify-content:center}
+.hstat:last-child{border-bottom:0}
+.hstat b{font-size:clamp(32px,4.4vw,54px);font-weight:900;letter-spacing:-.05em;line-height:1}
+.hstat b em{font-style:normal;color:var(--pink)}
+.hstat span{margin-top:6px;font-size:12.5px;font-weight:700;color:var(--muted)}
 
-/* ═══ 필터 ═══ */
-.fbar{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;
-  padding:15px 0;border-top:1px solid var(--line-l);border-bottom:1px solid var(--line-l);margin-bottom:30px}
-.chips{display:flex;gap:8px;flex-wrap:wrap}
-.chip{padding:9px 18px;border-radius:999px;font-size:13.5px;font-weight:800;background:#fff;border:1px solid var(--line-l);color:var(--muted2);transition:.2s}
-.chip:hover{border-color:#BDB8AF}
-.chip[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
-.chip:focus-visible{outline:2px solid var(--pink);outline-offset:2px}
-.cnt{font-size:13px;font-weight:800;color:var(--muted-l)}
+/* ═══ 0mg 선언 ═══ */
+.zero{background:var(--night);color:var(--paper)}
+.zero .lede{color:rgba(255,255,255,.58)}
+.zero .eyebrow{color:var(--pink)}
+.zgrid{display:grid;grid-template-columns:1fr;border-top:2px solid rgba(255,255,255,.22);border-left:2px solid rgba(255,255,255,.22)}
+@media(min-width:900px){.zgrid{grid-template-columns:repeat(3,1fr)}}
+.zc{padding:clamp(30px,4vw,46px);border-right:2px solid rgba(255,255,255,.22);border-bottom:2px solid rgba(255,255,255,.22)}
+.zc b{display:block;font-size:clamp(48px,6.6vw,86px);font-weight:900;letter-spacing:-.06em;line-height:.92}
+.zc b em{font-style:normal;color:var(--pink)}
+.zc strong{display:block;margin-top:16px;font-size:17px;font-weight:900;letter-spacing:-.02em}
+.zc span{display:block;margin-top:8px;font-size:14px;line-height:1.65;color:rgba(255,255,255,.55)}
+
+/* ═══ 상품 ═══ */
+.fbar{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:26px}
+.chips{display:flex;flex-wrap:wrap}
+.chip{padding:11px 20px;font-size:13.5px;font-weight:800;background:#fff;border:2px solid var(--line);margin-left:-2px;transition:background .18s,color .18s}
+.chip:first-child{margin-left:0}
+.chip:hover{background:var(--paper2)}
+.chip[aria-pressed="true"]{background:var(--ink);color:#fff;position:relative;z-index:2}
+.chip:focus-visible{outline:3px solid var(--pink);outline-offset:2px;position:relative;z-index:3}
+.cnt{font-size:13px;font-weight:800;color:var(--muted)}
 .cnt b{color:var(--ink)}
 
-/* ═══ 상품 카드 (가벼운 버전) ═══ */
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:18px}
-.pc{position:relative;border-radius:24px;overflow:hidden;isolation:isolate;background:var(--card);
-  border:1px solid var(--line-l);padding:18px;display:flex;flex-direction:column;text-align:left;
-  transition:transform .34s cubic-bezier(.22,.9,.3,1),box-shadow .34s ease}
-.pc:hover{transform:translateY(-8px);box-shadow:0 28px 64px rgba(0,0,0,.13)}
-.pc .aura{position:absolute;inset:-40% -20% auto -20%;height:74%;z-index:-1;filter:blur(44px);opacity:.5;transition:.45s}
-.pc:hover .aura{opacity:.85;transform:translateY(8px) scale(1.06)}
-.pc-vis{aspect-ratio:1/1;border-radius:17px;background:rgba(255,255,255,.55);display:grid;place-items:center;
-  margin-bottom:16px;border:1px solid rgba(0,0,0,.05);backdrop-filter:blur(6px)}
-.pc-vis span{font-size:11px;font-weight:800;color:#A8A49D;letter-spacing:.1em}
-.brand{align-self:flex-start;font-size:10.5px;font-weight:950;letter-spacing:.12em;padding:5px 11px;border-radius:999px;background:var(--ink);color:#fff}
-.pc h3{margin:11px 0 4px;font-size:18.5px;font-weight:950;letter-spacing:-.04em;line-height:1.24}
-.pc .taste{margin:0;font-size:13.5px;color:var(--muted-l);font-weight:700}
-.pc-bot{margin-top:15px;padding-top:13px;border-top:1px solid rgba(0,0,0,.09);display:flex;align-items:center;justify-content:space-between;gap:8px}
-.men{font-size:11px;font-weight:950;letter-spacing:.06em;padding:4px 9px;border-radius:7px;background:#EDEAE4;color:var(--muted2)}
-.men.no{background:rgba(255,45,111,.1);color:var(--pink-dp)}
-.pcprice{font-size:15.5px;font-weight:950;letter-spacing:-.03em}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(238px,1fr));
+  border-top:2px solid var(--line);border-left:2px solid var(--line)}
+.pc{border-right:2px solid var(--line);border-bottom:2px solid var(--line);background:#fff;
+  padding:20px;display:flex;flex-direction:column;text-align:left;transition:background .2s}
+.pc:hover{background:var(--paper2)}
+.pc-vis{aspect-ratio:1/1;border:2px solid var(--line);display:grid;place-items:center;margin-bottom:16px;position:relative;overflow:hidden}
+.pc-vis .swatch{position:absolute;inset:0;opacity:.9}
+.pc-vis .ph{position:relative;z-index:2;font-size:11px;font-weight:900;letter-spacing:.1em;color:rgba(0,0,0,.5);
+  background:rgba(255,255,255,.86);padding:5px 10px;border:2px solid rgba(0,0,0,.16)}
+.brand{align-self:flex-start;font-size:10.5px;font-weight:900;letter-spacing:.12em;padding:4px 10px;background:var(--ink);color:#fff}
+.pc h3{margin:11px 0 3px;font-size:18px;font-weight:900;letter-spacing:-.04em;line-height:1.25}
+.pc .taste{margin:0;font-size:13.5px;color:var(--muted);font-weight:700}
+.pc-bot{margin-top:auto;padding-top:14px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.men{font-size:10.5px;font-weight:900;letter-spacing:.06em;padding:4px 8px;border:2px solid var(--line)}
+.men.no{background:var(--pink);color:#fff;border-color:var(--pink)}
+.pcprice{font-size:15.5px;font-weight:900;letter-spacing:-.03em}
 
-/* ═══ 0mg ═══ */
-.zero canvas{position:absolute;inset:0;width:100%;height:100%}
-.zero .wrap{position:relative;z-index:2}
-.zero-grid{display:grid;grid-template-columns:1fr;gap:52px;align-items:center}
-@media(min-width:920px){.zero-grid{grid-template-columns:1.1fr .9fr;gap:72px}}
-.zbig{margin:0;font-size:clamp(88px,17vw,230px);font-weight:950;line-height:.8;letter-spacing:-.07em}
-.zbig em{font-style:normal;color:var(--pink)}
-.zbig small{display:block;font-size:clamp(15px,1.7vw,20px);font-weight:800;letter-spacing:.04em;color:rgba(255,255,255,.5);margin-top:22px;line-height:1.6}
-.zlist{display:grid;gap:12px}
-.zitem{border:1px solid var(--line-d);border-radius:20px;background:rgba(255,255,255,.04);padding:22px 26px;transition:.28s}
-.zitem:hover{background:rgba(255,255,255,.07);transform:translateX(6px)}
-.zitem strong{display:block;font-size:19px;font-weight:900;letter-spacing:-.03em}
-.zitem span{display:block;margin-top:7px;font-size:14px;line-height:1.6;color:var(--muted-d)}
+/* ═══ 노멘솔 — 레딜에 없는 축 ═══ */
+.nm{background:var(--paper2);border-top:2px solid var(--line);border-bottom:2px solid var(--line)}
+.nm-grid{display:grid;grid-template-columns:1fr}
+@media(min-width:940px){.nm-grid{grid-template-columns:.95fr 1.05fr}}
+.nm-l{padding:clamp(34px,4.4vw,60px);border:2px solid var(--line);background:#fff}
+.nm-r{border:2px solid var(--line);background:#fff;display:grid;grid-template-columns:repeat(2,1fr);margin-top:-2px}
+@media(min-width:620px){.nm-r{grid-template-columns:repeat(3,1fr)}}
+@media(min-width:940px){.nm-r{margin-top:0;margin-left:-2px}}
+.nmi{border-right:2px solid var(--line);border-bottom:2px solid var(--line);padding:22px 20px;
+  display:flex;flex-direction:column;justify-content:flex-end;min-height:134px}
+.nmi i{display:block;width:34px;height:8px;margin-bottom:14px;font-style:normal}
+.nmi b{font-size:16px;font-weight:900;letter-spacing:-.03em}
+.nmi span{margin-top:5px;font-size:12.5px;color:var(--muted);font-weight:700}
 
-/* ═══ 계열 카드 ═══ */
-.grp{display:grid;grid-template-columns:1fr;gap:18px}
-@media(min-width:860px){.grp{grid-template-columns:repeat(3,1fr)}}
-.gcard{position:relative;min-height:400px;border-radius:28px;overflow:hidden;display:flex;align-items:flex-end;transition:transform .34s cubic-bezier(.22,.9,.3,1)}
-.gcard:hover{transform:translateY(-8px)}
-.gcard .gbg{position:absolute;inset:0;transition:transform .6s cubic-bezier(.22,.9,.3,1)}
-.gcard:hover .gbg{transform:scale(1.07)}
-.gcard:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.1) 20%,rgba(0,0,0,.86))}
-.gcard .gin{position:relative;z-index:2;padding:32px;color:#fff}
-.gcard .gn{font-size:11.5px;font-weight:950;letter-spacing:.2em;color:rgba(255,255,255,.6)}
-.gcard h3{margin:12px 0 10px;font-size:34px;font-weight:950;letter-spacing:-.05em;line-height:1}
-.gcard p{margin:0;font-size:14.5px;line-height:1.62;color:rgba(255,255,255,.76)}
-.gcard .more{display:inline-block;margin-top:16px;font-size:13px;font-weight:900;color:var(--pink)}
+/* ═══ 큐레이션 ═══ */
+.cur{display:grid;grid-template-columns:1fr;border-top:2px solid var(--line);border-left:2px solid var(--line)}
+@media(min-width:860px){.cur{grid-template-columns:repeat(3,1fr)}}
+.cc{border-right:2px solid var(--line);border-bottom:2px solid var(--line);background:#fff;padding:clamp(28px,3.4vw,42px)}
+.cc b{display:block;font-size:clamp(38px,5vw,62px);font-weight:900;letter-spacing:-.06em;line-height:1}
+.cc b em{font-style:normal;color:var(--pink)}
+.cc strong{display:block;margin-top:14px;font-size:18px;font-weight:900;letter-spacing:-.03em}
+.cc p{margin:8px 0 0;font-size:14.5px;line-height:1.65;color:var(--muted)}
 
 /* ═══ 후기 ═══ */
-.rvs{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
-.rv{border:1px solid var(--line-d);border-radius:24px;background:rgba(255,255,255,.035);padding:28px;display:flex;flex-direction:column;gap:16px;transition:.28s}
-.rv:hover{background:rgba(255,255,255,.065);transform:translateY(-4px)}
-.stars{color:var(--pink);font-size:13px;letter-spacing:.16em}
-.rv p{margin:0;font-size:15px;line-height:1.68;font-weight:600}
-.rv .who{font-size:12.5px;color:rgba(255,255,255,.4);font-weight:700}
+.rvs{display:grid;grid-template-columns:repeat(auto-fill,minmax(272px,1fr));border-top:2px solid var(--line);border-left:2px solid var(--line)}
+.rv{border-right:2px solid var(--line);border-bottom:2px solid var(--line);background:#fff;padding:26px;display:flex;flex-direction:column;gap:14px}
+.stars{color:var(--pink-dp);font-size:13px;letter-spacing:.16em}
+.rv p{margin:0;font-size:14.5px;line-height:1.68;font-weight:600}
+.rv .who{font-size:12.5px;color:var(--muted);font-weight:700}
 
-.cta{text-align:center}
-.cta canvas{position:absolute;inset:0;width:100%;height:100%}
-.cta .wrap{position:relative;z-index:2}
-.cta .lede{margin:22px auto 38px;text-align:center}
+/* ═══ FAQ ═══ */
+.faq{border-top:2px solid var(--line)}
+.faq details{border-bottom:2px solid var(--line);background:#fff}
+.faq summary{padding:24px 26px;font-size:16.5px;font-weight:900;letter-spacing:-.03em;cursor:pointer;
+  list-style:none;display:flex;align-items:center;justify-content:space-between;gap:16px;transition:background .18s}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary:hover{background:var(--paper2)}
+.faq summary:after{content:"+";font-size:24px;font-weight:900;line-height:1;color:var(--pink-dp);flex:0 0 auto}
+.faq details[open] summary:after{content:"−"}
+.faq summary:focus-visible{outline:3px solid var(--pink);outline-offset:-3px}
+.faq .ans{padding:0 26px 26px;font-size:15px;line-height:1.75;color:var(--muted);max-width:70ch}
+.faq .ans strong{color:var(--ink)}
 
-.ft{background:#000;color:rgba(255,255,255,.44);font-size:12.5px;padding:58px 0 66px;border-top:1px solid var(--line-d)}
-.ft-nav{display:flex;gap:20px;flex-wrap:wrap;margin-bottom:24px;font-size:13px;font-weight:800}
-.ft-nav a{color:rgba(255,255,255,.82)}
+/* ═══ CTA ═══ */
+.cta{background:var(--night);color:var(--paper);text-align:center;border-top:2px solid var(--line)}
+.cta .eyebrow{color:var(--pink)}
+.cta .lede{margin:20px auto 34px;text-align:center;color:rgba(255,255,255,.58)}
+
+/* ═══ 푸터 ═══ */
+.ft{background:var(--night);color:rgba(255,255,255,.42);font-size:12.5px;padding:52px 0 62px;border-top:2px solid rgba(255,255,255,.16)}
+.ft-nav{display:flex;gap:18px;flex-wrap:wrap;margin-bottom:22px;font-size:13px;font-weight:800}
+.ft-nav a{color:rgba(255,255,255,.8)}
 .ft-nav a:hover{color:var(--pink)}
-.ft p{margin:5px 0;line-height:1.8}
-.ft .age{margin-top:16px;color:var(--pink);font-weight:800}
-.ft .cr{margin-top:18px;color:rgba(255,255,255,.24)}
+.ft p{margin:4px 0;line-height:1.8}
+.ft .age{margin-top:15px;color:var(--pink);font-weight:800}
+.ft .cr{margin-top:16px;color:rgba(255,255,255,.24)}
 
-.rev{opacity:0;transform:translateY(24px);transition:opacity .8s ease,transform .8s cubic-bezier(.22,.9,.3,1)}
+.rev{opacity:0;transform:translateY(18px);transition:opacity .7s ease,transform .7s cubic-bezier(.22,.9,.3,1)}
 .rev.on{opacity:1;transform:none}
-@media(prefers-reduced-motion:reduce){.rev{opacity:1;transform:none}*{transition:none!important;animation:none!important}}
+@media(prefers-reduced-motion:reduce){.rev{opacity:1;transform:none}*{transition:none!important}}
 </style>
 
-<div class="notice"><div class="wrap"><span>니코틴 <b>0mg</b> · 5만원 이상 무료배송 · 오후 3시 이전 결제 시 당일 출고</span></div></div>
+<div class="util"><div class="wrap"><span>🔞 19세 미만 구매 불가 · 니코틴 <b>0mg</b> · 5만원 이상 무료배송</span></div></div>
 
 <header class="hd"><div class="wrap">
   <span class="logo">액상<em>덕후</em></span>
   <nav><ul class="gnb">
     <li><a href="#shop">무니코틴</a></li>
-    <li><a href="#zero">0mg란</a></li>
-    <li><a href="#group">맛 계열</a></li>
+    <li><a href="#nomenthol">노멘솔</a></li>
+    <li><a href="#curation">취급 브랜드</a></li>
     <li><a href="#review">후기</a></li>
+    <li><a href="#faq">자주 묻는 질문</a></li>
   </ul></nav>
   <span class="hutil"><span class="hide-m">로그인</span><span>장바구니<span class="badge">0</span></span></span>
 </div></header>
 
 <!-- ═══ 히어로 ═══ -->
-<div class="hero dark">
-  <canvas id="c1" aria-hidden="true"></canvas>
-  <div class="wrap"><div class="hero-in">
+<div class="hero"><div class="wrap"><div class="hero-in">
+  <div class="hero-l">
     <p class="eyebrow">Nicotine Free</p>
-    <h1 class="display"><span>니코틴은</span><span class="dim">뺐습니다.</span><span>맛은 <em style="font-style:normal;color:var(--pink)">그대로</em> 뒀고요.</span></h1>
+    <h1><span>니코틴은</span><span class="out">뺐습니다.</span><span>맛은 <span class="pk">그대로</span>.</span></h1>
     <p class="hero-sub">빼는 건 쉽습니다. 빼고도 맛이 남게 만드는 게 어렵죠. 그런 액상만 골라 들여옵니다.</p>
     <div class="hero-cta">
       <a class="btn btn--pink" href="#shop">무니코틴 13종 보기</a>
-      <a class="btn btn--out" href="#zero">0mg가 뭔가요</a>
+      <a class="btn" href="#nomenthol">노멘솔만 보기</a>
     </div>
-    <div class="hero-meta">
-      <div class="hm"><b class="num"><em>0</em>mg</b><span>니코틴</span></div>
-      <div class="hm"><b class="num">13<em>종</em></b><span>무니코틴 액상</span></div>
-      <div class="hm"><b class="num">6<em>종</em></b><span>노멘솔</span></div>
-    </div>
-  </div></div>
-</div>
+  </div>
+  <div class="hero-r">
+    <div class="hstat"><b class="num"><em>0</em>mg</b><span>니코틴 · 타르</span></div>
+    <div class="hstat"><b class="num">13<em>종</em></b><span>무니코틴 액상</span></div>
+    <div class="hstat"><b class="num">6<em>종</em></b><span>노멘솔</span></div>
+  </div>
+</div></div></div>
+
+<!-- ═══ 0mg ═══ -->
+<section class="zero" id="zero"><div class="wrap">
+  <div class="shead rev">
+    <p class="eyebrow">What We Removed</p>
+    <h2 class="sec">비워낸 것과<br>남긴 것</h2>
+  </div>
+  <div class="zgrid rev">
+    <div class="zc"><b class="num"><em>0</em>mg</b><strong>니코틴 무첨가</strong><span>중독성 물질이 들어가지 않습니다. 습관은 남기되 의존은 남기지 않는 쪽을 택했습니다.</span></div>
+    <div class="zc"><b class="num"><em>0</em>mg</b><strong>타르 없음</strong><span>연소가 아니라 기화 방식이라 타르가 생기지 않습니다.</span></div>
+    <div class="zc"><b class="num">13<em>종</em></b><strong>전 제품 무니코틴</strong><span>일부만이 아니라 취급 액상 전부가 니코틴 0mg입니다.</span></div>
+  </div>
+</div></section>
 
 <!-- ═══ 상품 ═══ -->
-<section class="light" id="shop"><div class="wrap">
+<section id="shop"><div class="wrap">
   <div class="shead rev">
-    <p class="eyebrow">Nicotine-Free Lineup</p>
+    <p class="eyebrow">Lineup</p>
     <h2 class="sec">니코틴 <em>0mg</em> 액상만<br>모았습니다</h2>
-    <p class="lede">멘솔이 싫으신 분은 노멘솔만 골라 보세요. 6종 있습니다.</p>
+    <p class="lede">멘솔이 부담스러우시면 노멘솔만 골라 보세요. 6종 있습니다.</p>
   </div>
-
   <div class="fbar rev">
     <div class="chips">
       <button class="chip" aria-pressed="true" data-f="ALL">전체</button>
@@ -216,73 +251,72 @@ section{padding:clamp(76px,10vw,140px) 0;position:relative;overflow:hidden}
     </div>
     <span class="cnt"><b id="cnt">13</b>종</span>
   </div>
-
   <div class="grid" id="grid"></div>
 </div></section>
 
-<!-- ═══ 0mg ═══ -->
-<section class="dark zero" id="zero">
-  <canvas id="c2" aria-hidden="true"></canvas>
-  <div class="wrap"><div class="zero-grid">
-    <div class="rev">
-      <p class="eyebrow">What We Removed</p>
-      <p class="zbig num"><em>0</em>mg<small>니코틴도, 타르도 없습니다.<br>남긴 건 맛과 향뿐입니다.</small></p>
+<!-- ═══ 노멘솔 ═══ -->
+<section class="nm" id="nomenthol"><div class="wrap">
+  <div class="nm-grid rev">
+    <div class="nm-l">
+      <p class="eyebrow" style="color:var(--pink-dp)">No Menthol</p>
+      <h2 class="sec" style="font-size:clamp(30px,3.8vw,50px)">멘솔이 싫으면<br><em>고를 게 없죠</em></h2>
+      <p class="lede">무니코틴 액상은 대부분 멘솔입니다. 청량감으로 니코틴의 빈자리를 메우기 쉬워서요.<br><br>그래서 노멘솔만 따로 골라뒀습니다. 13종 중 6종입니다.</p>
+      <p style="margin-top:26px"><a class="btn btn--pink" href="#shop" data-jump="NM">노멘솔 6종 보기</a></p>
     </div>
-    <div class="zlist rev">
-      <div class="zitem"><strong>니코틴 무첨가</strong><span>중독성 물질이 들어가지 않습니다. 습관은 남기되 의존은 남기지 않는 쪽입니다.</span></div>
-      <div class="zitem"><strong>타르 없음</strong><span>연소가 아니라 기화 방식이라 타르가 생기지 않습니다.</span></div>
-      <div class="zitem"><strong>노멘솔 6종</strong><span>멘솔이 부담스러우신 분들을 위해 따로 골라뒀습니다.</span></div>
-      <div class="zitem"><strong>성분표 공개</strong><span>무엇이 들어갔는지 제품 페이지에 그대로 적어둡니다.</span></div>
-    </div>
-  </div></div>
-</section>
-
-<!-- ═══ 계열 ═══ -->
-<section class="light" id="group"><div class="wrap">
-  <div class="shead rev">
-    <p class="eyebrow">Taste Group</p>
-    <h2 class="sec">지금 끌리는 쪽에서<br><em>시작하세요</em></h2>
+    <div class="nm-r" id="nmr"></div>
   </div>
-  <div class="grp">
-    <a class="gcard rev" href="#shop" data-jump="과일">
-      <div class="gbg" style="background:radial-gradient(120% 100% at 30% 20%,#C084FC,#7E22CE 46%,#2A0C40)"></div>
-      <div class="gin"><span class="gn">7종</span><h3>과일</h3><p>거봉·샤인머스캣·석류·자몽·체리·알로에. 가장 무난하게 시작할 수 있는 쪽입니다.</p><span class="more">과일 계열 보기 →</span></div>
-    </a>
-    <a class="gcard rev" href="#shop" data-jump="청량">
-      <div class="gbg" style="background:radial-gradient(120% 100% at 30% 20%,#67E8F9,#0891B2 46%,#062E36)"></div>
-      <div class="gin"><span class="gn">4종</span><h3>청량 · 음료</h3><p>아이스스노우·민트·블랙멘솔·콜라. 답답할 때 뚫어주는 계열입니다.</p><span class="more">청량 계열 보기 →</span></div>
-    </a>
-    <a class="gcard rev" href="#shop" data-jump="타바코">
-      <div class="gbg" style="background:radial-gradient(120% 100% at 30% 20%,#D6C3A5,#92400E 46%,#2A1608)"></div>
-      <div class="gin"><span class="gn">2종</span><h3>타바코</h3><p>시가·마일드토바코. 연초에서 넘어오시는 분들이 가장 많이 찾습니다.</p><span class="more">타바코 계열 보기 →</span></div>
-    </a>
+</div></section>
+
+<!-- ═══ 큐레이션 ═══ -->
+<section id="curation"><div class="wrap">
+  <div class="shead rev">
+    <p class="eyebrow">Curation</p>
+    <h2 class="sec">한 브랜드만 파는<br><em>곳이 아닙니다</em></h2>
+    <p class="lede">자사 제품 하나를 파는 곳은 그 하나를 권할 수밖에 없습니다. 저희는 여러 브랜드를 놓고 고릅니다.</p>
+  </div>
+  <div class="cur rev">
+    <div class="cc"><b class="num">312<em>종</em></b><strong>검토한 액상</strong><p>시중 액상 312종을 정리해두고 그중에서 고릅니다.</p></div>
+    <div class="cc"><b class="num">13<em>종</em></b><strong>무니코틴만 통과</strong><p>니코틴이 들어간 나머지는 이 페이지에 올리지 않았습니다.</p></div>
+    <div class="cc"><b class="num">2<em>개</em></b><strong>취급 브랜드</strong><p>무무(제로닉 11종) · 무(2종). 좋은 게 나오면 늘립니다.</p></div>
   </div>
 </div></section>
 
 <!-- ═══ 후기 ═══ -->
-<section class="dark" id="review"><div class="wrap">
+<section style="background:var(--paper2);border-top:2px solid var(--line)" id="review"><div class="wrap">
   <div class="shead rev">
     <p class="eyebrow">Reviews</p>
     <h2 class="sec">후기로 보는 <em>액상덕후</em></h2>
   </div>
   <div class="rvs">
     <div class="rv rev"><span class="stars">★★★★★</span><p>“무니코틴이라 밍밍할 줄 알았는데 전혀 아니었어요. 향이 선명합니다.”</p><span class="who">구매 고객</span></div>
-    <div class="rv rev"><span class="stars">★★★★★</span><p>“노멘솔만 따로 모아둬서 고르기 편했습니다. 멘솔 못 견디는데 살렸어요.”</p><span class="who">구매 고객</span></div>
+    <div class="rv rev"><span class="stars">★★★★★</span><p>“노멘솔만 따로 모아둬서 고르기 편했습니다. 멘솔 못 견디는데 살았어요.”</p><span class="who">구매 고객</span></div>
     <div class="rv rev"><span class="stars">★★★★★</span><p>“끊고 싶은데 손이 심심할 때 쓰기 딱 좋아요. 죄책감이 없습니다.”</p><span class="who">구매 고객</span></div>
     <div class="rv rev"><span class="stars">★★★★★</span><p>“오후에 주문했는데 다음 날 왔어요. 포장도 꼼꼼합니다.”</p><span class="who">구매 고객</span></div>
   </div>
 </div></section>
 
-<!-- ═══ CTA ═══ -->
-<section class="dark cta">
-  <canvas id="c3" aria-hidden="true"></canvas>
-  <div class="wrap">
-    <p class="eyebrow" style="text-align:center">Start Here</p>
-    <h2 class="sec">뭘 고를지 모르겠으면,<br><em>물어보세요.</em></h2>
-    <p class="lede">좋아하시는 맛 하나만 말씀해주시면 가까운 액상을 골라드립니다.</p>
-    <a class="btn btn--pink" href="#">카카오톡으로 문의</a>
+<!-- ═══ FAQ ═══ -->
+<section id="faq"><div class="wrap">
+  <div class="shead rev">
+    <p class="eyebrow">FAQ</p>
+    <h2 class="sec">자주 묻는 질문</h2>
   </div>
-</section>
+  <div class="faq rev">
+    <details open><summary>정말 니코틴이 없나요?</summary><div class="ans">취급하는 13종 전부 니코틴을 첨가하지 않은 0mg 제품입니다. 일부만 무니코틴인 게 아니라 이 페이지에 올린 전 제품이 그렇습니다.</div></details>
+    <details><summary>노멘솔은 어떤 건가요?</summary><div class="ans">멘솔(쿨링) 성분을 넣지 않은 액상입니다. 청량감 없이 맛 자체만 올라옵니다. 멘솔이 목에 걸리거나 답답하신 분들이 주로 찾습니다. 13종 중 6종이 노멘솔이에요.</div></details>
+    <details><summary>쓰던 기기에 그냥 넣어도 되나요?</summary><div class="ans">액상만 판매하므로 쓰시던 기기에 그대로 넣으시면 됩니다. 다만 기기마다 맞는 점도(VG/PG 비율)가 달라서, 기기명을 알려주시면 맞는 것으로 안내해드립니다.</div></details>
+    <details><summary>교환·환불이 되나요?</summary><div class="ans">수령 후 7일 이내 가능합니다. 다만 <strong>개봉하거나 사용한 액상은 위생상 어렵습니다.</strong> 파손·누액은 사진과 함께 문의 주시면 전액 부담해 재발송합니다.</div></details>
+    <details><summary>배송은 얼마나 걸리나요?</summary><div class="ans">오후 3시 이전 결제 시 당일 출고합니다(영업일 기준). 배송비 3,000원이며 5만원 이상은 무료입니다.</div></details>
+  </div>
+</div></section>
+
+<!-- ═══ CTA ═══ -->
+<section class="cta"><div class="wrap">
+  <p class="eyebrow">Start Here</p>
+  <h2 class="sec">뭘 고를지 모르겠으면,<br><em style="color:var(--pink)">물어보세요.</em></h2>
+  <p class="lede">좋아하시는 맛 하나랑 쓰시는 기기만 알려주시면 맞는 액상을 골라드립니다.</p>
+  <a class="btn btn--pink" href="#">카카오톡으로 문의</a>
+</div></section>
 
 <footer class="ft"><div class="wrap">
   <div class="ft-nav"><a href="#">이용약관</a><a href="#">개인정보처리방침</a><a href="#">고객센터</a><a href="#">배송·교환·환불</a></div>
@@ -293,36 +327,36 @@ section{padding:clamp(76px,10vw,140px) 0;position:relative;overflow:hidden}
 </div></footer>
 
 <script>
-/* 레포 liquid.html 의 무니코틴 13종 (n=제품명, b=브랜드, f=맛, nm=노멘솔, cat=계열)
-   가격은 임시값입니다 — 실제 판매가로 교체 필요 */
+/* 레포 liquid.html 의 무니코틴 13종.
+   n=제품명 b=브랜드 f=맛 nm=노멘솔여부 cat=계열 p=가격(임시) sw=맛 색 */
 var P=[
- {n:"제로닉 거봉",b:"무무",f:"포도",nm:0,cat:"과일",p:"14,000원",a:"#C084FC",c:"#7E22CE"},
- {n:"제로닉 샤인머스캣",b:"무무",f:"샤인머스캣",nm:0,cat:"과일",p:"14,000원",a:"#BEF264",c:"#65A30D"},
- {n:"제로닉 석류",b:"무무",f:"석류",nm:0,cat:"과일",p:"14,000원",a:"#FDA4AF",c:"#BE123C"},
- {n:"제로닉 노멘솔 자몽",b:"무무",f:"자몽",nm:1,cat:"과일",p:"14,000원",a:"#FB7185",c:"#E11D48"},
- {n:"제로닉 노멘솔 체리",b:"무무",f:"체리",nm:1,cat:"과일",p:"14,000원",a:"#F87171",c:"#DC2626"},
- {n:"제로닉 노멘솔 포도",b:"무무",f:"포도",nm:1,cat:"과일",p:"14,000원",a:"#D8B4FE",c:"#9333EA"},
- {n:"제로닉 노멘솔 알로에",b:"무무",f:"알로에",nm:1,cat:"과일",p:"14,000원",a:"#A7F3D0",c:"#10B981"},
- {n:"제로닉 아이스스노우",b:"무무",f:"아이스스노우",nm:0,cat:"청량",p:"14,000원",a:"#A5F3FC",c:"#0891B2"},
- {n:"제로닉 민트",b:"무무",f:"민트",nm:0,cat:"청량",p:"14,000원",a:"#6EE7B7",c:"#059669"},
- {n:"제로닉 콜라",b:"무무",f:"콜라",nm:0,cat:"청량",p:"14,000원",a:"#D6BCA0",c:"#7C2D12"},
- {n:"무 블랙멘솔",b:"무",f:"블랙멘솔",nm:0,cat:"청량",p:"14,000원",a:"#67E8F9",c:"#164E63"},
- {n:"제로닉 노멘솔 시가",b:"무무",f:"시가",nm:1,cat:"타바코",p:"14,000원",a:"#C4A484",c:"#78350F"},
- {n:"무 마일드토바코",b:"무",f:"마일드토바코",nm:1,cat:"타바코",p:"14,000원",a:"#D6C3A5",c:"#92400E"}
+ {n:"제로닉 거봉",b:"무무",f:"포도",nm:0,cat:"과일",p:"14,000원",sw:"#9333EA"},
+ {n:"제로닉 샤인머스캣",b:"무무",f:"샤인머스캣",nm:0,cat:"과일",p:"14,000원",sw:"#84CC16"},
+ {n:"제로닉 석류",b:"무무",f:"석류",nm:0,cat:"과일",p:"14,000원",sw:"#BE123C"},
+ {n:"제로닉 노멘솔 자몽",b:"무무",f:"자몽",nm:1,cat:"과일",p:"14,000원",sw:"#F43F5E"},
+ {n:"제로닉 노멘솔 체리",b:"무무",f:"체리",nm:1,cat:"과일",p:"14,000원",sw:"#DC2626"},
+ {n:"제로닉 노멘솔 포도",b:"무무",f:"포도",nm:1,cat:"과일",p:"14,000원",sw:"#7E22CE"},
+ {n:"제로닉 노멘솔 알로에",b:"무무",f:"알로에",nm:1,cat:"과일",p:"14,000원",sw:"#10B981"},
+ {n:"제로닉 아이스스노우",b:"무무",f:"아이스스노우",nm:0,cat:"청량",p:"14,000원",sw:"#0891B2"},
+ {n:"제로닉 민트",b:"무무",f:"민트",nm:0,cat:"청량",p:"14,000원",sw:"#059669"},
+ {n:"제로닉 콜라",b:"무무",f:"콜라",nm:0,cat:"청량",p:"14,000원",sw:"#7C2D12"},
+ {n:"무 블랙멘솔",b:"무",f:"블랙멘솔",nm:0,cat:"청량",p:"14,000원",sw:"#164E63"},
+ {n:"제로닉 노멘솔 시가",b:"무무",f:"시가",nm:1,cat:"타바코",p:"14,000원",sw:"#78350F"},
+ {n:"무 마일드토바코",b:"무",f:"마일드토바코",nm:1,cat:"타바코",p:"14,000원",sw:"#92400E"}
 ];
 
+function match(x,f){
+  if(f==='ALL')return true;
+  if(f==='NM')return !!x.nm;
+  if(f==='M')return !x.nm;
+  return x.cat===f;
+}
 function render(f){
-  var L=P.filter(function(x){
-    if(f==='ALL')return 1;
-    if(f==='NM')return x.nm;
-    if(f==='M')return !x.nm;
-    return x.cat===f;
-  });
+  var L=P.filter(function(x){return match(x,f)});
   document.getElementById('cnt').textContent=L.length;
   document.getElementById('grid').innerHTML=L.map(function(x){
-    return '<a class="pc rev on" href="#">'+
-      '<span class="aura" style="background:radial-gradient(60% 100% at 50% 0%,'+x.a+','+x.c+' 55%,transparent)"></span>'+
-      '<div class="pc-vis"><span>제품 이미지</span></div>'+
+    return '<a class="pc" href="#">'+
+      '<div class="pc-vis"><span class="swatch" style="background:'+x.sw+'"></span><span class="ph">제품 이미지</span></div>'+
       '<span class="brand">'+x.b+'</span>'+
       '<h3>'+x.n+'</h3><p class="taste">'+x.f+'</p>'+
       '<div class="pc-bot"><span class="men'+(x.nm?' no':'')+'">'+(x.nm?'노멘솔':'멘솔')+'</span>'+
@@ -331,46 +365,25 @@ function render(f){
 }
 render('ALL');
 
+/* 노멘솔 섹션 — 6종 미리보기 */
+document.getElementById('nmr').innerHTML=P.filter(function(x){return x.nm}).map(function(x){
+  return '<div class="nmi"><i style="background:'+x.sw+'"></i><b>'+x.f+'</b><span>'+x.b+'</span></div>';
+}).join('');
+
 function setF(f){
   document.querySelectorAll('.chip').forEach(function(c){c.setAttribute('aria-pressed',String(c.dataset.f===f))});
   render(f);
 }
 document.querySelectorAll('.chip').forEach(function(c){c.addEventListener('click',function(){setF(c.dataset.f)})});
-document.querySelectorAll('[data-jump]').forEach(function(g){
-  g.addEventListener('click',function(){setF(g.dataset.jump)});
-});
+document.querySelectorAll('[data-jump]').forEach(function(g){g.addEventListener('click',function(){setF(g.dataset.jump)})});
 
 var reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
-var els=document.querySelectorAll('.rev:not(.on)');
+var els=document.querySelectorAll('.rev');
 if(reduce||!('IntersectionObserver' in window)){els.forEach(function(e){e.classList.add('on')})}
 else{
   var io=new IntersectionObserver(function(en){
-    en.forEach(function(x,i){if(x.isIntersecting){setTimeout(function(){x.target.classList.add('on')},Math.min(i*65,300));io.unobserve(x.target)}});
-  },{rootMargin:'0px 0px -7% 0px',threshold:.05});
+    en.forEach(function(x,i){if(x.isIntersecting){setTimeout(function(){x.target.classList.add('on')},Math.min(i*60,280));io.unobserve(x.target)}});
+  },{rootMargin:'0px 0px -6% 0px',threshold:.05});
   els.forEach(function(e){io.observe(e)});
 }
-
-function fog(id,cfg){
-  var c=document.getElementById(id);if(!c)return;
-  var ctx=c.getContext('2d'),w=0,h=0,t=0,raf=null;
-  function size(){var r=c.getBoundingClientRect();w=c.width=Math.max(1,r.width|0);h=c.height=Math.max(1,r.height|0)}
-  function puff(x,y,rad,col,a){
-    var g=ctx.createRadialGradient(x,y,0,x,y,rad);
-    g.addColorStop(0,'rgba('+col+','+a+')');
-    g.addColorStop(.48,'rgba('+col+','+(a*.28)+')');
-    g.addColorStop(1,'rgba('+col+',0)');
-    ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,rad,0,Math.PI*2);ctx.fill();
-  }
-  function draw(){ctx.clearRect(0,0,w,h);var b=Math.max(w,h);
-    cfg.forEach(function(p,i){puff(w*(p.x+Math.sin(t*p.sx+i)*.05),h*(p.y+Math.cos(t*p.sy+i)*.08),b*p.r,p.c,p.a)})}
-  function loop(){t+=.005;draw();raf=requestAnimationFrame(loop)}
-  function start(){size();draw();if(raf)cancelAnimationFrame(raf);if(!reduce)loop()}
-  addEventListener('resize',start);start();
-}
-fog('c1',[{x:.76,y:.26,r:.52,c:'255,45,111',a:.34,sx:.21,sy:.17},
-          {x:.34,y:.80,r:.40,c:'150,40,220',a:.20,sx:.13,sy:.23},
-          {x:.96,y:.86,r:.34,c:'0,190,255',a:.13,sx:.17,sy:.11}]);
-fog('c2',[{x:.18,y:.30,r:.46,c:'255,45,111',a:.22,sx:.15,sy:.19},
-          {x:.86,y:.74,r:.38,c:'120,60,220',a:.16,sx:.19,sy:.13}]);
-fog('c3',[{x:.50,y:.58,r:.50,c:'255,45,111',a:.26,sx:.14,sy:.18}]);
 </script>
