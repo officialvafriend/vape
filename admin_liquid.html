@@ -37,9 +37,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f0f2f8;
 .empty{text-align:center;color:#aaa;font-size:13px;padding:40px 0}
 .search{padding:10px 16px 0}
 .search input{width:100%;padding:10px 12px;font-size:14px;border-radius:10px;border:1.5px solid #e8e8e8;background:#f8f8f8;outline:none}
-.hint{font-size:11.5px;color:#888;margin-top:6px;line-height:1.5}
+.hint{font-size:11.5px;margin-top:6px;line-height:1.5;color:#888;min-height:16px}
 .hint.warn{color:#b05a00}
-#f_b_new{margin-top:8px}
+.hint.new{color:#1a7a40}
 </style>
 </head>
 <body>
@@ -61,8 +61,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f0f2f8;
   <div class="sec" id="s1">
     <div class="row"><label>액상명 *</label><input id="f_n" placeholder="예: 제로닉 거봉"></div>
     <div class="row"><label>브랜드</label>
-      <select id="f_b"></select>
-      <input id="f_b_new" placeholder="새 브랜드 이름 (예: 무무)" style="display:none">
+      <input id="f_b" list="brandList" autocomplete="off" placeholder="예: 무무">
+      <datalist id="brandList"></datalist>
       <div class="hint" id="b_hint"></div>
     </div>
     <div class="row"><label>맛</label><input id="f_f" placeholder="예: 포도"></div>
@@ -130,12 +130,7 @@ document.getElementById('tChips').addEventListener('click', function(e){
 });
 
 
-/* ═══ 브랜드 선택 / 새 브랜드 추가 ═══ */
-var NEW_VAL = '__new__';
-
-function esc(s){
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
-}
+/* ═══ 브랜드 추천 목록 (입력은 자유, 방해하지 않음) ═══ */
 function normBrand(s){
   return String(s||'').toLowerCase().replace(/[\s\-_.]/g,'');
 }
@@ -147,68 +142,45 @@ function brandCounts(){
   }
   return m;
 }
-function buildBrandOptions(keep){
-  var sel = document.getElementById('f_b');
+function buildBrandList(){
   var counts = brandCounts();
   var names = Object.keys(counts).sort(function(a,b){ return a.localeCompare(b,'ko'); });
-  var h = '<option value="">— 브랜드 선택 —</option>';
+  var h = '';
   for(var i=0;i<names.length;i++){
-    h += '<option value="'+esc(names[i])+'">'+esc(names[i])+' ('+counts[names[i]]+'종)</option>';
+    h += '<option value="' + String(names[i]).replace(/"/g,'&quot;') + '">' + counts[names[i]] + '종</option>';
   }
-  h += '<option value="'+NEW_VAL+'">+ 새 브랜드 추가</option>';
-  sel.innerHTML = h;
-  if(keep && keep !== NEW_VAL){
-    if(names.indexOf(keep) < 0){
-      var o = document.createElement('option');
-      o.value = keep;
-      o.textContent = keep + ' (신규)';
-      sel.insertBefore(o, sel.lastChild);
-    }
-    sel.value = keep;
-  }
-  toggleNewBrand();
+  document.getElementById('brandList').innerHTML = h;
 }
-function toggleNewBrand(){
-  var isNew = document.getElementById('f_b').value === NEW_VAL;
-  document.getElementById('f_b_new').style.display = isNew ? 'block' : 'none';
+/* 저장을 막지는 않고, 아래에 안내 문구만 보여줍니다 */
+function checkBrand(){
+  var v = document.getElementById('f_b').value.trim();
   var hint = document.getElementById('b_hint');
-  if(isNew){
+  if(!v){ hint.className = 'hint'; hint.textContent = ''; return; }
+  var counts = brandCounts();
+  var names = Object.keys(counts);
+  if(counts[v]){
     hint.className = 'hint';
-    hint.textContent = '새로 만든 브랜드는 손님 화면의 브랜드 목록에도 그대로 추가됩니다. 기존 브랜드와 겹치지 않는지 확인해주세요.';
-    document.getElementById('f_b_new').focus();
-  } else {
-    hint.className = 'hint';
-    hint.textContent = '';
+    hint.textContent = '기존 브랜드 · 현재 ' + counts[v] + '종';
+    return;
   }
-}
-/* 저장 시점의 브랜드 값 — 오타로 중복 브랜드가 생기는 것을 막습니다 */
-function currentBrand(){
-  var sel = document.getElementById('f_b');
-  if(sel.value !== NEW_VAL) return sel.value;
-  var v = document.getElementById('f_b_new').value.trim();
-  if(!v) return null;
-  var names = Object.keys(brandCounts());
   for(var i=0;i<names.length;i++){
-    if(names[i] !== v && normBrand(names[i]) === normBrand(v)){
-      if(confirm('이미 "' + names[i] + '" 브랜드가 있어요.\n\n' +
-                 '"' + names[i] + '" 로 저장할까요?\n' +
-                 '취소를 누르면 "' + v + '" 로 새 브랜드를 만듭니다.')){
-        return names[i];
-      }
-      break;
+    if(normBrand(names[i]) === normBrand(v)){
+      hint.className = 'hint warn';
+      hint.textContent = '"' + names[i] + '" 와 거의 같아요. 같은 브랜드라면 "' + names[i] + '" 로 맞춰주세요.';
+      return;
     }
   }
-  return v;
+  hint.className = 'hint new';
+  hint.textContent = '새 브랜드로 추가됩니다.';
 }
-document.getElementById('f_b').addEventListener('change', toggleNewBrand);
+document.getElementById('f_b').addEventListener('input', checkBrand);
 
 function clearForm(){
   editId = null;
   document.getElementById('f_n').value = '';
   document.getElementById('f_b').value = '';
-  document.getElementById('f_b_new').value = '';
-  toggleNewBrand();
   document.getElementById('f_f').value = '';
+  checkBrand();
   selC = ''; selT = [];
   Array.prototype.forEach.call(document.querySelectorAll('#cChips .chip, #tChips .chip'), function(c){ c.className = 'chip'; });
   document.getElementById('delBtn').style.display = 'none';
@@ -217,8 +189,8 @@ function clearForm(){
 function fillForm(d){
   editId = d.id;
   document.getElementById('f_n').value = d.n || '';
-  document.getElementById('f_b_new').value = '';
-  buildBrandOptions(d.b || '');
+  document.getElementById('f_b').value = d.b || '';
+  checkBrand();
   document.getElementById('f_f').value = d.f || '';
   selC = d.c || '';
   selT = (d.t || '').split(',').filter(Boolean);
@@ -260,8 +232,8 @@ async function loadData(){
     var res = await fetch(SCRIPT_URL + '?sheet=liquid');
     DATA = await res.json();
     renderList();
-    var _sel = document.getElementById('f_b');
-    buildBrandOptions(_sel.value === NEW_VAL ? '' : _sel.value);
+    buildBrandList();
+    checkBrand();
   }catch(e){
     document.getElementById('list').innerHTML = '<div class="empty">불러오기 실패. 새로고침 해보세요.</div>';
   }
@@ -271,12 +243,10 @@ loadData();
 document.getElementById('saveBtn').addEventListener('click', async function(){
   var n = document.getElementById('f_n').value.trim();
   if(!n){ toast('액상명을 입력해주세요'); return; }
-  var brand = currentBrand();
-  if(brand === null){ toast('새 브랜드 이름을 입력해주세요'); return; }
   var item = {
     id: editId || ('liq_' + Date.now()),
     n: n,
-    b: brand,
+    b: document.getElementById('f_b').value.trim(),
     f: document.getElementById('f_f').value.trim(),
     c: selC,
     t: selT.join(',')
@@ -289,7 +259,6 @@ document.getElementById('saveBtn').addEventListener('click', async function(){
     if(json.ok){
       toast('저장됐어요!');
       await loadData();
-      buildBrandOptions(brand);
       showTab(0);
     } else {
       toast('저장 실패했어요');
