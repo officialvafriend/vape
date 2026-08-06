@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#F2F3F5">
+<title>베이프렌드 본점 창고 · 재고 위치 찾기</title>
+<style>
+/* ══════════════════════════════════════════════
+   테마 토큰 — 밝은 창고 기준(라이트 기본), 다크 전환 가능
+   ══════════════════════════════════════════════ */
+:root{
+  --bg:#EFF1F4;
+  --panel:#FFFFFF;
+  --panel-2:#E8EBEF;
+  --line:#D2D8DF;
+  --text:#12161A;
+  --muted:#5C6773;
+
+  --hi:#0B5FFF;                 /* 선택·강조 (빨강/검정/흰 선반 모두와 대비) */
+  --hi-soft:rgba(11,95,255,.12);
+  --hi-line:#0846C2;
+
+  --warn-bg:#FFF1F1;
+  --warn-line:#F2B8B8;
+  --warn-text:#A31621;
+  --ok-bg:#E7F3FF;
+  --ok-line:#AFD1FA;
+  --ok-text:#0B4FB8;
+
+  --shelf-red:#DC1F2B;
+  --shelf-black:#1B1F24;
+  --shelf-white:#FFFFFF;
+  --shelf-white-line:#7A848F;
+  --shelf-white-label:#12161A;
+  --fixture:#0E8FA8;
+  --entrance:#FFC400;
+  --map-bg:#F7F9FB;
+
+  --mono:ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+  --sans:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Pretendard","Noto Sans KR","Malgun Gothic",system-ui,sans-serif;
+}
+[data-theme="dark"]{
+  --bg:#0F1214; --panel:#191D21; --panel-2:#20262B; --line:#2C343B;
+  --text:#EDF0F2; --muted:#8A939C;
+  --hi:#FFD100; --hi-soft:rgba(255,209,0,.16); --hi-line:#C9A400;
+  --warn-bg:rgba(245,51,63,.12); --warn-line:rgba(245,51,63,.38); --warn-text:#FF8E95;
+  --ok-bg:rgba(23,160,190,.14); --ok-line:rgba(23,160,190,.4); --ok-text:#5FCBE3;
+  --shelf-red:#F5333F; --shelf-black:#101215; --shelf-white:#F2F4F6;
+  --shelf-white-line:#C7CDD3; --shelf-white-label:#101215;
+  --fixture:#17A0BE; --entrance:#FBD24E; --map-bg:#141A1E;
+}
+
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg);color:var(--text);font-family:var(--sans);
+  font-size:15px;line-height:1.5;
+  padding-bottom:calc(28px + env(safe-area-inset-bottom));
+}
+.wrap{
+  max-width:1180px;margin:0 auto;
+  padding:0 max(14px,env(safe-area-inset-left)) 0 max(14px,env(safe-area-inset-right));
+}
+button{font-family:inherit}
+:focus-visible{outline:3px solid var(--hi);outline-offset:2px}
+
+/* ── 헤더 + 검색 ─────────────────────────── */
+header{
+  position:sticky;top:0;z-index:30;background:var(--bg);
+  padding:14px 0 10px;
+  box-shadow:0 8px 12px -10px rgba(0,0,0,.25);
+}
+.brandline{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.brandline h1{margin:0;font-size:18px;font-weight:800;letter-spacing:-.02em;flex:1}
+.brandline .sub{
+  font-family:var(--mono);font-size:10.5px;color:var(--muted);
+  letter-spacing:.08em;text-transform:uppercase;
+}
+@media(max-width:520px){.brandline .sub{display:none}}
+.themebtn{
+  border:1px solid var(--line);background:var(--panel);color:var(--muted);
+  min-width:44px;height:38px;border-radius:9px;font-size:13px;cursor:pointer;padding:0 10px;
+}
+.searchbox{position:relative}
+.searchbox input{
+  width:100%;padding:15px 52px 15px 15px;
+  background:var(--panel);border:1.5px solid var(--line);border-radius:11px;
+  color:var(--text);font-size:17px;font-family:var(--sans);outline:none;
+}
+.searchbox input:focus{border-color:var(--hi);box-shadow:0 0 0 3px var(--hi-soft)}
+.searchbox input::placeholder{color:var(--muted)}
+.clearbtn{
+  position:absolute;right:6px;top:50%;transform:translateY(-50%);
+  width:42px;height:42px;border:0;border-radius:9px;background:transparent;
+  color:var(--muted);font-size:19px;cursor:pointer;display:none
+}
+.clearbtn.on{display:block}
+.chips{display:flex;gap:7px;margin-top:9px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{
+  border:1px solid var(--line);background:var(--panel);color:var(--muted);
+  padding:0 14px;height:38px;border-radius:999px;font-size:13.5px;cursor:pointer;
+  white-space:nowrap;flex:0 0 auto
+}
+.chip:hover{border-color:var(--hi);color:var(--text)}
+
+/* ── 레이아웃 ─────────────────────────── */
+.cols{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:20px;align-items:start}
+.side{display:flex;flex-direction:column;gap:0}
+#detail{order:1}.count{order:2}.results{order:3}.notice{order:4}footer{order:5}
+@media(max-width:860px){
+  .cols{grid-template-columns:1fr;gap:14px}
+  #detail{order:0}
+}
+
+/* ── 약도 ─────────────────────────── */
+.mapcard{
+  background:var(--panel);border:1px solid var(--line);border-radius:14px;
+  padding:12px;position:sticky;top:126px;
+}
+@media(max-width:860px){.mapcard{position:static;padding:10px}}
+.maphead{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px}
+.maphead .lbl{font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.06em}
+.zoomout{
+  border:1px solid var(--line);background:var(--panel);color:var(--muted);
+  height:36px;padding:0 13px;border-radius:9px;font-size:13px;cursor:pointer;display:none
+}
+.zoomout.on{display:block;border-color:var(--hi);color:var(--hi)}
+svg#map{
+  width:100%;height:min(66vh,720px);display:block;
+  background:var(--map-bg);border-radius:8px;touch-action:manipulation;
+}
+@media(max-width:860px){svg#map{height:40vh;min-height:280px}}
+
+.mapbg{fill:var(--map-bg)}
+.zone{cursor:pointer}
+.zone .body,.cell,.zone{transition:opacity .18s}
+.dimmed .zone:not(.active){opacity:.2}
+.zone.red   .body{fill:var(--shelf-red);stroke:#fff}
+.zone.black .body{fill:var(--shelf-black);stroke:#fff}
+.zone.white .body{fill:var(--shelf-white);stroke:var(--shelf-white-line)}
+.zone.red .zlabel,.zone.black .zlabel{fill:#fff}
+.zone.white .zlabel{fill:var(--shelf-white-label)}
+.zsublabel{
+  font-family:var(--mono);font-size:30px;font-weight:700;pointer-events:none;
+  opacity:0;transition:opacity .2s;
+}
+.zoomed .zone.active .zsublabel{opacity:1}
+.zone.red .zsublabel,.zone.black .zsublabel{fill:#fff}
+.zone.white .zsublabel{fill:var(--shelf-white-label)}
+.zone.active .hitbox{
+  stroke:var(--hi);stroke-width:9;
+  animation:pulse 1.4s ease-in-out infinite
+}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
+@media(prefers-reduced-motion:reduce){.zone.active .hitbox{animation:none}}
+.zlabel{font-family:var(--mono);font-weight:700;pointer-events:none;font-size:42px}
+.fixture rect{fill:var(--fixture)}
+.entrance rect{fill:var(--entrance)}
+.fixlabel{font-family:var(--sans);font-size:34px;pointer-events:none;fill:#fff}
+[data-theme="light"] .entrance .fixlabel{fill:#3D2E00}
+
+/* ── 결과 ─────────────────────────── */
+.results{display:flex;flex-direction:column;gap:8px}
+.count{font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.08em;margin:2px 0 8px}
+.hit{
+  display:grid;grid-template-columns:84px minmax(0,1fr);gap:12px;align-items:center;
+  background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--line);
+  border-radius:11px;padding:14px 14px;cursor:pointer;text-align:left;width:100%;
+  color:inherit;font:inherit;min-height:62px;
+}
+.hit:hover{background:var(--panel-2)}
+.hit.sel{border-color:var(--hi);border-left-color:var(--hi);background:var(--hi-soft)}
+.hit .code{font-family:var(--mono);font-size:16px;font-weight:700}
+.hit .what{font-size:15px}
+.hit .what b{color:var(--hi-line);font-weight:800}
+[data-theme="dark"] .hit .what b{color:var(--hi)}
+.hit .flag{
+  display:inline-block;margin-top:5px;font-size:11.5px;font-family:var(--mono);
+  padding:3px 7px;border-radius:5px;
+  background:var(--warn-bg);color:var(--warn-text);border:1px solid var(--warn-line)
+}
+.hit .flag.ok{background:var(--ok-bg);color:var(--ok-text);border-color:var(--ok-line)}
+.swatch{width:11px;height:11px;border-radius:2px;display:inline-block;margin-right:6px;vertical-align:middle}
+
+.empty{
+  background:var(--panel);border:1px dashed var(--line);border-radius:11px;
+  padding:22px 16px;color:var(--muted);font-size:14px
+}
+.empty b{color:var(--text)}
+
+/* ── 선반 상세(층 단면) ─────────────────── */
+.detail{
+  background:var(--panel);border:1px solid var(--line);border-radius:12px;
+  padding:13px;margin-bottom:12px
+}
+.detail h3{margin:0 0 2px;font-family:var(--mono);font-size:16px}
+.detail .zsub{font-size:12.5px;color:var(--muted);margin-bottom:9px}
+.rack{
+  background:var(--panel-2);border:2px solid var(--line);border-radius:9px;
+  padding:6px;display:flex;flex-direction:column;gap:5px
+}
+.level{
+  display:grid;grid-template-columns:52px minmax(0,1fr);gap:10px;align-items:center;
+  min-height:48px;padding:9px 11px;background:var(--panel);border-radius:6px;
+  border-bottom:3px solid var(--line);font-size:14px
+}
+.level.on{background:var(--hi-soft);border-bottom-color:var(--hi);outline:2px solid var(--hi)}
+.level .lv{font-family:var(--mono);font-size:13px;color:var(--muted);text-align:right}
+.level.on .lv{color:var(--hi-line);font-weight:700}
+[data-theme="dark"] .level.on .lv{color:var(--hi)}
+.level.void .lt{color:var(--muted);font-style:italic}
+.level .lflag{
+  display:inline-block;margin-left:6px;font-size:11px;font-family:var(--mono);
+  padding:2px 6px;border-radius:4px;vertical-align:middle;
+  background:var(--warn-bg);color:var(--warn-text);border:1px solid var(--warn-line)
+}
+.level .lflag.ok{background:var(--ok-bg);color:var(--ok-text);border-color:var(--ok-line)}
+.floornote{font-size:12px;color:var(--muted);margin-top:7px;text-align:center}
+
+.notice{
+  margin-top:12px;background:var(--warn-bg);border:1px solid var(--warn-line);
+  border-radius:11px;padding:12px 14px;font-size:13.5px;color:var(--warn-text)
+}
+.notice b{display:block;margin-bottom:4px}
+.notice ul{margin:0;padding-left:18px}
+.notice li{margin:3px 0}
+footer{margin-top:20px;font-size:12.5px;color:var(--muted);line-height:1.8}
+kbd{font-family:var(--mono);font-size:11px;background:var(--panel-2);border:1px solid var(--line);border-radius:4px;padding:1px 5px}
+.kbdhint{display:none}
+@media(min-width:861px){.kbdhint{display:block;margin-top:8px}}
+
+/* ── 스크립트가 막힌 뷰어(카톡 등) 대응 ───────── */
+.nojs-note{
+  background:var(--ok-bg);border:1px solid var(--ok-line);color:var(--ok-text);
+  border-radius:11px;padding:12px 14px;font-size:13.5px;margin-bottom:12px;line-height:1.6
+}
+html.js .nojs-note{display:none}
+html:not(.js) .searchbox,html:not(.js) .chips,html:not(.js) .maphead,
+html:not(.js) .themebtn{display:none}
+html.js #fallback{display:none}
+#fallback{margin-bottom:12px}
+.fbhead{
+  font-family:var(--mono);font-size:11px;color:var(--muted);
+  letter-spacing:.08em;margin:2px 0 8px
+}
+</style>
+<script>document.documentElement.className="js";</script>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="brandline">
+    <h1>본점 창고 재고 위치</h1>
+    <div class="sub">VAFRIEND · WAREHOUSE LOCATOR</div>
+    <button class="themebtn" id="theme" aria-label="화면 밝기 전환">어둡게</button>
+  </div>
+  <div class="searchbox">
+    <input id="q" type="search" autocomplete="off" autocapitalize="off" spellcheck="false"
+           inputmode="search" enterkeyhint="search"
+           placeholder="물건 이름 입력 (예: 테이프, 액덕, 봉투, R-7)" aria-label="재고 검색">
+    <button class="clearbtn" id="clear" aria-label="지우기">✕</button>
+  </div>
+  <div class="chips" id="chips"></div>
+</header>
+
+  <div class="nojs-note"><b>지금은 목록만 볼 수 있습니다.</b><br>이 뷰어에서는 검색·약도 확대가 동작하지 않습니다. 우측 상단 메뉴에서 <b>다른 브라우저로 열기</b>(크롬·사파리)를 선택하면 검색까지 됩니다.</div>
+<div class="cols">
+  <div class="mapcard">
+    <div class="maphead">
+      <span class="lbl" id="maphint">선반을 누르면 확대됩니다</span>
+      <button class="zoomout" id="zoomout">전체 보기</button>
+    </div>
+    <svg id="map" viewBox="0 0 1405 2010" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="창고 약도">
+<rect class="mapbg" x="0" y="0" width="1405" height="2010"/>
+<g class="fixture"><rect x="35" y="30" width="180" height="135" stroke="#fff" stroke-width="6" stroke-dasharray="10 10" rx="4"/><text x="125" y="97.5" text-anchor="middle" dominant-baseline="central" class="fixlabel" transform="rotate(90 125 97.5)">정수기</text></g>
+<g class="fixture"><rect x="35" y="172" width="180" height="148" stroke="#fff" stroke-width="6" stroke-dasharray="10 10" rx="4"/><text x="125" y="246" text-anchor="middle" dominant-baseline="central" class="fixlabel" transform="rotate(90 125 246)">냉장고</text></g>
+<g class="fixture"><rect x="35" y="328" width="180" height="450" stroke="#fff" stroke-width="6" stroke-dasharray="10 10" rx="4"/><text x="125" y="553" text-anchor="middle" dominant-baseline="central" class="fixlabel" transform="rotate(90 125 553)">데스크1</text></g>
+<g class="fixture"><rect x="35" y="786" width="180" height="450" stroke="#fff" stroke-width="6" stroke-dasharray="10 10" rx="4"/><text x="125" y="1011" text-anchor="middle" dominant-baseline="central" class="fixlabel" transform="rotate(90 125 1011)">데스크2</text></g>
+<g class="fixture"><rect x="35" y="1244" width="180" height="440" stroke="#fff" stroke-width="6" stroke-dasharray="10 10" rx="4"/><text x="125" y="1464" text-anchor="middle" dominant-baseline="central" class="fixlabel" transform="rotate(90 125 1464)">데스크3</text></g>
+<g class="fixture"><rect x="35" y="1692" width="180" height="308" stroke="#fff" stroke-width="6" stroke-dasharray="10 10" rx="4"/><text x="125" y="1846" text-anchor="middle" dominant-baseline="central" class="fixlabel" transform="rotate(90 125 1846)">데스크4</text></g>
+<g class="entrance"><rect x="900" y="30" width="270" height="180" stroke="#fff" stroke-width="6" stroke-dasharray="10 10" rx="4"/><text x="1035" y="120" text-anchor="middle" dominant-baseline="central" class="fixlabel" font-size="44">입구</text></g>
+<g class="zone red" data-zone="R-1" tabindex="0" role="button" aria-label="R-1 선반"><rect class="body" x="385" y="30" width="505" height="180" stroke-width="6" stroke-dasharray="12 10" rx="4"/><rect class="hitbox" x="385" y="30" width="505" height="180" fill="transparent" stroke="transparent" stroke-width="6" rx="4"/><text x="637.5" y="120" text-anchor="middle" dominant-baseline="central" class="zlabel">R-1</text><text x="637.5" y="172" text-anchor="middle" dominant-baseline="central" class="zsublabel"></text></g>
+<g class="zone red" data-zone="R-2" tabindex="0" role="button" aria-label="R-2 선반"><rect class="body" x="1185" y="490" width="175" height="595" stroke-width="6" stroke-dasharray="12 10" rx="4"/><rect class="hitbox" x="1185" y="490" width="175" height="595" fill="transparent" stroke="transparent" stroke-width="6" rx="4"/><text x="1272.5" y="787.5" text-anchor="middle" dominant-baseline="central" class="zlabel" transform="rotate(90 1272.5 787.5)">R-2</text><text x="1272.5" y="839.5" text-anchor="middle" dominant-baseline="central" class="zsublabel" transform="rotate(90 1272.5 787.5)"></text></g>
+<g class="zone red" data-zone="R-3" tabindex="0" role="button" aria-label="R-3 선반"><rect class="body" x="1185" y="1090" width="175" height="600" stroke-width="6" stroke-dasharray="12 10" rx="4"/><rect class="hitbox" x="1185" y="1090" width="175" height="600" fill="transparent" stroke="transparent" stroke-width="6" rx="4"/><text x="1272.5" y="1390" text-anchor="middle" dominant-baseline="central" class="zlabel" transform="rotate(90 1272.5 1390)">R-3</text><text x="1272.5" y="1442" text-anchor="middle" dominant-baseline="central" class="zsublabel" transform="rotate(90 1272.5 1390)"></text></g>
+<g class="zone red" data-zone="R-4" tabindex="0" role="button" aria-label="R-4 선반"><rect class="body" x="648" y="675" width="177" height="595" stroke-width="6" stroke-dasharray="12 10" rx="4"/><rect class="hitbox" x="648" y="675" width="177" height="595" fill="transparent" stroke="transparent" stroke-width="6" rx="4"/><text x="736.5" y="972.5" text-anchor="middle" dominant-baseline="central" class="zlabel" transform="rotate(90 736.5 972.5)">R-4</text><text x="736.5" y="1024.5" text-anchor="middle" dominant-baseline="central" class="zsublabel" transform="rotate(90 736.5 972.5)"></text></g>
+<g class="zone red" data-zone="R-5" tabindex="0" role="button" aria-label="R-5 선반"><rect class="body" x="643" y="1275" width="182" height="625" stroke-width="6" stroke-dasharray="12 10" rx="4"/><rect class="hitbox" x="643" y="1275" width="182" height="625" fill="transparent" stroke="transparent" stroke-width="6" rx="4"/><text x="734" y="1587.5" text-anchor="middle" dominant-baseline="central" class="zlabel" transform="rotate(90 734 1587.5)">R-5</text><text x="734" y="1639.5" text-anchor="middle" dominant-baseline="central" class="zsublabel" transform="rotate(90 734 1587.5)"></text></g>
+<g class="zone red" data-zone="R-6" tabindex="0" role="button" aria-label="R-6 선반"><rect class="body" x="455" y="675" width="190" height="595" stroke-width="6" stroke-dasharray="12 10" rx="4"/><rect class="hitbox" x="455" y="675" width="190" height="595" fill="transparent" stroke="transparent" stroke-width="6" rx="4"/><text x="550" y="972.5" text-anchor="middle" dominant-baseline="central" class="zlabel" transform="rotate(90 550 972.5)">R-6</text><text x="550" y="1024.5" text-anchor="middle" dominant-baseline="central" class="zsublabel" transform="rotate(90 550 972.5)"></text></g>
+<g class="zone red" data-zone="R-7" tabindex="0" role="button" aria-label="R-7 선반"><rect class="body" x="455" y="1275" width="185" height="625" stroke-width="6" stroke-dasharray="12 10" rx="4"/><rect class="hitbox" x="455" y="1275" width="185" height="625" fill="transparent" stroke="transparent" stroke-width="6" rx="4"/><text x="547.5" y="1587.5" text-anchor="middle" dominant-baseline="central" class="zlabel" transform="rotate(90 547.5 1587.5)">R-7</text><text x="547.5" y="1639.5" text-anchor="middle" dominant-baseline="central" class="zsublabel" transform="rotate(90 547.5 1587.5)"></text></g>
+<g class="zone black" data-zone="B-1" tabindex="0" role="button" aria-label="B-1 선반"><rect class="body" x="455" y="540" width="370" height="130" stroke-width="6" stroke-dasharray="12 10" rx="4"/><rect class="hitbox" x="455" y="540" width="370" height="130" fill="transparent" stroke="transparent" stroke-width="6" rx="4"/><text x="640" y="605" text-anchor="middle" dominant-baseline="central" class="zlabel">B-1</text><text x="640" y="657" text-anchor="middle" dominant-baseline="central" class="zsublabel"></text></g>
+<g class="zone black" data-zone="B-2" tabindex="0" role="button" aria-label="B-2 선반"><rect class="body" x="1185" y="268" width="175" height="215" stroke-width="6" stroke-dasharray="12 10" rx="4"/><rect class="hitbox" x="1185" y="268" width="175" height="215" fill="transparent" stroke="transparent" stroke-width="6" rx="4"/><text x="1272.5" y="375.5" text-anchor="middle" dominant-baseline="central" class="zlabel" transform="rotate(90 1272.5 375.5)">B-2</text><text x="1272.5" y="427.5" text-anchor="middle" dominant-baseline="central" class="zsublabel" transform="rotate(90 1272.5 375.5)"></text></g>
+<g class="zone black" data-zone="B-3" tabindex="0" role="button" aria-label="B-3 선반"><rect class="body" x="1185" y="30" width="175" height="230" stroke-width="6" stroke-dasharray="12 10" rx="4"/><rect class="hitbox" x="1185" y="30" width="175" height="230" fill="transparent" stroke="transparent" stroke-width="6" rx="4"/><text x="1272.5" y="145" text-anchor="middle" dominant-baseline="central" class="zlabel" transform="rotate(90 1272.5 145)">B-3</text><text x="1272.5" y="197" text-anchor="middle" dominant-baseline="central" class="zsublabel" transform="rotate(90 1272.5 145)"></text></g>
+<g class="zone black" data-zone="B-4" tabindex="0" role="button" aria-label="B-4 선반"><rect class="body" x="455" y="1908" width="285" height="92" stroke-width="6" stroke-dasharray="12 10" rx="4"/><rect class="hitbox" x="455" y="1908" width="285" height="92" fill="transparent" stroke="transparent" stroke-width="6" rx="4"/><text x="597.5" y="1954" text-anchor="middle" dominant-baseline="central" class="zlabel">B-4</text><text x="597.5" y="2006" text-anchor="middle" dominant-baseline="central" class="zsublabel"></text></g>
+<g class="zone white" data-zone="W-1" tabindex="0" role="button" aria-label="W-1 선반"><rect class="body" x="1185" y="1700" width="175" height="260" stroke-width="6" stroke-dasharray="12 10" rx="4"/><rect class="hitbox" x="1185" y="1700" width="175" height="260" fill="transparent" stroke="transparent" stroke-width="6" rx="4"/><text x="1272.5" y="1830" text-anchor="middle" dominant-baseline="central" class="zlabel" transform="rotate(90 1272.5 1830)">W-1</text><text x="1272.5" y="1882" text-anchor="middle" dominant-baseline="central" class="zsublabel" transform="rotate(90 1272.5 1830)"></text></g>
+</svg>
+  </div>
+
+  <div class="side">
+    <div id="detail"></div>
+    <div class="count" id="count"></div>
+    <div class="results" id="results"></div>
+<div id="fallback">
+<div class="fbhead">전체 재고 목록 · 선반 순서</div>
+<div class="detail"><h3>R-1</h3><div class="zsub">레드 선반 · 총 4층</div><div class="rack"><div class="level"><div class="lv">1층</div><div class="lt">빌런단 박스</div></div><div class="level"><div class="lv">2층</div><div class="lt">빌런단 박스</div></div><div class="level"><div class="lv">3층</div><div class="lt">빌런단 박스</div></div><div class="level"><div class="lv">4층</div><div class="lt">테이프 및 문구류</div></div></div></div>
+<div class="detail"><h3>R-2</h3><div class="zsub">레드 선반 · 총 4층</div><div class="rack"><div class="level"><div class="lv">1층</div><div class="lt">빌런단 박스</div></div><div class="level"><div class="lv">2층</div><div class="lt">크래프트, 얌멘솔, 제로타바코, 델리포도 (단종)</div></div><div class="level"><div class="lv">3층</div><div class="lt">리퀴드랩 제품<span class="lflag ok">포스 등록 O</span></div></div><div class="level"><div class="lv">4층</div><div class="lt">멜트다운 시리즈<span class="lflag ok">재고 등록 O</span></div></div></div></div>
+<div class="detail"><h3>R-3</h3><div class="zsub">레드 선반 · 총 4층</div><div class="rack"><div class="level"><div class="lv">1층</div><div class="lt">젤로크리스탈, 플러키팟</div></div><div class="level"><div class="lv">2층</div><div class="lt">왼쪽: 리퀴드랩 / 오른쪽: 단종 팜팜</div></div><div class="level"><div class="lv">3층</div><div class="lt">제이코리아, 순수</div></div><div class="level"><div class="lv">4층</div><div class="lt">봉투</div></div></div></div>
+<div class="detail"><h3>R-4</h3><div class="zsub">레드 선반 · 총 4층</div><div class="rack"><div class="level"><div class="lv">1층</div><div class="lt">우산, 청소용품</div></div><div class="level"><div class="lv">2층</div><div class="lt">베이퍼 시리즈</div></div><div class="level"><div class="lv">3층</div><div class="lt">쿨멘솔</div></div><div class="level"><div class="lv">4층</div><div class="lt">812 시가</div></div></div></div>
+<div class="detail"><h3>R-5</h3><div class="zsub">레드 선반 · 총 5층</div><div class="rack"><div class="level"><div class="lv">1층</div><div class="lt">종이가방, 우산</div></div><div class="level"><div class="lv">2층</div><div class="lt">VPS (화이트아웃)</div></div><div class="level"><div class="lv">3층</div><div class="lt">투엑스, 송송 (단종)</div></div><div class="level void"><div class="lv">4층</div><div class="lt">빈 공간</div></div><div class="level void"><div class="lv">5층</div><div class="lt">빈 공간</div></div></div></div>
+<div class="detail"><h3>R-6</h3><div class="zsub">레드 선반 · 총 5층</div><div class="rack"><div class="level"><div class="lv">1층</div><div class="lt">잡화</div></div><div class="level"><div class="lv">2층</div><div class="lt">제로닉 시리즈</div></div><div class="level"><div class="lv">3층</div><div class="lt">액덕 (액상덕후)</div></div><div class="level"><div class="lv">4층</div><div class="lt">액덕 (액상덕후)</div></div><div class="level"><div class="lv">5층</div><div class="lt">프라임 / 쿠모카시 / 버블몬</div></div></div></div>
+<div class="detail"><h3>R-7</h3><div class="zsub">레드 선반 · 총 5층</div><div class="rack"><div class="level"><div class="lv">1층</div><div class="lt">잡동사니 / 얼먹 / 폐호흡</div></div><div class="level"><div class="lv">2층</div><div class="lt">액덕 — 멘솔쨩</div></div><div class="level"><div class="lv">3층</div><div class="lt">액덕 — 젤로크리스탈</div></div><div class="level"><div class="lv">4층</div><div class="lt">액덕 — 멘솔쨩</div></div><div class="level"><div class="lv">5층</div><div class="lt">액덕 — 흑염룡, 노보</div></div></div></div>
+<div class="detail"><h3>B-1</h3><div class="zsub">블랙 선반 · 총 3층</div><div class="rack"><div class="level"><div class="lv">1층</div><div class="lt">문구류</div></div><div class="level"><div class="lv">2층</div><div class="lt">문구류</div></div><div class="level"><div class="lv">3층</div><div class="lt">디오 리퀴드</div></div></div></div>
+<div class="detail"><h3>B-2</h3><div class="zsub">블랙 선반 · 총 3층</div><div class="rack"><div class="level"><div class="lv">1층</div><div class="lt">자판기용 제품<span class="lflag">포스 등록 X / 재고 미등록</span></div></div><div class="level"><div class="lv">2층</div><div class="lt">자판기용 제품<span class="lflag">포스 등록 X / 재고 미등록</span></div></div><div class="level"><div class="lv">3층</div><div class="lt">자판기용 제품<span class="lflag">포스 등록 X / 재고 미등록</span></div></div></div></div>
+<div class="detail"><h3>B-3</h3><div class="zsub">블랙 선반 · 총 5층</div><div class="rack"><div class="level void"><div class="lv">1층</div><div class="lt">(기재 없음)</div></div><div class="level"><div class="lv">2층</div><div class="lt">메가킥, 메가엣지</div></div><div class="level"><div class="lv">3층</div><div class="lt">메가킥, 메가엣지</div></div><div class="level"><div class="lv">4층</div><div class="lt">포스 미등록 제품<span class="lflag">포스 등록 X / 재고 미등록</span></div></div><div class="level"><div class="lv">5층</div><div class="lt">재고 미등록 제품<span class="lflag">포스 등록 O / 재고 미등록</span></div></div></div></div>
+<div class="detail"><h3>B-4</h3><div class="zsub">블랙 선반 · 총 5층</div><div class="rack"><div class="level"><div class="lv">1층</div><div class="lt">문구류</div></div><div class="level"><div class="lv">2층</div><div class="lt">액덕 노보</div></div><div class="level"><div class="lv">3층</div><div class="lt">액덕 노보</div></div><div class="level"><div class="lv">4층</div><div class="lt">액덕 노보</div></div><div class="level"><div class="lv">5층</div><div class="lt">액덕 노보</div></div></div></div>
+<div class="detail"><h3>W-1</h3><div class="zsub">화이트 선반 · 총 5층</div><div class="rack"><div class="level"><div class="lv">1층</div><div class="lt">컴퓨터 본체, 잡화</div></div><div class="level"><div class="lv">2층</div><div class="lt">프라임 액상</div></div><div class="level"><div class="lv">3층</div><div class="lt">프라임 액상</div></div><div class="level"><div class="lv">4층</div><div class="lt">프라임 액상</div></div><div class="level"><div class="lv">5층</div><div class="lt">봉투</div></div></div></div>
+</div>
+    <div class="notice">
+      <b>입출고 주의</b>
+      <ul>
+        <li>B-2 전체 · B-3-4 — 포스 등록 X / 재고 미등록</li>
+        <li>B-3-5 — 포스 등록 O / 재고 미등록</li>
+        <li>그 외 모든 제품은 재고가 잡혀 있음 → 입출고 시 수량 정확히 반영</li>
+      </ul>
+    </div>
+    <footer>
+      대부분의 분배 제품은 레드(R) 선반에 있습니다.<br>
+      <span class="swatch" style="background:var(--shelf-red)"></span>R 레드선반
+      <span class="swatch" style="background:var(--shelf-black)"></span>B 블랙선반
+      <span class="swatch" style="background:var(--shelf-white);outline:1px solid var(--shelf-white-line)"></span>W 화이트선반
+      <div class="kbdhint">단축키 <kbd>/</kbd> 검색창 · <kbd>Esc</kbd> 초기화</div>
+    </footer>
+  </div>
+</div>
+</div>
+
+<script>
+/* ═══════ 1. 창고 데이터 ═══════ */
+const ZONES = {
+  "R-1":{color:"red",  cells:4, x:385,y:30,  w:505,h:180, rot:0},
+  "R-2":{color:"red",  cells:4, x:1185,y:490,w:175,h:595, rot:90},
+  "R-3":{color:"red",  cells:4, x:1185,y:1090,w:175,h:600,rot:90},
+  "R-4":{color:"red",  cells:4, x:648,y:675, w:177,h:595, rot:90},
+  "R-5":{color:"red",  cells:5, x:643,y:1275,w:182,h:625, rot:90},
+  "R-6":{color:"red",  cells:5, x:455,y:675, w:190,h:595, rot:90},
+  "R-7":{color:"red",  cells:5, x:455,y:1275,w:185,h:625, rot:90},
+  "B-1":{color:"black",cells:3, x:455,y:540, w:370,h:130, rot:0},
+  "B-2":{color:"black",cells:3, x:1185,y:268,w:175,h:215, rot:90},
+  "B-3":{color:"black",cells:5, x:1185,y:30, w:175,h:230, rot:90},
+  "B-4":{color:"black",cells:5, x:455,y:1908,w:285,h:92,  rot:0},
+  "W-1":{color:"white",cells:5, x:1185,y:1700,w:175,h:260,rot:90}
+};
+/* 칸(cells) = 선반의 층 수. 1층이 맨 위, 번호가 커질수록 아래. */
+
+const FIXED = [
+  {t:"정수기", x:35,y:30,  w:180,h:135, rot:90},
+  {t:"냉장고", x:35,y:172, w:180,h:148, rot:90},
+  {t:"데스크1",x:35,y:328, w:180,h:450, rot:90},
+  {t:"데스크2",x:35,y:786, w:180,h:450, rot:90},
+  {t:"데스크3",x:35,y:1244,w:180,h:440, rot:90},
+  {t:"데스크4",x:35,y:1692,w:180,h:308, rot:90}
+];
+const ENTRANCE = {t:"입구", x:900,y:30,w:270,h:180};
+
+/* code, 내용, 태그(동의어), 플래그 */
+const ITEMS = [
+  ["R-1-1~3","빌런단 박스",["빌런단","빌런","박스"]],
+  ["R-1-4","테이프 및 문구류",["테이프","문구","문구류","펜","사무","박스테이프"]],
+  ["R-2-1","빌런단 박스",["빌런단","빌런","박스"]],
+  ["R-2-2","크래프트, 얌멘솔, 제로타바코, 델리포도 (단종)",["크래프트","얌멘솔","얌","제로타바코","타바코","델리포도","포도","단종"]],
+  ["R-2-3","리퀴드랩 제품",["리퀴드랩","리퀴드","랩"],"포스 등록 O"],
+  ["R-2-4","멜트다운 시리즈",["멜트다운","멜트"],"재고 등록 O"],
+  ["R-3-1","젤로크리스탈, 플러키팟",["젤로크리스탈","젤로","크리스탈","플러키팟","플러키","팟"]],
+  ["R-3-2","왼쪽: 리퀴드랩 / 오른쪽: 단종 팜팜",["리퀴드랩","팜팜","단종"]],
+  ["R-3-3","제이코리아, 순수",["제이코리아","제이","코리아","순수"]],
+  ["R-3-4","봉투",["봉투","비닐","비닐봉투","포장"]],
+  ["R-4-1","우산, 청소용품",["우산","청소","청소용품","걸레","빗자루"]],
+  ["R-4-2","베이퍼 시리즈",["베이퍼","vapor"]],
+  ["R-4-3","쿨멘솔",["쿨멘솔","멘솔","쿨"]],
+  ["R-4-4","812 시가",["812","시가","팔일이"]],
+  ["R-5-1","종이가방, 우산",["종이가방","쇼핑백","가방","우산","봉투"]],
+  ["R-5-2","VPS (화이트아웃)",["vps","화이트아웃","white out","whiteout","화아"]],
+  ["R-5-3","투엑스, 송송 (단종)",["투엑스","2x","송송","단종"]],
+  ["R-5-4~5","빈 공간",["빈","빈공간","공실","비어"],null,true],
+  ["R-6-1","잡화",["잡화","기타"]],
+  ["R-6-2","제로닉 시리즈",["제로닉","제로"]],
+  ["R-6-3~4","액덕 (액상덕후)",["액덕","액상덕후","덕후","duckhoo"]],
+  ["R-6-5","프라임 / 쿠모카시 / 버블몬",["프라임","prime","쿠모카시","쿠모","버블몬","버블"]],
+  ["R-7-1","잡동사니 / 얼먹 / 폐호흡",["잡동사니","잡화","얼먹","얼려먹구싶오","폐호흡","폐호흡액상"]],
+  ["R-7-2","액덕 — 멘솔쨩",["액덕","액상덕후","멘솔쨩","멘솔"]],
+  ["R-7-3","액덕 — 젤로크리스탈",["액덕","액상덕후","젤로크리스탈","젤로","크리스탈"]],
+  ["R-7-4","액덕 — 멘솔쨩",["액덕","액상덕후","멘솔쨩","멘솔"]],
+  ["R-7-5","액덕 — 흑염룡, 노보",["액덕","액상덕후","흑염룡","흑염","노보","novo"]],
+  ["B-1-1~2","문구류",["문구","문구류","펜","테이프","사무"]],
+  ["B-1-3","디오 리퀴드",["디오","리퀴드","dio"]],
+  ["B-2-1~3","자판기용 제품",["자판기","벤딩","자판","무인"],"포스 등록 X / 재고 미등록"],
+  ["B-3-1","(기재 없음)",[],null,true],
+  ["B-3-2~3","메가킥, 메가엣지",["메가킥","메가엣지","메가","킥","엣지"]],
+  ["B-3-4","포스 미등록 제품",["미등록","포스"],"포스 등록 X / 재고 미등록"],
+  ["B-3-5","재고 미등록 제품",["미등록","재고"],"포스 등록 O / 재고 미등록"],
+  ["B-4-1","문구류",["문구","문구류","펜","테이프"]],
+  ["B-4-2~5","액덕 노보",["액덕","액상덕후","노보","novo"]],
+  ["W-1-1","컴퓨터 본체, 잡화",["컴퓨터","본체","pc","잡화"]],
+  ["W-1-2~4","프라임 액상",["프라임","prime","액상"]],
+  ["W-1-5","봉투",["봉투","비닐","포장"]]
+];
+
+/* ═══════ 2. 인덱스 ═══════ */
+const REC = ITEMS.map(([code,text,tags,flag,isVoid])=>{
+  const zone = code.slice(0,3);
+  const nums = [];
+  const tail = code.slice(4);
+  const m = tail.match(/^(\d)~(\d)$/);
+  if(m){for(let i=+m[1];i<=+m[2];i++)nums.push(i);}
+  else nums.push(+tail);
+  return {code,zone,nums,text,tags:tags||[],flag:flag||null,isVoid:!!isVoid,
+          hay:(text+" "+(tags||[]).join(" ")+" "+code).toLowerCase()};
+});
+
+const norm = s => s.toLowerCase().replace(/[\s\-_.]/g,"");
+
+function search(qRaw){
+  const q = qRaw.trim();
+  if(!q) return [];
+  const n = norm(q);
+  const scored = [];
+  for(const r of REC){
+    let sc = 0;
+    if(norm(r.code).startsWith(n) || norm(r.zone)===n) sc = 100;
+    else if(norm(r.text).includes(n)) sc = 60;
+    else if(r.tags.some(t=>norm(t)===n)) sc = 50;
+    else if(r.tags.some(t=>norm(t).includes(n)||n.includes(norm(t))&&n.length>1)) sc = 30;
+    if(sc) scored.push({r,sc});
+  }
+  scored.sort((a,b)=>b.sc-a.sc || a.r.code.localeCompare(b.r.code));
+  return scored.map(s=>s.r);
+}
+
+/* ═══════ 3. 지도 연결 (도형은 HTML에 정적으로 들어 있음) ═══════ */
+const map = document.getElementById("map");
+const zoneNodes={}, subLabels={};
+Array.prototype.forEach.call(map.querySelectorAll(".zone"), function(g){
+  const code=g.getAttribute("data-zone");
+  if(!ZONES[code]) return;
+  ZONES[code].code=code;
+  zoneNodes[code]=g;
+  subLabels[code]=g.querySelector(".zsublabel");
+  g.addEventListener("click",function(e){e.stopPropagation();selectZone(code);});
+  g.addEventListener("keydown",function(e){
+    if(e.key==="Enter"||e.key===" "){e.preventDefault();selectZone(code);}
+  });
+});
+
+/* ═══════ 4. 확대 / 축소 ═══════ */
+const FULL=[0,0,1405,2010];
+const zoomBtn=document.getElementById("zoomout");
+const reduceMotion=window.matchMedia("(prefers-reduced-motion:reduce)").matches;
+let curVB=FULL.slice(), animId=null, zoomedZone=null;
+
+function setVB(v){
+  curVB=v;
+  map.setAttribute("viewBox",v.map(n=>Math.round(n*10)/10).join(" "));
+}
+function fitBox(x,y,w,h){
+  const r=map.getBoundingClientRect();
+  const ratio=(r.width&&r.height)?r.width/r.height:1405/2010;
+  let nw=w, nh=h;
+  if(w/h > ratio) nh=w/ratio; else nw=h*ratio;
+  return [x-(nw-w)/2, y-(nh-h)/2, nw, nh];
+}
+function animateVB(target){
+  cancelAnimationFrame(animId);
+  if(reduceMotion){setVB(target);return;}
+  const start=curVB.slice(), t0=performance.now(), D=360;
+  const step=t=>{
+    const k=Math.min(1,(t-t0)/D), e=1-Math.pow(1-k,3);
+    setVB(start.map((s,i)=>s+(target[i]-s)*e));
+    if(k<1) animId=requestAnimationFrame(step);
+  };
+  animId=requestAnimationFrame(step);
+}
+function zoomToZone(code){
+  const z=ZONES[code];
+  const pad=Math.max(z.w,z.h)*0.16;
+  zoomedZone=code;
+  map.classList.add("zoomed");
+  zoomBtn.classList.add("on");
+  animateVB(fitBox(z.x-pad,z.y-pad,z.w+pad*2,z.h+pad*2));
+}
+function resetZoom(){
+  if(!zoomedZone && curVB[2]===FULL[2]) return;
+  zoomedZone=null;
+  map.classList.remove("zoomed");
+  zoomBtn.classList.remove("on");
+  animateVB(FULL.slice());
+}
+zoomBtn.addEventListener("click",resetZoom);
+map.addEventListener("click",resetZoom);
+window.addEventListener("resize",()=>{ if(zoomedZone) zoomToZone(zoomedZone); });
+setVB(FULL.slice());
+
+/* ═══════ 5. 화면 갱신 ═══════ */
+const qEl=document.getElementById("q"),
+      resEl=document.getElementById("results"),
+      cntEl=document.getElementById("count"),
+      detEl=document.getElementById("detail"),
+      clearEl=document.getElementById("clear"),
+      hintEl=document.getElementById("maphint"),
+      mapCard=document.querySelector(".mapcard");
+let activeZones=new Set();
+
+function highlight(zones){
+  activeZones=new Set(zones);
+  map.classList.toggle("dimmed", zones.length>0);
+  for(const [c,g] of Object.entries(zoneNodes)) g.classList.toggle("active",activeZones.has(c));
+}
+function levelText(rec){
+  const n=rec.nums;
+  return n.length>1 ? `${n[0]}~${n[n.length-1]}층` : `${n[0]}층`;
+}
+function markLevel(rec){
+  for(const k in subLabels) subLabels[k].textContent="";
+  if(rec) subLabels[rec.zone].textContent=levelText(rec);
+}
+function isMobile(){return window.matchMedia("(max-width:860px)").matches;}
+
+function mark(text,q){
+  if(!q) return text;
+  const i=text.toLowerCase().indexOf(q.trim().toLowerCase());
+  if(i<0) return text;
+  return text.slice(0,i)+"<b>"+text.slice(i,i+q.trim().length)+"</b>"+text.slice(i+q.trim().length);
+}
+function flagClass(flag){
+  return (/등록 O/.test(flag) && !/X/.test(flag) && !/미등록/.test(flag)) ? " ok" : "";
+}
+
+function focusRecord(r,scroll){
+  highlight([r.zone]);
+  markLevel(r);
+  zoomToZone(r.zone);
+  renderDetail(r.zone,r);
+  hintEl.textContent=`${r.zone} 선반 · ${levelText(r)}`;
+  if(scroll && isMobile()) mapCard.scrollIntoView({behavior:reduceMotion?"auto":"smooth",block:"start"});
+}
+
+function renderResults(list,q){
+  resEl.innerHTML="";
+  if(!q.trim()){
+    cntEl.textContent="";
+    resEl.innerHTML=`<div class="empty">물건 이름을 입력하면 <b>선반 위치가 약도에 표시</b>됩니다.<br>선반 코드(R-7, B-2 …)로도 찾을 수 있고, 약도에서 선반을 직접 눌러도 됩니다. 층은 약도 아래에 표시됩니다.</div>`;
+    highlight([]); markLevel(null); detEl.innerHTML=""; resetZoom();
+    hintEl.textContent="선반을 누르면 확대됩니다";
+    return;
+  }
+  if(!list.length){
+    cntEl.textContent="";
+    resEl.innerHTML=`<div class="empty">‘<b>${q}</b>’ 는 등록된 위치가 없습니다.<br>제품명 일부만 입력하거나, 브랜드명으로 다시 찾아보세요.</div>`;
+    highlight([]); markLevel(null); detEl.innerHTML=""; resetZoom();
+    return;
+  }
+  cntEl.textContent=`검색 결과 ${list.length}건`;
+  list.forEach((r,i)=>{
+    const b=document.createElement("button");
+    b.className="hit"+(i===0?" sel":"");
+    b.innerHTML=`<div class="code">${r.code}</div>
+      <div><div class="what">${mark(r.text,q)}</div>
+      ${r.flag?`<span class="flag${flagClass(r.flag)}">${r.flag}</span>`:""}</div>`;
+    b.addEventListener("click",()=>{
+      document.querySelectorAll(".hit").forEach(h=>h.classList.remove("sel"));
+      b.classList.add("sel");
+      focusRecord(r,true);
+    });
+    resEl.appendChild(b);
+  });
+
+  const zones=[...new Set(list.map(r=>r.zone))];
+  highlight(zones);
+  markLevel(list[0]);
+  renderDetail(list[0].zone,list[0]);
+  if(zones.length===1){ zoomToZone(zones[0]); hintEl.textContent=`${zones[0]} 선반 · ${levelText(list[0])}`; }
+  else { resetZoom(); hintEl.textContent=`${zones.length}개 선반에 있음`; }
+}
+
+function renderDetail(zone,focus){
+  const z=ZONES[zone];
+  const rows=[];
+  for(let i=1;i<=z.cells;i++){
+    const rec=REC.find(r=>r.zone===zone&&r.nums.includes(i));
+    rows.push({n:i,rec});
+  }
+  const kind={red:"레드 선반",black:"블랙 선반",white:"화이트 선반"}[z.color];
+  detEl.innerHTML=`<div class="detail">
+    <h3>${zone}</h3>
+    <div class="zsub">${kind} · 총 ${z.cells}층 · 선반 앞에서 본 모습</div>
+    <div class="rack">${rows.map(r=>{
+      const on=focus&&focus.nums.includes(r.n);
+      const txt=r.rec?r.rec.text:"(기재 없음)";
+      const vd=!r.rec||r.rec.isVoid;
+      const fl=r.rec&&r.rec.flag?`<span class="lflag${flagClass(r.rec.flag)}">${r.rec.flag}</span>`:"";
+      return `<div class="level${on?" on":""}${vd?" void":""}">
+        <div class="lv">${r.n}층</div><div class="lt">${txt}${fl}</div></div>`;
+    }).join("")}</div>
+    <div class="floornote">↓ 아래로 갈수록 낮은 층</div>
+  </div>`;
+}
+
+/* 빠른 검색 칩 */
+const QUICK=["액덕","테이프","봉투","프라임","우산","자판기","멘솔쨩","빈 공간"];
+const chipWrap=document.getElementById("chips");
+QUICK.forEach(k=>{
+  const c=document.createElement("button");
+  c.className="chip"; c.textContent=k;
+  c.addEventListener("click",()=>{qEl.value=k;run();});
+  chipWrap.appendChild(c);
+});
+
+function selectZone(code){ qEl.value=code; run(); if(isMobile()) qEl.blur(); }
+function run(){
+  const q=qEl.value;
+  clearEl.classList.toggle("on",!!q);
+  renderResults(search(q),q);
+}
+qEl.addEventListener("input",run);
+qEl.addEventListener("keydown",e=>{ if(e.key==="Enter"){e.preventDefault();qEl.blur();} });
+clearEl.addEventListener("click",()=>{qEl.value="";run();qEl.focus();});
+document.addEventListener("keydown",e=>{
+  if(e.key==="/"&&document.activeElement!==qEl){e.preventDefault();qEl.focus();}
+  if(e.key==="Escape"){qEl.value="";run();}
+});
+
+/* 밝기 전환 */
+const themeBtn=document.getElementById("theme");
+themeBtn.addEventListener("click",()=>{
+  const dark=document.documentElement.dataset.theme==="dark";
+  document.documentElement.dataset.theme=dark?"light":"dark";
+  themeBtn.textContent=dark?"어둡게":"밝게";
+  document.querySelector('meta[name="theme-color"]').content=dark?"#F2F3F5":"#0F1214";
+});
+
+run();
+</script>
+</body>
+</html>
