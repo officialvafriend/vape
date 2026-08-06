@@ -1,0 +1,1073 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#F2F3F5">
+<title>베이프렌드 본점 창고 · 재고 위치 찾기</title>
+<style>
+/* ══════════════════════════════════════════════
+   테마 토큰 — 밝은 창고 기준(라이트 기본), 다크 전환 가능
+   ══════════════════════════════════════════════ */
+:root{
+  --bg:#EFF1F4;
+  --panel:#FFFFFF;
+  --panel-2:#E8EBEF;
+  --line:#D2D8DF;
+  --text:#12161A;
+  --muted:#5C6773;
+
+  --hi:#0B5FFF;                 /* 선택·강조 (빨강/검정/흰 선반 모두와 대비) */
+  --hi-soft:rgba(11,95,255,.12);
+  --hi-line:#0846C2;
+
+  --warn-bg:#FFF1F1;
+  --warn-line:#F2B8B8;
+  --warn-text:#A31621;
+  --ok-bg:#E7F3FF;
+  --ok-line:#AFD1FA;
+  --ok-text:#0B4FB8;
+
+  --shelf-red:#DC1F2B;
+  --shelf-black:#1B1F24;
+  --shelf-white:#FFFFFF;
+  --shelf-white-line:#7A848F;
+  --shelf-white-label:#12161A;
+  --fixture:#0E8FA8;
+  --entrance:#FFC400;
+  --map-bg:#F7F9FB;
+
+  --mono:ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+  --sans:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Pretendard","Noto Sans KR","Malgun Gothic",system-ui,sans-serif;
+}
+[data-theme="dark"]{
+  --bg:#0F1214; --panel:#191D21; --panel-2:#20262B; --line:#2C343B;
+  --text:#EDF0F2; --muted:#8A939C;
+  --hi:#FFD100; --hi-soft:rgba(255,209,0,.16); --hi-line:#C9A400;
+  --warn-bg:rgba(245,51,63,.12); --warn-line:rgba(245,51,63,.38); --warn-text:#FF8E95;
+  --ok-bg:rgba(23,160,190,.14); --ok-line:rgba(23,160,190,.4); --ok-text:#5FCBE3;
+  --shelf-red:#F5333F; --shelf-black:#101215; --shelf-white:#F2F4F6;
+  --shelf-white-line:#C7CDD3; --shelf-white-label:#101215;
+  --fixture:#17A0BE; --entrance:#FBD24E; --map-bg:#141A1E;
+}
+
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg);color:var(--text);font-family:var(--sans);
+  font-size:15px;line-height:1.5;
+  padding-bottom:calc(28px + env(safe-area-inset-bottom));
+}
+.wrap{
+  max-width:1180px;margin:0 auto;
+  padding:0 max(14px,env(safe-area-inset-left)) 0 max(14px,env(safe-area-inset-right));
+}
+button{font-family:inherit}
+:focus-visible{outline:3px solid var(--hi);outline-offset:2px}
+
+/* ── 헤더 + 검색 ─────────────────────────── */
+header{
+  position:sticky;top:0;z-index:30;background:var(--bg);
+  padding:14px 0 10px;
+  box-shadow:0 8px 12px -10px rgba(0,0,0,.25);
+}
+.brandline{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.brandline h1{margin:0;font-size:18px;font-weight:800;letter-spacing:-.02em;flex:1}
+.brandline .sub{
+  font-family:var(--mono);font-size:10.5px;color:var(--muted);
+  letter-spacing:.08em;text-transform:uppercase;
+}
+@media(max-width:520px){.brandline .sub{display:none}}
+.themebtn{
+  border:1px solid var(--line);background:var(--panel);color:var(--muted);
+  min-width:44px;height:38px;border-radius:9px;font-size:13px;cursor:pointer;padding:0 10px;
+}
+.searchbox{position:relative}
+.searchbox input{
+  width:100%;padding:15px 52px 15px 15px;
+  background:var(--panel);border:1.5px solid var(--line);border-radius:11px;
+  color:var(--text);font-size:17px;font-family:var(--sans);outline:none;
+}
+.searchbox input:focus{border-color:var(--hi);box-shadow:0 0 0 3px var(--hi-soft)}
+.searchbox input::placeholder{color:var(--muted)}
+.clearbtn{
+  position:absolute;right:6px;top:50%;transform:translateY(-50%);
+  width:42px;height:42px;border:0;border-radius:9px;background:transparent;
+  color:var(--muted);font-size:19px;cursor:pointer;display:none
+}
+.clearbtn.on{display:block}
+.chips{display:flex;gap:7px;margin-top:9px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{
+  border:1px solid var(--line);background:var(--panel);color:var(--muted);
+  padding:0 14px;height:38px;border-radius:999px;font-size:13.5px;cursor:pointer;
+  white-space:nowrap;flex:0 0 auto
+}
+.chip:hover{border-color:var(--hi);color:var(--text)}
+
+/* ── 레이아웃 ─────────────────────────── */
+.cols{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:20px;align-items:start}
+.side{display:flex;flex-direction:column;gap:0}
+#detail{order:1}.count{order:2}.results{order:3}.notice{order:4}footer{order:5}
+@media(max-width:860px){
+  .cols{grid-template-columns:1fr;gap:14px}
+  #detail{order:0}
+}
+
+/* ── 약도 ─────────────────────────── */
+.mapcard{
+  background:var(--panel);border:1px solid var(--line);border-radius:14px;
+  padding:12px;position:sticky;top:126px;
+}
+@media(max-width:860px){.mapcard{position:static;padding:10px}}
+.maphead{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px}
+.maphead .lbl{font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.06em}
+.zoomout{
+  border:1px solid var(--line);background:var(--panel);color:var(--muted);
+  height:36px;padding:0 13px;border-radius:9px;font-size:13px;cursor:pointer;display:none
+}
+.zoomout.on{display:block;border-color:var(--hi);color:var(--hi)}
+svg#map{
+  width:100%;height:min(66vh,720px);display:block;
+  background:var(--map-bg);border-radius:8px;touch-action:manipulation;
+}
+@media(max-width:860px){svg#map{height:40vh;min-height:280px}}
+
+.mapbg{fill:var(--map-bg)}
+.zone{cursor:pointer}
+.zone .body,.cell,.zone{transition:opacity .18s}
+.dimmed .zone:not(.active){opacity:.2}
+.zone.red   .body{fill:var(--shelf-red);stroke:#fff}
+.zone.black .body{fill:var(--shelf-black);stroke:#fff}
+.zone.white .body{fill:var(--shelf-white);stroke:var(--shelf-white-line)}
+.zone.red .zlabel,.zone.black .zlabel{fill:#fff}
+.zone.white .zlabel{fill:var(--shelf-white-label)}
+.zsublabel{
+  font-family:var(--mono);font-size:30px;font-weight:700;pointer-events:none;
+  opacity:0;transition:opacity .2s;
+}
+.zoomed .zone.active .zsublabel{opacity:1}
+.zone.red .zsublabel,.zone.black .zsublabel{fill:#fff}
+.zone.white .zsublabel{fill:var(--shelf-white-label)}
+.zone.active .hitbox{
+  stroke:var(--hi);stroke-width:9;
+  animation:pulse 1.4s ease-in-out infinite
+}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
+@media(prefers-reduced-motion:reduce){.zone.active .hitbox{animation:none}}
+.zlabel{font-family:var(--mono);font-weight:700;pointer-events:none;font-size:42px}
+.fixture rect{fill:var(--fixture)}
+.entrance rect{fill:var(--entrance)}
+.fixlabel{font-family:var(--sans);font-size:34px;pointer-events:none;fill:#fff}
+[data-theme="light"] .entrance .fixlabel{fill:#3D2E00}
+
+/* ── 결과 ─────────────────────────── */
+.results{display:flex;flex-direction:column;gap:8px}
+.count{font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.08em;margin:2px 0 8px}
+.hit{
+  display:grid;grid-template-columns:92px minmax(0,1fr);gap:12px;align-items:center;
+  background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--line);
+  border-radius:11px;padding:14px 14px;cursor:pointer;text-align:left;width:100%;
+  color:inherit;font:inherit;min-height:62px;
+}
+.hit:hover{background:var(--panel-2)}
+.hit.sel{border-color:var(--hi);border-left-color:var(--hi);background:var(--hi-soft)}
+.hit .code{font-family:var(--mono);font-size:16px;font-weight:700}
+.hit .what{font-size:15px}
+.hit .what b{color:var(--hi-line);font-weight:800}
+[data-theme="dark"] .hit .what b{color:var(--hi)}
+.hit .flag{
+  display:inline-block;margin-top:5px;font-size:11.5px;font-family:var(--mono);
+  padding:3px 7px;border-radius:5px;
+  background:var(--warn-bg);color:var(--warn-text);border:1px solid var(--warn-line)
+}
+.hit .flag.ok{background:var(--ok-bg);color:var(--ok-text);border-color:var(--ok-line)}
+.hit .sub2{font-size:12.5px;color:var(--muted);margin-top:3px}
+.hit .code{line-height:1.35}
+.hit .code.none{color:var(--muted);font-size:12.5px;font-weight:600}
+.swatch{width:11px;height:11px;border-radius:2px;display:inline-block;margin-right:6px;vertical-align:middle}
+
+.empty{
+  background:var(--panel);border:1px dashed var(--line);border-radius:11px;
+  padding:22px 16px;color:var(--muted);font-size:14px
+}
+.empty b{color:var(--text)}
+
+/* ── 선반 상세(층 단면) ─────────────────── */
+.detail{
+  background:var(--panel);border:1px solid var(--line);border-radius:12px;
+  padding:13px;margin-bottom:12px
+}
+.detail h3{margin:0 0 2px;font-family:var(--mono);font-size:16px}
+.detail .zsub{font-size:12.5px;color:var(--muted);margin-bottom:9px}
+.rack{
+  background:var(--panel-2);border:2px solid var(--line);border-radius:9px;
+  padding:6px;display:flex;flex-direction:column;gap:5px
+}
+.level{
+  display:grid;grid-template-columns:52px minmax(0,1fr);gap:10px;align-items:center;
+  min-height:48px;padding:9px 11px;background:var(--panel);border-radius:6px;
+  border-bottom:3px solid var(--line);font-size:14px
+}
+.level.on{background:var(--hi-soft);border-bottom-color:var(--hi);outline:2px solid var(--hi)}
+.level .lv{font-family:var(--mono);font-size:13px;color:var(--muted);text-align:right}
+.level.on .lv{color:var(--hi-line);font-weight:700}
+[data-theme="dark"] .level.on .lv{color:var(--hi)}
+.level.void .lt{color:var(--muted);font-style:italic}
+.level .lflag{
+  display:inline-block;margin-left:6px;font-size:11px;font-family:var(--mono);
+  padding:2px 6px;border-radius:4px;vertical-align:middle;
+  background:var(--warn-bg);color:var(--warn-text);border:1px solid var(--warn-line)
+}
+.level .lflag.ok{background:var(--ok-bg);color:var(--ok-text);border-color:var(--ok-line)}
+.floornote{font-size:12px;color:var(--muted);margin-top:7px;text-align:center}
+
+.notice{
+  margin-top:12px;background:var(--warn-bg);border:1px solid var(--warn-line);
+  border-radius:11px;padding:12px 14px;font-size:13.5px;color:var(--warn-text)
+}
+.notice b{display:block;margin-bottom:4px}
+.notice ul{margin:0;padding-left:18px}
+.notice li{margin:3px 0}
+footer{margin-top:20px;font-size:12.5px;color:var(--muted);line-height:1.8}
+kbd{font-family:var(--mono);font-size:11px;background:var(--panel-2);border:1px solid var(--line);border-radius:4px;padding:1px 5px}
+.kbdhint{display:none}
+@media(min-width:861px){.kbdhint{display:block;margin-top:8px}}
+
+/* ── 스크립트가 막힌 뷰어(카톡 등) 대응 ───────── */
+.nojs-note{
+  background:var(--ok-bg);border:1px solid var(--ok-line);color:var(--ok-text);
+  border-radius:11px;padding:12px 14px;font-size:13.5px;margin-bottom:12px;line-height:1.6
+}
+html.js .nojs-note{display:none}
+html:not(.js) .searchbox,html:not(.js) .chips,html:not(.js) .maphead,
+html:not(.js) .themebtn{display:none}
+html.js #fallback{display:none}
+#fallback{margin-bottom:12px}
+.fbhead{
+  font-family:var(--mono);font-size:11px;color:var(--muted);
+  letter-spacing:.08em;margin:2px 0 8px
+}
+</style>
+<script>document.documentElement.className="js";</script>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="brandline">
+    <h1>본점 창고 재고 위치</h1>
+    <div class="sub">VAFRIEND · WAREHOUSE LOCATOR</div>
+    <button class="themebtn" id="theme" aria-label="화면 밝기 전환">어둡게</button>
+  </div>
+  <div class="searchbox">
+    <input id="q" type="search" autocomplete="off" autocapitalize="off" spellcheck="false"
+           inputmode="search" enterkeyhint="search"
+           placeholder="액상·물건 이름 입력 (예: 수 피코, 디오, 복숭아, R-7)" aria-label="재고 검색">
+    <button class="clearbtn" id="clear" aria-label="지우기">✕</button>
+  </div>
+  <div class="chips" id="chips"></div>
+</header>
+
+  <div class="nojs-note"><b>지금은 목록만 볼 수 있습니다.</b><br>이 뷰어에서는 검색·약도 확대가 동작하지 않습니다. 우측 상단 메뉴에서 <b>다른 브라우저로 열기</b>(크롬·사파리)를 선택하면 검색까지 됩니다.</div>
+<div class="cols">
+  <div class="mapcard">
+    <div class="maphead">
+      <span class="lbl" id="maphint">선반을 누르면 확대됩니다</span>
+      <button class="zoomout" id="zoomout">전체 보기</button>
+    </div>
+    <svg id="map" viewBox="0 0 1405 2010" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="창고 약도">
+<rect class="mapbg" x="0" y="0" width="1405" height="2010"/>
+<g class="fixture"><rect x="35" y="30" width="180" height="135" stroke="#fff" stroke-width="6" stroke-dasharray="10 10" rx="4"/><text x="125" y="97.5" text-anchor="middle" dominant-baseline="central" class="fixlabel" transform="rotate(90 125 97.5)">정수기</text></g>
+<g class="fixture"><rect x="35" y="172" width="180" height="148" stroke="#fff" stroke-width="6" stroke-dasharray="10 10" rx="4"/><text x="125" y="246" text-anchor="middle" dominant-baseline="central" class="fixlabel" transform="rotate(90 125 246)">냉장고</text></g>
+<g class="fixture"><rect x="35" y="328" width="180" height="450" stroke="#fff" stroke-width="6" stroke-dasharray="10 10" rx="4"/><text x="125" y="553" text-anchor="middle" dominant-baseline="central" class="fixlabel" transform="rotate(90 125 553)">데스크1</text></g>
+<g class="fixture"><rect x="35" y="786" width="180" height="450" stroke="#fff" stroke-width="6" stroke-dasharray="10 10" rx="4"/><text x="125" y="1011" text-anchor="middle" dominant-baseline="central" class="fixlabel" transform="rotate(90 125 1011)">데스크2</text></g>
+<g class="fixture"><rect x="35" y="1244" width="180" height="440" stroke="#fff" stroke-width="6" stroke-dasharray="10 10" rx="4"/><text x="125" y="1464" text-anchor="middle" dominant-baseline="central" class="fixlabel" transform="rotate(90 125 1464)">데스크3</text></g>
+<g class="fixture"><rect x="35" y="1692" width="180" height="308" stroke="#fff" stroke-width="6" stroke-dasharray="10 10" rx="4"/><text x="125" y="1846" text-anchor="middle" dominant-baseline="central" class="fixlabel" transform="rotate(90 125 1846)">데스크4</text></g>
+<g class="entrance"><rect x="900" y="30" width="270" height="180" stroke="#fff" stroke-width="6" stroke-dasharray="10 10" rx="4"/><text x="1035" y="120" text-anchor="middle" dominant-baseline="central" class="fixlabel" font-size="44">입구</text></g>
+<g class="zone red" data-zone="R-1" tabindex="0" role="button" aria-label="R-1 선반"><rect class="body" x="385" y="30" width="505" height="180" stroke-width="6" stroke-dasharray="12 10" rx="4"/><rect class="hitbox" x="385" y="30" width="505" height="180" fill="transparent" stroke="transparent" stroke-width="6" rx="4"/><text x="637.5" y="120" text-anchor="middle" dominant-baseline="central" class="zlabel">R-1</text><text x="637.5" y="172" text-anchor="middle" dominant-baseline="central" class="zsublabel"></text></g>
+<g class="zone red" data-zone="R-2" tabindex="0" role="button" aria-label="R-2 선반"><rect class="body" x="1185" y="490" width="175" height="595" stroke-width="6" stroke-dasharray="12 10" rx="4"/><rect class="hitbox" x="1185" y="490" width="175" height="595" fill="transparent" stroke="transparent" stroke-width="6" rx="4"/><text x="1272.5" y="787.5" text-anchor="middle" dominant-baseline="central" class="zlabel" transform="rotate(90 1272.5 787.5)">R-2</text><text x="1272.5" y="839.5" text-anchor="middle" dominant-baseline="central" class="zsublabel" transform="rotate(90 1272.5 787.5)"></text></g>
+<g class="zone red" data-zone="R-3" tabindex="0" role="button" aria-label="R-3 선반"><rect class="body" x="1185" y="1090" width="175" height="600" stroke-width="6" stroke-dasharray="12 10" rx="4"/><rect class="hitbox" x="1185" y="1090" width="175" height="600" fill="transparent" stroke="transparent" stroke-width="6" rx="4"/><text x="1272.5" y="1390" text-anchor="middle" dominant-baseline="central" class="zlabel" transform="rotate(90 1272.5 1390)">R-3</text><text x="1272.5" y="1442" text-anchor="middle" dominant-baseline="central" class="zsublabel" transform="rotate(90 1272.5 1390)"></text></g>
+<g class="zone red" data-zone="R-4" tabindex="0" role="button" aria-label="R-4 선반"><rect class="body" x="648" y="675" width="177" height="595" stroke-width="6" stroke-dasharray="12 10" rx="4"/><rect class="hitbox" x="648" y="675" width="177" height="595" fill="transparent" stroke="transparent" stroke-width="6" rx="4"/><text x="736.5" y="972.5" text-anchor="middle" dominant-baseline="central" class="zlabel" transform="rotate(90 736.5 972.5)">R-4</text><text x="736.5" y="1024.5" text-anchor="middle" dominant-baseline="central" class="zsublabel" transform="rotate(90 736.5 972.5)"></text></g>
+<g class="zone red" data-zone="R-5" tabindex="0" role="button" aria-label="R-5 선반"><rect class="body" x="643" y="1275" width="182" height="625" stroke-width="6" stroke-dasharray="12 10" rx="4"/><rect class="hitbox" x="643" y="1275" width="182" height="625" fill="transparent" stroke="transparent" stroke-width="6" rx="4"/><text x="734" y="1587.5" text-anchor="middle" dominant-baseline="central" class="zlabel" transform="rotate(90 734 1587.5)">R-5</text><text x="734" y="1639.5" text-anchor="middle" dominant-baseline="central" class="zsublabel" transform="rotate(90 734 1587.5)"></text></g>
+<g class="zone red" data-zone="R-6" tabindex="0" role="button" aria-label="R-6 선반"><rect class="body" x="455" y="675" width="190" height="595" stroke-width="6" stroke-dasharray="12 10" rx="4"/><rect class="hitbox" x="455" y="675" width="190" height="595" fill="transparent" stroke="transparent" stroke-width="6" rx="4"/><text x="550" y="972.5" text-anchor="middle" dominant-baseline="central" class="zlabel" transform="rotate(90 550 972.5)">R-6</text><text x="550" y="1024.5" text-anchor="middle" dominant-baseline="central" class="zsublabel" transform="rotate(90 550 972.5)"></text></g>
+<g class="zone red" data-zone="R-7" tabindex="0" role="button" aria-label="R-7 선반"><rect class="body" x="455" y="1275" width="185" height="625" stroke-width="6" stroke-dasharray="12 10" rx="4"/><rect class="hitbox" x="455" y="1275" width="185" height="625" fill="transparent" stroke="transparent" stroke-width="6" rx="4"/><text x="547.5" y="1587.5" text-anchor="middle" dominant-baseline="central" class="zlabel" transform="rotate(90 547.5 1587.5)">R-7</text><text x="547.5" y="1639.5" text-anchor="middle" dominant-baseline="central" class="zsublabel" transform="rotate(90 547.5 1587.5)"></text></g>
+<g class="zone black" data-zone="B-1" tabindex="0" role="button" aria-label="B-1 선반"><rect class="body" x="455" y="540" width="370" height="130" stroke-width="6" stroke-dasharray="12 10" rx="4"/><rect class="hitbox" x="455" y="540" width="370" height="130" fill="transparent" stroke="transparent" stroke-width="6" rx="4"/><text x="640" y="605" text-anchor="middle" dominant-baseline="central" class="zlabel">B-1</text><text x="640" y="657" text-anchor="middle" dominant-baseline="central" class="zsublabel"></text></g>
+<g class="zone black" data-zone="B-2" tabindex="0" role="button" aria-label="B-2 선반"><rect class="body" x="1185" y="268" width="175" height="215" stroke-width="6" stroke-dasharray="12 10" rx="4"/><rect class="hitbox" x="1185" y="268" width="175" height="215" fill="transparent" stroke="transparent" stroke-width="6" rx="4"/><text x="1272.5" y="375.5" text-anchor="middle" dominant-baseline="central" class="zlabel" transform="rotate(90 1272.5 375.5)">B-2</text><text x="1272.5" y="427.5" text-anchor="middle" dominant-baseline="central" class="zsublabel" transform="rotate(90 1272.5 375.5)"></text></g>
+<g class="zone black" data-zone="B-3" tabindex="0" role="button" aria-label="B-3 선반"><rect class="body" x="1185" y="30" width="175" height="230" stroke-width="6" stroke-dasharray="12 10" rx="4"/><rect class="hitbox" x="1185" y="30" width="175" height="230" fill="transparent" stroke="transparent" stroke-width="6" rx="4"/><text x="1272.5" y="145" text-anchor="middle" dominant-baseline="central" class="zlabel" transform="rotate(90 1272.5 145)">B-3</text><text x="1272.5" y="197" text-anchor="middle" dominant-baseline="central" class="zsublabel" transform="rotate(90 1272.5 145)"></text></g>
+<g class="zone black" data-zone="B-4" tabindex="0" role="button" aria-label="B-4 선반"><rect class="body" x="455" y="1908" width="285" height="92" stroke-width="6" stroke-dasharray="12 10" rx="4"/><rect class="hitbox" x="455" y="1908" width="285" height="92" fill="transparent" stroke="transparent" stroke-width="6" rx="4"/><text x="597.5" y="1954" text-anchor="middle" dominant-baseline="central" class="zlabel">B-4</text><text x="597.5" y="2006" text-anchor="middle" dominant-baseline="central" class="zsublabel"></text></g>
+<g class="zone white" data-zone="W-1" tabindex="0" role="button" aria-label="W-1 선반"><rect class="body" x="1185" y="1700" width="175" height="260" stroke-width="6" stroke-dasharray="12 10" rx="4"/><rect class="hitbox" x="1185" y="1700" width="175" height="260" fill="transparent" stroke="transparent" stroke-width="6" rx="4"/><text x="1272.5" y="1830" text-anchor="middle" dominant-baseline="central" class="zlabel" transform="rotate(90 1272.5 1830)">W-1</text><text x="1272.5" y="1882" text-anchor="middle" dominant-baseline="central" class="zsublabel" transform="rotate(90 1272.5 1830)"></text></g>
+</svg>
+  </div>
+
+  <div class="side">
+    <div id="detail"></div>
+    <div class="count" id="count"></div>
+    <div class="results" id="results"></div>
+<div id="fallback">
+<div class="fbhead">전체 재고 목록 · 선반 순서</div>
+<div class="detail"><h3>R-1</h3><div class="zsub">레드 선반 · 총 4층</div><div class="rack"><div class="level"><div class="lv">1층</div><div class="lt">빌런단 박스</div></div><div class="level"><div class="lv">2층</div><div class="lt">빌런단 박스</div></div><div class="level"><div class="lv">3층</div><div class="lt">빌런단 박스</div></div><div class="level"><div class="lv">4층</div><div class="lt">테이프 및 문구류</div></div></div></div>
+<div class="detail"><h3>R-2</h3><div class="zsub">레드 선반 · 총 4층</div><div class="rack"><div class="level"><div class="lv">1층</div><div class="lt">빌런단 박스</div></div><div class="level"><div class="lv">2층</div><div class="lt">크래프트, 얌시리즈, 라입시리즈, 델리</div></div><div class="level"><div class="lv">3층</div><div class="lt">리퀴드랩 제품<span class="lflag ok">포스 등록 O</span></div></div><div class="level"><div class="lv">4층</div><div class="lt">멜트다운 시리즈<span class="lflag ok">재고 등록 O</span></div></div></div></div>
+<div class="detail"><h3>R-3</h3><div class="zsub">레드 선반 · 총 4층</div><div class="rack"><div class="level"><div class="lv">1층</div><div class="lt">젤로크리스탈, 플러키팟</div></div><div class="level"><div class="lv">2층</div><div class="lt">왼쪽: 리퀴드랩 / 오른쪽: 팜팜</div></div><div class="level"><div class="lv">3층</div><div class="lt">제이코리아, 순수, 느낌</div></div><div class="level"><div class="lv">4층</div><div class="lt">봉투</div></div></div></div>
+<div class="detail"><h3>R-4</h3><div class="zsub">레드 선반 · 총 4층</div><div class="rack"><div class="level"><div class="lv">1층</div><div class="lt">우산, 청소용품</div></div><div class="level"><div class="lv">2층</div><div class="lt">베이퍼 시리즈</div></div><div class="level"><div class="lv">3층</div><div class="lt">쿨멘솔</div></div><div class="level"><div class="lv">4층</div><div class="lt">812 시가</div></div></div></div>
+<div class="detail"><h3>R-5</h3><div class="zsub">레드 선반 · 총 5층</div><div class="rack"><div class="level"><div class="lv">1층</div><div class="lt">종이가방, 우산</div></div><div class="level"><div class="lv">2층</div><div class="lt">VPS (화이트아웃), 퀸즈시리즈, 크레이지</div></div><div class="level"><div class="lv">3층</div><div class="lt">투엑스, 송송 (단종)</div></div><div class="level void"><div class="lv">4층</div><div class="lt">빈 공간</div></div><div class="level void"><div class="lv">5층</div><div class="lt">빈 공간</div></div></div></div>
+<div class="detail"><h3>R-6</h3><div class="zsub">레드 선반 · 총 5층</div><div class="rack"><div class="level"><div class="lv">1층</div><div class="lt">잡화</div></div><div class="level"><div class="lv">2층</div><div class="lt">제로닉 시리즈, 무</div></div><div class="level"><div class="lv">3층</div><div class="lt">액덕 (액상덕후)</div></div><div class="level"><div class="lv">4층</div><div class="lt">액덕 (액상덕후)</div></div><div class="level"><div class="lv">5층</div><div class="lt">프라임 / 쿠모카시 / 버블몬</div></div></div></div>
+<div class="detail"><h3>R-7</h3><div class="zsub">레드 선반 · 총 5층</div><div class="rack"><div class="level"><div class="lv">1층</div><div class="lt">잡동사니 / 얼먹 / 폐호흡</div></div><div class="level"><div class="lv">2층</div><div class="lt">액덕 — 멘솔쨩</div></div><div class="level"><div class="lv">3층</div><div class="lt">액덕 — 젤로크리스탈</div></div><div class="level"><div class="lv">4층</div><div class="lt">액덕 — 멘솔쨩</div></div><div class="level"><div class="lv">5층</div><div class="lt">액덕 — 흑염룡, 노보</div></div></div></div>
+<div class="detail"><h3>B-1</h3><div class="zsub">블랙 선반 · 총 3층</div><div class="rack"><div class="level"><div class="lv">1층</div><div class="lt">문구류</div></div><div class="level"><div class="lv">2층</div><div class="lt">문구류</div></div><div class="level"><div class="lv">3층</div><div class="lt">디오 리퀴드</div></div></div></div>
+<div class="detail"><h3>B-2</h3><div class="zsub">블랙 선반 · 총 3층</div><div class="rack"><div class="level"><div class="lv">1층</div><div class="lt">자판기용 제품<span class="lflag">포스 등록 X / 재고 미등록</span></div></div><div class="level"><div class="lv">2층</div><div class="lt">자판기용 제품<span class="lflag">포스 등록 X / 재고 미등록</span></div></div><div class="level"><div class="lv">3층</div><div class="lt">자판기용 제품<span class="lflag">포스 등록 X / 재고 미등록</span></div></div></div></div>
+<div class="detail"><h3>B-3</h3><div class="zsub">블랙 선반 · 총 5층</div><div class="rack"><div class="level void"><div class="lv">1층</div><div class="lt">(기재 없음)</div></div><div class="level"><div class="lv">2층</div><div class="lt">메가킥, 메가엣지</div></div><div class="level"><div class="lv">3층</div><div class="lt">메가킥, 메가엣지</div></div><div class="level"><div class="lv">4층</div><div class="lt">포스 미등록 제품<span class="lflag">포스 등록 X / 재고 미등록</span></div></div><div class="level"><div class="lv">5층</div><div class="lt">재고 미등록 제품<span class="lflag">포스 등록 O / 재고 미등록</span></div></div></div></div>
+<div class="detail"><h3>B-4</h3><div class="zsub">블랙 선반 · 총 5층</div><div class="rack"><div class="level"><div class="lv">1층</div><div class="lt">문구류</div></div><div class="level"><div class="lv">2층</div><div class="lt">액덕 노보</div></div><div class="level"><div class="lv">3층</div><div class="lt">액덕 노보</div></div><div class="level"><div class="lv">4층</div><div class="lt">액덕 노보</div></div><div class="level"><div class="lv">5층</div><div class="lt">액덕 노보</div></div></div></div>
+<div class="detail"><h3>W-1</h3><div class="zsub">화이트 선반 · 총 5층</div><div class="rack"><div class="level"><div class="lv">1층</div><div class="lt">컴퓨터 본체, 잡화</div></div><div class="level"><div class="lv">2층</div><div class="lt">프라임 라인 액상 전체</div></div><div class="level"><div class="lv">3층</div><div class="lt">프라임 라인 액상 전체</div></div><div class="level"><div class="lv">4층</div><div class="lt">프라임 라인 액상 전체</div></div><div class="level"><div class="lv">5층</div><div class="lt">봉투</div></div></div></div>
+</div>
+    <div class="notice">
+      <b>입출고 주의</b>
+      <ul>
+        <li>B-2 전체 · B-3-4 — 포스 등록 X / 재고 미등록</li>
+        <li>B-3-5 — 포스 등록 O / 재고 미등록</li>
+        <li>그 외 모든 제품은 재고가 잡혀 있음 → 입출고 시 수량 정확히 반영</li>
+      </ul>
+    </div>
+    <footer>
+      대부분의 분배 제품은 레드(R) 선반에 있습니다.<br>
+      <span class="swatch" style="background:var(--shelf-red)"></span>R 레드선반
+      <span class="swatch" style="background:var(--shelf-black)"></span>B 블랙선반
+      <span class="swatch" style="background:var(--shelf-white);outline:1px solid var(--shelf-white-line)"></span>W 화이트선반
+      <div class="kbdhint">단축키 <kbd>/</kbd> 검색창 · <kbd>Esc</kbd> 초기화</div>
+    </footer>
+  </div>
+</div>
+</div>
+
+<script>
+/* ═══════ 1. 창고 데이터 ═══════ */
+const ZONES = {
+  "R-1":{color:"red",  cells:4, x:385,y:30,  w:505,h:180, rot:0},
+  "R-2":{color:"red",  cells:4, x:1185,y:490,w:175,h:595, rot:90},
+  "R-3":{color:"red",  cells:4, x:1185,y:1090,w:175,h:600,rot:90},
+  "R-4":{color:"red",  cells:4, x:648,y:675, w:177,h:595, rot:90},
+  "R-5":{color:"red",  cells:5, x:643,y:1275,w:182,h:625, rot:90},
+  "R-6":{color:"red",  cells:5, x:455,y:675, w:190,h:595, rot:90},
+  "R-7":{color:"red",  cells:5, x:455,y:1275,w:185,h:625, rot:90},
+  "B-1":{color:"black",cells:3, x:455,y:540, w:370,h:130, rot:0},
+  "B-2":{color:"black",cells:3, x:1185,y:268,w:175,h:215, rot:90},
+  "B-3":{color:"black",cells:5, x:1185,y:30, w:175,h:230, rot:90},
+  "B-4":{color:"black",cells:5, x:455,y:1908,w:285,h:92,  rot:0},
+  "W-1":{color:"white",cells:5, x:1185,y:1700,w:175,h:260,rot:90}
+};
+/* 칸(cells) = 선반의 층 수. 1층이 맨 위, 번호가 커질수록 아래. */
+
+const FIXED = [
+  {t:"정수기", x:35,y:30,  w:180,h:135, rot:90},
+  {t:"냉장고", x:35,y:172, w:180,h:148, rot:90},
+  {t:"데스크1",x:35,y:328, w:180,h:450, rot:90},
+  {t:"데스크2",x:35,y:786, w:180,h:450, rot:90},
+  {t:"데스크3",x:35,y:1244,w:180,h:440, rot:90},
+  {t:"데스크4",x:35,y:1692,w:180,h:308, rot:90}
+];
+const ENTRANCE = {t:"입구", x:900,y:30,w:270,h:180};
+
+/* code, 내용, 태그(동의어), 플래그 */
+const ITEMS = [
+  ["R-1-1~3","빌런단 박스",["빌런단","빌런","박스"]],
+  ["R-1-4","테이프 및 문구류",["테이프","문구","문구류","펜","사무","박스테이프"]],
+  ["R-2-1","빌런단 박스",["빌런단","빌런","박스"]],
+  ["R-2-2","크래프트, 얌시리즈, 라입시리즈, 델리",["크래프트","얌시리즈","얌","라입","라입시리즈","제로타바코","타바코","델리","델리포도"]],
+  ["R-2-3","리퀴드랩 제품",["리퀴드랩","리퀴드","랩"],"포스 등록 O"],
+  ["R-2-4","멜트다운 시리즈",["멜트다운","멜트"],"재고 등록 O"],
+  ["R-3-1","젤로크리스탈, 플러키팟",["젤로크리스탈","젤로","크리스탈","플러키팟","플러키","팟"]],
+  ["R-3-2","왼쪽: 리퀴드랩 / 오른쪽: 팜팜",["리퀴드랩","팜팜"]],
+  ["R-3-3","제이코리아, 순수, 느낌",["제이코리아","제이","코리아","순수","느낌"]],
+  ["R-3-4","봉투",["봉투","비닐","비닐봉투","포장"]],
+  ["R-4-1","우산, 청소용품",["우산","청소","청소용품","걸레","빗자루"]],
+  ["R-4-2","베이퍼 시리즈",["베이퍼","vapor"]],
+  ["R-4-3","쿨멘솔",["쿨멘솔","멘솔","쿨"]],
+  ["R-4-4","812 시가",["812","시가","팔일이"]],
+  ["R-5-1","종이가방, 우산",["종이가방","쇼핑백","가방","우산","봉투"]],
+  ["R-5-2","VPS (화이트아웃), 퀸즈시리즈, 크레이지",["vps","화이트아웃","whiteout","화아","퀸즈","퀸즈시리즈","퀸","크레이지"]],
+  ["R-5-3","투엑스, 송송 (단종)",["투엑스","2x","송송","단종"]],
+  ["R-5-4~5","빈 공간",["빈","빈공간","공실","비어"],null,true],
+  ["R-6-1","잡화",["잡화","기타"]],
+  ["R-6-2","제로닉 시리즈, 무",["제로닉","제로","무무","무"]],
+  ["R-6-3~4","액덕 (액상덕후)",["액덕","액상덕후","덕후","duckhoo"]],
+  ["R-6-5","프라임 / 쿠모카시 / 버블몬",["프라임","prime","쿠모카시","쿠모","버블몬","버블"]],
+  ["R-7-1","잡동사니 / 얼먹 / 폐호흡",["잡동사니","잡화","얼먹","얼려먹구싶오","폐호흡","폐호흡액상"]],
+  ["R-7-2","액덕 — 멘솔쨩",["액덕","액상덕후","멘솔쨩","멘솔"]],
+  ["R-7-3","액덕 — 젤로크리스탈",["액덕","액상덕후","젤로크리스탈","젤로","크리스탈"]],
+  ["R-7-4","액덕 — 멘솔쨩",["액덕","액상덕후","멘솔쨩","멘솔"]],
+  ["R-7-5","액덕 — 흑염룡, 노보",["액덕","액상덕후","흑염룡","흑염","노보","novo"]],
+  ["B-1-1~2","문구류",["문구","문구류","펜","테이프","사무"]],
+  ["B-1-3","디오 리퀴드",["디오","리퀴드","dio"]],
+  ["B-2-1~3","자판기용 제품",["자판기","벤딩","자판","무인"],"포스 등록 X / 재고 미등록"],
+  ["B-3-1","(기재 없음)",[],null,true],
+  ["B-3-2~3","메가킥, 메가엣지",["메가킥","메가엣지","메가","킥","엣지"]],
+  ["B-3-4","포스 미등록 제품",["미등록","포스"],"포스 등록 X / 재고 미등록"],
+  ["B-3-5","재고 미등록 제품",["미등록","재고"],"포스 등록 O / 재고 미등록"],
+  ["B-4-1","문구류",["문구","문구류","펜","테이프"]],
+  ["B-4-2~5","액덕 노보",["액덕","액상덕후","노보","novo"]],
+  ["W-1-1","컴퓨터 본체, 잡화",["컴퓨터","본체","pc","잡화"]],
+  ["W-1-2~4","프라임 라인 액상 전체",["프라임","prime","액상"]],
+  ["W-1-5","봉투",["봉투","비닐","포장"]]
+];
+
+/* ═══════ 1-2. 액상 목록 (liquid.html 기준 · 총 312종) ═══════ */
+/* [제품명, 브랜드, 맛, 위치, 비고]  ·  위치가 "" 면 창고 재고 없음 */
+/* 위치를 바꾸려면 해당 줄의 위치 코드만 고치면 됩니다. 여러 곳이면 | 로 구분 */
+const LIQUIDS = [
+["VF 릭 레몬","VF","레몬","R-1-1~3|R-2-1","단박스 · 액상 재고 아님"],
+["VF 릭 바나나","VF","바나나+사이다","R-1-1~3|R-2-1","단박스 · 액상 재고 아님"],
+["VF 릭 석류","VF","석류","R-1-1~3|R-2-1","단박스 · 액상 재고 아님"],
+["VF 릭 소다","VF","소다","R-1-1~3|R-2-1","단박스 · 액상 재고 아님"],
+["VF 릭 자두","VF","자두","R-1-1~3|R-2-1","단박스 · 액상 재고 아님"],
+["VF 릭 적사과","VF","적사과","R-1-1~3|R-2-1","단박스 · 액상 재고 아님"],
+["VF 릭 청사과","VF","청사과","R-1-1~3|R-2-1","단박스 · 액상 재고 아님"],
+["VF 릭 청포도","VF","청포도","R-1-1~3|R-2-1","단박스 · 액상 재고 아님"],
+["VF 릭 파인애플","VF","파인애플","R-1-1~3|R-2-1","단박스 · 액상 재고 아님"],
+["VF 블루베리석류","VF","블루베리+석류","R-1-1~3|R-2-1","단박스 · 액상 재고 아님"],
+["VF 빌런 레몬","VF","레몬","R-1-1~3|R-2-1","단박스 · 액상 재고 아님"],
+["VF 빌런 레즈애플","VF","레즈애플","R-1-1~3|R-2-1","단박스 · 액상 재고 아님"],
+["VF 빌런 바나나라무네","VF","바나나+사이다","R-1-1~3|R-2-1","단박스 · 액상 재고 아님"],
+["VF 빌런 보석바","VF","소다","R-1-1~3|R-2-1","단박스 · 액상 재고 아님"],
+["VF 빌런 석류","VF","석류","R-1-1~3|R-2-1","단박스 · 액상 재고 아님"],
+["VF 빌런 자두","VF","자두","R-1-1~3|R-2-1","단박스 · 액상 재고 아님"],
+["VF 빌런 청사과","VF","그린애플","R-1-1~3|R-2-1","단박스 · 액상 재고 아님"],
+["VF 빌런 청포도","VF","청포도","R-1-1~3|R-2-1","단박스 · 액상 재고 아님"],
+["VF 빌런 파인애플","VF","파인애플","R-1-1~3|R-2-1","단박스 · 액상 재고 아님"],
+["VF 소다레몬","VF","소다+레몬","R-1-1~3|R-2-1","단박스 · 액상 재고 아님"],
+["VF 알로에소다","VF","알로에+소다","R-1-1~3|R-2-1","단박스 · 액상 재고 아님"],
+["VF 적포도청사과","VF","적포도+청사과","R-1-1~3|R-2-1","단박스 · 액상 재고 아님"],
+["VF 체리캔디","VF","체리사탕","R-1-1~3|R-2-1","단박스 · 액상 재고 아님"],
+["VF 초바쉐","VF","초코+바나나","R-1-1~3|R-2-1","단박스 · 액상 재고 아님"],
+["VF 핑크샤크","VF","복숭아+레몬","R-1-1~3|R-2-1","단박스 · 액상 재고 아님"],
+["VF 홀리","VF","멜론+유자","R-1-1~3|R-2-1","단박스 · 액상 재고 아님"],
+["갱쥬스 알베","갱쥬스","알로에베라","W-1-2~4"],
+["모모라즈슬러쉬","고스트","복숭아+라즈베리","W-1-2~4"],
+["적포도슬러쉬","고스트","적포도","W-1-2~4"],
+["더블슬블","기타","파인애플+소다","W-1-2~4"],
+["돔페피치","기타","복숭아","W-1-2~4"],
+["딸기 요거트","기타","딸기+요거트","W-1-2~4"],
+["레즈애플","기타","레즈애플","W-1-2~4"],
+["리얼자몽","기타","자몽","W-1-2~4"],
+["미슐랭블루","기타","포도+콜라","W-1-2~4"],
+["슴오크쿠반","기타","묵직한 시가","W-1-2~4"],
+["알로에라임","기타","알로에+라임","W-1-2~4"],
+["알로에포도","기타","알로에+포도","W-1-2~4"],
+["엑스온더비치","기타","오렌지칵테일","W-1-2~4"],
+["잽알베","기타","알로에베라","W-1-2~4"],
+["치즈칩스","기타","치즈","W-1-2~4"],
+["칠링피치티","기타","복숭아아이스티","W-1-2~4"],
+["컵콘","기타","옥수수콘","W-1-2~4"],
+["크오크","기타","크림+견과류","W-1-2~4"],
+["피치 요거트","기타","복숭아+요거트","W-1-2~4"],
+["노보 그린펀치","노보","청포도","R-7-5|B-4-2~5"],
+["노보 블랙멘솔","노보","멘솔","R-7-5|B-4-2~5"],
+["노보 블루펀치","노보","블루베리","R-7-5|B-4-2~5"],
+["노보 타박멘솔","노보","타바코+멘솔","R-7-5|B-4-2~5"],
+["느낌 무향","느낌","무향","R-3-3"],
+["댕댕이 꽁꽁멘솔","댕댕이","단맛 느껴지는 멘솔","","단종 · 창고 재고 없음"],
+["댕댕이 스피아민트","댕댕이","민트","","단종 · 창고 재고 없음"],
+["댕댕이 포카리레몬","댕댕이","포카리+레몬","","단종 · 창고 재고 없음"],
+["델리 백향과","델리","백향과","R-2-2"],
+["델리 오렌타","델리","오렌지","R-2-2"],
+["델리 포도","델리","포도","R-2-2"],
+["델리사과","델리","사과","R-2-2"],
+["디오 딸기망고","디오","딸기+망고","B-1-3"],
+["디오 레드에너지","디오","에너지드링크","B-1-3"],
+["디오 레몬","디오","레몬+라임","B-1-3"],
+["디오 로젤하트","디오","히비스커스티","B-1-3"],
+["디오 멜론","디오","멜론","B-1-3"],
+["디오 블랙티","디오","홍차","B-1-3"],
+["디오 블루마린","디오","이온음료","B-1-3"],
+["디오 블루워터","디오","이온음료+자몽","B-1-3"],
+["디오 샤인","디오","샤인머스캣","B-1-3"],
+["디오 알포","디오","알로에+포도","B-1-3"],
+["디오 콜라","디오","콜라","B-1-3"],
+["(한) 라입 제로레몬","라입시리즈","레몬","R-2-2"],
+["(한) 라입 제로석류","라입시리즈","석류","R-2-2"],
+["(한) 라입 제로알로에","라입시리즈","알로에","R-2-2"],
+["(한) 라입 제로타바코","라입시리즈","타바코","R-2-2"],
+["(한) 라입 제로피치","라입시리즈","복숭아","R-2-2"],
+["(한) 라입 쿨링라임","라입시리즈","라임","R-2-2"],
+["(한) 라입 쿨링민트","라입시리즈","민트","R-2-2"],
+["(한) 라입 쿨링워터멜론","라입시리즈","수박","R-2-2"],
+["(한) 라입 쿨링피치","라입시리즈","복숭아","R-2-2"],
+["(한) 라입 쿨링피치자몽","라입시리즈","복숭아+자몽","R-2-2"],
+["레드보틀 민트캔디","레드보틀","민트사탕","","단종 · 창고 재고 없음"],
+["레드보틀 스타프룻","레드보틀","스타후르츠","","단종 · 창고 재고 없음"],
+["레드보틀 자몽","레드보틀","자몽","","단종 · 창고 재고 없음"],
+["레드보틀 청포도","레드보틀","청포도사탕","","단종 · 창고 재고 없음"],
+["레드보틀 초코피넛","레드보틀","초콜릿+땅콩버터","","단종 · 창고 재고 없음"],
+["마르키사","마르키사","패션후르츠","W-1-2~4"],
+["마르키사 라즈","마르키사","패션후르츠+라즈베리","W-1-2~4"],
+["야쿠자르트","마르키사","야쿠르트","W-1-2~4"],
+["마샤 더블샤인","마샤","샤인머스캣X2","W-1-2~4"],
+["마샤 딸기","마샤","딸기","W-1-2~4"],
+["마샤 블랙","마샤","블랙사파이어","W-1-2~4"],
+["마샤 샤인","마샤","샤인머스캣","W-1-2~4"],
+["마샤 유자","마샤","유자","W-1-2~4"],
+["메즈망고","메즈","망고","W-1-2~4"],
+["메즈멜론","메즈","멜론","W-1-2~4"],
+["모코 그레이프사워","모코","포도","W-1-2~4"],
+["모코 더블망고","모코","망고X2","W-1-2~4"],
+["모코 더블샤인","모코","샤인머스캣X2","W-1-2~4"],
+["모코 블루베리사워","모코","블루베리","W-1-2~4"],
+["모코 스트로베리사워","모코","딸기","W-1-2~4"],
+["모코 하와이","모코","레몬","W-1-2~4"],
+["몬테 세븐","몬테","마일드세븐","W-1-2~4"],
+["몬테 스카디레인보우","몬테","후르츠믹스","W-1-2~4"],
+["무 마일드토바코","무","마일드토바코","R-6-2"],
+["무 블랙멘솔","무","블랙멘솔","R-6-2"],
+["무디 그린애플","무디","그린애플","","단종 · 창고 재고 없음"],
+["무디 아카시아","무디","아카시아(껌)","","단종 · 창고 재고 없음"],
+["무디 크랜베리","무디","크랜베리","","단종 · 창고 재고 없음"],
+["무디 푸라보노","무디","후라보노(껌)","","단종 · 창고 재고 없음"],
+["제로닉 거봉","무무","포도","R-6-2"],
+["제로닉 노멘솔 자몽","무무","자몽","R-6-2"],
+["제로닉 노멘솔 체리","무무","체리","R-6-2"],
+["제로닉 노멘솔 포도","무무","포도","R-6-2"],
+["제로닉 노멘솔시가","무무","시가","R-6-2"],
+["제로닉 노멘솔알로에","무무","알로에","R-6-2"],
+["제로닉 민트","무무","민트","R-6-2"],
+["제로닉 샤인머스캣","무무","샤인머스캣","R-6-2"],
+["제로닉 석류","무무","석류","R-6-2"],
+["제로닉 아이스스노우","무무","아이스스노우","R-6-2"],
+["제로닉 콜라","무무","콜라","R-6-2"],
+["바론 그린애플","바론","그린애플","W-1-2~4"],
+["바론 더블민트","바론","민트","W-1-2~4"],
+["바론 피치키스","바론","복숭아","W-1-2~4"],
+["버블몬 멘솔","버블몬","멘솔","R-6-5"],
+["버블몬 스타","버블몬","딸기","R-6-5"],
+["버블몬 아쿠아","버블몬","열대과일","R-6-5"],
+["버블몬 알포","버블몬","알로에+포도","R-6-5"],
+["버블몬 오몽","버블몬","망고","R-6-5"],
+["버블몬 쿨블루","버블몬","블루베리","R-6-5"],
+["버블몬 폴라","버블몬","청포도","R-6-5"],
+["베이퍼 렘드","베이퍼","레몬","R-4-2"],
+["베이퍼 모모","베이퍼","복숭아","R-4-2"],
+["베이퍼 시가812","베이퍼","구수한 시가","R-4-2"],
+["베이퍼 알로","베이퍼","알로에","R-4-2"],
+["베이퍼 욜","베이퍼","청포도+알로에","R-4-2"],
+["베이퍼 찰스","베이퍼","살구+복숭아","R-4-2"],
+["베이퍼 체체","베이퍼","체리","R-4-2"],
+["베이퍼 쿨멘솔","베이퍼","단일멘솔","R-4-2"],
+["베이퍼 톨리","베이퍼","수박+소다","R-4-2"],
+["베이퍼 프루아","베이퍼","자두+소다","R-4-2"],
+["베이퍼 플로이","베이퍼","사과+석류","R-4-2"],
+["베이퍼 하이 렘드","베이퍼","레몬(하이민트)","R-4-2"],
+["베이퍼 하이 모모","베이퍼","복숭아(하이민트)","R-4-2"],
+["베이퍼 하이 알로","베이퍼","알로에(하이민트)","R-4-2"],
+["베이퍼 하이 욜","베이퍼","청포도+알로에(하이민트)","R-4-2"],
+["베이퍼 하이 찰스","베이퍼","살구+복숭아(하이민트)","R-4-2"],
+["베이퍼 하이 체체","베이퍼","체리(하이민트)","R-4-2"],
+["베이퍼 하이 톨리","베이퍼","수박+소다(하이민트)","R-4-2"],
+["베이퍼 하이 프루아","베이퍼","자두+소다(하이민트)","R-4-2"],
+["베이퍼 하이 플로이","베이퍼","사과+석류(하이민트)","R-4-2"],
+["블러 스피아민트","블러","스피아민트","W-1-2~4"],
+["(한) 블링크 레몬","블링크","레몬","","단종 · 창고 재고 없음"],
+["(한) 블링크 버블껌","블링크","풍선껌","","단종 · 창고 재고 없음"],
+["(한) 블링크 자몽","블링크","자몽","","단종 · 창고 재고 없음"],
+["(한) 블링크 쿼드베리","블링크","4가지 베리맛","","단종 · 창고 재고 없음"],
+["(한) 블링크 포도","블링크","포도","","단종 · 창고 재고 없음"],
+["설향 딸기","설향","딸기","W-1-2~4"],
+["설향 라임","설향","라임","W-1-2~4"],
+["설향 자두","설향","자두+살구","W-1-2~4"],
+["송송 모스 쿨라임","송송","라임","R-5-3"],
+["송송 언노운 무향","송송","무향","R-5-3"],
+["수 골든포인트","수리퀴드","구수한 시가","W-1-2~4"],
+["수 더스트","수리퀴드","멜론+소다","W-1-2~4"],
+["수 러브청포도","수리퀴드","청포도","W-1-2~4"],
+["수 러브퍼플베리","수리퀴드","퍼플베리","W-1-2~4"],
+["수 러브피치","수리퀴드","복숭아","W-1-2~4"],
+["수 루기","수리퀴드","석류+자두","W-1-2~4"],
+["수 마이트","수리퀴드","레몬","W-1-2~4"],
+["수 블랙멘솔","수리퀴드","멘솔","W-1-2~4"],
+["수 섹스어필","수리퀴드","복분자","W-1-2~4"],
+["수 스노우민트","수리퀴드","민트","W-1-2~4"],
+["수 스노우사이다","수리퀴드","사이다","W-1-2~4"],
+["수 스노우아카시아","수리퀴드","아카시아꽃","W-1-2~4"],
+["수 스노우청포도","수리퀴드","청포도","W-1-2~4"],
+["수 스노우퍼플베리","수리퀴드","퍼플베리","W-1-2~4"],
+["수 스노우피치","수리퀴드","복숭아","W-1-2~4"],
+["수 아메리카노","수리퀴드","커피","W-1-2~4"],
+["수 예티","수리퀴드","수박+라즈베리","W-1-2~4"],
+["수 잭알그레이프","수리퀴드","포도","W-1-2~4"],
+["수 잭워터멜론","수리퀴드","수박","W-1-2~4"],
+["수 피코","수리퀴드","자두+살구","W-1-2~4"],
+["순수 레몬","순수","레몬","R-3-3"],
+["순수 리프","순수","부드러운 시가","R-3-3"],
+["순수 민트","순수","민트","R-3-3"],
+["순수 백도","순수","백도","R-3-3"],
+["순수 복숭아","순수","복숭아","R-3-3"],
+["순수 블랙멘솔","순수","단일멘솔","R-3-3"],
+["순수 살구","순수","살구","R-3-3"],
+["순수 석류","순수","석류","R-3-3"],
+["순수 시가","순수","묵직한 시가","R-3-3"],
+["순수 알로에","순수","알로에","R-3-3"],
+["순수 자두","순수","자두","R-3-3"],
+["순수 자몽","순수","자몽","R-3-3"],
+["순수 청포도","순수","청포도","R-3-3"],
+["순수 타박멘솔","순수","타바코+멘솔","R-3-3"],
+["순수 포도","순수","포도","R-3-3"],
+["슈퍼쿨 그레이프","슈퍼쿨","포도","W-1-2~4"],
+["슈퍼쿨 폴로","슈퍼쿨","민트","W-1-2~4"],
+["스위든 그린티","스위든","녹차","W-1-2~4"],
+["스위든 멘솔마스터","스위든","멘솔","W-1-2~4"],
+["스위든 선인장","스위든","멜론+알로에","W-1-2~4"],
+["스위든 아이스그린티","스위든","녹차","W-1-2~4"],
+["스위든 아이스바인","스위든","청포도+화이트와인","W-1-2~4"],
+["스위든 체어맨","스위든","묵직한 시가","W-1-2~4"],
+["스위든 쿠반시가","스위든","깔끔한 시가","W-1-2~4"],
+["(한) 얌 레몬","얌시리즈","레몬","R-2-2"],
+["(한) 얌 복숭아","얌시리즈","복숭아","R-2-2"],
+["(한) 얌 샤인머스캣","얌시리즈","샤인머스캣","R-2-2"],
+["(한) 얌 수박","얌시리즈","수박","R-2-2"],
+["(한) 얌 알로에","얌시리즈","알로에","R-2-2"],
+["(한) 얌 자두","얌시리즈","자두","R-2-2"],
+["(한) 얌 포도","얌시리즈","포도","R-2-2"],
+["오구오구 레몬자몽","오구오구","레몬+자몽","","단종 · 창고 재고 없음"],
+["오구오구 리치알로에","오구오구","리치+알로에","","단종 · 창고 재고 없음"],
+["오구오구 수박라즈","오구오구","수박+라즈베리","","단종 · 창고 재고 없음"],
+["오구오구 자두복숭아","오구오구","자두+복숭아","","단종 · 창고 재고 없음"],
+["오구오구 파인알로","오구오구","파인애플+알로에","","단종 · 창고 재고 없음"],
+["용트림수박","용트림","수박","W-1-2~4"],
+["용트림알로에","용트림","알로에","W-1-2~4"],
+["용트림체리","용트림","체리","W-1-2~4"],
+["(한) 골든알로에","제이코리아","알로에","R-3-3"],
+["(한) 레드포카리","제이코리아","자몽+포카리","R-3-3"],
+["(한) 로스트토바코","제이코리아","부드러운 토바코","R-3-3"],
+["(한) 블루블러드","제이코리아","파인애플+소다","R-3-3"],
+["(한) 블루스카이","제이코리아","레몬+라임","R-3-3"],
+["(한) 샤크","제이코리아","죠스바(오렌지+딸기)","R-3-3"],
+["(한) 솔의눈","제이코리아","솔잎눈(음료수)","R-3-3"],
+["(한) 스위트피치망고","제이코리아","복숭아+망고","R-3-3"],
+["(한) 아이스샷","제이코리아","단일멘솔","R-3-3"],
+["(한) 얌멘솔","제이코리아","멘솔","R-3-3"],
+["(한) 와 라즈베리","제이코리아","라즈베리+백향과","R-3-3"],
+["(한) 와 배","제이코리아","배+백향과","R-3-3"],
+["(한) 와 블루레몬","제이코리아","블루레몬+백향과","R-3-3"],
+["(한) 와 샤인","제이코리아","샤인머스캣+백향과","R-3-3"],
+["(한) 와 오가닉","제이코리아","패션후르츠","R-3-3"],
+["(한) 와 핑크멜론","제이코리아","멜론+백향과","R-3-3"],
+["(한) 와 한라봉","제이코리아","한라봉+백향과","R-3-3"],
+["(한) 젤라또알로에","제이코리아","알로에","R-3-3"],
+["(한) 토바코샷","제이코리아","묵직한 토바코","R-3-3"],
+["(한) 트리플라임","제이코리아","라임","R-3-3"],
+["츄잉 달콤상콤복숭아","츄잉","복숭아","W-1-2~4"],
+["츄잉 모니모니","츄잉","레모나","W-1-2~4"],
+["츄잉 미스후라보노","츄잉","후라보노껌","W-1-2~4"],
+["츄잉 박하사탕","츄잉","박하사탕","W-1-2~4"],
+["츄잉 에너제틱","츄잉","에너지드링크","W-1-2~4"],
+["츄잉 청포도사탕","츄잉","청포도사탕","W-1-2~4"],
+["츄잉 커피껌","츄잉","커피껌","W-1-2~4"],
+["코베 텍사스시가","코베","시가","","단종 · 창고 재고 없음"],
+["쿠모카시 딸기","쿠모카시","딸기","R-6-5"],
+["쿠모카시 멜론","쿠모카시","멜론","R-6-5"],
+["쿠모카시 모모","쿠모카시","소다","R-6-5"],
+["쿠모카시 블루베리","쿠모카시","블루베리","R-6-5"],
+["쿠모카시 엔젤스무디","쿠모카시","딸기+바나나","R-6-5"],
+["쿠모카시 오렌지","쿠모카시","오렌지","R-6-5"],
+["쿠모카시 청사과","쿠모카시","그린애플","R-6-5"],
+["쿠모카시 토레타","쿠모카시","이온음료","R-6-5"],
+["쿠모카시 파인","쿠모카시","파인애플","R-6-5"],
+["쿠모카시 포도","쿠모카시","포도","R-6-5"],
+["(한) 마피아퀸","퀸즈시리즈","구아바+키위","R-5-2"],
+["(한) 사무라이퀸","퀸즈시리즈","딸기+블루베리","R-5-2"],
+["(한) 아마조네스퀸","퀸즈시리즈","복숭아+리치","R-5-2"],
+["(한) 크루세이더퀸","퀸즈시리즈","레몬+콜라","R-5-2"],
+["(한) 크래레몬","크래프트","레몬사탕","R-2-2"],
+["(한) 크래레즈애플","크래프트","레즈애플","R-2-2"],
+["(한) 크래스프라이트","크래프트","스프라이트","R-2-2"],
+["(한) 크래유자","크래프트","유자","R-2-2"],
+["(한) 크래피치","크래프트","복숭아","R-2-2"],
+["크래프트 자두","크래프트","자두","R-2-2"],
+["크래프트 포도","크래프트","포도","R-2-2"],
+["(한) 크레이지 딸기","크레이지","딸기","R-5-2"],
+["(한) 크레이지 쿨알로에","크레이지","알로에","R-5-2"],
+["민트 레드불","크로닉","레드불","W-1-2~4"],
+["민트 블랙커런트","크로닉","블루베리","W-1-2~4"],
+["민트 초코스콘","크로닉","초코스콘","W-1-2~4"],
+["민트 피치망고","크로닉","복숭아+망고","W-1-2~4"],
+["크로닉 리치","크로닉","리치","W-1-2~4"],
+["톡스 로젤하트","톡스","히비스커스","W-1-2~4"],
+["톡스 알베리","톡스","알로에+베리류","W-1-2~4"],
+["투엑스 구찌","투엑스","녹차","R-5-3"],
+["투엑스 돌체라떼","투엑스","커피맛","R-5-3"],
+["투엑스 말보루","투엑스","단일멘솔","R-5-3"],
+["투엑스 빠빠코코낫","투엑스","빠다코코넛","R-5-3"],
+["투엑스 세븐","투엑스","마일드세븐","R-5-3"],
+["투엑스 슈퍼라이트","투엑스","스프라이트","R-5-3"],
+["투엑스 엑쎄","투엑스","에쎄","R-5-3"],
+["투엑스 코코콜라","투엑스","콜라","R-5-3"],
+["투엑스 포카인","투엑스","포카리+사과","R-5-3"],
+["투엑스 피플원","투엑스","석류","R-5-3"],
+["파이 토트","파이","묵직한 시가","W-1-2~4"],
+["팜팜 그린애플","팜팜","그린애플","R-3-2"],
+["팜팜 라임사이다","팜팜","라임+사이다","R-3-2"],
+["팜팜 레몬트리","팜팜","레몬","R-3-2"],
+["팜팜 레즈애플","팜팜","레즈애플","R-3-2"],
+["팜팜 베리미","팜팜","라즈베리+블루베리","R-3-2"],
+["팜팜 샤인머스캣","팜팜","샤인머스캣","R-3-2"],
+["팜팜 체리콕","팜팜","체리+콜라","R-3-2"],
+["팜팜 포미자","팜팜","포카리+오미자","R-3-2"],
+["팜팜 포카리","팜팜","포카리","R-3-2"],
+["팜팜 피치팝","팜팜","복숭아","R-3-2"],
+["더블라임","펠릭스","라임","W-1-2~4"],
+["라임알로에","펠릭스","라임+알로에","W-1-2~4"],
+["프라임 아이스레몬","프라임","레몬","W-1-2~4"],
+["프라임 쿨툰드라","프라임","베리향","W-1-2~4"],
+["프라임 파워멘솔","프라임","멘솔","W-1-2~4"],
+["한야 포도","한야","포도","W-1-2~4"],
+["(한) 화이트 멘솔시가","화이트아웃","멘솔+시가","R-5-2"],
+["(한) 화이트 블루레몬","화이트아웃","블루레몬에이드","R-5-2"],
+["(한) 화이트 알로에베라","화이트아웃","알로에베라","R-5-2"],
+["(한) 화이트 워터멜론","화이트아웃","수박","R-5-2"],
+["(한) 화이트 체리","화이트아웃","체리","R-5-2"],
+["(한) 화이트 파인애플","화이트아웃","파인애플","R-5-2"],
+["(한) 화이트 피치","화이트아웃","복숭아","R-5-2"],
+["(한) 화이트 화이트멜론","화이트아웃","멜론","R-5-2"],
+["히든 알베","히든","알로에베라","W-1-2~4"]
+];
+
+/* ═══════ 2. 인덱스 ═══════ */
+function tailNums(code){
+  const nums=[];
+  const tail=code.slice(4);
+  const m=tail.match(/^(\d)~(\d)$/);
+  if(m){for(let i=+m[1];i<=+m[2];i++)nums.push(i);}
+  else nums.push(+tail);
+  return nums;
+}
+
+const REC = ITEMS.map(([code,text,tags,flag,isVoid])=>{
+  return {code,zone:code.slice(0,3),nums:tailNums(code),text,
+          tags:tags||[],flag:flag||null,isVoid:!!isVoid};
+});
+
+/* 액상 인덱스 — 위치 문자열을 선반/층으로 변환 */
+const LREC = LIQUIDS.map(([name,brand,flavor,loc,note])=>{
+  const spots = (loc||"").split("|").filter(Boolean).map(code=>({
+    code, zone:code.slice(0,3), nums:tailNums(code)
+  }));
+  return {name,brand,flavor,loc:loc||"",note:note||null,spots};
+});
+
+const norm = s => s.toLowerCase().replace(/[\s\-_.]/g,"");
+
+function search(qRaw){
+  const q = qRaw.trim();
+  if(!q) return [];
+  const n = norm(q);
+  const scored = [];
+  for(const r of REC){
+    let sc = 0;
+    if(norm(r.code).startsWith(n) || norm(r.zone)===n) sc = 100;
+    else if(norm(r.text).includes(n)) sc = 60;
+    else if(r.tags.some(t=>norm(t)===n)) sc = 50;
+    else if(r.tags.some(t=>norm(t).includes(n)||n.includes(norm(t))&&n.length>1)) sc = 30;
+    if(sc) scored.push({r,sc});
+  }
+  scored.sort((a,b)=>b.sc-a.sc || a.r.code.localeCompare(b.r.code));
+  return scored.map(s=>s.r);
+}
+
+function searchLiquids(qRaw){
+  const q=qRaw.trim();
+  if(!q) return [];
+  const n=norm(q);
+  const scored=[];
+  for(const r of LREC){
+    const nm=norm(r.name), bd=norm(r.brand), fv=norm(r.flavor);
+    let sc=0;
+    if(nm===n) sc=120;
+    else if(nm.startsWith(n)) sc=100;
+    else if(bd===n) sc=80;
+    else if(nm.includes(n)) sc=70;
+    else if(bd.includes(n)&&n.length>1) sc=50;
+    else if(fv.includes(n)&&n.length>1) sc=40;
+    else if(r.spots.some(sp=>norm(sp.code).startsWith(n))) sc=20;
+    if(sc) scored.push({r,sc});
+  }
+  scored.sort((a,b)=>b.sc-a.sc || a.r.name.localeCompare(b.r.name));
+  return scored.map(x=>x.r);
+}
+
+/* ═══════ 3. 지도 연결 (도형은 HTML에 정적으로 들어 있음) ═══════ */
+const map = document.getElementById("map");
+const zoneNodes={}, subLabels={};
+Array.prototype.forEach.call(map.querySelectorAll(".zone"), function(g){
+  const code=g.getAttribute("data-zone");
+  if(!ZONES[code]) return;
+  ZONES[code].code=code;
+  zoneNodes[code]=g;
+  subLabels[code]=g.querySelector(".zsublabel");
+  g.addEventListener("click",function(e){e.stopPropagation();selectZone(code);});
+  g.addEventListener("keydown",function(e){
+    if(e.key==="Enter"||e.key===" "){e.preventDefault();selectZone(code);}
+  });
+});
+
+/* ═══════ 4. 확대 / 축소 ═══════ */
+const FULL=[0,0,1405,2010];
+const zoomBtn=document.getElementById("zoomout");
+const reduceMotion=window.matchMedia("(prefers-reduced-motion:reduce)").matches;
+let curVB=FULL.slice(), animId=null, zoomedZone=null;
+
+function setVB(v){
+  curVB=v;
+  map.setAttribute("viewBox",v.map(n=>Math.round(n*10)/10).join(" "));
+}
+function fitBox(x,y,w,h){
+  const r=map.getBoundingClientRect();
+  const ratio=(r.width&&r.height)?r.width/r.height:1405/2010;
+  let nw=w, nh=h;
+  if(w/h > ratio) nh=w/ratio; else nw=h*ratio;
+  return [x-(nw-w)/2, y-(nh-h)/2, nw, nh];
+}
+function animateVB(target){
+  cancelAnimationFrame(animId);
+  if(reduceMotion){setVB(target);return;}
+  const start=curVB.slice(), t0=performance.now(), D=360;
+  const step=t=>{
+    const k=Math.min(1,(t-t0)/D), e=1-Math.pow(1-k,3);
+    setVB(start.map((s,i)=>s+(target[i]-s)*e));
+    if(k<1) animId=requestAnimationFrame(step);
+  };
+  animId=requestAnimationFrame(step);
+}
+function zoomToZone(code){
+  const z=ZONES[code];
+  const pad=Math.max(z.w,z.h)*0.16;
+  zoomedZone=code;
+  map.classList.add("zoomed");
+  zoomBtn.classList.add("on");
+  animateVB(fitBox(z.x-pad,z.y-pad,z.w+pad*2,z.h+pad*2));
+}
+function resetZoom(){
+  if(!zoomedZone && curVB[2]===FULL[2]) return;
+  zoomedZone=null;
+  map.classList.remove("zoomed");
+  zoomBtn.classList.remove("on");
+  animateVB(FULL.slice());
+}
+zoomBtn.addEventListener("click",resetZoom);
+map.addEventListener("click",resetZoom);
+window.addEventListener("resize",()=>{ if(zoomedZone) zoomToZone(zoomedZone); });
+setVB(FULL.slice());
+
+/* ═══════ 5. 화면 갱신 ═══════ */
+const qEl=document.getElementById("q"),
+      resEl=document.getElementById("results"),
+      cntEl=document.getElementById("count"),
+      detEl=document.getElementById("detail"),
+      clearEl=document.getElementById("clear"),
+      hintEl=document.getElementById("maphint"),
+      mapCard=document.querySelector(".mapcard");
+let activeZones=new Set();
+
+function highlight(zones){
+  activeZones=new Set(zones);
+  map.classList.toggle("dimmed", zones.length>0);
+  for(const [c,g] of Object.entries(zoneNodes)) g.classList.toggle("active",activeZones.has(c));
+}
+function levelText(rec){
+  const n=rec.nums;
+  return n.length>1 ? `${n[0]}~${n[n.length-1]}층` : `${n[0]}층`;
+}
+function markLevel(rec){
+  for(const k in subLabels) subLabels[k].textContent="";
+  if(rec) subLabels[rec.zone].textContent=levelText(rec);
+}
+function isMobile(){return window.matchMedia("(max-width:860px)").matches;}
+
+function mark(text,q){
+  if(!q) return text;
+  const i=text.toLowerCase().indexOf(q.trim().toLowerCase());
+  if(i<0) return text;
+  return text.slice(0,i)+"<b>"+text.slice(i,i+q.trim().length)+"</b>"+text.slice(i+q.trim().length);
+}
+function flagClass(flag){
+  return (/등록 O/.test(flag) && !/X/.test(flag) && !/미등록/.test(flag)) ? " ok" : "";
+}
+
+function focusRecord(r,scroll){
+  highlight([r.zone]);
+  markLevel(r);
+  zoomToZone(r.zone);
+  renderDetail(r.zone,r);
+  hintEl.textContent=`${r.zone} 선반 · ${levelText(r)}`;
+  if(scroll && isMobile()) mapCard.scrollIntoView({behavior:reduceMotion?"auto":"smooth",block:"start"});
+}
+
+function renderResults(q){
+  const shelf = search(q), liq = searchLiquids(q);
+  resEl.innerHTML="";
+
+  if(!q.trim()){
+    cntEl.textContent="";
+    resEl.innerHTML=`<div class="empty">액상 이름이나 물건 이름을 입력하면 <b>선반 위치가 약도에 표시</b>됩니다.<br>브랜드명(수리퀴드, 디오 …), 맛(복숭아, 멘솔 …), 선반 코드(R-7, B-2 …) 모두 검색됩니다. 약도에서 선반을 직접 눌러도 됩니다.</div>`;
+    highlight([]); markLevel(null); detEl.innerHTML=""; resetZoom();
+    hintEl.textContent="선반을 누르면 확대됩니다";
+    return;
+  }
+  if(!liq.length && !shelf.length){
+    cntEl.textContent="";
+    resEl.innerHTML=`<div class="empty">‘<b>${q}</b>’ 는 등록된 위치가 없습니다.<br>제품명 일부만 입력하거나, 브랜드명으로 다시 찾아보세요.</div>`;
+    highlight([]); markLevel(null); detEl.innerHTML=""; resetZoom();
+    return;
+  }
+
+  const parts=[];
+  if(liq.length) parts.push(`액상 ${liq.length}종`);
+  if(shelf.length) parts.push(`선반 ${shelf.length}건`);
+  cntEl.textContent=parts.join(" · ");
+
+  let first=null;
+  const LIMIT=40;
+
+  liq.slice(0,LIMIT).forEach(r=>{
+    const b=document.createElement("button");
+    b.className="hit";
+    const codeLabel = r.spots.length ? r.spots.map(sp=>sp.code).join("<br>") : "재고 없음";
+    b.innerHTML=`<div class="code${r.spots.length?"":" none"}">${codeLabel}</div>
+      <div><div class="what">${mark(r.name,q)}</div>
+      <div class="sub2">${r.brand} · ${r.flavor}</div>
+      ${r.note?`<span class="flag">${r.note}</span>`:""}</div>`;
+    b.addEventListener("click",()=>{
+      document.querySelectorAll(".hit").forEach(h=>h.classList.remove("sel"));
+      b.classList.add("sel");
+      focusLiquid(r,true);
+    });
+    resEl.appendChild(b);
+    if(!first) first={kind:"liq",r,btn:b};
+  });
+  if(liq.length>LIMIT){
+    const more=document.createElement("div");
+    more.className="empty";
+    more.innerHTML=`외 <b>${liq.length-LIMIT}종</b> 더 있습니다. 브랜드명이나 맛을 더 입력해 좁혀보세요.`;
+    resEl.appendChild(more);
+  }
+
+  shelf.forEach(r=>{
+    const b=document.createElement("button");
+    b.className="hit";
+    b.innerHTML=`<div class="code">${r.code}</div>
+      <div><div class="what">${mark(r.text,q)}</div>
+      ${r.flag?`<span class="flag${flagClass(r.flag)}">${r.flag}</span>`:""}</div>`;
+    b.addEventListener("click",()=>{
+      document.querySelectorAll(".hit").forEach(h=>h.classList.remove("sel"));
+      b.classList.add("sel");
+      focusRecord(r,true);
+    });
+    resEl.appendChild(b);
+    if(!first) first={kind:"shelf",r,btn:b};
+  });
+
+  if(!first){ highlight([]); markLevel(null); detEl.innerHTML=""; resetZoom(); return; }
+  first.btn.classList.add("sel");
+
+  const zones=[...new Set(
+    liq.flatMap(r=>r.spots.map(sp=>sp.zone)).concat(shelf.map(r=>r.zone))
+  )];
+  highlight(zones);
+
+  const focus = first.kind==="liq"
+    ? (first.r.spots[0]||null)
+    : first.r;
+
+  if(focus){
+    markLevel(focus);
+    renderDetail(focus.zone,focus);
+    if(zones.length===1){
+      zoomToZone(zones[0]);
+      hintEl.textContent=`${zones[0]} 선반 · ${levelText(focus)}`;
+    } else {
+      resetZoom();
+      hintEl.textContent=`${zones.length}개 선반에 있음`;
+    }
+  } else {
+    markLevel(null); detEl.innerHTML=""; resetZoom();
+    hintEl.textContent="창고 재고 없음";
+  }
+}
+
+function focusLiquid(r,scroll){
+  if(!r.spots.length){
+    highlight([]); markLevel(null); detEl.innerHTML=""; resetZoom();
+    hintEl.textContent=r.note||"창고 재고 없음";
+    return;
+  }
+  const zones=[...new Set(r.spots.map(sp=>sp.zone))];
+  highlight(zones);
+  const sp=r.spots[0];
+  markLevel(sp);
+  renderDetail(sp.zone,sp);
+  if(zones.length===1){
+    zoomToZone(sp.zone);
+    hintEl.textContent=`${sp.zone} 선반 · ${levelText(sp)}`;
+  } else {
+    resetZoom();
+    hintEl.textContent=`${zones.length}개 선반에 나뉘어 있음`;
+  }
+  if(scroll && isMobile()) mapCard.scrollIntoView({behavior:reduceMotion?"auto":"smooth",block:"start"});
+}
+
+function renderDetail(zone,focus){
+  const z=ZONES[zone];
+  const rows=[];
+  for(let i=1;i<=z.cells;i++){
+    const rec=REC.find(r=>r.zone===zone&&r.nums.includes(i));
+    rows.push({n:i,rec});
+  }
+  const kind={red:"레드 선반",black:"블랙 선반",white:"화이트 선반"}[z.color];
+  detEl.innerHTML=`<div class="detail">
+    <h3>${zone}</h3>
+    <div class="zsub">${kind} · 총 ${z.cells}층 · 선반 앞에서 본 모습</div>
+    <div class="rack">${rows.map(r=>{
+      const on=focus&&focus.nums.includes(r.n);
+      const txt=r.rec?r.rec.text:"(기재 없음)";
+      const vd=!r.rec||r.rec.isVoid;
+      const fl=r.rec&&r.rec.flag?`<span class="lflag${flagClass(r.rec.flag)}">${r.rec.flag}</span>`:"";
+      return `<div class="level${on?" on":""}${vd?" void":""}">
+        <div class="lv">${r.n}층</div><div class="lt">${txt}${fl}</div></div>`;
+    }).join("")}</div>
+    <div class="floornote">↓ 아래로 갈수록 낮은 층</div>
+  </div>`;
+}
+
+/* 빠른 검색 칩 */
+const QUICK=["수리퀴드","디오","베이퍼","순수","복숭아","멘솔","시가","테이프","봉투","우산","빈 공간"];
+const chipWrap=document.getElementById("chips");
+QUICK.forEach(k=>{
+  const c=document.createElement("button");
+  c.className="chip"; c.textContent=k;
+  c.addEventListener("click",()=>{qEl.value=k;run();});
+  chipWrap.appendChild(c);
+});
+
+function selectZone(code){ qEl.value=code; run(); if(isMobile()) qEl.blur(); }
+function run(){
+  const q=qEl.value;
+  clearEl.classList.toggle("on",!!q);
+  renderResults(q);
+}
+qEl.addEventListener("input",run);
+qEl.addEventListener("keydown",e=>{ if(e.key==="Enter"){e.preventDefault();qEl.blur();} });
+clearEl.addEventListener("click",()=>{qEl.value="";run();qEl.focus();});
+document.addEventListener("keydown",e=>{
+  if(e.key==="/"&&document.activeElement!==qEl){e.preventDefault();qEl.focus();}
+  if(e.key==="Escape"){qEl.value="";run();}
+});
+
+/* 밝기 전환 */
+const themeBtn=document.getElementById("theme");
+themeBtn.addEventListener("click",()=>{
+  const dark=document.documentElement.dataset.theme==="dark";
+  document.documentElement.dataset.theme=dark?"light":"dark";
+  themeBtn.textContent=dark?"어둡게":"밝게";
+  document.querySelector('meta[name="theme-color"]').content=dark?"#F2F3F5":"#0F1214";
+});
+
+run();
+</script>
+</body>
+</html>
