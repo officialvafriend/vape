@@ -183,6 +183,24 @@ svg#map{
   background:var(--warn-bg);color:var(--warn-text);border:1px solid var(--warn-line)
 }
 .hit .flag.ok{background:var(--ok-bg);color:var(--ok-text);border-color:var(--ok-line)}
+.hit .vend{
+  display:inline-block;margin-left:5px;padding:1px 7px;border-radius:999px;
+  background:var(--panel-2);border:1px solid var(--line);
+  font-size:11px;font-family:var(--mono);color:var(--muted);vertical-align:middle
+}
+.vsum{
+  background:var(--panel);border:1px solid var(--line);border-radius:11px;
+  padding:12px 13px;margin-bottom:4px
+}
+.vsum .vt{font-size:14px;font-weight:700;margin-bottom:9px}
+.vsum .vt span{font-weight:400;color:var(--muted);font-size:12.5px}
+.vsum .vrow{display:flex;flex-wrap:wrap;gap:6px}
+.vchip{
+  border:1px solid var(--line);background:var(--panel-2);color:var(--text);
+  font-family:var(--mono);font-size:12.5px;padding:7px 11px;border-radius:8px;cursor:pointer
+}
+.vchip:hover{border-color:var(--hi);color:var(--hi)}
+.vchip b{font-family:var(--sans);font-weight:600;color:var(--muted);margin-left:4px;font-size:11.5px}
 .hit .sub2{font-size:12.5px;color:var(--muted);margin-top:3px}
 .hit .code{line-height:1.35}
 .hit .code.none{color:var(--muted);font-size:12.5px;font-weight:600}
@@ -264,7 +282,7 @@ html.js #fallback{display:none}
   <div class="searchbox">
     <input id="q" type="search" autocomplete="off" autocapitalize="off" spellcheck="false"
            inputmode="search" enterkeyhint="search"
-           placeholder="액상·물건 이름 입력 (예: 수 피코, 디오, 복숭아, R-7)" aria-label="재고 검색">
+           placeholder="액상·도매처·물건 입력 (예: 수 피코, 비웰, 복숭아, R-7)" aria-label="재고 검색">
     <button class="clearbtn" id="clear" aria-label="지우기">✕</button>
   </div>
   <div class="chips" id="chips"></div>
@@ -728,6 +746,63 @@ const LIQUIDS = [
 ["히든 알베","히든","알로에베라","W-1-2~4"]
 ];
 
+/* ═══════ 1-3. 브랜드 → 도매처 ═══════ */
+/* 도매처가 바뀌면 이 표만 고치면 됩니다. 비어 있는 브랜드는 '미지정'으로 표시 */
+const VENDOR = {
+  "VF":"VF",
+  "레드보틀":"닥터베이프",
+  "블링크":"닥터베이프",
+  "크래프트":"닥터베이프",
+  "마샤":"마샤몰",
+  "노보":"메두사",
+  "디오":"메두사",
+  "슈퍼쿨":"메두사",
+  "크로닉":"메두사",
+  "모코":"모코",
+  "버블몬":"버블몬코리아",
+  "마르키사":"베이프코리아",
+  "용트림":"베이프코리아",
+  "갱쥬스":"부평",
+  "고스트":"부평",
+  "몬테":"부평",
+  "무":"부평",
+  "댕댕이":"비웰",
+  "라입시리즈":"비웰",
+  "베이퍼":"비웰",
+  "송송":"비웰",
+  "수리퀴드":"비웰",
+  "얌시리즈":"비웰",
+  "오구오구":"비웰",
+  "투엑스":"비웰",
+  "팜팜":"비웰",
+  "순수":"순수",
+  "스위든":"스위든",
+  "느낌":"시가맨",
+  "제이코리아":"시가맨",
+  "무무":"엔바이오랩",
+  "톡스":"엔바이오랩",
+  "쿠모카시":"영베이프",
+  "메즈":"오지구",
+  "설향":"유베이퍼",
+  "츄잉":"츄잉",
+  "펠릭스":"펠릭스",
+  "무디":"퓨어클라우드",
+  "퀸즈시리즈":"퓨어클라우드",
+  "크레이지":"퓨어클라우드",
+  "화이트아웃":"퓨어클라우드",
+  "프라임":"프라임"
+};
+
+/* 제품별 도매처 — 브랜드가 '기타'처럼 묶이지 않는 경우 여기서 개별 지정 */
+/* 이 표가 브랜드 도매처보다 우선합니다 */
+const VENDOR_ITEM = {
+  "크오크":"용트림",
+  "딸기 요거트":"WWW(월드와이드베이프)",
+  "피치 요거트":"WWW(월드와이드베이프)",
+  "알로에라임":"부평",
+  "알로에포도":"부평"
+};
+
 /* ═══════ 2. 인덱스 ═══════ */
 function tailNums(code){
   const nums=[];
@@ -748,7 +823,8 @@ const LREC = LIQUIDS.map(([name,brand,flavor,loc,note])=>{
   const spots = (loc||"").split("|").filter(Boolean).map(code=>({
     code, zone:code.slice(0,3), nums:tailNums(code)
   }));
-  return {name,brand,flavor,loc:loc||"",note:note||null,spots};
+  return {name,brand,flavor,loc:loc||"",note:note||null,spots,
+          vendor:VENDOR_ITEM[name]||VENDOR[brand]||""};
 });
 
 const norm = s => s.toLowerCase().replace(/[\s\-_.]/g,"");
@@ -784,6 +860,8 @@ function searchLiquids(qRaw){
     else if(nm.includes(n)) sc=70;
     else if(bd.includes(n)&&n.length>1) sc=50;
     else if(fv.includes(n)&&n.length>1) sc=40;
+    else if(norm(r.vendor)===n) sc=60;
+    else if(r.vendor&&norm(r.vendor).includes(n)&&n.length>1) sc=35;
     else if(r.spots.some(sp=>norm(sp.code).startsWith(n))) sc=20;
     if(sc) scored.push({r,sc});
   }
@@ -904,7 +982,7 @@ function renderResults(q){
 
   if(!q.trim()){
     cntEl.textContent="";
-    resEl.innerHTML=`<div class="empty">액상 이름이나 물건 이름을 입력하면 <b>선반 위치가 약도에 표시</b>됩니다.<br>브랜드명(수리퀴드, 디오 …), 맛(복숭아, 멘솔 …), 선반 코드(R-7, B-2 …) 모두 검색됩니다. 약도에서 선반을 직접 눌러도 됩니다.</div>`;
+    resEl.innerHTML=`<div class="empty">액상 이름이나 물건 이름을 입력하면 <b>선반 위치가 약도에 표시</b>됩니다.<br>브랜드(수리퀴드, 디오 …), 맛(복숭아, 멘솔 …), 도매처(비웰, 메두사 …), 선반 코드(R-7, B-2 …) 모두 검색됩니다. 약도에서 선반을 직접 눌러도 됩니다.</div>`;
     highlight([]); markLevel(null); detEl.innerHTML=""; resetZoom();
     hintEl.textContent="선반을 누르면 확대됩니다";
     return;
@@ -914,6 +992,36 @@ function renderResults(q){
     resEl.innerHTML=`<div class="empty">‘<b>${q}</b>’ 는 등록된 위치가 없습니다.<br>제품명 일부만 입력하거나, 브랜드명으로 다시 찾아보세요.</div>`;
     highlight([]); markLevel(null); detEl.innerHTML=""; resetZoom();
     return;
+  }
+
+  /* 도매처를 통째로 검색한 경우 — 선반별 요약을 먼저 보여줍니다 */
+  const nq=norm(q);
+  const vendorHit=[...new Set(LREC.map(r=>r.vendor).filter(Boolean))]
+    .find(v=>norm(v)===nq);
+  if(vendorHit){
+    const g={};
+    liq.forEach(r=>{
+      (r.spots.length?r.spots.map(sp=>sp.code):["재고 없음"])
+        .forEach(c=>{g[c]=(g[c]||0)+1;});
+    });
+    const box=document.createElement("div");
+    box.className="vsum";
+    box.innerHTML=`<div class="vt">${vendorHit} <span>· 액상 ${liq.length}종</span></div>
+      <div class="vrow">${Object.keys(g).sort().map(c=>
+        `<button class="vchip" data-code="${c}">${c}<b>${g[c]}종</b></button>`).join("")}</div>`;
+    box.querySelectorAll(".vchip").forEach(btn=>{
+      const code=btn.getAttribute("data-code");
+      if(code==="재고 없음") return;
+      btn.addEventListener("click",()=>{
+        const zone=code.slice(0,3);
+        highlight([zone]);
+        const sp={code,zone,nums:tailNums(code)};
+        markLevel(sp); renderDetail(zone,sp); zoomToZone(zone);
+        hintEl.textContent=`${zone} 선반 · ${levelText(sp)}`;
+        if(isMobile()) mapCard.scrollIntoView({behavior:reduceMotion?"auto":"smooth",block:"start"});
+      });
+    });
+    resEl.appendChild(box);
   }
 
   const parts=[];
@@ -930,7 +1038,7 @@ function renderResults(q){
     const codeLabel = r.spots.length ? r.spots.map(sp=>sp.code).join("<br>") : "재고 없음";
     b.innerHTML=`<div class="code${r.spots.length?"":" none"}">${codeLabel}</div>
       <div><div class="what">${mark(r.name,q)}</div>
-      <div class="sub2">${r.brand} · ${r.flavor}</div>
+      <div class="sub2">${r.brand} · ${r.flavor}${r.vendor?` <span class="vend">${r.vendor}</span>`:""}</div>
       ${r.note?`<span class="flag">${r.note}</span>`:""}</div>`;
     b.addEventListener("click",()=>{
       document.querySelectorAll(".hit").forEach(h=>h.classList.remove("sel"));
@@ -1035,7 +1143,7 @@ function renderDetail(zone,focus){
 }
 
 /* 빠른 검색 칩 */
-const QUICK=["수리퀴드","디오","베이퍼","순수","복숭아","멘솔","시가","테이프","봉투","우산","빈 공간"];
+const QUICK=["비웰","메두사","퓨어클라우드","시가맨","닥터베이프","복숭아","멘솔","테이프","봉투","우산","빈 공간"];
 const chipWrap=document.getElementById("chips");
 QUICK.forEach(k=>{
   const c=document.createElement("button");
