@@ -251,6 +251,8 @@ svg#map{
 footer{margin-top:20px;font-size:12.5px;color:var(--muted);line-height:1.8}
 kbd{font-family:var(--mono);font-size:11px;background:var(--panel-2);border:1px solid var(--line);border-radius:4px;padding:1px 5px}
 .kbdhint{display:none}
+.syncnote{margin-top:6px;font-size:11px;color:var(--muted,#888);font-family:var(--mono)}
+html:not(.js) .syncnote{display:none}
 @media(min-width:861px){.kbdhint{display:block;margin-top:8px}}
 
 /* ── 스크립트가 막힌 뷰어(카톡 등) 대응 ───────── */
@@ -352,6 +354,7 @@ html.js #fallback{display:none}
       <span class="swatch" style="background:var(--shelf-black)"></span>B 블랙선반
       <span class="swatch" style="background:var(--shelf-white);outline:1px solid var(--shelf-white-line)"></span>W 화이트선반
       <div class="kbdhint">단축키 <kbd>/</kbd> 검색창 · <kbd>Esc</kbd> 초기화</div>
+      <div id="syncnote" class="syncnote">시트에서 불러오는 중…</div>
     </footer>
   </div>
 </div>
@@ -884,13 +887,50 @@ const REC = ITEMS.map(([code,text,tags,flag,isVoid])=>{
 });
 
 /* 액상 인덱스 — 위치 문자열을 선반/층으로 변환 */
-const LREC = LIQUIDS.map(([name,brand,flavor,loc,note])=>{
-  const spots = (loc||"").split("|").filter(Boolean).map(code=>({
-    code, zone:code.slice(0,3), nums:tailNums(code)
-  }));
-  return {name,brand,flavor,loc:loc||"",note:note||null,spots,
-          vendor:VENDOR_ITEM[name]||VENDOR[brand]||""};
-});
+function buildLREC(rows){
+  return rows.map(({name,brand,flavor,loc,note,vendor})=>{
+    const spots = (loc||"").split("|").filter(Boolean).map(code=>({
+      code, zone:code.slice(0,3), nums:tailNums(code)
+    }));
+    return {name, brand:brand||"", flavor:flavor||"", loc:loc||"",
+            note:note||null, spots, vendor:vendor||""};
+  });
+}
+
+/* 기본값 = 파일에 내장된 목록 (카카오톡 뷰어·시트 연결 실패 시 사용) */
+let LREC = buildLREC(LIQUIDS.map(([name,brand,flavor,loc,note])=>({
+  name, brand, flavor, loc, note,
+  vendor: VENDOR_ITEM[name] || VENDOR[brand] || ""
+})));
+
+/* ═══════ 구글 시트 실시간 연동 ═══════
+   시트에 제품을 추가하면 이 페이지에도 자동으로 반영됩니다.
+   불러오기에 실패하면 위의 내장 목록을 그대로 사용합니다. */
+const SHEET_API = "https://script.google.com/macros/s/AKfycby7_3DBk_st-ALx7rKQw3A19C79PH3ZOmHyehJNXPaateeL5vdtJTuKW9JAIvBbo-A/exec?sheet=liquid";
+const NOTE_MAP = {};
+LIQUIDS.forEach(([name,,,,note])=>{ if(note) NOTE_MAP[name] = note; });
+
+fetch(SHEET_API)
+  .then(r=>r.json())
+  .then(list=>{
+    if(!Array.isArray(list) || !list.length) return;
+    LREC = buildLREC(list.map(o=>({
+      name:   o.n || "",
+      brand:  o.brand || "",
+      flavor: o.f || "",
+      loc:    o.loc || "",
+      note:   NOTE_MAP[o.n] || null,
+      vendor: o.b || ""
+    })).filter(r=>r.name));
+    const el = document.getElementById("q");
+    if(el && el.value.trim()) el.dispatchEvent(new Event("input"));
+    const st = document.getElementById("syncnote");
+    if(st) st.textContent = "시트 연동됨 · 총 " + LREC.length + "종";
+  })
+  .catch(()=>{
+    const st = document.getElementById("syncnote");
+    if(st) st.textContent = "시트 연결 실패 · 내장 목록 사용 중";
+  });
 
 const norm = s => s.toLowerCase().replace(/[\s\-_.]/g,"");
 
