@@ -30,6 +30,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f0f2f8;
 .il{flex:1;min-width:0}
 .in{font-size:13px;font-weight:600;color:#1a1a1a;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .if2{font-size:11px;color:#666}
+.loc{display:inline-block;margin-top:4px;font-size:11px;font-weight:700;letter-spacing:.3px;color:#1f3864;background:#e8eefb;border:1px solid #c9d7f0;border-radius:6px;padding:2px 7px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+.loc.none{color:#999;background:#f2f2f2;border-color:#e2e2e2;font-weight:600}
 .bgs{display:flex;gap:4px;flex-shrink:0;margin-left:8px;flex-direction:column;align-items:flex-end}
 .bg{font-size:10px;padding:3px 7px;border-radius:8px;font-weight:600;white-space:nowrap}
 .bp{background:#e8ecff;color:#2e3a8c}
@@ -50,7 +52,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f0f2f8;
       <div class="tb" data-tab="프라임 라인">프라임</div>
     </div>
   </div>
-  <div class="sw"><span class="si">🔍</span><input type="text" id="qi" placeholder="액상명 또는 맛 검색..."/></div>
+  <div class="sw"><span class="si">🔍</span><input type="text" id="qi" placeholder="액상명 · 맛 · 위치 검색"/></div>
   <div class="fs">
     <div class="fl">종류 (복수 선택 가능)</div>
     <div class="chips" id="tc">
@@ -402,7 +404,8 @@ function render() {
     if (cTab !== "all" && d.c !== cTab) return false;
     if (cTypes.length > 0 && !cTypes.some(function(ct){ return d.t.indexOf(ct) >= 0; })) return false;
     if (cBrand !== "전체" && d.b !== cBrand) return false;
-    if (q && d.n.toLowerCase().indexOf(q) < 0 && d.f.toLowerCase().indexOf(q) < 0) return false;
+    if (q && d.n.toLowerCase().indexOf(q) < 0 && d.f.toLowerCase().indexOf(q) < 0
+          && (d.loc||"").toLowerCase().indexOf(q) < 0) return false;
     return true;
   });
   document.getElementById("cb").innerHTML = "<b>" + fl.length + "종</b> 표시중";
@@ -418,7 +421,9 @@ function render() {
       if(d.t[ti]==="노멘솔") typeTags += "<span class='bg bn'>노멘솔</span>";
       else if(d.t[ti]==="무니코틴") typeTags += "<span class='bg bm'>무니코틴</span>";
     }
-    return "<div class='item'><div class='il'><div class='in'>" + d.n + "</div><div class='if2'>🍬 " + d.f + " · " + d.b + "</div></div><div class='bgs'><span class='bg " + cb + "'>" + cl + "</span>" + typeTags + "</div></div>";
+    var locTag = d.loc ? "<div class='loc'>📍 " + d.loc + "</div>"
+                       : "<div class='loc none'>위치 미등록</div>";
+    return "<div class='item'><div class='il'><div class='in'>" + d.n + "</div><div class='if2'>🍬 " + d.f + " · " + d.b + "</div>" + locTag + "</div><div class='bgs'><span class='bg " + cb + "'>" + cl + "</span>" + typeTags + "</div></div>";
   }).join("");
 }
 
