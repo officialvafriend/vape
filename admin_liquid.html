@@ -54,18 +54,32 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f0f2f8;
   </div>
 
   <div class="sec ac" id="s0">
-    <div class="search"><input id="q" placeholder="액상명 검색"></div>
+    <div class="search"><input id="q" placeholder="액상명 · 브랜드 · 도매처 · 위치 검색"></div>
     <div class="list" id="list"><div class="empty">불러오는 중...</div></div>
   </div>
 
   <div class="sec" id="s1">
     <div class="row"><label>액상명 *</label><input id="f_n" placeholder="예: 제로닉 거봉"></div>
-    <div class="row"><label>브랜드</label>
-      <input id="f_b" list="brandList" autocomplete="off" placeholder="예: 무무">
+    <div class="row"><label>도매처</label>
+      <input id="f_b" list="brandList" autocomplete="off" placeholder="예: 엔바이오랩">
       <datalist id="brandList"></datalist>
       <div class="hint" id="b_hint"></div>
     </div>
+    <div class="row"><label>브랜드</label>
+      <input id="f_brand" list="brandList2" autocomplete="off" placeholder="예: 무무">
+      <datalist id="brandList2"></datalist>
+      <div class="hint" id="brand_hint"></div>
+    </div>
     <div class="row"><label>맛</label><input id="f_f" placeholder="예: 포도"></div>
+    <div class="row"><label>창고 위치</label>
+      <input id="f_loc" list="locList" autocomplete="off" placeholder="예: R-6-2">
+      <datalist id="locList"></datalist>
+      <div class="hint" id="loc_hint">여러 곳이면 R-7-5|B-4-2~5 처럼 세로줄로 구분 · 비우면 위치 미등록</div>
+    </div>
+    <div class="row"><label>사진 파일명</label>
+      <input id="f_img" autocomplete="off" placeholder="예: p368.jpg">
+      <div class="hint" id="img_hint"></div>
+    </div>
     <div class="row"><label>라인</label>
       <div class="chips" id="cChips">
         <div class="chip" data-v="프리미엄 라인">프리미엄 라인</div>
@@ -134,13 +148,49 @@ document.getElementById('tChips').addEventListener('click', function(e){
 function normBrand(s){
   return String(s||'').toLowerCase().replace(/[\s\-_.]/g,'');
 }
-function brandCounts(){
+function fieldCounts(key){
   var m = {};
   for(var i=0;i<DATA.length;i++){
-    var b = (DATA[i].b||'').trim();
+    var b = (DATA[i][key]||'').trim();
     if(b) m[b] = (m[b]||0) + 1;
   }
   return m;
+}
+function brandCounts(){ return fieldCounts('b'); }
+function fillDatalist(elId, key){
+  var counts = fieldCounts(key);
+  var names = Object.keys(counts).sort(function(a,b){ return a.localeCompare(b,'ko'); });
+  var h = '';
+  for(var i=0;i<names.length;i++){
+    h += '<option value="' + String(names[i]).replace(/"/g,'&quot;') + '">' + counts[names[i]] + '종</option>';
+  }
+  document.getElementById(elId).innerHTML = h;
+}
+/* 다음 사진 번호 자동 제안 */
+function nextImgName(){
+  var mx = 0;
+  for(var i=0;i<DATA.length;i++){
+    var m = /^p(\d+)\.jpg$/i.exec((DATA[i].img||'').trim());
+    if(m && +m[1] > mx) mx = +m[1];
+  }
+  return 'p' + String(mx+1).padStart(3,'0') + '.jpg';
+}
+function checkField(inputId, hintId, key, labelTxt){
+  var v = document.getElementById(inputId).value.trim();
+  var hint = document.getElementById(hintId);
+  if(!v){ hint.className = 'hint'; hint.textContent = ''; return; }
+  var counts = fieldCounts(key);
+  var names = Object.keys(counts);
+  if(counts[v]){ hint.className='hint'; hint.textContent='기존 '+labelTxt+' · 현재 '+counts[v]+'종'; return; }
+  for(var i=0;i<names.length;i++){
+    if(normBrand(names[i]) === normBrand(v)){
+      hint.className='hint warn';
+      hint.textContent='"'+names[i]+'" 와 거의 같아요. 같은 '+labelTxt+'라면 "'+names[i]+'" 로 맞춰주세요.';
+      return;
+    }
+  }
+  hint.className='hint new';
+  hint.textContent='새 '+labelTxt+'로 추가됩니다.';
 }
 function buildBrandList(){
   var counts = brandCounts();
@@ -174,12 +224,21 @@ function checkBrand(){
   hint.textContent = '새 브랜드로 추가됩니다.';
 }
 document.getElementById('f_b').addEventListener('input', checkBrand);
+document.getElementById('f_brand').addEventListener('input', function(){ checkField('f_brand','brand_hint','brand','브랜드'); });
+document.getElementById('f_loc').addEventListener('input', function(){ checkField('f_loc','loc_hint','loc','위치'); });
 
 function clearForm(){
   editId = null;
   document.getElementById('f_n').value = '';
   document.getElementById('f_b').value = '';
+  document.getElementById('f_brand').value = '';
   document.getElementById('f_f').value = '';
+  document.getElementById('f_loc').value = '';
+  document.getElementById('f_img').value = nextImgName();
+  document.getElementById('brand_hint').textContent = '';
+  document.getElementById('loc_hint').className = 'hint';
+  document.getElementById('loc_hint').textContent = '여러 곳이면 R-7-5|B-4-2~5 처럼 세로줄로 구분 · 비우면 위치 미등록';
+  document.getElementById('img_hint').textContent = '새 제품이면 이대로 두세요';
   checkBrand();
   selC = ''; selT = [];
   Array.prototype.forEach.call(document.querySelectorAll('#cChips .chip, #tChips .chip'), function(c){ c.className = 'chip'; });
@@ -190,8 +249,14 @@ function fillForm(d){
   editId = d.id;
   document.getElementById('f_n').value = d.n || '';
   document.getElementById('f_b').value = d.b || '';
+  document.getElementById('f_brand').value = d.brand || '';
   checkBrand();
+  checkField('f_brand','brand_hint','brand','브랜드');
   document.getElementById('f_f').value = d.f || '';
+  document.getElementById('f_loc').value = d.loc || '';
+  checkField('f_loc','loc_hint','loc','위치');
+  document.getElementById('f_img').value = d.img || '';
+  document.getElementById('img_hint').textContent = '';
   selC = d.c || '';
   selT = (d.t || '').split(',').filter(Boolean);
   Array.prototype.forEach.call(document.querySelectorAll('#cChips .chip'), function(c){
@@ -208,7 +273,8 @@ function renderList(){
   var q = document.getElementById('q').value.toLowerCase();
   var box = document.getElementById('list');
   var filtered = DATA.filter(function(d){
-    return !q || (d.n||'').toLowerCase().indexOf(q) >= 0 || (d.b||'').toLowerCase().indexOf(q) >= 0;
+    return !q || (d.n||'').toLowerCase().indexOf(q) >= 0 || (d.b||'').toLowerCase().indexOf(q) >= 0
+             || (d.brand||'').toLowerCase().indexOf(q) >= 0 || (d.loc||'').toLowerCase().indexOf(q) >= 0;
   });
   if(!filtered.length){ box.innerHTML = '<div class="empty">액상이 없어요</div>'; return; }
   var h = '';
@@ -233,6 +299,8 @@ async function loadData(){
     DATA = await res.json();
     renderList();
     buildBrandList();
+    fillDatalist('brandList2','brand');
+    fillDatalist('locList','loc');
     checkBrand();
   }catch(e){
     document.getElementById('list').innerHTML = '<div class="empty">불러오기 실패. 새로고침 해보세요.</div>';
@@ -247,7 +315,10 @@ document.getElementById('saveBtn').addEventListener('click', async function(){
     id: editId || ('liq_' + Date.now()),
     n: n,
     b: document.getElementById('f_b').value.trim(),
+    brand: document.getElementById('f_brand').value.trim(),
     f: document.getElementById('f_f').value.trim(),
+    loc: document.getElementById('f_loc').value.trim(),
+    img: document.getElementById('f_img').value.trim(),
     c: selC,
     t: selT.join(',')
   };
