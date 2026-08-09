@@ -280,7 +280,7 @@ function renderList(){
   var h = '';
   for(var i=0;i<filtered.length;i++){
     var d = filtered[i];
-    h += '<div class="item" data-id="'+d.id+'"><div><div class="n">'+d.n+'</div><div class="meta">'+(d.b||'')+' · '+(d.c||'')+' · '+(d.t||'')+'</div></div><div class="arrow">›</div></div>';
+        h += '<div class="item" data-id="'+d.id+'"><div><div class="n">'+d.n+'</div><div class="meta">'+(d.brand||'-')+' · '+(d.b||'')+' · '+(d.loc||'위치 미등록')+'</div></div><div class="arrow">›</div></div>';
   }
   box.innerHTML = h;
   Array.prototype.forEach.call(box.querySelectorAll('.item'), function(el){
