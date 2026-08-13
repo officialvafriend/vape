@@ -188,6 +188,31 @@ svg#map{
   background:var(--panel-2);border:1px solid var(--line);
   font-size:11px;font-family:var(--mono);color:var(--muted);vertical-align:middle
 }
+/* ── 선택 제품 사진 패널 ───────────────── */
+.lqphoto{
+  display:grid;grid-template-columns:130px minmax(0,1fr);gap:13px;align-items:center;
+  background:var(--panel-2);border:1px solid var(--hi);border-left:4px solid var(--hi);
+  border-radius:11px;padding:12px 13px;margin:0 0 10px;
+}
+.lqphoto img{
+  width:130px;height:130px;object-fit:contain;background:#fff;
+  border:1px solid var(--line);border-radius:9px;display:block
+}
+.lqphoto .ph{
+  width:130px;height:130px;display:flex;align-items:center;justify-content:center;
+  background:var(--panel);border:1px dashed var(--line);border-radius:9px;
+  font-size:34px;color:var(--muted)
+}
+.lqphoto .pn{font-size:16px;font-weight:700;line-height:1.35;margin-bottom:6px}
+.lqphoto .pf{font-size:13px;color:var(--muted);margin-bottom:9px}
+.lqphoto .pl{font-family:var(--mono);font-size:15px;font-weight:700;color:var(--hi-line)}
+[data-theme="dark"] .lqphoto .pl{color:var(--hi)}
+.lqphoto .pl.none{color:var(--muted);font-weight:400;font-size:13px}
+@media(max-width:520px){
+  .lqphoto{grid-template-columns:110px minmax(0,1fr);gap:11px;padding:11px}
+  .lqphoto img,.lqphoto .ph{width:110px;height:110px}
+  .lqphoto .pn{font-size:14.5px}
+}
 .vsum{
   background:var(--panel);border:1px solid var(--line);border-radius:11px;
   padding:12px 13px;margin-bottom:4px
@@ -888,12 +913,12 @@ const REC = ITEMS.map(([code,text,tags,flag,isVoid])=>{
 
 /* 액상 인덱스 — 위치 문자열을 선반/층으로 변환 */
 function buildLREC(rows){
-  return rows.map(({name,brand,flavor,loc,note,vendor})=>{
+  return rows.map(({name,brand,flavor,loc,note,vendor,img})=>{
     const spots = (loc||"").split("|").filter(Boolean).map(code=>({
       code, zone:code.slice(0,3), nums:tailNums(code)
     }));
     return {name, brand:brand||"", flavor:flavor||"", loc:loc||"",
-            note:note||null, spots, vendor:vendor||""};
+            note:note||null, spots, vendor:vendor||"", img:img||""};
   });
 }
 
@@ -920,7 +945,8 @@ fetch(SHEET_API)
       flavor: o.f || "",
       loc:    o.loc || "",
       note:   NOTE_MAP[o.n] || null,
-      vendor: o.b || ""
+      vendor: o.b || "",
+      img:    o.img || ""
     })).filter(r=>r.name));
     const el = document.getElementById("q");
     if(el && el.value.trim()) el.dispatchEvent(new Event("input"));
@@ -949,6 +975,48 @@ function search(qRaw){
   }
   scored.sort((a,b)=>b.sc-a.sc || a.r.code.localeCompare(b.r.code));
   return scored.map(s=>s.r);
+}
+
+/* ═══════ 선택 제품 사진 패널 ═══════
+   결과 카드를 누르면 선반 상세 영역 맨 위에 큰 사진이 붙습니다.
+   (데스크톱에서는 지도 오른쪽 칸, 모바일에서는 지도 바로 아래)
+   focusLiquid()가 detail을 다시 그리므로 반드시 그 뒤에 호출해야 합니다. */
+function clearPhoto(){
+  document.querySelectorAll(".lqphoto").forEach(n=>n.remove());
+}
+
+function photoSrc(r){
+  if(!r.img) return "";
+  return r.img.indexOf("http")===0 ? r.img : "img/" + r.img;
+}
+
+function showPhoto(r){
+  clearPhoto();
+
+  const src = photoSrc(r);
+  const locHtml = r.spots.length
+    ? `<div class="pl">${r.spots.map(sp=>sp.code).join(" · ")}</div>`
+    : `<div class="pl none">창고 위치 미등록</div>`;
+
+  const box = document.createElement("div");
+  box.className = "lqphoto";
+  box.innerHTML = `<div class="ph">&#129514;</div>
+    <div>
+      <div class="pn">${r.name}</div>
+      <div class="pf">${[r.brand, r.flavor].filter(Boolean).join(" · ")}</div>
+      ${locHtml}
+    </div>`;
+
+  /* 사진이 실제로 로드된 경우에만 자리표시자를 교체합니다 */
+  if(src){
+    const im = new Image();
+    im.alt = r.name;
+    im.loading = "lazy";
+    im.onload = ()=>{ const ph = box.querySelector(".ph"); if(ph) box.replaceChild(im, ph); };
+    im.src = src;
+  }
+
+  detEl.insertAdjacentElement("afterbegin", box);
 }
 
 function searchLiquids(qRaw){
@@ -1149,6 +1217,7 @@ function renderResults(q){
       document.querySelectorAll(".hit").forEach(h=>h.classList.remove("sel"));
       b.classList.add("sel");
       focusLiquid(r,true);
+      showPhoto(r);
     });
     resEl.appendChild(b);
     if(!first) first={kind:"liq",r,btn:b};
@@ -1169,6 +1238,7 @@ function renderResults(q){
     b.addEventListener("click",()=>{
       document.querySelectorAll(".hit").forEach(h=>h.classList.remove("sel"));
       b.classList.add("sel");
+      clearPhoto();
       focusRecord(r,true);
     });
     resEl.appendChild(b);
