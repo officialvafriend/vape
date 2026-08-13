@@ -194,6 +194,7 @@ svg#map{
   background:var(--panel-2);border:1px solid var(--hi);border-left:4px solid var(--hi);
   border-radius:11px;padding:12px 13px;margin:0 0 10px;
 }
+.lqphoto .pcell{width:130px;height:130px}
 .lqphoto img{
   width:130px;height:130px;object-fit:contain;background:#fff;
   border:1px solid var(--line);border-radius:9px;display:block
@@ -203,7 +204,7 @@ svg#map{
   background:var(--panel);border:1px dashed var(--line);border-radius:9px;
   font-size:34px;color:var(--muted);text-align:center
 }
-.lqphoto .ph span{font-size:12px;font-family:var(--mono);line-height:1.5}
+.lqphoto .ph span{font-size:11px;font-family:var(--mono);line-height:1.5;word-break:break-all;padding:0 6px}
 .lqphoto .pn{font-size:16px;font-weight:700;line-height:1.35;margin-bottom:6px}
 .lqphoto .pf{font-size:13px;color:var(--muted);margin-bottom:9px}
 .lqphoto .pl{font-family:var(--mono);font-size:15px;font-weight:700;color:var(--hi-line)}
@@ -1001,19 +1002,28 @@ function showPhoto(r, btn){
 
   const box = document.createElement("div");
   box.className = "lqphoto";
-  box.innerHTML = `<div class="ph">${src?"&#129514;":"<span>사진<br>미등록</span>"}</div>
+  box.innerHTML = `<div class="pcell"></div>
     <div>
       <div class="pn">${r.name}</div>
       <div class="pf">${[r.brand, r.flavor].filter(Boolean).join(" · ")}</div>
       ${locHtml}
     </div>`;
 
-  /* 사진이 실제로 로드된 경우에만 자리표시자를 교체합니다 */
-  if(src){
-    const im = new Image();
+  const cell = box.querySelector(".pcell");
+  const fail = msg =>{
+    cell.innerHTML = `<div class="ph"><span>${msg}</span></div>`;
+  };
+
+  if(!src){
+    fail("사진<br>미등록");
+  } else {
+    /* 화면에 먼저 붙인 뒤 즉시 로드합니다.
+       (detached + loading=lazy 는 iOS 사파리에서 로드가 시작되지 않습니다) */
+    const im = document.createElement("img");
     im.alt = r.name;
-    im.loading = "lazy";
-    im.onload = ()=>{ const ph = box.querySelector(".ph"); if(ph) box.replaceChild(im, ph); };
+    im.decoding = "async";
+    im.addEventListener("error", ()=>fail(src));
+    cell.appendChild(im);
     im.src = src;
   }
 
