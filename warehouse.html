@@ -201,8 +201,9 @@ svg#map{
 .lqphoto .ph{
   width:130px;height:130px;display:flex;align-items:center;justify-content:center;
   background:var(--panel);border:1px dashed var(--line);border-radius:9px;
-  font-size:34px;color:var(--muted)
+  font-size:34px;color:var(--muted);text-align:center
 }
+.lqphoto .ph span{font-size:12px;font-family:var(--mono);line-height:1.5}
 .lqphoto .pn{font-size:16px;font-weight:700;line-height:1.35;margin-bottom:6px}
 .lqphoto .pf{font-size:13px;color:var(--muted);margin-bottom:9px}
 .lqphoto .pl{font-family:var(--mono);font-size:15px;font-weight:700;color:var(--hi-line)}
@@ -978,9 +979,8 @@ function search(qRaw){
 }
 
 /* ═══════ 선택 제품 사진 패널 ═══════
-   결과 카드를 누르면 선반 상세 영역 맨 위에 큰 사진이 붙습니다.
-   (데스크톱에서는 지도 오른쪽 칸, 모바일에서는 지도 바로 아래)
-   focusLiquid()가 detail을 다시 그리므로 반드시 그 뒤에 호출해야 합니다. */
+   선택된 결과 카드 바로 아래에 큰 사진이 붙습니다.
+   검색 후 자동 선택된 첫 결과에도 함께 표시됩니다. */
 function clearPhoto(){
   document.querySelectorAll(".lqphoto").forEach(n=>n.remove());
 }
@@ -990,8 +990,9 @@ function photoSrc(r){
   return r.img.indexOf("http")===0 ? r.img : "img/" + r.img;
 }
 
-function showPhoto(r){
+function showPhoto(r, btn){
   clearPhoto();
+  if(!btn) return;
 
   const src = photoSrc(r);
   const locHtml = r.spots.length
@@ -1000,7 +1001,7 @@ function showPhoto(r){
 
   const box = document.createElement("div");
   box.className = "lqphoto";
-  box.innerHTML = `<div class="ph">&#129514;</div>
+  box.innerHTML = `<div class="ph">${src?"&#129514;":"<span>사진<br>미등록</span>"}</div>
     <div>
       <div class="pn">${r.name}</div>
       <div class="pf">${[r.brand, r.flavor].filter(Boolean).join(" · ")}</div>
@@ -1016,7 +1017,7 @@ function showPhoto(r){
     im.src = src;
   }
 
-  detEl.insertAdjacentElement("afterbegin", box);
+  btn.insertAdjacentElement("afterend", box);
 }
 
 function searchLiquids(qRaw){
@@ -1217,7 +1218,7 @@ function renderResults(q){
       document.querySelectorAll(".hit").forEach(h=>h.classList.remove("sel"));
       b.classList.add("sel");
       focusLiquid(r,true);
-      showPhoto(r);
+      showPhoto(r,b);
     });
     resEl.appendChild(b);
     if(!first) first={kind:"liq",r,btn:b};
@@ -1271,6 +1272,8 @@ function renderResults(q){
     markLevel(null); detEl.innerHTML=""; resetZoom();
     hintEl.textContent="창고 재고 없음";
   }
+
+  if(first.kind==="liq") showPhoto(first.r, first.btn);
 }
 
 function focusLiquid(r,scroll){
