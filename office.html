@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0">
+<title>베이프렌드 자동화 오피스</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f0f2f8;color:#1a1a1a;padding-bottom:50px}
+.app{max-width:480px;margin:0 auto;background:#f0f2f8;min-height:100vh}
+.hd{background:linear-gradient(135deg,#1F3864,#2E75B6);padding:16px;color:#fff;position:sticky;top:0;z-index:10;box-shadow:0 2px 8px rgba(0,0,0,.2)}
+.hd h1{font-size:17px;font-weight:700}
+.hd p{font-size:11px;opacity:.85;margin-top:3px}
+.hd .sync{display:flex;align-items:center;justify-content:space-between;margin-top:10px}
+.hd .sync span{font-size:11px;opacity:.8}
+.hd .sync button{background:rgba(255,255,255,.18);color:#fff;border:none;padding:6px 12px;font-size:12px;font-weight:700;border-radius:16px;cursor:pointer}
+.hd .sync button:active{background:rgba(255,255,255,.3)}
+h2.t{font-size:12px;font-weight:700;color:#8a90a6;padding:18px 16px 8px;letter-spacing:.5px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:0 12px}
+.stat{background:#fff;border-radius:14px;padding:14px 8px;text-align:center;box-shadow:0 1px 5px rgba(0,0,0,.06)}
+.stat .ico{font-size:18px}
+.stat .num{font-size:22px;font-weight:900;color:#1F3864;margin-top:4px;line-height:1.1}
+.stat .num.err{font-size:14px;color:#c62828}
+.stat .lbl{font-size:11px;color:#999;margin-top:3px}
+.card{background:#fff;border-radius:14px;margin:0 12px 8px;box-shadow:0 1px 5px rgba(0,0,0,.06);overflow:hidden}
+.chk{display:flex;align-items:center;padding:13px 14px;cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none;border-bottom:1px solid #f4f4f4}
+.chk:last-of-type{border-bottom:none}
+.chk .dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;margin-right:10px;background:#ddd}
+.chk .dot.ok{background:#2E7D32}
+.chk .dot.warn{background:#F9A825}
+.chk .dot.bad{background:#C00000}
+.chk .dot.unk{background:#b0b4c4}
+.chk .txt{flex:1;min-width:0}
+.chk .txt b{font-size:13.5px;font-weight:700;display:block}
+.chk .txt small{font-size:11px;color:#999}
+.chk .cnt{font-size:12px;font-weight:700;color:#888;flex-shrink:0;margin-left:8px}
+.chk .cnt.hit{color:#C00000}
+.chk .cnt.unk{color:#b0b4c4}
+.chk .arr{color:#ccc;font-size:15px;margin-left:6px;transition:transform .2s;flex-shrink:0}
+.chk .arr.open{transform:rotate(90deg)}
+.det{display:none;padding:10px 14px 12px;background:#fafbfd;border-bottom:1px solid #f4f4f4;font-size:12px;color:#555;line-height:1.7}
+.det.open{display:block}
+.det .pill{display:inline-block;background:#fff;border:1px solid #e4e6ef;border-radius:6px;padding:2px 8px;margin:2px 3px 2px 0;font-size:11.5px}
+.links{margin:0 12px}
+.lgrp{background:#fff;border-radius:14px;margin-bottom:8px;box-shadow:0 1px 5px rgba(0,0,0,.06);overflow:hidden}
+.lgrp .gh{font-size:11px;font-weight:700;color:#8a90a6;padding:10px 14px 4px}
+a.lnk{display:flex;align-items:center;padding:12px 14px;text-decoration:none;color:#1a1a1a;border-top:1px solid #f4f4f4}
+a.lnk:active{background:#f6f7fb}
+a.lnk .e{width:26px;font-size:15px;flex-shrink:0}
+a.lnk .n{flex:1;font-size:13.5px;font-weight:600}
+a.lnk .d{font-size:11px;color:#aaa;margin-top:1px;font-weight:400}
+a.lnk .go{color:#ccc;font-size:15px}
+.setrow{display:flex;align-items:center;padding:13px 14px;border-bottom:1px solid #f4f4f4}
+.setrow:last-child{border-bottom:none}
+.setrow .txt{flex:1}
+.setrow .txt b{font-size:13.5px;display:block}
+.setrow .txt small{font-size:11px;color:#999}
+.setrow button{border:none;border-radius:8px;padding:8px 12px;font-size:12px;font-weight:700;cursor:pointer;margin-left:6px}
+.bset{background:#1F3864;color:#fff}
+.bdel{background:#fff;color:#c62828;border:1.5px solid #c62828}
+.foot{text-align:center;font-size:11px;color:#b0b4c4;padding:20px 24px;line-height:1.6}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1a1a1a;color:#fff;padding:10px 18px;border-radius:20px;font-size:13px;z-index:100;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.show{opacity:1}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="hd">
+    <h1>🏢 베이프렌드 자동화 오피스</h1>
+    <p>시트 · 관리자 · 창고를 한 화면에서</p>
+    <div class="sync">
+      <span id="syncAt">불러오는 중...</span>
+      <button id="reload">↻ 새로고침</button>
+    </div>
+  </div>
+
+  <h2 class="t">📊 등록 현황</h2>
+  <div class="stats">
+    <div class="stat"><div class="ico">🔧</div><div class="num" id="cDev">–</div><div class="lbl">기기</div></div>
+    <div class="stat"><div class="ico">💧</div><div class="num" id="cLiq">–</div><div class="lbl">액상</div></div>
+    <div class="stat"><div class="ico">🚬</div><div class="num" id="cDis">–</div><div class="lbl">일회용</div></div>
+  </div>
+
+  <h2 class="t">🔍 자동 점검 <span style="font-weight:400;color:#b0b4c4">— 눌러서 목록 보기</span></h2>
+  <div class="card" id="checks">
+    <div class="chk"><div class="dot"></div><div class="txt"><b>점검 준비 중...</b><small>시트를 불러오고 있어요</small></div></div>
+  </div>
+
+  <h2 class="t">🔗 바로가기</h2>
+  <div class="links">
+    <div class="lgrp">
+      <div class="gh">관리자 — 등록 / 수정</div>
+      <a class="lnk" href="admin.html"><div class="e">⚙️</div><div class="n">기기 관리자<div class="d">admin.html</div></div><div class="go">›</div></a>
+      <a class="lnk" href="admin_liquid.html"><div class="e">💧</div><div class="n">액상 관리자<div class="d">admin_liquid.html</div></div><div class="go">›</div></a>
+      <a class="lnk" href="admin_disposable.html"><div class="e">🚬</div><div class="n">일회용 관리자<div class="d">admin_disposable.html</div></div><div class="go">›</div></a>
+    </div>
+    <div class="lgrp">
+      <div class="gh">고객용 — 손님에게 보여주는 화면</div>
+      <a class="lnk" href="index.html"><div class="e">🏠</div><div class="n">기기 카탈로그<div class="d">index.html</div></div><div class="go">›</div></a>
+      <a class="lnk" href="liquid.html"><div class="e">🧪</div><div class="n">액상 찾기<div class="d">liquid.html</div></div><div class="go">›</div></a>
+      <a class="lnk" href="disposable.html"><div class="e">📦</div><div class="n">일회용 목록<div class="d">disposable.html</div></div><div class="go">›</div></a>
+      <a class="lnk" href="liquid_quiz.html"><div class="e">❓</div><div class="n">액상 추천 퀴즈<div class="d">liquid_quiz.html</div></div><div class="go">›</div></a>
+    </div>
+    <div class="lgrp">
+      <div class="gh">창고 — 재고 / 위치</div>
+      <a class="lnk" href="warehouse.html"><div class="e">🏭</div><div class="n">창고 재고<div class="d">warehouse.html</div></div><div class="go">›</div></a>
+      <a class="lnk" href="storage.html"><div class="e">🗺️</div><div class="n">보관 구역 안내<div class="d">storage.html</div></div><div class="go">›</div></a>
+    </div>
+    <div class="lgrp">
+      <div class="gh">원본 데이터</div>
+      <a class="lnk" id="apiDev" href="#" target="_blank" rel="noopener"><div class="e">🗄️</div><div class="n">기기 시트 JSON<div class="d">Apps Script API</div></div><div class="go">›</div></a>
+      <a class="lnk" id="apiLiq" href="#" target="_blank" rel="noopener"><div class="e">🗄️</div><div class="n">액상 시트 JSON<div class="d">?sheet=liquid</div></div><div class="go">›</div></a>
+      <a class="lnk" id="apiDis" href="#" target="_blank" rel="noopener"><div class="e">🗄️</div><div class="n">일회용 시트 JSON<div class="d">?sheet=disposable</div></div><div class="go">›</div></a>
+    </div>
+  </div>
+
+  <h2 class="t">🔑 설정</h2>
+  <div class="card">
+    <div class="setrow">
+      <div class="txt"><b>GitHub 토큰</b><small id="tokState">확인 중...</small></div>
+      <button class="bset" id="tokSet">등록</button>
+      <button class="bdel" id="tokDel">삭제</button>
+    </div>
+  </div>
+
+  <div class="foot">
+    사진 업로드에 쓰는 토큰이에요. 이 브라우저에만 저장되고<br>서버로는 안 보내집니다. 공용 PC에선 쓰고 나서 삭제하세요.
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+var SCRIPT_URL = "https://script.google.com/macros/s/AKfycby7_3DBk_st-ALx7rKQw3A19C79PH3ZOmHyehJNXPaateeL5vdtJTuKW9JAIvBbo-A/exec";
+var TOKEN_KEY = 'vafe_gh_token';
+
+function toast(msg){
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show';
+  setTimeout(function(){ t.className = 'toast'; }, 2200);
+}
+
+document.getElementById('apiDev').href = SCRIPT_URL;
+document.getElementById('apiLiq').href = SCRIPT_URL + '?sheet=liquid';
+document.getElementById('apiDis').href = SCRIPT_URL + '?sheet=disposable';
+
+/* ---------- 자동 점검 규칙 ----------
+   여기에 규칙을 한 줄 추가하면 오피스가 알아서 매번 검사해줘요.
+   name: 화면에 보일 이름 / desc: 설명 / find: 문제 있는 항목을 골라내는 함수
+   label: 목록에 표시할 이름을 뽑는 함수                                        */
+var RULES = [
+  {
+    name: '사진 없는 기기',
+    desc: '카탈로그에서 빈칸으로 보여요',
+    from: 'dev',
+    find: function(list){ return list.filter(function(d){ return !(d.img||'').trim(); }); },
+    label: function(d){ return d.n || '(이름없음)'; }
+  },
+  {
+    name: '사진 없는 액상',
+    desc: '액상 찾기 화면에서 빈칸으로 보여요',
+    from: 'liq',
+    find: function(list){ return list.filter(function(d){ return !(d.img||'').trim(); }); },
+    label: function(d){ return d.n || '(이름없음)'; }
+  },
+  {
+    name: '보관 위치 미입력 액상',
+    desc: '창고에서 못 찾는 재고가 돼요',
+    from: 'liq',
+    find: function(list){ return list.filter(function(d){ return !(d.loc||'').trim(); }); },
+    label: function(d){ return d.n || '(이름없음)'; }
+  },
+  {
+    name: '맛/타입 미분류 액상',
+    desc: '추천 퀴즈 결과에 안 잡혀요',
+    from: 'liq',
+    find: function(list){ return list.filter(function(d){ return !(d.t||'').trim() && !(d.c||'').trim(); }); },
+    label: function(d){ return d.n || '(이름없음)'; }
+  },
+  {
+    name: '가격 미입력 일회용',
+    desc: '손님한테 값을 못 보여줘요',
+    from: 'dis',
+    find: function(list){ return list.filter(function(d){ return !String(d.price||'').trim(); }); },
+    label: function(d){ return d.name || d.key || '(이름없음)'; }
+  },
+  {
+    name: '이름 중복',
+    desc: '같은 이름이 두 번 등록됐어요',
+    from: 'all',
+    find: function(list){
+      var seen = {}, dup = [];
+      list.forEach(function(d){
+        var k = (d.n || d.name || d.key || '').trim().toLowerCase();
+        if(!k) return;
+        if(seen[k]){ if(seen[k] === 1){ dup.push(d); seen[k] = 2; } }
+        else seen[k] = 1;
+      });
+      return dup;
+    },
+    label: function(d){ return (d.n || d.name || d.key || '(이름없음)') + ' [' + (d._src||'') + ']'; }
+  }
+];
+
+function num(el, v, isErr){
+  var e = document.getElementById(el);
+  e.textContent = v;
+  e.className = 'num' + (isErr ? ' err' : '');
+}
+
+function esc(s){
+  return String(s).replace(/[&<>"]/g, function(c){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];
+  });
+}
+
+function renderChecks(data, ok){
+  var box = document.getElementById('checks');
+  var html = '';
+  RULES.forEach(function(rule, i){
+    var src, usable;
+    if(rule.from === 'all'){
+      src = data.dev.concat(data.liq, data.dis);
+      usable = ok.dev && ok.liq && ok.dis;
+    } else {
+      src = data[rule.from];
+      usable = ok[rule.from];
+    }
+
+    var hits = [];
+    if(usable){
+      try { hits = rule.find(src) || []; } catch(e) { hits = []; }
+    }
+
+    // 시트를 못 불러왔으면 "이상 없음"이라고 하면 안 돼요 — 확인을 못 한 거니까.
+    var cls, cnt, cntCls;
+    if(!usable){
+      cls = 'unk'; cnt = '확인 못함'; cntCls = ' unk';
+    } else {
+      cls = hits.length === 0 ? 'ok' : (hits.length <= 3 ? 'warn' : 'bad');
+      cnt = hits.length === 0 ? '이상 없음' : hits.length + '건';
+      cntCls = hits.length ? ' hit' : '';
+    }
+
+    html += '<div class="chk" data-i="' + i + '">' +
+              '<div class="dot ' + cls + '"></div>' +
+              '<div class="txt"><b>' + esc(rule.name) + '</b><small>' + esc(rule.desc) + '</small></div>' +
+              '<div class="cnt' + cntCls + '">' + cnt + '</div>' +
+              '<div class="arr">›</div>' +
+            '</div>';
+
+    var body;
+    if(!usable){
+      body = '⚠️ 시트를 못 불러와서 점검을 건너뛰었어요. 새로고침을 눌러보세요.';
+    } else if(hits.length){
+      body = hits.slice(0, 60).map(function(d){ return '<span class="pill">' + esc(rule.label(d)) + '</span>'; }).join('') +
+             (hits.length > 60 ? '<div style="margin-top:6px;color:#999">…외 ' + (hits.length - 60) + '건</div>' : '');
+    } else {
+      body = '👍 고칠 게 없어요.';
+    }
+    html += '<div class="det" data-d="' + i + '">' + body + '</div>';
+  });
+  box.innerHTML = html;
+
+  box.querySelectorAll('.chk').forEach(function(el){
+    el.addEventListener('click', function(){
+      var d = box.querySelector('.det[data-d="' + el.getAttribute('data-i') + '"]');
+      var arr = el.querySelector('.arr');
+      var open = d.className.indexOf('open') >= 0;
+      d.className = 'det' + (open ? '' : ' open');
+      arr.className = 'arr' + (open ? '' : ' open');
+    });
+  });
+}
+
+function tag(list, src){
+  return (Array.isArray(list) ? list : []).map(function(d){ d._src = src; return d; });
+}
+
+async function load(){
+  document.getElementById('syncAt').textContent = '불러오는 중...';
+  var r = await Promise.allSettled([
+    fetch(SCRIPT_URL).then(function(x){ return x.json(); }),
+    fetch(SCRIPT_URL + '?sheet=liquid').then(function(x){ return x.json(); }),
+    fetch(SCRIPT_URL + '?sheet=disposable').then(function(x){ return x.json(); })
+  ]);
+
+  var ok = { dev: true, liq: true, dis: true };
+  var data = { dev: [], liq: [], dis: [] };
+  var keys = ['dev', 'liq', 'dis'];
+  var srcs = ['기기', '액상', '일회용'];
+
+  r.forEach(function(res, i){
+    if(res.status === 'fulfilled' && Array.isArray(res.value)) data[keys[i]] = tag(res.value, srcs[i]);
+    else ok[keys[i]] = false;
+  });
+
+  num('cDev', ok.dev ? data.dev.length : '실패', !ok.dev);
+  num('cLiq', ok.liq ? data.liq.length : '실패', !ok.liq);
+  num('cDis', ok.dis ? data.dis.length : '실패', !ok.dis);
+
+  renderChecks(data, ok);
+
+  var now = new Date();
+  var hh = ('0' + now.getHours()).slice(-2), mm = ('0' + now.getMinutes()).slice(-2);
+  var failed = keys.filter(function(k){ return !ok[k]; }).length;
+  document.getElementById('syncAt').textContent =
+    (failed ? '⚠️ ' + failed + '개 시트 불러오기 실패 · ' : '✅ 동기화됨 · ') + hh + ':' + mm;
+}
+
+document.getElementById('reload').addEventListener('click', load);
+
+/* ---------- 토큰 ---------- */
+function renderToken(){
+  var t = localStorage.getItem(TOKEN_KEY);
+  document.getElementById('tokState').textContent = t
+    ? '등록됨 (' + t.slice(0, 4) + '••••' + t.slice(-4) + ')'
+    : '미등록 — 사진 업로드가 안 돼요';
+}
+document.getElementById('tokSet').addEventListener('click', function(){
+  var t = prompt('GitHub 토큰을 붙여넣어 주세요:');
+  if(t && t.trim()){ localStorage.setItem(TOKEN_KEY, t.trim()); renderToken(); toast('저장했어요'); }
+});
+document.getElementById('tokDel').addEventListener('click', function(){
+  if(!localStorage.getItem(TOKEN_KEY)){ toast('저장된 토큰이 없어요'); return; }
+  if(confirm('토큰을 삭제할까요?')){ localStorage.removeItem(TOKEN_KEY); renderToken(); toast('삭제했어요'); }
+});
+
+renderToken();
+load();
+</script>
+</body>
+</html>
