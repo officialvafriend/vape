@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#14181b">
+<title>베이프렌드 본점 · 매장 재고 위치찾기</title>
+<style>
+  :root{
+    --bg:#14181b; --panel:#1c2226; --line:#2c3438;
+    --text:#eef1f2; --sub:#93a0a6; --red:#e0392f; --red-dim:#4a201d; --gold:#d9a441;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font-family:"Pretendard","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+    -webkit-font-smoothing:antialiased;
+    padding:14px 14px 40px;
+  }
+  h1{font-size:17px;margin:0 0 3px;font-weight:800;}
+  .brandline{font-size:11px;color:var(--sub);letter-spacing:.08em;font-weight:700;margin-bottom:12px;}
+  .search-wrap{position:relative;margin-bottom:12px;}
+  .search-wrap input{
+    width:100%;padding:12px 40px 12px 14px;border-radius:10px;
+    border:1px solid var(--line);background:var(--panel);color:var(--text);
+    font-size:14px;outline:none;
+  }
+  .search-wrap input:focus{border-color:var(--red);}
+  .floor{
+    position:relative;
+    background:#20272b;
+    border:1px solid var(--line);
+    border-radius:10px;
+    height:560px;
+    overflow:auto;
+    background-image:
+      linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px);
+    background-size:20px 20px;
+  }
+  .floorInner{ position:relative; width:1400px; height:1000px; }
+  .box{
+    position:absolute;
+    border-radius:7px;
+    border:1.5px solid rgba(255,255,255,.25);
+    background:var(--red);
+    color:#fff;
+    display:flex;align-items:center;justify-content:center;
+    font-size:11px;font-weight:700;text-align:center;
+    padding:3px;cursor:pointer;
+    transition:filter .12s, opacity .15s, box-shadow .15s;
+    user-select:none;
+  }
+  .box:hover{filter:brightness(1.15);}
+  .box.dim{opacity:.15;}
+  .box.match{box-shadow:0 0 0 3px #1a56db;z-index:4;}
+  .box.empty{background:#3a4247;color:var(--sub);}
+  .lineLayer{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;}
+  .lineLayer line{stroke:#c0392b;stroke-width:2.5;opacity:.55;}
+  .lineLayer text{font-size:12px;font-weight:700;fill:#e0392f;font-family:inherit;}
+  .flow{display:flex;justify-content:space-between;font-size:11px;color:var(--sub);margin-top:8px;}
+
+  .modal-backdrop{
+    display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);
+    align-items:center;justify-content:center;z-index:50;padding:20px;
+  }
+  .modal-backdrop.open{display:flex;}
+  .modal{
+    background:var(--panel);border:1px solid var(--line);border-radius:14px;
+    padding:22px;max-width:320px;width:100%;text-align:center;
+  }
+  .modal .num{
+    display:inline-flex;align-items:center;justify-content:center;
+    width:36px;height:36px;border-radius:9px;background:var(--red-dim);color:var(--red);
+    font-weight:800;font-size:15px;margin-bottom:12px;
+  }
+  .modal .label{font-size:17px;font-weight:700;margin-bottom:18px;line-height:1.4;}
+  .modal button{
+    width:100%;padding:11px;border-radius:9px;border:1px solid var(--line);
+    background:#2c3438;color:#fff;font-size:14px;cursor:pointer;
+  }
+  footer{text-align:center;color:var(--sub);font-size:11px;padding:18px 0 4px;}
+</style>
+</head>
+<body>
+  <h1>본점 매장 재고 위치찾기</h1>
+  <div class="brandline">VAFRIEND · STAFF VIEW (조회 전용)</div>
+
+  <div class="search-wrap">
+    <input id="search" type="text" placeholder="상품명·구역 검색 (예: 릭, 소모품, 각인기)" autocomplete="off">
+  </div>
+
+  <div class="floor" id="floor">
+    <div class="floorInner" id="floorInner">
+      <svg class="lineLayer" id="lineLayer"></svg>
+      <div id="boxLayer"></div>
+    </div>
+  </div>
+  <div class="flow"><span>◂ 창고 방향(B-3)</span><span>입구·외부자판기 ▸</span></div>
+
+  <div class="modal-backdrop" id="modalBackdrop">
+    <div class="modal">
+      <div class="num" id="modalNum"></div>
+      <div class="label" id="modalLabel"></div>
+      <button id="modalClose">닫기</button>
+    </div>
+  </div>
+
+  <footer>손님 응대 아닌 직원 참고용 · 위치 수정은 관리자에게 문의</footer>
+
+<script>
+const BOXES = [
+  {num:"1",x:58,y:15,w:5,h:5,label:"소모품"},
+  {num:"2",x:50,y:15,w:5,h:5,label:"봉투,쿠폰"},
+  {num:"3",x:64,y:21,w:5,h:5,label:"소모품"},
+  {num:"4",x:70,y:21,w:5,h:5,label:"소모품/케이스"},
+  {num:"5",x:70,y:6,w:5,h:5,label:"각인,일회용 진열장"},
+  {num:"6",x:70,y:15,w:5,h:5,label:"소모품"},
+  {num:"7",x:58,y:21,w:5,h:5,label:"소모품"},
+  {num:"8",x:70,y:42,w:5,h:5,label:"빈곳"},
+  {num:"9",x:64,y:15,w:5,h:5,label:"소모품"},
+  {num:"10",x:50,y:21,w:5,h:5,label:"소모품"},
+  {num:"11",x:78,y:28,w:5,h:5,label:"케이스/빌지"},
+  {num:"12",x:78,y:70,w:5,h:5,label:"일회용"},
+  {num:"13",x:78,y:90,w:5,h:5,label:"기기"},
+  {num:"14",x:78,y:83,w:5,h:5,label:"기기"},
+  {num:"15",x:78,y:42,w:5,h:5,label:"빈곳"},
+  {num:"16",x:70,y:83,w:5,h:5,label:"기기"},
+  {num:"19",x:50,y:70,w:5,h:5,label:"보관함"},
+  {num:"21",x:70,y:90,w:5,h:5,label:"기기"},
+  {num:"23",x:58,y:90,w:5,h:5,label:"세면대"},
+  {num:"24",x:70,y:70,w:5,h:5,label:"빈곳"},
+  {num:"25",x:70,y:76,w:5,h:5,label:"엘프바5%"},
+  {num:"26",x:7,y:21,w:5,h:5,label:"빌런액상"},
+  {num:"27",x:13,y:21,w:5,h:5,label:"빌런액상"},
+  {num:"28",x:7,y:28,w:5,h:5,label:"종이가방"},
+  {num:"29",x:13,y:28,w:5,h:5,label:"릭액상"},
+  {num:"30",x:20,y:28,w:5,h:5,label:"문구류"},
+  {num:"31",x:20,y:21,w:5,h:5,label:"문구류"},
+  {num:"32",x:26,y:28,w:5,h:5,label:"휴지,유리세정제"},
+  {num:"33",x:26,y:21,w:5,h:5,label:"폐호흡코일/말론0.4옴"},
+  {num:"34",x:34,y:21,w:5,h:5,label:"폐호흡코일"},
+  {num:"35",x:34,y:28,w:5,h:5,label:"구급함/폐호흡코일"},
+  {num:"36",x:20,y:0,w:5,h:5,label:"빌런/릭"},
+  {num:"37",x:20,y:6,w:5,h:5,label:"릭/일회용"},
+  {num:"38",x:7,y:6,w:5,h:5,label:"빌런/택배박스"},
+  {num:"39",x:7,y:0,w:5,h:5,label:"빌런"},
+  {num:"40",x:43,y:90,w:5,h:5,label:"쿨멘솔"},
+  {num:"41",x:34,y:90,w:5,h:5,label:"빌런시리즈"},
+  {num:"42",x:34,y:83,w:5,h:5,label:"빌런시리즈"},
+  {num:"43",x:50,y:90,w:5,h:5,label:"릭시리즈"},
+  {num:"44",x:26,y:70,w:5,h:5,label:"RDA/18650"},
+  {num:"46",x:13,y:70,w:5,h:5,label:"폐호흡 프리미엄"},
+  {num:"47",x:20,y:70,w:5,h:5,label:"디오리퀴드"},
+  {num:"49",x:7,y:70,w:5,h:5,label:"시연용액상"},
+  {num:"51",x:7,y:76,w:5,h:5,label:"시연용액상"},
+  {num:"52",x:13,y:76,w:5,h:5,label:"폐호흡 프리미엄"},
+  {num:"53",x:20,y:76,w:5,h:5,label:"디오리퀴드"},
+  {num:"54",x:26,y:76,w:5,h:5,label:"폐호흡 관련"},
+  {num:"55",x:7,y:83,w:5,h:5,label:"기타제품들"},
+  {num:"56",x:13,y:83,w:5,h:5,label:"프라임액상/폐호흡프라임액상"},
+  {num:"57",x:20,y:83,w:5,h:5,label:"디오리퀴드"},
+  {num:"58",x:26,y:83,w:5,h:5,label:"단종 프라임액상"},
+  {num:"60",x:7,y:90,w:5,h:5,label:"기타제품들"},
+  {num:"61",x:13,y:90,w:5,h:5,label:"폐호흡프리미엄액상"},
+  {num:"62",x:20,y:90,w:5,h:5,label:"디오리퀴드"},
+  {num:"63",x:26,y:90,w:5,h:5,label:"퀸즈시리즈/리퀴드랩"},
+  {num:"66",x:50,y:76,w:5,h:5,label:"보관함"},
+  {num:"68",x:34,y:76,w:5,h:5,label:"보관함"},
+  {num:"69",x:43,y:83,w:5,h:5,label:"812시가"},
+  {num:"71",x:50,y:83,w:5,h:5,label:"단종 액상"},
+  {num:"72",x:43,y:76,w:5,h:5,label:"AS"},
+  {num:"73",x:34,y:70,w:5,h:5,label:"보관함"},
+  {num:"74",x:43,y:70,w:5,h:5,label:"AS"},
+  {num:"75",x:34,y:70,w:5,h:5,label:"말론0.6옴팟"},
+  {num:"76",x:34,y:76,w:5,h:5,label:"말론0.6옴팟"},
+  {num:"77",x:34,y:83,w:5,h:5,label:"리퀴드랩"},
+  {num:"78",x:34,y:90,w:5,h:5,label:"무니코틴"},
+  {num:"79",x:43,y:11,w:4,h:5,label:"PC"},
+  {num:"80",x:50,y:6,w:4,h:5,label:"포스"},
+  {num:"81",x:78,y:21,w:3,h:4,label:"각인기"},
+  {num:"82",x:78,y:76,w:5,h:5,label:"일회용"},
+  {num:"83",x:70,y:28,w:5,h:5,label:"케이스"},
+  {num:"84",x:78,y:35,w:5,h:5,label:"립클링/일회용"},
+  {num:"85",x:70,y:35,w:5,h:5,label:"각인용지"},
+  {num:"87",x:70,y:56,w:13,h:2,label:"일회용제품"},
+  {num:"88",x:70,y:56,w:13,h:2,label:"일회용제품"},
+  {num:"89",x:70,y:56,w:13,h:2,label:"일회용제품"},
+  {num:"90",x:70,y:56,w:13,h:2,label:"일회용제품"},
+  {num:"91",x:78,y:70,w:5,h:5,label:"고농도제품"},
+  {num:"92",x:78,y:76,w:5,h:5,label:"에어릭스"},
+  {num:"93",x:1,y:21,w:5,h:5,label:"화확물질작성 및 잡다"},
+  {num:"94",x:1,y:28,w:5,h:5,label:"물티슈,곽티슈"}
+];
+const LINES = [
+  {x1:0.17,y1:66.75,x2:83.06,y2:66.83,label:"벽면"},
+  {x1:0.33,y1:15.92,x2:39.39,y2:16.08,label:"카운터2"},
+  {x1:77.22,y1:13.17,x2:48.39,y2:13.5,label:"카운터1"},
+  {x1:77.22,y1:13.08,x2:85.33,y2:31.17,label:"카운터3"},
+  {x1:85.67,y1:31.5,x2:83.83,y2:67.08,label:"카운터4"},
+  {x1:92.17,y1:0.5,x2:92.06,y2:24.5,label:"입구"},
+  {x1:92.17,y1:34.17,x2:92.5,y2:99.42,label:"자판기벽"}
+];
+
+const floorInnerEl = document.getElementById('floorInner');
+const boxLayer = document.getElementById('boxLayer');
+const lineLayer = document.getElementById('lineLayer');
+const searchEl = document.getElementById('search');
+const modalBackdrop = document.getElementById('modalBackdrop');
+const modalNum = document.getElementById('modalNum');
+const modalLabel = document.getElementById('modalLabel');
+
+function renderBoxes(){
+  boxLayer.innerHTML = '';
+  BOXES.forEach(b=>{
+    const el = document.createElement('div');
+    el.className = 'box' + (b.label ? '' : ' empty');
+    el.dataset.num = b.num;
+    el.style.left = b.x + '%';
+    el.style.top = b.y + '%';
+    el.style.width = b.w + '%';
+    el.style.height = b.h + '%';
+    el.textContent = b.label || ('#' + b.num);
+    el.addEventListener('click', ()=>{
+      modalNum.textContent = b.num;
+      modalLabel.textContent = b.label || '(이름 없음)';
+      modalBackdrop.classList.add('open');
+    });
+    boxLayer.appendChild(el);
+  });
+}
+function renderLines(){
+  lineLayer.innerHTML = '';
+  LINES.forEach(ln=>{
+    const line = document.createElementNS('http://www.w3.org/2000/svg','line');
+    line.setAttribute('x1', ln.x1+'%'); line.setAttribute('y1', ln.y1+'%');
+    line.setAttribute('x2', ln.x2+'%'); line.setAttribute('y2', ln.y2+'%');
+    lineLayer.appendChild(line);
+    if(ln.label){
+      const midX=(ln.x1+ln.x2)/2, midY=(ln.y1+ln.y2)/2;
+      const text = document.createElementNS('http://www.w3.org/2000/svg','text');
+      text.setAttribute('x', midX+'%'); text.setAttribute('y', (midY-1)+'%');
+      text.setAttribute('text-anchor','middle');
+      text.textContent = ln.label;
+      lineLayer.appendChild(text);
+    }
+  });
+}
+renderBoxes();
+renderLines();
+
+modalBackdrop.addEventListener('click', (e)=>{ if(e.target === modalBackdrop) modalBackdrop.classList.remove('open'); });
+document.getElementById('modalClose').addEventListener('click', ()=> modalBackdrop.classList.remove('open'));
+
+searchEl.addEventListener('input', ()=>{
+  const q = searchEl.value.trim().toLowerCase();
+  const boxEls = boxLayer.querySelectorAll('.box');
+  let firstMatch = null;
+  boxEls.forEach(el=>{
+    const label = (el.textContent || '').toLowerCase();
+    el.classList.remove('dim','match');
+    if(!q) return;
+    if(label.includes(q)){
+      el.classList.add('match');
+      if(!firstMatch) firstMatch = el;
+    }else{
+      el.classList.add('dim');
+    }
+  });
+  if(firstMatch) firstMatch.scrollIntoView({behavior:'smooth', block:'center', inline:'center'});
+});
+
+document.addEventListener('keydown', (e)=>{
+  if(e.key === '/' && document.activeElement !== searchEl){ e.preventDefault(); searchEl.focus(); }
+  if(e.key === 'Escape'){
+    if(modalBackdrop.classList.contains('open')) modalBackdrop.classList.remove('open');
+    else { searchEl.value=''; searchEl.dispatchEvent(new Event('input')); searchEl.blur(); }
+  }
+});
+</script>
+</body>
+</html>
