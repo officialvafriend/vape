@@ -113,6 +113,15 @@
     font-size:11px;color:#7a1410;font-weight:800;
   }
   .del-handle:hover{background:#fff;}
+  .kw-handle{
+    position:absolute;right:2px;top:2px;width:16px;height:16px;
+    cursor:pointer;border-radius:4px;
+    background:rgba(255,255,255,.55);
+    display:flex;align-items:center;justify-content:center;
+    font-size:10px;color:#1a1e21;font-weight:800;
+  }
+  .kw-handle:hover{background:#fff;}
+  .kw-handle.has-kw{background:#ffd76a;}
   .flow{display:flex;justify-content:space-between;font-size:11px;color:#637075;margin-top:8px;}
   .out{
     margin-top:14px;background:#1c2226;color:#eef1f2;border-radius:9px;padding:12px 14px;
@@ -154,87 +163,90 @@
 const STORAGE_KEY = 'vf_bonjeom_plain_layout_v1';
 
 const DEFAULTS = {
-  "1":{x:58,y:15,w:5,h:5,label:"소모품"},
-  "2":{x:50,y:15,w:5,h:5,label:"봉투,쿠폰"},
-  "3":{x:64,y:21,w:5,h:5,label:"소모품"},
-  "4":{x:70,y:21,w:5,h:5,label:"소모품/케이스"},
-  "5":{x:70,y:6,w:5,h:5,label:"각인,일회용 진열장"},
-  "6":{x:70,y:15,w:5,h:5,label:"소모품"},
-  "7":{x:58,y:21,w:5,h:5,label:"소모품"},
-  "8":{x:70,y:42,w:5,h:5,label:"빈곳"},
-  "9":{x:64,y:15,w:5,h:5,label:"소모품"},
-  "10":{x:50,y:21,w:5,h:5,label:"소모품"},
-  "11":{x:78,y:28,w:5,h:5,label:"케이스/빌지"},
-  "12":{x:78,y:70,w:5,h:5,label:"일회용"},
-  "13":{x:78,y:90,w:5,h:5,label:"기기"},
-  "14":{x:78,y:83,w:5,h:5,label:"기기"},
-  "15":{x:78,y:42,w:5,h:5,label:"빈곳"},
-  "16":{x:70,y:83,w:5,h:5,label:"기기"},
-  "19":{x:50,y:70,w:5,h:5,label:"보관함"},
-  "21":{x:70,y:90,w:5,h:5,label:"기기"},
-  "23":{x:58,y:90,w:5,h:5,label:"세면대"},
-  "24":{x:70,y:70,w:5,h:5,label:"빈곳"},
-  "25":{x:70,y:76,w:5,h:5,label:"엘프바5%"},
-  "26":{x:7,y:21,w:5,h:5,label:"빌런액상"},
-  "27":{x:13,y:21,w:5,h:5,label:"빌런액상"},
-  "28":{x:7,y:28,w:5,h:5,label:"종이가방"},
-  "29":{x:13,y:28,w:5,h:5,label:"릭액상"},
-  "30":{x:20,y:28,w:5,h:5,label:"문구류"},
-  "31":{x:20,y:21,w:5,h:5,label:"문구류"},
-  "32":{x:26,y:28,w:5,h:5,label:"휴지,유리세정제"},
-  "33":{x:26,y:21,w:5,h:5,label:"폐호흡코일/말론0.4옴"},
-  "34":{x:34,y:21,w:5,h:5,label:"폐호흡코일"},
-  "35":{x:34,y:28,w:5,h:5,label:"구급함/폐호흡코일"},
-  "36":{x:20,y:0,w:5,h:5,label:"빌런/릭"},
-  "37":{x:20,y:6,w:5,h:5,label:"릭/일회용"},
-  "38":{x:7,y:6,w:5,h:5,label:"빌런/택배박스"},
-  "39":{x:7,y:0,w:5,h:5,label:"빌런"},
-  "40":{x:43,y:90,w:5,h:5,label:"쿨멘솔"},
-  "41":{x:34,y:90,w:5,h:5,label:"빌런시리즈"},
-  "42":{x:34,y:83,w:5,h:5,label:"빌런시리즈"},
-  "43":{x:50,y:90,w:5,h:5,label:"릭시리즈"},
-  "44":{x:26,y:70,w:5,h:5,label:"RDA/18650"},
-  "46":{x:13,y:70,w:5,h:5,label:"폐호흡 프리미엄"},
-  "47":{x:20,y:70,w:5,h:5,label:"디오리퀴드"},
-  "49":{x:7,y:70,w:5,h:5,label:"시연용액상"},
-  "51":{x:7,y:76,w:5,h:5,label:"시연용액상"},
-  "52":{x:13,y:76,w:5,h:5,label:"폐호흡 프리미엄"},
-  "53":{x:20,y:76,w:5,h:5,label:"디오리퀴드"},
-  "54":{x:26,y:76,w:5,h:5,label:"폐호흡 관련"},
-  "55":{x:7,y:83,w:5,h:5,label:"기타제품들"},
-  "56":{x:13,y:83,w:5,h:5,label:"프라임액상/폐호흡프라임액상"},
-  "57":{x:20,y:83,w:5,h:5,label:"디오리퀴드"},
-  "58":{x:26,y:83,w:5,h:5,label:"단종 프라임액상"},
-  "60":{x:7,y:90,w:5,h:5,label:"기타제품들"},
-  "61":{x:13,y:90,w:5,h:5,label:"폐호흡프리미엄액상"},
-  "62":{x:20,y:90,w:5,h:5,label:"디오리퀴드"},
-  "63":{x:26,y:90,w:5,h:5,label:"퀸즈시리즈/리퀴드랩"},
-  "66":{x:50,y:76,w:5,h:5,label:"보관함"},
-  "68":{x:34,y:76,w:5,h:5,label:"보관함"},
-  "69":{x:43,y:83,w:5,h:5,label:"812시가"},
-  "71":{x:50,y:83,w:5,h:5,label:"단종 액상"},
-  "72":{x:43,y:76,w:5,h:5,label:"AS"},
-  "73":{x:34,y:70,w:5,h:5,label:"보관함"},
-  "74":{x:43,y:70,w:5,h:5,label:"AS"},
-  "75":{x:34,y:70,w:5,h:5,label:"말론0.6옴팟"},
-  "76":{x:34,y:76,w:5,h:5,label:"말론0.6옴팟"},
-  "77":{x:34,y:83,w:5,h:5,label:"리퀴드랩"},
-  "78":{x:34,y:90,w:5,h:5,label:"무니코틴"},
-  "79":{x:43,y:11,w:4,h:5,label:"PC"},
-  "80":{x:50,y:6,w:4,h:5,label:"포스"},
-  "81":{x:78,y:21,w:3,h:4,label:"각인기"},
-  "82":{x:78,y:76,w:5,h:5,label:"일회용"},
-  "83":{x:70,y:28,w:5,h:5,label:"케이스"},
-  "84":{x:78,y:35,w:5,h:5,label:"립클링/일회용"},
-  "85":{x:70,y:35,w:5,h:5,label:"각인용지"},
-  "87":{x:70,y:56,w:13,h:2,label:"일회용제품"},
-  "88":{x:70,y:56,w:13,h:2,label:"일회용제품"},
-  "89":{x:70,y:56,w:13,h:2,label:"일회용제품"},
-  "90":{x:70,y:56,w:13,h:2,label:"일회용제품"},
-  "91":{x:78,y:70,w:5,h:5,label:"고농도제품"},
-  "92":{x:78,y:76,w:5,h:5,label:"에어릭스"},
-  "93":{x:1,y:21,w:5,h:5,label:"화확물질작성 및 잡다"},
-  "94":{x:1,y:28,w:5,h:5,label:"물티슈,곽티슈"}
+  "1":{x:58,y:15,w:5,h:5,label:"소모품",keywords:"발라리안코일,발라맥스프로팟,맥스프로 ,발라코일0.6옴,발라코일0.8옴,발라코일1.0옴"},
+  "2":{x:50,y:15,w:5,h:5,label:"봉투,쿠폰",keywords:"봉투,쿠폰"},
+  "3":{x:64,y:21,w:5,h:5,label:"소모품",keywords:"크로스팟,럭스Q팟,에이펙스팟,글렌트팟,픽소팟,마이팟,디오X팟,페보팟,아르거스팟,하부코일,AX팟,아스몬코일,썬더Q팟,아스몬공팟,AVPPRO코일,BP코일,아스몬체결팟,아스몬하이체결팟"},
+  "4":{x:70,y:21,w:5,h:5,label:"소모품/케이스",keywords:"젤로울트라팟,젤로케이스,젤로맥스케이스,발라리안케이스,말론S케이스,닷파티케이스,베이비캡,말론드립팁,닷파티드립팁"},
+  "5":{x:70,y:6,w:5,h:5,label:"각인,일회용 진열장",keywords:""},
+  "6":{x:70,y:15,w:5,h:5,label:"소모품",keywords:"말론S0.6옴팟,말론S0.4옴팟,말론0.6옴팟,베이비프로팟,베이비팟,젤로드립팁,아스몬케이스,아스몬드립팁"},
+  "7":{x:58,y:21,w:5,h:5,label:"소모품",keywords:"플러키팟,발라R팟,맥스프로공팟,맥스공팟,발라맥스공팟,발라맥스프로공팟,발라클리어공팟"},
+  "8":{x:70,y:42,w:5,h:5,label:"빈곳",keywords:""},
+  "9":{x:64,y:15,w:5,h:5,label:"소모품",keywords:"젤로팟,젤로맥스팟,젤로크리스탈팟,,브이메이트팟,소울팟"},
+  "10":{x:50,y:21,w:5,h:5,label:"소모품",keywords:"하복,하복공팟,하복입코일,하복폐코일,발라리안 에어팟,아스트로레드팟,팬텀레드팟,조바팟"},
+  "11":{x:78,y:28,w:5,h:5,label:"케이스/빌지",keywords:"영수증빌지"},
+  "12":{x:78,y:70,w:5,h:5,label:"일회용",keywords:"팜팜바"},
+  "13":{x:78,y:90,w:5,h:5,label:"기기",keywords:"조바,발라리안맥스프로스티그마"},
+  "14":{x:78,y:83,w:5,h:5,label:"기기",keywords:"발라리안맥스프로스티그마,플러키,아스트로모터헤드,말론"},
+  "15":{x:78,y:42,w:5,h:5,label:"빈곳",keywords:""},
+  "16":{x:70,y:83,w:5,h:5,label:"기기",keywords:"발라리안맥스프로,하복,말론S"},
+  "19":{x:50,y:70,w:5,h:5,label:"보관함",keywords:""},
+  "21":{x:70,y:90,w:5,h:5,label:"기기",keywords:"조바"},
+  "23":{x:58,y:90,w:5,h:5,label:"세면대",keywords:"청소기롤,에어건"},
+  "24":{x:70,y:70,w:5,h:5,label:"빈곳",keywords:""},
+  "25":{x:70,y:76,w:5,h:5,label:"엘프바5%",keywords:"엘프바5%"},
+  "26":{x:7,y:21,w:5,h:5,label:"빌런액상",keywords:""},
+  "27":{x:13,y:21,w:5,h:5,label:"빌런액상",keywords:""},
+  "28":{x:7,y:28,w:5,h:5,label:"종이가방",keywords:""},
+  "29":{x:13,y:28,w:5,h:5,label:"릭액상",keywords:""},
+  "30":{x:20,y:28,w:5,h:5,label:"문구류",keywords:""},
+  "31":{x:20,y:21,w:5,h:5,label:"문구류",keywords:""},
+  "32":{x:26,y:28,w:5,h:5,label:"휴지,유리세정제",keywords:""},
+  "33":{x:26,y:21,w:5,h:5,label:"폐호흡코일/말론0.4옴",keywords:""},
+  "34":{x:34,y:21,w:5,h:5,label:"폐호흡코일",keywords:""},
+  "35":{x:34,y:28,w:5,h:5,label:"구급함/폐호흡코일",keywords:""},
+  "36":{x:20,y:0,w:5,h:5,label:"빌런/릭",keywords:""},
+  "37":{x:20,y:6,w:5,h:5,label:"릭/일회용",keywords:""},
+  "38":{x:7,y:6,w:5,h:5,label:"빌런/택배박스",keywords:""},
+  "39":{x:7,y:0,w:5,h:5,label:"빌런",keywords:""},
+  "40":{x:43,y:90,w:5,h:5,label:"쿨멘솔",keywords:"쿨멘솔"},
+  "41":{x:37,y:90,w:5,h:5,label:"빌런시리즈",keywords:"빌런"},
+  "42":{x:37,y:83,w:5,h:5,label:"빌런시리즈",keywords:"빌런"},
+  "43":{x:50,y:90,w:5,h:5,label:"릭시리즈",keywords:"릭시리즈"},
+  "44":{x:26,y:69,w:5,h:5,label:"RDA/18650",keywords:"RDA용품,18650,건전지"},
+  "46":{x:13,y:70,w:5,h:5,label:"폐호흡 프리미엄",keywords:""},
+  "47":{x:20,y:70,w:5,h:5,label:"디오리퀴드",keywords:"디오"},
+  "49":{x:7,y:70,w:5,h:5,label:"시연용액상",keywords:""},
+  "51":{x:7,y:76,w:5,h:5,label:"시연용액상",keywords:""},
+  "52":{x:13,y:76,w:5,h:5,label:"폐호흡 프리미엄",keywords:""},
+  "53":{x:20,y:76,w:5,h:5,label:"디오리퀴드",keywords:"디오"},
+  "54":{x:26,y:76,w:5,h:5,label:"폐호흡 관련",keywords:""},
+  "55":{x:7,y:83,w:5,h:5,label:"기타제품들",keywords:""},
+  "56":{x:13,y:83,w:5,h:5,label:"프라임액상/폐호흡프라임액상",keywords:""},
+  "57":{x:20,y:83,w:5,h:5,label:"디오리퀴드",keywords:"디오"},
+  "58":{x:26,y:83,w:5,h:5,label:"단종 프라임액상",keywords:"수리퀴드,스노우,러브"},
+  "60":{x:7,y:90,w:5,h:5,label:"기타제품들",keywords:""},
+  "61":{x:13,y:90,w:5,h:5,label:"폐호흡프리미엄액상",keywords:""},
+  "62":{x:20,y:90,w:5,h:5,label:"디오리퀴드",keywords:"디오"},
+  "63":{x:26,y:90,w:5,h:5,label:"퀸즈시리즈/리퀴드랩",keywords:"마피아퀸,사무라이퀸,아마조네스퀸,크루세이더퀸,리퀴드랩"},
+  "66":{x:50,y:76,w:5,h:5,label:"보관함",keywords:""},
+  "68":{x:32,y:76,w:5,h:5,label:"보관함",keywords:""},
+  "69":{x:43,y:83,w:5,h:5,label:"812시가",keywords:"812시가"},
+  "71":{x:50,y:83,w:5,h:5,label:"단종 액상",keywords:"단종액상"},
+  "72":{x:43,y:76,w:5,h:5,label:"AS",keywords:"명함,쿠폰"},
+  "74":{x:43,y:70,w:5,h:5,label:"AS",keywords:"AS기기,명함,쿠폰"},
+  "75":{x:32,y:70,w:5,h:5,label:"말론0.6옴팟",keywords:"말론0.6옴팟"},
+  "76":{x:37,y:76,w:5,h:5,label:"빈곳",keywords:""},
+  "77":{x:32,y:83,w:5,h:5,label:"리퀴드랩",keywords:"리퀴드랩액상"},
+  "78":{x:32,y:90,w:5,h:5,label:"무니코틴",keywords:""},
+  "79":{x:43,y:11,w:4,h:5,label:"PC",keywords:""},
+  "80":{x:50,y:6,w:4,h:5,label:"포스",keywords:""},
+  "81":{x:78,y:21,w:3,h:4,label:"각인기",keywords:""},
+  "82":{x:78,y:76,w:5,h:5,label:"일회용",keywords:"모스바"},
+  "83":{x:70,y:28,w:5,h:5,label:"케이스",keywords:"발라리안맥스프로스티그마화이트케이스,발라리안맥스프로컴튼베어케이스,발라리안맥스프로스티그마케이스블랙,말론케이스,발라리안맥스프로케이스"},
+  "84":{x:78,y:35,w:5,h:5,label:"립클링/일회용",keywords:"립클링"},
+  "85":{x:70,y:35,w:5,h:5,label:"각인용지",keywords:"각인용지"},
+  "87":{x:70,y:56,w:13,h:2,label:"일회용제품",keywords:""},
+  "88":{x:70,y:56,w:13,h:2,label:"일회용제품",keywords:""},
+  "89":{x:70,y:56,w:13,h:2,label:"일회용제품",keywords:""},
+  "90":{x:70,y:56,w:13,h:2,label:"일회용제품",keywords:"모스바,엘프바1%"},
+  "91":{x:65,y:56,w:5,h:5,label:"고농도제품",keywords:"2%액상"},
+  "92":{x:65,y:61,w:5,h:5,label:"에어릭스",keywords:"에어릭스"},
+  "93":{x:1,y:21,w:5,h:5,label:"화확물질작성 및 잡다",keywords:""},
+  "94":{x:1,y:28,w:5,h:5,label:"물티슈,곽티슈",keywords:""},
+  "95":{x:70,y:59,w:13,h:2,label:"일회용제품",keywords:"팜팜바,드래곤바"},
+  "96":{x:70,y:61,w:13,h:2,label:"일회용제품",keywords:"네스티원,카오린,엘프바10,000펌프,팜팜바"},
+  "97":{x:70,y:63,w:13,h:2,label:"일회용제품",keywords:"팜팜바"},
+  "98":{x:37,y:70,w:5,h:5,label:"빈곳",keywords:"말론0.6옴팟"}
 };
 
 let layout = loadLayout() || JSON.parse(JSON.stringify(DEFAULTS));
@@ -318,7 +330,7 @@ function render(){
       let nx = pos.x + pos.w + gap;
       let ny = pos.y;
       if(nx + pos.w > 100){ nx = 0; ny = Math.min(100 - pos.h, pos.y + pos.h + gap); }
-      layout[nextNum] = { x:nx, y:ny, w:pos.w, h:pos.h, label:pos.label };
+      layout[nextNum] = { x:nx, y:ny, w:pos.w, h:pos.h, label:pos.label, keywords:pos.keywords||"" };
       saveLayout();
       render();
     });
@@ -337,9 +349,28 @@ function render(){
       render();
     });
 
+    const kwHandle = document.createElement('div');
+    kwHandle.className = 'kw-handle' + (pos.keywords ? ' has-kw' : '');
+    kwHandle.textContent = '🔍';
+    kwHandle.title = '검색 키워드 편집';
+    box.appendChild(kwHandle);
+    kwHandle.addEventListener('pointerdown', (e)=>{ e.stopPropagation(); });
+    kwHandle.addEventListener('click', (e)=>{
+      e.stopPropagation();
+      const cur = pos.keywords || '';
+      const input = prompt(
+        num + '번 박스 검색 키워드 (쉼표로 구분, 화면엔 안 보이고 검색에만 씀)\n예: 말론 0.4옴, 폐호흡 코일, XROS 코일',
+        cur
+      );
+      if(input === null) return;
+      pos.keywords = input.trim();
+      saveLayout();
+      render();
+    });
+
     let lastDown = 0;
     box.addEventListener('pointerdown', (e)=>{
-      if(e.target === handle || e.target === dupHandle || e.target === delHandle) return;
+      if(e.target === handle || e.target === dupHandle || e.target === delHandle || e.target === kwHandle) return;
       if(label.contentEditable === 'true') return; // let text editing/caret placement work normally
 
       const now = Date.now();
@@ -413,10 +444,11 @@ function applySearch(){
   let firstMatch = null;
   boxEls.forEach(b=>{
     const num = b.dataset.num;
-    const label = (layout[num] && layout[num].label || '').toLowerCase();
+    const p = layout[num] || {};
+    const haystack = ((p.label||'') + ' ' + (p.keywords||'')).toLowerCase();
     b.classList.remove('dim','match');
     if(!q) return;
-    if(label.includes(q) || num.includes(q)){
+    if(haystack.includes(q) || num.includes(q)){
       b.classList.add('match');
       if(!firstMatch) firstMatch = b;
     }else{
@@ -514,7 +546,7 @@ document.getElementById('exportBtn').addEventListener('click', ()=>{
   const rounded = {};
   Object.keys(layout).forEach(k=>{
     const p = layout[k];
-    rounded[k] = {x:Math.round(p.x), y:Math.round(p.y), w:Math.round(p.w), h:Math.round(p.h), label:p.label||""};
+    rounded[k] = {x:Math.round(p.x), y:Math.round(p.y), w:Math.round(p.w), h:Math.round(p.h), label:p.label||"", keywords:p.keywords||""};
   });
   out.textContent = JSON.stringify({boxes:rounded, lines:lines}, null, 2);
   out.style.display = 'block';
