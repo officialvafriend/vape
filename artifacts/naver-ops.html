@@ -1,0 +1,588 @@
+<title>베이프렌드 네이버 콘솔</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --ground:#F4F6F8; --surface:#FFFFFF; --surface-2:#EAEEF2; --surface-3:#F8FAFB;
+  --line:#D9E0E7; --line-strong:#BAC5D0;
+  --ink:#161E26; --ink-2:#4B5865; --ink-3:#7B8896;
+  --accent:#0E7C86; --accent-ink:#0A5A62; --accent-soft:#DCEDEF;
+  --s-wait:#7C8A98; --s-lack:#9C6B12; --s-writing:#2A66A8; --s-review:#5F4CA8;
+  --s-approve:#B45A14; --s-done:#1B7048; --s-fix:#B0332A; --s-hold:#65727E;
+  --shadow:0 1px 2px rgba(22,30,38,.06), 0 8px 24px -12px rgba(22,30,38,.18);
+  --r:10px;
+  --mono:"IBM Plex Mono","SFMono-Regular",Menlo,monospace;
+  --sans:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --ground:#0E141A; --surface:#151D25; --surface-2:#1C262F; --surface-3:#121A21;
+    --line:#28343E; --line-strong:#3A4855;
+    --ink:#E3E9EF; --ink-2:#A6B4C2; --ink-3:#7A8896;
+    --accent:#3FAFBB; --accent-ink:#8ED6DE; --accent-soft:#0F3A40;
+    --s-wait:#94A2B0; --s-lack:#D0A03C; --s-writing:#6BA3DE; --s-review:#A08FE0;
+    --s-approve:#E09550; --s-done:#4FB585; --s-fix:#E0736A; --s-hold:#8794A1;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.6);
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0E141A; --surface:#151D25; --surface-2:#1C262F; --surface-3:#121A21;
+  --line:#28343E; --line-strong:#3A4855;
+  --ink:#E3E9EF; --ink-2:#A6B4C2; --ink-3:#7A8896;
+  --accent:#3FAFBB; --accent-ink:#8ED6DE; --accent-soft:#0F3A40;
+  --s-wait:#94A2B0; --s-lack:#D0A03C; --s-writing:#6BA3DE; --s-review:#A08FE0;
+  --s-approve:#E09550; --s-done:#4FB585; --s-fix:#E0736A; --s-hold:#8794A1;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.6);
+}
+*{box-sizing:border-box}
+body{background:var(--ground);color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.6;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+.wrap{max-width:1240px;margin:0 auto;padding:20px 20px 64px}
+
+/* header */
+.top{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end;justify-content:space-between;padding-bottom:16px;border-bottom:1px solid var(--line)}
+.brand h1{margin:0;font-size:19px;font-weight:600;letter-spacing:-.01em}
+.brand .eyebrow{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.10em;text-transform:uppercase;color:var(--accent);margin:0 0 3px}
+.brand .sub{margin:4px 0 0;font-size:12.5px;color:var(--ink-3)}
+.ctrls{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.field{display:flex;flex-direction:column;gap:4px}
+.field label{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)}
+select,input[type=text],input[type=date],textarea{background:var(--surface);border:1px solid var(--line-strong);border-radius:8px;padding:7px 10px;min-width:0}
+textarea{width:100%;resize:vertical;line-height:1.65}
+
+/* notice */
+.notice{display:flex;gap:10px;align-items:flex-start;margin-top:14px;padding:10px 13px;border-radius:var(--r);border:1px solid var(--line);background:var(--surface-3);font-size:12.5px;color:var(--ink-2)}
+.notice b{color:var(--ink);font-weight:600}
+.notice .dot{width:7px;height:7px;border-radius:50%;background:var(--s-lack);margin-top:7px;flex:none}
+.notice.ok .dot{background:var(--s-done)}
+
+/* pipeline */
+.pipe{display:flex;gap:8px;overflow-x:auto;padding:16px 0 4px;scrollbar-width:thin}
+.chip{flex:none;display:flex;align-items:baseline;gap:8px;padding:8px 13px;border-radius:99px;border:1px solid var(--line);background:var(--surface);cursor:pointer;transition:border-color .12s,background .12s}
+.chip:hover{border-color:var(--line-strong)}
+.chip[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.chip .nm{font-size:12.5px;font-weight:500;white-space:nowrap}
+.chip .ct{font-family:var(--mono);font-size:12px;font-weight:600;font-variant-numeric:tabular-nums;color:var(--ink-3)}
+.chip[aria-pressed="true"] .ct{color:var(--accent-ink)}
+.chip .sq{width:8px;height:8px;border-radius:2px;align-self:center}
+
+/* layout */
+.cols{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:18px;margin-top:14px;align-items:start}
+@media (max-width:940px){.cols{grid-template-columns:1fr}}
+
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
+.panel>header{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 15px;border-bottom:1px solid var(--line)}
+.panel>header h2{margin:0;font-size:13px;font-weight:600}
+.panel>header .meta{font-family:var(--mono);font-size:11px;color:var(--ink-3);font-variant-numeric:tabular-nums}
+
+/* task rows */
+.rows{display:flex;flex-direction:column}
+.row{display:grid;grid-template-columns:auto 1fr auto;gap:4px 12px;align-items:center;padding:12px 15px;border-bottom:1px solid var(--line);cursor:pointer;text-align:left;background:none;border-left:0;border-right:0;border-top:0;width:100%}
+.row:last-child{border-bottom:0}
+.row:hover{background:var(--surface-3)}
+.row[aria-current="true"]{background:var(--accent-soft)}
+.row .stripe{width:3px;height:30px;border-radius:2px;grid-row:1/3}
+.row .ttl{font-size:13.5px;font-weight:500;line-height:1.45}
+.row .sub{grid-column:2;font-family:var(--mono);font-size:11px;color:var(--ink-3);display:flex;gap:9px;flex-wrap:wrap;font-variant-numeric:tabular-nums}
+.row .right{grid-row:1/3;display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+.badge{font-size:11px;font-weight:600;padding:2px 8px;border-radius:99px;white-space:nowrap;border:1px solid}
+.due{font-family:var(--mono);font-size:11px;color:var(--ink-3);font-variant-numeric:tabular-nums}
+.due.over{color:var(--s-fix);font-weight:600}
+.empty{padding:34px 16px;text-align:center;color:var(--ink-3);font-size:13px}
+
+/* detail */
+.detail{position:sticky;top:16px}
+.dbody{padding:15px;display:flex;flex-direction:column;gap:16px}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:12.5px}
+.kv dt{font-family:var(--mono);font-size:11px;letter-spacing:.04em;color:var(--ink-3);text-transform:uppercase}
+.kv dd{margin:0;color:var(--ink-2)}
+.sect{display:flex;flex-direction:column;gap:9px}
+.sect h3{margin:0;font-size:12px;font-weight:600;display:flex;align-items:center;gap:8px}
+.sect h3 .n{font-family:var(--mono);font-size:11px;color:var(--ink-3);font-weight:500;font-variant-numeric:tabular-nums}
+.checks{display:flex;flex-direction:column;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.chk{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:start;padding:9px 11px;background:var(--surface);font-size:12.5px}
+.chk input{margin-top:3px;accent-color:var(--accent);width:15px;height:15px}
+.chk .q{line-height:1.5}
+.chk .fail{display:block;font-size:11px;color:var(--ink-3);margin-top:2px}
+.chk .req{font-family:var(--mono);font-size:10px;padding:1px 6px;border-radius:4px;border:1px solid var(--line-strong);color:var(--ink-3);white-space:nowrap}
+.chk .req.on{color:var(--s-fix);border-color:currentColor}
+
+.gate{border:1px solid var(--line);border-radius:8px;padding:12px;background:var(--surface-3);display:flex;flex-direction:column;gap:10px}
+.gate .hd{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.gate .hd strong{font-size:12.5px}
+.gate p{margin:0;font-size:12px;color:var(--ink-2)}
+.btns{display:flex;gap:8px;flex-wrap:wrap}
+button.b{border:1px solid var(--line-strong);background:var(--surface);border-radius:8px;padding:7px 13px;font-size:12.5px;font-weight:500;cursor:pointer;transition:border-color .12s,background .12s}
+button.b:hover:not(:disabled){border-color:var(--accent);color:var(--accent-ink)}
+button.b:disabled{opacity:.42;cursor:not-allowed}
+button.b.pri{background:var(--accent);border-color:var(--accent);color:#fff}
+button.b.pri:hover:not(:disabled){background:var(--accent-ink);border-color:var(--accent-ink);color:#fff}
+.msg{font-size:12px;padding:8px 10px;border-radius:7px;border:1px solid var(--line);background:var(--surface)}
+.msg.err{border-color:var(--s-fix);color:var(--s-fix)}
+.msg.ok{border-color:var(--s-done);color:var(--s-done)}
+.draft{font-family:var(--sans);font-size:12.5px;min-height:120px}
+.hint{font-size:11.5px;color:var(--ink-3);line-height:1.55}
+.foot{margin-top:22px;padding-top:14px;border-top:1px solid var(--line);font-size:11.5px;color:var(--ink-3);display:flex;gap:16px;flex-wrap:wrap}
+.foot code{font-family:var(--mono);font-size:11px}
+</style>
+
+<div class="wrap">
+  <div class="top">
+    <div class="brand">
+      <p class="eyebrow">Naver Operations</p>
+      <h1>베이프렌드 네이버 업무 콘솔</h1>
+      <p class="sub">지점별 네이버 플레이스·블로그 업무를 한 곳에서 관리하고, 승인 없이는 게시완료로 넘어가지 않게 합니다.</p>
+    </div>
+    <div class="ctrls">
+      <div class="field">
+        <label for="fBranch">지점</label>
+        <select id="fBranch"></select>
+      </div>
+      <div class="field">
+        <label for="fChannel">채널</label>
+        <select id="fChannel">
+          <option value="ALL">전체</option>
+          <option>네이버 플레이스</option>
+          <option>네이버 블로그</option>
+          <option>리뷰</option>
+          <option>검색관리</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="notice" id="notice"><span class="dot"></span><span id="noticeText">연결 상태를 확인하는 중입니다…</span></div>
+
+  <div class="pipe" id="pipe"></div>
+
+  <div class="cols">
+    <section class="panel">
+      <header>
+        <h2>업무 목록</h2>
+        <span class="meta" id="listMeta"></span>
+      </header>
+      <div class="rows" id="rows"></div>
+    </section>
+
+    <section class="panel detail">
+      <header>
+        <h2>업무 상세 · 검수</h2>
+        <span class="meta" id="detailMeta"></span>
+      </header>
+      <div class="dbody" id="detail"></div>
+    </section>
+  </div>
+
+  <div class="foot">
+    <span>기준문서: <code>00_회사및운영기준</code> · <code>10_네이버운영기준</code></span>
+    <span>상태값 8종은 <code>10_네이버운영기준 7항</code>을 따릅니다</span>
+  </div>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+var STATUS = [
+  {k:"대기",      c:"--s-wait"},
+  {k:"자료부족",  c:"--s-lack"},
+  {k:"작성중",    c:"--s-writing"},
+  {k:"검수중",    c:"--s-review"},
+  {k:"승인대기",  c:"--s-approve"},
+  {k:"게시완료",  c:"--s-done"},
+  {k:"수정필요",  c:"--s-fix"},
+  {k:"보류",      c:"--s-hold"}
+];
+var DONE = "게시완료";
+var STAFF_MAX = ["대기","자료부족","작성중","검수중","승인대기","수정필요","보류"];
+
+/* 데모 데이터: db가 비어 있거나 연결되지 않았을 때만 화면에 표시됩니다.
+   지점 2곳은 구조 확인용 예시이며 실제 지점이 아닙니다. */
+var DEMO = {
+  branches:[
+    {id:"BR-001", name:"예시지점 A", status:"운영중", address:"주소 확인 필요", phone:"확인 필요", hours:"확인 필요", holiday:"확인 필요", keyword:"확인 필요", example:true},
+    {id:"BR-002", name:"예시지점 B", status:"운영중", address:"주소 확인 필요", phone:"확인 필요", hours:"확인 필요", holiday:"확인 필요", keyword:"확인 필요", example:true}
+  ],
+  tasks:[
+    {id:"TSK-0001", branchId:"BR-001", channel:"네이버 플레이스", taskType:"영업시간 수정", title:"영업시간 변경 반영", request:"영업시간이 바뀌었다는 지점 요청 반영", due:"2026-09-12", priority:"높음", owner:"확인 필요", status:"승인대기", checks:{}, draft:"", example:true},
+    {id:"TSK-0002", branchId:"BR-001", channel:"네이버 블로그", taskType:"게시물 작성", title:"9월 신규 입고 안내", request:"신규 입고 상품 소개 게시물", due:"2026-09-15", priority:"보통", owner:"확인 필요", status:"작성중", checks:{}, draft:"", example:true},
+    {id:"TSK-0003", branchId:"BR-002", channel:"리뷰", taskType:"리뷰 답변", title:"미답변 리뷰 3건 답변", request:"최근 2주 미답변 리뷰 답변 작성", due:"2026-09-11", priority:"보통", owner:"확인 필요", status:"자료부족", checks:{}, draft:"", example:true},
+    {id:"TSK-0004", branchId:"BR-002", channel:"검색관리", taskType:"키워드 점검", title:"대표키워드 노출 점검", request:"대표키워드 노출 순위 확인 후 기록", due:"2026-09-20", priority:"낮음", owner:"확인 필요", status:"대기", checks:{}, draft:"", example:true}
+  ],
+  checklist:[
+    {id:"QC-01", cat:"사실", q:"지점명이 해당 지점과 일치하는가?", required:true,  onFail:"게시 중단 후 지점정보 확인"},
+    {id:"QC-02", cat:"사실", q:"주소가 지점정보와 일치하는가?", required:true,  onFail:"게시 중단 후 지점정보 확인"},
+    {id:"QC-03", cat:"사실", q:"전화번호가 지점정보와 일치하는가?", required:true,  onFail:"게시 중단 후 지점정보 확인"},
+    {id:"QC-04", cat:"사실", q:"영업시간·정기휴무가 지점정보와 일치하는가?", required:true, onFail:"게시 중단 후 지점정보 확인"},
+    {id:"QC-05", cat:"사실", q:"다른 지점 정보가 섞이지 않았는가?", required:true, onFail:"즉시 게시 중단, 승인담당자 확인"},
+    {id:"QC-06", cat:"사실", q:"가격 정보가 확인된 자료에 근거하는가?", required:true, onFail:"추측 금지, 자료부족으로 상태 변경"},
+    {id:"QC-07", cat:"사실", q:"행사기간이 명확히 확인되었는가?", required:true, onFail:"불명확하면 게시하지 않음"},
+    {id:"QC-08", cat:"사실", q:"재고 정보를 추측해서 쓰지 않았는가?", required:true, onFail:"추측 금지, 자료부족으로 상태 변경"},
+    {id:"QC-09", cat:"자료", q:"사진과 본문 내용이 일치하는가?", required:true, onFail:"사진 교체 또는 본문 수정"},
+    {id:"QC-10", cat:"자료", q:"지도 링크가 해당 지점으로 연결되는가?", required:true, onFail:"링크 수정"},
+    {id:"QC-11", cat:"자료", q:"전화·예약 링크가 정상 작동하는가?", required:false, onFail:"링크 수정"},
+    {id:"QC-12", cat:"표현", q:"키워드가 과다 반복되지 않았는가?", required:false, onFail:"본문 수정"},
+    {id:"QC-13", cat:"표현", q:"과장 표현이 없는가?", required:true, onFail:"본문 수정"},
+    {id:"QC-14", cat:"표현", q:"건강 효능을 주장하는 표현이 없는가?", required:true, onFail:"즉시 삭제, 담당자 전달"},
+    {id:"QC-15", cat:"표현", q:"미성년자 관련 문제 소지가 없는가?", required:true, onFail:"자동 처리 금지, 담당자 즉시 전달"},
+    {id:"QC-16", cat:"승인", q:"게시 전 승인담당자 승인을 받았는가?", required:true, onFail:"승인 전 게시 금지"}
+  ]
+};
+
+var state = {
+  branches: DEMO.branches.slice(),
+  checklist: DEMO.checklist.slice(),
+  tasks: {},
+  approvals: {},
+  seeded: false,
+  selBranch: "ALL",
+  selChannel: "ALL",
+  selStatus: "ALL",
+  selTask: "TSK-0001",
+  msg: null,
+  drafting: false
+};
+DEMO.tasks.forEach(function(t){ state.tasks[t.id] = t; });
+
+var db = null, sampleFn = null;
+
+/* ---------- helpers ---------- */
+function el(id){ return document.getElementById(id); }
+function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g, function(c){
+  return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); }
+function statusMeta(k){ for(var i=0;i<STATUS.length;i++){ if(STATUS[i].k===k) return STATUS[i]; } return STATUS[0]; }
+function branchOf(id){ for(var i=0;i<state.branches.length;i++){ if(state.branches[i].id===id) return state.branches[i]; } return null; }
+function displayStatus(t){
+  var a = state.approvals[t.id];
+  if(a && a.decision === "approved") return DONE;
+  return t.status || "대기";
+}
+function taskList(){
+  var out = [];
+  for(var k in state.tasks){ if(Object.prototype.hasOwnProperty.call(state.tasks,k)) out.push(state.tasks[k]); }
+  out.sort(function(a,b){ return String(a.due||"9999").localeCompare(String(b.due||"9999")); });
+  return out;
+}
+function filtered(){
+  return taskList().filter(function(t){
+    if(state.selBranch !== "ALL" && t.branchId !== state.selBranch) return false;
+    if(state.selChannel !== "ALL" && t.channel !== state.selChannel) return false;
+    if(state.selStatus !== "ALL" && displayStatus(t) !== state.selStatus) return false;
+    return true;
+  });
+}
+function isExampleData(){ return !state.seeded; }
+function today(){ return new Date().toISOString().slice(0,10); }
+
+/* ---------- render ---------- */
+function renderNotice(){
+  var n = el("notice"), t = el("noticeText");
+  var parts = [];
+  if(db){ n.className = "notice ok"; parts.push("<b>공유 저장소 연결됨.</b> 이 페이지를 여는 모든 지점이 같은 데이터를 봅니다."); }
+  else { n.className = "notice"; parts.push("<b>공유 저장소에 연결되지 않았습니다.</b> 화면 확인용으로만 동작하며 변경 내용이 저장되지 않습니다."); }
+  if(isExampleData()) parts.push("표시된 지점·업무는 구조 확인용 <b>예시</b>이며 실제 베이프렌드 데이터가 아닙니다.");
+  if(!sampleFn) parts.push("초안 작성 기능은 이 화면에서 사용할 수 없습니다.");
+  t.innerHTML = parts.join(" ");
+}
+
+function renderBranchSelect(){
+  var s = el("fBranch");
+  var cur = state.selBranch;
+  var html = '<option value="ALL">전체 (본사 보기)</option>';
+  state.branches.forEach(function(b){
+    html += '<option value="'+esc(b.id)+'">'+esc(b.name)+'</option>';
+  });
+  s.innerHTML = html;
+  s.value = cur;
+}
+
+function renderPipe(){
+  var all = taskList().filter(function(t){
+    if(state.selBranch !== "ALL" && t.branchId !== state.selBranch) return false;
+    if(state.selChannel !== "ALL" && t.channel !== state.selChannel) return false;
+    return true;
+  });
+  var html = '<button class="chip" type="button" data-st="ALL" aria-pressed="'+(state.selStatus==="ALL")+'">'+
+             '<span class="nm">전체</span><span class="ct">'+all.length+'</span></button>';
+  STATUS.forEach(function(s){
+    var n = all.filter(function(t){ return displayStatus(t) === s.k; }).length;
+    html += '<button class="chip" type="button" data-st="'+esc(s.k)+'" aria-pressed="'+(state.selStatus===s.k)+'">'+
+            '<span class="sq" style="background:var('+s.c+')"></span>'+
+            '<span class="nm">'+esc(s.k)+'</span><span class="ct">'+n+'</span></button>';
+  });
+  el("pipe").innerHTML = html;
+}
+
+function renderRows(){
+  var list = filtered();
+  el("listMeta").textContent = list.length + "건";
+  if(!list.length){ el("rows").innerHTML = '<p class="empty">조건에 맞는 업무가 없습니다.</p>'; return; }
+  var html = "";
+  list.forEach(function(t){
+    var ds = displayStatus(t), sm = statusMeta(ds), b = branchOf(t.branchId);
+    var over = t.due && t.due < today() && ds !== DONE;
+    html += '<button class="row" type="button" data-id="'+esc(t.id)+'" aria-current="'+(state.selTask===t.id)+'">'+
+      '<span class="stripe" style="background:var('+sm.c+')"></span>'+
+      '<span class="ttl">'+esc(t.title)+'</span>'+
+      '<span class="right">'+
+        '<span class="badge" style="color:var('+sm.c+');border-color:var('+sm.c+')">'+esc(ds)+'</span>'+
+        '<span class="due'+(over?" over":"")+'">'+esc(t.due||"기한 미정")+'</span>'+
+      '</span>'+
+      '<span class="sub"><span>'+esc(t.id)+'</span><span>'+esc(b?b.name:t.branchId)+'</span><span>'+esc(t.channel)+'</span><span>'+esc(t.taskType||"")+'</span></span>'+
+    '</button>';
+  });
+  el("rows").innerHTML = html;
+}
+
+function renderDetail(){
+  var t = state.tasks[state.selTask];
+  var host = el("detail");
+  if(!t){ el("detailMeta").textContent=""; host.innerHTML = '<p class="empty">왼쪽에서 업무를 선택하세요.</p>'; return; }
+  var b = branchOf(t.branchId), ds = displayStatus(t), sm = statusMeta(ds);
+  var ap = state.approvals[t.id];
+  el("detailMeta").textContent = t.id;
+
+  var req = state.checklist.filter(function(c){ return c.required; });
+  var reqDone = req.filter(function(c){ return t.checks && t.checks[c.id]; }).length;
+  var allDone = state.checklist.filter(function(c){ return t.checks && t.checks[c.id]; }).length;
+  var gatePass = reqDone === req.length;
+
+  var h = "";
+
+  h += '<dl class="kv">'+
+    '<dt>지점</dt><dd>'+esc(b?b.name:t.branchId)+' <span style="color:var(--ink-3)">'+esc(t.branchId)+'</span></dd>'+
+    '<dt>채널</dt><dd>'+esc(t.channel)+' · '+esc(t.taskType||"-")+'</dd>'+
+    '<dt>요청</dt><dd>'+esc(t.request||"-")+'</dd>'+
+    '<dt>마감</dt><dd>'+esc(t.due||"미정")+' · 우선순위 '+esc(t.priority||"보통")+'</dd>'+
+    '<dt>담당</dt><dd>'+esc(t.owner||"확인 필요")+'</dd>'+
+    '<dt>상태</dt><dd><span class="badge" style="color:var('+sm.c+');border-color:var('+sm.c+')">'+esc(ds)+'</span></dd>'+
+  '</dl>';
+
+  /* 검수 체크리스트 */
+  h += '<div class="sect"><h3>검수항목 <span class="n">'+allDone+' / '+state.checklist.length+' · 필수 '+reqDone+'/'+req.length+'</span></h3><div class="checks">';
+  state.checklist.forEach(function(c){
+    var on = !!(t.checks && t.checks[c.id]);
+    h += '<label class="chk">'+
+      '<input type="checkbox" data-chk="'+esc(c.id)+'"'+(on?" checked":"")+(ds===DONE?" disabled":"")+'>'+
+      '<span class="q">'+esc(c.q)+'<span class="fail">실패 시 · '+esc(c.onFail)+'</span></span>'+
+      '<span class="req'+(c.required?" on":"")+'">'+(c.required?"필수":"선택")+'</span>'+
+    '</label>';
+  });
+  h += '</div></div>';
+
+  /* 초안 */
+  h += '<div class="sect"><h3>게시 초안</h3>';
+  h += '<textarea class="draft" id="draftBox" placeholder="초안을 직접 작성하거나, 아래 버튼으로 기준에 맞춘 초안을 생성하세요."'+(ds===DONE?" disabled":"")+'>'+esc(t.draft||"")+'</textarea>';
+  h += '<div class="btns">';
+  if(sampleFn) h += '<button class="b" type="button" id="btnDraft"'+(state.drafting||ds===DONE?" disabled":"")+'>'+(state.drafting?"작성 중…":"기준에 맞춰 초안 작성")+'</button>';
+  h += '<button class="b" type="button" id="btnSaveDraft"'+(ds===DONE?" disabled":"")+'>초안 저장</button>';
+  h += '</div>';
+  h += '<p class="hint">초안은 참고용입니다. 가격·재고·행사기간은 확인된 자료가 없으면 <b>확인 필요</b>로 남습니다.</p>';
+  h += '</div>';
+
+  /* 상태 변경 + 승인 게이트 */
+  h += '<div class="sect"><h3>상태 변경</h3><div class="btns">';
+  STAFF_MAX.forEach(function(k){
+    h += '<button class="b" type="button" data-st-set="'+esc(k)+'"'+(ds===DONE||t.status===k?" disabled":"")+'>'+esc(k)+'</button>';
+  });
+  h += '</div><p class="hint">담당자는 <b>승인대기</b>까지만 올릴 수 있습니다. 게시완료는 승인 권한이 있는 사람만 처리합니다.</p></div>';
+
+  h += '<div class="gate">';
+  h += '<div class="hd"><strong>승인 및 게시</strong><span class="badge" style="color:var('+(gatePass?"--s-done":"--s-fix")+');border-color:var('+(gatePass?"--s-done":"--s-fix")+')">'+(gatePass?"필수 검수 통과":"필수 검수 미완료")+'</span></div>';
+  if(ap && ap.decision === "approved"){
+    h += '<p>'+esc(ap.approver||"승인자 미기재")+' 승인 · '+esc(ap.decidedAt||"")+'</p>';
+    if(ap.postUrl) h += '<p>게시 URL · <span style="word-break:break-all">'+esc(ap.postUrl)+'</span></p>';
+    h += '<div class="btns"><button class="b" type="button" id="btnUnapprove">승인 취소</button></div>';
+  } else {
+    h += '<p>필수 검수 항목이 모두 통과해야 게시완료로 넘길 수 있습니다.</p>';
+    h += '<div class="field"><label for="apName">승인자</label><input type="text" id="apName" placeholder="승인자 이름"></div>';
+    h += '<div class="field"><label for="apUrl">게시 URL</label><input type="text" id="apUrl" placeholder="https://"></div>';
+    h += '<div class="btns"><button class="b pri" type="button" id="btnApprove"'+(gatePass?"":" disabled")+'>승인하고 게시완료</button></div>';
+    h += '<p class="hint">승인 기록은 편집 권한이 있는 멤버만 저장할 수 있습니다. 권한이 없으면 저장이 거부됩니다.</p>';
+  }
+  h += '</div>';
+
+  if(state.msg) h += '<p class="msg '+esc(state.msg.kind)+'">'+esc(state.msg.text)+'</p>';
+
+  host.innerHTML = h;
+}
+
+function render(){ renderNotice(); renderBranchSelect(); renderPipe(); renderRows(); renderDetail(); }
+
+/* ---------- persistence ---------- */
+function saveTask(t){
+  t.updatedAt = new Date().toISOString();
+  state.tasks[t.id] = t;
+  render();
+  if(!db) return;
+  db.doc("tasks/"+t.id).set(t).catch(function(e){ flash("업무 저장 실패 · "+e.code, "err"); });
+}
+function flash(text, kind){ state.msg = {text:text, kind:kind||""}; renderDetail();
+  setTimeout(function(){ if(state.msg && state.msg.text===text){ state.msg=null; renderDetail(); } }, 6000); }
+
+/* ---------- events ---------- */
+el("fBranch").addEventListener("change", function(e){ state.selBranch = e.target.value; render(); });
+el("fChannel").addEventListener("change", function(e){ state.selChannel = e.target.value; render(); });
+el("pipe").addEventListener("click", function(e){
+  var c = e.target.closest("[data-st]"); if(!c) return;
+  state.selStatus = c.getAttribute("data-st"); render();
+});
+el("rows").addEventListener("click", function(e){
+  var r = e.target.closest("[data-id]"); if(!r) return;
+  state.selTask = r.getAttribute("data-id"); state.msg = null; render();
+});
+
+el("detail").addEventListener("change", function(e){
+  var t = state.tasks[state.selTask]; if(!t) return;
+  var id = e.target.getAttribute && e.target.getAttribute("data-chk");
+  if(id){
+    var copy = JSON.parse(JSON.stringify(t));
+    copy.checks = copy.checks || {};
+    copy.checks[id] = e.target.checked;
+    saveTask(copy);
+  }
+});
+
+el("detail").addEventListener("click", function(e){
+  var t = state.tasks[state.selTask]; if(!t) return;
+  var btn = e.target.closest("button"); if(!btn) return;
+
+  var setSt = btn.getAttribute("data-st-set");
+  if(setSt){
+    var c1 = JSON.parse(JSON.stringify(t)); c1.status = setSt; saveTask(c1); return;
+  }
+  if(btn.id === "btnSaveDraft"){
+    var box = el("draftBox"); if(!box) return;
+    var c2 = JSON.parse(JSON.stringify(t)); c2.draft = box.value; saveTask(c2);
+    flash("초안을 저장했습니다.", "ok"); return;
+  }
+  if(btn.id === "btnDraft"){ makeDraft(t); return; }
+  if(btn.id === "btnApprove"){ approve(t); return; }
+  if(btn.id === "btnUnapprove"){ unapprove(t); return; }
+});
+
+/* ---------- approval (admin-gated by db rules) ---------- */
+function approve(t){
+  var nameEl = el("apName"), urlEl = el("apUrl");
+  var rec = {
+    taskId: t.id,
+    decision: "approved",
+    approver: (nameEl && nameEl.value.trim()) || "",
+    postUrl: (urlEl && urlEl.value.trim()) || "",
+    decidedAt: new Date().toISOString().slice(0,16).replace("T"," ")
+  };
+  if(!rec.approver){ flash("승인자 이름을 입력하세요.", "err"); return; }
+  if(!db){ state.approvals[t.id] = rec; flash("저장소에 연결되지 않아 화면에만 반영되었습니다.", "err"); render(); return; }
+  db.doc("approvals/"+t.id).set(rec).then(function(){
+    flash("승인 처리되었습니다. 상태가 게시완료로 바뀝니다.", "ok");
+  }).catch(function(e){
+    if(e && e.code === "invalid_argument") flash("승인 권한이 없습니다. 편집 가능 등급 멤버만 승인할 수 있습니다.", "err");
+    else flash("승인 저장 실패 · " + (e && e.code), "err");
+  });
+}
+function unapprove(t){
+  if(!db){ delete state.approvals[t.id]; render(); return; }
+  db.doc("approvals/"+t.id).delete().then(function(){
+    flash("승인을 취소했습니다.", "ok");
+  }).catch(function(e){
+    if(e && e.code === "invalid_argument") flash("승인 취소 권한이 없습니다.", "err");
+    else flash("승인 취소 실패 · " + (e && e.code), "err");
+  });
+}
+
+/* ---------- draft via Claude ---------- */
+function makeDraft(t){
+  if(!sampleFn) return;
+  var b = branchOf(t.branchId) || {};
+  state.drafting = true; renderDetail();
+  var known = [
+    "지점명: " + (b.name || "확인 필요"),
+    "주소: " + (b.address || "확인 필요"),
+    "전화번호: " + (b.phone || "확인 필요"),
+    "영업시간: " + (b.hours || "확인 필요"),
+    "정기휴무: " + (b.holiday || "확인 필요"),
+    "대표키워드: " + (b.keyword || "확인 필요")
+  ].join("\n");
+  var prompt =
+    "당신은 베이프렌드(전자담배 매장)의 네이버 채널 담당자입니다. 아래 업무의 게시 초안을 한국어로 작성하세요.\n\n" +
+    "[업무]\n채널: " + t.channel + "\n업무유형: " + (t.taskType||"") + "\n제목: " + t.title + "\n요청내용: " + (t.request||"") + "\n\n" +
+    "[확인된 지점 정보]\n" + known + "\n\n" +
+    "[반드시 지킬 규칙]\n" +
+    "1. 위에 '확인 필요'로 표시된 항목은 절대 지어내지 말고, 본문에도 '확인 필요'라고 그대로 남긴다.\n" +
+    "2. 가격, 재고, 행사기간은 확인된 자료가 없으므로 추측해서 쓰지 않는다.\n" +
+    "3. 다른 지점의 정보를 섞지 않는다.\n" +
+    "4. 건강 효능을 주장하는 표현을 쓰지 않는다.\n" +
+    "5. 미성년자와 연관될 수 있는 표현을 쓰지 않는다.\n" +
+    "6. 과장 표현과 키워드 과다 반복을 피한다.\n\n" +
+    "본문만 출력하세요. 설명이나 머리말은 붙이지 마세요.";
+
+  sampleFn(prompt, { modelTier:"default", onText: function(ev){
+    var box = el("draftBox"); if(box) box.value = ev.text;
+  }}).then(function(res){
+    state.drafting = false;
+    var c = JSON.parse(JSON.stringify(t));
+    c.draft = res.text;
+    if(c.status === "대기") c.status = "작성중";
+    saveTask(c);
+    flash("초안을 생성했습니다. 검수항목을 확인한 뒤 승인 요청하세요.", "ok");
+  }).catch(function(e){
+    state.drafting = false;
+    var code = e && e.code;
+    if(code === "not_granted") flash("초안 작성 권한이 없습니다.", "err");
+    else if(code === "rate_limited") flash("요청이 많습니다. 잠시 후 다시 시도하세요.", "err");
+    else if(code === "cancelled") { renderDetail(); return; }
+    else flash("초안 작성 실패 · " + (code||"알 수 없음"), "err");
+  });
+}
+
+/* ---------- boot ---------- */
+render();
+
+claude.use("db").then(function(d){
+  if(!d) { renderNotice(); return; }
+  db = d;
+  renderNotice();
+
+  d.doc("master/branches").onSnapshot(function(snap){
+    if(snap.exists){
+      var v = snap.data();
+      if(v && v.items && v.items.length){ state.branches = v.items; state.seeded = true; }
+    }
+    render();
+  }, function(){});
+
+  d.doc("master/checklist").onSnapshot(function(snap){
+    if(snap.exists){
+      var v = snap.data();
+      if(v && v.items && v.items.length){ state.checklist = v.items; }
+    }
+    render();
+  }, function(){});
+
+  d.collection("tasks").onSnapshot(function(snap){
+    var docs = snap.docs || [];
+    if(docs.length){
+      var next = {};
+      docs.forEach(function(doc){ var v = doc.data(); if(v && v.id) next[v.id] = v; });
+      state.tasks = next; state.seeded = true;
+      if(!state.tasks[state.selTask]){ var ks = Object.keys(next); state.selTask = ks.length?next[ks[0]].id:null; }
+    }
+    render();
+  }, function(){});
+
+  d.collection("approvals").onSnapshot(function(snap){
+    var next = {};
+    (snap.docs||[]).forEach(function(doc){ var v = doc.data(); if(v && v.taskId) next[v.taskId] = v; });
+    state.approvals = next;
+    render();
+  }, function(){});
+}).catch(function(){ renderNotice(); });
+
+claude.use("sample").then(function(s){ sampleFn = s; render(); }).catch(function(){});
+
+})();
+</script>
