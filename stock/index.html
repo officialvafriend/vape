@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="robots" content="noindex">
+<title>아침 재고보고 (시험판)</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<style>
+  :root{--bg:#f2f4f6;--card:#fff;--ink:#191f28;--sub:#8b95a1;--line:#e5e8eb;--blue:#3182f6;--green:#03b26c;--red:#f04452;--orange:#ff8a00}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font-family:"Pretendard Variable",Pretendard,"Malgun Gothic",sans-serif;-webkit-font-smoothing:antialiased;word-break:keep-all}
+  button,input{font:inherit;color:inherit}
+  button{border:0;background:none;cursor:pointer}
+  .wrap{max-width:640px;margin:0 auto;padding:16px 16px 120px}
+  .top{display:flex;align-items:center;gap:8px;padding:6px 2px 14px}
+  .top b{font-size:20px;font-weight:800}
+  .chip{background:#e8f3ff;color:var(--blue);font-weight:700;font-size:13px;padding:5px 10px;border-radius:99px}
+  .top .d{margin-left:auto;color:var(--sub);font-size:14px}
+  .card{background:var(--card);border-radius:20px;padding:18px;margin-top:12px}
+  .h{font-size:17px;font-weight:800}
+  .s{font-size:13.5px;color:var(--sub);margin-top:4px;line-height:1.5}
+  .who{display:flex;gap:8px;margin-top:12px}
+  .who input{flex:1;height:52px;border:1.5px solid var(--line);border-radius:14px;padding:0 14px;font-size:17px;background:#f9fafb}
+  .prog{display:flex;align-items:center;gap:10px;margin-top:12px}
+  .bar{flex:1;height:8px;background:#eef1f4;border-radius:99px;overflow:hidden}
+  .bar i{display:block;height:100%;background:var(--blue);border-radius:99px;transition:.2s}
+  .prog span{font-size:14px;font-weight:700;color:var(--blue);min-width:64px;text-align:right}
+  .grp{font-size:14px;font-weight:800;color:var(--sub);margin:22px 4px 8px}
+  .it{display:flex;align-items:center;gap:10px;background:var(--card);border-radius:16px;padding:12px 12px 12px 16px;margin-top:8px;border:2px solid transparent}
+  .it.done{border-color:#d5ecff}
+  .it.warn{border-color:#ffd2d7}
+  .it .nm{flex:1;min-width:0}
+  .it .nm b{display:block;font-size:16px;font-weight:700}
+  .it .nm span{font-size:12.5px;color:var(--sub)}
+  .it .nm span em{font-style:normal;font-weight:700}
+  .up{color:var(--red)}.dn{color:var(--blue)}
+  .ctl{display:flex;align-items:center;gap:4px}
+  .ctl button{width:44px;height:48px;border-radius:12px;background:#f2f4f6;font-size:22px;font-weight:700}
+  .ctl input{width:70px;height:48px;border:1.5px solid var(--line);border-radius:12px;text-align:center;font-size:20px;font-weight:800;background:#fff}
+  .ctl input:focus{outline:none;border-color:var(--blue)}
+  .same{height:48px;padding:0 10px;border-radius:12px;background:#e8f3ff;color:var(--blue);font-size:13px;font-weight:700;white-space:nowrap}
+  .foot{position:fixed;left:0;right:0;bottom:0;background:linear-gradient(transparent,var(--bg) 30%);padding:24px 16px 16px}
+  .send{display:block;width:100%;max-width:608px;margin:0 auto;height:58px;border-radius:16px;background:var(--blue);color:#fff;font-size:18px;font-weight:800}
+  .send:disabled{background:#c9d4e0}
+  .note{text-align:center;color:var(--sub);font-size:12.5px;margin-top:22px;line-height:1.6}
+  .toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%) translateY(10px);background:#191f28;color:#fff;padding:14px 18px;border-radius:14px;font-weight:700;opacity:0;transition:.25s;pointer-events:none;z-index:9;max-width:90%;text-align:center}
+  .toast.on{opacity:1;transform:translateX(-50%)}
+  .done-view{text-align:center;padding:40px 10px}
+  .done-view .big{font-size:56px}
+  .done-view b{display:block;font-size:22px;font-weight:800;margin-top:10px}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<div class="foot" id="foot"><button class="send" id="send">재고보고 보내기</button></div>
+<div class="toast" id="toast"></div>
+<script>
+const VER = "10.01-stock1";
+// 노션 '코일' 표(지점별 칸)에 있던 품목 그대로. 지난 값 = 2026-10-01 노션 값(시험용). 순서: 본점,1호,2호,4호,5호,6호,7호,8호
+const COLS = ["본점", "동성로", "수성", "율하", "반월당", "상인", "광장코아", "현풍"];
+const HO = { 동성로: 1, 수성: 2, 본점: 3, 율하: 4, 반월당: 5, 상인: 6, 광장코아: 7, 현풍: 8 };
+const RAW = `맥스프로팟 0.5|772,89,86,117,0,127,108,210
+맥스프로팟 0.6|146,58,39,40,0,33,41,30
+젤로맥스|210,88,112,119,0,123,86,147
+젤로팟|330,138,142,124,0,108,126,163
+젤로맥스팟 5ml|162,27,36,24,0,45,36,18
+젤로 크리스탈 0.6옴팟|0,84,52,56,0,63,44,62
+브이메이트팟|419,109,103,164,0,128,97,80
+말론팟 0.4|305,126,120,166,0,111,90,146
+말론팟 0.6|229,90,104,99,0,94,88,121
+말론S 0.6옴팟|580,52,60,50,0,42,52,89
+말론S 0.4옴팟|282,0,24,5,0,8,10,22
+닷파티팟0.4|0,0,0,0,0,0,0,0
+닷파티팟0.6|307,113,107,107,0,86,107,106
+하복폐|0,0,32,24,0,20,24,23
+하복입|0,25,19,35,0,4,55,32
+하복공팟|0,15,15,17,0,19,19,30
+하복2 0.6옴팟|0,36,29,22,0,22,26,32
+하복2 0.15옴팟|0,14,80,76,0,74,74,60
+에어팟 0.6|0,42,33,67,0,57,37,45
+R팟 0.6|0,40,31,33,0,29,21,15
+아스트로 레드팟|0,23,14,9,0,0,8,9
+베놈 레드팟|0,11,17,28,0,18,24,20
+발라클리어공팟|0,17,21,23,0,19,19,24
+발라맥스공팟|0,16,23,27,0,18,30,22
+발라맥스 프로공팟|0,11,17,24,0,18,14,22
+발라코일 0.6옴|0,148,89,91,0,135,103,77
+발라맥스프로 블랙|0,2,9,5,0,3,4,7
+발라맥스프로 실버|0,6,8,4,0,9,9,8
+발라맥스프로 퍼플|0,3,3,3,0,6,5,4
+발라맥스프로 블루|0,2,3,1,0,5,5,5
+발라맥스프로 핑크|0,3,5,4,0,5,4,4
+말론 블랙|0,2,3,8,0,2,3,2
+말론 실버|0,4,5,6,0,3,5,6
+말론 건메탈|0,0,0,0,0,0,0,1
+말론S 블랙|0,6,4,4,0,3,1,5
+말론S 실버|0,3,3,2,0,4,7,9
+말론S 건메탈|0,2,3,4,0,3,6,4`;
+const isDevice = (n) => /^(발라맥스프로|말론S?) (블랙|실버|퍼플|블루|핑크|건메탈)$/.test(n);
+const ITEMS = RAW.split("\n").map((l) => { const [n, v] = l.split("|"); return { n, v: v.split(",").map(Number) }; });
+
+const qs = new URLSearchParams(location.search);
+const B = COLS.includes(qs.get("branch")) ? qs.get("branch") : "본점";
+const KEY = `vf-stock-${B}`;
+const ls = { get: (k, d) => { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } }, set: (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} } };
+// 지난 값: 이 기기에서 마지막으로 보낸 보고가 있으면 그것, 없으면 노션 값
+const last = ls.get(KEY + "-last", null);
+const prev = (i) => last?.v?.[i] ?? ITEMS[i].v[COLS.indexOf(B)];
+let cur = ls.get(KEY + "-draft", {}); // 작성 중인 값 (새로고침해도 유지)
+let who = ls.get("vf-stock-who", "");
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+function toast(m) { const t = $("#toast"); t.textContent = m; t.classList.add("on"); clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove("on"), 2200); }
+
+function rowHtml(it, i) {
+  const p = prev(i), v = cur[i];
+  const has = v !== undefined && v !== "";
+  const diff = has ? v - p : 0;
+  const big = has && p > 0 && Math.abs(diff) > Math.max(10, p * 0.5); // 지난번보다 크게 다르면 표시
+  return `<div class="it ${has ? "done" : ""} ${big ? "warn" : ""}" id="r${i}"><div class="nm"><b>${esc(it.n)}</b><span>지난 보고 ${p}${has && diff ? ` · <em class="${diff > 0 ? "up" : "dn"}">${diff > 0 ? "+" : ""}${diff}</em>` : ""}${big ? " · 숫자 다시 확인" : ""}</span></div>
+    <div class="ctl"><button data-m="${i}">−</button><input inputmode="numeric" data-i="${i}" value="${has ? v : ""}" placeholder="${p}"><button data-p="${i}">+</button></div>
+    ${has ? "" : `<button class="same" data-same="${i}">그대로</button>`}</div>`;
+}
+function render() {
+  const done = ITEMS.filter((_, i) => cur[i] !== undefined && cur[i] !== "").length;
+  const d = new Date();
+  $("#app").innerHTML = `<div class="top"><a href="../staff/?branch=${encodeURIComponent(B)}" style="text-decoration:none;font-size:22px;color:var(--ink)">‹</a><b>아침 재고보고</b><span class="chip">${HO[B]}호 ${esc(B)}</span><span class="d">${d.getMonth() + 1}/${d.getDate()} (${"일월화수목금토"[d.getDay()]})</span></div>
+  <div class="card"><div class="h">보고하는 사람</div><div class="who"><input id="who" placeholder="이름 (출근한 근무자)" value="${esc(who)}"></div>
+    <div class="prog"><div class="bar"><i style="width:${(done / ITEMS.length) * 100}%"></i></div><span>${done} / ${ITEMS.length}</span></div>
+    <div class="s">실제로 센 개수를 넣어 주세요. 지난 보고와 같으면 [그대로]를 누르면 돼요. 크게 다르면 빨간 테두리가 생겨요.</div></div>
+  <div class="grp">팟 · 코일 · 공팟</div>${ITEMS.map((it, i) => (isDevice(it.n) ? "" : rowHtml(it, i))).join("")}
+  <div class="grp">기기</div>${ITEMS.map((it, i) => (isDevice(it.n) ? rowHtml(it, i) : "")).join("")}
+  <div class="note">시험판 · 버전 ${VER}<br>지난 보고 숫자는 처음엔 노션(10/1) 값, 한 번 보내면 이 기기에서 보낸 값이에요.</div>`;
+  $("#send").disabled = done < ITEMS.length;
+  $("#send").textContent = done < ITEMS.length ? `${ITEMS.length - done}개 남았어요` : "재고보고 보내기";
+}
+const setv = (i, v) => { if (v === "" || v === null) delete cur[i]; else cur[i] = Math.max(0, Math.round(+v || 0)); ls.set(KEY + "-draft", cur); };
+function refreshRow(i) { const el = document.getElementById("r" + i); const tmp = document.createElement("div"); tmp.innerHTML = rowHtml(ITEMS[i], +i); el.replaceWith(tmp.firstElementChild); const done = Object.keys(cur).length; document.querySelector(".bar i").style.width = (done / ITEMS.length) * 100 + "%"; document.querySelector(".prog span").textContent = `${done} / ${ITEMS.length}`; $("#send").disabled = done < ITEMS.length; $("#send").textContent = done < ITEMS.length ? `${ITEMS.length - done}개 남았어요` : "재고보고 보내기"; }
+
+document.addEventListener("click", (e) => {
+  const t = e.target.closest("button"); if (!t) return;
+  if (t.dataset.m !== undefined) { const i = t.dataset.m; setv(i, (cur[i] ?? prev(i)) - 1); return refreshRow(i); }
+  if (t.dataset.p !== undefined) { const i = t.dataset.p; setv(i, (cur[i] ?? prev(i)) + 1); return refreshRow(i); }
+  if (t.dataset.same !== undefined) { const i = t.dataset.same; setv(i, prev(i)); return refreshRow(i); }
+});
+document.addEventListener("change", (e) => { if (e.target.dataset.i !== undefined) { setv(e.target.dataset.i, e.target.value); refreshRow(e.target.dataset.i); } });
+document.addEventListener("input", (e) => { if (e.target.id === "who") { who = e.target.value.trim(); ls.set("vf-stock-who", who); } });
+
+// 보내기: 디스코드 웹훅(🔌패드연결) → 운영봇이 받아 지점 보고 채널·시트에 기록
+const HOOK = "https://discord.com/api/webhooks/1555156884753743905/BLK7tRBQACouQrOE_hvOkm2-iD44gnfnxdJvQXxiBAJKXJU3MG4bjnACFsXgDkDWLBrh";
+$("#send").addEventListener("click", async () => {
+  if (!who) { $("#who").focus(); return toast("보고하는 사람 이름을 넣어 주세요"); }
+  const v = ITEMS.map((_, i) => cur[i]);
+  const body = { type: "stock", branch: B, by: who, items: ITEMS.map((it, i) => [it.n, v[i], prev(i)]), ver: VER };
+  $("#send").disabled = true; $("#send").textContent = "보내는 중…";
+  try {
+    const r = await fetch(HOOK, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ content: JSON.stringify(body), allowed_mentions: { parse: [] } }) });
+    if (!r.ok) throw new Error("디스코드 응답 " + r.status);
+    ls.set(KEY + "-last", { v, at: Date.now(), by: who }); cur = {}; ls.set(KEY + "-draft", {});
+    $("#app").innerHTML = `<div class="card done-view"><div class="big">✅</div><b>${HO[B]}호 ${esc(B)} 재고보고 완료</b><div class="s">${esc(who)} · ${new Date().toTimeString().slice(0, 5)}<br>디스코드 보고 채널과 시트에 기록돼요.</div></div>`;
+    $("#foot").style.display = "none";
+  } catch (err) { toast(`못 보냈어요 (${navigator.onLine ? err.message : "인터넷 끊김"}) · 입력한 숫자는 그대로 있어요`); render(); }
+});
+render();
+</script>
+</body>
+</html>
