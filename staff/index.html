@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>베이프렌드 매장 대시보드 (시안)</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<style>
+  :root{
+    --bg:#f2f4f6; --card:#ffffff; --ink:#191f28; --ink2:#4e5968; --sub:#8b95a1; --line:#e5e8eb;
+    --blue:#3182f6; --blue-soft:#e8f3ff; --green:#03b26c; --green-soft:#e5f8ef; --red:#f04452; --red-soft:#fdecee;
+    --amber:#f59f00; --amber-soft:#fff4dc; --dark:#191f28; --r:20px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--bg);color:var(--ink);font-family:"Pretendard Variable",Pretendard,-apple-system,"Malgun Gothic",sans-serif;-webkit-font-smoothing:antialiased}
+  button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+  .app{max-width:1240px;margin:0 auto;padding:20px 28px 60px}
+
+  /* 상단 */
+  .top{display:flex;align-items:center;gap:16px;margin-bottom:20px}
+  .logo{font-weight:800;font-size:20px;letter-spacing:-.4px}
+  .logo b{color:var(--blue)}
+  .store{display:flex;align-items:center;gap:8px;background:var(--card);border-radius:999px;padding:8px 14px;font-weight:700;font-size:15px}
+  .store .dot{width:8px;height:8px;border-radius:50%;background:var(--green)}
+  .date{color:var(--sub);font-size:15px;font-weight:500}
+  .tabs{margin-left:auto;display:flex;gap:4px;background:#e5e8eb;border-radius:14px;padding:4px}
+  .tab{padding:9px 16px;border-radius:10px;font-weight:600;font-size:15px;color:var(--ink2)}
+  .tab.on{background:var(--card);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.06)}
+
+  .view{display:none}.view.on{display:block}
+
+  /* 히어로 */
+  .hero{background:var(--dark);color:#fff;border-radius:24px;padding:28px 32px;display:flex;align-items:center;gap:24px;margin-bottom:16px}
+  .hero h1{font-size:26px;font-weight:700;letter-spacing:-.5px;line-height:1.35}
+  .hero h1 em{font-style:normal;color:#64a8ff}
+  .hero p{color:#b0b8c1;margin-top:6px;font-size:15px}
+  .hero .acts{margin-left:auto;display:flex;gap:10px}
+  .btn{height:52px;padding:0 22px;border-radius:14px;font-weight:700;font-size:16px;display:inline-flex;align-items:center;gap:8px;transition:transform .08s}
+  .btn:active{transform:scale(.97)}
+  .btn.primary{background:var(--blue);color:#fff}
+  .btn.ghost{background:rgba(255,255,255,.1);color:#fff}
+  .btn.light{background:var(--blue-soft);color:var(--blue)}
+  .btn.gray{background:#f2f4f6;color:var(--ink)}
+
+  /* 카드 */
+  .grid{display:grid;gap:16px}
+  .kpis{grid-template-columns:repeat(4,1fr);margin-bottom:16px}
+  .card{background:var(--card);border-radius:var(--r);padding:22px 24px}
+  .kpi .label{font-size:14px;color:var(--sub);font-weight:600}
+  .kpi .val{font-size:30px;font-weight:800;letter-spacing:-.8px;margin-top:8px}
+  .kpi .val small{font-size:16px;font-weight:600;color:var(--ink2);margin-left:4px}
+  .kpi .hint{font-size:13px;color:var(--sub);margin-top:6px}
+  .ok{color:var(--green)} .warn{color:var(--amber)} .bad{color:var(--red)} .mute{color:#b0b8c1}
+  .two{grid-template-columns:1.35fr 1fr;margin-bottom:16px}
+  .card h2{font-size:18px;font-weight:700;letter-spacing:-.3px;display:flex;align-items:center;gap:8px}
+  .card h2 .more{margin-left:auto;font-size:14px;color:var(--sub);font-weight:600}
+  .card .desc{color:var(--sub);font-size:14px;margin-top:4px}
+
+  /* 빠른 실행 */
+  .quick{grid-template-columns:repeat(3,1fr);gap:10px;margin-top:16px}
+  .qa{background:#f9fafb;border-radius:16px;padding:18px;text-align:left;display:flex;flex-direction:column;gap:10px;min-height:118px;transition:background .15s}
+  .qa:hover{background:#f2f4f6}
+  .qa .ic{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font-size:20px;background:var(--blue-soft)}
+  .qa b{font-size:16px} .qa span{font-size:13px;color:var(--sub)}
+  .qa.done .ic{background:var(--green-soft)}
+
+  /* 리스트 */
+  .list{margin-top:14px}
+  .row{display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--line)}
+  .row:first-child{border-top:0}
+  .av{width:38px;height:38px;border-radius:50%;background:var(--blue-soft);color:var(--blue);display:grid;place-items:center;font-weight:700}
+  .row .nm{font-weight:600} .row .sm{font-size:13px;color:var(--sub)}
+  .pill{margin-left:auto;font-size:13px;font-weight:700;padding:5px 10px;border-radius:999px}
+  .pill.g{background:var(--green-soft);color:var(--green)} .pill.b{background:var(--blue-soft);color:var(--blue)} .pill.a{background:var(--amber-soft);color:#b77700} .pill.r{background:var(--red-soft);color:var(--red)} .pill.m{background:#f2f4f6;color:var(--sub)}
+
+  /* 진행바 */
+  .bar{height:8px;background:#f2f4f6;border-radius:99px;overflow:hidden;margin-top:12px}
+  .bar i{display:block;height:100%;background:var(--blue);border-radius:99px;transition:width .3s}
+
+  /* 상품 카드 */
+  .push{grid-template-columns:repeat(5,1fr);gap:12px;margin-top:14px}
+  .pd{background:#f9fafb;border-radius:16px;padding:12px;text-align:center}
+  .pd img{width:100%;aspect-ratio:1;object-fit:contain;background:#fff;border-radius:12px}
+  .pd b{display:block;font-size:14px;margin-top:8px;line-height:1.3}
+  .pd span{font-size:12px;color:var(--sub)}
+
+  /* 타임라인 */
+  .tl .row{align-items:flex-start}
+  .tl time{font-size:13px;color:var(--sub);width:46px;flex:none;padding-top:2px;font-variant-numeric:tabular-nums}
+
+  /* 칸반 */
+  .kanban{grid-template-columns:repeat(4,1fr)}
+  .col{background:#e9ecef;border-radius:18px;padding:14px;min-height:300px}
+  .col h3{font-size:15px;font-weight:700;color:var(--ink2);margin:2px 4px 12px;display:flex;gap:6px}
+  .col h3 span{color:var(--sub)}
+  .tk{background:var(--card);border-radius:14px;padding:14px;margin-bottom:10px}
+  .tk .ty{font-size:12px;font-weight:700;padding:3px 8px;border-radius:6px;display:inline-block}
+  .tk .ty.c{background:var(--green-soft);color:var(--green)} .tk .ty.b{background:var(--blue-soft);color:var(--blue)}
+  .tk b{display:block;margin-top:8px;font-size:15px}
+  .tk .sm{font-size:13px;color:var(--sub);margin-top:4px}
+  .tk .nx{margin-top:10px;width:100%;height:38px;border-radius:10px;background:var(--blue-soft);color:var(--blue);font-weight:700;font-size:14px}
+
+  /* 전 지점 */
+  .branches{grid-template-columns:repeat(4,1fr)}
+  .br h3{font-size:17px;font-weight:700;display:flex;align-items:center;gap:8px}
+  .br h3 .n{color:var(--sub);font-weight:600;font-size:14px}
+  .br .lines{margin-top:12px;display:grid;gap:8px;font-size:14px}
+  .br .lines div{display:flex;justify-content:space-between}
+  .br .lines span:first-child{color:var(--sub)}
+
+  /* 모달 */
+  .dim{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;align-items:flex-end;justify-content:center;z-index:50}
+  .dim.on{display:flex}
+  .sheet{background:#fff;width:min(560px,100%);border-radius:24px 24px 0 0;padding:28px 28px 24px;max-height:86vh;overflow:auto;animation:up .2s ease}
+  @keyframes up{from{transform:translateY(30px);opacity:.6}to{transform:none;opacity:1}}
+  .sheet h2{font-size:22px;font-weight:700;letter-spacing:-.4px}
+  .sheet .desc{color:var(--sub);margin-top:6px;font-size:15px}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+  .chip{padding:12px 16px;border-radius:12px;background:#f2f4f6;font-weight:600}
+  .chip.on{background:var(--blue);color:#fff}
+  .input{margin-top:12px;width:100%;height:52px;border-radius:14px;border:1px solid var(--line);padding:0 16px;font:inherit;font-size:16px;outline:none}
+  .input:focus{border-color:var(--blue)}
+  .check{display:flex;align-items:center;gap:12px;padding:14px 0;border-top:1px solid var(--line);font-size:16px}
+  .check:first-of-type{border-top:0}
+  .check i{width:26px;height:26px;border-radius:8px;border:2px solid #d1d6db;display:grid;place-items:center;flex:none;font-style:normal;color:#fff;font-size:15px}
+  .check.on i{background:var(--blue);border-color:var(--blue)}
+  .sheet .foot{display:flex;gap:10px;margin-top:22px}
+  .sheet .foot .btn{flex:1;justify-content:center}
+  .toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(20px);background:var(--dark);color:#fff;padding:14px 20px;border-radius:14px;font-weight:600;opacity:0;transition:.25s;z-index:60}
+  .toast.on{opacity:1;transform:translateX(-50%)}
+  .proto{font-size:12px;color:var(--sub);text-align:center;margin-top:28px}
+
+  @media (max-width:900px){
+    .app{padding:16px}
+    .top{flex-wrap:wrap}.tabs{margin-left:0;width:100%;overflow-x:auto}
+    .hero{flex-direction:column;align-items:flex-start}.hero .acts{margin-left:0}
+    .kpis{grid-template-columns:repeat(2,1fr)} .two,.kanban{grid-template-columns:1fr}
+    .branches{grid-template-columns:repeat(2,1fr)} .push{grid-template-columns:repeat(3,1fr)} .quick{grid-template-columns:repeat(2,1fr)}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="logo">VAFRIEND <b>매장</b></div>
+    <div class="store"><span class="dot"></span>2호 수성</div>
+    <div class="date" id="today"></div>
+    <nav class="tabs" id="tabs">
+      <button class="tab on" data-v="home">오늘</button>
+      <button class="tab" data-v="req">요청</button>
+      <button class="tab" data-v="memo">인수인계</button>
+      <button class="tab" data-v="all">전 지점</button>
+    </nav>
+  </header>
+
+  <!-- 오늘 -->
+  <section class="view on" id="v-home">
+    <div class="hero">
+      <div>
+        <h1 id="heroTitle"></h1>
+        <p id="heroSub"></p>
+      </div>
+      <div class="acts">
+        <button class="btn ghost" data-open="clock">🙋 출근</button>
+        <button class="btn primary" data-open="open" id="heroMain">🌅 오픈 보고</button>
+      </div>
+    </div>
+
+    <div class="grid kpis" id="kpis"></div>
+
+    <div class="grid two">
+      <div class="card">
+        <h2>빠른 실행</h2>
+        <div class="desc">자주 하는 일은 여기서 바로 눌러요.</div>
+        <div class="grid quick" id="quick"></div>
+      </div>
+      <div class="card">
+        <h2>오늘 근무자 <span class="more" id="workCnt"></span></h2>
+        <div class="list" id="workers"></div>
+      </div>
+    </div>
+
+    <div class="grid two">
+      <div class="card">
+        <h2>이번 주 밀어줄 꿀조합 🍯 <span class="more">관리자가 설정</span></h2>
+        <div class="desc">손님 상담 때 먼저 권해 주세요. 진열 위치를 같이 보여줘요.</div>
+        <div class="grid push" id="push"></div>
+      </div>
+      <div class="card tl">
+        <h2>오늘 기록 <span class="more">시트에 자동 저장</span></h2>
+        <div class="list" id="timeline"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 요청 -->
+  <section class="view" id="v-req">
+    <div class="grid kanban" id="kanban"></div>
+  </section>
+
+  <!-- 인수인계 -->
+  <section class="view" id="v-memo">
+    <div class="grid two">
+      <div class="card">
+        <h2>확인 안 한 인수인계 <span class="more" id="memoCnt"></span></h2>
+        <div class="list" id="memos"></div>
+        <button class="btn light" style="margin-top:16px" data-open="memo">📌 인수인계 남기기</button>
+      </div>
+      <div class="card">
+        <h2>확인 끝난 인수인계</h2>
+        <div class="list" id="memosDone"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 전 지점 -->
+  <section class="view" id="v-all">
+    <div class="grid kpis" id="allKpis"></div>
+    <div class="grid branches" id="branches"></div>
+  </section>
+
+  <p class="proto">시안 · 테스트 서버의 10/1 시험 데이터를 넣었어요. 버튼은 이 화면 안에서만 동작해요(실제 기록 안 됨).</p>
+</div>
+
+<div class="dim" id="dim"><div class="sheet" id="sheet"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+const IMG = "https://officialvafriend.github.io/vape/img/";
+const BR = ["동성로","수성","본점","율하","반월당","상인","광장코아","현풍"];
+const ho = (b) => `${BR.indexOf(b)+1}호 ${b}`;
+const ME = "수성";
+const now = () => { const d=new Date(); return `${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`; };
+const OPEN = ["바닥 쓸기/닦기, 유리·거울 닦기","진열장·포스·단말기 먼지 제거","입/폐/일회용 기기 배터리 체크","시연대 정리정돈","자판기 청소·작동 체크","매장 환기","유니폼 착용"];
+const CLOSE = ["액상·기기·소모품 진열 채우기","시연팟 체크·코일 교환","기기 배터리 체크","수납공간 정리","드립팁 세척·종량제 확인","자판기 체크(마감 전)","매장 외부 청소","순회점검표·환기대장 작성"];
+
+// 테스트 서버 10/1 기록을 바탕으로 한 시안 데이터
+const S = {
+  workers: [{n:"홍길동(테스트)",in:"17:18"},{n:"직원B",in:"17:54"}],
+  recent: ["홍길동(테스트)","직원B","안보롱"],
+  open: null, close: null,
+  log: [["16:49","출근","안보롱"],["16:49","퇴근","안보롱"],["17:18","출근","홍길동(테스트)"],["17:54","출근","직원B"],["17:00","지점요청 준비 완료","3호 본점 → 2호 수성 · 바닐라 30ml 2병"]],
+  tickets: [
+    {t:"b",from:"본점",to:"수성",title:"바닐라 30ml 2병 (테스트)",stage:"보냄",col:2,who:"액상덕후 17:02"},
+    {t:"c",from:"수성",title:"빌런 청포도 3병 택배",stage:"포장 완료",col:1,who:"홍길동(테스트) 17:30"},
+    {t:"c",from:"율하",title:"디오 레몬 2병 퀵",stage:"접수",col:0,who:"율하 18:05"},
+    {t:"b",from:"상인",to:"수성",title:"하복코일 0.6 1팩",stage:"요청",col:0,who:"상인 18:10"},
+    {t:"c",from:"본점",title:"바닐라 30ml 3병 (테스트)",stage:"완료",col:3,who:"액상덕후 16:56"},
+  ],
+  memos: [{t:"17:40",by:"홍길동(테스트)",text:"상인에서 하복코일 1팩 요청 들어옴. 내일 오전 퀵으로 보내주세요."}],
+  memosDone: [{t:"어제 22:10",by:"안보롱",text:"자판기 2번 칸 결제 오류 → 본사에 전달함",ok:"홍길동(테스트) 17:20"}],
+  push: [["VF 빌런 자두","p094.jpg","R-1-1~3"],["VF 빌런 청포도","p086.jpg","R-1-1~3"],["VF 빌런 레즈애플","p212.jpg","R-1-1~3"],["디오 레몬","p064.jpg","B-1-3"],["디오 샤인","p184.jpg","B-1-3"]],
+  all: {동성로:{w:1,o:"15:01",c:null,r:0},수성:null,본점:{w:0,o:"16:20",c:null,r:1},율하:{w:1,o:"10:58",c:null,r:1},반월당:{w:1,o:"11:03",c:null,r:0},상인:{w:2,o:"10:55",c:null,r:1},광장코아:{w:1,o:null,c:null,r:0},현풍:{w:1,o:"11:10",c:null,r:0}},
+};
+
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s).replace(/[&<>"]/g,(c)=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"})[c]);
+function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("on");clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove("on"),1800);}
+
+function render(){
+  const d=new Date(); $("#today").textContent=`${d.getMonth()+1}월 ${d.getDate()}일 ${"일월화수목금토"[d.getDay()]}요일`;
+  const working=S.workers.filter(w=>!w.out);
+  $("#heroTitle").innerHTML = !S.open ? `<em>${ho(ME)}</em>, 오픈 보고가 아직이에요` : !S.close ? `<em>${ho(ME)}</em>, 오늘도 잘 부탁해요` : `<em>${ho(ME)}</em>, 오늘 마감까지 끝!`;
+  $("#heroSub").textContent = working.length ? `지금 근무 중: ${working.map(w=>w.n).join(", ")}` : "아직 출근한 사람이 없어요";
+  const hm=$("#heroMain"); hm.dataset.open=!S.open?"open":"close"; hm.textContent=!S.open?"🌅 오픈 보고":"🌙 마감 보고";
+
+  const openReq=S.tickets.filter(t=>t.col<3&&(t.from===ME||t.to===ME)).length;
+  $("#kpis").innerHTML=[
+    ["출근",`${working.length}<small>명</small>`,working.length?working.map(w=>w.n).join(", "):"아직 없음",""],
+    ["오픈 보고",S.open?S.open.t:"아직",S.open?(S.open.miss.length?`못 한 항목 ${S.open.miss.length}개`:"전부 완료"):"오픈 시각 전에 눌러 주세요",S.open?(S.open.miss.length?"warn":"ok"):"mute"],
+    ["마감 보고",S.close?S.close.t:"아직",S.close?"보고 완료":"마감 후 눌러 주세요",S.close?"ok":"mute"],
+    ["진행 중 요청",`${openReq}<small>건</small>`,`인수인계 확인 대기 ${S.memos.length}건`,openReq?"":"mute"],
+  ].map(([l,v,h,c])=>`<div class="card kpi"><div class="label">${l}</div><div class="val ${c}">${v}</div><div class="hint">${esc(h)}</div></div>`).join("");
+
+  $("#quick").innerHTML=[
+    ["clock","🙋","출근·퇴근","이름 고르고 끝",false],
+    [S.open?"close":"open",S.open?"🌙":"🌅",S.open?"마감 보고":"오픈 보고",S.open?"체크 후 보고":"체크 7개",!!S.close],
+    ["req","🧾","요청하기","고객·지점·비품·고장",false],
+    ["memo","📌","인수인계","다음 근무자에게",false],
+    ["pad","🛍️","상담패드","손님 화면 열기",false],
+    ["sheet","📊","기록 보기","시트에서 찾기",false],
+  ].map(([k,ic,b,s,done])=>`<button class="qa${done?" done":""}" data-open="${k}"><div class="ic">${ic}</div><b>${b}</b><span>${s}</span></button>`).join("");
+
+  $("#workCnt").textContent=`${working.length}명 근무 중`;
+  $("#workers").innerHTML=S.workers.map(w=>`<div class="row"><div class="av">${esc(w.n[0])}</div><div><div class="nm">${esc(w.n)}</div><div class="sm">출근 ${w.in}${w.out?` · 퇴근 ${w.out}`:""}</div></div><span class="pill ${w.out?"m":"g"}">${w.out?"퇴근":"근무 중"}</span></div>`).join("")||`<div class="row sm">아직 없음</div>`;
+
+  $("#push").innerHTML=S.push.map(([n,img,loc])=>`<div class="pd"><img src="${IMG+img}" alt=""><b>${esc(n)}</b><span>진열 ${esc(loc)}</span></div>`).join("");
+
+  $("#timeline").innerHTML=[...S.log].sort((a,b)=>b[0].localeCompare(a[0])).slice(0,7).map(([t,k,x])=>`<div class="row"><time>${t}</time><div><div class="nm">${esc(k)}</div><div class="sm">${esc(x)}</div></div></div>`).join("");
+
+  const cols=["접수·요청","처리 중","발송·전달","오늘 완료"];
+  $("#kanban").innerHTML=cols.map((c,i)=>{const ts=S.tickets.filter(t=>t.col===i);return `<div class="col"><h3>${c} <span>${ts.length}</span></h3>${ts.map((t,j)=>`<div class="tk"><span class="ty ${t.t}">${t.t==="c"?"고객요청":"지점요청"}</span><b>${esc(t.title)}</b><div class="sm">${t.t==="c"?ho(t.from)+" 처리":ho(t.from)+" → "+ho(t.to)}</div><div class="sm">${esc(t.stage)} · ${esc(t.who)}</div>${i<3?`<button class="nx" data-adv="${S.tickets.indexOf(t)}">다음 단계로</button>`:""}</div>`).join("")}</div>`;}).join("");
+
+  $("#memoCnt").textContent=`${S.memos.length}건`;
+  $("#memos").innerHTML=S.memos.map((m,i)=>`<div class="row"><div class="av">📌</div><div style="flex:1"><div class="nm">${esc(m.text)}</div><div class="sm">${esc(m.by)} · ${m.t}</div></div><button class="btn light" style="height:40px;padding:0 14px;font-size:14px" data-ok="${i}">확인함</button></div>`).join("")||`<div class="row sm">모두 확인했어요 👍</div>`;
+  $("#memosDone").innerHTML=S.memosDone.map(m=>`<div class="row"><div class="av" style="background:var(--green-soft);color:var(--green)">✓</div><div><div class="nm">${esc(m.text)}</div><div class="sm">${esc(m.by)} · ${m.t} → 확인 ${esc(m.ok)}</div></div></div>`).join("");
+
+  const all={...S.all,[ME]:{w:working.length,o:S.open&&S.open.t,c:S.close&&S.close.t,r:openReq}};
+  const oc=BR.filter(b=>all[b].o).length, cc=BR.filter(b=>all[b].c).length;
+  $("#allKpis").innerHTML=[["오픈 보고",`${oc}<small>/ 8</small>`,oc<8?`${8-oc}곳 아직`:"전 지점 완료",oc<8?"warn":"ok"],["마감 보고",`${cc}<small>/ 8</small>`,"마감 시간 전","mute"],["진행 중 요청",`${S.tickets.filter(t=>t.col<3).length}<small>건</small>`,"요청 탭에서 확인",""],["근무 중",`${BR.reduce((a,b)=>a+all[b].w,0)}<small>명</small>`,"전 지점 합계",""]]
+    .map(([l,v,h,c])=>`<div class="card kpi"><div class="label">${l}</div><div class="val ${c}">${v}</div><div class="hint">${h}</div></div>`).join("");
+  $("#branches").innerHTML=BR.map(b=>{const x=all[b];return `<div class="card br"><h3>${b} <span class="n">${BR.indexOf(b)+1}호</span>${!x.o?'<span class="pill r" style="margin-left:auto">오픈 미보고</span>':""}</h3><div class="lines"><div><span>근무</span><b>${x.w}명</b></div><div><span>오픈</span><b class="${x.o?"ok":"mute"}">${x.o||"—"}</b></div><div><span>마감</span><b class="${x.c?"ok":"mute"}">${x.c||"—"}</b></div><div><span>요청</span><b>${x.r}건</b></div></div></div>`;}).join("");
+}
+
+// 모달
+let pick=null, miss=new Set();
+function sheet(html){$("#sheet").innerHTML=html;$("#dim").classList.add("on");}
+function close(){ $("#dim").classList.remove("on"); }
+$("#dim").onclick=(e)=>{if(e.target.id==="dim")close();};
+function openSheet(k){
+  if(k==="clock"){pick=null;sheet(`<h2>누가 출근했나요?</h2><div class="desc">지점 계정은 같이 쓰니까 이름을 골라 주세요. 처음이면 직접 입력해요.</div>
+    <div class="chips">${S.recent.map(n=>`<button class="chip" data-pick="${esc(n)}">${esc(n)}</button>`).join("")}</div>
+    <input class="input" id="nm" placeholder="직접 입력 (예: 김민규)">
+    <div class="foot"><button class="btn gray" data-x>취소</button><button class="btn primary" data-do="in">출근하기</button></div>`);return;}
+  if(k==="open"||k==="close"){miss=new Set();const L=k==="open"?OPEN:CLOSE;sheet(`<h2>${k==="open"?"🌅 오픈":"🌙 마감"} 보고</h2><div class="desc">한 일을 체크해 주세요. 못 한 건 체크하지 않고 보고하면 돼요.</div>
+    <div style="margin-top:14px">${L.map((x,i)=>`<div class="check on" data-chk="${i}"><i>✓</i>${esc(x)}</div>`).join("")}</div>
+    <div class="foot"><button class="btn gray" data-x>취소</button><button class="btn primary" data-do="${k}">보고하기</button></div>`);return;}
+  if(k==="memo"){sheet(`<h2>📌 인수인계 남기기</h2><div class="desc">다음 근무자가 [확인함]을 누를 때까지 화면에 떠 있어요.</div><textarea class="input" id="mt" style="height:120px;padding:14px" placeholder="예) 율하에서 바닐라 3병 퀵으로 옴, 받으면 확인 눌러주세요"></textarea>
+    <div class="foot"><button class="btn gray" data-x>취소</button><button class="btn primary" data-do="memo">남기기</button></div>`);return;}
+  if(k==="req"){sheet(`<h2>무엇을 요청할까요?</h2><div class="chips" style="display:grid;grid-template-columns:1fr 1fr">${["🧾 고객요청 (택배·퀵)","🔁 지점요청","📦 비품 부족","🔧 고장 신고","🧪 시연 교체"].map(x=>`<button class="chip" style="padding:18px;text-align:left" data-x>${x}</button>`).join("")}</div><div class="foot"><button class="btn gray" data-x>닫기</button></div>`);return;}
+  toast(k==="pad"?"손님용 상담패드 화면으로 넘어가요 (디자인 별도 진행)":"구글시트 기록 화면이 열려요");
+}
+document.addEventListener("click",(e)=>{
+  const o=e.target.closest("[data-open]"); if(o) return openSheet(o.dataset.open);
+  const t=e.target.closest("[data-v]"); if(t){document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("on",x===t));document.querySelectorAll(".view").forEach(v=>v.classList.toggle("on",v.id==="v-"+t.dataset.v));return;}
+  if(e.target.closest("[data-x]")) return close();
+  const p=e.target.closest("[data-pick]"); if(p){pick=p.dataset.pick;document.querySelectorAll("[data-pick]").forEach(c=>c.classList.toggle("on",c===p));return;}
+  const c=e.target.closest("[data-chk]"); if(c){c.classList.toggle("on");return;}
+  const a=e.target.closest("[data-adv]"); if(a){const t=S.tickets[+a.dataset.adv];t.col++;t.stage=["접수","처리 중","발송·전달","완료"][t.col];t.who=`${S.workers[0].n} ${now()}`;S.log.push([now(),`요청 단계 → ${t.stage}`,t.title]);render();toast("다음 단계로 넘겼어요");return;}
+  const k=e.target.closest("[data-ok]"); if(k){const m=S.memos.splice(+k.dataset.ok,1)[0];m.ok=`${S.workers[0].n} ${now()}`;S.memosDone.unshift(m);S.log.push([now(),"인수인계 확인",m.text]);render();toast("확인했어요");return;}
+  const d=e.target.closest("[data-do]"); if(!d) return;
+  const act=d.dataset.do;
+  if(act==="in"){const n=($("#nm").value.trim()||pick);if(!n)return toast("이름을 골라 주세요");if(!S.workers.some(w=>w.n===n&&!w.out))S.workers.push({n,in:now()});S.log.push([now(),"출근",n]);close();render();toast(`${n}님 출근 ${now()} 기록했어요`);}
+  if(act==="open"||act==="close"){const L=act==="open"?OPEN:CLOSE;const miss=[...document.querySelectorAll("[data-chk]")].filter(x=>!x.classList.contains("on")).map(x=>L[+x.dataset.chk]);S[act]={t:now(),miss};S.log.push([now(),act==="open"?"오픈 보고":"마감 보고",miss.length?`못 함: ${miss.join(", ")}`:"전부 완료"]);close();render();toast(`${act==="open"?"오픈":"마감"} 보고 완료`);}
+  if(act==="memo"){const v=$("#mt").value.trim();if(!v)return toast("내용을 적어 주세요");S.memos.push({t:now(),by:S.workers[0]?.n||"수성",text:v});S.log.push([now(),"인수인계",v]);close();render();toast("인수인계를 남겼어요");}
+});
+render();
+</script>
+</body>
+</html>
