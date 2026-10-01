@@ -7,6 +7,8 @@
 <title>베이프렌드 상담패드 (시안)</title>
 <!-- 매장 안내 책자와 같은 서체·로고·사진 (NanumSquare, KBLJump) -->
 <link rel="stylesheet" href="brand.css">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#15120f">
 <style>
   :root{
     --paper:#fff; --panel:#efece5; --ink:#15120f; --ink-soft:#54504a; --grey:#8d887f; --line:#e1ddd4;
@@ -475,6 +477,14 @@ document.addEventListener("click", (e) => {
 document.addEventListener("input", (e) => { const id = e.target.id; if (id === "engrText") engrave = e.target.value; if (id === "memName") member.name = e.target.value; if (id === "memPhone") member.phone = e.target.value.replace(/D/g, ""); if (id === "memAgree") member.agree = e.target.checked; });
 addEventListener("scroll", () => { let cur = "s1"; for (const s of ["s1", "s2", "s3", "s4"]) if (document.getElementById(s).getBoundingClientRect().top < 140) cur = s; document.querySelectorAll("#tabs a").forEach((a) => a.classList.toggle("on", a.getAttribute("href") === "#" + cur)); }, { passive: true });
 render();
+// 오프라인 저장 + 사진 미리 받아 두기 (와이파이가 끊겨도 메뉴판이 열리게)
+if ("serviceWorker" in navigator && location.protocol === "https:") {
+  navigator.serviceWorker.register("sw.js").then(() => navigator.serviceWorker.ready).then(() => {
+    const urls = [...new Set(L.map((x) => IMG + x.img))]; let i = 0;
+    const next = () => { const batch = urls.slice(i, i += 8); if (batch.length) Promise.all(batch.map((u) => fetch(u).catch(() => {}))).then(() => setTimeout(next, 300)); };
+    setTimeout(next, 3000);
+  }).catch(() => {});
+}
 </script>
 </body>
 </html>
