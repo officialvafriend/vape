@@ -240,7 +240,7 @@
     <button class="more" id="more">더 보기</button>
   </section>
 
-  <div class="foot"><b>시안 · 버전 10.01-1925</b> · 사진·맛·태그는 직원 교육용 액상 DB(380종), 가격은 매장 안내 책자 기준이에요. 패키지·꿀조합·이벤트 문구는 관리자 화면에서 바꾸게 만들 예정이에요. 발라리안 맥스프로는 사진이 없어 임시 그림이에요(판매가 78,000원). 레이저 각인은 포스에 0원 상품으로 등록 예정. 액상 10병 기기패키지 가격과 빌런 패키지 할인 조건은 아직 확정 전이에요.</div>
+  <div class="foot"><b>시안 · 버전 10.01-2020</b> · 사진·맛·태그는 직원 교육용 액상 DB(380종), 가격은 매장 안내 책자 기준이에요. 패키지·꿀조합·이벤트 문구는 관리자 화면에서 바꾸게 만들 예정이에요. 발라리안 맥스프로는 사진이 없어 임시 그림이에요(판매가 78,000원). 레이저 각인은 포스에 0원 상품으로 등록 예정. 액상 10병 기기패키지 가격과 빌런 패키지 할인 조건은 아직 확정 전이에요.</div>
 </div>
 
 <div class="dim" id="dim"><div class="sheet" id="sheet"></div></div>
@@ -436,7 +436,7 @@ async function demoReq(x) {
       const r = await fetch(PAD_HOOK, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ content: JSON.stringify({ type: "demo", branch: PAD.branch, name: x.n, loc: x.loc, pad: PAD.no }), allowed_mentions: { parse: [] } }) });
       if (!r.ok) throw new Error("디스코드 응답 " + r.status);
       return toast("직원에게 알렸어요 · 잠시만 기다려 주세요");
-    } catch (e) { return toast(`알림을 못 보냈어요 · 직원을 불러 주세요 (${navigator.onLine ? (e.message || "연결 실패").slice(0, 40) : "인터넷 끊김"} · 10.01-1925)`); }
+    } catch (e) { return toast(`알림을 못 보냈어요 · 직원을 불러 주세요 (${navigator.onLine ? (e.message || "연결 실패").slice(0, 40) : "인터넷 끊김"} · 10.01-2020)`); }
   }
   try {
     const r = await fetch(PAD.api + "/demo-request", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ branch: PAD.branch, name: x.n, loc: x.loc, pad: PAD.no }) }).then((r) => r.json());
