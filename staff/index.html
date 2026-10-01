@@ -163,6 +163,7 @@
       </div>
       <div class="acts">
         <button class="btn ghost" data-open="clock">🙋 출근</button>
+        <button class="btn ghost" data-open="stock">📦 아침 재고보고</button>
         <button class="btn primary" data-open="open" id="heroMain">🌅 오픈 보고</button>
       </div>
     </div>
@@ -230,7 +231,7 @@
 const IMG = "https://officialvafriend.github.io/vape/img/";
 const BR = ["동성로","수성","본점","율하","반월당","상인","광장코아","현풍"];
 const ho = (b) => `${BR.indexOf(b)+1}호 ${b}`;
-const ME = "수성";
+const ME = ["동성로","수성","본점","율하","반월당","상인","광장코아","현풍"].includes(new URLSearchParams(location.search).get("branch")) ? new URLSearchParams(location.search).get("branch") : "수성";
 const now = () => { const d=new Date(); return `${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`; };
 const OPEN = ["바닥 쓸기/닦기, 유리·거울 닦기","진열장·포스·단말기 먼지 제거","입/폐/일회용 기기 배터리 체크","시연대 정리정돈","자판기 청소·작동 체크","매장 환기","유니폼 착용"];
 const CLOSE = ["액상·기기·소모품 진열 채우기","시연팟 체크·코일 교환","기기 배터리 체크","수납공간 정리","드립팁 세척·종량제 확인","자판기 체크(마감 전)","매장 외부 청소","순회점검표·환기대장 작성"];
@@ -279,7 +280,7 @@ function render(){
     ["req","🧾","요청하기","고객·지점·비품·고장",false],
     ["memo","📌","인수인계","다음 근무자에게",false],
     ["pad","🛍️","상담패드","손님 화면 열기",false],
-    ["sheet","📊","기록 보기","시트에서 찾기",false],
+    ["stock","📦","아침 재고보고","팟·코일·기기 개수",false],
   ].map(([k,ic,b,s,done])=>`<button class="qa${done?" done":""}" data-open="${k}"><div class="ic">${ic}</div><b>${b}</b><span>${s}</span></button>`).join("");
 
   $("#workCnt").textContent=`${working.length}명 근무 중`;
@@ -322,7 +323,7 @@ function openSheet(k){
   toast(k==="pad"?"손님용 상담패드 화면으로 넘어가요 (디자인 별도 진행)":"구글시트 기록 화면이 열려요");
 }
 document.addEventListener("click",(e)=>{
-  const o=e.target.closest("[data-open]"); if(o) return openSheet(o.dataset.open);
+  const o=e.target.closest("[data-open]"); if(o&&o.dataset.open==="stock") { location.href=`../stock/?branch=${encodeURIComponent(ME)}`; return; } if(o) return openSheet(o.dataset.open);
   const t=e.target.closest("[data-v]"); if(t){document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("on",x===t));document.querySelectorAll(".view").forEach(v=>v.classList.toggle("on",v.id==="v-"+t.dataset.v));return;}
   if(e.target.closest("[data-x]")) return close();
   const p=e.target.closest("[data-pick]"); if(p){pick=p.dataset.pick;document.querySelectorAll("[data-pick]").forEach(c=>c.classList.toggle("on",c===p));return;}
