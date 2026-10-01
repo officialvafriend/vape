@@ -1,0 +1,471 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="robots" content="noindex">
+<title>베이프렌드 상담패드 (시안)</title>
+<!-- 매장 안내 책자와 같은 서체·로고·사진 (NanumSquare, KBLJump) -->
+<link rel="stylesheet" href="brand.css">
+<style>
+  :root{
+    --paper:#fff; --panel:#efece5; --ink:#15120f; --ink-soft:#54504a; --grey:#8d887f; --line:#e1ddd4;
+    --red:#d81f2a; --red-deep:#98131c;
+    --kr:"NanumSquare","Pretendard","Malgun Gothic",sans-serif;
+    --num:"KBLJump","Arial Black","NanumSquare",sans-serif;
+    --pad:28px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:#dcd9d3}
+  body{font-family:var(--kr);color:var(--ink);-webkit-font-smoothing:antialiased;word-break:keep-all}
+  button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+  .app{max-width:834px;margin:0 auto;background:var(--paper);min-height:100vh;position:relative}
+  .num{font-family:var(--num)}
+  .price{font-family:var(--num);font-weight:900;font-variant-numeric:tabular-nums}
+  .won{font-family:var(--kr);font-weight:700;font-size:.5em;margin-left:.15em}
+
+  .top{position:sticky;top:0;z-index:20;background:var(--ink);color:#fff}
+  .bar{display:flex;align-items:center;gap:12px;padding:16px var(--pad)}
+  .bar .vf-logo{width:40px;height:36px;background-size:contain;background-repeat:no-repeat;background-position:center}
+  .bar .w{font-family:var(--num);font-weight:900;font-size:22px;color:var(--red);letter-spacing:.02em}
+  .bar .s{font-size:12px;letter-spacing:.2em;color:rgba(255,255,255,.55);font-family:var(--num)}
+  .cart{margin-left:auto;display:flex;align-items:center;gap:10px;background:var(--red);color:#fff;padding:12px 18px;font-family:var(--num);font-weight:800;font-size:16px}
+  .cart b{background:#fff;color:var(--red);min-width:26px;height:26px;display:grid;place-items:center;font-size:14px;padding:0 6px}
+  .tabs{display:flex;padding:0 var(--pad);gap:26px;overflow-x:auto;scrollbar-width:none}
+  .tabs a{flex:none;color:rgba(255,255,255,.6);text-decoration:none;font-family:var(--num);font-weight:800;font-size:17px;padding:10px 0 14px;border-bottom:3px solid transparent}
+  .tabs a.on{color:#fff;border-color:var(--red)}
+
+  .sec{padding:34px var(--pad) 10px;scroll-margin-top:120px}
+  .hdr{display:flex;align-items:flex-end;gap:16px;padding-bottom:16px;border-bottom:1px solid var(--line)}
+  .hdr .n{font-family:var(--num);font-weight:900;font-size:64px;line-height:.76;letter-spacing:-.03em}
+  .hdr .eb{font-family:var(--num);font-weight:800;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--red)}
+  .hdr h2{font-family:var(--num);font-weight:800;font-size:26px;line-height:1.25;margin-top:4px}
+
+  .redblock{background:var(--red);color:#fff;padding:30px var(--pad) 26px;scroll-margin-top:120px}
+  .redblock .hdr{border-color:rgba(255,255,255,.3)}
+  .redblock .hdr .n{color:#fff}.redblock .hdr .eb{color:#f7c3c6}
+  .best-title{font-family:var(--num);font-weight:900;font-size:38px;line-height:1.22;margin-top:22px}
+  .best-sub{margin-top:10px;font-size:17px;line-height:1.6;color:rgba(255,255,255,.88)}
+  .best-pics{display:flex;align-items:flex-end;gap:2px;margin-top:20px}
+  .best-pics img{width:84px;height:110px;object-fit:contain;filter:drop-shadow(0 8px 10px rgba(0,0,0,.28))}
+  .dev{flex:none;width:72px;height:128px;background:linear-gradient(160deg,#2b2724,#0d0b0a);border:2px solid rgba(255,255,255,.5);border-radius:18px;display:grid;place-items:center;color:#fff;font-family:var(--num);font-weight:800;font-size:11px;text-align:center;line-height:1.3;margin-right:8px}
+  .cta{margin-top:22px;width:100%;background:#fff;color:var(--red);padding:20px 22px;display:flex;align-items:center;gap:12px;text-align:left}
+  .cta b{font-family:var(--num);font-weight:900;font-size:20px;display:block}
+  .cta small{display:block;font-size:14px;color:var(--ink-soft);margin-top:4px;font-weight:700}
+  .cta .arr{margin-left:auto;font-family:var(--num);font-size:30px;font-weight:900}
+  .evrows{margin-top:22px}
+  .evrow{display:grid;grid-template-columns:1fr auto;align-items:center;gap:14px;padding:16px 0;border-top:1px solid rgba(255,255,255,.3)}
+  .evrow:last-child{border-bottom:1px solid rgba(255,255,255,.3)}
+  .evrow .t{font-family:var(--num);font-weight:800;font-size:19px}
+  .evrow .u{font-size:14px;color:rgba(255,255,255,.8);margin-top:3px}
+  .evrow .d{font-family:var(--num);font-weight:900;font-size:28px;white-space:nowrap}
+
+  .spec{margin-top:6px}
+  .row{display:grid;grid-template-columns:1fr auto;align-items:center;gap:16px;padding:20px 0;border-top:1px solid var(--line)}
+  .row:first-child{border-top:0}
+  .row .k{font-family:var(--num);font-weight:800;font-size:21px}
+  .row .k .op{color:var(--grey);margin:0 .3em}
+  .row .u{display:block;font-size:14px;color:var(--grey);margin-top:5px}
+  .row .tag{display:inline-block;margin-top:8px;font-family:var(--num);font-weight:800;font-size:13px;color:#fff;background:var(--red);padding:4px 10px}
+  .row .v{text-align:right}
+  .row .v .note{display:block;font-size:12.5px;font-weight:700;color:var(--grey);margin-bottom:2px}
+  .row .v .price{font-size:30px}
+  .row.hi,.row.hi .u{color:var(--red)}
+  .row.best{background:rgba(216,31,42,.06);border-left:4px solid var(--red);padding-left:14px;margin-left:-18px}
+
+  .combo{margin-top:18px;border:1px solid var(--line);padding:20px}
+  .combo .lab{display:flex;gap:6px}
+  .badge{display:inline-block;font-family:var(--num);font-weight:800;font-size:12px;letter-spacing:.06em;padding:5px 10px;background:var(--red);color:#fff}
+  .badge.line{background:none;color:var(--red);border:1.5px solid var(--red)}
+  .combo h3{font-family:var(--num);font-weight:800;font-size:23px;margin-top:12px}
+  .combo .names{font-size:15px;color:var(--ink-soft);margin-top:6px;line-height:1.6}
+  .combo .items{display:flex;align-items:flex-end;gap:6px;margin-top:14px}
+  .combo .items img{width:70px;height:92px;object-fit:contain}
+  .combo .items .dev{width:56px;height:100px;border-radius:14px;font-size:10px;background:linear-gradient(160deg,#3a3531,#15120f);border-color:#ccc}
+  .combo .act{display:flex;gap:8px;margin-top:16px}
+  .b1{flex:1;height:56px;background:var(--red);color:#fff;font-family:var(--num);font-weight:900;font-size:17px}
+  .b1.ink{background:var(--ink)}
+  .b2{height:56px;padding:0 20px;background:var(--panel);font-family:var(--num);font-weight:800;font-size:16px}
+  .photo{height:180px;margin-top:20px;border:1px solid var(--line)}
+
+  .tastes{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:18px}
+  .taste{padding:16px 12px;background:var(--panel);text-align:left}
+  .taste b{font-family:var(--num);font-weight:800;font-size:18px;display:block}
+  .taste span{font-size:12.5px;color:var(--grey)}
+  .taste.on{background:var(--ink);color:#fff}.taste.on span{color:rgba(255,255,255,.6)}
+  .filters{display:flex;gap:6px;margin-top:12px;flex-wrap:wrap}
+  .f{font-family:var(--num);font-weight:800;font-size:14px;padding:9px 14px;border:1.5px solid var(--line)}
+  .f.on{border-color:var(--ink);background:var(--ink);color:#fff}
+  .cnt{margin-left:auto;align-self:center;font-size:13px;color:var(--grey)}
+  .prods{display:grid;grid-template-columns:repeat(3,1fr);margin-top:14px;border-top:1px solid var(--line);border-left:1px solid var(--line)}
+  .p{text-align:left;padding:14px 14px 16px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);position:relative}
+  .p img{width:100%;aspect-ratio:1;object-fit:contain}
+  .p .bd{font-size:12px;color:var(--grey);margin-top:6px;font-weight:700}
+  .p b{display:block;font-family:var(--num);font-weight:800;font-size:16.5px;line-height:1.3;margin-top:2px}
+  .p .tg{font-size:12.5px;color:var(--ink-soft);margin-top:5px}
+  .p .rib{position:absolute;top:10px;left:10px;font-family:var(--num);font-weight:800;font-size:11px;background:var(--red);color:#fff;padding:3px 7px}
+  .more{display:block;width:100%;margin-top:14px;height:54px;border:1.5px solid var(--ink);font-family:var(--num);font-weight:800;font-size:16px}
+
+  .foot{margin-top:30px;background:var(--ink);color:rgba(255,255,255,.6);padding:24px var(--pad) 40px;font-size:13px;line-height:1.8}
+  .foot b{color:#fff}
+
+  .dim{position:fixed;inset:0;background:rgba(21,18,15,.5);display:none;align-items:flex-end;justify-content:center;z-index:40}
+  .dim.on{display:flex}
+  .sheet{background:#fff;width:min(834px,100%);max-height:88vh;overflow:auto;padding:28px var(--pad) 26px;animation:up .2s ease}
+  @keyframes up{from{transform:translateY(30px);opacity:.6}to{transform:none;opacity:1}}
+  .x{float:right;width:44px;height:44px;background:var(--panel);font-size:20px}
+  .det{display:grid;grid-template-columns:260px 1fr;gap:24px;clear:both;padding-top:6px}
+  .det .img{background:var(--panel);aspect-ratio:1;display:grid;place-items:center}
+  .det .img img{width:88%;height:88%;object-fit:contain}
+  .det h3{font-family:var(--num);font-weight:900;font-size:30px;line-height:1.2;margin-top:6px}
+  .chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+  .chips span{font-size:13px;font-weight:700;padding:5px 10px;background:var(--panel)}
+  .ben{margin-top:16px;border-top:2px solid var(--red)}
+  .ben div{display:grid;grid-template-columns:auto 1fr;gap:10px;padding:11px 0;border-bottom:1px solid var(--line);font-size:15px;line-height:1.5}
+  .ben i{font-style:normal;font-family:var(--num);font-weight:900;color:var(--red)}
+  .upsell{margin-top:16px;width:100%;background:var(--red);color:#fff;padding:18px;display:flex;align-items:center;gap:12px;text-align:left}
+  .upsell b{font-family:var(--num);font-weight:900;font-size:18px;display:block}
+  .upsell small{display:block;font-size:13.5px;color:rgba(255,255,255,.85);margin-top:3px}
+  .upsell .arr{margin-left:auto;font-family:var(--num);font-weight:900;font-size:26px}
+  .btns{display:flex;gap:8px;margin-top:16px}
+  .sh{font-family:var(--num);font-weight:900;font-size:26px}
+  .sub{font-family:var(--num);font-weight:800;font-size:18px;margin-top:26px}
+  .line{display:flex;align-items:center;gap:14px;padding:12px 0;border-top:1px solid var(--line)}
+  .line img{width:54px;height:54px;object-fit:contain;background:var(--panel)}
+  .line .mini{flex:none;width:54px;height:54px;background:var(--ink);color:#fff;display:grid;place-items:center;font-family:var(--num);font-size:9px;text-align:center;line-height:1.2}
+  .line b{font-family:var(--num);font-weight:800;font-size:17px}
+  .line .s{font-size:13px;color:var(--grey)}
+  .step{margin-left:auto;display:flex;align-items:center;border:1.5px solid var(--line)}
+  .step button{width:46px;height:46px;font-size:20px}
+  .step span{min-width:30px;text-align:center;font-family:var(--num);font-weight:800;font-size:18px}
+  .nudge{margin-top:16px;background:var(--ink);color:#fff;padding:18px}
+  .nudge b{font-family:var(--num);font-weight:900;font-size:19px}
+  .nudge .u{font-size:14px;color:rgba(255,255,255,.7);margin-top:4px}
+  .nudge .bar2{height:8px;background:rgba(255,255,255,.18);margin-top:12px}
+  .nudge .bar2 i{display:block;height:100%;background:var(--red)}
+  .engr{display:flex;align-items:center;gap:14px;margin-top:12px;padding:16px 18px;border:2px solid var(--red);background:rgba(216,31,42,.05)}
+  .engr b{font-family:var(--num);font-weight:900;font-size:18px;color:var(--red)}
+  .engr .u{font-size:14px;color:var(--ink-soft);margin-top:4px}
+  .engr .b1{flex:none;padding:0 22px;margin-left:auto}
+  .engr.on{border-color:var(--ink);background:#fff}.engr.on b{color:var(--ink)}
+  .engr input{display:block;width:100%;margin-top:10px;height:50px;border:1.5px solid var(--line);padding:0 14px;font:inherit;font-size:17px}
+  .engr.off{border-style:dashed;border-color:var(--grey);background:none}.engr.off b{color:var(--ink)}
+  .pick2{margin-top:12px;border:2px solid var(--red);padding:16px 18px;background:rgba(216,31,42,.04)}
+  .pk-h{font-family:var(--num);font-weight:900;font-size:17px;color:var(--red);margin-bottom:10px}
+  .pk{display:grid;grid-template-columns:1fr auto;align-items:center;column-gap:12px;width:100%;text-align:left;background:#fff;border:1.5px solid var(--line);padding:14px 16px;margin-top:8px}
+  .pk b{font-family:var(--num);font-weight:900;font-size:17px}
+  .pk span{grid-column:1;font-size:13.5px;color:var(--ink-soft);margin-top:3px}
+  .pk i{grid-row:1/3;grid-column:2;font-style:normal;font-family:var(--num);font-weight:900;font-size:24px;color:var(--red)}
+  .pk.on{border-color:var(--red);background:#fff}.pk.on .b2{grid-row:1/3;grid-column:2;height:44px}
+  .pk-or{text-align:center;font-size:13px;color:var(--grey);margin-top:8px;font-weight:700}
+  .mem{margin-top:16px;padding:18px;background:var(--panel)}
+  .mem .pk{border-color:#fff}
+  .in{display:block;width:100%;height:54px;margin-top:10px;border:1.5px solid var(--line);padding:0 14px;font:inherit;font-size:17px;background:#fff}
+  .agree{display:flex;gap:8px;align-items:flex-start;margin-top:10px;font-size:13.5px;color:var(--ink-soft);line-height:1.5}
+  .agree input{width:20px;height:20px;flex:none;margin-top:1px}
+  .lnk{font-size:13px;color:var(--grey);text-decoration:underline;margin-left:8px;font-family:var(--kr)}
+  .colors{display:flex;gap:6px;flex-wrap:wrap;padding:0 0 12px 68px}
+  .colors button{padding:8px 14px;border:1.5px solid var(--line);font-family:var(--num);font-weight:800;font-size:14px}
+  .colors button.on{border-color:var(--ink);background:var(--ink);color:#fff}
+  .colors .lab{align-self:center;font-size:13px;color:var(--grey);margin-right:4px}
+  .scan{border-top:1px solid var(--line);padding:14px 0}
+  .scan .hd{display:flex;align-items:baseline;gap:10px}
+  .scan .hd b{font-family:var(--num);font-weight:900;font-size:19px}
+  .scan .hd .x{margin-left:auto;font-family:var(--num);font-weight:900;font-size:22px;color:var(--red);float:none;width:auto;height:auto;background:none}
+  .scan .s{font-size:13px;color:var(--grey);margin-top:3px}
+  .scan svg{display:block;max-width:100%;height:auto;margin-top:8px;background:#fff}
+  .scan .warn{display:inline-block;margin-top:6px;font-size:12.5px;font-weight:700;color:var(--red)}
+  .scan.bundle{background:rgba(216,31,42,.05);border:2px solid var(--red);padding:14px 16px;margin-top:12px}
+  .total{display:flex;align-items:baseline;justify-content:space-between;margin-top:16px;padding-top:16px;border-top:2px solid var(--ink)}
+  .total .price{font-size:34px}
+  .toast{position:fixed;left:50%;bottom:30px;transform:translateX(-50%) translateY(16px);background:var(--ink);color:#fff;padding:16px 22px;font-family:var(--num);font-weight:800;opacity:0;transition:.25s;z-index:60;pointer-events:none}
+  .toast.on{opacity:1;transform:translateX(-50%)}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
+    <nav class="tabs" id="tabs">
+      <a href="#s1" class="on">최고혜택</a><a href="#s2">기기 패키지</a><a href="#s3">빌런 &amp; 릭</a><a href="#s4">맛으로 찾기</a>
+    </nav>
+  </div>
+
+  <section class="redblock" id="s1">
+    <div class="hdr"><div class="n">01</div><div><div class="eb">Best Deal</div><h2>오늘 가장 큰 혜택</h2></div></div>
+    <div class="best-title">액상 10병 +<br>발라리안 맥스프로 기기패키지</div>
+    <div class="best-sub">낱개로 사는 것보다 가장 저렴한 구성이에요.<br>원하는 맛으로 10병을 골라 담으면 돼요.</div>
+    <div class="best-pics" id="bestPics"></div>
+    <button class="cta" data-pkg="max10"><span><b>최고혜택 구성 보고 더 저렴하게 구매하러 가기</b><small>구성과 할인 금액을 한눈에 보여 드려요</small></span><span class="arr">→</span></button>
+    <div class="evrows">
+      <div class="evrow"><div><div class="t">빌런 패키지 이벤트</div><div class="u">빌런 패키지로 구매하면 추가 할인이 적용돼요</div></div><div class="d">-10,000원</div></div>
+      <div class="evrow"><div><div class="t">레이저 각인 무료 이벤트</div><div class="u">기기 구매 또는 액상 10병 이상 구매 시 원하는 문구를 새겨 드려요</div></div><div class="d">0원</div></div>
+      <div class="evrow"><div><div class="t">액상만 구매하셨나요?</div><div class="u">리뷰를 쓰면 바로 3,000원 즉시할인해 드려요</div></div><div class="d">-3,000원</div></div>
+      <div class="evrow"><div><div class="t">리뷰 작성 이벤트</div><div class="u">리뷰를 쓰면 원하는 액상 1병을 더 받아 갈 수 있어요</div></div><div class="d">+1병</div></div>
+    </div>
+  </section>
+
+  <section class="sec" id="s2">
+    <div class="hdr"><div class="n">02</div><div><div class="eb">Starter Package</div><h2>기기 패키지</h2></div></div>
+    <div class="spec">
+      <div class="row"><div><span class="k">프리미엄 기기패키지</span><span class="u">기기 + 프리미엄 액상 5병</span><span class="tag">단품가보다 9,500원 저렴</span></div><div class="v"><span class="note">맥스프로 78,000원 + 40,000원</span><span class="price">118,000<span class="won">원</span></span></div></div>
+      <div class="row"><div><span class="k">베이프렌드 기기패키지</span><span class="u">기기 + 빌런&amp;릭 5병 · 입문자 최적가</span><span class="tag">19,500원 이득</span></div><div class="v"><span class="note">맥스프로 78,000원 + 30,000원</span><span class="price">108,000<span class="won">원</span></span></div></div>
+    </div>
+    <div id="combos"></div>
+  </section>
+
+  <section class="sec" id="s3">
+    <div class="hdr"><div class="n">03</div><div><div class="eb">Best Seller</div><h2>빌런 &amp; 릭 시리즈</h2></div></div>
+    <div class="photo hero-photo"></div>
+    <div class="spec">
+      <div class="row"><div><span class="k">5병 구매</span><span class="u">병당 9,900원</span></div><div class="v"><span class="price">49,500<span class="won">원</span></span></div></div>
+      <div class="row hi"><div><span class="k">6병<span class="op">=</span>5병<span class="op">+</span>100원 딜</span><span class="u">100원 1병 추가 · 병당 약 8,270원</span><span class="tag">+100원</span></div><div class="v"><span class="price">49,600<span class="won">원</span></span></div></div>
+      <div class="row"><div><span class="k">10병 구매</span><span class="u">병당 8,500원</span></div><div class="v"><span class="price">85,000<span class="won">원</span></span></div></div>
+      <div class="row hi best"><div><span class="k">12병<span class="op">=</span>10병<span class="op">+</span>100원 딜 ×2</span><span class="u">100원 2병 추가 · 병당 7,100원</span><span class="tag">+200원</span></div><div class="v"><span class="price">85,200<span class="won">원</span></span></div></div>
+    </div>
+    <div class="prods" id="vlList"></div>
+  </section>
+
+  <section class="sec" id="s4">
+    <div class="hdr"><div class="n">04</div><div><div class="eb">Find Your Taste</div><h2>맛으로 찾기</h2></div></div>
+    <div class="tastes" id="tastes"></div>
+    <div class="filters" id="filters"></div>
+    <div class="prods" id="prods"></div>
+    <button class="more" id="more">더 보기</button>
+  </section>
+
+  <div class="foot"><b>시안</b> · 사진·맛·태그는 직원 교육용 액상 DB(380종), 가격은 매장 안내 책자 기준이에요. 패키지·꿀조합·이벤트 문구는 관리자 화면에서 바꾸게 만들 예정이에요. 발라리안 맥스프로는 사진이 없어 임시 그림이에요(판매가 78,000원). 레이저 각인은 포스에 0원 상품으로 등록 예정. 액상 10병 기기패키지 가격과 빌런 패키지 할인 조건은 아직 확정 전이에요.</div>
+</div>
+
+<div class="dim" id="dim"><div class="sheet" id="sheet"></div></div>
+<div class="toast" id="toast"></div>
+
+<script src="data.js"></script>
+<script src="pos.js"></script>
+<script src="JsBarcode.all.min.js"></script>
+<script>
+const IMG = "https://officialvafriend.github.io/vape/img/";
+const L = window.LIQ || [];
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+const byName = (n) => L.find((x) => x.n === n);
+const isVL = (x) => /VF (빌런|릭) /.test(x.n);
+const short = (n) => n.replace(/^VF /, "");
+const DEVICE = { id: "dev_maxpro", n: "발라리안 맥스프로", br: "기기", dev: true, price: 78000 };
+const devBox = () => `<div class="dev">발라리안<br>맥스프로</div>`;
+const pic = (x) => x.dev ? `<div class="mini">발라리안<br>맥스프로</div>` : `<img src="${IMG + x.img}" alt="">`;
+
+// ── 관리자 화면에서 정할 값 (시안에서는 고정) ──
+const VILLAIN5 = ["VF 빌런 자두", "VF 빌런 청포도", "VF 빌런 레몬", "VF 빌런 레즈애플", "VF 빌런 청사과"];
+const PKGS = [
+  { id: "max10", badge: "최고 혜택", name: "발라리안 맥스프로 + 액상 10병", desc: "원하는 맛 10병을 골라 구성", device: true, items: [], pick: 10 },
+  { id: "fruitmint", badge: "BEST", sub: "기기패키지", name: "과일멘솔 조합", desc: "발라리안 맥스프로 + 빌런 자두 · 청포도 · 레몬 · 레즈애플 · 청사과", device: true, items: VILLAIN5 },
+  { id: "honey", badge: "꿀조합", sub: "매장 추천", name: "상큼 과일 꿀조합", desc: "빌런 자두 · 청포도 · 레즈애플 + 디오 레몬 · 샤인", items: ["VF 빌런 자두", "VF 빌런 청포도", "VF 빌런 레즈애플", "디오 레몬", "디오 샤인"] },
+];
+const TASTES = [["과일", "상큼·달콤"], ["멘솔·민트", "시원·깔끔"], ["디저트·음료", "콜라·캔디"], ["시가·타바코", "묵직한 연초"]];
+// 빌런&릭 가격표 (책자 02p): 가장 싼 조합으로 계산
+const vlPrice = (n) => { let best = n * 9900; for (const [q, p] of [[12, 85200], [11, 85100], [10, 85000], [6, 49600], [5, 49500]]) if (n >= q) best = Math.min(best, p + vlPrice(n - q)); return best; };
+
+// 기기 78,000원. 베이프렌드 기기패키지 = 기기 + 빌런&릭 5병 30,000원 → 둘 중 싼 쪽으로 계산 (다른 액상은 미포함)
+const estimate = (dev, vl) => { if (!dev) return vlPrice(vl); const plain = dev * DEVICE.price + vlPrice(vl); return vl >= 5 ? Math.min(plain, (dev - 1) * DEVICE.price + 108000 + vlPrice(vl - 5)) : plain; };
+const cart = new Map();
+let review = false; // 액상만 구매 시 리뷰 3,000원 즉시할인
+const member = { type: null, name: "", phone: "", agree: false };
+let engrave = null;
+let devColor = null; // 발라맥스프로 색상 (포스 상품이 색상별로 나뉘어 있음)
+const DEV_COLORS = ["블랙", "실버", "블루", "핑크", "퍼플"]; // null=각인 안 함, 문자열=각인 문구
+let taste = null, line = "프리미엄", tag = null, shown = 12;
+
+function card(x) {
+  return `<button class="p" data-p="${x.id}">${isVL(x) ? '<span class="rib">BEST</span>' : ""}<img loading="lazy" src="${IMG + x.img}" alt=""><div class="bd">${esc(x.br)}</div><b>${esc(short(x.n))}</b><div class="tg">${esc([x.f, ...x.t.filter((t) => t !== "일반")].join(" · "))}</div></button>`;
+}
+function render() {
+  $("#bestPics").innerHTML = devBox() + VILLAIN5.map(byName).filter(Boolean).map((x) => `<img src="${IMG + x.img}" alt="">`).join("");
+  $("#combos").innerHTML = PKGS.slice(1).map((p) => `<div class="combo"><div class="lab"><span class="badge">${esc(p.badge)}</span>${p.sub ? `<span class="badge line">${esc(p.sub)}</span>` : ""}</div>
+    <h3>${esc(p.name)}</h3><div class="names">${esc(p.desc)}</div>
+    <div class="items">${p.device ? devBox() : ""}${p.items.map(byName).filter(Boolean).map((x) => `<img src="${IMG + x.img}" alt="">`).join("")}</div>
+    <div class="act"><button class="b1" data-pkgadd="${p.id}">이 구성 그대로 담기</button><button class="b2" data-pkg="${p.id}">자세히</button></div></div>`).join("");
+  $("#vlList").innerHTML = L.filter(isVL).slice(0, 9).map(card).join("");
+  $("#tastes").innerHTML = TASTES.map(([n, d]) => `<button class="taste ${taste === n ? "on" : ""}" data-t="${n}"><b>${n}</b><span>${d}</span></button>`).join("");
+  const list = L.filter((x) => x.line === line && (!taste || x.g === taste) && (!tag || x.t.includes(tag))).sort((a, b) => isVL(b) - isVL(a));
+  $("#filters").innerHTML = ["프리미엄", "프라임"].map((l) => `<button class="f ${line === l ? "on" : ""}" data-l="${l}">${l}</button>`).join("") + `<span style="width:10px"></span>` +
+    ["노멘솔", "무니코틴"].map((t) => `<button class="f ${tag === t ? "on" : ""}" data-tag="${t}">${t}</button>`).join("") + `<span class="cnt">${list.length}종</span>`;
+  $("#prods").innerHTML = list.slice(0, shown).map(card).join("");
+  $("#more").style.display = list.length > shown ? "block" : "none";
+  $("#cartN").textContent = [...cart.values()].reduce((a, b) => a + b, 0);
+}
+
+function toast(m) { const t = $("#toast"); t.textContent = m; t.classList.add("on"); clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove("on"), 1900); }
+function open(html) { $("#sheet").innerHTML = `<button class="x" data-x>✕</button>` + html; $("#dim").classList.add("on"); $("#sheet").scrollTop = 0; }
+const closeS = () => $("#dim").classList.remove("on");
+const add = (id, n = 1) => { cart.set(id, (cart.get(id) || 0) + n); if (cart.get(id) <= 0) cart.delete(id); render(); };
+const item = (id) => id === DEVICE.id ? DEVICE : L.find((y) => y.id === id);
+
+function benefits(x) {
+  const out = [];
+  if (isVL(x)) out.push("빌런&릭 5병 49,500원 · 6병은 100원만 더 (49,600원)");
+  if (x.n.includes("빌런")) out.push("빌런 패키지 이벤트 10,000원 추가 할인");
+  if (!isVL(x) && x.line === "프리미엄") out.push("프리미엄 5병 49,500원 · 11병 90,000원");
+  if (x.line === "프라임") out.push("프라임 3병 50,000원 · 10병 160,000원");
+  out.push("기기 구매 또는 액상 10병 이상이면 레이저 각인 무료");
+  out.push("리뷰 작성하면 원하는 액상 1병 더");
+  return out.map((t, i) => [String(i + 1).padStart(2, "0"), t]);
+}
+function detail(id) {
+  const x = item(id);
+  const sims = L.filter((y) => y.id !== id && y.g === x.g && y.line === x.line).sort((a, b) => (b.br === x.br) - (a.br === x.br)).slice(0, 3);
+  open(`<div class="det"><div class="img"><img src="${IMG + x.img}" alt=""></div><div>
+    <div style="font-size:13px;color:var(--grey);font-weight:700">${esc(x.br)} · ${esc(x.line)}</div>
+    <h3>${esc(short(x.n))}</h3>
+    <div class="chips">${[x.f, x.g, ...x.t.filter((t) => t !== "일반")].map((t) => `<span>${esc(t)}</span>`).join("")}</div>
+    <div class="ben">${benefits(x).map(([n, t]) => `<div><i>${n}</i><span>${esc(t)}</span></div>`).join("")}</div>
+  </div></div>
+  <button class="upsell" data-pkg="max10"><span><b>최고혜택 구성 보러 가기</b><small>액상 10병 + 발라리안 맥스프로 기기패키지로 더 저렴하게</small></span><span class="arr">→</span></button>
+  <div class="btns"><button class="b1" data-add="${x.id}">담기</button><button class="b2" data-demo="${x.id}">시연 요청</button></div>
+  <div class="sub">비슷한 맛</div><div class="prods">${sims.map(card).join("")}</div>`);
+}
+function nudge(vl) {
+  if (!vl) return "";
+  const steps = [[5, "5병 49,500원"], [6, "6병 49,600원 (100원 딜)"], [10, "10병 85,000원"], [12, "12병 85,200원 (100원 딜 ×2)"]];
+  const next = steps.find(([q]) => vl < q);
+  if (!next) return `<div class="nudge"><b>빌런&amp;릭 최대 혜택 적용 중</b><div class="u">12병 85,200원 구간이에요</div></div>`;
+  const msg = vl === 5 || vl === 10 || vl === 11 ? "100원만 더 내면 1병 더!" : `빌런&amp;릭 ${next[0] - vl}병 더 담으면 ${next[1]}`;
+  return `<div class="nudge"><b>${msg}</b><div class="u">지금 ${vl}병 · 다음 구간 ${next[1]}</div><div class="bar2"><i style="width:${Math.min(100, (vl / next[0]) * 100)}%"></i></div></div>`;
+}
+function memberBox() {
+  if (!member.type) return `<div class="mem"><div class="sub" style="margin-top:0">혹시 처음 오셨나요?</div>
+    <button class="pk" data-mem="new"><b>처음이에요 · 회원등록하고 적립하기!</b><span>오늘 구매부터 바로 적립돼요</span><i>→</i></button>
+    <button class="pk" data-mem="old"><b>회원이에요 · 회원정보 입력하기</b><span>휴대폰 번호만 입력하면 적립돼요 &gt;.&lt;</span><i>→</i></button></div>`;
+  if (member.type === "new") return `<div class="mem"><div class="sub" style="margin-top:0">회원등록 <button class="lnk" data-mem-x>다시 고르기</button></div>
+    <input class="in" id="memName" placeholder="이름" value="${esc(member.name)}"><input class="in" id="memPhone" inputmode="numeric" placeholder="휴대폰 번호 (- 없이)" value="${esc(member.phone)}">
+    <label class="agree"><input type="checkbox" id="memAgree" ${member.agree ? "checked" : ""}> 적립을 위한 개인정보(이름·휴대폰 번호) 수집·이용에 동의해요</label></div>`;
+  return `<div class="mem"><div class="sub" style="margin-top:0">회원정보 입력 <button class="lnk" data-mem-x>다시 고르기</button></div>
+    <input class="in" id="memPhone" inputmode="numeric" placeholder="가입하신 휴대폰 번호 (- 없이)" value="${esc(member.phone)}"></div>`;
+}
+function cartView() {
+  const items = [...cart];
+  const vl = items.filter(([id]) => isVL(item(id))).reduce((a, [, n]) => a + n, 0);
+  const dev = cart.get(DEVICE.id) || 0;
+  const liq = items.filter(([id]) => !item(id).dev).reduce((a, [, n]) => a + n, 0);
+  const ok = dev > 0 || liq >= 10;
+  if (!ok) engrave = null;
+  const engr = !items.length ? "" : ok && engrave === null
+    ? `<div class="engr"><div><b>레이저 각인 무료 대상이에요!</b><div class="u">각인을 원하시면 [각인 추가 0원]을 눌러 주세요</div></div><button class="b1" data-engr-add>각인 추가 0원</button></div>`
+    : ok ? `<div class="engr on"><div style="flex:1"><b>레이저 각인 · 0원</b><input id="engrText" maxlength="20" placeholder="새길 문구 (이름·이니셜 등, 20자 이내)" value="${esc(engrave)}"></div><button class="b2" data-engr-del>빼기</button></div>`
+    : `<div class="pick2"><div class="pk-h">지금 ${liq}병 · 이런 혜택도 받을 수 있어요</div>
+      <button class="pk" data-more-liq><b>액상 ${10 - liq}병 더 담고 레이저 각인 무료</b><span>10병 이상이면 원하는 문구를 무료로 새겨 드려요</span><i>→</i></button>
+      <div class="pk-or">또는</div>
+      ${review ? `<div class="pk on"><b>리뷰 3,000원 즉시할인 적용됨</b><span>결제할 때 직원에게 작성한 리뷰를 보여 주세요</span><button class="b2" data-review-del>취소</button></div>` : `<button class="pk" data-review><b>리뷰 쓰고 3,000원 즉시할인 받으러 가기</b><span>액상만 구매하시는 분 전용 혜택이에요</span><i>→</i></button>`}</div>`;
+  if (ok || dev) review = false;
+  const mem = !items.length ? "" : memberBox();
+  open(`<div class="sh">담은 상품</div>${nudge(vl)}${engr}
+    <div style="margin-top:12px">${items.map(([id, n]) => { const x = item(id); return `<div class="line">${pic(x)}<div><b>${esc(short(x.n))}</b><div class="s">${esc(x.br)}${x.dev && devColor ? " · " + devColor : ""}</div></div><div class="step"><button data-m="${id}">−</button><span>${n}</span><button data-pl="${id}">+</button></div></div>${x.dev ? `<div class="colors"><span class="lab">색상</span>${DEV_COLORS.map((c) => `<button class="${devColor === c ? "on" : ""}" data-color="${c}">${c}</button>`).join("")}</div>` : ""}`; }).join("") || '<div style="padding:30px 0;color:var(--grey)">아직 담은 상품이 없어요</div>'}</div>
+    ${review ? `<div class="line"><div class="mini" style="background:var(--red)">리뷰</div><div><b>리뷰 즉시할인</b><div class="s">액상만 구매 혜택</div></div><b class="price" style="margin-left:auto;color:var(--red);font-size:20px">-3,000원</b></div>` : ""}
+    ${vl || dev ? `<div class="total"><span class="num" style="font-weight:800;font-size:17px">예상 금액 ${dev ? "(기기패키지 적용)" : "(빌런&amp;릭 " + vl + "병 묶음가" + (review ? " · 리뷰할인" : "") + ")"}</span><span class="price">${(estimate(dev, vl) - (review ? 3000 : 0)).toLocaleString()}<span class="won">원</span></span></div>` : ""}
+    <button class="upsell" data-pkg="max10"><span><b>이 맛들로 기기패키지 만들기</b><small>액상 10병 + 발라리안 맥스프로가 가장 저렴해요</small></span><span class="arr">→</span></button>
+    ${mem}
+    <div class="btns"><button class="b1 ink" data-staff ${items.length ? "" : "disabled"}>직원에게 보여주기</button></div>`);
+}
+function pkgView(id) {
+  const p = PKGS.find((x) => x.id === id);
+  const its = p.items.map(byName).filter(Boolean);
+  const ben = ["낱개로 사는 것보다 저렴한 구성 (기기 가격 + 액상 묶음가)"];
+  if (its.some((x) => x.n.includes("빌런"))) ben.push("빌런 패키지 이벤트 10,000원 추가 할인 적용");
+  ben.push(p.device || p.pick >= 10 ? "레이저 각인 무료 (기기 구매 혜택)" : "5병 더 담으면 레이저 각인 무료 (액상 10병 이상)");
+  ben.push("리뷰 작성 시 액상 1병 더");
+  open(`<span class="badge">${esc(p.badge)}</span><div class="sh" style="margin-top:12px">${esc(p.name)}</div><div style="color:var(--ink-soft);margin-top:6px;font-size:15px">${esc(p.desc)}</div>
+    <div class="ben">${ben.map((t, i) => `<div><i>0${i + 1}</i><span>${esc(t)}</span></div>`).join("")}</div>
+    <div style="margin-top:8px">${p.device ? `<div class="line">${pic(DEVICE)}<div><b>발라리안 맥스프로</b><div class="s">기기 1대 · 78,000원</div></div></div>` : ""}
+    ${its.map((x) => `<div class="line">${pic(x)}<div><b>${esc(short(x.n))}</b><div class="s">${esc(x.f)}</div></div></div>`).join("")}
+    ${p.pick ? `<div class="line" style="color:var(--grey);font-size:15px">+ 맛으로 찾기에서 액상 ${p.pick}병을 골라 담아 주세요</div>` : ""}</div>
+    <div class="btns"><button class="b1" data-pkgadd="${p.id}">${p.pick ? "기기 담고 맛 고르러 가기" : "이 구성 그대로 담기"}</button></div>`);
+}
+// 포스에 찍을 값: 바코드가 등록된 상품은 바코드, 없으면 상품코드를 CODE128로 (포스 인식은 매장에서 확인 필요)
+const posOf = (name) => (window.POS?.[PAD.branch] || {})[name];
+function bundleOf(dev, vl) { // 포스에 있는 묶음 상품 중 정확히 맞는 것만 (확인된 것)
+  if (dev && vl === 5) return "빌런,릭 패키지 30,000원 (5병)";
+  if (!dev && vl === 6) return "빌런,릭 49,600원(6병)";
+  if (!dev && vl === 12) return "빌런,릭 85,200원(12병)";
+  return null;
+}
+function scanBlock(title, sub, posName, n, note = "") {
+  const p = posName && posOf(posName);
+  const code = p ? `<svg class="bc" data-v="${esc(p[1])}" data-f="${p[2]}"></svg>${p[3] ? "" : '<span class="warn">바코드 미등록 · 상품코드(' + esc(p[0]) + ')로 만든 바코드라 포스 인식 확인 필요</span>'}`
+    : '<span class="warn">포스 상품을 못 찾았어요 · 포스에서 직접 검색해 주세요</span>';
+  return `<div class="scan"><div class="hd"><b>${esc(title)}</b><span class="x">× ${n}</span></div><div class="s">${esc(sub)}${note}</div>${code}</div>`;
+}
+function staffView() {
+  const items = [...cart];
+  const vl = items.filter(([id]) => isVL(item(id))).reduce((a, [, n]) => a + n, 0);
+  const dev = cart.get(DEVICE.id) || 0;
+  const bundle = bundleOf(dev, vl);
+  const blocks = items.map(([id, n]) => {
+    const x = item(id);
+    if (x.dev) return devColor ? scanBlock(`발라리안 맥스프로 · ${devColor}`, "기기", `발라맥스프로 ${devColor}`, n)
+      : `<div class="scan"><div class="hd"><b>발라리안 맥스프로</b><span class="x">× ${n}</span></div><div class="s">색상을 골라야 바코드가 나와요</div><div class="colors" style="padding:10px 0 0">${DEV_COLORS.map((c) => `<button data-color2="${c}">${c}</button>`).join("")}</div></div>`;
+    return scanBlock(short(x.n), [x.br, x.loc ? "진열 " + x.loc : ""].filter(Boolean).join(" · "), x.n, n, bundle && isVL(x) ? " · <b style='color:var(--red)'>서비스(0원) 처리</b>" : "");
+  }).join("");
+  open(`<div class="sh">직원 확인용 · 포스 스캔</div><div style="color:var(--ink-soft);margin-top:6px;font-size:14.5px">위에서부터 차례로 찍어 주세요. (${esc(PAD.branch)} 포스 상품 기준 · 8/31 자료)</div>
+  ${bundle ? `<div class="scan bundle"><div class="hd"><b>① 묶음 상품 먼저: ${esc(bundle)}</b><span class="x">× 1</span></div><div class="s">이걸로 돈을 받고, 아래 빌런·릭은 낱개로 찍어 서비스(0원) 처리</div>${(() => { const p = posOf(bundle); return p ? `<svg class="bc" data-v="${p[1]}" data-f="${p[2]}"></svg>${p[3] ? "" : '<span class="warn">바코드 미등록 · 상품코드(' + p[0] + ')로 만든 바코드라 포스 인식 확인 필요</span>'}` : '<span class="warn">포스 상품을 못 찾았어요</span>'; })()}</div>`
+    : vl >= 5 ? `<div class="scan bundle"><div class="s" style="color:var(--ink)">빌런·릭 ${vl}병 묶음가는 포스에서 묶음 상품을 직접 골라 주세요</div></div>` : ""}
+  <div style="margin-top:6px">${blocks}</div>
+  ${engrave !== null ? `<div class="scan"><div class="hd"><b>레이저 각인 (0원)</b><span class="x">× 1</span></div><div class="s">문구: ${engrave ? esc(engrave) : "손님께 확인"}</div><span class="warn">포스에 0원 각인 상품 등록 후 바코드 연결</span></div>` : ""}
+  ${review ? `<div class="line"><div class="mini" style="background:var(--red)">리뷰</div><div><b>리뷰 즉시할인 -3,000원</b><div class="s">손님 리뷰 작성 확인 후 할인</div></div></div>` : ""}
+  ${member.type ? `<div class="line"><div class="mini">회원</div><div><b>${member.type === "new" ? "신규 회원등록" : "기존 회원 적립"}</b><div class="s">${esc([member.name, member.phone].filter(Boolean).join(" · ") || "정보 미입력")}</div></div></div>` : `<div class="line"><div class="mini">회원</div><div><b>회원 정보 없음</b><div class="s">적립 원하시는지 한 번 여쭤봐 주세요</div></div></div>`}
+  <div class="btns"><button class="b2" data-x>수정</button><button class="b1" data-reset>완료 · 처음으로</button></div>`);
+  document.querySelectorAll("#sheet svg.bc").forEach((el) => {
+    try { JsBarcode(el, el.dataset.v, { format: el.dataset.f, height: 70, width: 2.4, fontSize: 18, margin: 8 }); }
+    catch { JsBarcode(el, el.dataset.v, { format: "CODE128", height: 70, width: 2.4, fontSize: 18, margin: 8 }); }
+  });
+}
+
+// ── 시연 요청: 운영봇이 지점 🧪시연요청 채널로 보내고, 매장폰·워치에 "고객 시연요청 3번 빌런 자두"로 뜬다 ──
+const PAD = { branch: new URLSearchParams(location.search).get("branch") || "본점", no: new URLSearchParams(location.search).get("pad") || "1", api: "http://127.0.0.1:5182" };
+let demoPoll = null;
+async function demoReq(x) {
+  try {
+    const r = await fetch(PAD.api + "/demo-request", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ branch: PAD.branch, name: x.n, loc: x.loc, pad: PAD.no }) }).then((r) => r.json());
+    if (!r.ok) throw new Error(r.error);
+    toast(`직원에게 알렸어요${r.no ? ` · 시연 ${r.no}번` : ""} · 잠시만 기다려 주세요`);
+    clearInterval(demoPoll); let n = 0;
+    demoPoll = setInterval(async () => {
+      if (++n > 100) return clearInterval(demoPoll); // 5분
+      const s = await fetch(`${PAD.api}/demo-status?id=${r.id}`).then((r) => r.json()).catch(() => null);
+      if (s?.going) { clearInterval(demoPoll); toast(`${s.going}님이 시연 준비하러 오고 있어요`); }
+    }, 3000);
+  } catch { toast("알림을 못 보냈어요 · 직원을 불러 주세요"); }
+}
+document.addEventListener("click", (e) => {
+  const q = (s) => e.target.closest(s); let el;
+  if (q("[data-x]")) return closeS();
+  if ((el = q("[data-pkgadd]"))) { const p = PKGS.find((x) => x.id === el.dataset.pkgadd); if (p.device) add(DEVICE.id); p.items.map(byName).filter(Boolean).forEach((x) => add(x.id)); closeS(); if (p.pick) { document.getElementById("s4").scrollIntoView({ behavior: "smooth" }); toast(`기기를 담았어요. 액상 ${p.pick}병을 골라 주세요`); } else toast("구성을 담았어요"); return; }
+  if ((el = q("[data-pkg]"))) return pkgView(el.dataset.pkg);
+  if ((el = q("[data-p]"))) return detail(el.dataset.p);
+  if ((el = q("[data-add]"))) { add(el.dataset.add); closeS(); toast("담았어요"); return; }
+  if ((el = q("[data-demo]"))) return demoReq(item(el.dataset.demo));
+  if ((el = q("[data-t]"))) { taste = taste === el.dataset.t ? null : el.dataset.t; shown = 12; render(); return; }
+  if ((el = q("[data-l]"))) { line = el.dataset.l; shown = 12; render(); return; }
+  if ((el = q("[data-tag]"))) { tag = tag === el.dataset.tag ? null : el.dataset.tag; render(); return; }
+  if (q("#more")) { shown += 12; render(); return; }
+  if (q("#cartBtn")) return cartView();
+  if ((el = q("[data-m]"))) { add(el.dataset.m, -1); return cartView(); }
+  if ((el = q("[data-pl]"))) { add(el.dataset.pl, 1); return cartView(); }
+  if (q("[data-engr-add]")) { engrave = ""; cartView(); toast("레이저 각인을 추가했어요 (0원)"); setTimeout(() => document.getElementById("engrText")?.focus(), 50); return; }
+  if (q("[data-engr-del]")) { engrave = null; return cartView(); }
+  if (q("[data-more-liq]")) { closeS(); document.getElementById("s4").scrollIntoView({ behavior: "smooth" }); toast("맛을 골라 10병을 채우면 각인이 무료예요"); return; }
+  if (q("[data-review]")) { review = true; toast("리뷰 3,000원 즉시할인을 적용했어요"); return cartView(); }
+  if (q("[data-review-del]")) { review = false; return cartView(); }
+  if ((el = q("[data-mem]"))) { member.type = el.dataset.mem; cartView(); setTimeout(() => document.querySelector(".mem .in")?.focus(), 50); return; }
+  if (q("[data-mem-x]")) { Object.assign(member, { type: null, name: "", phone: "", agree: false }); return cartView(); }
+  if ((el = q("[data-color]"))) { devColor = el.dataset.color; return cartView(); }
+  if ((el = q("[data-color2]"))) { devColor = el.dataset.color2; return staffView(); }
+  if (q("[data-staff]")) { if (member.type === "new" && (member.phone || member.name) && !member.agree) return toast("회원등록은 개인정보 동의가 필요해요"); return staffView(); }
+  if (q("[data-reset]")) { cart.clear(); engrave = null; devColor = null; review = false; Object.assign(member, { type: null, name: "", phone: "", agree: false }); render(); closeS(); scrollTo(0, 0); toast("처음 화면으로 돌아왔어요"); return; }
+  if (e.target.id === "dim") closeS();
+});
+document.addEventListener("input", (e) => { const id = e.target.id; if (id === "engrText") engrave = e.target.value; if (id === "memName") member.name = e.target.value; if (id === "memPhone") member.phone = e.target.value.replace(/D/g, ""); if (id === "memAgree") member.agree = e.target.checked; });
+addEventListener("scroll", () => { let cur = "s1"; for (const s of ["s1", "s2", "s3", "s4"]) if (document.getElementById(s).getBoundingClientRect().top < 140) cur = s; document.querySelectorAll("#tabs a").forEach((a) => a.classList.toggle("on", a.getAttribute("href") === "#" + cur)); }, { passive: true });
+render();
+</script>
+</body>
+</html>
