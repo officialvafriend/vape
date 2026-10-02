@@ -285,7 +285,7 @@
 <body data-mode="">
 <div class="app">
   <div class="top">
-    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">v10.02-1830</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
+    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">v10.02-1900</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
     <nav class="tabs" id="tabs" style="display:none"></nav>
   </div>
 
@@ -318,6 +318,7 @@
     <div class="hdr"><div class="n">02</div><div><div class="eb">Starter Package</div><h2>기기 패키지</h2></div></div>
     <div class="spec">
       <div class="row"><div><span class="k">프리미엄 기기패키지</span><span class="u">기기 + 프리미엄 액상 5병</span><span class="tag">단품가보다 9,500원 저렴</span></div><div class="v"><span class="note">맥스프로 78,000원 + 40,000원</span><span class="price">118,000<span class="won">원</span></span></div></div>
+      <div class="row"><div><span class="k">프리미엄 기기패키지 10병</span><span class="u">기기 + 프리미엄 액상 10병 · 병당 7,500원</span><span class="tag">단품가보다 24,000원 저렴</span></div><div class="v"><span class="note">맥스프로 78,000원 + 75,000원</span><span class="price">153,000<span class="won">원</span></span></div></div>
       <div class="row"><div><span class="k">베이프렌드 기기패키지</span><span class="u">기기 + 빌런&amp;릭 5병 · 입문자 최적가</span><span class="tag">19,500원 이득</span></div><div class="v"><span class="note">맥스프로 78,000원 + 30,000원</span><span class="price">108,000<span class="won">원</span></span></div></div>
     </div>
     <div id="combos"></div>
@@ -367,7 +368,7 @@
 
   <div id="dspList" data-for="dsp"></div>
 
-  <div class="foot"><b>시안 · 버전 10.02-1830</b> · 사진·맛·태그는 직원 교육용 액상 DB(380종), 가격은 매장 안내 책자 기준이에요. 패키지·꿀조합·이벤트 문구는 관리자 화면에서 바꾸게 만들 예정이에요. 발라리안 맥스프로는 사진이 없어 임시 그림이에요(판매가 78,000원). 레이저 각인은 포스에 0원 상품으로 등록 예정. 액상 10병 기기패키지 가격과 빌런 패키지 할인 조건은 아직 확정 전이에요.</div>
+  <div class="foot"><b>시안 · 버전 10.02-1900</b> · 사진·맛·태그는 직원 교육용 액상 DB(380종), 가격은 매장 안내 책자 기준이에요. 패키지·꿀조합·이벤트 문구는 관리자 화면에서 바꾸게 만들 예정이에요. 발라리안 맥스프로는 사진이 없어 임시 그림이에요(판매가 78,000원). 레이저 각인은 포스에 0원 상품으로 등록 예정. 빌런 패키지 할인 조건은 아직 확정 전이에요.</div>
 </div>
 
 <div class="srch" id="srch"><div class="hd"><input id="q" type="search" placeholder="이름·초성·맛·브랜드 (예: ㅂㄹㅈㄷ, 멘솔, 팜팜바, 말론)" autocomplete="off"><button class="cl" id="srchClose">닫기</button></div>
@@ -396,7 +397,7 @@ const pic = (x) => x.c === "dsp" && dImg(x) ? `<img src="${dImg(x)}" alt="" styl
 // ── 관리자 화면에서 정할 값 (시안에서는 고정) ──
 const VILLAIN5 = ["VF 빌런 자두", "VF 빌런 청포도", "VF 빌런 레몬", "VF 빌런 레즈애플", "VF 빌런 청사과"];
 const PKGS = [
-  { id: "max10", badge: "최고 혜택", name: "발라리안 맥스프로 + 액상 10병", desc: "원하는 맛 10병을 골라 구성", device: true, items: [], pick: 10 },
+  { id: "max10", badge: "최고 혜택", name: "발라리안 맥스프로 + 액상 10병", desc: "기기 가격 + 액상 10병 75,000원 (병당 7,500원) · 원하는 맛 10병을 골라 구성", device: true, items: [], pick: 10 },
   { id: "fruitmint", badge: "BEST", sub: "기기패키지", name: "과일멘솔 조합", desc: "발라리안 맥스프로 + 빌런 자두 · 청포도 · 레몬 · 레즈애플 · 청사과", device: true, items: VILLAIN5 },
   { id: "honey", badge: "꿀조합", sub: "매장 추천", name: "상큼 과일 꿀조합", desc: "빌런 자두 · 청포도 · 레즈애플 + 디오 레몬 · 샤인", items: ["VF 빌런 자두", "VF 빌런 청포도", "VF 빌런 레즈애플", "디오 레몬", "디오 샤인"] },
 ];
@@ -406,6 +407,7 @@ const TASTES = [["과일", "상큼·달콤"], ["멘솔·민트", "시원·깔끔
 // 빌런&릭 전용가 5병 49,500 · 6병 49,600 · 10병 85,000 · 12병 85,200 — 빌런·릭'만'으로 채울 때만
 // 프라임 1병 20,000 · 3병 50,000 · 10병 160,000
 // 기기 78,000 · 베이프렌드 기기패키지 = 기기 + 빌런&릭 5병 30,000 · 프리미엄 기기패키지 = 기기 + 프리미엄 5병 40,000
+// 프리미엄 기기패키지 10병 = 기기 + 프리미엄 10병 75,000 (빌런·릭 섞어도 됨, 2026-10-02 사용자 확인)
 const best = (n, deals, unit) => { const memo = {}; const f = (k) => { if (k <= 0) return 0; if (memo[k] != null) return memo[k]; let b = k * unit; for (const [q, p] of deals) if (k >= q) b = Math.min(b, p + f(k - q)); return (memo[k] = b); }; return f(n); };
 const vlPrice = (n) => best(n, [[12, 85200], [10, 85000], [6, 49600], [5, 49500]], 15000);
 const prPrice = (n) => best(n, [[11, 90000], [5, 49500]], 15000);
@@ -416,6 +418,7 @@ function estimate(c) { // c = { dev, v, p, m }
   let lq = liqPrice(c.v, c.p, c.m), b = c.dev * DEVICE.price + lq, how = "";
   if (c.dev && c.v >= 5) { const l2 = liqPrice(c.v - 5, c.p, c.m), t = (c.dev - 1) * DEVICE.price + 108000 + l2; if (t < b) { b = t; lq = l2; how = "베이프렌드 기기패키지"; } }
   if (c.dev && c.v + c.p >= 5) for (let a = 0; a <= Math.min(5, c.v); a++) { if (5 - a > c.p) continue; const l2 = liqPrice(c.v - a, c.p - (5 - a), c.m), t = (c.dev - 1) * DEVICE.price + 118000 + l2; if (t < b) { b = t; lq = l2; how = "프리미엄 기기패키지"; } }
+  if (c.dev && c.v + c.p >= 10) for (let a = 0; a <= Math.min(10, c.v); a++) { if (10 - a > c.p) continue; const l2 = liqPrice(c.v - a, c.p - (10 - a), c.m), t = (c.dev - 1) * DEVICE.price + 153000 + l2; if (t < b) { b = t; lq = l2; how = "프리미엄 기기패키지 10병"; } }
   return { total: b, how, liq: lq }; // liq = 기기패키지에 들어간 액상을 뺀 액상 금액
 }
 // 다른 프리미엄을 빌런·릭으로 바꾸면(필요하면 몇 병 더 담아서) 더 싸지는지 — 직원이 권할 문구
@@ -566,7 +569,7 @@ function dspView(model) {
 function modelView(model) {
   const xs = G.filter((x) => x.model === model); const x0 = xs[0];
   if (x0.c === "dsp") return dspView(model);
-  const ben = x0.c === "dev" ? ["레이저 각인 무료 (기기 구매)", ...(model === "발라맥스프로" ? ["기기 + 빌런&릭 5병 → 베이프렌드 기기패키지 108,000원", "기기 + 프리미엄 5병 → 프리미엄 기기패키지 118,000원"] : []), "이 기기에 맞는 팟은 [액상·소모품 → 팟·코일]에서"]
+  const ben = x0.c === "dev" ? ["레이저 각인 무료 (기기 구매)", ...(model === "발라맥스프로" ? ["기기 + 빌런&릭 5병 → 베이프렌드 기기패키지 108,000원", "기기 + 프리미엄 5병 → 프리미엄 기기패키지 118,000원", "기기 + 프리미엄 10병 → 프리미엄 기기패키지 10병 153,000원"] : []), "이 기기에 맞는 팟은 [액상·소모품 → 팟·코일]에서"]
     : x0.ev ? [`${EVN[x0.ev][2]} 이벤트 · 같은 이벤트끼리 맛 섞어도 돼요`] : [];
   open(`<div style="font-size:13px;color:var(--grey);font-weight:700">${{ dev: "전자담배 기기", pod: "팟·코일", dsp: "일회용" }[x0.c]}</div><div class="sh" style="margin-top:6px">${esc(model)}</div>
     ${ben.length ? `<div class="ben">${ben.map((t, i) => `<div><i>0${i + 1}</i><span>${esc(t)}</span></div>`).join("")}</div>` : ""}
