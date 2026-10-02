@@ -55,7 +55,7 @@
   .best-sub{margin-top:10px;font-size:17px;line-height:1.6;color:rgba(255,255,255,.88)}
   .best-pics{display:flex;align-items:flex-end;gap:2px;margin-top:20px}
   .best-pics img{width:84px;height:110px;object-fit:contain;filter:drop-shadow(0 8px 10px rgba(0,0,0,.28))}
-  .dev{flex:none;width:72px;height:128px;background:linear-gradient(160deg,#2b2724,#0d0b0a);border:2px solid rgba(255,255,255,.5);border-radius:18px;display:grid;place-items:center;color:#fff;font-family:var(--num);font-weight:800;font-size:11px;text-align:center;line-height:1.3;margin-right:8px}
+  .dev{flex:none;width:72px;height:128px;background:#fff;overflow:hidden;border:2px solid rgba(255,255,255,.5);border-radius:18px;display:grid;place-items:center;color:#fff;font-family:var(--num);font-weight:800;font-size:11px;text-align:center;line-height:1.3;margin-right:8px}
   .cta{margin-top:22px;width:100%;background:#fff;color:var(--red);padding:20px 22px;display:flex;align-items:center;gap:12px;text-align:left}
   .cta b{font-family:var(--num);font-weight:900;font-size:20px;display:block}
   .cta small{display:block;font-size:14px;color:var(--ink-soft);margin-top:4px;font-weight:700}
@@ -88,7 +88,8 @@
   .combo .names{font-size:15px;color:var(--ink-soft);margin-top:6px;line-height:1.6}
   .combo .items{display:flex;align-items:flex-end;gap:6px;margin-top:14px}
   .combo .items img{width:70px;height:92px;object-fit:contain}
-  .combo .items .dev{width:56px;height:100px;border-radius:14px;font-size:10px;background:linear-gradient(160deg,#3a3531,#15120f);border-color:#ccc}
+  .combo .items .dev{width:56px;height:100px;border-radius:14px;font-size:10px;background:#fff;border-color:#ccc}
+  .dev img{width:100%;height:100%;object-fit:contain;display:block}
   .combo .act{display:flex;gap:8px;margin-top:16px}
   .b1{flex:1;height:56px;background:var(--red);color:#fff;font-family:var(--num);font-weight:900;font-size:17px}
   .b1.ink{background:var(--ink)}
@@ -285,7 +286,7 @@
 <body data-mode=""><div id="testRibbon" style="position:fixed;left:0;right:0;bottom:0;z-index:99999;background:#d32f2f;color:#fff;text-align:center;font:700 13px sans-serif;padding:4px;pointer-events:none">테스트판 · 손님 상담에는 정식판을 쓰세요</div>
 <div class="app">
   <div class="top">
-    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">테스트 v10.02-1900</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
+    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">테스트 v10.02-2000</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
     <nav class="tabs" id="tabs" style="display:none"></nav>
   </div>
 
@@ -368,7 +369,7 @@
 
   <div id="dspList" data-for="dsp"></div>
 
-  <div class="foot"><b>시안 · 버전 10.02-1900</b> · 사진·맛·태그는 직원 교육용 액상 DB(380종), 가격은 매장 안내 책자 기준이에요. 패키지·꿀조합·이벤트 문구는 관리자 화면에서 바꾸게 만들 예정이에요. 발라리안 맥스프로는 사진이 없어 임시 그림이에요(판매가 78,000원). 레이저 각인은 포스에 0원 상품으로 등록 예정. 빌런 패키지 할인 조건은 아직 확정 전이에요.</div>
+  <div class="foot"><b>시안 · 버전 10.02-2000</b> · 사진·맛·태그는 직원 교육용 액상 DB(380종), 가격은 매장 안내 책자 기준이에요. 패키지·꿀조합·이벤트 문구는 관리자 화면에서 바꾸게 만들 예정이에요. 발라리안 맥스프로 사진은 톡톡 응대 메뉴 이미지에서 잘라 썼어요(판매가 78,000원). 레이저 각인은 포스에 0원 상품으로 등록 예정. 빌런 패키지 할인 조건은 아직 확정 전이에요.</div>
 </div>
 
 <div class="srch" id="srch"><div class="hd"><input id="q" type="search" placeholder="이름·초성·맛·브랜드 (예: ㅂㄹㅈㄷ, 멘솔, 팜팜바, 말론)" autocomplete="off"><button class="cl" id="srchClose">닫기</button></div>
@@ -391,8 +392,8 @@ const byName = (n) => L.find((x) => x.n === n);
 const isVL = (x) => !x.c && /VF (빌런|릭) /.test(x.n);
 const short = (n) => n.replace(/^VF /, "");
 const DEVICE = { id: "dev_maxpro", n: "발라리안 맥스프로", br: "기기", dev: true, price: 78000 };
-const devBox = () => `<div class="dev">발라리안<br>맥스프로</div>`;
-const pic = (x) => x.c === "dsp" && dImg(x) ? `<img src="${dImg(x)}" alt="" style="object-fit:cover">` : x.dev ?`<div class="mini">발라리안<br>맥스프로</div>` : x.c ? `<div class="mini" style="font-size:26px;background:var(--panel)">${{ dev: "🔋", pod: "🧩", dsp: "🚬" }[x.c]}</div>` : `<img src="${IMG + x.img}" alt="">`;
+const devBox = () => `<div class="dev"><img src="dev_maxpro.png" alt="발라리안 맥스프로"></div>`;
+const pic = (x) => x.c === "dsp" && dImg(x) ? `<img src="${dImg(x)}" alt="" style="object-fit:cover">` : x.dev ?`<img src="dev_maxpro.png" alt="" style="object-fit:contain;background:#fff">` : x.c ? `<div class="mini" style="font-size:26px;background:var(--panel)">${{ dev: "🔋", pod: "🧩", dsp: "🚬" }[x.c]}</div>` : `<img src="${IMG + x.img}" alt="">`;
 
 // ── 관리자 화면에서 정할 값 (시안에서는 고정) ──
 const VILLAIN5 = ["VF 빌런 자두", "VF 빌런 청포도", "VF 빌런 레몬", "VF 빌런 레즈애플", "VF 빌런 청사과"];
