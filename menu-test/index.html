@@ -81,7 +81,8 @@
   .cv-h{font-family:var(--num);font-weight:800;font-size:20px;margin-top:24px}
   .cv-h small{font-family:var(--kr);font-size:13px;color:var(--grey);font-weight:600;margin-left:6px}
   .cv-pods{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
-  .cv-pods button{border:2px solid var(--ink);border-radius:16px;padding:16px;display:flex;flex-direction:column;align-items:flex-start;gap:8px;text-align:left;background:#fff}
+  .cv-pods button{position:relative;border:2px solid var(--ink);border-radius:16px;padding:16px;display:flex;flex-direction:column;align-items:flex-start;gap:8px;text-align:left;background:#fff}
+  .cv-pods .cvp-in{position:absolute;top:12px;right:12px;font-size:12px;font-weight:800;color:#fff;background:#03b26c;border-radius:999px;padding:4px 9px}
   .cv-pods .cvp-k{font-size:14px;font-weight:800;color:#3182f6}
   .cv-pods .cvp-p small{font-family:var(--kr);font-size:13px;color:var(--grey);font-weight:600}
   .cv-pods .cvp-p{align-self:stretch;display:flex;align-items:baseline;justify-content:space-between;background:#f3f4f6;border-radius:12px;padding:12px 14px;font-size:24px;font-weight:800;color:var(--red)}
@@ -339,7 +340,7 @@
 <body data-mode=""><div id="testRibbon" style="position:fixed;left:0;right:0;bottom:0;z-index:99999;background:#d32f2f;color:#fff;text-align:center;font:700 13px sans-serif;padding:4px;pointer-events:none">테스트판 · 손님 상담에는 정식판을 쓰세요</div>
 <div class="app">
   <div class="top">
-    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">테스트 v10.02-2540</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
+    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">테스트 v10.02-2550</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
     <nav class="tabs" id="tabs" style="display:none"></nav>
   </div>
 
@@ -424,7 +425,7 @@
 
   <div id="dspList" data-for="dsp"></div>
 
-  <div class="foot"><b>시안 · 버전 10.02-2540</b> · 사진·맛·태그는 직원 교육용 액상 DB(380종), 가격은 매장 안내 책자 기준이에요. 패키지·꿀조합·이벤트 문구는 관리자 화면에서 바꾸게 만들 예정이에요. 기기패키지 기준 기기는 하복2(판매가 89,000원)이고 사진은 용트림 상품 페이지 사진에서 배경을 지운 거예요. 레이저 각인은 포스에 0원 상품으로 등록 예정. 빌런 패키지 할인 조건은 아직 확정 전이에요.</div>
+  <div class="foot"><b>시안 · 버전 10.02-2550</b> · 사진·맛·태그는 직원 교육용 액상 DB(380종), 가격은 매장 안내 책자 기준이에요. 패키지·꿀조합·이벤트 문구는 관리자 화면에서 바꾸게 만들 예정이에요. 기기패키지 기준 기기는 하복2(판매가 89,000원)이고 사진은 용트림 상품 페이지 사진에서 배경을 지운 거예요. 레이저 각인은 포스에 0원 상품으로 등록 예정. 빌런 패키지 할인 조건은 아직 확정 전이에요.</div>
 </div>
 
 <div class="srch" id="srch"><div class="hd"><input id="q" type="search" placeholder="이름·초성·맛·브랜드 (예: ㅂㄹㅈㄷ, 멘솔, 팜팜바, 말론)" autocomplete="off"><button class="cl" id="srchClose">닫기</button></div>
@@ -464,7 +465,7 @@ const MAIN_SPEC = [
   ["AS 보증", "6개월", "베이프렌드 매장 AS · 모든 기기 동일"],
   ["구성품", "카트리지 2개", "충전케이블과 설명서 그리고 컬러드립팁이 들어있어요."],
 ];
-const MAIN_TIPS = ["입호흡·폐호흡 둘 다 되는 기기 — 팟만 바꿔 끼우면 돼요", "팟은 2~3주에 1개씩 교체를 권장해요", "기존 하복 코일·카트리지와는 호환되지 않아요"];
+const MAIN_TIPS = ["입호흡과 폐호흡은 PG/VG 비율이 달라요.", "팟은 입호흡 기준 액상 1병당 1개씩 교체해줘야해요. 기간은 7~10일에 한번씩 교체를 권장해요.", "기존 하복 코일·카트리지와는 호환되지 않아요"];
 const DEVICE = { id: "dev_main", n: MAIN.name, br: "기기", dev: true, price: MAIN.price };
 const PK = { vl5: MAIN.price + ADD.vl5, pr5: MAIN.price + ADD.pr5, pr10: MAIN.price + ADD.pr10 };
 const devBox = () => MAIN.img ? `<div class="dev"><img src="${MAIN.img}" alt="${MAIN.name}"></div>` : `<div class="dev" style="background:#15120f;color:#fff">${MAIN.name}</div>`;
