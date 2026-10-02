@@ -54,7 +54,7 @@
   .best-title{font-family:var(--num);font-weight:900;font-size:38px;line-height:1.22;margin-top:22px}
   .best-sub{margin-top:10px;font-size:17px;line-height:1.6;color:rgba(255,255,255,.88)}
   /* 오늘 가장 큰 혜택: 왼쪽 글·액상, 오른쪽 여백에 기기를 크게 */
-  .best-grid{display:flex;align-items:flex-end;gap:16px}
+  .best-grid{display:flex;align-items:center;gap:16px}
   .best-left{flex:1;min-width:0}
   .best-dev{flex:none;position:relative;width:min(158px,21vw);padding-bottom:12px;margin-right:10px}
   .best-dev img{display:block;width:100%;height:auto;position:relative;z-index:1}
@@ -305,7 +305,7 @@
 <body data-mode=""><div id="testRibbon" style="position:fixed;left:0;right:0;bottom:0;z-index:99999;background:#d32f2f;color:#fff;text-align:center;font:700 13px sans-serif;padding:4px;pointer-events:none">테스트판 · 손님 상담에는 정식판을 쓰세요</div>
 <div class="app">
   <div class="top">
-    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">테스트 v10.02-2340</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
+    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">테스트 v10.02-2400</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
     <nav class="tabs" id="tabs" style="display:none"></nav>
   </div>
 
@@ -325,7 +325,7 @@
     <div class="best-grid"><div class="best-left">
       <div class="best-title" id="bestTitle"></div>
       <div class="best-sub">낱개로 사는 것보다 가장 저렴한 구성이에요.<br>원하는 맛으로 10병을 골라 담으면 돼요.</div>
-      <div class="best-pics" id="bestPics"></div></div>
+      </div>
       <div class="best-dev" id="bestDev"></div></div>
     <button class="cta" data-pkg="max10"><span><b>최고혜택 구성 보고 더 저렴하게 구매하러 가기</b><small>구성과 할인 금액을 한눈에 보여 드려요</small></span><span class="arr">→</span></button>
     <div class="evrows">
@@ -390,7 +390,7 @@
 
   <div id="dspList" data-for="dsp"></div>
 
-  <div class="foot"><b>시안 · 버전 10.02-2340</b> · 사진·맛·태그는 직원 교육용 액상 DB(380종), 가격은 매장 안내 책자 기준이에요. 패키지·꿀조합·이벤트 문구는 관리자 화면에서 바꾸게 만들 예정이에요. 기기패키지 기준 기기는 하복2(판매가 89,000원)이고 사진은 용트림 상품 페이지 사진에서 배경을 지운 거예요. 레이저 각인은 포스에 0원 상품으로 등록 예정. 빌런 패키지 할인 조건은 아직 확정 전이에요.</div>
+  <div class="foot"><b>시안 · 버전 10.02-2400</b> · 사진·맛·태그는 직원 교육용 액상 DB(380종), 가격은 매장 안내 책자 기준이에요. 패키지·꿀조합·이벤트 문구는 관리자 화면에서 바꾸게 만들 예정이에요. 기기패키지 기준 기기는 하복2(판매가 89,000원)이고 사진은 용트림 상품 페이지 사진에서 배경을 지운 거예요. 레이저 각인은 포스에 0원 상품으로 등록 예정. 빌런 패키지 할인 조건은 아직 확정 전이에요.</div>
 </div>
 
 <div class="srch" id="srch"><div class="hd"><input id="q" type="search" placeholder="이름·초성·맛·브랜드 (예: ㅂㄹㅈㄷ, 멘솔, 팜팜바, 말론)" autocomplete="off"><button class="cl" id="srchClose">닫기</button></div>
@@ -698,7 +698,6 @@ function renderMain() {
 }
 function render() {
   renderMain();
-  $("#bestPics").innerHTML = VILLAIN5.map(byName).filter(Boolean).map((x) => `<img src="vl_${x.img.replace(/\.\w+$/, ".png")}" alt="">`).join(""); // 배경 지운 빌런 5종
   $("#combos").innerHTML = PKGS.slice(1).map((p) => `<div class="combo"><div class="lab"><span class="badge">${esc(p.badge)}</span>${p.sub ? `<span class="badge line">${esc(p.sub)}</span>` : ""}</div>
     <h3>${esc(p.name)}</h3><div class="names">${esc(p.desc)}</div>
     <div class="items">${p.device ? devBox() : ""}${p.items.map(byName).filter(Boolean).map((x) => `<img src="${IMG + x.img}" alt="">`).join("")}</div>
