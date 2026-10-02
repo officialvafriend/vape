@@ -252,7 +252,7 @@
     <button class="more" id="more">더 보기</button>
   </section>
 
-  <div class="foot"><b>시안 · 버전 10.02-1300</b> · 사진·맛·태그는 직원 교육용 액상 DB(380종), 가격은 매장 안내 책자 기준이에요. 패키지·꿀조합·이벤트 문구는 관리자 화면에서 바꾸게 만들 예정이에요. 발라리안 맥스프로는 사진이 없어 임시 그림이에요(판매가 78,000원). 레이저 각인은 포스에 0원 상품으로 등록 예정. 액상 10병 기기패키지 가격과 빌런 패키지 할인 조건은 아직 확정 전이에요.</div>
+  <div class="foot"><b>시안 · 버전 10.02-1340</b> · 사진·맛·태그는 직원 교육용 액상 DB(380종), 가격은 매장 안내 책자 기준이에요. 패키지·꿀조합·이벤트 문구는 관리자 화면에서 바꾸게 만들 예정이에요. 발라리안 맥스프로는 사진이 없어 임시 그림이에요(판매가 78,000원). 레이저 각인은 포스에 0원 상품으로 등록 예정. 액상 10병 기기패키지 가격과 빌런 패키지 할인 조건은 아직 확정 전이에요.</div>
 </div>
 
 <div class="srch" id="srch"><div class="hd"><input id="q" type="search" placeholder="액상 이름·초성·맛·브랜드 (예: ㅂㄹㅈㄷ, 멘솔, 디오)" autocomplete="off"><button class="cl" id="srchClose">닫기</button></div>
@@ -301,6 +301,22 @@ function estimate(c) { // c = { dev, v, p, m }
   if (c.dev && c.v >= 5) { const t = (c.dev - 1) * DEVICE.price + 108000 + liqPrice(c.v - 5, c.p, c.m); if (t < b) { b = t; how = "베이프렌드 기기패키지"; } }
   if (c.dev && c.v + c.p >= 5) for (let a = 0; a <= Math.min(5, c.v); a++) { if (5 - a > c.p) continue; const t = (c.dev - 1) * DEVICE.price + 118000 + liqPrice(c.v - a, c.p - (5 - a), c.m); if (t < b) { b = t; how = "프리미엄 기기패키지"; } }
   return { total: b, how };
+}
+// 다른 프리미엄을 빌런·릭으로 바꾸면(필요하면 몇 병 더 담아서) 더 싸지는지 — 직원이 권할 문구
+function swapHint(c) {
+  if (!c.p) return "";
+  const now = estimate(c).total, n = c.v + c.p;
+  // 아끼는 돈 + 더 받는 병(1병≈7,000원 가치)으로 가장 이득인 안내 하나
+  let pick = null;
+  for (const extra of [0, 1, 2]) {
+    const alt = estimate({ ...c, v: n + extra, p: 0 }).total, save = now - alt;
+    if (save < -1000) continue;
+    const score = save + extra * 7000;
+    if (score > 0 && (!pick || score > pick.score)) pick = { extra, alt, save, score };
+  }
+  if (pick) { const { extra, alt, save } = pick;
+    return `<div class="nudge"><b>다른 프리미엄 ${c.p}병을 빌런·릭으로 바꾸면${extra ? ` + ${extra}병 더` : ""} ${alt.toLocaleString()}원</b><div class="u">빌런·릭만 ${n + extra}병 · ${save > 0 ? save.toLocaleString() + "원 아끼고" : save === 0 ? "같은 금액에" : (-save).toLocaleString() + "원만 더 내고"}${extra ? ` ${extra}병 더` : ""}</div></div>`; }
+  return "";
 }
 const countCart = () => { const c = { dev: 0, v: 0, p: 0, m: 0 }; for (const [id, n] of cart) { const x = item(id); if (x.dev) c.dev += n; else if (isVL(x)) c.v += n; else if (x.line === "프라임") c.m += n; else c.p += n; } return c; };
 const cart = new Map();
@@ -421,7 +437,7 @@ function cartView() {
       ${review ? `<div class="pk on"><b>리뷰 3,000원 즉시할인 적용됨</b><span>결제할 때 직원에게 작성한 리뷰를 보여 주세요</span><button class="b2" data-review-del>취소</button></div>` : `<button class="pk" data-review><b>리뷰 쓰고 3,000원 즉시할인 받으러 가기</b><span>액상만 구매하시는 분 전용 혜택이에요</span><i>→</i></button>`}</div>`;
   if (ok || dev) review = false;
   const mem = !items.length ? "" : memberBox();
-  open(`<div class="sh">담은 상품</div>${nudge(vl)}${engr}
+  open(`<div class="sh">담은 상품</div>${nudge(vl)}${swapHint(countCart())}${engr}
     <div style="margin-top:12px">${items.map(([id, n]) => { const x = item(id); return `<div class="line">${pic(x)}<div><b>${esc(short(x.n))}</b><div class="s">${esc(x.br)}${x.dev && devColor ? " · " + devColor : ""}</div></div><div class="step"><button data-m="${id}">−</button><span>${n}</span><button data-pl="${id}">+</button></div></div>${x.dev ? `<div class="colors"><span class="lab">색상</span>${DEV_COLORS.map((c) => `<button class="${devColor === c ? "on" : ""}" data-color="${c}">${c}</button>`).join("")}</div>` : ""}`; }).join("") || '<div style="padding:30px 0;color:var(--grey)">아직 담은 상품이 없어요</div>'}</div>
     ${review ? `<div class="line"><div class="mini" style="background:var(--red)">리뷰</div><div><b>리뷰 즉시할인</b><div class="s">액상만 구매 혜택</div></div><b class="price" style="margin-left:auto;color:var(--red);font-size:20px">-3,000원</b></div>` : ""}
     ${items.length ? (() => { const e = estimate(countCart()); return `<div class="total"><span class="num" style="font-weight:800;font-size:17px">예상 금액 ${e.how ? "(" + e.how + ")" : "(묶음가 자동 적용)"}${review ? " · 리뷰할인" : ""}</span><span class="price">${(e.total - (review ? 3000 : 0)).toLocaleString()}<span class="won">원</span></span></div>`; })() : ""}
