@@ -35,7 +35,8 @@
   .bar .vf-logo{width:40px;height:36px;background-size:contain;background-repeat:no-repeat;background-position:center}
   .bar .w{font-family:var(--num);font-weight:900;font-size:22px;color:var(--red);letter-spacing:.02em}
   .bar .s{font-size:12px;letter-spacing:.2em;color:rgba(255,255,255,.55);font-family:var(--num)}
-  .cart{margin-left:auto;display:flex;align-items:center;gap:10px;background:var(--red);color:#fff;padding:12px 18px;font-family:var(--num);font-weight:800;font-size:16px}
+  .find{margin-left:auto;background:rgba(255,255,255,.12);color:#fff;padding:12px 16px;font-family:var(--num);font-weight:800;font-size:16px}
+  .cart{margin-left:8px;display:flex;align-items:center;gap:10px;background:var(--red);color:#fff;padding:12px 18px;font-family:var(--num);font-weight:800;font-size:16px}
   .cart b{background:#fff;color:var(--red);min-width:26px;height:26px;display:grid;place-items:center;font-size:14px;padding:0 6px}
   .tabs{display:flex;padding:0 var(--pad);gap:26px;overflow-x:auto;scrollbar-width:none}
   .tabs a{flex:none;color:rgba(255,255,255,.6);text-decoration:none;font-family:var(--num);font-weight:800;font-size:17px;padding:10px 0 14px;border-bottom:3px solid transparent}
@@ -115,7 +116,7 @@
   .foot{margin-top:30px;background:var(--ink);color:rgba(255,255,255,.6);padding:24px var(--pad) 40px;font-size:13px;line-height:1.8}
   .foot b{color:#fff}
 
-  .dim{position:fixed;inset:0;background:rgba(21,18,15,.5);display:none;align-items:flex-end;justify-content:center;z-index:40}
+  .dim{position:fixed;inset:0;background:rgba(21,18,15,.5);display:none;align-items:flex-end;justify-content:center;z-index:55}
   .dim.on{display:flex}
   .sheet{background:#fff;width:min(834px,100%);max-height:88vh;overflow:auto;padding:28px var(--pad) 26px;animation:up .2s ease}
   @keyframes up{from{transform:translateY(30px);opacity:.6}to{transform:none;opacity:1}}
@@ -184,6 +185,17 @@
   .scan.bundle{background:rgba(216,31,42,.05);border:2px solid var(--red);padding:14px 16px;margin-top:12px}
   .total{display:flex;align-items:baseline;justify-content:space-between;margin-top:16px;padding-top:16px;border-top:2px solid var(--ink)}
   .total .price{font-size:34px}
+  .srch{position:fixed;inset:0;background:var(--paper);z-index:50;display:none;flex-direction:column}
+  .srch.on{display:flex}
+  .srch .hd{display:flex;gap:10px;align-items:center;padding:14px var(--pad);background:var(--ink)}
+  .srch input{flex:1;height:56px;border:0;padding:0 16px;font:inherit;font-size:20px;font-family:var(--kr);font-weight:700;background:#fff;color:var(--ink)}
+  .srch input:focus{outline:3px solid var(--red)}
+  .srch .cl{color:#fff;font-family:var(--num);font-weight:800;font-size:16px;padding:0 6px}
+  .srch .hint{padding:14px var(--pad) 4px;font-size:14px;color:var(--grey)}
+  .srch .quick{display:flex;gap:6px;flex-wrap:wrap;padding:6px var(--pad) 0}
+  .srch .quick button{padding:9px 14px;border:1.5px solid var(--line);font-family:var(--num);font-weight:800;font-size:14px}
+  .srch .res{flex:1;overflow:auto;padding:10px var(--pad) 40px}
+  .srch .res .prods{margin-top:6px}
   .toast{position:fixed;left:50%;bottom:30px;transform:translateX(-50%) translateY(16px);background:var(--ink);color:#fff;padding:16px 22px;font-family:var(--num);font-weight:800;opacity:0;transition:.25s;z-index:60;pointer-events:none}
   .toast.on{opacity:1;transform:translateX(-50%)}
 </style>
@@ -191,7 +203,7 @@
 <body>
 <div class="app">
   <div class="top">
-    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
+    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
     <nav class="tabs" id="tabs">
       <a href="#s1" class="on">최고혜택</a><a href="#s2">기기 패키지</a><a href="#s3">빌런 &amp; 릭</a><a href="#s4">맛으로 찾기</a>
     </nav>
@@ -240,9 +252,13 @@
     <button class="more" id="more">더 보기</button>
   </section>
 
-  <div class="foot"><b>시안 · 버전 10.02-0930</b> · 사진·맛·태그는 직원 교육용 액상 DB(380종), 가격은 매장 안내 책자 기준이에요. 패키지·꿀조합·이벤트 문구는 관리자 화면에서 바꾸게 만들 예정이에요. 발라리안 맥스프로는 사진이 없어 임시 그림이에요(판매가 78,000원). 레이저 각인은 포스에 0원 상품으로 등록 예정. 액상 10병 기기패키지 가격과 빌런 패키지 할인 조건은 아직 확정 전이에요.</div>
+  <div class="foot"><b>시안 · 버전 10.02-1000</b> · 사진·맛·태그는 직원 교육용 액상 DB(380종), 가격은 매장 안내 책자 기준이에요. 패키지·꿀조합·이벤트 문구는 관리자 화면에서 바꾸게 만들 예정이에요. 발라리안 맥스프로는 사진이 없어 임시 그림이에요(판매가 78,000원). 레이저 각인은 포스에 0원 상품으로 등록 예정. 액상 10병 기기패키지 가격과 빌런 패키지 할인 조건은 아직 확정 전이에요.</div>
 </div>
 
+<div class="srch" id="srch"><div class="hd"><input id="q" type="search" placeholder="액상 이름·초성·맛·브랜드 (예: ㅂㄹㅈㄷ, 멘솔, 디오)" autocomplete="off"><button class="cl" id="srchClose">닫기</button></div>
+  <div class="hint" id="srchHint">초성만 쳐도 돼요 · 띄어쓰기 상관없어요</div>
+  <div class="quick" id="srchQuick"></div>
+  <div class="res" id="srchRes"></div></div>
 <div class="dim" id="dim"><div class="sheet" id="sheet"></div></div>
 <div class="toast" id="toast"></div>
 
@@ -281,6 +297,34 @@ let engrave = null;
 let devColor = null; // 발라맥스프로 색상 (포스 상품이 색상별로 나뉘어 있음)
 const DEV_COLORS = ["블랙", "실버", "블루", "핑크", "퍼플"]; // null=각인 안 함, 문자열=각인 문구
 let taste = null, line = "프리미엄", tag = null, shown = 12;
+
+// ── 검색: 이름·초성·브랜드·맛·태그. 띄어쓰기·대소문자·'VF ' 무시 ──
+const CHO = "ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ";
+const cho = (str) => [...str].map((ch) => { const c = ch.charCodeAt(0) - 0xac00; return c >= 0 && c < 11172 ? CHO[Math.floor(c / 588)] : ch; }).join("");
+const norm = (str) => String(str).toLowerCase().replace(/^vf\s*/, "").replace(/\s+/g, "");
+const IDX = L.map((x) => { const nm = norm(x.n); const all = norm([x.n, x.br, x.f, x.g, x.line, ...x.t].join(" ")); return { x, nm, all, cho: cho(nm) }; });
+function searchItems(qs) {
+  const q = norm(qs); if (!q) return [];
+  const onlyCho = /^[ㄱ-ㅎ]+$/.test(q);
+  const noNo = !q.includes("노멘솔") && q.includes("멘솔"); // "멘솔"로 찾을 때 노멘솔은 빼기
+  return IDX.map((o0) => {
+    const o = noNo ? { ...o0, nm: o0.nm.replace(/노멘솔/g, ""), all: o0.all.replace(/노멘솔/g, "") } : o0;
+    let sc = 0;
+    if (onlyCho) { if (o.cho.startsWith(q)) sc = 3; else if (o.cho.includes(q)) sc = 2; }
+    else if (o.nm.startsWith(q)) sc = 4; else if (o.nm.includes(q)) sc = 3; else if (o.all.includes(q)) sc = 1;
+    return [sc, o.x];
+  }).filter(([sc]) => sc).sort((a, b) => b[0] - a[0] || isVL(b[1]) - isVL(a[1])).map(([, x]) => x);
+}
+function openSearch() {
+  $("#srch").classList.add("on"); const i = $("#q"); i.value = ""; drawSearch(); setTimeout(() => i.focus(), 50);
+}
+function drawSearch() {
+  const q = $("#q").value, r = searchItems(q);
+  $("#srchQuick").innerHTML = q ? "" : ["빌런", "디오", "멘솔", "노멘솔", "무니코틴", "과일", "디저트", "시가"].map((k) => `<button data-qk="${k}">${k}</button>`).join("");
+  $("#srchHint").textContent = q ? `'${q}' ${r.length}개` : "초성만 쳐도 돼요 · 띄어쓰기 상관없어요";
+  $("#srchRes").innerHTML = q && !r.length ? '<div style="padding:30px 0;color:var(--grey);font-size:16px">찾는 액상이 없어요. 다른 이름이나 초성으로 찾아 보세요.</div>' : `<div class="prods">${r.slice(0, 60).map(card).join("")}</div>`;
+}
+document.addEventListener("input", (e) => { if (e.target.id === "q") drawSearch(); });
 
 function card(x) {
   return `<button class="p" data-p="${x.id}">${isVL(x) ? '<span class="rib">BEST</span>' : ""}<img loading="lazy" src="${IMG + x.img}" alt=""><div class="bd">${esc(x.br)}</div><b>${esc(short(x.n))}</b><div class="tg">${esc([x.f, ...x.t.filter((t) => t !== "일반")].join(" · "))}</div></button>`;
@@ -429,6 +473,9 @@ function staffView() {
 const PAD = { branch: new URLSearchParams(location.search).get("branch") || "본점", no: new URLSearchParams(location.search).get("pad") || "1" };
 document.addEventListener("click", (e) => {
   const q = (s) => e.target.closest(s); let el;
+  if (q("#findBtn")) return openSearch();
+  if (q("#srchClose")) { $("#srch").classList.remove("on"); return; }
+  if ((el = q("[data-qk]"))) { $("#q").value = el.dataset.qk; drawSearch(); return; }
   if (q("[data-x]")) return closeS();
   if ((el = q("[data-pkgadd]"))) { const p = PKGS.find((x) => x.id === el.dataset.pkgadd); if (p.device) add(DEVICE.id); p.items.map(byName).filter(Boolean).forEach((x) => add(x.id)); closeS(); if (p.pick) { document.getElementById("s4").scrollIntoView({ behavior: "smooth" }); toast(`기기를 담았어요. 액상 ${p.pick}병을 골라 주세요`); } else toast("구성을 담았어요"); return; }
   if ((el = q("[data-pkg]"))) return pkgView(el.dataset.pkg);
