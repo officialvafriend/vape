@@ -104,6 +104,27 @@
   .cta small{display:block;font-size:14px;color:var(--ink-soft);margin-top:4px;font-weight:700}
   .cta .arr{margin-left:auto;font-family:var(--num);font-size:30px;font-weight:900}
   .evrows{margin-top:22px}
+  /* 첫 화면(오늘 가장 큰 혜택)을 패드 화면 높이에 꽉 차게: 상단 바(--topH)를 뺀 높이, 이벤트·버튼은 아래쪽 끝에 */
+  #s1{min-height:calc(100dvh - var(--topH, 130px));display:flex;flex-direction:column}
+  #s1 .best-grid{flex:1}
+  /* 받침대 있는 넓은 사진: 오른쪽에 크게 깔고(양옆 빈 곳은 글자 밑으로), 위 구분선까지 올라가게 */
+  #s1 .best-grid{position:relative;min-height:440px;align-items:center}
+  #s1 .best-left{position:relative;z-index:2;max-width:min(500px,64vw)}
+  #s1{overflow:hidden}
+  #s1 .best-dev{position:absolute;right:-56px;top:-95px;bottom:14px;width:auto;margin:0;padding:0;z-index:1}
+  #s1 .best-dev .spec-hit,#s1 .best-dev img{height:100%;width:auto}
+  #s1 .best-dev .spec-hit i{display:none}
+  #s1 .spec-tag{right:22%;top:34%}
+  #s1 .best-title{font-size:clamp(32px,5.5vw,45px)}
+  #s1 .best-price b{font-size:clamp(34px,5.6vw,46px)}
+  #s1 .best-sub{font-size:20px}
+  .best-price{display:flex;align-items:baseline;flex-wrap:wrap;gap:6px 14px;margin-top:22px}
+  .best-price s{font-size:24px;color:rgba(255,255,255,.65);font-weight:700}
+  .best-price b{font-family:var(--num);font-size:clamp(40px,6.4vw,54px);font-weight:900;color:#fff}
+  .best-price em{font-style:normal;background:#fff;color:var(--red);font-weight:900;font-size:18px;padding:6px 12px;border-radius:999px}
+  #s1 .evrows{margin-top:auto;padding-top:10px}
+  #s1 .evrow{padding:12px 0}
+  #s1 .cta{margin-top:14px}
   .evrow{display:grid;grid-template-columns:1fr auto;align-items:center;gap:14px;padding:16px 0;border-top:1px solid rgba(255,255,255,.3)}
   .evrow:last-child{border-bottom:1px solid rgba(255,255,255,.3)}
   .evrow .t{font-family:var(--num);font-weight:800;font-size:19px}
@@ -340,7 +361,7 @@
 <body data-mode=""><div id="testRibbon" style="position:fixed;left:0;right:0;bottom:0;z-index:99999;background:#d32f2f;color:#fff;text-align:center;font:700 13px sans-serif;padding:4px;pointer-events:none">테스트판 · 손님 상담에는 정식판을 쓰세요</div>
 <div class="app">
   <div class="top">
-    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">테스트 v10.02-2590</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
+    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">테스트 v10.02-2630</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
     <nav class="tabs" id="tabs" style="display:none"></nav>
   </div>
 
@@ -360,6 +381,7 @@
     <div class="best-grid"><div class="best-left">
       <div class="best-title" id="bestTitle"></div>
       <div class="best-sub">낱개로 사는 것보다 가장 저렴한 구성이에요.<br>원하는 맛으로 10병을 골라 담으면 돼요.</div>
+      <div class="best-price" id="bestPrice"></div>
       </div>
       <div class="best-dev" id="bestDev"></div></div>
     <div class="evrows">
@@ -423,7 +445,7 @@
 
   <div id="dspList" data-for="dsp"></div>
 
-  <div class="foot"><b>시안 · 버전 10.02-2590</b> · 사진·맛·태그는 직원 교육용 액상 DB(380종), 가격은 매장 안내 책자 기준이에요. 패키지·꿀조합·이벤트 문구는 관리자 화면에서 바꾸게 만들 예정이에요. 기기패키지 기준 기기는 하복2(판매가 89,000원)이고 사진은 용트림 상품 페이지 사진에서 배경을 지운 거예요. 레이저 각인은 포스에 0원 상품으로 등록 예정. 빌런 패키지 할인 조건은 아직 확정 전이에요.</div>
+  <div class="foot"><b>시안 · 버전 10.02-2630</b> · 사진·맛·태그는 직원 교육용 액상 DB(380종), 가격은 매장 안내 책자 기준이에요. 패키지·꿀조합·이벤트 문구는 관리자 화면에서 바꾸게 만들 예정이에요. 기기패키지 기준 기기는 하복2(판매가 89,000원)이고 사진은 용트림 상품 페이지 사진에서 배경을 지운 거예요. 레이저 각인은 포스에 0원 상품으로 등록 예정. 빌런 패키지 할인 조건은 아직 확정 전이에요.</div>
 </div>
 
 <div class="srch" id="srch"><div class="hd"><input id="q" type="search" placeholder="이름·초성·맛·브랜드 (예: ㅂㄹㅈㄷ, 멘솔, 팜팜바, 말론)" autocomplete="off"><button class="cl" id="srchClose">닫기</button></div>
@@ -447,11 +469,11 @@ const isVL = (x) => !x.c && /VF (빌런|릭) /.test(x.n);
 const short = (n) => n.replace(/^VF /, "");
 // ── 기기패키지 기준 기기 (여기만 바꾸면 패키지 가격·문구가 같이 바뀜) ──
 // model = 포스 상품 모델명, colors = 포스 색상, img = 누끼 사진(없으면 이름 상자)
-const MAIN = { model: "하복2", name: "하복2", price: 89000, colors: ["블랙", "실버", "올리브", "네이비"], img: "dev_havok2_silver.png",
+const MAIN = { model: "하복2", name: "하복2", price: 89000, colors: ["블랙", "실버", "올리브", "네이비"], img: "dev_havok2_hero.png", // 메인 사진 = 용트림 홍보 이미지(검정) 누끼
   imgs: { 블랙: "dev_havok2_black.png", 실버: "dev_havok2_silver.png", 올리브: "dev_havok2_olive.png", 네이비: "dev_havok2_navy.png" },
   podPack: 2, podPackPrice: 12000 }; // 전용 팟 1팩 2개입 12,000원 (용트림 소비자 권장가) — 포스에는 낱개 6,000원이라 팩이면 2번 찍음
 // 기기에 더하는 액상 금액 (맥스프로 때와 같은 금액 · 하복2 확정 전)
-const ADD = { vl5: 30000, pr5: 40000, pr10: 75000 };
+const ADD = { vl5: 30000, pr5: 40000, pr10: 75000, ref10: 90000 }; // ref10 = 비교용 평소가(프리미엄 11병 90,000원)
 // 기준 기기 스펙 (출처: 용트림 하복2 상세페이지 '제품 사양'·FAQ)
 const MAIN_SPEC = [
   ["카트리지", "5.5ml", "일체형으로 편하게 교체 가능해요."],
@@ -643,7 +665,7 @@ function dspView(model) {
 }
 let cvColor = null; // 스펙 창에서 고른 색
 function mainSpecView(color) {
-  cvColor = color || cvColor || devColor || Object.keys(MAIN.imgs)[1] || MAIN.colors[0];
+  cvColor = color || cvColor || devColor || MAIN.colors[0];
   const pods = G.filter((x) => x.c === "pod" && x.n.startsWith(MAIN.model + " "));
   open(`<div class="cv">
     <div class="cv-name">${esc(MAIN.name)}</div><div class="cv-sub">입호흡+폐호흡</div>
@@ -756,6 +778,7 @@ function card(x) {
 function renderMain() {
   $("#bestTitle").innerHTML = `${esc(MAIN.name)} 기기패키지<br>+입호흡 액상 10병`;
   $("#bestDev").innerHTML = MAIN.img ? `<button class="spec-hit" data-mainspec="1" aria-label="기기 스펙 보기"><img src="${MAIN.img}" alt="${esc(MAIN.name)}"><i></i><span class="spec-tag">스펙 보기</span></button>` : `<div class="best-ph">${esc(MAIN.name)}<small>사진 준비 중</small></div>`;
+  { const reg = MAIN.price + ADD.ref10; $("#bestPrice").innerHTML = `<s>${won(reg)}</s><b>${won(PK.pr10)}</b><em>${won(reg - PK.pr10)} 할인</em>`; } // 원래가 = 기기 + 프리미엄 11병 90,000원 (사용자 기준: 평소 11병 90,000 → 기기 구매 시 10병 75,000)
   document.querySelectorAll("[data-pk]").forEach((el) => { el.innerHTML = `${PK[el.dataset.pk].toLocaleString()}<span class="won">원</span>`; });
   document.querySelectorAll("[data-pk-note]").forEach((el) => { el.textContent = `${MAIN.name} ${won(MAIN.price)} + ${won(ADD[el.dataset.pkNote])}`; });
 }
@@ -971,6 +994,10 @@ if ("serviceWorker" in navigator && location.protocol === "https:") {
     setTimeout(next, 3000);
   }).catch(() => {});
 }
+</script>
+<script>
+// 상단 바 실제 높이를 --topH로 (첫 화면 꽉 차게 계산용) — 탭 줄이 보였다 안 보였다 해서 바뀔 때마다 다시 잼
+(() => { const top = document.querySelector('.top'); const set = () => document.documentElement.style.setProperty('--topH', top.offsetHeight + 'px'); set(); addEventListener('resize', set); new ResizeObserver(set).observe(top); })();
 </script>
 </body>
 </html>
