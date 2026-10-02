@@ -128,9 +128,15 @@
   .best-price{display:flex;align-items:baseline;flex-wrap:wrap;gap:6px 14px;margin-top:22px}
   .best-price s{font-size:24px;color:rgba(255,255,255,.65);font-weight:700}
   .best-price b{font-family:var(--num);font-size:clamp(40px,6.4vw,54px);font-weight:900;color:#fff}
+  .best-price small{flex-basis:100%;font-size:14px;color:rgba(255,255,255,.8)}
+  .evc{font-family:var(--kr);font-size:12px;font-weight:700;background:rgba(255,255,255,.18);border-radius:999px;padding:2px 8px;margin-left:6px;vertical-align:middle}
   .best-price em{font-style:normal;background:#fff;color:var(--red);font-weight:900;font-size:18px;padding:6px 12px;border-radius:999px}
   #s1 .evrows{margin-top:auto;padding-top:10px}
   #s1 .evrow{padding:12px 0}
+  /* 첫 화면 이벤트 줄: 오른쪽 숫자는 기기 사진에 가려져서 빼고, 줄과 버튼은 사진 위로 */
+  #s1 .evrow .d{display:none}
+  #s1 .evrow{grid-template-columns:1fr}
+  #s1 .evrows,#s1 .cta{position:relative;z-index:3}
   #s1 .cta{margin-top:14px}
   .evrow{display:grid;grid-template-columns:1fr auto;align-items:center;gap:14px;padding:16px 0;border-top:1px solid rgba(255,255,255,.3)}
   .evrow:last-child{border-bottom:1px solid rgba(255,255,255,.3)}
@@ -368,7 +374,7 @@
 <body data-mode=""><div id="testRibbon" style="position:fixed;left:0;right:0;bottom:0;z-index:99999;background:#d32f2f;color:#fff;text-align:center;font:700 13px sans-serif;padding:4px;pointer-events:none">테스트판 · 손님 상담에는 정식판을 쓰세요</div>
 <div class="app">
   <div class="top">
-    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">테스트 v10.02-2650</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
+    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">테스트 v10.02-2710</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
     <nav class="tabs" id="tabs" style="display:none"></nav>
   </div>
 
@@ -393,7 +399,8 @@
       <div class="best-dev" id="bestDev"></div></div>
     <div class="evrows">
       <div class="evrow"><div><div class="t">레이저 각인 무료 이벤트</div><div class="u">기기 구매 또는 액상 10병 이상 구매 시 원하는 문구를 새겨 드려요</div></div><div class="d">0원</div></div>
-      <div class="evrow"><div><div class="t">리뷰 작성 이벤트</div><div class="u">리뷰를 네이버 클립에 업로드하면 3,000원 할인해 드려요<br>클립 업로드는 담당직원이 도와드립니다 (소요시간 3~5분)</div></div><div class="d">-3,000원</div></div>
+      <div class="evrow"><div><div class="t">클립 리뷰 이벤트 <span class="evc">결제 20만원 이상</span></div><div class="u">네이버 클립에 리뷰를 올리면 3,000원 할인 · 업로드는 담당직원이 도와드려요 (3~5분)</div></div><div class="d">-3,000원</div></div>
+      <div class="evrow"><div><div class="t">리뷰 작성 이벤트 <span class="evc">결제 20만원 미만</span></div><div class="u">리뷰를 쓰면 입호흡 액상 1병을 더 드려요</div></div><div class="d">+1병</div></div>
     </div>
     <button class="cta" data-pkg="max10"><span><b>추가 혜택으로 구매하러 가기</b><small>구성과 할인 금액을 한눈에 보여 드려요</small></span><span class="arr">→</span></button>
   </section>
@@ -404,6 +411,7 @@
       <div class="row"><div><span class="k">프리미엄 기기패키지</span><span class="u">기기 + 프리미엄 액상 5병</span><span class="tag">단품가보다 9,500원 저렴</span></div><div class="v"><span class="note" data-pk-note="pr5"></span><span class="price" data-pk="pr5"></span></div></div>
       <div class="row"><div><span class="k">프리미엄 기기패키지 10병</span><span class="u">기기 + 프리미엄 액상 10병 · 병당 7,500원</span><span class="tag">단품가보다 24,000원 저렴</span></div><div class="v"><span class="note" data-pk-note="pr10"></span><span class="price" data-pk="pr10"></span></div></div>
       <div class="row"><div><span class="k">베이프렌드 기기패키지</span><span class="u">기기 + 빌런&amp;릭 5병 · 입문자 최적가</span><span class="tag">19,500원 이득</span></div><div class="v"><span class="note" data-pk-note="vl5"></span><span class="price" data-pk="vl5"></span></div></div>
+      <div class="row"><div><span class="k">하복2 풀패키지</span><span class="u">기기 + 입호흡 액상 10병 + 폐호흡 프리미엄 3병</span><span class="tag" data-pk-tag="full"></span></div><div class="v"><span class="note" data-pk-note="full"></span><span class="price" data-pk="full"></span></div></div>
     </div>
     <div id="combos"></div>
   </section>
@@ -452,7 +460,7 @@
 
   <div id="dspList" data-for="dsp"></div>
 
-  <div class="foot"><b>시안 · 버전 10.02-2650</b> · 사진·맛·태그는 직원 교육용 액상 DB(380종), 가격은 매장 안내 책자 기준이에요. 패키지·꿀조합·이벤트 문구는 관리자 화면에서 바꾸게 만들 예정이에요. 기기패키지 기준 기기는 하복2(판매가 89,000원)이고 사진은 용트림 상품 페이지 사진에서 배경을 지운 거예요. 레이저 각인은 포스에 0원 상품으로 등록 예정. 빌런 패키지 할인 조건은 아직 확정 전이에요.</div>
+  <div class="foot"><b>시안 · 버전 10.02-2710</b> · 사진·맛·태그는 직원 교육용 액상 DB(380종), 가격은 매장 안내 책자 기준이에요. 패키지·꿀조합·이벤트 문구는 관리자 화면에서 바꾸게 만들 예정이에요. 기기패키지 기준 기기는 하복2(판매가 89,000원)이고 사진은 용트림 상품 페이지 사진에서 배경을 지운 거예요. 레이저 각인은 포스에 0원 상품으로 등록 예정. 빌런 패키지 할인 조건은 아직 확정 전이에요.</div>
 </div>
 
 <div class="srch" id="srch"><div class="hd"><input id="q" type="search" placeholder="이름·초성·맛·브랜드 (예: ㅂㄹㅈㄷ, 멘솔, 팜팜바, 말론)" autocomplete="off"><button class="cl" id="srchClose">닫기</button></div>
@@ -480,7 +488,8 @@ const MAIN = { model: "하복2", name: "하복2", price: 89000, colors: ["블랙
   imgs: { 블랙: "dev_havok2_black.png", 실버: "dev_havok2_silver.png", 올리브: "dev_havok2_olive.png", 네이비: "dev_havok2_navy.png" },
   podPack: 2, podPackPrice: 12000 }; // 전용 팟 1팩 2개입 12,000원 (용트림 소비자 권장가) — 포스에는 낱개 6,000원이라 팩이면 2번 찍음
 // 기기에 더하는 액상 금액 (맥스프로 때와 같은 금액 · 하복2 확정 전)
-const ADD = { vl5: 30000, pr5: 40000, pr10: 75000, ref10: 90000 }; // ref10 = 비교용 평소가(프리미엄 11병 90,000원)
+const ADD = { vl5: 30000, pr5: 40000, pr10: 75000, ref10: 90000, lung3: 40000 }; // lung3 = 폐 프리미엄 40,000원(3병) 포스 묶음 상품
+const REVIEW_LINE = 200000; // 결제 20만원 이상 = 클립 리뷰 3,000원 할인 / 미만 = 리뷰 작성 시 입호흡 액상 1병 // ref10 = 비교용 평소가(프리미엄 11병 90,000원)
 // 기준 기기 스펙 (출처: 용트림 하복2 상세페이지 '제품 사양'·FAQ)
 const MAIN_SPEC = [
   ["카트리지", "5.5ml", "일체형으로 편하게 교체 가능해요."],
@@ -494,7 +503,7 @@ const MAIN_SPEC = [
 ];
 const MAIN_TIPS = ["입호흡과 폐호흡은 PG/VG 비율이 달라요.", "팟은 입호흡 기준 액상 1병당 1개씩 교체해줘야해요. 기간은 7~10일에 한번씩 교체를 권장해요.", "기존 하복 코일·카트리지와는 호환되지 않아요"];
 const DEVICE = { id: "dev_main", n: MAIN.name, br: "기기", dev: true, price: MAIN.price };
-const PK = { vl5: MAIN.price + ADD.vl5, pr5: MAIN.price + ADD.pr5, pr10: MAIN.price + ADD.pr10 };
+const PK = { vl5: MAIN.price + ADD.vl5, pr5: MAIN.price + ADD.pr5, pr10: MAIN.price + ADD.pr10, full: MAIN.price + ADD.pr10 + ADD.lung3 };
 const devBox = () => MAIN.img ? `<div class="dev"><img src="${MAIN.img}" alt="${MAIN.name}"></div>` : `<div class="dev" style="background:#15120f;color:#fff">${MAIN.name}</div>`;
 const pic = (x) => x.c === "dsp" && dImg(x) ? `<img src="${dImg(x)}" alt="" style="object-fit:cover">` : x.dev ? (MAIN.img ? `<img src="${MAIN.img}" alt="" style="object-fit:contain;background:#fff">` : `<div class="mini" style="background:#15120f;color:#fff">${MAIN.name}</div>`) : x.c ? `<div class="mini" style="font-size:26px;background:var(--panel)">${{ dev: "🔋", pod: "🧩", dsp: "🚬" }[x.c]}</div>` : `<img src="${IMG + x.img}" alt="">`;
 
@@ -785,9 +794,10 @@ function card(x) {
 function renderMain() {
   $("#bestTitle").innerHTML = `${esc(MAIN.name)} 기기패키지<br>+입호흡 액상 10병`;
   $("#bestDev").innerHTML = MAIN.img ? `<button class="spec-hit" data-mainspec="1" aria-label="기기 스펙 보기"><img src="${MAIN.img}" alt="${esc(MAIN.name)}"><i></i><span class="spec-tag">스펙 보기</span></button>` : `<div class="best-ph">${esc(MAIN.name)}<small>사진 준비 중</small></div>`;
-  { const reg = MAIN.price + ADD.ref10; $("#bestPrice").innerHTML = `<s>${won(reg)}</s><b>${won(PK.pr10)}</b><em>${won(reg - PK.pr10)} 할인</em>`; } // 원래가 = 기기 + 프리미엄 11병 90,000원 (사용자 기준: 평소 11병 90,000 → 기기 구매 시 10병 75,000)
+  { const reg = MAIN.price + ADD.ref10; $("#bestPrice").innerHTML = `<s>${won(reg)}</s><b>${won(PK.pr10)}</b><em>${won(reg - PK.pr10)} 할인</em><small>${esc(MAIN.name)} + 입호흡 액상 10병 패키지로 구매 시</small>`; } // 원래가 = 기기 + 프리미엄 11병 90,000원 (사용자 기준: 평소 11병 90,000 → 기기 구매 시 10병 75,000)
   document.querySelectorAll("[data-pk]").forEach((el) => { el.innerHTML = `${PK[el.dataset.pk].toLocaleString()}<span class="won">원</span>`; });
-  document.querySelectorAll("[data-pk-note]").forEach((el) => { el.textContent = `${MAIN.name} ${won(MAIN.price)} + ${won(ADD[el.dataset.pkNote])}`; });
+  document.querySelectorAll("[data-pk-note]").forEach((el) => { el.textContent = el.dataset.pkNote === "full" ? `패키지 ${won(PK.pr10)} + 폐호흡 3병 ${won(ADD.lung3)}` : `${MAIN.name} ${won(MAIN.price)} + ${won(ADD[el.dataset.pkNote])}`; });
+  document.querySelectorAll("[data-pk-tag]").forEach((el) => { el.textContent = `20만원 이상 · 클립 리뷰 시 ${won(PK.full - 3000)}`; });
 }
 function render() {
   renderMain();
