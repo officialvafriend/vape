@@ -70,7 +70,7 @@
 <div class="dim" id="dim"><div class="sheet" id="sheet"></div></div>
 <div class="toast" id="toast"></div>
 <script>
-const VER = "10.02-1";
+const VER = "10.02-2";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
 const OPEN_AT = { 동성로: "11:00", 수성: "10:30", 본점: "11:00", 율하: "10:30", 반월당: "10:30", 상인: "10:30", 광장코아: "11:00", 현풍: "11:00" };
 // 운영봇(운영봇_시험.mjs)의 CHECK와 같은 목록이어야 기록이 맞아요
@@ -91,7 +91,8 @@ const ho = (b) => `${BR.indexOf(b) + 1}호 ${b}`;
 function toast(m) { const t = $("#toast"); t.textContent = m; t.classList.add("on"); clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove("on"), 2600); }
 
 const qs = new URLSearchParams(location.search);
-let B = BR.includes(qs.get("branch")) ? qs.get("branch") : ls.get("vf-app-branch", null);
+// ?pick=1 이면 저장된 지점이 있어도 지점 고르기 화면부터 (드라이브 링크용)
+let B = qs.has("pick") ? null : BR.includes(qs.get("branch")) ? qs.get("branch") : ls.get("vf-app-branch", null);
 if (B) ls.set("vf-app-branch", B);
 const dayKey = () => `vf-app-${B}-${todayKey()}`;
 const st = () => ls.get(dayKey(), { ins: [], open: null, close: null });
