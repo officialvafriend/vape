@@ -58,6 +58,14 @@
   .best-left{flex:1;min-width:0}
   .best-dev{flex:none;position:relative;width:min(158px,21vw);padding-bottom:12px;margin-right:10px}
   .best-dev img{display:block;width:100%;height:auto;position:relative;z-index:1}
+  .spec-hit{display:block;width:100%;position:relative;padding:0;background:none;border:0;cursor:pointer}
+  .spec-hit i{position:absolute;left:50%;bottom:-12px;width:120%;height:22px;transform:translateX(-50%);border-radius:50%;background:radial-gradient(closest-side,rgba(0,0,0,.35),rgba(0,0,0,0))}
+  .spec-tag{position:absolute;right:-4px;top:30%;z-index:2;background:#fff;color:var(--red);font-weight:800;font-size:12px;padding:6px 10px;border-radius:999px;box-shadow:0 2px 8px rgba(0,0,0,.2)}
+  .spec2{margin-top:14px;border-top:2px solid var(--ink)}
+  .spec2 div{display:grid;grid-template-columns:110px 1fr;gap:12px;padding:12px 0;border-bottom:1px solid var(--line);font-size:15px;line-height:1.5}
+  .spec2 b{color:var(--grey);font-weight:700}
+  .spec-pic{display:flex;justify-content:center;margin-top:12px;background:var(--panel);padding:16px 0}
+  .spec-pic img{height:200px;width:auto}
   .best-ph{position:relative;z-index:1;height:min(390px,52vw);border-radius:26px;background:linear-gradient(160deg,#2b2724,#0d0b0a);border:2px solid rgba(255,255,255,.35);display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:var(--num);font-weight:900;font-size:26px;gap:6px}
   .best-ph small{font-family:var(--kr);font-size:13px;font-weight:600;opacity:.6}
   .best-dev i{position:absolute;left:50%;bottom:0;width:120%;height:22px;transform:translateX(-50%);border-radius:50%;background:radial-gradient(closest-side,rgba(0,0,0,.35),rgba(0,0,0,0))}
@@ -305,7 +313,7 @@
 <body data-mode=""><div id="testRibbon" style="position:fixed;left:0;right:0;bottom:0;z-index:99999;background:#d32f2f;color:#fff;text-align:center;font:700 13px sans-serif;padding:4px;pointer-events:none">테스트판 · 손님 상담에는 정식판을 쓰세요</div>
 <div class="app">
   <div class="top">
-    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">테스트 v10.02-2410</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
+    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">테스트 v10.02-2430</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
     <nav class="tabs" id="tabs" style="display:none"></nav>
   </div>
 
@@ -390,7 +398,7 @@
 
   <div id="dspList" data-for="dsp"></div>
 
-  <div class="foot"><b>시안 · 버전 10.02-2410</b> · 사진·맛·태그는 직원 교육용 액상 DB(380종), 가격은 매장 안내 책자 기준이에요. 패키지·꿀조합·이벤트 문구는 관리자 화면에서 바꾸게 만들 예정이에요. 기기패키지 기준 기기는 하복2(판매가 89,000원)이고 사진은 용트림 상품 페이지 사진에서 배경을 지운 거예요. 레이저 각인은 포스에 0원 상품으로 등록 예정. 빌런 패키지 할인 조건은 아직 확정 전이에요.</div>
+  <div class="foot"><b>시안 · 버전 10.02-2430</b> · 사진·맛·태그는 직원 교육용 액상 DB(380종), 가격은 매장 안내 책자 기준이에요. 패키지·꿀조합·이벤트 문구는 관리자 화면에서 바꾸게 만들 예정이에요. 기기패키지 기준 기기는 하복2(판매가 89,000원)이고 사진은 용트림 상품 페이지 사진에서 배경을 지운 거예요. 레이저 각인은 포스에 0원 상품으로 등록 예정. 빌런 패키지 할인 조건은 아직 확정 전이에요.</div>
 </div>
 
 <div class="srch" id="srch"><div class="hd"><input id="q" type="search" placeholder="이름·초성·맛·브랜드 (예: ㅂㄹㅈㄷ, 멘솔, 팜팜바, 말론)" autocomplete="off"><button class="cl" id="srchClose">닫기</button></div>
@@ -417,6 +425,18 @@ const short = (n) => n.replace(/^VF /, "");
 const MAIN = { model: "하복2", name: "하복2", price: 89000, colors: ["블랙", "실버", "올리브", "네이비"], img: "dev_havok2_silver.png" };
 // 기기에 더하는 액상 금액 (맥스프로 때와 같은 금액 · 하복2 확정 전)
 const ADD = { vl5: 30000, pr5: 40000, pr10: 75000 };
+// 기준 기기 스펙 (출처: 용트림 하복2 상세페이지 '제품 사양'·FAQ)
+const MAIN_SPEC = [
+  ["카트리지", "팟·코일 일체형 전용 5.5ml"],
+  ["입호흡 / 폐호흡", "0.6Ω 입호흡 14~28W (동봉) · 0.15Ω 폐호흡 40~80W (기본 장착)"],
+  ["배터리 / 충전", "내장 2,800mAh · Type-C 고속충전 (5V/2A 권장)"],
+  ["크기 / 무게", "44.8 × 20.6 × 106.5mm · 117g"],
+  ["드립팁", "510 컬러 드립팁 2개"],
+  ["보증", "구입일로부터 2년 · 기기 본체 1회 (카트리지 제외)"],
+  ["정품 인증", "16자리 코드 검증"],
+  ["구성품", "본체 · 전용 카트리지 2개 · Type-C 케이블 · 사용설명서"],
+];
+const MAIN_TIPS = ["입호흡·폐호흡 둘 다 되는 기기 — 팟만 바꿔 끼우면 돼요", "팟은 2~3주에 1개씩 교체를 권장해요", "기존 하복 코일·카트리지와는 호환되지 않아요"];
 const DEVICE = { id: "dev_main", n: MAIN.name, br: "기기", dev: true, price: MAIN.price };
 const PK = { vl5: MAIN.price + ADD.vl5, pr5: MAIN.price + ADD.pr5, pr10: MAIN.price + ADD.pr10 };
 const devBox = () => MAIN.img ? `<div class="dev"><img src="${MAIN.img}" alt="${MAIN.name}"></div>` : `<div class="dev" style="background:#15120f;color:#fff">${MAIN.name}</div>`;
@@ -594,6 +614,17 @@ function dspView(model) {
     <div class="opts">${xs.map((x) => `<button data-gadd="${x.id}" data-re="${esc(model)}" class="${cart.get(x.id) ? "sel" : ""}">${esc(x.opt)}${cart.get(x.id) ? ` ×${cart.get(x.id)}` : ""}<small>${won(x.price)}</small></button>`).join("")}</div>
     <div class="btns"><button class="b2" data-x>더 고르기</button><button class="b1" id="cartBtn2">담은 상품 보기</button></div>`);
 }
+function specHtml() {
+  const pods = G.filter((x) => x.c === "pod" && x.n.startsWith(MAIN.model + " "));
+  return `<div class="spec2">${MAIN_SPEC.map(([k, v]) => `<div><b>${esc(k)}</b><span>${esc(v)}</span></div>`).join("")}</div>
+    <div class="ben">${MAIN_TIPS.map((t, i) => `<div><i>0${i + 1}</i><span>${esc(t)}</span></div>`).join("")}</div>
+    ${pods.length ? `<div class="sub">전용 팟</div><div class="opts">${pods.map((x) => `<button data-gadd="${x.id}">${esc(x.n.replace(MAIN.model + " ", ""))}<small>${won(x.price)}</small></button>`).join("")}</div>` : ""}`;
+}
+function mainSpecView() {
+  open(`<div style="font-size:13px;color:var(--grey);font-weight:700">기기 스펙</div><div class="sh" style="margin-top:6px">${esc(MAIN.name)} <span style="font-size:18px;color:var(--red)">${won(MAIN.price)}</span></div>
+    ${MAIN.img ? `<div class="spec-pic"><img src="${MAIN.img}" alt=""></div>` : ""}${specHtml()}
+    <div class="btns"><button class="b2" data-x>닫기</button><button class="b1" data-pkg="max10" data-close="1">기기패키지 보러 가기</button></div>`);
+}
 function modelView(model) {
   const xs = G.filter((x) => x.model === model); const x0 = xs[0];
   if (x0.c === "dsp") return dspView(model);
@@ -601,6 +632,7 @@ function modelView(model) {
     : x0.ev ? [`${EVN[x0.ev][2]} 이벤트 · 같은 이벤트끼리 맛 섞어도 돼요`] : [];
   open(`<div style="font-size:13px;color:var(--grey);font-weight:700">${{ dev: "전자담배 기기", pod: "팟·코일", dsp: "일회용" }[x0.c]}</div><div class="sh" style="margin-top:6px">${esc(model)}</div>
     ${ben.length ? `<div class="ben">${ben.map((t, i) => `<div><i>0${i + 1}</i><span>${esc(t)}</span></div>`).join("")}</div>` : ""}
+    ${model === MAIN.model ? `<div class="sub">기기 스펙</div>${specHtml()}` : ""}
     <div class="sub">${xs.length > 1 ? "골라 담기" : "담기"}</div>
     <div class="opts">${xs.map((x) => `<button data-gadd="${x.id}" data-close="1">${esc(x.opt || x.n)}<small>${won(x.price)}</small></button>`).join("")}</div>`);
 }
@@ -692,7 +724,7 @@ function card(x) {
 }
 function renderMain() {
   $("#bestTitle").innerHTML = `${esc(MAIN.name)} 기기패키지<br>+입호흡 액상 10병`;
-  $("#bestDev").innerHTML = MAIN.img ? `<img src="${MAIN.img}" alt="${esc(MAIN.name)}"><i></i>` : `<div class="best-ph">${esc(MAIN.name)}<small>사진 준비 중</small></div>`;
+  $("#bestDev").innerHTML = MAIN.img ? `<button class="spec-hit" data-mainspec="1" aria-label="기기 스펙 보기"><img src="${MAIN.img}" alt="${esc(MAIN.name)}"><i></i><span class="spec-tag">스펙 보기</span></button>` : `<div class="best-ph">${esc(MAIN.name)}<small>사진 준비 중</small></div>`;
   document.querySelectorAll("[data-pk]").forEach((el) => { el.innerHTML = `${PK[el.dataset.pk].toLocaleString()}<span class="won">원</span>`; });
   document.querySelectorAll("[data-pk-note]").forEach((el) => { el.textContent = `${MAIN.name} ${won(MAIN.price)} + ${won(ADD[el.dataset.pkNote])}`; });
 }
@@ -857,6 +889,7 @@ document.addEventListener("click", (e) => {
   const q = (s) => e.target.closest(s); let el;
   if ((el = q("[data-mode]")) && el.classList.contains("way")) { setMode(el.dataset.mode); return; }
   if (q("#homeBtn")) { closeS(); $("#srch").classList.remove("on"); setMode(""); return; }
+  if ((el = q("[data-mainspec]"))) return mainSpecView();
   if ((el = q("[data-gm]"))) return modelView(el.dataset.gm);
   if ((el = q("[data-gadd]"))) { addGoods(el.dataset.gadd); const x = GMAP.get(el.dataset.gadd); toast(`담았어요 · ${x.n}`); if (el.dataset.close) closeS(); renderGoods(); if (el.dataset.re) { const st = $("#sheet").scrollTop; dspView(el.dataset.re); $("#sheet").scrollTop = st; } return; }
   if (q("#cartBtn2") || q("[data-cartback]")) return cartView();
