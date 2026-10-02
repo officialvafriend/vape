@@ -285,7 +285,7 @@
 <body data-mode="">
 <div class="app">
   <div class="top">
-    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">v10.02-1800</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
+    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">v10.02-1830</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
     <nav class="tabs" id="tabs" style="display:none"></nav>
   </div>
 
@@ -367,7 +367,7 @@
 
   <div id="dspList" data-for="dsp"></div>
 
-  <div class="foot"><b>시안 · 버전 10.02-1800</b> · 사진·맛·태그는 직원 교육용 액상 DB(380종), 가격은 매장 안내 책자 기준이에요. 패키지·꿀조합·이벤트 문구는 관리자 화면에서 바꾸게 만들 예정이에요. 발라리안 맥스프로는 사진이 없어 임시 그림이에요(판매가 78,000원). 레이저 각인은 포스에 0원 상품으로 등록 예정. 액상 10병 기기패키지 가격과 빌런 패키지 할인 조건은 아직 확정 전이에요.</div>
+  <div class="foot"><b>시안 · 버전 10.02-1830</b> · 사진·맛·태그는 직원 교육용 액상 DB(380종), 가격은 매장 안내 책자 기준이에요. 패키지·꿀조합·이벤트 문구는 관리자 화면에서 바꾸게 만들 예정이에요. 발라리안 맥스프로는 사진이 없어 임시 그림이에요(판매가 78,000원). 레이저 각인은 포스에 0원 상품으로 등록 예정. 액상 10병 기기패키지 가격과 빌런 패키지 할인 조건은 아직 확정 전이에요.</div>
 </div>
 
 <div class="srch" id="srch"><div class="hd"><input id="q" type="search" placeholder="이름·초성·맛·브랜드 (예: ㅂㄹㅈㄷ, 멘솔, 팜팜바, 말론)" autocomplete="off"><button class="cl" id="srchClose">닫기</button></div>
@@ -461,15 +461,37 @@ const DSPINFO = {
 const dInfo = (model) => DSPINFO[model] || { name: model, img: "", d: "" };
 // 니코틴 2% 이상 고농도: 구매 시 화학물질 장부 작성 (구매 수량은 매장이 알고 있으니 '사는 구 + 성함'만, 예: 대구 동구 홍길동)
 const isHi = (x) => !!(x && x.c === "dsp" && dInfo(x.model).hi);
-let ledger = "";
-const HI_NOTE = "니코틴 2% 이상 고농도 제품이라 구매하실 때 화학물질 장부 작성이 필요해요. 사시는 구와 성함만 적어 주세요 (예: 대구 동구 홍길동)";
+// 장부는 구매자가 패드에 직접 작성 (성함 + 사시는 구)
+const ledger = { name: "", gu: "", etc: "" };
+const GU = ["중구", "동구", "서구", "남구", "북구", "수성구", "달서구", "달성군", "군위군"];
+const ledgerText = () => { const where = ledger.gu === "기타" ? ledger.etc.trim() : ledger.gu ? "대구 " + ledger.gu : ""; return where && ledger.name.trim() ? `${where} ${ledger.name.trim()}` : ""; };
+function ledgerView() {
+  const hs = [...cart].filter(([id]) => isHi(item(id)));
+  open(`<div style="font-size:13px;color:var(--red);font-weight:800">구매자 직접 작성</div><div class="sh" style="margin-top:6px">화학물질 구매 장부</div>
+    <div style="margin-top:10px;font-size:16px;line-height:1.65;color:var(--ink-soft)">니코틴 2% 이상 고농도 제품은 법에 따라 구매 장부를 남겨야 해요.<br>번거로우시겠지만 <b style="color:var(--ink)">성함과 사시는 구</b>만 직접 적어 주세요. 양해 부탁드려요.</div>
+    <div class="hinote" style="border-width:1px"><div class="u" style="margin:0">구매 제품: ${hs.map(([id, n]) => esc(item(id).n) + " " + n + "개").join(" · ")}</div></div>
+    <div class="sub">성함</div>
+    <input class="in" id="ldName" placeholder="예: 홍길동" value="${esc(ledger.name)}" autocomplete="off">
+    <div class="sub">사시는 곳 <span style="font-size:13px;color:var(--grey);font-family:var(--kr)">대구</span></div>
+    <div class="opts">${[...GU, "기타"].map((g) => `<button data-gu="${g}" class="${ledger.gu === g ? "sel" : ""}">${g === "기타" ? "대구 외 지역" : g}</button>`).join("")}</div>
+    ${ledger.gu === "기타" ? `<input class="in" id="ldEtc" placeholder="예: 경북 경산시" value="${esc(ledger.etc)}" autocomplete="off">` : ""}
+    <div class="save" style="background:var(--ink);margin-top:18px"><div><b>장부에 이렇게 적혀요</b><div class="u" id="ldPrev">${esc(ledgerText() || "성함과 사시는 곳을 골라 주세요")}</div></div></div>
+    <div class="btns"><button class="b2" data-cartback>뒤로</button><button class="b1" data-ledger-ok>작성 완료 · 직원에게 돌려주기</button></div>`);
+}
+const HI_NOTE = "니코틴 2% 이상 고농도 제품이라 구매하실 때 화학물질 장부를 직접 작성해 주셔야 해요. 성함과 사시는 구만 적으시면 돼요 (예: 대구 동구 홍길동)";
 const AIRX_DEV = 35000; let airxGift = "pod"; // 에어릭스 팟 10개마다: "pod" = 팟 2개 무료, "dev" = 에어릭스 기기 증정
 const dsrc = (f) => /^dsp_/.test(f) ? f : VAPE + encodeURIComponent(f); // dsp_*.png = 메뉴판 폴더 안 사진(톡톡 메뉴 이미지에서 자름)
 const dImg = (x) => { const i = x && x.c === "dsp" && dInfo(x.model).img; return i ? dsrc(i) : ""; };
 // 이벤트 묶음 하나(예: 3+1 = 4개)를 같은 맛 가격으로 샀을 때
+// 이벤트 묶음 단위: 3+1은 포스 묶음 상품이 브랜드별(팜팜바/모스바)이라 같은 브랜드끼리만 묶음
+const evKey = (x) => x.ev === "DSP-3+1" ? x.ev + "|" + x.model : x.ev;
+const evB = (k) => k.split("|")[0];
+const evLabel = (k) => { const [e, m] = k.split("|"); return (m ? dInfo(m).name + " " : "") + EVN[e][2]; };
+// 포스 일회용 이벤트 묶음 상품 (본점 '단종' 중분류, 10/2 조회) — 이걸로 돈 받고 낱개는 서비스(0원)
+const DSP_POS = { "DSP-3+1|팜팜바": "팜팜바 74,700원(3+1)", "DSP-3+1|모스바": "모스바 75,000원(3+1)", "DSP-AIRX": "에어릭스 75,000원 (10+2)" };
 const dealOf = (ev, price) => { const [buy, free] = EVN[ev]; return { n: buy + free, pay: buy * price, list: (buy + free) * price, save: free * price }; };
 const DSPEV = [
-  { ev: "DSP-3+1", id: "dE1", tab: "3+1", red: true, badge: "BEST", t: "3개 사면 1개 더", s: "같은 3+1 제품끼리는 맛을 섞어도 돼요" },
+  { ev: "DSP-3+1", id: "dE1", tab: "3+1", red: true, badge: "BEST", t: "3개 사면 1개 더", s: "팜팜바는 팜팜바끼리, 모스바는 모스바끼리 맛을 섞어도 돼요" },
   { ev: "DSP-5+1", id: "dE2", tab: "5+1", t: "5개 사면 1개 더", s: "같은 5+1 제품끼리는 맛을 섞어도 돼요" },
   { ev: "DSP-AIRX", id: "dE3", tab: "에어릭스 10+2", t: "에어릭스 팟 10개 사면 팟 2개 더 또는 기기 증정", s: "팟 2개 더 받기 / 에어릭스 기기(35,000원) 받기 중 골라요 · 하카 기기 호환" },
   { ev: "", id: "dE4", tab: "배터리", t: "배터리 · 기타", s: "팟형 일회용은 배터리가 따로 필요해요" },
@@ -526,10 +548,11 @@ function dspView(model) {
   let save = ""; curDsp = model;
   if (ev === "DSP-AIRX") save = airxBox(gc.cnt[ev] || 0, gc);
   else if (ev) {
-    const [buy, free, label] = EVN[ev], n = gc.cnt[ev] || 0, r = n % (buy + free), off = gc.saveBy[ev] || 0;
+    const k = evKey(x0), [buy, free, label] = EVN[ev], n = gc.cnt[k] || 0, r = n % (buy + free), off = gc.saveBy[k] || 0;
     const next = r >= buy ? `지금 ${buy + free - r}개 더 고르면 무료` : `${buy - r}개 더 담으면 ${free}개 무료`;
-    save = (off ? `<div class="save"><div><b>${label} 할인 적용 중</b><div class="u">${label} 제품 ${n}개 중 ${gc.freeBy[ev]}개 무료</div></div><span class="price">-${off.toLocaleString()}<span class="won">원</span></span></div>` : "")
-      + (r || !n ? `<div class="save" style="background:var(--ink)"><div><b>${next}</b><div class="u">${label} 제품끼리 맛 섞어도 돼요 · 지금 ${n}개</div></div><span class="price">-${won(free * x0.price)}</span></div>` : "");
+    const mix = k.includes("|") ? `${i.name}끼리 맛 섞어도 돼요` : `${label} 제품끼리 맛 섞어도 돼요`;
+    save = (off ? `<div class="save"><div><b>${label} 할인 적용 중</b><div class="u">${n}개 중 ${gc.freeBy[k]}개 무료</div></div><span class="price">-${off.toLocaleString()}<span class="won">원</span></span></div>` : "")
+      + (r || !n ? `<div class="save" style="background:var(--ink)"><div><b>${next}</b><div class="u">${mix} · 지금 ${n}개</div></div><span class="price">-${won(free * x0.price)}</span></div>` : "");
   }
   open(`<div style="font-size:13px;color:var(--grey);font-weight:700">일회용${ev ? " · " + EVN[ev][2] + " 이벤트" : ""}</div><div class="sh" style="margin:6px 0 14px">${esc(i.name)}</div>
     ${i.img ? `<div class="dhero"><img src="${dsrc(i.hero || i.img)}" alt=""></div>` : ""}
@@ -560,10 +583,10 @@ function goodsCalc() {
   let dev = 0, pod = 0, dsp = 0; const freeBy = {}, cnt = {}, saveBy = {}; const evItems = {};
   for (const [id, n] of cart) { const x = GMAP.get(id); if (!x) continue;
     if (x.c === "dev") dev += x.price * n; else if (x.c === "pod") pod += x.price * n;
-    else if (x.ev) { (evItems[x.ev] ||= []).push(...Array(n).fill(x.price)); } else dsp += x.price * n; }
+    else if (x.ev) { (evItems[evKey(x)] ||= []).push(...Array(n).fill(x.price)); } else dsp += x.price * n; }
   let giftDev = 0;
   for (const [ev, prices] of Object.entries(evItems)) {
-    const [buy, free] = EVN[ev]; prices.sort((a, b) => b - a);
+    const [buy, free] = EVN[evB(ev)]; prices.sort((a, b) => b - a);
     if (ev === "DSP-AIRX" && airxGift === "dev") { giftDev = Math.floor(prices.length / buy); dsp += prices.reduce((a, b) => a + b, 0); freeBy[ev] = 0; cnt[ev] = prices.length; saveBy[ev] = 0; continue; }
     const sets = Math.floor(prices.length / (buy + free)); const nFree = sets * free;
     const freeAmt = prices.slice(prices.length - nFree).reduce((a, b) => a + b, 0);
@@ -586,10 +609,10 @@ function airxBox(n, gc) {
 function goodsHints(gc, liqPart) {
   const out = [];
   for (const [ev, n] of Object.entries(gc.cnt)) {
-    const [buy, free, label] = EVN[ev]; const r = n % (buy + free);
+    const [buy, free] = EVN[evB(ev)], label = evLabel(ev); const r = n % (buy + free);
     if (ev === "DSP-AIRX") { out.push(airxBox(n, gc)); continue; }
-    if (gc.saveBy[ev]) out.push(`<div class="save"><div><b>일회용 ${label} 할인</b><div class="u">${n}개 중 ${gc.freeBy[ev]}개 무료 (가장 싼 맛 기준)</div></div><span class="price">-${gc.saveBy[ev].toLocaleString()}<span class="won">원</span></span></div>`);
-    if (r) out.push(`<div class="nudge"><b>일회용 ${label}: ${r >= buy ? `지금 ${buy + free - r}개 더 고르면 무료` : `${buy - r}개 더 담으면 ${free}개 무료`}</b><div class="u">지금 ${n}개 · 같은 ${label} 제품끼리 맛 섞어도 돼요</div></div>`);
+    if (gc.saveBy[ev]) out.push(`<div class="save"><div><b>${label} 할인</b><div class="u">${n}개 중 ${gc.freeBy[ev]}개 무료 (가장 싼 맛 기준)</div></div><span class="price">-${gc.saveBy[ev].toLocaleString()}<span class="won">원</span></span></div>`);
+    if (r) out.push(`<div class="nudge"><b>${label}: ${r >= buy ? `지금 ${buy + free - r}개 더 고르면 무료` : `${buy - r}개 더 담으면 ${free}개 무료`}</b><div class="u">지금 ${n}개 · 같은 제품끼리 맛 섞어도 돼요</div></div>`);
   }
   const base = liqPart + gc.pod;
   if (base > 0) out.push(base >= 100000 ? `<div class="nudge" style="background:var(--red)"><b>🎁 일회용 기기 1개 증정 대상이에요</b><div class="u">액상·팟 ${won(base)} (10만원 이상)</div></div>`
@@ -717,8 +740,7 @@ function cartView() {
       ${hasGoods ? "" : `<div class="pk-or">또는</div>
       ${review ? `<div class="pk on"><b>리뷰 3,000원 즉시할인 적용됨</b><span>결제할 때 직원에게 작성한 리뷰를 보여 주세요</span><button class="b2" data-review-del>취소</button></div>` : `<button class="pk" data-review><b>리뷰 쓰고 3,000원 즉시할인 받으러 가기</b><span>액상만 구매하시는 분 전용 혜택이에요</span><i>→</i></button>`}`}</div>`;
   if (ok || dev || hasGoods) review = false;
-  const mem = (items.some(([id]) => isHi(item(id))) ? `<div class="hinote"><b>화학물질 장부 작성 (고농도 2% 이상)</b><div class="u">${esc(HI_NOTE)}</div>
-    <input class="in" id="ledgerIn" placeholder="예: 대구 동구 홍길동" value="${esc(ledger)}"></div>` : "") + (!items.length ? "" : memberBox());
+  const mem = (items.some(([id]) => isHi(item(id))) ? `<div class="hinote"><b>화학물질 장부 작성 (고농도 2% 이상)</b><div class="u">${esc(HI_NOTE)}</div><div class="u" style="color:var(--ink);font-weight:700">${ledgerText() ? "작성됨: " + esc(ledgerText()) : "[직원에게 보여주기]를 누르면 손님이 직접 적는 화면이 나와요"}</div></div>` : "") + (!items.length ? "" : memberBox());
   const gc = goodsCalc(), est = estimate(countCart());
   open(`<div class="sh">담은 상품</div>${nudge(vl)}${swapHint(countCart())}${goodsHints(gc, est.liq)}${engr}
     <div style="margin-top:12px">${items.map(([id, n]) => { const x = item(id); return `<div class="line">${pic(x)}<div><b>${esc(short(x.n))}</b><div class="s">${x.c ? won(x.price) + (x.ev ? " · " + EVN[x.ev][2] : "") : esc(x.br)}${x.dev && devColor ? " · " + devColor : ""}</div></div><div class="step"><button data-m="${id}">−</button><span>${n}</span><button data-pl="${id}">+</button></div></div>${x.dev ? `<div class="colors"><span class="lab">색상</span>${DEV_COLORS.map((c) => `<button class="${devColor === c ? "on" : ""}" data-color="${c}">${c}</button>`).join("")}</div>` : ""}`; }).join("") || '<div style="padding:30px 0;color:var(--grey)">아직 담은 상품이 없어요</div>'}</div>
@@ -771,11 +793,19 @@ function staffView() {
   open(`<div class="sh">직원 확인용 · 포스 스캔</div><div style="color:var(--ink-soft);margin-top:6px;font-size:14.5px">위에서부터 차례로 찍어 주세요. (${esc(PAD.branch)} 포스 상품 기준 · 10/2 자료)</div>
   ${bundle ? `<div class="scan bundle"><div class="hd"><b>① 묶음 상품 먼저: ${esc(bundle)}</b><span class="x">× 1</span></div><div class="s">이걸로 돈을 받고, 아래 빌런·릭은 낱개로 찍어 서비스(0원) 처리</div>${(() => { const p = posOf(bundle); return p ? `<svg class="bc" data-v="${p[1]}" data-f="${p[2]}"></svg>${p[3] ? "" : '<span class="warn">바코드 미등록 · 상품코드(' + p[0] + ')로 만든 바코드라 포스 인식 확인 필요</span>'}` : '<span class="warn">포스 상품을 못 찾았어요</span>'; })()}</div>`
     : vl >= 5 ? `<div class="scan bundle"><div class="s" style="color:var(--ink)">빌런·릭 ${vl}병 묶음가는 포스에서 묶음 상품을 직접 골라 주세요</div></div>` : ""}
+  ${(() => { // 일회용 이벤트 묶음 상품 (포스에 있는 것): 묶음으로 돈 받고 낱개는 서비스(0원)
+    const gc = goodsCalc();
+    return Object.entries(gc.freeBy).filter(([k, nf]) => nf && DSP_POS[k]).map(([k, nf]) => {
+      const [buy, free] = EVN[evB(k)], sets = nf / free, inSet = sets * (buy + free), rest = gc.cnt[k] - inSet, nm = DSP_POS[k], p = posOf(nm);
+      const who = k.includes("|") ? dInfo(k.split("|")[1]).name : "에어릭스 팟";
+      return `<div class="scan bundle"><div class="hd"><b>일회용 묶음 먼저: ${esc(nm)}</b><span class="x">× ${sets}</span></div><div class="s">이걸로 돈을 받고, 아래 ${esc(who)} 중 <b style="color:var(--red)">${inSet}개는 서비스(0원)</b>${rest ? `, 나머지 ${rest}개는 정상가` : ""}로 찍어 주세요</div>${p ? `<svg class="bc" data-v="${esc(p[1])}" data-f="${p[2]}"></svg>${p[3] ? "" : '<span class="warn">바코드 미등록 · 상품코드(' + esc(p[0]) + ')로 만든 바코드라 포스 인식 확인 필요</span>'}` : '<span class="warn">포스 상품을 못 찾았어요 · 포스에서 직접 검색해 주세요</span>'}</div>`;
+    }).join("");
+  })()}
   <div style="margin-top:6px">${blocks}</div>
-  ${(() => { const gc = goodsCalc(), fr = Object.entries(gc.freeBy).filter(([, n]) => n); const base = estimate(countCart()).liq + gc.pod; return (fr.length ? `<div class="scan bundle"><div class="s" style="color:var(--ink)">일회용 이벤트 무료: ${fr.map(([ev, n]) => EVN[ev][2] + " " + n + "개").join(", ")} → 가장 싼 것부터 서비스(0원) 처리</div></div>` : "") + (gc.giftDev ? `<div class="scan bundle"><div class="s" style="color:var(--ink)">🎁 에어릭스 팟 10개 혜택 → 에어릭스 기기 ${gc.giftDev}대 증정 (서비스 0원 처리)</div></div>` : "") + (base >= 100000 ? `<div class="scan bundle"><div class="s" style="color:var(--ink)">🎁 액상·팟 ${won(base)} → 일회용 기기 1개 증정</div></div>` : ""); })()}
+  ${(() => { const gc = goodsCalc(), fr = Object.entries(gc.freeBy).filter(([k, n]) => n && !DSP_POS[k]); const base = estimate(countCart()).liq + gc.pod; return (fr.length ? `<div class="scan bundle"><div class="s" style="color:var(--ink)">일회용 이벤트 무료: ${fr.map(([k, n]) => evLabel(k) + " " + n + "개").join(", ")} → 포스에 묶음 상품이 없어서 가장 싼 것부터 서비스(0원) 처리</div></div>` : "") + (gc.giftDev ? `<div class="scan bundle"><div class="s" style="color:var(--ink)">🎁 에어릭스 팟 10개 혜택 → 에어릭스 기기 ${gc.giftDev}대 증정 (서비스 0원 처리)</div></div>` : "") + (base >= 100000 ? `<div class="scan bundle"><div class="s" style="color:var(--ink)">🎁 액상·팟 ${won(base)} → 일회용 기기 1개 증정</div></div>` : ""); })()}
   ${engrave !== null ? `<div class="scan"><div class="hd"><b>레이저 각인 (0원)</b><span class="x">× 1</span></div><div class="s">문구: ${engrave ? esc(engrave) : "손님께 확인"}</div><span class="warn">포스에 0원 각인 상품 등록 후 바코드 연결</span></div>` : ""}
   ${review ? `<div class="line"><div class="mini" style="background:var(--red)">리뷰</div><div><b>리뷰 즉시할인 -3,000원</b><div class="s">손님 리뷰 작성 확인 후 할인</div></div></div>` : ""}
-  ${(() => { const hs = items.filter(([id]) => isHi(item(id))); return hs.length ? `<div class="scan bundle"><div class="hd"><b>화학물질 장부 작성</b></div><div class="s" style="color:var(--ink);font-size:15px;margin-top:6px">${ledger.trim() ? `<b>${esc(ledger.trim())}</b>` : '<span class="warn">아직 안 적었어요 · 손님께 사시는 구와 성함 여쭤보기</span>'}</div><div class="s">${hs.map(([id, n]) => esc(item(id).n) + " ×" + n).join(" · ")}</div></div>` : ""; })()}
+  ${(() => { const hs = items.filter(([id]) => isHi(item(id))); return hs.length ? `<div class="scan bundle"><div class="hd"><b>화학물질 장부 작성</b></div><div class="s" style="color:var(--ink);font-size:15px;margin-top:6px">${ledgerText() ? `<b>${esc(ledgerText())}</b> <span style="font-size:12.5px;color:var(--grey)">(구매자 직접 작성)</span>` : '<span class="warn">아직 작성 안 됨</span>'}</div><div class="s">${hs.map(([id, n]) => esc(item(id).n) + " ×" + n).join(" · ")}</div></div>` : ""; })()}
   ${member.type ? `<div class="line"><div class="mini">회원</div><div><b>${member.type === "new" ? "신규 회원등록" : "기존 회원 적립"}</b><div class="s">${esc([member.name, member.phone].filter(Boolean).join(" · ") || "정보 미입력")}</div></div></div>` : `<div class="line"><div class="mini">회원</div><div><b>회원 정보 없음</b><div class="s">적립 원하시는지 한 번 여쭤봐 주세요</div></div></div>`}
   <div class="btns"><button class="b2" data-x>수정</button><button class="b1" data-reset>완료 · 처음으로</button></div>`);
   document.querySelectorAll("#sheet svg.bc").forEach((el) => {
@@ -792,7 +822,9 @@ document.addEventListener("click", (e) => {
   if (q("#homeBtn")) { closeS(); $("#srch").classList.remove("on"); setMode(""); return; }
   if ((el = q("[data-gm]"))) return modelView(el.dataset.gm);
   if ((el = q("[data-gadd]"))) { addGoods(el.dataset.gadd); const x = GMAP.get(el.dataset.gadd); toast(`담았어요 · ${x.n}`); if (el.dataset.close) closeS(); renderGoods(); if (el.dataset.re) { const st = $("#sheet").scrollTop; dspView(el.dataset.re); $("#sheet").scrollTop = st; } return; }
-  if (q("#cartBtn2")) return cartView();
+  if (q("#cartBtn2") || q("[data-cartback]")) return cartView();
+  if ((el = q("[data-gu]"))) { ledger.gu = el.dataset.gu; const st = $("#sheet").scrollTop; ledgerView(); $("#sheet").scrollTop = st; if (ledger.gu === "기타") document.getElementById("ldEtc")?.focus(); return; }
+  if (q("[data-ledger-ok]")) { if (!ledger.name.trim()) { document.getElementById("ldName")?.focus(); return toast("성함을 적어 주세요"); } if (!ledgerText()) return toast("사시는 곳을 골라 주세요"); toast("감사합니다! 직원에게 패드를 돌려주세요"); return staffView(); }
   if ((el = q("[data-airx]"))) { airxGift = el.dataset.airx; const st = $("#sheet").scrollTop; curDsp ? dspView(curDsp) : cartView(); $("#sheet").scrollTop = st; return; }
   if ((el = q("[data-pf]"))) { podSub = el.dataset.pf; renderGoods(); return; }
   if (q("#findBtn")) return openSearch();
@@ -819,11 +851,11 @@ document.addEventListener("click", (e) => {
   if (q("[data-mem-x]")) { Object.assign(member, { type: null, name: "", phone: "", agree: false }); return cartView(); }
   if ((el = q("[data-color]"))) { devColor = el.dataset.color; return cartView(); }
   if ((el = q("[data-color2]"))) { devColor = el.dataset.color2; return staffView(); }
-  if (q("[data-staff]")) { if ([...cart.keys()].some((id) => isHi(item(id))) && !ledger.trim()) { toast("고농도 제품은 장부에 사시는 구와 성함을 적어 주세요"); document.getElementById("ledgerIn")?.focus(); return; } if (member.type === "new" && (member.phone || member.name) && !member.agree) return toast("회원등록은 개인정보 동의가 필요해요"); return staffView(); }
-  if (q("[data-reset]")) { cart.clear(); airxGift = "pod"; ledger = ""; engrave = null; devColor = null; review = false; Object.assign(member, { type: null, name: "", phone: "", agree: false }); render(); closeS(); setMode(""); toast("처음 화면으로 돌아왔어요"); return; }
+  if (q("[data-staff]")) { if (member.type === "new" && (member.phone || member.name) && !member.agree) return toast("회원등록은 개인정보 동의가 필요해요"); if ([...cart.keys()].some((id) => isHi(item(id))) && !ledgerText()) { ledgerView(); toast("손님께 패드를 건네 직접 작성해 달라고 해 주세요"); return; } if (member.type === "new" && (member.phone || member.name) && !member.agree) return toast("회원등록은 개인정보 동의가 필요해요"); return staffView(); }
+  if (q("[data-reset]")) { cart.clear(); airxGift = "pod"; Object.assign(ledger, { name: "", gu: "", etc: "" }); engrave = null; devColor = null; review = false; Object.assign(member, { type: null, name: "", phone: "", agree: false }); render(); closeS(); setMode(""); toast("처음 화면으로 돌아왔어요"); return; }
   if (e.target.id === "dim") closeS();
 });
-document.addEventListener("input", (e) => { const id = e.target.id; if (id === "engrText") engrave = e.target.value; if (id === "ledgerIn") ledger = e.target.value; if (id === "memName") member.name = e.target.value; if (id === "memPhone") member.phone = e.target.value.replace(/\D/g, ""); if (id === "memAgree") member.agree = e.target.checked; });
+document.addEventListener("input", (e) => { const id = e.target.id; if (id === "engrText") engrave = e.target.value; if (id === "ldName" || id === "ldEtc") { ledger[id === "ldName" ? "name" : "etc"] = e.target.value; const p = document.getElementById("ldPrev"); if (p) p.textContent = ledgerText() || "성함과 사시는 곳을 골라 주세요"; } if (id === "memName") member.name = e.target.value; if (id === "memPhone") member.phone = e.target.value.replace(/\D/g, ""); if (id === "memAgree") member.agree = e.target.checked; });
 addEventListener("scroll", () => { const ids = (TABS[mode] || []).map(([id]) => id); let cur = ids[0]; for (const s of ids) if (document.getElementById(s).getBoundingClientRect().top < 140) cur = s; document.querySelectorAll("#tabs a").forEach((a) => a.classList.toggle("on", a.getAttribute("href") === "#" + cur)); }, { passive: true });
 render();
 setMode("");
