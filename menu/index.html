@@ -53,9 +53,17 @@
   .redblock .hdr .n{color:#fff}.redblock .hdr .eb{color:#f7c3c6}
   .best-title{font-family:var(--num);font-weight:900;font-size:38px;line-height:1.22;margin-top:22px}
   .best-sub{margin-top:10px;font-size:17px;line-height:1.6;color:rgba(255,255,255,.88)}
+  /* 오늘 가장 큰 혜택: 왼쪽 글·액상, 오른쪽 여백에 기기를 크게 */
+  .best-grid{display:flex;align-items:flex-end;gap:16px}
+  .best-left{flex:1;min-width:0}
+  .best-dev{flex:none;position:relative;width:min(158px,21vw);padding-bottom:12px;margin-right:10px}
+  .best-dev img{display:block;width:100%;height:auto;position:relative;z-index:1}
+  .best-ph{position:relative;z-index:1;height:min(390px,52vw);border-radius:26px;background:linear-gradient(160deg,#2b2724,#0d0b0a);border:2px solid rgba(255,255,255,.35);display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:var(--num);font-weight:900;font-size:26px;gap:6px}
+  .best-ph small{font-family:var(--kr);font-size:13px;font-weight:600;opacity:.6}
+  .best-dev i{position:absolute;left:50%;bottom:0;width:120%;height:22px;transform:translateX(-50%);border-radius:50%;background:radial-gradient(closest-side,rgba(0,0,0,.35),rgba(0,0,0,0))}
   .best-pics{display:flex;align-items:flex-end;gap:2px;margin-top:20px}
   .best-pics img{width:84px;height:110px;object-fit:contain;filter:drop-shadow(0 8px 10px rgba(0,0,0,.28))}
-  .dev{flex:none;width:72px;height:128px;background:linear-gradient(160deg,#2b2724,#0d0b0a);border:2px solid rgba(255,255,255,.5);border-radius:18px;display:grid;place-items:center;color:#fff;font-family:var(--num);font-weight:800;font-size:11px;text-align:center;line-height:1.3;margin-right:8px}
+  .dev{flex:none;width:72px;height:128px;background:#fff;overflow:hidden;border:2px solid rgba(255,255,255,.5);border-radius:18px;display:grid;place-items:center;color:#fff;font-family:var(--num);font-weight:800;font-size:11px;text-align:center;line-height:1.3;margin-right:8px}
   .cta{margin-top:22px;width:100%;background:#fff;color:var(--red);padding:20px 22px;display:flex;align-items:center;gap:12px;text-align:left}
   .cta b{font-family:var(--num);font-weight:900;font-size:20px;display:block}
   .cta small{display:block;font-size:14px;color:var(--ink-soft);margin-top:4px;font-weight:700}
@@ -88,8 +96,20 @@
   .combo .names{font-size:15px;color:var(--ink-soft);margin-top:6px;line-height:1.6}
   .combo .items{display:flex;align-items:flex-end;gap:6px;margin-top:14px}
   .combo .items img{width:70px;height:92px;object-fit:contain}
-  .combo .items .dev{width:56px;height:100px;border-radius:14px;font-size:10px;background:linear-gradient(160deg,#3a3531,#15120f);border-color:#ccc}
+  .combo .items .dev{width:56px;height:100px;border-radius:14px;font-size:10px;background:#fff;border-color:#ccc}
+  .dev img{width:100%;height:100%;object-fit:contain;display:block}
   .combo .act{display:flex;gap:8px;margin-top:16px}
+  /* 태블릿(레노버 탭 M11 세로 약 800px): 조합 카드 2개를 나란히 → 기기 패키지 칸이 한 화면에 */
+  @media (min-width:700px){
+    #combos{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}
+    #combos .combo{margin-top:0;padding:16px;display:flex;flex-direction:column}
+    #combos .combo h3{font-size:20px}
+    #combos .combo .names{font-size:13px}
+    #combos .combo .items{gap:3px}
+    #combos .combo .items img{width:46px;height:70px}
+    #combos .combo .items .dev{width:42px;height:76px}
+    #combos .combo .act{margin-top:auto;padding-top:14px}
+  }
   .b1{flex:1;height:56px;background:var(--red);color:#fff;font-family:var(--num);font-weight:900;font-size:17px}
   .b1.ink{background:var(--ink)}
   .b2{height:56px;padding:0 20px;background:var(--panel);font-family:var(--num);font-weight:800;font-size:16px}
@@ -285,7 +305,7 @@
 <body data-mode="">
 <div class="app">
   <div class="top">
-    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">v10.02-1900</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
+    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">v10.02-2340</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
     <nav class="tabs" id="tabs" style="display:none"></nav>
   </div>
 
@@ -302,9 +322,11 @@
 
   <section class="redblock" id="s1" data-for="dev">
     <div class="hdr"><div class="n">01</div><div><div class="eb">Best Deal</div><h2>오늘 가장 큰 혜택</h2></div></div>
-    <div class="best-title">액상 10병 +<br>발라리안 맥스프로 기기패키지</div>
-    <div class="best-sub">낱개로 사는 것보다 가장 저렴한 구성이에요.<br>원하는 맛으로 10병을 골라 담으면 돼요.</div>
-    <div class="best-pics" id="bestPics"></div>
+    <div class="best-grid"><div class="best-left">
+      <div class="best-title" id="bestTitle"></div>
+      <div class="best-sub">낱개로 사는 것보다 가장 저렴한 구성이에요.<br>원하는 맛으로 10병을 골라 담으면 돼요.</div>
+      <div class="best-pics" id="bestPics"></div></div>
+      <div class="best-dev" id="bestDev"></div></div>
     <button class="cta" data-pkg="max10"><span><b>최고혜택 구성 보고 더 저렴하게 구매하러 가기</b><small>구성과 할인 금액을 한눈에 보여 드려요</small></span><span class="arr">→</span></button>
     <div class="evrows">
       <div class="evrow"><div><div class="t">빌런 패키지 이벤트</div><div class="u">빌런 패키지로 구매하면 추가 할인이 적용돼요</div></div><div class="d">-10,000원</div></div>
@@ -317,9 +339,9 @@
   <section class="sec" id="s2" data-for="dev">
     <div class="hdr"><div class="n">02</div><div><div class="eb">Starter Package</div><h2>기기 패키지</h2></div></div>
     <div class="spec">
-      <div class="row"><div><span class="k">프리미엄 기기패키지</span><span class="u">기기 + 프리미엄 액상 5병</span><span class="tag">단품가보다 9,500원 저렴</span></div><div class="v"><span class="note">맥스프로 78,000원 + 40,000원</span><span class="price">118,000<span class="won">원</span></span></div></div>
-      <div class="row"><div><span class="k">프리미엄 기기패키지 10병</span><span class="u">기기 + 프리미엄 액상 10병 · 병당 7,500원</span><span class="tag">단품가보다 24,000원 저렴</span></div><div class="v"><span class="note">맥스프로 78,000원 + 75,000원</span><span class="price">153,000<span class="won">원</span></span></div></div>
-      <div class="row"><div><span class="k">베이프렌드 기기패키지</span><span class="u">기기 + 빌런&amp;릭 5병 · 입문자 최적가</span><span class="tag">19,500원 이득</span></div><div class="v"><span class="note">맥스프로 78,000원 + 30,000원</span><span class="price">108,000<span class="won">원</span></span></div></div>
+      <div class="row"><div><span class="k">프리미엄 기기패키지</span><span class="u">기기 + 프리미엄 액상 5병</span><span class="tag">단품가보다 9,500원 저렴</span></div><div class="v"><span class="note" data-pk-note="pr5"></span><span class="price" data-pk="pr5"></span></div></div>
+      <div class="row"><div><span class="k">프리미엄 기기패키지 10병</span><span class="u">기기 + 프리미엄 액상 10병 · 병당 7,500원</span><span class="tag">단품가보다 24,000원 저렴</span></div><div class="v"><span class="note" data-pk-note="pr10"></span><span class="price" data-pk="pr10"></span></div></div>
+      <div class="row"><div><span class="k">베이프렌드 기기패키지</span><span class="u">기기 + 빌런&amp;릭 5병 · 입문자 최적가</span><span class="tag">19,500원 이득</span></div><div class="v"><span class="note" data-pk-note="vl5"></span><span class="price" data-pk="vl5"></span></div></div>
     </div>
     <div id="combos"></div>
   </section>
@@ -368,7 +390,7 @@
 
   <div id="dspList" data-for="dsp"></div>
 
-  <div class="foot"><b>시안 · 버전 10.02-1900</b> · 사진·맛·태그는 직원 교육용 액상 DB(380종), 가격은 매장 안내 책자 기준이에요. 패키지·꿀조합·이벤트 문구는 관리자 화면에서 바꾸게 만들 예정이에요. 발라리안 맥스프로는 사진이 없어 임시 그림이에요(판매가 78,000원). 레이저 각인은 포스에 0원 상품으로 등록 예정. 빌런 패키지 할인 조건은 아직 확정 전이에요.</div>
+  <div class="foot"><b>시안 · 버전 10.02-2340</b> · 사진·맛·태그는 직원 교육용 액상 DB(380종), 가격은 매장 안내 책자 기준이에요. 패키지·꿀조합·이벤트 문구는 관리자 화면에서 바꾸게 만들 예정이에요. 기기패키지 기준 기기는 하복2(판매가 89,000원)이고 사진은 용트림 상품 페이지 사진에서 배경을 지운 거예요. 레이저 각인은 포스에 0원 상품으로 등록 예정. 빌런 패키지 할인 조건은 아직 확정 전이에요.</div>
 </div>
 
 <div class="srch" id="srch"><div class="hd"><input id="q" type="search" placeholder="이름·초성·맛·브랜드 (예: ㅂㄹㅈㄷ, 멘솔, 팜팜바, 말론)" autocomplete="off"><button class="cl" id="srchClose">닫기</button></div>
@@ -390,15 +412,21 @@ const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&l
 const byName = (n) => L.find((x) => x.n === n);
 const isVL = (x) => !x.c && /VF (빌런|릭) /.test(x.n);
 const short = (n) => n.replace(/^VF /, "");
-const DEVICE = { id: "dev_maxpro", n: "발라리안 맥스프로", br: "기기", dev: true, price: 78000 };
-const devBox = () => `<div class="dev">발라리안<br>맥스프로</div>`;
-const pic = (x) => x.c === "dsp" && dImg(x) ? `<img src="${dImg(x)}" alt="" style="object-fit:cover">` : x.dev ?`<div class="mini">발라리안<br>맥스프로</div>` : x.c ? `<div class="mini" style="font-size:26px;background:var(--panel)">${{ dev: "🔋", pod: "🧩", dsp: "🚬" }[x.c]}</div>` : `<img src="${IMG + x.img}" alt="">`;
+// ── 기기패키지 기준 기기 (여기만 바꾸면 패키지 가격·문구가 같이 바뀜) ──
+// model = 포스 상품 모델명, colors = 포스 색상, img = 누끼 사진(없으면 이름 상자)
+const MAIN = { model: "하복2", name: "하복2", price: 89000, colors: ["블랙", "실버", "올리브", "네이비"], img: "dev_havok2_silver.png" };
+// 기기에 더하는 액상 금액 (맥스프로 때와 같은 금액 · 하복2 확정 전)
+const ADD = { vl5: 30000, pr5: 40000, pr10: 75000 };
+const DEVICE = { id: "dev_main", n: MAIN.name, br: "기기", dev: true, price: MAIN.price };
+const PK = { vl5: MAIN.price + ADD.vl5, pr5: MAIN.price + ADD.pr5, pr10: MAIN.price + ADD.pr10 };
+const devBox = () => MAIN.img ? `<div class="dev"><img src="${MAIN.img}" alt="${MAIN.name}"></div>` : `<div class="dev" style="background:#15120f;color:#fff">${MAIN.name}</div>`;
+const pic = (x) => x.c === "dsp" && dImg(x) ? `<img src="${dImg(x)}" alt="" style="object-fit:cover">` : x.dev ? (MAIN.img ? `<img src="${MAIN.img}" alt="" style="object-fit:contain;background:#fff">` : `<div class="mini" style="background:#15120f;color:#fff">${MAIN.name}</div>`) : x.c ? `<div class="mini" style="font-size:26px;background:var(--panel)">${{ dev: "🔋", pod: "🧩", dsp: "🚬" }[x.c]}</div>` : `<img src="${IMG + x.img}" alt="">`;
 
 // ── 관리자 화면에서 정할 값 (시안에서는 고정) ──
 const VILLAIN5 = ["VF 빌런 자두", "VF 빌런 청포도", "VF 빌런 레몬", "VF 빌런 레즈애플", "VF 빌런 청사과"];
 const PKGS = [
-  { id: "max10", badge: "최고 혜택", name: "발라리안 맥스프로 + 액상 10병", desc: "기기 가격 + 액상 10병 75,000원 (병당 7,500원) · 원하는 맛 10병을 골라 구성", device: true, items: [], pick: 10 },
-  { id: "fruitmint", badge: "BEST", sub: "기기패키지", name: "과일멘솔 조합", desc: "발라리안 맥스프로 + 빌런 자두 · 청포도 · 레몬 · 레즈애플 · 청사과", device: true, items: VILLAIN5 },
+  { id: "max10", badge: "최고 혜택", name: `${MAIN.name} + 액상 10병`, desc: "기기 가격 + 액상 10병 75,000원 (병당 7,500원) · 원하는 맛 10병을 골라 구성", device: true, items: [], pick: 10 },
+  { id: "fruitmint", badge: "BEST", sub: "기기패키지", name: "과일멘솔 조합", desc: `${MAIN.name} + 빌런 자두 · 청포도 · 레몬 · 레즈애플 · 청사과`, device: true, items: VILLAIN5 },
   { id: "honey", badge: "꿀조합", sub: "매장 추천", name: "상큼 과일 꿀조합", desc: "빌런 자두 · 청포도 · 레즈애플 + 디오 레몬 · 샤인", items: ["VF 빌런 자두", "VF 빌런 청포도", "VF 빌런 레즈애플", "디오 레몬", "디오 샤인"] },
 ];
 const TASTES = [["과일", "상큼·달콤"], ["멘솔·민트", "시원·깔끔"], ["디저트·음료", "콜라·캔디"], ["시가·타바코", "묵직한 연초"]];
@@ -406,7 +434,7 @@ const TASTES = [["과일", "상큼·달콤"], ["멘솔·민트", "시원·깔끔
 // 프리미엄 1병 15,000 · 5병 49,500 · 11병 90,000 — 빌런·릭을 다른 프리미엄과 섞어도 됨
 // 빌런&릭 전용가 5병 49,500 · 6병 49,600 · 10병 85,000 · 12병 85,200 — 빌런·릭'만'으로 채울 때만
 // 프라임 1병 20,000 · 3병 50,000 · 10병 160,000
-// 기기 78,000 · 베이프렌드 기기패키지 = 기기 + 빌런&릭 5병 30,000 · 프리미엄 기기패키지 = 기기 + 프리미엄 5병 40,000
+// 기기 = MAIN.price · 베이프렌드 기기패키지 = 기기 + 빌런&릭 5병 30,000 · 프리미엄 기기패키지 = 기기 + 프리미엄 5병 40,000
 // 프리미엄 기기패키지 10병 = 기기 + 프리미엄 10병 75,000 (빌런·릭 섞어도 됨, 2026-10-02 사용자 확인)
 const best = (n, deals, unit) => { const memo = {}; const f = (k) => { if (k <= 0) return 0; if (memo[k] != null) return memo[k]; let b = k * unit; for (const [q, p] of deals) if (k >= q) b = Math.min(b, p + f(k - q)); return (memo[k] = b); }; return f(n); };
 const vlPrice = (n) => best(n, [[12, 85200], [10, 85000], [6, 49600], [5, 49500]], 15000);
@@ -416,9 +444,9 @@ const pmPrice = (n) => best(n, [[10, 160000], [3, 50000]], 20000);
 const liqPrice = (v, p, m) => { let b = Infinity; for (let k = 0; k <= v; k++) b = Math.min(b, vlPrice(k) + prPrice(v - k + p)); return b + pmPrice(m); };
 function estimate(c) { // c = { dev, v, p, m }
   let lq = liqPrice(c.v, c.p, c.m), b = c.dev * DEVICE.price + lq, how = "";
-  if (c.dev && c.v >= 5) { const l2 = liqPrice(c.v - 5, c.p, c.m), t = (c.dev - 1) * DEVICE.price + 108000 + l2; if (t < b) { b = t; lq = l2; how = "베이프렌드 기기패키지"; } }
-  if (c.dev && c.v + c.p >= 5) for (let a = 0; a <= Math.min(5, c.v); a++) { if (5 - a > c.p) continue; const l2 = liqPrice(c.v - a, c.p - (5 - a), c.m), t = (c.dev - 1) * DEVICE.price + 118000 + l2; if (t < b) { b = t; lq = l2; how = "프리미엄 기기패키지"; } }
-  if (c.dev && c.v + c.p >= 10) for (let a = 0; a <= Math.min(10, c.v); a++) { if (10 - a > c.p) continue; const l2 = liqPrice(c.v - a, c.p - (10 - a), c.m), t = (c.dev - 1) * DEVICE.price + 153000 + l2; if (t < b) { b = t; lq = l2; how = "프리미엄 기기패키지 10병"; } }
+  if (c.dev && c.v >= 5) { const l2 = liqPrice(c.v - 5, c.p, c.m), t = (c.dev - 1) * DEVICE.price + PK.vl5 + l2; if (t < b) { b = t; lq = l2; how = "베이프렌드 기기패키지"; } }
+  if (c.dev && c.v + c.p >= 5) for (let a = 0; a <= Math.min(5, c.v); a++) { if (5 - a > c.p) continue; const l2 = liqPrice(c.v - a, c.p - (5 - a), c.m), t = (c.dev - 1) * DEVICE.price + PK.pr5 + l2; if (t < b) { b = t; lq = l2; how = "프리미엄 기기패키지"; } }
+  if (c.dev && c.v + c.p >= 10) for (let a = 0; a <= Math.min(10, c.v); a++) { if (10 - a > c.p) continue; const l2 = liqPrice(c.v - a, c.p - (10 - a), c.m), t = (c.dev - 1) * DEVICE.price + PK.pr10 + l2; if (t < b) { b = t; lq = l2; how = "프리미엄 기기패키지 10병"; } }
   return { total: b, how, liq: lq }; // liq = 기기패키지에 들어간 액상을 뺀 액상 금액
 }
 // 다른 프리미엄을 빌런·릭으로 바꾸면(필요하면 몇 병 더 담아서) 더 싸지는지 — 직원이 권할 문구
@@ -511,14 +539,14 @@ function setMode(m) {
   $("#tabs").style.display = m ? "" : "none";
   scrollTo(0, 0);
 }
-const isMaxPro = (x) => x && x.c === "dev" && x.model === "발라맥스프로";
+const isMain = (x) => x && x.c === "dev" && x.model === MAIN.model;
 function modelGroups(list) { const m = new Map(); for (const x of list) { if (!m.has(x.model)) m.set(x.model, []); m.get(x.model).push(x); } return [...m]; }
 function gCard([model, xs]) {
   const prices = [...new Set(xs.map((x) => x.price))].sort((a, b) => a - b);
   return `<button class="p" data-gm="${esc(model)}"><div class="gpic">${EMOJI[xs[0].c]}</div><div class="bd">${xs.length > 1 ? xs.length + "가지" : ""}</div><b>${esc(model)}</b><div class="pr">${won(prices[0])}${prices.length > 1 ? "~" : ""}</div>${xs[0].ev ? `<span class="ev">${EVN[xs[0].ev][2]}</span>` : ""}</button>`;
 }
 function renderGoods() {
-  const devs = modelGroups(G.filter((x) => x.c === "dev")).sort((a, b) => (b[0] === "발라맥스프로") - (a[0] === "발라맥스프로") || a[1][0].pos.localeCompare(b[1][0].pos));
+  const devs = modelGroups(G.filter((x) => x.c === "dev")).sort((a, b) => (b[0] === MAIN.model) - (a[0] === MAIN.model) || a[1][0].pos.localeCompare(b[1][0].pos));
   $("#devList").innerHTML = devs.map(gCard).join("");
   const subs = ["팟·코일", "케이스·드립팁·기타"];
   $("#podFilter").innerHTML = subs.map((s) => `<button class="f ${podSub === s ? "on" : ""}" data-pf="${s}">${s}</button>`).join("");
@@ -569,7 +597,7 @@ function dspView(model) {
 function modelView(model) {
   const xs = G.filter((x) => x.model === model); const x0 = xs[0];
   if (x0.c === "dsp") return dspView(model);
-  const ben = x0.c === "dev" ? ["레이저 각인 무료 (기기 구매)", ...(model === "발라맥스프로" ? ["기기 + 빌런&릭 5병 → 베이프렌드 기기패키지 108,000원", "기기 + 프리미엄 5병 → 프리미엄 기기패키지 118,000원", "기기 + 프리미엄 10병 → 프리미엄 기기패키지 10병 153,000원"] : []), "이 기기에 맞는 팟은 [액상·소모품 → 팟·코일]에서"]
+  const ben = x0.c === "dev" ? ["레이저 각인 무료 (기기 구매)", ...(model === MAIN.model ? [`기기 + 빌런&릭 5병 → 베이프렌드 기기패키지 ${won(PK.vl5)}`, `기기 + 프리미엄 5병 → 프리미엄 기기패키지 ${won(PK.pr5)}`, `기기 + 프리미엄 10병 → 프리미엄 기기패키지 10병 ${won(PK.pr10)}`] : []), "이 기기에 맞는 팟은 [액상·소모품 → 팟·코일]에서"]
     : x0.ev ? [`${EVN[x0.ev][2]} 이벤트 · 같은 이벤트끼리 맛 섞어도 돼요`] : [];
   open(`<div style="font-size:13px;color:var(--grey);font-weight:700">${{ dev: "전자담배 기기", pod: "팟·코일", dsp: "일회용" }[x0.c]}</div><div class="sh" style="margin-top:6px">${esc(model)}</div>
     ${ben.length ? `<div class="ben">${ben.map((t, i) => `<div><i>0${i + 1}</i><span>${esc(t)}</span></div>`).join("")}</div>` : ""}
@@ -578,7 +606,7 @@ function modelView(model) {
 }
 function addGoods(id) {
   const x = GMAP.get(id); if (!x) return;
-  if (isMaxPro(x)) { add(DEVICE.id); devColor = x.opt; return; } // 맥스프로는 기기패키지 계산 때문에 기존 기기 칸으로
+  if (isMain(x)) { add(DEVICE.id); devColor = x.opt; return; } // 기준 기기는 기기패키지 계산 때문에 기기 칸으로
   add(id);
 }
 // 일회용 이벤트: 같은 이벤트끼리 (사는 개수+무료) 묶음마다 가장 싼 것 무료
@@ -626,8 +654,8 @@ const cart = new Map();
 let review = false; // 액상만 구매 시 리뷰 3,000원 즉시할인
 const member = { type: null, name: "", phone: "", agree: false };
 let engrave = null;
-let devColor = null; // 발라맥스프로 색상 (포스 상품이 색상별로 나뉘어 있음)
-const DEV_COLORS = ["블랙", "실버", "블루", "핑크", "퍼플"]; // null=각인 안 함, 문자열=각인 문구
+let devColor = null; // 기준 기기 색상 (포스 상품이 색상별로 나뉘어 있음)
+const DEV_COLORS = MAIN.colors; // null=각인 안 함, 문자열=각인 문구
 let taste = null, line = "프리미엄", tag = null, shown = 12;
 
 // ── 검색: 이름·초성·브랜드·맛·태그. 띄어쓰기·대소문자·'VF ' 무시 ──
@@ -662,8 +690,15 @@ document.addEventListener("input", (e) => { if (e.target.id === "q") drawSearch(
 function card(x) {
   return `<button class="p" data-p="${x.id}">${isVL(x) ? '<span class="rib">BEST</span>' : ""}<img loading="lazy" src="${IMG + x.img}" alt=""><div class="bd">${esc(x.br)}</div><b>${esc(short(x.n))}</b><div class="tg">${esc([x.f, ...x.t.filter((t) => t !== "일반")].join(" · "))}</div></button>`;
 }
+function renderMain() {
+  $("#bestTitle").innerHTML = `${esc(MAIN.name)} 기기패키지<br>+액상10병`;
+  $("#bestDev").innerHTML = MAIN.img ? `<img src="${MAIN.img}" alt="${esc(MAIN.name)}"><i></i>` : `<div class="best-ph">${esc(MAIN.name)}<small>사진 준비 중</small></div>`;
+  document.querySelectorAll("[data-pk]").forEach((el) => { el.innerHTML = `${PK[el.dataset.pk].toLocaleString()}<span class="won">원</span>`; });
+  document.querySelectorAll("[data-pk-note]").forEach((el) => { el.textContent = `${MAIN.name} ${won(MAIN.price)} + ${won(ADD[el.dataset.pkNote])}`; });
+}
 function render() {
-  $("#bestPics").innerHTML = devBox() + VILLAIN5.map(byName).filter(Boolean).map((x) => `<img src="${IMG + x.img}" alt="">`).join("");
+  renderMain();
+  $("#bestPics").innerHTML = VILLAIN5.map(byName).filter(Boolean).map((x) => `<img src="vl_${x.img.replace(/\.\w+$/, ".png")}" alt="">`).join(""); // 배경 지운 빌런 5종
   $("#combos").innerHTML = PKGS.slice(1).map((p) => `<div class="combo"><div class="lab"><span class="badge">${esc(p.badge)}</span>${p.sub ? `<span class="badge line">${esc(p.sub)}</span>` : ""}</div>
     <h3>${esc(p.name)}</h3><div class="names">${esc(p.desc)}</div>
     <div class="items">${p.device ? devBox() : ""}${p.items.map(byName).filter(Boolean).map((x) => `<img src="${IMG + x.img}" alt="">`).join("")}</div>
@@ -704,7 +739,7 @@ function detail(id) {
     <div class="chips">${[x.f, x.g, ...x.t.filter((t) => t !== "일반")].map((t) => `<span>${esc(t)}</span>`).join("")}</div>
     <div class="ben">${benefits(x).map(([n, t]) => `<div><i>${n}</i><span>${esc(t)}</span></div>`).join("")}</div>
   </div></div>
-  <button class="upsell" data-pkg="max10"><span><b>최고혜택 구성 보러 가기</b><small>액상 10병 + 발라리안 맥스프로 기기패키지로 더 저렴하게</small></span><span class="arr">→</span></button>
+  <button class="upsell" data-pkg="max10"><span><b>최고혜택 구성 보러 가기</b><small>액상 10병 + ${MAIN.name} 기기패키지로 더 저렴하게</small></span><span class="arr">→</span></button>
   <div class="btns"><button class="b1" data-add="${x.id}">담기</button></div>
   <div class="sub">비슷한 맛</div><div class="prods">${sims.map(card).join("")}</div>`);
 }
@@ -749,7 +784,7 @@ function cartView() {
     <div style="margin-top:12px">${items.map(([id, n]) => { const x = item(id); return `<div class="line">${pic(x)}<div><b>${esc(short(x.n))}</b><div class="s">${x.c ? won(x.price) + (x.ev ? " · " + EVN[x.ev][2] : "") : esc(x.br)}${x.dev && devColor ? " · " + devColor : ""}</div></div><div class="step"><button data-m="${id}">−</button><span>${n}</span><button data-pl="${id}">+</button></div></div>${x.dev ? `<div class="colors"><span class="lab">색상</span>${DEV_COLORS.map((c) => `<button class="${devColor === c ? "on" : ""}" data-color="${c}">${c}</button>`).join("")}</div>` : ""}`; }).join("") || '<div style="padding:30px 0;color:var(--grey)">아직 담은 상품이 없어요</div>'}</div>
     ${review ? `<div class="line"><div class="mini" style="background:var(--red)">리뷰</div><div><b>리뷰 즉시할인</b><div class="s">액상만 구매 혜택</div></div><b class="price" style="margin-left:auto;color:var(--red);font-size:20px">-3,000원</b></div>` : ""}
     ${items.length ? (() => { const e = est; const fr = Object.values(gc.freeBy).reduce((a, b) => a + b, 0); return `<div class="total"><span class="num" style="font-weight:800;font-size:17px">예상 금액 ${e.how ? "(" + e.how + ")" : "(묶음가 자동 적용)"}${fr ? " · 일회용 " + fr + "개 무료" : ""}${gc.giftDev ? " · 에어릭스 기기 증정" : ""}${review ? " · 리뷰할인" : ""}</span><span class="price">${(e.total + gc.total - (review ? 3000 : 0)).toLocaleString()}<span class="won">원</span></span></div>`; })() : ""}
-    ${items.some(([id]) => !item(id).c) || (!items.length && mode !== "dsp") ? `<button class="upsell" data-pkg="max10"><span><b>이 맛들로 기기패키지 만들기</b><small>액상 10병 + 발라리안 맥스프로가 가장 저렴해요</small></span><span class="arr">→</span></button>` : ""}
+    ${items.some(([id]) => !item(id).c) || (!items.length && mode !== "dsp") ? `<button class="upsell" data-pkg="max10"><span><b>이 맛들로 기기패키지 만들기</b><small>액상 10병 + ${MAIN.name}가 가장 저렴해요</small></span><span class="arr">→</span></button>` : ""}
     ${mem}
     <div class="btns"><button class="b1 ink" data-staff ${items.length ? "" : "disabled"}>직원에게 보여주기</button></div>`);
 }
@@ -762,7 +797,7 @@ function pkgView(id) {
   ben.push("리뷰 작성 시 액상 1병 더");
   open(`<span class="badge">${esc(p.badge)}</span><div class="sh" style="margin-top:12px">${esc(p.name)}</div><div style="color:var(--ink-soft);margin-top:6px;font-size:15px">${esc(p.desc)}</div>
     <div class="ben">${ben.map((t, i) => `<div><i>0${i + 1}</i><span>${esc(t)}</span></div>`).join("")}</div>
-    <div style="margin-top:8px">${p.device ? `<div class="line">${pic(DEVICE)}<div><b>발라리안 맥스프로</b><div class="s">기기 1대 · 78,000원</div></div></div>` : ""}
+    <div style="margin-top:8px">${p.device ? `<div class="line">${pic(DEVICE)}<div><b>${MAIN.name}</b><div class="s">기기 1대 · ${won(MAIN.price)}</div></div></div>` : ""}
     ${its.map((x) => `<div class="line">${pic(x)}<div><b>${esc(short(x.n))}</b><div class="s">${esc(x.f)}</div></div></div>`).join("")}
     ${p.pick ? `<div class="line" style="color:var(--grey);font-size:15px">+ 맛으로 찾기에서 액상 ${p.pick}병을 골라 담아 주세요</div>` : ""}</div>
     <div class="btns"><button class="b1" data-pkgadd="${p.id}">${p.pick ? "기기 담고 맛 고르러 가기" : "이 구성 그대로 담기"}</button></div>`);
@@ -788,8 +823,8 @@ function staffView() {
   const bundle = bundleOf(dev, vl);
   const blocks = items.map(([id, n]) => {
     const x = item(id);
-    if (x.dev) return devColor ? scanBlock(`발라리안 맥스프로 · ${devColor}`, "기기", `발라맥스프로 ${devColor}`, n)
-      : `<div class="scan"><div class="hd"><b>발라리안 맥스프로</b><span class="x">× ${n}</span></div><div class="s">색상을 골라야 바코드가 나와요</div><div class="colors" style="padding:10px 0 0">${DEV_COLORS.map((c) => `<button data-color2="${c}">${c}</button>`).join("")}</div></div>`;
+    if (x.dev) return devColor ? scanBlock(`${MAIN.name} · ${devColor}`, "기기", `${MAIN.model} ${devColor}`, n)
+      : `<div class="scan"><div class="hd"><b>${MAIN.name}</b><span class="x">× ${n}</span></div><div class="s">색상을 골라야 바코드가 나와요</div><div class="colors" style="padding:10px 0 0">${DEV_COLORS.map((c) => `<button data-color2="${c}">${c}</button>`).join("")}</div></div>`;
     if (x.c) return scanBlock(x.n, won(x.price) + (x.ev ? " · " + EVN[x.ev][2] + " 이벤트" : ""), x.n, n);
     return scanBlock(short(x.n), [x.br, x.loc ? "진열 " + x.loc : ""].filter(Boolean).join(" · "), x.n, n, bundle && isVL(x) ? " · <b style='color:var(--red)'>서비스(0원) 처리</b>" : "");
   }).join("");
