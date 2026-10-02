@@ -252,7 +252,7 @@
     <button class="more" id="more">더 보기</button>
   </section>
 
-  <div class="foot"><b>시안 · 버전 10.02-1220</b> · 사진·맛·태그는 직원 교육용 액상 DB(380종), 가격은 매장 안내 책자 기준이에요. 패키지·꿀조합·이벤트 문구는 관리자 화면에서 바꾸게 만들 예정이에요. 발라리안 맥스프로는 사진이 없어 임시 그림이에요(판매가 78,000원). 레이저 각인은 포스에 0원 상품으로 등록 예정. 액상 10병 기기패키지 가격과 빌런 패키지 할인 조건은 아직 확정 전이에요.</div>
+  <div class="foot"><b>시안 · 버전 10.02-1300</b> · 사진·맛·태그는 직원 교육용 액상 DB(380종), 가격은 매장 안내 책자 기준이에요. 패키지·꿀조합·이벤트 문구는 관리자 화면에서 바꾸게 만들 예정이에요. 발라리안 맥스프로는 사진이 없어 임시 그림이에요(판매가 78,000원). 레이저 각인은 포스에 0원 상품으로 등록 예정. 액상 10병 기기패키지 가격과 빌런 패키지 할인 조건은 아직 확정 전이에요.</div>
 </div>
 
 <div class="srch" id="srch"><div class="hd"><input id="q" type="search" placeholder="액상 이름·초성·맛·브랜드 (예: ㅂㄹㅈㄷ, 멘솔, 디오)" autocomplete="off"><button class="cl" id="srchClose">닫기</button></div>
@@ -285,11 +285,24 @@ const PKGS = [
   { id: "honey", badge: "꿀조합", sub: "매장 추천", name: "상큼 과일 꿀조합", desc: "빌런 자두 · 청포도 · 레즈애플 + 디오 레몬 · 샤인", items: ["VF 빌런 자두", "VF 빌런 청포도", "VF 빌런 레즈애플", "디오 레몬", "디오 샤인"] },
 ];
 const TASTES = [["과일", "상큼·달콤"], ["멘솔·민트", "시원·깔끔"], ["디저트·음료", "콜라·캔디"], ["시가·타바코", "묵직한 연초"]];
-// 빌런&릭 가격표 (책자 02p): 가장 싼 조합으로 계산
-const vlPrice = (n) => { let best = n * 9900; for (const [q, p] of [[12, 85200], [11, 85100], [10, 85000], [6, 49600], [5, 49500]]) if (n >= q) best = Math.min(best, p + vlPrice(n - q)); return best; };
-
-// 기기 78,000원. 베이프렌드 기기패키지 = 기기 + 빌런&릭 5병 30,000원 → 둘 중 싼 쪽으로 계산 (다른 액상은 미포함)
-const estimate = (dev, vl) => { if (!dev) return vlPrice(vl); const plain = dev * DEVICE.price + vlPrice(vl); return vl >= 5 ? Math.min(plain, (dev - 1) * DEVICE.price + 108000 + vlPrice(vl - 5)) : plain; };
+// ── 가격 규칙 (2026-10-02 사용자 확인) ──
+// 프리미엄 1병 15,000 · 5병 49,500 · 11병 90,000 — 빌런·릭을 다른 프리미엄과 섞어도 됨
+// 빌런&릭 전용가 5병 49,500 · 6병 49,600 · 10병 85,000 · 12병 85,200 — 빌런·릭'만'으로 채울 때만
+// 프라임 1병 20,000 · 3병 50,000 · 10병 160,000
+// 기기 78,000 · 베이프렌드 기기패키지 = 기기 + 빌런&릭 5병 30,000 · 프리미엄 기기패키지 = 기기 + 프리미엄 5병 40,000
+const best = (n, deals, unit) => { const memo = {}; const f = (k) => { if (k <= 0) return 0; if (memo[k] != null) return memo[k]; let b = k * unit; for (const [q, p] of deals) if (k >= q) b = Math.min(b, p + f(k - q)); return (memo[k] = b); }; return f(n); };
+const vlPrice = (n) => best(n, [[12, 85200], [11, 85100], [10, 85000], [6, 49600], [5, 49500]], 15000);
+const prPrice = (n) => best(n, [[11, 90000], [5, 49500]], 15000);
+const pmPrice = (n) => best(n, [[10, 160000], [3, 50000]], 20000);
+// 빌런·릭 v병 중 k병은 전용가로, 나머지는 다른 프리미엄 p병과 섞어 프리미엄 묶음가로 — 가장 싼 나누기
+const liqPrice = (v, p, m) => { let b = Infinity; for (let k = 0; k <= v; k++) b = Math.min(b, vlPrice(k) + prPrice(v - k + p)); return b + pmPrice(m); };
+function estimate(c) { // c = { dev, v, p, m }
+  let b = c.dev * DEVICE.price + liqPrice(c.v, c.p, c.m), how = "";
+  if (c.dev && c.v >= 5) { const t = (c.dev - 1) * DEVICE.price + 108000 + liqPrice(c.v - 5, c.p, c.m); if (t < b) { b = t; how = "베이프렌드 기기패키지"; } }
+  if (c.dev && c.v + c.p >= 5) for (let a = 0; a <= Math.min(5, c.v); a++) { if (5 - a > c.p) continue; const t = (c.dev - 1) * DEVICE.price + 118000 + liqPrice(c.v - a, c.p - (5 - a), c.m); if (t < b) { b = t; how = "프리미엄 기기패키지"; } }
+  return { total: b, how };
+}
+const countCart = () => { const c = { dev: 0, v: 0, p: 0, m: 0 }; for (const [id, n] of cart) { const x = item(id); if (x.dev) c.dev += n; else if (isVL(x)) c.v += n; else if (x.line === "프라임") c.m += n; else c.p += n; } return c; };
 const cart = new Map();
 let review = false; // 액상만 구매 시 리뷰 3,000원 즉시할인
 const member = { type: null, name: "", phone: "", agree: false };
@@ -411,7 +424,7 @@ function cartView() {
   open(`<div class="sh">담은 상품</div>${nudge(vl)}${engr}
     <div style="margin-top:12px">${items.map(([id, n]) => { const x = item(id); return `<div class="line">${pic(x)}<div><b>${esc(short(x.n))}</b><div class="s">${esc(x.br)}${x.dev && devColor ? " · " + devColor : ""}</div></div><div class="step"><button data-m="${id}">−</button><span>${n}</span><button data-pl="${id}">+</button></div></div>${x.dev ? `<div class="colors"><span class="lab">색상</span>${DEV_COLORS.map((c) => `<button class="${devColor === c ? "on" : ""}" data-color="${c}">${c}</button>`).join("")}</div>` : ""}`; }).join("") || '<div style="padding:30px 0;color:var(--grey)">아직 담은 상품이 없어요</div>'}</div>
     ${review ? `<div class="line"><div class="mini" style="background:var(--red)">리뷰</div><div><b>리뷰 즉시할인</b><div class="s">액상만 구매 혜택</div></div><b class="price" style="margin-left:auto;color:var(--red);font-size:20px">-3,000원</b></div>` : ""}
-    ${vl || dev ? `<div class="total"><span class="num" style="font-weight:800;font-size:17px">예상 금액 ${dev ? "(기기패키지 적용)" : "(빌런&amp;릭 " + vl + "병 묶음가" + (review ? " · 리뷰할인" : "") + ")"}</span><span class="price">${(estimate(dev, vl) - (review ? 3000 : 0)).toLocaleString()}<span class="won">원</span></span></div>` : ""}
+    ${items.length ? (() => { const e = estimate(countCart()); return `<div class="total"><span class="num" style="font-weight:800;font-size:17px">예상 금액 ${e.how ? "(" + e.how + ")" : "(묶음가 자동 적용)"}${review ? " · 리뷰할인" : ""}</span><span class="price">${(e.total - (review ? 3000 : 0)).toLocaleString()}<span class="won">원</span></span></div>`; })() : ""}
     <button class="upsell" data-pkg="max10"><span><b>이 맛들로 기기패키지 만들기</b><small>액상 10병 + 발라리안 맥스프로가 가장 저렴해요</small></span><span class="arr">→</span></button>
     ${mem}
     <div class="btns"><button class="b1 ink" data-staff ${items.length ? "" : "disabled"}>직원에게 보여주기</button></div>`);
