@@ -269,6 +269,10 @@
   .dcard .deal s{color:var(--grey);font-weight:700;font-size:12.5px;font-family:var(--kr)}
   .dcard .inc{position:absolute;top:8px;right:8px;background:var(--ink);color:#fff;font-family:var(--num);font-weight:800;font-size:13px;padding:4px 9px}
   @media (max-width:600px){.dcards{grid-template-columns:repeat(2,1fr)}.dev2 .big{font-size:56px}.dcards.two .dcard b{font-size:19px}}
+  .hitag{align-self:flex-start;margin-top:2px;font-family:var(--num);font-weight:800;font-size:12px;color:#fff;background:var(--ink);padding:3px 8px}
+  .hinote{margin-top:12px;padding:16px 18px;border:2px solid var(--ink);background:#fff}
+  .hinote b{font-family:var(--num);font-weight:900;font-size:17px}
+  .hinote .u{font-size:14px;color:var(--ink-soft);margin-top:4px;line-height:1.55}
   .dnote{font-size:13px;color:var(--grey);padding:14px var(--pad) 0}
   .dhero{margin:-4px 0 0;background:#f3f3f3;display:grid;place-items:center;overflow:hidden}
   .dhero img{width:100%;max-height:300px;object-fit:contain;display:block}
@@ -281,7 +285,7 @@
 <body data-mode="">
 <div class="app">
   <div class="top">
-    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">v10.02-1730</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
+    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">v10.02-1800</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
     <nav class="tabs" id="tabs" style="display:none"></nav>
   </div>
 
@@ -363,7 +367,7 @@
 
   <div id="dspList" data-for="dsp"></div>
 
-  <div class="foot"><b>시안 · 버전 10.02-1730</b> · 사진·맛·태그는 직원 교육용 액상 DB(380종), 가격은 매장 안내 책자 기준이에요. 패키지·꿀조합·이벤트 문구는 관리자 화면에서 바꾸게 만들 예정이에요. 발라리안 맥스프로는 사진이 없어 임시 그림이에요(판매가 78,000원). 레이저 각인은 포스에 0원 상품으로 등록 예정. 액상 10병 기기패키지 가격과 빌런 패키지 할인 조건은 아직 확정 전이에요.</div>
+  <div class="foot"><b>시안 · 버전 10.02-1800</b> · 사진·맛·태그는 직원 교육용 액상 DB(380종), 가격은 매장 안내 책자 기준이에요. 패키지·꿀조합·이벤트 문구는 관리자 화면에서 바꾸게 만들 예정이에요. 발라리안 맥스프로는 사진이 없어 임시 그림이에요(판매가 78,000원). 레이저 각인은 포스에 0원 상품으로 등록 예정. 액상 10병 기기패키지 가격과 빌런 패키지 할인 조건은 아직 확정 전이에요.</div>
 </div>
 
 <div class="srch" id="srch"><div class="hd"><input id="q" type="search" placeholder="이름·초성·맛·브랜드 (예: ㅂㄹㅈㄷ, 멘솔, 팜팜바, 말론)" autocomplete="off"><button class="cl" id="srchClose">닫기</button></div>
@@ -444,17 +448,21 @@ const DSPINFO = {
   "모스바": { name: "모스바", img: "dsp_moss.png", hero: "dsp_moss_all.png", d: "30,000펌프 · 작아서 휴대성 좋음" },
   "드래곤바": { name: "드래곤바", img: "product_3_3.png", d: "40,000펌프 · 액상 30mL 대용량" },
   "엘프바25000": { name: "엘프바 1%", img: "엘프바1_15.png", d: "25,000펌프 · 멘솔 5단계 조절" },
-  "(50)엘프바": { name: "엘프바 5%", img: "엘프바5_16.png", d: "25,000펌프 · 고농도 5%" },
+  "(50)엘프바": { name: "엘프바 5%", img: "엘프바5_16.png", d: "25,000펌프 · 고농도 5%", hi: true },
   "엘프바": { name: "엘프바", img: "엘프바1_15.png", d: "" },
   "네스티원": { name: "네스티원 팟", img: "dsp_nasty.png", hero: "dsp_nasty_all.png", d: "40,000펌프", w: "네스티원 배터리가 있어야 써요" },
   "립클링": { name: "립클링 1%", img: "dsp_lip.jpg", d: "20,000펌프", w: "립클링 배터리가 있어야 써요" },
-  "(고)립클링": { name: "립클링 2%", img: "dsp_lip.jpg", d: "20,000펌프 · 고농도", w: "립클링 배터리가 있어야 써요" },
+  "(고)립클링": { name: "립클링 2%", img: "dsp_lip.jpg", d: "20,000펌프 · 고농도 2%", w: "립클링 배터리가 있어야 써요", hi: true },
   "립클링배터리": { name: "립클링 배터리", img: "", d: "립클링 팟과 함께 써요" },
   "(무) 말론바": { name: "말론바 무니코틴", img: "product_13_13.png", d: "35,000펌프 · 무니코틴" },
-  "에어릭스": { name: "에어릭스 팟", img: "", d: "고농도 2% · 하카 기기 호환", w: "에어릭스 기기나 하카 기기가 있어야 써요" },
+  "에어릭스": { name: "에어릭스 팟", img: "", d: "고농도 2% · 하카 기기 호환", w: "에어릭스 기기나 하카 기기가 있어야 써요", hi: true },
   "인피": { name: "인피", img: "dsp_infy.jpg", d: "" },
 };
 const dInfo = (model) => DSPINFO[model] || { name: model, img: "", d: "" };
+// 니코틴 2% 이상 고농도: 구매 시 화학물질 장부 작성 (구매 수량은 매장이 알고 있으니 '사는 구 + 성함'만, 예: 대구 동구 홍길동)
+const isHi = (x) => !!(x && x.c === "dsp" && dInfo(x.model).hi);
+let ledger = "";
+const HI_NOTE = "니코틴 2% 이상 고농도 제품이라 구매하실 때 화학물질 장부 작성이 필요해요. 사시는 구와 성함만 적어 주세요 (예: 대구 동구 홍길동)";
 const AIRX_DEV = 35000; let airxGift = "pod"; // 에어릭스 팟 10개마다: "pod" = 팟 2개 무료, "dev" = 에어릭스 기기 증정
 const dsrc = (f) => /^dsp_/.test(f) ? f : VAPE + encodeURIComponent(f); // dsp_*.png = 메뉴판 폴더 안 사진(톡톡 메뉴 이미지에서 자름)
 const dImg = (x) => { const i = x && x.c === "dsp" && dInfo(x.model).img; return i ? dsrc(i) : ""; };
@@ -506,7 +514,7 @@ function dCard([model, xs]) {
   const dl = xs[0].ev && dealOf(xs[0].ev, p);
   return `<button class="dcard" data-gm="${esc(model)}"><div class="dimg">${i.img ? `<img loading="lazy" src="${dsrc(i.img)}" alt="">` : `<span class="no">${esc(i.name)}</span>`}</div>
     ${inCart ? `<span class="inc">${inCart}개 담음</span>` : ""}
-    <div class="db"><b>${esc(i.name)}</b>${i.d ? `<div class="dm">${esc(i.d)}</div>` : ""}${i.w ? `<div class="dm warn">${esc(i.w)}</div>` : ""}
+    <div class="db"><b>${esc(i.name)}</b>${i.d ? `<div class="dm">${esc(i.d)}</div>` : ""}${i.w ? `<div class="dm warn">${esc(i.w)}</div>` : ""}${i.hi ? `<div class="hitag">고농도 · 구매 시 장부 작성</div>` : ""}
     <div class="dp">${won(p)}${many ? "~" : ""} <small>· ${xs.length}가지</small></div>
     ${dl ? `<div class="deal"><span>${dl.n}개 ${won(dl.pay)}</span><span>${won(dl.save)} 할인</span></div>` : ""}</div></button>`;
 }
@@ -526,6 +534,7 @@ function dspView(model) {
   open(`<div style="font-size:13px;color:var(--grey);font-weight:700">일회용${ev ? " · " + EVN[ev][2] + " 이벤트" : ""}</div><div class="sh" style="margin:6px 0 14px">${esc(i.name)}</div>
     ${i.img ? `<div class="dhero"><img src="${dsrc(i.hero || i.img)}" alt=""></div>` : ""}
     ${i.d || i.w ? `<div style="margin-top:10px;font-size:15px;color:var(--ink-soft)">${esc(i.d)}${i.w ? ` <b style="color:var(--red)">· ${esc(i.w)}</b>` : ""}</div>` : ""}
+    ${i.hi ? `<div class="hinote"><b>고농도 제품 · 화학물질 장부 작성</b><div class="u">${esc(HI_NOTE)}</div></div>` : ""}
     ${save}
     <div class="sub">맛 고르기 <span style="font-size:13px;color:var(--grey);font-family:var(--kr)">누를 때마다 1개씩 담겨요</span></div>
     <div class="opts">${xs.map((x) => `<button data-gadd="${x.id}" data-re="${esc(model)}" class="${cart.get(x.id) ? "sel" : ""}">${esc(x.opt)}${cart.get(x.id) ? ` ×${cart.get(x.id)}` : ""}<small>${won(x.price)}</small></button>`).join("")}</div>
@@ -708,7 +717,8 @@ function cartView() {
       ${hasGoods ? "" : `<div class="pk-or">또는</div>
       ${review ? `<div class="pk on"><b>리뷰 3,000원 즉시할인 적용됨</b><span>결제할 때 직원에게 작성한 리뷰를 보여 주세요</span><button class="b2" data-review-del>취소</button></div>` : `<button class="pk" data-review><b>리뷰 쓰고 3,000원 즉시할인 받으러 가기</b><span>액상만 구매하시는 분 전용 혜택이에요</span><i>→</i></button>`}`}</div>`;
   if (ok || dev || hasGoods) review = false;
-  const mem = !items.length ? "" : memberBox();
+  const mem = (items.some(([id]) => isHi(item(id))) ? `<div class="hinote"><b>화학물질 장부 작성 (고농도 2% 이상)</b><div class="u">${esc(HI_NOTE)}</div>
+    <input class="in" id="ledgerIn" placeholder="예: 대구 동구 홍길동" value="${esc(ledger)}"></div>` : "") + (!items.length ? "" : memberBox());
   const gc = goodsCalc(), est = estimate(countCart());
   open(`<div class="sh">담은 상품</div>${nudge(vl)}${swapHint(countCart())}${goodsHints(gc, est.liq)}${engr}
     <div style="margin-top:12px">${items.map(([id, n]) => { const x = item(id); return `<div class="line">${pic(x)}<div><b>${esc(short(x.n))}</b><div class="s">${x.c ? won(x.price) + (x.ev ? " · " + EVN[x.ev][2] : "") : esc(x.br)}${x.dev && devColor ? " · " + devColor : ""}</div></div><div class="step"><button data-m="${id}">−</button><span>${n}</span><button data-pl="${id}">+</button></div></div>${x.dev ? `<div class="colors"><span class="lab">색상</span>${DEV_COLORS.map((c) => `<button class="${devColor === c ? "on" : ""}" data-color="${c}">${c}</button>`).join("")}</div>` : ""}`; }).join("") || '<div style="padding:30px 0;color:var(--grey)">아직 담은 상품이 없어요</div>'}</div>
@@ -765,6 +775,7 @@ function staffView() {
   ${(() => { const gc = goodsCalc(), fr = Object.entries(gc.freeBy).filter(([, n]) => n); const base = estimate(countCart()).liq + gc.pod; return (fr.length ? `<div class="scan bundle"><div class="s" style="color:var(--ink)">일회용 이벤트 무료: ${fr.map(([ev, n]) => EVN[ev][2] + " " + n + "개").join(", ")} → 가장 싼 것부터 서비스(0원) 처리</div></div>` : "") + (gc.giftDev ? `<div class="scan bundle"><div class="s" style="color:var(--ink)">🎁 에어릭스 팟 10개 혜택 → 에어릭스 기기 ${gc.giftDev}대 증정 (서비스 0원 처리)</div></div>` : "") + (base >= 100000 ? `<div class="scan bundle"><div class="s" style="color:var(--ink)">🎁 액상·팟 ${won(base)} → 일회용 기기 1개 증정</div></div>` : ""); })()}
   ${engrave !== null ? `<div class="scan"><div class="hd"><b>레이저 각인 (0원)</b><span class="x">× 1</span></div><div class="s">문구: ${engrave ? esc(engrave) : "손님께 확인"}</div><span class="warn">포스에 0원 각인 상품 등록 후 바코드 연결</span></div>` : ""}
   ${review ? `<div class="line"><div class="mini" style="background:var(--red)">리뷰</div><div><b>리뷰 즉시할인 -3,000원</b><div class="s">손님 리뷰 작성 확인 후 할인</div></div></div>` : ""}
+  ${(() => { const hs = items.filter(([id]) => isHi(item(id))); return hs.length ? `<div class="scan bundle"><div class="hd"><b>화학물질 장부 작성</b></div><div class="s" style="color:var(--ink);font-size:15px;margin-top:6px">${ledger.trim() ? `<b>${esc(ledger.trim())}</b>` : '<span class="warn">아직 안 적었어요 · 손님께 사시는 구와 성함 여쭤보기</span>'}</div><div class="s">${hs.map(([id, n]) => esc(item(id).n) + " ×" + n).join(" · ")}</div></div>` : ""; })()}
   ${member.type ? `<div class="line"><div class="mini">회원</div><div><b>${member.type === "new" ? "신규 회원등록" : "기존 회원 적립"}</b><div class="s">${esc([member.name, member.phone].filter(Boolean).join(" · ") || "정보 미입력")}</div></div></div>` : `<div class="line"><div class="mini">회원</div><div><b>회원 정보 없음</b><div class="s">적립 원하시는지 한 번 여쭤봐 주세요</div></div></div>`}
   <div class="btns"><button class="b2" data-x>수정</button><button class="b1" data-reset>완료 · 처음으로</button></div>`);
   document.querySelectorAll("#sheet svg.bc").forEach((el) => {
@@ -808,11 +819,11 @@ document.addEventListener("click", (e) => {
   if (q("[data-mem-x]")) { Object.assign(member, { type: null, name: "", phone: "", agree: false }); return cartView(); }
   if ((el = q("[data-color]"))) { devColor = el.dataset.color; return cartView(); }
   if ((el = q("[data-color2]"))) { devColor = el.dataset.color2; return staffView(); }
-  if (q("[data-staff]")) { if (member.type === "new" && (member.phone || member.name) && !member.agree) return toast("회원등록은 개인정보 동의가 필요해요"); return staffView(); }
-  if (q("[data-reset]")) { cart.clear(); airxGift = "pod"; engrave = null; devColor = null; review = false; Object.assign(member, { type: null, name: "", phone: "", agree: false }); render(); closeS(); setMode(""); toast("처음 화면으로 돌아왔어요"); return; }
+  if (q("[data-staff]")) { if ([...cart.keys()].some((id) => isHi(item(id))) && !ledger.trim()) { toast("고농도 제품은 장부에 사시는 구와 성함을 적어 주세요"); document.getElementById("ledgerIn")?.focus(); return; } if (member.type === "new" && (member.phone || member.name) && !member.agree) return toast("회원등록은 개인정보 동의가 필요해요"); return staffView(); }
+  if (q("[data-reset]")) { cart.clear(); airxGift = "pod"; ledger = ""; engrave = null; devColor = null; review = false; Object.assign(member, { type: null, name: "", phone: "", agree: false }); render(); closeS(); setMode(""); toast("처음 화면으로 돌아왔어요"); return; }
   if (e.target.id === "dim") closeS();
 });
-document.addEventListener("input", (e) => { const id = e.target.id; if (id === "engrText") engrave = e.target.value; if (id === "memName") member.name = e.target.value; if (id === "memPhone") member.phone = e.target.value.replace(/\D/g, ""); if (id === "memAgree") member.agree = e.target.checked; });
+document.addEventListener("input", (e) => { const id = e.target.id; if (id === "engrText") engrave = e.target.value; if (id === "ledgerIn") ledger = e.target.value; if (id === "memName") member.name = e.target.value; if (id === "memPhone") member.phone = e.target.value.replace(/\D/g, ""); if (id === "memAgree") member.agree = e.target.checked; });
 addEventListener("scroll", () => { const ids = (TABS[mode] || []).map(([id]) => id); let cur = ids[0]; for (const s of ids) if (document.getElementById(s).getBoundingClientRect().top < 140) cur = s; document.querySelectorAll("#tabs a").forEach((a) => a.classList.toggle("on", a.getAttribute("href") === "#" + cur)); }, { passive: true });
 render();
 setMode("");
