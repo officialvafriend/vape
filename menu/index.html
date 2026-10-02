@@ -528,7 +528,7 @@ function renderGoods() {
     const big = gs.length <= 2;
     return `<section class="dev2 ${e.red ? "red" : ""}" id="${e.id}"><div class="eh">${e.ev ? `<div class="big">${EVN[e.ev][2]}</div>` : ""}<div>${e.badge ? `<span class="badge">${e.badge}</span>` : ""}<div class="et">${esc(e.t)}</div><div class="es">${esc(e.s)}</div></div></div>
       <div class="dcards ${big ? "two" : ""}">${gs.map(dCard).join("")}</div></section>`;
-  }).join("") + `<div class="dnote">사진을 누르면 맛을 골라 담을 수 있어요 · 이벤트 대상은 매장 확인 중</div>`;
+  }).join("") + `<div class="dnote">사진을 누르면 맛을 골라 담을 수 있어요</div>`;
 }
 function dCard([model, xs]) {
   const i = dInfo(model), p = Math.min(...xs.map((x) => x.price)), many = new Set(xs.map((x) => x.price)).size > 1;
@@ -802,7 +802,7 @@ function staffView() {
     }).join("");
   })()}
   <div style="margin-top:6px">${blocks}</div>
-  ${(() => { const gc = goodsCalc(), fr = Object.entries(gc.freeBy).filter(([k, n]) => n && !DSP_POS[k]); const base = estimate(countCart()).liq + gc.pod; return (fr.length ? `<div class="scan bundle"><div class="s" style="color:var(--ink)">일회용 이벤트 무료: ${fr.map(([k, n]) => evLabel(k) + " " + n + "개").join(", ")} → 포스에 묶음 상품이 없어서 가장 싼 것부터 서비스(0원) 처리</div></div>` : "") + (gc.giftDev ? `<div class="scan bundle"><div class="s" style="color:var(--ink)">🎁 에어릭스 팟 10개 혜택 → 에어릭스 기기 ${gc.giftDev}대 증정 (서비스 0원 처리)</div></div>` : "") + (base >= 100000 ? `<div class="scan bundle"><div class="s" style="color:var(--ink)">🎁 액상·팟 ${won(base)} → 일회용 기기 1개 증정</div></div>` : ""); })()}
+  ${(() => { const gc = goodsCalc(), fr = Object.entries(gc.freeBy).filter(([k, n]) => n && !DSP_POS[k]); const base = estimate(countCart()).liq + gc.pod; return (fr.length ? `<div class="scan bundle"><div class="s" style="color:var(--ink)">일회용 이벤트 무료: ${fr.map(([k, n]) => evLabel(k) + " " + n + "개").join(", ")} → 포스에서 가장 싼 것부터 서비스(0원) 처리</div></div>` : "") + (gc.giftDev ? `<div class="scan bundle"><div class="s" style="color:var(--ink)">🎁 에어릭스 팟 10개 혜택 → 에어릭스 기기 ${gc.giftDev}대 증정 (서비스 0원 처리)</div></div>` : "") + (base >= 100000 ? `<div class="scan bundle"><div class="s" style="color:var(--ink)">🎁 액상·팟 ${won(base)} → 일회용 기기 1개 증정</div></div>` : ""); })()}
   ${engrave !== null ? `<div class="scan"><div class="hd"><b>레이저 각인 (0원)</b><span class="x">× 1</span></div><div class="s">문구: ${engrave ? esc(engrave) : "손님께 확인"}</div><span class="warn">포스에 0원 각인 상품 등록 후 바코드 연결</span></div>` : ""}
   ${review ? `<div class="line"><div class="mini" style="background:var(--red)">리뷰</div><div><b>리뷰 즉시할인 -3,000원</b><div class="s">손님 리뷰 작성 확인 후 할인</div></div></div>` : ""}
   ${(() => { const hs = items.filter(([id]) => isHi(item(id))); return hs.length ? `<div class="scan bundle"><div class="hd"><b>화학물질 장부 작성</b></div><div class="s" style="color:var(--ink);font-size:15px;margin-top:6px">${ledgerText() ? `<b>${esc(ledgerText())}</b> <span style="font-size:12.5px;color:var(--grey)">(구매자 직접 작성)</span>` : '<span class="warn">아직 작성 안 됨</span>'}</div><div class="s">${hs.map(([id, n]) => esc(item(id).n) + " ×" + n).join(" · ")}</div></div>` : ""; })()}
