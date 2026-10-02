@@ -82,10 +82,10 @@
   .cv-h small{font-family:var(--kr);font-size:13px;color:var(--grey);font-weight:600;margin-left:6px}
   .cv-pods{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
   .cv-pods button{border:2px solid var(--ink);border-radius:16px;padding:16px;display:flex;flex-direction:column;align-items:flex-start;gap:8px;text-align:left;background:#fff}
-  .cv-pods .t{font-family:var(--num);font-weight:900;font-size:22px}
-  .cv-pods .t small,.cv-pods .p small{display:block;font-family:var(--kr);font-size:13px;color:var(--grey);font-weight:600}
-  .cv-pods .p{font-size:20px;font-weight:800;color:var(--red)}
-  .cv-pods .add{align-self:stretch;text-align:center;background:var(--ink);color:#fff;border-radius:10px;padding:12px 0;font-weight:800;font-size:16px}
+  .cv-pods .cvp-k{font-size:14px;font-weight:800;color:#3182f6}
+  .cv-pods .cvp-p small{font-family:var(--kr);font-size:13px;color:var(--grey);font-weight:600}
+  .cv-pods .cvp-p{align-self:stretch;display:flex;align-items:baseline;justify-content:space-between;background:#f3f4f6;border-radius:12px;padding:12px 14px;font-size:24px;font-weight:800;color:var(--red)}
+  .cv-pods .cvp-add{align-self:stretch;text-align:center;background:var(--ink);color:#fff;border-radius:10px;padding:12px 0;font-weight:800;font-size:16px}
   .cv-tips{margin-top:14px;font-size:14px;color:var(--ink-soft);line-height:1.8}
   .spec2{margin-top:14px;border-top:2px solid var(--ink)}
   .spec2 div{display:grid;grid-template-columns:110px 1fr;gap:12px;padding:12px 0;border-bottom:1px solid var(--line);font-size:15px;line-height:1.5}
@@ -339,7 +339,7 @@
 <body data-mode=""><div id="testRibbon" style="position:fixed;left:0;right:0;bottom:0;z-index:99999;background:#d32f2f;color:#fff;text-align:center;font:700 13px sans-serif;padding:4px;pointer-events:none">테스트판 · 손님 상담에는 정식판을 쓰세요</div>
 <div class="app">
   <div class="top">
-    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">테스트 v10.02-2530</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
+    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">테스트 v10.02-2540</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
     <nav class="tabs" id="tabs" style="display:none"></nav>
   </div>
 
@@ -424,7 +424,7 @@
 
   <div id="dspList" data-for="dsp"></div>
 
-  <div class="foot"><b>시안 · 버전 10.02-2530</b> · 사진·맛·태그는 직원 교육용 액상 DB(380종), 가격은 매장 안내 책자 기준이에요. 패키지·꿀조합·이벤트 문구는 관리자 화면에서 바꾸게 만들 예정이에요. 기기패키지 기준 기기는 하복2(판매가 89,000원)이고 사진은 용트림 상품 페이지 사진에서 배경을 지운 거예요. 레이저 각인은 포스에 0원 상품으로 등록 예정. 빌런 패키지 할인 조건은 아직 확정 전이에요.</div>
+  <div class="foot"><b>시안 · 버전 10.02-2540</b> · 사진·맛·태그는 직원 교육용 액상 DB(380종), 가격은 매장 안내 책자 기준이에요. 패키지·꿀조합·이벤트 문구는 관리자 화면에서 바꾸게 만들 예정이에요. 기기패키지 기준 기기는 하복2(판매가 89,000원)이고 사진은 용트림 상품 페이지 사진에서 배경을 지운 거예요. 레이저 각인은 포스에 0원 상품으로 등록 예정. 빌런 패키지 할인 조건은 아직 확정 전이에요.</div>
 </div>
 
 <div class="srch" id="srch"><div class="hd"><input id="q" type="search" placeholder="이름·초성·맛·브랜드 (예: ㅂㄹㅈㄷ, 멘솔, 팜팜바, 말론)" autocomplete="off"><button class="cl" id="srchClose">닫기</button></div>
@@ -462,7 +462,7 @@ const MAIN_SPEC = [
   ["크기", "106.5mm", "44.8 × 20.6 × 106.5mm"],
   ["무게", "117g", "비누 하나와 비슷해요."],
   ["AS 보증", "6개월", "베이프렌드 매장 AS · 모든 기기 동일"],
-  ["구성품", "카트리지 2개", "Type-C 케이블 · 설명서 · 컬러 드립팁"],
+  ["구성품", "카트리지 2개", "충전케이블과 설명서 그리고 컬러드립팁이 들어있어요."],
 ];
 const MAIN_TIPS = ["입호흡·폐호흡 둘 다 되는 기기 — 팟만 바꿔 끼우면 돼요", "팟은 2~3주에 1개씩 교체를 권장해요", "기존 하복 코일·카트리지와는 호환되지 않아요"];
 const DEVICE = { id: "dev_main", n: MAIN.name, br: "기기", dev: true, price: MAIN.price };
@@ -653,7 +653,7 @@ function mainSpecView(color) {
     <div class="cv-two"><div><b>가격</b><strong>${won(MAIN.price)}</strong><span>온라인판매가</span></div><div><b>호흡 방식</b><strong>입호흡 + 폐호흡</strong><span>팟만 바꿔 끼우면 돼요</span></div></div>
     <div class="cv-grid">${MAIN_SPEC.map(([k, v, sub]) => `<div><b>${esc(k)}</b><strong>${esc(v)}</strong>${sub ? `<span>${esc(sub)}</span>` : ""}</div>`).join("")}</div>
     ${pods.length ? `<div class="cv-h">전용 팟 <small>1팩 ${MAIN.podPack}개입 · 팩 단위로 담아요</small></div>
-    <div class="cv-pods">${pods.map((x) => { const inc = Math.floor((cart.get(x.id) || 0) / MAIN.podPack); return `<button data-gpack="${x.id}"><span class="t">${esc(x.n.replace(MAIN.model + " ", ""))}<small>${/0\.15/.test(x.n) ? "폐호흡" : "입호흡"}</small></span><span class="p">${won(MAIN.podPackPrice)}<small>1팩 ${MAIN.podPack}개</small></span><span class="add">${inc ? `${inc}팩 담음 · 1팩 더` : "1팩 담기"}</span></button>`; }).join("")}</div>` : ""}
+    <div class="cv-pods">${pods.map((x) => { const inc = Math.floor((cart.get(x.id) || 0) / MAIN.podPack); return `<button data-gpack="${x.id}"><span class="cvp-k">${/0\.15/.test(x.n) ? "폐호흡" : "입호흡"}</span><span class="cvp-t">${esc(x.n.replace(MAIN.model + " ", ""))}</span><span class="cvp-p">${won(MAIN.podPackPrice)}<small>1팩 ${MAIN.podPack}개입</small></span>${inc ? `<span class="cvp-in">${inc}팩 담았어요</span>` : ""}<span class="cvp-add">1팩 담기</span></button>`; }).join("")}</div>` : ""}
     <div class="cv-tips">${MAIN_TIPS.map((t) => `<div>· ${esc(t)}</div>`).join("")}</div>
     <div class="btns"><button class="b2" data-maindev="1">이 색으로 기기 담기</button><button class="b1" data-pkg="max10">기기패키지 보러 가기</button></div></div>`);
 }
