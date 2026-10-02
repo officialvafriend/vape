@@ -113,6 +113,13 @@
   #s1{overflow:hidden}
   #s1 .best-dev{position:absolute;right:-56px;top:-95px;bottom:14px;width:auto;margin:0;padding:0;z-index:1}
   #s1 .best-dev .spec-hit,#s1 .best-dev img{height:100%;width:auto}
+  /* 좁은 화면(휴대폰·좁은 창): 사진을 글 위에 따로 */
+  @media (max-width:699px){
+    #s1 .best-grid{flex-direction:column-reverse;min-height:0}
+    #s1 .best-left{max-width:none}
+    #s1 .best-dev{position:relative;top:auto;right:auto;bottom:auto;width:64%;margin:-10px auto 0}
+    #s1 .best-dev .spec-hit,#s1 .best-dev img{height:auto;width:100%}
+  }
   #s1 .best-dev .spec-hit i{display:none}
   #s1 .spec-tag{right:22%;top:34%}
   #s1 .best-title{font-size:clamp(32px,5.5vw,45px)}
@@ -361,7 +368,7 @@
 <body data-mode="">
 <div class="app">
   <div class="top">
-    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">v10.02-2630</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
+    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">v10.02-2640</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
     <nav class="tabs" id="tabs" style="display:none"></nav>
   </div>
 
@@ -445,7 +452,7 @@
 
   <div id="dspList" data-for="dsp"></div>
 
-  <div class="foot"><b>시안 · 버전 10.02-2630</b> · 사진·맛·태그는 직원 교육용 액상 DB(380종), 가격은 매장 안내 책자 기준이에요. 패키지·꿀조합·이벤트 문구는 관리자 화면에서 바꾸게 만들 예정이에요. 기기패키지 기준 기기는 하복2(판매가 89,000원)이고 사진은 용트림 상품 페이지 사진에서 배경을 지운 거예요. 레이저 각인은 포스에 0원 상품으로 등록 예정. 빌런 패키지 할인 조건은 아직 확정 전이에요.</div>
+  <div class="foot"><b>시안 · 버전 10.02-2640</b> · 사진·맛·태그는 직원 교육용 액상 DB(380종), 가격은 매장 안내 책자 기준이에요. 패키지·꿀조합·이벤트 문구는 관리자 화면에서 바꾸게 만들 예정이에요. 기기패키지 기준 기기는 하복2(판매가 89,000원)이고 사진은 용트림 상품 페이지 사진에서 배경을 지운 거예요. 레이저 각인은 포스에 0원 상품으로 등록 예정. 빌런 패키지 할인 조건은 아직 확정 전이에요.</div>
 </div>
 
 <div class="srch" id="srch"><div class="hd"><input id="q" type="search" placeholder="이름·초성·맛·브랜드 (예: ㅂㄹㅈㄷ, 멘솔, 팜팜바, 말론)" autocomplete="off"><button class="cl" id="srchClose">닫기</button></div>
