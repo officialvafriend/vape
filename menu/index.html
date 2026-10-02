@@ -368,7 +368,7 @@
 <body data-mode="">
 <div class="app">
   <div class="top">
-    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">v10.02-2640</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
+    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">v10.02-2650</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
     <nav class="tabs" id="tabs" style="display:none"></nav>
   </div>
 
@@ -393,7 +393,7 @@
       <div class="best-dev" id="bestDev"></div></div>
     <div class="evrows">
       <div class="evrow"><div><div class="t">레이저 각인 무료 이벤트</div><div class="u">기기 구매 또는 액상 10병 이상 구매 시 원하는 문구를 새겨 드려요</div></div><div class="d">0원</div></div>
-      <div class="evrow"><div><div class="t">리뷰 작성 이벤트</div><div class="u">리뷰를 쓰면 인기액상 1병을 더 받아 갈 수 있어요</div></div><div class="d">+1병</div></div>
+      <div class="evrow"><div><div class="t">리뷰 작성 이벤트</div><div class="u">리뷰를 네이버 클립에 업로드하면 3,000원 할인해 드려요<br>클립 업로드는 담당직원이 도와드립니다 (소요시간 3~5분)</div></div><div class="d">-3,000원</div></div>
     </div>
     <button class="cta" data-pkg="max10"><span><b>추가 혜택으로 구매하러 가기</b><small>구성과 할인 금액을 한눈에 보여 드려요</small></span><span class="arr">→</span></button>
   </section>
@@ -452,7 +452,7 @@
 
   <div id="dspList" data-for="dsp"></div>
 
-  <div class="foot"><b>시안 · 버전 10.02-2640</b> · 사진·맛·태그는 직원 교육용 액상 DB(380종), 가격은 매장 안내 책자 기준이에요. 패키지·꿀조합·이벤트 문구는 관리자 화면에서 바꾸게 만들 예정이에요. 기기패키지 기준 기기는 하복2(판매가 89,000원)이고 사진은 용트림 상품 페이지 사진에서 배경을 지운 거예요. 레이저 각인은 포스에 0원 상품으로 등록 예정. 빌런 패키지 할인 조건은 아직 확정 전이에요.</div>
+  <div class="foot"><b>시안 · 버전 10.02-2650</b> · 사진·맛·태그는 직원 교육용 액상 DB(380종), 가격은 매장 안내 책자 기준이에요. 패키지·꿀조합·이벤트 문구는 관리자 화면에서 바꾸게 만들 예정이에요. 기기패키지 기준 기기는 하복2(판매가 89,000원)이고 사진은 용트림 상품 페이지 사진에서 배경을 지운 거예요. 레이저 각인은 포스에 0원 상품으로 등록 예정. 빌런 패키지 할인 조건은 아직 확정 전이에요.</div>
 </div>
 
 <div class="srch" id="srch"><div class="hd"><input id="q" type="search" placeholder="이름·초성·맛·브랜드 (예: ㅂㄹㅈㄷ, 멘솔, 팜팜바, 말론)" autocomplete="off"><button class="cl" id="srchClose">닫기</button></div>
@@ -819,7 +819,7 @@ function benefits(x) {
   if (!isVL(x) && x.line === "프리미엄") out.push("프리미엄 5병 49,500원 · 11병 90,000원");
   if (x.line === "프라임") out.push("프라임 3병 50,000원 · 10병 160,000원");
   out.push("기기 구매 또는 액상 10병 이상이면 레이저 각인 무료");
-  out.push("리뷰 작성하면 원하는 액상 1병 더");
+  out.push("네이버 클립 리뷰 업로드 시 3,000원 할인");
   return out.map((t, i) => [String(i + 1).padStart(2, "0"), t]);
 }
 function detail(id) {
@@ -868,13 +868,13 @@ function cartView() {
     : `<div class="pick2"><div class="pk-h">지금 ${liq}병 · 이런 혜택도 받을 수 있어요</div>
       <button class="pk" data-more-liq><b>액상 ${10 - liq}병 더 담고 레이저 각인 무료</b><span>10병 이상이면 원하는 문구를 무료로 새겨 드려요</span><i>→</i></button>
       ${hasGoods ? "" : `<div class="pk-or">또는</div>
-      ${review ? `<div class="pk on"><b>리뷰 3,000원 즉시할인 적용됨</b><span>결제할 때 직원에게 작성한 리뷰를 보여 주세요</span><button class="b2" data-review-del>취소</button></div>` : `<button class="pk" data-review><b>리뷰 쓰고 3,000원 즉시할인 받으러 가기</b><span>액상만 구매하시는 분 전용 혜택이에요</span><i>→</i></button>`}`}</div>`;
+      ${review ? `<div class="pk on"><b>클립 리뷰 3,000원 할인 적용됨</b><span>클립 업로드는 담당직원이 도와드려요 (3~5분)</span><button class="b2" data-review-del>취소</button></div>` : `<button class="pk" data-review><b>네이버 클립 리뷰 올리고 3,000원 할인 받기</b><span>액상만 구매하시는 분 전용 혜택이에요</span><i>→</i></button>`}`}</div>`;
   if (ok || dev || hasGoods) review = false;
   const mem = (items.some(([id]) => isHi(item(id))) ? `<div class="hinote"><b>화학물질 장부 작성 (고농도 2% 이상)</b><div class="u">${esc(HI_NOTE)}</div><div class="u" style="color:var(--ink);font-weight:700">${ledgerText() ? "작성됨: " + esc(ledgerText()) : "[직원에게 보여주기]를 누르면 손님이 직접 적는 화면이 나와요"}</div></div>` : "") + (!items.length ? "" : memberBox());
   const gc = goodsCalc(), est = estimate(countCart());
   open(`<div class="sh">담은 상품</div>${nudge(vl)}${swapHint(countCart())}${goodsHints(gc, est.liq)}${engr}
     <div style="margin-top:12px">${items.map(([id, n]) => { const x = item(id); return `<div class="line">${pic(x)}<div><b>${esc(short(x.n))}</b><div class="s">${x.c ? won(x.price) + (x.ev ? " · " + EVN[x.ev][2] : "") : esc(x.br)}${x.dev && devColor ? " · " + devColor : ""}</div></div><div class="step"><button data-m="${id}">−</button><span>${n}</span><button data-pl="${id}">+</button></div></div>${x.dev ? `<div class="colors"><span class="lab">색상</span>${DEV_COLORS.map((c) => `<button class="${devColor === c ? "on" : ""}" data-color="${c}">${c}</button>`).join("")}</div>` : ""}`; }).join("") || '<div style="padding:30px 0;color:var(--grey)">아직 담은 상품이 없어요</div>'}</div>
-    ${review ? `<div class="line"><div class="mini" style="background:var(--red)">리뷰</div><div><b>리뷰 즉시할인</b><div class="s">액상만 구매 혜택</div></div><b class="price" style="margin-left:auto;color:var(--red);font-size:20px">-3,000원</b></div>` : ""}
+    ${review ? `<div class="line"><div class="mini" style="background:var(--red)">리뷰</div><div><b>클립 리뷰 할인</b><div class="s">네이버 클립 리뷰 업로드</div></div><b class="price" style="margin-left:auto;color:var(--red);font-size:20px">-3,000원</b></div>` : ""}
     ${items.length ? (() => { const e = est; const fr = Object.values(gc.freeBy).reduce((a, b) => a + b, 0); return `<div class="total"><span class="num" style="font-weight:800;font-size:17px">예상 금액 ${e.how ? "(" + e.how + ")" : "(묶음가 자동 적용)"}${fr ? " · 일회용 " + fr + "개 무료" : ""}${gc.giftDev ? " · 에어릭스 기기 증정" : ""}${review ? " · 리뷰할인" : ""}</span><span class="price">${(e.total + gc.total - (review ? 3000 : 0)).toLocaleString()}<span class="won">원</span></span></div>`; })() : ""}
     ${items.some(([id]) => !item(id).c) || (!items.length && mode !== "dsp") ? `<button class="upsell" data-pkg="max10"><span><b>이 맛들로 기기패키지 만들기</b><small>액상 10병 + ${MAIN.name}가 가장 저렴해요</small></span><span class="arr">→</span></button>` : ""}
     ${mem}
@@ -886,7 +886,7 @@ function pkgView(id) {
   const ben = ["낱개로 사는 것보다 저렴한 구성 (기기 가격 + 액상 묶음가)"];
   if (its.some((x) => x.n.includes("빌런"))) ben.push("빌런 패키지 이벤트 10,000원 추가 할인 적용");
   ben.push(p.device || p.pick >= 10 ? "레이저 각인 무료 (기기 구매 혜택)" : "5병 더 담으면 레이저 각인 무료 (액상 10병 이상)");
-  ben.push("리뷰 작성 시 액상 1병 더");
+  ben.push("네이버 클립 리뷰 업로드 시 3,000원 할인");
   open(`<span class="badge">${esc(p.badge)}</span><div class="sh" style="margin-top:12px">${esc(p.name)}</div><div style="color:var(--ink-soft);margin-top:6px;font-size:15px">${esc(p.desc)}</div>
     <div class="ben">${ben.map((t, i) => `<div><i>0${i + 1}</i><span>${esc(t)}</span></div>`).join("")}</div>
     <div style="margin-top:8px">${p.device ? `<div class="line">${pic(DEVICE)}<div><b>${MAIN.name}</b><div class="s">기기 1대 · ${won(MAIN.price)}</div></div></div>` : ""}
@@ -934,7 +934,7 @@ function staffView() {
   <div style="margin-top:6px">${blocks}</div>
   ${(() => { const gc = goodsCalc(), fr = Object.entries(gc.freeBy).filter(([k, n]) => n && !DSP_POS[k]); const base = estimate(countCart()).liq + gc.pod; return (fr.length ? `<div class="scan bundle"><div class="s" style="color:var(--ink)">일회용 이벤트 무료: ${fr.map(([k, n]) => evLabel(k) + " " + n + "개").join(", ")} → 포스에서 가장 싼 것부터 서비스(0원) 처리</div></div>` : "") + (gc.giftDev ? `<div class="scan bundle"><div class="s" style="color:var(--ink)">🎁 에어릭스 팟 10개 혜택 → 에어릭스 기기 ${gc.giftDev}대 증정 (서비스 0원 처리)</div></div>` : "") + (base >= 100000 ? `<div class="scan bundle"><div class="s" style="color:var(--ink)">🎁 액상·팟 ${won(base)} → 일회용 기기 1개 증정</div></div>` : ""); })()}
   ${engrave !== null ? `<div class="scan"><div class="hd"><b>레이저 각인 (0원)</b><span class="x">× 1</span></div><div class="s">문구: ${engrave ? esc(engrave) : "손님께 확인"}</div><span class="warn">포스에 0원 각인 상품 등록 후 바코드 연결</span></div>` : ""}
-  ${review ? `<div class="line"><div class="mini" style="background:var(--red)">리뷰</div><div><b>리뷰 즉시할인 -3,000원</b><div class="s">손님 리뷰 작성 확인 후 할인</div></div></div>` : ""}
+  ${review ? `<div class="line"><div class="mini" style="background:var(--red)">리뷰</div><div><b>클립 리뷰 할인 -3,000원</b><div class="s">네이버 클립 업로드 확인 후 할인</div></div></div>` : ""}
   ${(() => { const hs = items.filter(([id]) => isHi(item(id))); return hs.length ? `<div class="scan bundle"><div class="hd"><b>화학물질 장부 작성</b></div><div class="s" style="color:var(--ink);font-size:15px;margin-top:6px">${ledgerText() ? `<b>${esc(ledgerText())}</b> <span style="font-size:12.5px;color:var(--grey)">(구매자 직접 작성)</span>` : '<span class="warn">아직 작성 안 됨</span>'}</div><div class="s">${hs.map(([id, n]) => esc(item(id).n) + " ×" + n).join(" · ")}</div></div>` : ""; })()}
   ${member.type ? `<div class="line"><div class="mini">회원</div><div><b>${member.type === "new" ? "신규 회원등록" : "기존 회원 적립"}</b><div class="s">${esc([member.name, member.phone].filter(Boolean).join(" · ") || "정보 미입력")}</div></div></div>` : `<div class="line"><div class="mini">회원</div><div><b>회원 정보 없음</b><div class="s">적립 원하시는지 한 번 여쭤봐 주세요</div></div></div>`}
   <div class="btns"><button class="b2" data-x>수정</button><button class="b1" data-reset>완료 · 처음으로</button></div>`);
