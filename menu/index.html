@@ -136,6 +136,12 @@
   .tot2 .r.pay{border-top:1px solid var(--line);margin-top:6px;padding-top:12px;font-weight:800}
   .tot2 .r.pay b{font-family:var(--num);font-size:32px;font-weight:900} .tot2 .r.pay small{font-size:16px;margin-left:2px}
   .tot2 .save{margin-top:8px;background:var(--red);color:#fff;text-align:center;font-weight:800;padding:10px;font-size:16px}
+  /* 상담 흐름: 단계 표시 + 다음 단계 버튼 */
+  .flow{display:flex;align-items:center;gap:6px;padding:7px var(--pad);background:#211d1a;font-size:13px;font-weight:700;color:rgba(255,255,255,.45);overflow:hidden;white-space:nowrap}
+  .flow i{font-style:normal;opacity:.5}
+  .flow span.done{color:rgba(255,255,255,.8)} .flow span.on{color:#fff;background:var(--red);padding:3px 9px;border-radius:999px}
+  .nextbar{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:40;display:none;align-items:center;gap:14px;background:var(--ink);color:#fff;padding:14px 22px;border-radius:999px;box-shadow:0 6px 20px rgba(0,0,0,.3);font-weight:800;font-size:17px;max-width:calc(100% - 32px)}
+  .nextbar.on{display:flex} .nextbar small{font-weight:600;opacity:.75;font-size:14px} .nextbar b{color:#ffd2d4}
   .evc{font-family:var(--kr);font-size:12px;font-weight:700;background:rgba(255,255,255,.18);border-radius:999px;padding:2px 8px;margin-left:6px;vertical-align:middle}
   .best-price em{font-style:normal;background:#fff;color:var(--red);font-weight:900;font-size:18px;padding:6px 12px;border-radius:999px}
   #s1 .evrows{margin-top:auto;padding-top:10px}
@@ -381,8 +387,9 @@
 <body data-mode="">
 <div class="app">
   <div class="top">
-    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">v10.02-2720</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
+    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">v10.02-2800</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
     <nav class="tabs" id="tabs" style="display:none"></nav>
+    <div class="flow" id="flow"><span data-st="1">① 찾는 것</span><i>›</i><span data-st="2">② 고르기</span><i>›</i><span data-st="3">③ 담은 상품</span><i>›</i><span data-st="4">④ 직원 확인</span></div>
   </div>
 
   <section class="home" data-for="home">
@@ -467,7 +474,7 @@
 
   <div id="dspList" data-for="dsp"></div>
 
-  <div class="foot"><b>시안 · 버전 10.02-2720</b> · 사진·맛·태그는 직원 교육용 액상 DB(380종), 가격은 매장 안내 책자 기준이에요. 패키지·꿀조합·이벤트 문구는 관리자 화면에서 바꾸게 만들 예정이에요. 기기패키지 기준 기기는 하복2(판매가 89,000원)이고 사진은 용트림 상품 페이지 사진에서 배경을 지운 거예요. 레이저 각인은 포스에 0원 상품으로 등록 예정. 빌런 패키지 할인 조건은 아직 확정 전이에요.</div>
+  <div class="foot"><b>시안 · 버전 10.02-2800</b> · 사진·맛·태그는 직원 교육용 액상 DB(380종), 가격은 매장 안내 책자 기준이에요. 패키지·꿀조합·이벤트 문구는 관리자 화면에서 바꾸게 만들 예정이에요. 기기패키지 기준 기기는 하복2(판매가 89,000원)이고 사진은 용트림 상품 페이지 사진에서 배경을 지운 거예요. 레이저 각인은 포스에 0원 상품으로 등록 예정. 빌런 패키지 할인 조건은 아직 확정 전이에요.</div>
 </div>
 
 <div class="srch" id="srch"><div class="hd"><input id="q" type="search" placeholder="이름·초성·맛·브랜드 (예: ㅂㄹㅈㄷ, 멘솔, 팜팜바, 말론)" autocomplete="off"><button class="cl" id="srchClose">닫기</button></div>
@@ -1039,5 +1046,29 @@ if ("serviceWorker" in navigator && location.protocol === "https:") {
 // 상단 바 실제 높이를 --topH로 (첫 화면 꽉 차게 계산용) — 탭 줄이 보였다 안 보였다 해서 바뀔 때마다 다시 잼
 (() => { const top = document.querySelector('.top'); const set = () => document.documentElement.style.setProperty('--topH', top.offsetHeight + 'px'); set(); addEventListener('resize', set); new ResizeObserver(set).observe(top); })();
 </script>
-</body>
+<button class="nextbar" id="nextBar"></button>
+<script>
+// 상담 흐름: ① 찾는 것(처음) ② 고르기(구역 들어감) ③ 담은 상품(장바구니 창) ④ 직원 확인(바코드 창)
+(() => {
+  const flow = document.getElementById("flow"), bar = document.getElementById("nextBar");
+  function step() {
+    const sh = document.getElementById("sheet"), open = document.getElementById("dim").classList.contains("on");
+    if (open && sh.querySelector(".scan")) return 4;
+    if (open && sh.querySelector(".tot2, [data-staff]")) return 3;
+    return mode ? 2 : 1;
+  }
+  function update() {
+    const st = step(), n = [...cart.values()].reduce((a, b) => a + b, 0);
+    flow.querySelectorAll("span").forEach((el) => { const k = +el.dataset.st; el.classList.toggle("on", k === st); el.classList.toggle("done", k < st); });
+    const show = st === 2 && n > 0 && !document.getElementById("dim").classList.contains("on");
+    if (show) {
+      const gc = goodsCalc(), e = estimate(countCart());
+      bar.innerHTML = `<span>담은 상품 보기 <small>${n}개</small></span><b>${(e.total + gc.total).toLocaleString()}원</b><span>→</span>`;
+    }
+    bar.classList.toggle("on", show);
+  }
+  bar.addEventListener("click", () => cartView());
+  setInterval(update, 400); update();
+})();
+</script></body>
 </html>
