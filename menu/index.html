@@ -252,7 +252,7 @@
     <button class="more" id="more">더 보기</button>
   </section>
 
-  <div class="foot"><b>시안 · 버전 10.02-1340</b> · 사진·맛·태그는 직원 교육용 액상 DB(380종), 가격은 매장 안내 책자 기준이에요. 패키지·꿀조합·이벤트 문구는 관리자 화면에서 바꾸게 만들 예정이에요. 발라리안 맥스프로는 사진이 없어 임시 그림이에요(판매가 78,000원). 레이저 각인은 포스에 0원 상품으로 등록 예정. 액상 10병 기기패키지 가격과 빌런 패키지 할인 조건은 아직 확정 전이에요.</div>
+  <div class="foot"><b>시안 · 버전 10.02-1400</b> · 사진·맛·태그는 직원 교육용 액상 DB(380종), 가격은 매장 안내 책자 기준이에요. 패키지·꿀조합·이벤트 문구는 관리자 화면에서 바꾸게 만들 예정이에요. 발라리안 맥스프로는 사진이 없어 임시 그림이에요(판매가 78,000원). 레이저 각인은 포스에 0원 상품으로 등록 예정. 액상 10병 기기패키지 가격과 빌런 패키지 할인 조건은 아직 확정 전이에요.</div>
 </div>
 
 <div class="srch" id="srch"><div class="hd"><input id="q" type="search" placeholder="액상 이름·초성·맛·브랜드 (예: ㅂㄹㅈㄷ, 멘솔, 디오)" autocomplete="off"><button class="cl" id="srchClose">닫기</button></div>
@@ -291,7 +291,7 @@ const TASTES = [["과일", "상큼·달콤"], ["멘솔·민트", "시원·깔끔
 // 프라임 1병 20,000 · 3병 50,000 · 10병 160,000
 // 기기 78,000 · 베이프렌드 기기패키지 = 기기 + 빌런&릭 5병 30,000 · 프리미엄 기기패키지 = 기기 + 프리미엄 5병 40,000
 const best = (n, deals, unit) => { const memo = {}; const f = (k) => { if (k <= 0) return 0; if (memo[k] != null) return memo[k]; let b = k * unit; for (const [q, p] of deals) if (k >= q) b = Math.min(b, p + f(k - q)); return (memo[k] = b); }; return f(n); };
-const vlPrice = (n) => best(n, [[12, 85200], [11, 85100], [10, 85000], [6, 49600], [5, 49500]], 15000);
+const vlPrice = (n) => best(n, [[12, 85200], [10, 85000], [6, 49600], [5, 49500]], 15000);
 const prPrice = (n) => best(n, [[11, 90000], [5, 49500]], 15000);
 const pmPrice = (n) => best(n, [[10, 160000], [3, 50000]], 20000);
 // 빌런·릭 v병 중 k병은 전용가로, 나머지는 다른 프리미엄 p병과 섞어 프리미엄 묶음가로 — 가장 싼 나누기
@@ -408,7 +408,7 @@ function nudge(vl) {
   const steps = [[5, "5병 49,500원"], [6, "6병 49,600원 (100원 딜)"], [10, "10병 85,000원"], [12, "12병 85,200원 (100원 딜 ×2)"]];
   const next = steps.find(([q]) => vl < q);
   if (!next) return `<div class="nudge"><b>빌런&amp;릭 최대 혜택 적용 중</b><div class="u">12병 85,200원 구간이에요</div></div>`;
-  const msg = vl === 5 || vl === 10 || vl === 11 ? "100원만 더 내면 1병 더!" : `빌런&amp;릭 ${next[0] - vl}병 더 담으면 ${next[1]}`;
+  const msg = vl === 11 ? "1병 더 담으면 오히려 4,800원 싸져요 (12병 85,200원)" : vl === 5 ? "100원만 더 내면 1병 더!" : `빌런&amp;릭 ${next[0] - vl}병 더 담으면 ${next[1]}`;
   return `<div class="nudge"><b>${msg}</b><div class="u">지금 ${vl}병 · 다음 구간 ${next[1]}</div><div class="bar2"><i style="width:${Math.min(100, (vl / next[0]) * 100)}%"></i></div></div>`;
 }
 function memberBox() {
