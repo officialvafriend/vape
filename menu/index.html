@@ -61,6 +61,32 @@
   .spec-hit{display:block;width:100%;position:relative;padding:0;background:none;border:0;cursor:pointer}
   .spec-hit i{position:absolute;left:50%;bottom:-12px;width:120%;height:22px;transform:translateX(-50%);border-radius:50%;background:radial-gradient(closest-side,rgba(0,0,0,.35),rgba(0,0,0,0))}
   .spec-tag{position:absolute;right:-4px;top:30%;z-index:2;background:#fff;color:var(--red);font-weight:800;font-size:12px;padding:6px 10px;border-radius:999px;box-shadow:0 2px 8px rgba(0,0,0,.2)}
+  .cv-name{font-family:var(--num);font-weight:900;font-size:28px}
+  .cv-sub{color:var(--grey);font-size:14px;margin-top:4px}
+  .cv-hero{position:relative;height:300px;margin-top:8px}
+  .cv-hero img{position:absolute;left:50%;bottom:30px;transform:translateX(-50%);height:250px;width:auto;z-index:1}
+  .cv-hero svg{position:absolute;left:50%;bottom:0;transform:translateX(-50%);width:min(420px,90%);height:70px}
+  .cv-cl{position:absolute;left:50%;bottom:4px;transform:translateX(-50%);font-size:13px;color:#9aa3ad;font-weight:700}
+  .cv-colors{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
+  .cv-colors button{background:#f3f4f6;border:2px solid transparent;border-radius:14px;padding:10px 4px 8px;display:flex;flex-direction:column;align-items:center;gap:4px;font-weight:700;font-size:14px}
+  .cv-colors button img{height:64px;width:auto}
+  .cv-colors button.on{border-color:var(--ink);background:#fff}
+  .cv-two{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
+  .cv-two div,.cv-grid div{background:#f3f4f6;border-radius:16px;padding:14px 16px;display:flex;flex-direction:column;gap:4px}
+  .cv-two b,.cv-grid b{color:#3182f6;font-size:13px;font-weight:700}
+  .cv-two strong{font-size:22px;font-weight:800}
+  .cv-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+  .cv-grid strong{font-size:18px;font-weight:800}
+  .cv-two span,.cv-grid span{font-size:13px;color:var(--grey)}
+  .cv-h{font-family:var(--num);font-weight:800;font-size:20px;margin-top:24px}
+  .cv-h small{font-family:var(--kr);font-size:13px;color:var(--grey);font-weight:600;margin-left:6px}
+  .cv-pods{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+  .cv-pods button{border:2px solid var(--ink);border-radius:16px;padding:16px;display:flex;flex-direction:column;align-items:flex-start;gap:8px;text-align:left;background:#fff}
+  .cv-pods .t{font-family:var(--num);font-weight:900;font-size:22px}
+  .cv-pods .t small,.cv-pods .p small{display:block;font-family:var(--kr);font-size:13px;color:var(--grey);font-weight:600}
+  .cv-pods .p{font-size:20px;font-weight:800;color:var(--red)}
+  .cv-pods .add{align-self:stretch;text-align:center;background:var(--ink);color:#fff;border-radius:10px;padding:12px 0;font-weight:800;font-size:16px}
+  .cv-tips{margin-top:14px;font-size:14px;color:var(--ink-soft);line-height:1.8}
   .spec2{margin-top:14px;border-top:2px solid var(--ink)}
   .spec2 div{display:grid;grid-template-columns:110px 1fr;gap:12px;padding:12px 0;border-bottom:1px solid var(--line);font-size:15px;line-height:1.5}
   .spec2 b{color:var(--grey);font-weight:700}
@@ -313,7 +339,7 @@
 <body data-mode="">
 <div class="app">
   <div class="top">
-    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">v10.02-2430</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
+    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">v10.02-2500</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
     <nav class="tabs" id="tabs" style="display:none"></nav>
   </div>
 
@@ -398,7 +424,7 @@
 
   <div id="dspList" data-for="dsp"></div>
 
-  <div class="foot"><b>시안 · 버전 10.02-2430</b> · 사진·맛·태그는 직원 교육용 액상 DB(380종), 가격은 매장 안내 책자 기준이에요. 패키지·꿀조합·이벤트 문구는 관리자 화면에서 바꾸게 만들 예정이에요. 기기패키지 기준 기기는 하복2(판매가 89,000원)이고 사진은 용트림 상품 페이지 사진에서 배경을 지운 거예요. 레이저 각인은 포스에 0원 상품으로 등록 예정. 빌런 패키지 할인 조건은 아직 확정 전이에요.</div>
+  <div class="foot"><b>시안 · 버전 10.02-2500</b> · 사진·맛·태그는 직원 교육용 액상 DB(380종), 가격은 매장 안내 책자 기준이에요. 패키지·꿀조합·이벤트 문구는 관리자 화면에서 바꾸게 만들 예정이에요. 기기패키지 기준 기기는 하복2(판매가 89,000원)이고 사진은 용트림 상품 페이지 사진에서 배경을 지운 거예요. 레이저 각인은 포스에 0원 상품으로 등록 예정. 빌런 패키지 할인 조건은 아직 확정 전이에요.</div>
 </div>
 
 <div class="srch" id="srch"><div class="hd"><input id="q" type="search" placeholder="이름·초성·맛·브랜드 (예: ㅂㄹㅈㄷ, 멘솔, 팜팜바, 말론)" autocomplete="off"><button class="cl" id="srchClose">닫기</button></div>
@@ -422,19 +448,21 @@ const isVL = (x) => !x.c && /VF (빌런|릭) /.test(x.n);
 const short = (n) => n.replace(/^VF /, "");
 // ── 기기패키지 기준 기기 (여기만 바꾸면 패키지 가격·문구가 같이 바뀜) ──
 // model = 포스 상품 모델명, colors = 포스 색상, img = 누끼 사진(없으면 이름 상자)
-const MAIN = { model: "하복2", name: "하복2", price: 89000, colors: ["블랙", "실버", "올리브", "네이비"], img: "dev_havok2_silver.png" };
+const MAIN = { model: "하복2", name: "하복2", price: 89000, colors: ["블랙", "실버", "올리브", "네이비"], img: "dev_havok2_silver.png",
+  imgs: { 블랙: "dev_havok2_black.png", 실버: "dev_havok2_silver.png", 올리브: "dev_havok2_olive.png", 네이비: "dev_havok2_navy.png" },
+  podPack: 2, podPackPrice: 12000 }; // 전용 팟 1팩 2개입 12,000원 (용트림 소비자 권장가) — 포스에는 낱개 6,000원이라 팩이면 2번 찍음
 // 기기에 더하는 액상 금액 (맥스프로 때와 같은 금액 · 하복2 확정 전)
 const ADD = { vl5: 30000, pr5: 40000, pr10: 75000 };
 // 기준 기기 스펙 (출처: 용트림 하복2 상세페이지 '제품 사양'·FAQ)
 const MAIN_SPEC = [
-  ["카트리지", "팟·코일 일체형 전용 5.5ml"],
-  ["입호흡 / 폐호흡", "0.6Ω 입호흡 14~28W (동봉) · 0.15Ω 폐호흡 40~80W (기본 장착)"],
-  ["배터리 / 충전", "내장 2,800mAh · Type-C 고속충전 (5V/2A 권장)"],
-  ["크기 / 무게", "44.8 × 20.6 × 106.5mm · 117g"],
-  ["드립팁", "510 컬러 드립팁 2개"],
-  ["보증", "구입일로부터 2년 · 기기 본체 1회 (카트리지 제외)"],
-  ["정품 인증", "16자리 코드 검증"],
-  ["구성품", "본체 · 전용 카트리지 2개 · Type-C 케이블 · 사용설명서"],
+  ["카트리지", "5.5ml", "팟·코일 일체형"],
+  ["배터리", "2,800mAh", "Type-C 고속충전 5V/2A"],
+  ["입호흡", "0.6Ω · 14~28W", "팟 동봉"],
+  ["폐호흡", "0.15Ω · 40~80W", "기본 장착"],
+  ["크기", "106.5mm", "44.8 × 20.6 × 106.5mm"],
+  ["무게", "117g", ""],
+  ["보증", "2년", "기기 본체 1회 · 카트리지 제외"],
+  ["구성품", "카트리지 2개", "Type-C 케이블 · 설명서 · 컬러 드립팁"],
 ];
 const MAIN_TIPS = ["입호흡·폐호흡 둘 다 되는 기기 — 팟만 바꿔 끼우면 돼요", "팟은 2~3주에 1개씩 교체를 권장해요", "기존 하복 코일·카트리지와는 호환되지 않아요"];
 const DEVICE = { id: "dev_main", n: MAIN.name, br: "기기", dev: true, price: MAIN.price };
@@ -614,25 +642,29 @@ function dspView(model) {
     <div class="opts">${xs.map((x) => `<button data-gadd="${x.id}" data-re="${esc(model)}" class="${cart.get(x.id) ? "sel" : ""}">${esc(x.opt)}${cart.get(x.id) ? ` ×${cart.get(x.id)}` : ""}<small>${won(x.price)}</small></button>`).join("")}</div>
     <div class="btns"><button class="b2" data-x>더 고르기</button><button class="b1" id="cartBtn2">담은 상품 보기</button></div>`);
 }
-function specHtml() {
+let cvColor = null; // 스펙 창에서 고른 색
+function mainSpecView(color) {
+  cvColor = color || cvColor || devColor || Object.keys(MAIN.imgs)[1] || MAIN.colors[0];
   const pods = G.filter((x) => x.c === "pod" && x.n.startsWith(MAIN.model + " "));
-  return `<div class="spec2">${MAIN_SPEC.map(([k, v]) => `<div><b>${esc(k)}</b><span>${esc(v)}</span></div>`).join("")}</div>
-    <div class="ben">${MAIN_TIPS.map((t, i) => `<div><i>0${i + 1}</i><span>${esc(t)}</span></div>`).join("")}</div>
-    ${pods.length ? `<div class="sub">전용 팟</div><div class="opts">${pods.map((x) => `<button data-gadd="${x.id}">${esc(x.n.replace(MAIN.model + " ", ""))}<small>${won(x.price)}</small></button>`).join("")}</div>` : ""}`;
-}
-function mainSpecView() {
-  open(`<div style="font-size:13px;color:var(--grey);font-weight:700">기기 스펙</div><div class="sh" style="margin-top:6px">${esc(MAIN.name)} <span style="font-size:18px;color:var(--red)">${won(MAIN.price)}</span></div>
-    ${MAIN.img ? `<div class="spec-pic"><img src="${MAIN.img}" alt=""></div>` : ""}${specHtml()}
-    <div class="btns"><button class="b2" data-x>닫기</button><button class="b1" data-pkg="max10" data-close="1">기기패키지 보러 가기</button></div>`);
+  open(`<div class="cv">
+    <div class="cv-name">${esc(MAIN.name)}</div><div class="cv-sub">유웰 · 입호흡 + 폐호흡 팟 모드</div>
+    <div class="cv-hero"><img id="cvImg" src="${MAIN.imgs[cvColor] || MAIN.img}" alt=""><svg viewBox="0 0 400 70" preserveAspectRatio="none"><ellipse cx="200" cy="35" rx="190" ry="26" fill="none" stroke="#dfe2e6" stroke-width="2"/></svg><span class="cv-cl" id="cvCl">${esc(cvColor)}</span></div>
+    <div class="cv-colors">${MAIN.colors.map((k) => `<button data-cvc="${k}" class="${k === cvColor ? "on" : ""}"><img src="${MAIN.imgs[k] || MAIN.img}" alt=""><span>${k}</span></button>`).join("")}</div>
+    <div class="cv-two"><div><b>가격</b><strong>${won(MAIN.price)}</strong><span>기기 1대 · 소비자 권장가</span></div><div><b>호흡 방식</b><strong>입호흡 + 폐호흡</strong><span>팟만 바꿔 끼우면 돼요</span></div></div>
+    <div class="cv-grid">${MAIN_SPEC.map(([k, v, sub]) => `<div><b>${esc(k)}</b><strong>${esc(v)}</strong>${sub ? `<span>${esc(sub)}</span>` : ""}</div>`).join("")}</div>
+    ${pods.length ? `<div class="cv-h">전용 팟 <small>1팩 ${MAIN.podPack}개입 · 팩 단위로 담아요</small></div>
+    <div class="cv-pods">${pods.map((x) => { const inc = Math.floor((cart.get(x.id) || 0) / MAIN.podPack); return `<button data-gpack="${x.id}"><span class="t">${esc(x.n.replace(MAIN.model + " ", ""))}<small>${/0\.15/.test(x.n) ? "폐호흡" : "입호흡"}</small></span><span class="p">${won(MAIN.podPackPrice)}<small>1팩 ${MAIN.podPack}개</small></span><span class="add">${inc ? `${inc}팩 담음 · 1팩 더` : "1팩 담기"}</span></button>`; }).join("")}</div>` : ""}
+    <div class="cv-tips">${MAIN_TIPS.map((t) => `<div>· ${esc(t)}</div>`).join("")}</div>
+    <div class="btns"><button class="b2" data-maindev="1">이 색으로 기기 담기</button><button class="b1" data-pkg="max10">기기패키지 보러 가기</button></div></div>`);
 }
 function modelView(model) {
+  if (model === MAIN.model) return mainSpecView();
   const xs = G.filter((x) => x.model === model); const x0 = xs[0];
   if (x0.c === "dsp") return dspView(model);
   const ben = x0.c === "dev" ? ["레이저 각인 무료 (기기 구매)", ...(model === MAIN.model ? [`기기 + 빌런&릭 5병 → 베이프렌드 기기패키지 ${won(PK.vl5)}`, `기기 + 프리미엄 5병 → 프리미엄 기기패키지 ${won(PK.pr5)}`, `기기 + 프리미엄 10병 → 프리미엄 기기패키지 10병 ${won(PK.pr10)}`] : []), "이 기기에 맞는 팟은 [액상·소모품 → 팟·코일]에서"]
     : x0.ev ? [`${EVN[x0.ev][2]} 이벤트 · 같은 이벤트끼리 맛 섞어도 돼요`] : [];
   open(`<div style="font-size:13px;color:var(--grey);font-weight:700">${{ dev: "전자담배 기기", pod: "팟·코일", dsp: "일회용" }[x0.c]}</div><div class="sh" style="margin-top:6px">${esc(model)}</div>
     ${ben.length ? `<div class="ben">${ben.map((t, i) => `<div><i>0${i + 1}</i><span>${esc(t)}</span></div>`).join("")}</div>` : ""}
-    ${model === MAIN.model ? `<div class="sub">기기 스펙</div>${specHtml()}` : ""}
     <div class="sub">${xs.length > 1 ? "골라 담기" : "담기"}</div>
     <div class="opts">${xs.map((x) => `<button data-gadd="${x.id}" data-close="1">${esc(x.opt || x.n)}<small>${won(x.price)}</small></button>`).join("")}</div>`);
 }
@@ -890,6 +922,9 @@ document.addEventListener("click", (e) => {
   if ((el = q("[data-mode]")) && el.classList.contains("way")) { setMode(el.dataset.mode); return; }
   if (q("#homeBtn")) { closeS(); $("#srch").classList.remove("on"); setMode(""); return; }
   if ((el = q("[data-mainspec]"))) return mainSpecView();
+  if ((el = q("[data-cvc]"))) { cvColor = el.dataset.cvc; $("#cvImg").src = MAIN.imgs[cvColor] || MAIN.img; $("#cvCl").textContent = cvColor; document.querySelectorAll("[data-cvc]").forEach((b) => b.classList.toggle("on", b === el)); return; }
+  if ((el = q("[data-gpack]"))) { const st = $("#sheet").scrollTop; for (let i = 0; i < MAIN.podPack; i++) addGoods(el.dataset.gpack); toast(`담았어요 · ${GMAP.get(el.dataset.gpack).n} 1팩(${MAIN.podPack}개)`); renderGoods(); mainSpecView(); $("#sheet").scrollTop = st; return; }
+  if ((el = q("[data-maindev]"))) { const x = G.find((y) => y.model === MAIN.model && y.opt === cvColor); if (x) addGoods(x.id); toast(`담았어요 · ${MAIN.name} ${cvColor}`); closeS(); return; }
   if ((el = q("[data-gm]"))) return modelView(el.dataset.gm);
   if ((el = q("[data-gadd]"))) { addGoods(el.dataset.gadd); const x = GMAP.get(el.dataset.gadd); toast(`담았어요 · ${x.n}`); if (el.dataset.close) closeS(); renderGoods(); if (el.dataset.re) { const st = $("#sheet").scrollTop; dspView(el.dataset.re); $("#sheet").scrollTop = st; } return; }
   if (q("#cartBtn2") || q("[data-cartback]")) return cartView();
