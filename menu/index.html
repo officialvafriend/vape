@@ -253,9 +253,9 @@
   .dcard{background:#fff;color:var(--ink);text-align:left;border:1.5px solid var(--line);display:flex;flex-direction:column;position:relative}
   .dev2.red .dcard{border:0}
   .dcard .dimg{aspect-ratio:4/3;background:var(--panel);overflow:hidden;display:grid;place-items:center}
-  .dcards.two .dcard .dimg{aspect-ratio:16/11}
+  .dcards.two .dcard .dimg{aspect-ratio:14/5;background:#f3f3f3}
   .dcard .dimg img{width:100%;height:100%;object-fit:cover}
-  .dcard .dimg .no{font-family:var(--num);font-weight:900;font-size:22px;color:var(--grey)}
+  .dcard .dimg .no{font-family:var(--num);font-weight:900;font-size:24px;color:var(--ink);letter-spacing:-.01em;text-align:center;padding:0 10px}
   .dcard .db{padding:12px 14px 14px;display:flex;flex-direction:column;gap:4px;flex:1}
   .dcard b{font-family:var(--num);font-weight:900;font-size:19px}
   .dcards.two .dcard b{font-size:24px}
@@ -264,13 +264,14 @@
   .dcard .dp{margin-top:auto;padding-top:6px;font-family:var(--num);font-weight:900;font-size:17px}
   .dcard .dp small{font-family:var(--kr);font-weight:700;font-size:12.5px;color:var(--grey)}
   .dcard .deal{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-top:6px;padding:9px 10px;background:rgba(216,31,42,.08);color:var(--red);font-family:var(--num);font-weight:900;font-size:15px}
+  .dcards:not(.two) .dcard .deal{flex-direction:column;align-items:flex-start;gap:2px}
   .dcards.two .dcard .deal{font-size:17px}
   .dcard .deal s{color:var(--grey);font-weight:700;font-size:12.5px;font-family:var(--kr)}
   .dcard .inc{position:absolute;top:8px;right:8px;background:var(--ink);color:#fff;font-family:var(--num);font-weight:800;font-size:13px;padding:4px 9px}
   @media (max-width:600px){.dcards{grid-template-columns:repeat(2,1fr)}.dev2 .big{font-size:56px}.dcards.two .dcard b{font-size:19px}}
   .dnote{font-size:13px;color:var(--grey);padding:14px var(--pad) 0}
-  .dhero{margin:-4px 0 0;background:var(--panel);aspect-ratio:16/6;overflow:hidden}
-  .dhero img{width:100%;height:100%;object-fit:cover}
+  .dhero{margin:-4px 0 0;background:#f3f3f3;display:grid;place-items:center;overflow:hidden}
+  .dhero img{width:100%;max-height:300px;object-fit:contain;display:block}
   .save{display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding:16px 18px;background:var(--red);color:#fff}
   .save b{font-family:var(--num);font-weight:900;font-size:19px}
   .save .u{font-size:13.5px;opacity:.85;margin-top:3px}
@@ -280,7 +281,7 @@
 <body data-mode="">
 <div class="app">
   <div class="top">
-    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">v10.02-1600</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
+    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">v10.02-1700</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
     <nav class="tabs" id="tabs" style="display:none"></nav>
   </div>
 
@@ -362,7 +363,7 @@
 
   <div id="dspList" data-for="dsp"></div>
 
-  <div class="foot"><b>시안 · 버전 10.02-1600</b> · 사진·맛·태그는 직원 교육용 액상 DB(380종), 가격은 매장 안내 책자 기준이에요. 패키지·꿀조합·이벤트 문구는 관리자 화면에서 바꾸게 만들 예정이에요. 발라리안 맥스프로는 사진이 없어 임시 그림이에요(판매가 78,000원). 레이저 각인은 포스에 0원 상품으로 등록 예정. 액상 10병 기기패키지 가격과 빌런 패키지 할인 조건은 아직 확정 전이에요.</div>
+  <div class="foot"><b>시안 · 버전 10.02-1700</b> · 사진·맛·태그는 직원 교육용 액상 DB(380종), 가격은 매장 안내 책자 기준이에요. 패키지·꿀조합·이벤트 문구는 관리자 화면에서 바꾸게 만들 예정이에요. 발라리안 맥스프로는 사진이 없어 임시 그림이에요(판매가 78,000원). 레이저 각인은 포스에 0원 상품으로 등록 예정. 액상 10병 기기패키지 가격과 빌런 패키지 할인 조건은 아직 확정 전이에요.</div>
 </div>
 
 <div class="srch" id="srch"><div class="hd"><input id="q" type="search" placeholder="이름·초성·맛·브랜드 (예: ㅂㄹㅈㄷ, 멘솔, 팜팜바, 말론)" autocomplete="off"><button class="cl" id="srchClose">닫기</button></div>
@@ -439,21 +440,22 @@ const won = (n) => n.toLocaleString() + "원";
 // 일회용 사진·설명 — 직원 교육 사이트(vafriend_disposable_reference)와 같은 사진. 포스 상품명 앞부분(model) 기준
 const VAPE = "https://officialvafriend.github.io/vape/";
 const DSPINFO = {
-  "팜팜바": { name: "팜팜바", img: "product_1_1.png", d: "30,000펌프 · 멘솔량 조절 가능" },
-  "모스바": { name: "모스바", img: "product_2_2.png", d: "30,000펌프 · 작아서 휴대성 좋음" },
+  "팜팜바": { name: "팜팜바", img: "dsp_farm.png", hero: "dsp_farm_all.png", d: "30,000펌프 · 멘솔량 조절 가능" },
+  "모스바": { name: "모스바", img: "dsp_moss.png", hero: "dsp_moss_all.png", d: "30,000펌프 · 작아서 휴대성 좋음" },
   "드래곤바": { name: "드래곤바", img: "product_3_3.png", d: "40,000펌프 · 액상 30mL 대용량" },
   "엘프바25000": { name: "엘프바 1%", img: "엘프바1_15.png", d: "25,000펌프 · 멘솔 5단계 조절" },
   "(50)엘프바": { name: "엘프바 5%", img: "엘프바5_16.png", d: "25,000펌프 · 고농도 5%" },
   "엘프바": { name: "엘프바", img: "엘프바1_15.png", d: "" },
-  "네스티원": { name: "네스티원 팟", img: "product_6_6.png", d: "40,000펌프", w: "네스티원 배터리가 있어야 써요" },
-  "립클링": { name: "립클링 1%", img: "product_11_11.png", d: "20,000펌프", w: "립클링 배터리가 있어야 써요" },
-  "(고)립클링": { name: "립클링 2%", img: "product_12_12.png", d: "20,000펌프 · 고농도", w: "립클링 배터리가 있어야 써요" },
-  "립클링배터리": { name: "립클링 배터리", img: "product_10_10.png", d: "립클링 팟과 함께 써요" },
+  "네스티원": { name: "네스티원 팟", img: "dsp_nasty.png", hero: "dsp_nasty_all.png", d: "40,000펌프", w: "네스티원 배터리가 있어야 써요" },
+  "립클링": { name: "립클링 1%", img: "", d: "20,000펌프", w: "립클링 배터리가 있어야 써요" },
+  "(고)립클링": { name: "립클링 2%", img: "", d: "20,000펌프 · 고농도", w: "립클링 배터리가 있어야 써요" },
+  "립클링배터리": { name: "립클링 배터리", img: "", d: "립클링 팟과 함께 써요" },
   "(무) 말론바": { name: "말론바 무니코틴", img: "product_13_13.png", d: "35,000펌프 · 무니코틴" },
   "에어릭스": { name: "에어릭스 팟", img: "1782899254142_111.jfif", d: "고농도 2%", w: "에어릭스 기기가 있어야 써요" },
 };
 const dInfo = (model) => DSPINFO[model] || { name: model, img: "", d: "" };
-const dImg = (x) => { const i = x && x.c === "dsp" && dInfo(x.model).img; return i ? VAPE + encodeURIComponent(i) : ""; };
+const dsrc = (f) => /^dsp_/.test(f) ? f : VAPE + encodeURIComponent(f); // dsp_*.png = 메뉴판 폴더 안 사진(톡톡 메뉴 이미지에서 자름)
+const dImg = (x) => { const i = x && x.c === "dsp" && dInfo(x.model).img; return i ? dsrc(i) : ""; };
 // 이벤트 묶음 하나(예: 3+1 = 4개)를 같은 맛 가격으로 샀을 때
 const dealOf = (ev, price) => { const [buy, free] = EVN[ev]; return { n: buy + free, pay: buy * price, list: (buy + free) * price, save: free * price }; };
 const DSPEV = [
@@ -500,7 +502,7 @@ function dCard([model, xs]) {
   const i = dInfo(model), p = Math.min(...xs.map((x) => x.price)), many = new Set(xs.map((x) => x.price)).size > 1;
   const inCart = xs.reduce((a, x) => a + (cart.get(x.id) || 0), 0);
   const dl = xs[0].ev && dealOf(xs[0].ev, p);
-  return `<button class="dcard" data-gm="${esc(model)}"><div class="dimg">${i.img ? `<img loading="lazy" src="${VAPE + encodeURIComponent(i.img)}" alt="">` : `<span class="no">${esc(i.name)}</span>`}</div>
+  return `<button class="dcard" data-gm="${esc(model)}"><div class="dimg">${i.img ? `<img loading="lazy" src="${dsrc(i.img)}" alt="">` : `<span class="no">${esc(i.name)}</span>`}</div>
     ${inCart ? `<span class="inc">${inCart}개 담음</span>` : ""}
     <div class="db"><b>${esc(i.name)}</b>${i.d ? `<div class="dm">${esc(i.d)}</div>` : ""}${i.w ? `<div class="dm warn">${esc(i.w)}</div>` : ""}
     <div class="dp">${won(p)}${many ? "~" : ""} <small>· ${xs.length}가지</small></div>
@@ -518,7 +520,7 @@ function dspView(model) {
       + (r || !n ? `<div class="save" style="background:var(--ink)"><div><b>${next}</b><div class="u">${label} 제품끼리 맛 섞어도 돼요 · 지금 ${n}개</div></div><span class="price">-${won(free * x0.price)}</span></div>` : "");
   }
   open(`<div style="font-size:13px;color:var(--grey);font-weight:700">일회용${ev ? " · " + EVN[ev][2] + " 이벤트" : ""}</div><div class="sh" style="margin:6px 0 14px">${esc(i.name)}</div>
-    ${i.img ? `<div class="dhero"><img src="${VAPE + encodeURIComponent(i.img)}" alt=""></div>` : ""}
+    ${i.img ? `<div class="dhero"><img src="${dsrc(i.hero || i.img)}" alt=""></div>` : ""}
     ${i.d || i.w ? `<div style="margin-top:10px;font-size:15px;color:var(--ink-soft)">${esc(i.d)}${i.w ? ` <b style="color:var(--red)">· ${esc(i.w)}</b>` : ""}</div>` : ""}
     ${save}
     <div class="sub">맛 고르기 <span style="font-size:13px;color:var(--grey);font-family:var(--kr)">누를 때마다 1개씩 담겨요</span></div>
