@@ -125,7 +125,7 @@ function rowHtml(it, i) {
 function render() {
   const done = ITEMS.filter((_, i) => cur[i] !== undefined && cur[i] !== "").length;
   const d = new Date();
-  $("#app").innerHTML = `<div class="top"><a href="../staff/?branch=${encodeURIComponent(B)}" style="text-decoration:none;font-size:22px;color:var(--ink)">‹</a><b>아침 재고보고</b><span class="chip">${HO[B]}호 ${esc(B)}</span><span class="d">${d.getMonth() + 1}/${d.getDate()} (${"일월화수목금토"[d.getDay()]})</span></div>
+  $("#app").innerHTML = `<div class="top"><a href="${/^\/vape\/[\w-]+\/$/.test(qs.get("back") || "") ? qs.get("back") : `../staff/?branch=${encodeURIComponent(B)}`}" style="text-decoration:none;font-size:22px;color:var(--ink)">‹</a><b>아침 재고보고</b><span class="chip">${HO[B]}호 ${esc(B)}</span><span class="d">${d.getMonth() + 1}/${d.getDate()} (${"일월화수목금토"[d.getDay()]})</span></div>
   <div class="card"><div class="h">보고하는 사람</div><div class="who"><input id="who" placeholder="이름 (출근한 근무자)" value="${esc(who)}"></div>
     <div class="prog"><div class="bar"><i style="width:${(done / ITEMS.length) * 100}%"></i></div><span>${done} / ${ITEMS.length}</span></div>
     <div class="s">실제로 센 개수를 넣어 주세요. 지난 보고와 같으면 [그대로]를 누르면 돼요. 크게 다르면 빨간 테두리가 생겨요.</div></div>
