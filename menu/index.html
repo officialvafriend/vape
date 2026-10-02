@@ -129,6 +129,13 @@
   .best-price s{font-size:24px;color:rgba(255,255,255,.65);font-weight:700}
   .best-price b{font-family:var(--num);font-size:clamp(40px,6.4vw,54px);font-weight:900;color:#fff}
   .best-price small{flex-basis:100%;font-size:14px;color:rgba(255,255,255,.8)}
+  .tot2{margin-top:16px;border-top:2px solid var(--ink);padding-top:10px}
+  .tot2 .r{display:flex;justify-content:space-between;align-items:baseline;padding:6px 0;font-size:16px}
+  .tot2 .r s{color:var(--grey);font-size:17px}
+  .tot2 .r.off span{color:var(--ink-soft)} .tot2 .r.off b{color:var(--red);font-weight:800}
+  .tot2 .r.pay{border-top:1px solid var(--line);margin-top:6px;padding-top:12px;font-weight:800}
+  .tot2 .r.pay b{font-family:var(--num);font-size:32px;font-weight:900} .tot2 .r.pay small{font-size:16px;margin-left:2px}
+  .tot2 .save{margin-top:8px;background:var(--red);color:#fff;text-align:center;font-weight:800;padding:10px;font-size:16px}
   .evc{font-family:var(--kr);font-size:12px;font-weight:700;background:rgba(255,255,255,.18);border-radius:999px;padding:2px 8px;margin-left:6px;vertical-align:middle}
   .best-price em{font-style:normal;background:#fff;color:var(--red);font-weight:900;font-size:18px;padding:6px 12px;border-radius:999px}
   #s1 .evrows{margin-top:auto;padding-top:10px}
@@ -374,7 +381,7 @@
 <body data-mode="">
 <div class="app">
   <div class="top">
-    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">v10.02-2710</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
+    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">v10.02-2720</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
     <nav class="tabs" id="tabs" style="display:none"></nav>
   </div>
 
@@ -460,7 +467,7 @@
 
   <div id="dspList" data-for="dsp"></div>
 
-  <div class="foot"><b>시안 · 버전 10.02-2710</b> · 사진·맛·태그는 직원 교육용 액상 DB(380종), 가격은 매장 안내 책자 기준이에요. 패키지·꿀조합·이벤트 문구는 관리자 화면에서 바꾸게 만들 예정이에요. 기기패키지 기준 기기는 하복2(판매가 89,000원)이고 사진은 용트림 상품 페이지 사진에서 배경을 지운 거예요. 레이저 각인은 포스에 0원 상품으로 등록 예정. 빌런 패키지 할인 조건은 아직 확정 전이에요.</div>
+  <div class="foot"><b>시안 · 버전 10.02-2720</b> · 사진·맛·태그는 직원 교육용 액상 DB(380종), 가격은 매장 안내 책자 기준이에요. 패키지·꿀조합·이벤트 문구는 관리자 화면에서 바꾸게 만들 예정이에요. 기기패키지 기준 기기는 하복2(판매가 89,000원)이고 사진은 용트림 상품 페이지 사진에서 배경을 지운 거예요. 레이저 각인은 포스에 0원 상품으로 등록 예정. 빌런 패키지 할인 조건은 아직 확정 전이에요.</div>
 </div>
 
 <div class="srch" id="srch"><div class="hd"><input id="q" type="search" placeholder="이름·초성·맛·브랜드 (예: ㅂㄹㅈㄷ, 멘솔, 팜팜바, 말론)" autocomplete="off"><button class="cl" id="srchClose">닫기</button></div>
@@ -885,8 +892,24 @@ function cartView() {
   open(`<div class="sh">담은 상품</div>${nudge(vl)}${swapHint(countCart())}${goodsHints(gc, est.liq)}${engr}
     <div style="margin-top:12px">${items.map(([id, n]) => { const x = item(id); return `<div class="line">${pic(x)}<div><b>${esc(short(x.n))}</b><div class="s">${x.c ? won(x.price) + (x.ev ? " · " + EVN[x.ev][2] : "") : esc(x.br)}${x.dev && devColor ? " · " + devColor : ""}</div></div><div class="step"><button data-m="${id}">−</button><span>${n}</span><button data-pl="${id}">+</button></div></div>${x.dev ? `<div class="colors"><span class="lab">색상</span>${DEV_COLORS.map((c) => `<button class="${devColor === c ? "on" : ""}" data-color="${c}">${c}</button>`).join("")}</div>` : ""}`; }).join("") || '<div style="padding:30px 0;color:var(--grey)">아직 담은 상품이 없어요</div>'}</div>
     ${review ? `<div class="line"><div class="mini" style="background:var(--red)">리뷰</div><div><b>클립 리뷰 할인</b><div class="s">네이버 클립 리뷰 업로드</div></div><b class="price" style="margin-left:auto;color:var(--red);font-size:20px">-3,000원</b></div>` : ""}
-    ${items.length ? (() => { const e = est; const fr = Object.values(gc.freeBy).reduce((a, b) => a + b, 0); return `<div class="total"><span class="num" style="font-weight:800;font-size:17px">예상 금액 ${e.how ? "(" + e.how + ")" : "(묶음가 자동 적용)"}${fr ? " · 일회용 " + fr + "개 무료" : ""}${gc.giftDev ? " · 에어릭스 기기 증정" : ""}${review ? " · 리뷰할인" : ""}</span><span class="price">${(e.total + gc.total - (review ? 3000 : 0)).toLocaleString()}<span class="won">원</span></span></div>`; })() : ""}
-    ${items.some(([id]) => !item(id).c) || (!items.length && mode !== "dsp") ? `<button class="upsell" data-pkg="max10"><span><b>이 맛들로 기기패키지 만들기</b><small>액상 10병 + ${MAIN.name}가 가장 저렴해요</small></span><span class="arr">→</span></button>` : ""}
+    ${items.length ? (() => {
+      const e = est, c = countCart(), fr = Object.values(gc.freeBy).reduce((x, y) => x + y, 0);
+      const dspFree = Object.values(gc.saveBy).reduce((x, y) => x + y, 0);
+      // 낱개 가격: 기준 기기 정가 + 액상 1병가(프리미엄·빌런 15,000 / 프라임 20,000) + 소모품·일회용 정가
+      const unit = c.dev * DEVICE.price + (c.v + c.p) * 15000 + c.m * 20000 + gc.total + dspFree;
+      const rv = review ? 3000 : 0, pay = e.total + gc.total - rv;
+      const pkgOff = c.dev * DEVICE.price + (c.v + c.p) * 15000 + c.m * 20000 - e.total;
+      const rows = [
+        pkgOff > 0 ? [e.how ? e.how + " 할인" : "액상 묶음가 할인", pkgOff] : null,
+        dspFree > 0 ? ["일회용 " + fr + "개 무료", dspFree] : null,
+        rv ? ["리뷰 할인", rv] : null,
+      ].filter(Boolean);
+      return `<div class="tot2">
+        ${rows.length ? `<div class="r"><span>낱개로 샀을 때</span><s>${won(unit)}</s></div>${rows.map(([k, v]) => `<div class="r off"><span>${esc(k)}</span><b>-${won(v)}</b></div>`).join("")}` : ""}
+        <div class="r pay"><span>결제 예상 금액${gc.giftDev ? " · 에어릭스 기기 증정" : ""}</span><b>${pay.toLocaleString()}<small>원</small></b></div>
+        ${rows.length ? `<div class="save">총 ${won(unit - pay)} 할인 받았어요</div>` : ""}
+      </div>`; })() : ""}
+    ${!(est.how || "").includes("기기패키지") && (items.some(([id]) => !item(id).c) || (!items.length && mode !== "dsp")) ? `<button class="upsell" data-pkg="max10"><span><b>이 맛들로 기기패키지 만들기</b><small>액상 10병 + ${MAIN.name}가 가장 저렴해요</small></span><span class="arr">→</span></button>` : ""}
     ${mem}
     <div class="btns"><button class="b1 ink" data-staff ${items.length ? "" : "disabled"}>직원에게 보여주기</button></div>`);
 }
