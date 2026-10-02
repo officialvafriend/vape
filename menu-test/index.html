@@ -142,6 +142,13 @@
   .flow span.done{color:rgba(255,255,255,.8)} .flow span.on{color:#fff;background:var(--red);padding:3px 9px;border-radius:999px}
   .nextbar{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:40;display:none;align-items:center;gap:14px;background:var(--ink);color:#fff;padding:14px 22px;border-radius:999px;box-shadow:0 6px 20px rgba(0,0,0,.3);font-weight:800;font-size:17px;max-width:calc(100% - 32px)}
   .nextbar.on{display:flex} .nextbar small{font-weight:600;opacity:.75;font-size:14px} .nextbar b{color:#ffd2d4}
+  .inc{margin-top:14px;border:2px dashed var(--red);background:#fff5f5;padding:14px 16px;display:flex;flex-direction:column;gap:6px}
+  .inc b{font-size:16px} .inc span{font-size:13px;color:var(--ink-soft)}
+  .inc.done{border-style:solid;background:#eefaf3;border-color:#03b26c} .inc.done b{color:#03b26c}
+  .incn{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+  .incn button{padding:10px 14px;background:#fff;border:1px solid var(--line);font-weight:800;font-size:15px}
+  .incn input{flex:1;min-width:120px;height:42px;border:1px solid var(--line);padding:0 12px;font:inherit}
+  .incn .go{background:var(--ink);color:#fff;border-color:var(--ink)}
   .evc{font-family:var(--kr);font-size:12px;font-weight:700;background:rgba(255,255,255,.18);border-radius:999px;padding:2px 8px;margin-left:6px;vertical-align:middle}
   .best-price em{font-style:normal;background:#fff;color:var(--red);font-weight:900;font-size:18px;padding:6px 12px;border-radius:999px}
   #s1 .evrows{margin-top:auto;padding-top:10px}
@@ -387,7 +394,7 @@
 <body data-mode=""><div id="testRibbon" style="position:fixed;left:0;right:0;bottom:0;z-index:99999;background:#d32f2f;color:#fff;text-align:center;font:700 13px sans-serif;padding:4px;pointer-events:none">테스트판 · 손님 상담에는 정식판을 쓰세요</div>
 <div class="app">
   <div class="top">
-    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">테스트 v10.02-2800</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
+    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">테스트 v10.02-2900</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
     <nav class="tabs" id="tabs" style="display:none"></nav>
     <div class="flow" id="flow"><span data-st="1">① 찾는 것</span><i>›</i><span data-st="2">② 고르기</span><i>›</i><span data-st="3">③ 담은 상품</span><i>›</i><span data-st="4">④ 직원 확인</span></div>
   </div>
@@ -474,7 +481,7 @@
 
   <div id="dspList" data-for="dsp"></div>
 
-  <div class="foot"><b>시안 · 버전 10.02-2800</b> · 사진·맛·태그는 직원 교육용 액상 DB(380종), 가격은 매장 안내 책자 기준이에요. 패키지·꿀조합·이벤트 문구는 관리자 화면에서 바꾸게 만들 예정이에요. 기기패키지 기준 기기는 하복2(판매가 89,000원)이고 사진은 용트림 상품 페이지 사진에서 배경을 지운 거예요. 레이저 각인은 포스에 0원 상품으로 등록 예정. 빌런 패키지 할인 조건은 아직 확정 전이에요.</div>
+  <div class="foot"><b>시안 · 버전 10.02-2900</b> · 사진·맛·태그는 직원 교육용 액상 DB(380종), 가격은 매장 안내 책자 기준이에요. 패키지·꿀조합·이벤트 문구는 관리자 화면에서 바꾸게 만들 예정이에요. 기기패키지 기준 기기는 하복2(판매가 89,000원)이고 사진은 용트림 상품 페이지 사진에서 배경을 지운 거예요. 레이저 각인은 포스에 0원 상품으로 등록 예정. 빌런 패키지 할인 조건은 아직 확정 전이에요.</div>
 </div>
 
 <div class="srch" id="srch"><div class="hd"><input id="q" type="search" placeholder="이름·초성·맛·브랜드 (예: ㅂㄹㅈㄷ, 멘솔, 팜팜바, 말론)" autocomplete="off"><button class="cl" id="srchClose">닫기</button></div>
@@ -961,6 +968,7 @@ function staffView() {
     return scanBlock(short(x.n), [x.br, x.loc ? "진열 " + x.loc : ""].filter(Boolean).join(" · "), x.n, n, bundle && isVL(x) ? " · <b style='color:var(--red)'>서비스(0원) 처리</b>" : "");
   }).join("");
   open(`<div class="sh">직원 확인용 · 포스 스캔</div><div style="color:var(--ink-soft);margin-top:6px;font-size:14.5px">위에서부터 차례로 찍어 주세요. (${esc(PAD.branch)} 포스 상품 기준 · 10/2 자료)</div>
+  ${incBox()}
   ${bundle ? `<div class="scan bundle"><div class="hd"><b>① 묶음 상품 먼저: ${esc(bundle)}</b><span class="x">× 1</span></div><div class="s">이걸로 돈을 받고, 아래 빌런·릭은 낱개로 찍어 서비스(0원) 처리</div>${(() => { const p = posOf(bundle); return p ? `<svg class="bc" data-v="${p[1]}" data-f="${p[2]}"></svg>${p[3] ? "" : '<span class="warn">바코드 미등록 · 상품코드(' + p[0] + ')로 만든 바코드라 포스 인식 확인 필요</span>'}` : '<span class="warn">포스 상품을 못 찾았어요</span>'; })()}</div>`
     : vl >= 5 ? `<div class="scan bundle"><div class="s" style="color:var(--ink)">빌런·릭 ${vl}병 묶음가는 포스에서 묶음 상품을 직접 골라 주세요</div></div>` : ""}
   ${(() => { // 일회용 이벤트 묶음 상품 (포스에 있는 것): 묶음으로 돈 받고 낱개는 서비스(0원)
@@ -984,10 +992,51 @@ function staffView() {
   });
 }
 
+// ── 프리미엄 11병 인센티브 (건당 1,000원 · 지금은 TEST 기록) ──
+const INC_TEST = true, INC_UNIT = 1000;
+// 신호: 디스코드 웹훅(🔌패드연결) → 운영봇 → 시트 '인센티브' 탭 + 현황 채널 (재고보고 페이지와 같은 웹훅)
+const HOOK = "https://discord.com/api/webhooks/1555156884753743905/BLK7tRBQACouQrOE_hvOkm2-iD44gnfnxdJvQXxiBAJKXJU3MG4bjnACFsXgDkDWLBrh";
+// 프리미엄 묶음가(5병 49,500 · 11병 90,000) 가장 싼 조합에서 11병 묶음이 몇 번 쓰였는지
+function count11() {
+  const c = countCart(), e = estimate(c);
+  const used = /10병/.test(e.how) ? 10 : /기기패키지/.test(e.how) ? 5 : 0; // 기기패키지에 들어간 액상은 빼고
+  const n = Math.max(0, c.v + c.p - used);
+  const dp = [{ cost: 0, k: 0 }];
+  for (let i = 1; i <= n; i++) {
+    let b = { cost: dp[i - 1].cost + 15000, k: dp[i - 1].k };
+    if (i >= 5 && dp[i - 5].cost + 49500 < b.cost) b = { cost: dp[i - 5].cost + 49500, k: dp[i - 5].k };
+    if (i >= 11 && dp[i - 11].cost + 90000 <= b.cost) b = { cost: dp[i - 11].cost + 90000, k: dp[i - 11].k + 1 };
+    dp.push(b);
+  }
+  return dp[n].k;
+}
+let incSent = null; // 이번 장바구니에서 이미 기록했으면 판매자 이름
+const incNames = () => { try { const d = new Date(), k = `vf-app-${PAD.branch}-${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; const today = (JSON.parse(localStorage.getItem(k)) || { ins: [] }).ins.filter((x) => !x.out).map((x) => x.name); const recent = JSON.parse(localStorage.getItem(`vf-app-${PAD.branch}-names`)) || []; return [...new Set([...today, ...recent])].slice(0, 8); } catch { return []; } };
+function incBox() {
+  const k = count11(); if (!k) return "";
+  if (incSent) return `<div class="inc done"><b>${INC_TEST ? "🧪 TEST · " : ""}11병 판매 기록됨 · ${esc(incSent)}</b><span>프리미엄 11병 ${k}건 · 인센티브 ${won(k * INC_UNIT)}</span></div>`;
+  const names = incNames();
+  return `<div class="inc"><b>${INC_TEST ? "🧪 TEST · " : ""}프리미엄 11병 ${k}건 · 판매자를 눌러 주세요</b><span>누르면 날짜·구매 내역과 함께 자동 기록돼요 (인센티브 ${won(k * INC_UNIT)}) — 영수증 따로 안 뽑아도 돼요</span>
+    <div class="incn">${names.map((x) => `<button data-inc="${esc(x)}">${esc(x)}</button>`).join("")}<input id="incName" maxlength="20" placeholder="이름 직접 입력"><button data-inc-go="1" class="go">기록</button></div></div>`;
+}
+async function incSend(seller) {
+  seller = String(seller || "").trim(); if (!seller) return toast("판매자 이름을 눌러 주세요");
+  const k = count11(), gc = goodsCalc(), e = estimate(countCart());
+  const body = { type: "incentive", branch: PAD.branch, pad: PAD.no, seller, n11: k, amount: k * INC_UNIT, total: e.total + gc.total - (review ? 3000 : 0), items: [...cart].map(([id, q]) => [item(id).n, q]), test: INC_TEST };
+  try {
+    const r = await fetch(HOOK, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ content: JSON.stringify(body), allowed_mentions: { parse: [] } }) });
+    if (!r.ok) throw new Error("응답 " + r.status);
+    incSent = seller; toast(`기록했어요 · ${seller} · 11병 ${k}건${INC_TEST ? " (TEST)" : ""}`);
+    const st = $("#sheet").scrollTop; staffView(); $("#sheet").scrollTop = st;
+  } catch (err) { toast(`기록 못 했어요 (${navigator.onLine ? err.message : "인터넷 끊김"}) · 다시 눌러 주세요`); }
+}
+
 // 지점·패드 번호 (바코드는 지점 포스 기준)
 const PAD = { branch: new URLSearchParams(location.search).get("branch") || "본점", no: new URLSearchParams(location.search).get("pad") || "1" };
 document.addEventListener("click", (e) => {
   const q = (s) => e.target.closest(s); let el;
+  if ((el = q("[data-inc]"))) return incSend(el.dataset.inc);
+  if (q("[data-inc-go]")) return incSend($("#incName")?.value);
   if ((el = q("[data-mode]")) && el.classList.contains("way")) { setMode(el.dataset.mode); return; }
   if (q("#homeBtn")) { closeS(); $("#srch").classList.remove("on"); setMode(""); return; }
   if ((el = q("[data-mainspec]"))) return mainSpecView();
@@ -1026,7 +1075,7 @@ document.addEventListener("click", (e) => {
   if ((el = q("[data-color]"))) { devColor = el.dataset.color; return cartView(); }
   if ((el = q("[data-color2]"))) { devColor = el.dataset.color2; return staffView(); }
   if (q("[data-staff]")) { if (member.type === "new" && (member.phone || member.name) && !member.agree) return toast("회원등록은 개인정보 동의가 필요해요"); if ([...cart.keys()].some((id) => isHi(item(id))) && !ledgerText()) { ledgerView(); toast("손님께 패드를 건네 직접 작성해 달라고 해 주세요"); return; } if (member.type === "new" && (member.phone || member.name) && !member.agree) return toast("회원등록은 개인정보 동의가 필요해요"); return staffView(); }
-  if (q("[data-reset]")) { cart.clear(); airxGift = "pod"; Object.assign(ledger, { name: "", gu: "", etc: "" }); engrave = null; devColor = null; review = false; Object.assign(member, { type: null, name: "", phone: "", agree: false }); render(); closeS(); setMode(""); toast("처음 화면으로 돌아왔어요"); return; }
+  if (q("[data-reset]") && !(incSent = null)) { cart.clear(); airxGift = "pod"; Object.assign(ledger, { name: "", gu: "", etc: "" }); engrave = null; devColor = null; review = false; Object.assign(member, { type: null, name: "", phone: "", agree: false }); render(); closeS(); setMode(""); toast("처음 화면으로 돌아왔어요"); return; }
   if (e.target.id === "dim") closeS();
 });
 document.addEventListener("input", (e) => { const id = e.target.id; if (id === "engrText") engrave = e.target.value; if (id === "ldName" || id === "ldEtc") { ledger[id === "ldName" ? "name" : "etc"] = e.target.value; const p = document.getElementById("ldPrev"); if (p) p.textContent = ledgerText() || "성함과 사시는 곳을 골라 주세요"; } if (id === "memName") member.name = e.target.value; if (id === "memPhone") member.phone = e.target.value.replace(/\D/g, ""); if (id === "memAgree") member.agree = e.target.checked; });
