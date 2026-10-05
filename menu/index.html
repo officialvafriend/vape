@@ -546,12 +546,17 @@
   .scan{position:relative;cursor:pointer;transition:opacity .15s ease}
   .scan.done{opacity:.32}
   .scan.done::after{content:"✓ 찍음";position:absolute;right:0;bottom:16px;background:#03b26c;color:#fff;font-weight:900;font-size:16px;padding:8px 14px;border-radius:999px;opacity:1}
+  .p.sold img{opacity:.35;filter:grayscale(1)}
+  .p.sold b,.p.sold .tg,.p.sold .bd{color:var(--grey)}
+  .p .rib.so{background:#8d887f}
+  .p .qa.so{display:grid;place-items:center;background:var(--panel);color:var(--grey)}
+  .stockat{font-size:13px;color:var(--grey)}
 </style>
 </head>
 <body data-mode="">
 <div class="app">
   <div class="top">
-    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">v10.05-1900</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
+    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">v10.05-2000</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
     <nav class="tabs" id="tabs" style="display:none"></nav>
     <div class="flow" id="flow"><span data-st="1">① 찾는 것</span><i>›</i><span data-st="2">② 고르기</span><i>›</i><span data-st="3">③ 담은 상품</span><i>›</i><span data-st="4">④ 직원 확인</span></div>
   </div>
@@ -606,7 +611,7 @@
 
   <section class="sec" id="sRec" data-for="liq">
     <div class="hdr"><div class="n">02</div><div><div class="eb">Our Pick</div><h2>매장 추천 맛</h2></div></div>
-    <div style="font-size:15px;color:var(--grey);margin-top:12px">어떤 맛 좋아하세요? 고르시면 매장 추천 시리즈를 보여 드려요</div>
+    <div style="font-size:15px;color:var(--grey);margin-top:12px">어떤 맛 좋아하세요? 고르시면 매장 추천 시리즈를 보여 드려요<span class="stockat" id="stockAt"></span></div>
     <div class="tastes rec" id="recTabs"></div>
     <div class="prods" id="recList"></div>
   </section>
@@ -643,7 +648,7 @@
 
   <div id="dspList" data-for="dsp"></div>
 
-  <div class="foot"><b>시안 · 버전 10.05-1900</b> · 사진·맛·태그는 직원 교육용 액상 DB(380종), 가격은 매장 안내 책자 기준이에요. 패키지·꿀조합·이벤트 문구는 관리자 화면에서 바꾸게 만들 예정이에요. 기기패키지 기준 기기는 하복2(판매가 89,000원)이고 사진은 용트림 상품 페이지 사진에서 배경을 지운 거예요. 레이저 각인은 포스에 0원 상품으로 등록 예정. 빌런 패키지 할인 조건은 아직 확정 전이에요.</div>
+  <div class="foot"><b>시안 · 버전 10.05-2000</b> · 사진·맛·태그는 직원 교육용 액상 DB(380종), 가격은 매장 안내 책자 기준이에요. 패키지·꿀조합·이벤트 문구는 관리자 화면에서 바꾸게 만들 예정이에요. 기기패키지 기준 기기는 하복2(판매가 89,000원)이고 사진은 용트림 상품 페이지 사진에서 배경을 지운 거예요. 레이저 각인은 포스에 0원 상품으로 등록 예정. 빌런 패키지 할인 조건은 아직 확정 전이에요.</div>
 </div>
 
 <div class="srch" id="srch"><div class="hd"><input id="q" type="search" placeholder="이름·초성·맛·브랜드 (예: ㅂㄹㅈㄷ, 멘솔, 팜팜바, 말론)" autocomplete="off"><button class="cl" id="srchClose">닫기</button></div>
@@ -712,7 +717,13 @@ const REC = [ // g = 보여 줄 시리즈 (적은 순서대로)
   { k: "단일멘솔", s: "쿨멘솔 BEST", g: [/쿨멘솔/] },
   { k: "무니코틴", s: "제로닉 · 무", g: [/^(제로닉|무) /] },
 ];
-const pickG = (gs) => gs.flatMap((re) => L.filter((x) => re.test(x.n)));
+// 품절 표시: 업무봇이 매시간 올리는 stock.json (지점별 재고 0 상품명만, 수량 없음)
+let OUT = new Set(), STOCK_AT = "";
+const isOut = (x) => OUT.has(x.n);
+async function loadStock() {
+  try { const j = await (await fetch("stock.json", { cache: "no-store" })).json(); const b = j[PAD.branch]; if (b) { OUT = new Set(b.out); STOCK_AT = b.at; render(); } } catch (e) {}
+}
+const pickG = (gs) => gs.flatMap((re) => L.filter((x) => re.test(x.n))).sort((a, b) => isOut(a) - isOut(b));
 let rec = REC[0].k;
 const TASTES = [["과일", "상큼·달콤"], ["멘솔·민트", "시원·깔끔"], ["디저트·음료", "콜라·캔디"], ["시가·타바코", "묵직한 연초"]];
 // ── 가격 규칙 (2026-10-02 사용자 확인) ──
@@ -1015,7 +1026,8 @@ document.addEventListener("input", (e) => { if (e.target.id === "q") drawSearch(
 
 function card(x) {
   const bg = badgeOf(x), q = cart.get(x.id) || 0;
-  return `<div class="p ${q ? "got" : ""}" data-p="${x.id}" role="button">${bg ? `<span class="rib ${bg === "HOT" ? "hot" : ""}">${bg}</span>` : ""}<img loading="lazy" src="${IMG + x.img}" alt=""><div class="bd">${esc(x.br)}</div><b>${esc(short(x.n))}</b><div class="tg">${esc([x.f, ...x.t.filter((t) => t !== "일반")].join(" · "))}</div>${q ? `<div class="qs"><button data-qm="${x.id}" aria-label="빼기">−</button><span>${q}병</span><button data-qa="${x.id}" aria-label="담기">+</button></div>` : `<button class="qa" data-qa="${x.id}" aria-label="담기">+ 담기</button>`}</div>`;
+  const so = isOut(x) && !q;
+  return `<div class="p ${q ? "got" : ""} ${so ? "sold" : ""}" data-p="${x.id}" role="button">${so ? `<span class="rib so">품절</span>` : bg ? `<span class="rib ${bg === "HOT" ? "hot" : ""}">${bg}</span>` : ""}<img loading="lazy" src="${IMG + x.img}" alt=""><div class="bd">${esc(x.br)}</div><b>${esc(short(x.n))}</b><div class="tg">${esc([x.f, ...x.t.filter((t) => t !== "일반")].join(" · "))}</div>${q ? `<div class="qs"><button data-qm="${x.id}" aria-label="빼기">−</button><span>${q}병</span><button data-qa="${x.id}" aria-label="담기">+</button></div>` : so ? `<div class="qa so">품절</div>` : `<button class="qa" data-qa="${x.id}" aria-label="담기">+ 담기</button>`}</div>`;
 }
 function renderMain() {
   $("#bestTitle").innerHTML = `${esc(MAIN.name)} 기기패키지<br>+입호흡 액상 10병`;
@@ -1032,10 +1044,11 @@ function render() {
     <div class="items">${p.device ? devBox() : ""}${p.items.map(byName).filter(Boolean).map((x) => `<img src="${IMG + x.img}" alt="">`).join("")}</div>
     <div class="act"><button class="b1" data-pkgadd="${p.id}">이 구성 그대로 담기</button><button class="b2" data-pkg="${p.id}">자세히</button></div></div>`).join("");
   
+  $("#stockAt").textContent = STOCK_AT ? ` · 재고 ${STOCK_AT} 기준` : "";
   $("#recTabs").innerHTML = REC.map((x) => `<button class="taste ${rec === x.k ? "on" : ""}" data-rec="${x.k}"><b>${x.k}</b><span>${x.s}</span></button>`).join("");
   { const R = REC.find((y) => y.k === rec); $("#recList").innerHTML = pickG(R.g).map(card).join("") + (R.also ? `<div style="grid-column:1/-1;font-size:15px;font-weight:800;margin:14px 0 2px">${R.note}</div>` + pickG(R.also).map(card).join("") : ""); }
   $("#tastes").innerHTML = TASTES.map(([n, d]) => `<button class="taste ${taste === n ? "on" : ""}" data-t="${n}"><b>${n}</b><span>${d}</span></button>`).join("");
-  const list = L.filter((x) => x.line === line && (!taste || x.g === taste) && (!tag || x.t.includes(tag))).sort((a, b) => bestRank(a) - bestRank(b));
+  const list = L.filter((x) => x.line === line && (!taste || x.g === taste) && (!tag || x.t.includes(tag))).sort((a, b) => isOut(a) - isOut(b) || bestRank(a) - bestRank(b));
   $("#filters").innerHTML = ["프리미엄", "프라임"].map((l) => `<button class="f ${line === l ? "on" : ""}" data-l="${l}">${l}</button>`).join("") + `<span style="width:10px"></span>` +
     ["노멘솔", "무니코틴"].map((t) => `<button class="f ${tag === t ? "on" : ""}" data-tag="${t}">${t}</button>`).join("") + `<span class="cnt">${list.length}종</span>`;
   $("#prods").innerHTML = list.slice(0, shown).map(card).join("");
@@ -1307,6 +1320,7 @@ document.addEventListener("click", (e) => {
 document.addEventListener("input", (e) => { const id = e.target.id; if (id === "engrText") engrave = e.target.value; if (id === "ldName" || id === "ldEtc") { ledger[id === "ldName" ? "name" : "etc"] = e.target.value; const p = document.getElementById("ldPrev"); if (p) p.textContent = ledgerText() || "성함과 사시는 곳을 골라 주세요"; } if (id === "memName") member.name = e.target.value; if (id === "memPhone") member.phone = e.target.value.replace(/\D/g, ""); if (id === "memAgree") member.agree = e.target.checked; });
 addEventListener("scroll", () => { const ids = (TABS[mode] || []).map(([id]) => id); let cur = ids[0]; for (const s of ids) if (document.getElementById(s).getBoundingClientRect().top < 140) cur = s; document.querySelectorAll("#tabs a").forEach((a) => a.classList.toggle("on", a.getAttribute("href") === "#" + cur)); }, { passive: true });
 render();
+loadStock(); setInterval(loadStock, 10 * 60e3); // 패드를 켜 둔 채로도 10분마다 새 재고
 setMode("");
 // 오프라인 저장 + 사진 미리 받아 두기 (와이파이가 끊겨도 메뉴판이 열리게)
 if ("serviceWorker" in navigator && location.protocol === "https:") {
