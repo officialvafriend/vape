@@ -599,7 +599,7 @@
 <body data-mode="">
 <div class="app">
   <div class="top">
-    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">v10.05-4400</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
+    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">v10.05-4500</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
     <nav class="tabs" id="tabs" style="display:none"></nav>
     <div class="flow" id="flow"><span data-st="1">① 찾는 것</span><i>›</i><span data-st="2">② 고르기</span><i>›</i><span data-st="3">③ 담은 상품</span><i>›</i><span data-st="4">④ 직원 확인</span></div>
   </div>
@@ -691,7 +691,7 @@
 
   <div id="dspList" data-for="dsp"></div>
 
-  <div class="foot"><b>시안 · 버전 10.05-4400</b> · 사진·맛·태그는 직원 교육용 액상 DB(380종), 가격은 매장 안내 책자 기준이에요. 패키지·꿀조합·이벤트 문구는 관리자 화면에서 바꾸게 만들 예정이에요. 기기패키지 기준 기기는 하복2(판매가 89,000원)이고 사진은 용트림 상품 페이지 사진에서 배경을 지운 거예요. 레이저 각인은 포스에 0원 상품으로 등록 예정. 빌런 패키지 할인 조건은 아직 확정 전이에요.</div>
+  <div class="foot"><b>시안 · 버전 10.05-4500</b> · 사진·맛·태그는 직원 교육용 액상 DB(380종), 가격은 매장 안내 책자 기준이에요. 패키지·꿀조합·이벤트 문구는 관리자 화면에서 바꾸게 만들 예정이에요. 기기패키지 기준 기기는 하복2(판매가 89,000원)이고 사진은 용트림 상품 페이지 사진에서 배경을 지운 거예요. 레이저 각인은 포스에 0원 상품으로 등록 예정. 빌런 패키지 할인 조건은 아직 확정 전이에요.</div>
 </div>
 
 <div class="srch" id="srch"><div class="hd"><input id="q" type="search" placeholder="이름·초성·맛·브랜드 (예: ㅂㄹㅈㄷ, 멘솔, 팜팜바, 말론)" autocomplete="off"><button class="cl" id="srchClose">닫기</button></div>
@@ -711,6 +711,9 @@ const IMG = "https://officialvafriend.github.io/vape/img/";
 // 안 파는 액상(단종·취급 안 함)은 목록에서 뺌 — 품절(일시적으로 0)과 다름. 사용자 10/5: 디오 딸기망고 없음
 const HIDE = new Set(["디오 딸기망고", "디오 콜라"]);
 const L = (window.LIQ || []).filter((x) => !HIDE.has(x.n));
+// 빌런 9종은 사장님이 준 정사각 이미지로 (10/5) — 메뉴판과 같이 올라가는 파일, 나머지는 공용 img/
+const OWN_IMG = { "VF 빌런 레몬": "vl_sq_lemon.jpg", "VF 빌런 레즈애플": "vl_sq_redsapple.jpg", "VF 빌런 바나나라무네": "vl_sq_banana.jpg", "VF 빌런 보석바": "vl_sq_bosukbar.jpg", "VF 빌런 석류": "vl_sq_pomegranate.jpg", "VF 빌런 자두": "vl_sq_plum.jpg", "VF 빌런 청사과": "vl_sq_greenapple.jpg", "VF 빌런 청포도": "vl_sq_greengrape.jpg", "VF 빌런 파인애플": "vl_sq_pineapple.jpg" };
+const isrc = (x) => OWN_IMG[x.n] || IMG + x.img;
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
 const byName = (n) => L.find((x) => x.n === n);
@@ -739,7 +742,7 @@ const MAIN_TIPS = ["입호흡과 폐호흡은 PG/VG 비율이 달라요.", "팟�
 const DEVICE = { id: "dev_main", n: MAIN.name, br: "기기", dev: true, price: MAIN.price };
 const PK = { vl5: MAIN.price + ADD.vl5, pr5: MAIN.price + ADD.pr5, pr10: MAIN.price + ADD.pr10, full: MAIN.price + ADD.pr10 + ADD.lung3 };
 const devBox = () => MAIN.img ? `<div class="dev"><img src="${MAIN.img}" alt="${MAIN.name}"></div>` : `<div class="dev" style="background:#15120f;color:#fff">${MAIN.name}</div>`;
-const pic = (x) => x.c === "dsp" && dImg(x) ? `<img src="${dImg(x)}" alt="" style="object-fit:cover">` : x.dev ? (MAIN.img ? `<img src="${MAIN.img}" alt="" style="object-fit:contain;background:#fff">` : `<div class="mini" style="background:#15120f;color:#fff">${MAIN.name}</div>`) : x.c ? `<div class="mini" style="font-size:26px;background:var(--panel)">${{ dev: "🔋", pod: "🧩", dsp: "🚬" }[x.c]}</div>` : `<img src="${IMG + x.img}" alt="">`;
+const pic = (x) => x.c === "dsp" && dImg(x) ? `<img src="${dImg(x)}" alt="" style="object-fit:cover">` : x.dev ? (MAIN.img ? `<img src="${MAIN.img}" alt="" style="object-fit:contain;background:#fff">` : `<div class="mini" style="background:#15120f;color:#fff">${MAIN.name}</div>`) : x.c ? `<div class="mini" style="font-size:26px;background:var(--panel)">${{ dev: "🔋", pod: "🧩", dsp: "🚬" }[x.c]}</div>` : `<img src="${isrc(x)}" alt="">`;
 
 // ── 관리자 화면에서 정할 값 (시안에서는 고정) ──
 const VILLAIN5 = ["VF 빌런 자두", "VF 빌런 청포도", "VF 빌런 레몬", "VF 빌런 레즈애플", "VF 빌런 청사과"];
@@ -1132,7 +1135,7 @@ document.addEventListener("input", (e) => { if (e.target.id === "q") drawSearch(
 function card(x) {
   const bg = badgeOf(x), q = cart.get(x.id) || 0;
   const so = isOut(x) && !q;
-  return `<div class="p ${q ? "got" : ""} ${so ? "sold" : ""}" data-p="${x.id}" role="button">${so ? `<span class="rib so">품절</span>` : bg ? `<span class="rib ${bg === "HOT" ? "hot" : ""}">${bg}</span>` : ""}<img loading="lazy" src="${IMG + x.img}" alt=""><div class="bd">${esc(x.br)}</div><b>${esc(short(x.n))}</b><div class="tg">${esc([x.f, ...x.t.filter((t) => t !== "일반")].join(" · "))}</div>${q ? `<div class="qs"><button data-qm="${x.id}" aria-label="빼기">−</button><span>${q}병</span><button data-qa="${x.id}" aria-label="담기">+</button></div>` : so ? `<div class="qa so">품절</div>` : `<button class="qa" data-qa="${x.id}" aria-label="담기">+ 담기</button>`}</div>`;
+  return `<div class="p ${q ? "got" : ""} ${so ? "sold" : ""}" data-p="${x.id}" role="button">${so ? `<span class="rib so">품절</span>` : bg ? `<span class="rib ${bg === "HOT" ? "hot" : ""}">${bg}</span>` : ""}<img loading="lazy" src="${isrc(x)}" alt=""><div class="bd">${esc(x.br)}</div><b>${esc(short(x.n))}</b><div class="tg">${esc([x.f, ...x.t.filter((t) => t !== "일반")].join(" · "))}</div>${q ? `<div class="qs"><button data-qm="${x.id}" aria-label="빼기">−</button><span>${q}병</span><button data-qa="${x.id}" aria-label="담기">+</button></div>` : so ? `<div class="qa so">품절</div>` : `<button class="qa" data-qa="${x.id}" aria-label="담기">+ 담기</button>`}</div>`;
 }
 function renderMain() {
   $("#bestTitle").innerHTML = `${esc(MAIN.name)} 기기패키지<br>+입호흡 액상 10병`;
@@ -1146,7 +1149,7 @@ function render() {
   renderMain();
   $("#combos").innerHTML = PKGS.slice(1).map((p) => `<div class="combo"><div class="lab"><span class="badge">${esc(p.badge)}</span>${p.sub ? `<span class="badge line">${esc(p.sub)}</span>` : ""}</div>
     <h3>${esc(p.name)}</h3><div class="names">${esc(p.desc)}</div>
-    <div class="items">${p.device ? devBox() : ""}${p.items.map(byName).filter(Boolean).map((x) => `<img src="${IMG + x.img}" alt="">`).join("")}</div>
+    <div class="items">${p.device ? devBox() : ""}${p.items.map(byName).filter(Boolean).map((x) => `<img src="${isrc(x)}" alt="">`).join("")}</div>
     <div class="act"><button class="b1" data-pkgadd="${p.id}">이 구성 그대로 담기</button><button class="b2" data-pkg="${p.id}">자세히</button></div></div>`).join("");
   
   $("#stockAt").textContent = STOCK_AT ? ` · 재고 ${STOCK_AT} 기준` : "";
@@ -1216,7 +1219,7 @@ async function askSend(id) {
 function detail(id) {
   const x = item(id);
   const sims = L.filter((y) => y.id !== id && y.g === x.g && y.line === x.line).sort((a, b) => (b.br === x.br) - (a.br === x.br)).slice(0, 3);
-  open(`<div class="det"><div class="img"><img src="${IMG + x.img}" alt=""></div><div>
+  open(`<div class="det"><div class="img"><img src="${isrc(x)}" alt=""></div><div>
     <div style="font-size:13px;color:var(--grey);font-weight:700">${esc(x.br)} · ${esc(x.line)}</div>
     <h3>${esc(short(x.n))}</h3>
     <div class="chips">${[x.f, x.g, ...x.t.filter((t) => t !== "일반")].map((t) => `<span>${esc(t)}</span>`).join("")}</div>
@@ -1515,7 +1518,7 @@ setMode("");
 // 오프라인 저장 + 사진 미리 받아 두기 (와이파이가 끊겨도 메뉴판이 열리게)
 if ("serviceWorker" in navigator && location.protocol === "https:") {
   navigator.serviceWorker.register("sw.js").then(() => navigator.serviceWorker.ready).then(() => {
-    const urls = [...new Set(L.map((x) => IMG + x.img))]; let i = 0;
+    const urls = [...new Set(L.map(isrc))]; let i = 0;
     const next = () => { const batch = urls.slice(i, i += 8); if (batch.length) Promise.all(batch.map((u) => fetch(u).catch(() => {}))).then(() => setTimeout(next, 300)); };
     setTimeout(next, 3000);
   }).catch(() => {});
