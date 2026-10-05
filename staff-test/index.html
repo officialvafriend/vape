@@ -70,7 +70,7 @@
 <div class="dim" id="dim"><div class="sheet" id="sheet"></div></div>
 <div class="toast" id="toast"></div>
 <script>
-const VER = "10.02-2";
+const VER = "10.05-1";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
 const OPEN_AT = { 동성로: "11:00", 수성: "10:30", 본점: "11:00", 율하: "10:30", 반월당: "10:30", 상인: "10:30", 광장코아: "11:00", 현풍: "11:00" };
 // 운영봇(운영봇_시험.mjs)의 CHECK와 같은 목록이어야 기록이 맞아요
@@ -147,7 +147,7 @@ function sheetIn() {
     <div class="btns"><button class="btn" data-x>취소</button><button class="btn primary" id="okIn">출근 보내기</button></div>`);
 }
 async function doIn(name) {
-  name = name.trim(); if (!name) return toast("이름을 넣어 주세요");
+  name = name.trim(); if (!name) return toast("이름을 넣어 주세요"); if (!/[가-힣a-zA-Z]{2,}/.test(name)) return toast("이름을 두 글자 이상 정확히 넣어 주세요"); // 10/5 '0'으로 출근 기록된 일
   const s = st(); if (s.ins.some((x) => x.name === name)) return toast("오늘 이미 출근했어요");
   $("#okIn").disabled = true;
   try {
