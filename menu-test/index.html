@@ -254,6 +254,18 @@
   .step{margin-left:auto;display:flex;align-items:center;border:1.5px solid var(--line)}
   .step button{width:46px;height:46px;font-size:20px}
   .step span{min-width:30px;text-align:center;font-family:var(--num);font-weight:800;font-size:18px}
+  /* 액상 손님 기기 권유 카드 (아래에서 올라옴) */
+  .devup{position:fixed;left:50%;bottom:0;transform:translate(-50%,110%);transition:transform .32s cubic-bezier(.2,.8,.2,1);z-index:60;width:min(640px,100%);background:#15120f;color:#fff;padding:22px 22px 20px;box-shadow:0 -10px 30px rgba(0,0,0,.35);display:grid;grid-template-columns:1fr 128px;gap:4px 14px}
+  .devup.on{transform:translate(-50%,0)}
+  .devup .t{font-family:var(--num);font-weight:900;font-size:22px;line-height:1.3;letter-spacing:-.02em}
+  .devup .t em{font-style:normal;color:#ff4b4b}
+  .devup .pr{margin-top:10px;font-size:16px;color:rgba(255,255,255,.75)}
+  .devup .pr b{display:block;color:#fff;font-family:var(--num);font-weight:900;font-size:26px;margin-top:2px}
+  .devup .pr s{color:rgba(255,255,255,.45)} .devup .pr i{font-style:normal;color:#ff4b4b;font-weight:800}
+  .devup img{grid-column:2;grid-row:1/3;width:128px;height:160px;object-fit:contain;align-self:end}
+  .devup .bt{grid-column:1/-1;display:grid;grid-template-columns:1.4fr 1fr;gap:10px;margin-top:16px}
+  .devup .bt button{padding:16px 10px;font-weight:800;font-size:17px}
+  .devup .bt .go{background:#e3191f;color:#fff} .devup .bt .no{background:rgba(255,255,255,.1);color:#fff}
   .nudge{margin-top:16px;background:var(--ink);color:#fff;padding:18px}
   .nudge b{font-family:var(--num);font-weight:900;font-size:19px}
   .nudge .u{font-size:14px;color:rgba(255,255,255,.7);margin-top:4px}
@@ -309,7 +321,7 @@
   body[data-mode=""] [data-for]:not([data-for~="home"]),
   body[data-mode="dev"] [data-for]:not([data-for~="dev"]),
   body[data-mode="liq"] [data-for]:not([data-for~="liq"]),
-  body[data-mode="dsp"] [data-for]:not([data-for~="dsp"]){display:none}
+  body[data-mode="dsp"] [data-for]:not([data-for~="dsp"]){display:none!important} /* !important: #s1 display:flex가 이기던 문제 */
   .ver{font-size:11px;color:rgba(255,255,255,.45);font-family:var(--kr);margin-left:2px}
   .homebtn{background:rgba(255,255,255,.12);color:#fff;padding:12px 14px;font-family:var(--num);font-weight:800;font-size:15px;margin-left:12px}
   .home{padding:40px var(--pad) 60px}
@@ -394,7 +406,7 @@
 <body data-mode=""><div id="testRibbon" style="position:fixed;left:0;right:0;bottom:0;z-index:99999;background:#d32f2f;color:#fff;text-align:center;font:700 13px sans-serif;padding:4px;pointer-events:none">테스트판 · 손님 상담에는 정식판을 쓰세요</div>
 <div class="app">
   <div class="top">
-    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">테스트 v10.02-2900</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
+    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">테스트 v10.05-1000</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
     <nav class="tabs" id="tabs" style="display:none"></nav>
     <div class="flow" id="flow"><span data-st="1">① 찾는 것</span><i>›</i><span data-st="2">② 고르기</span><i>›</i><span data-st="3">③ 담은 상품</span><i>›</i><span data-st="4">④ 직원 확인</span></div>
   </div>
@@ -481,7 +493,7 @@
 
   <div id="dspList" data-for="dsp"></div>
 
-  <div class="foot"><b>시안 · 버전 10.02-2900</b> · 사진·맛·태그는 직원 교육용 액상 DB(380종), 가격은 매장 안내 책자 기준이에요. 패키지·꿀조합·이벤트 문구는 관리자 화면에서 바꾸게 만들 예정이에요. 기기패키지 기준 기기는 하복2(판매가 89,000원)이고 사진은 용트림 상품 페이지 사진에서 배경을 지운 거예요. 레이저 각인은 포스에 0원 상품으로 등록 예정. 빌런 패키지 할인 조건은 아직 확정 전이에요.</div>
+  <div class="foot"><b>시안 · 버전 10.05-1000</b> · 사진·맛·태그는 직원 교육용 액상 DB(380종), 가격은 매장 안내 책자 기준이에요. 패키지·꿀조합·이벤트 문구는 관리자 화면에서 바꾸게 만들 예정이에요. 기기패키지 기준 기기는 하복2(판매가 89,000원)이고 사진은 용트림 상품 페이지 사진에서 배경을 지운 거예요. 레이저 각인은 포스에 0원 상품으로 등록 예정. 빌런 패키지 할인 조건은 아직 확정 전이에요.</div>
 </div>
 
 <div class="srch" id="srch"><div class="hd"><input id="q" type="search" placeholder="이름·초성·맛·브랜드 (예: ㅂㄹㅈㄷ, 멘솔, 팜팜바, 말론)" autocomplete="off"><button class="cl" id="srchClose">닫기</button></div>
@@ -853,6 +865,21 @@ function benefits(x) {
   out.push("네이버 클립 리뷰 업로드 시 3,000원 할인");
   return out.map((t, i) => [String(i + 1).padStart(2, "0"), t]);
 }
+// 액상 손님에게 기기 한 번 더 권유 — 액상 5병 이상 & 기기 없음일 때 손님당 1번 ([완료·처음으로]에서 초기화)
+let devUpShown = false, devUpThen = null;
+const hasDev = () => cart.has(DEVICE.id) || [...cart.keys()].some((id) => item(id).c === "dev");
+function devUp(then) {
+  const c = countCart(), n = c.v + c.p + c.m;
+  if (devUpShown || hasDev() || n < 5) return false;
+  devUpShown = true; devUpThen = then || null;
+  const reg = MAIN.price + ADD.ref10;
+  $("#devUp").innerHTML = `<div class="t">지금 담으신 액상 <em>${n}병</em>,<br>기기랑 같이 사면 더 싸져요</div>
+    <div class="pr">${esc(MAIN.name)} + 입호흡 액상 10병<b>${won(PK.pr10)}</b>따로 사면 <s>${won(reg)}</s> → <i>${won(reg - PK.pr10)} 아껴요</i></div>
+    ${MAIN.img ? `<img src="${MAIN.img}" alt="">` : ""}
+    <div class="bt"><button class="go" data-devup="go">${esc(MAIN.name)} 패키지 보기</button><button class="no" data-devup="no">액상만 살게요</button></div>`;
+  requestAnimationFrame(() => $("#devUp").classList.add("on"));
+  return true;
+}
 function detail(id) {
   const x = item(id);
   const sims = L.filter((y) => y.id !== id && y.g === x.g && y.line === x.line).sort((a, b) => (b.br === x.br) - (a.br === x.br)).slice(0, 3);
@@ -1038,7 +1065,7 @@ document.addEventListener("click", (e) => {
   if ((el = q("[data-inc]"))) return incSend(el.dataset.inc);
   if (q("[data-inc-go]")) return incSend($("#incName")?.value);
   if ((el = q("[data-mode]")) && el.classList.contains("way")) { setMode(el.dataset.mode); return; }
-  if (q("#homeBtn")) { closeS(); $("#srch").classList.remove("on"); setMode(""); return; }
+  if (q("#homeBtn")) { $("#devUp").classList.remove("on"); closeS(); $("#srch").classList.remove("on"); setMode(""); return; }
   if ((el = q("[data-mainspec]"))) return mainSpecView();
   if ((el = q("[data-cvc]"))) { cvColor = el.dataset.cvc; $("#cvImg").src = MAIN.imgs[cvColor] || MAIN.img; $("#cvCl").textContent = cvColor; document.querySelectorAll("[data-cvc]").forEach((b) => b.classList.toggle("on", b === el)); return; }
   if ((el = q("[data-gpack]"))) { const st = $("#sheet").scrollTop; for (let i = 0; i < MAIN.podPack; i++) addGoods(el.dataset.gpack); toast(`담았어요 · ${GMAP.get(el.dataset.gpack).n} 1팩(${MAIN.podPack}개)`); renderGoods(); mainSpecView(); $("#sheet").scrollTop = st; return; }
@@ -1057,12 +1084,13 @@ document.addEventListener("click", (e) => {
   if ((el = q("[data-pkgadd]"))) { const p = PKGS.find((x) => x.id === el.dataset.pkgadd); if (p.device) add(DEVICE.id); p.items.map(byName).filter(Boolean).forEach((x) => add(x.id)); closeS(); if (p.pick) { (setMode("liq"), setTimeout(() => document.getElementById("s4").scrollIntoView({ behavior: "smooth" }), 50)); toast(`기기를 담았어요. 액상 ${p.pick}병을 골라 주세요`); } else toast("구성을 담았어요"); return; }
   if ((el = q("[data-pkg]"))) return pkgView(el.dataset.pkg);
   if ((el = q("[data-p]"))) return detail(el.dataset.p);
-  if ((el = q("[data-add]"))) { add(el.dataset.add); closeS(); toast("담았어요"); return; }
+  if ((el = q("[data-add]"))) { add(el.dataset.add); closeS(); if (!devUp()) toast("담았어요"); return; }
+  if ((el = q("[data-devup]"))) { $("#devUp").classList.remove("on"); const then = devUpThen; devUpThen = null; if (el.dataset.devup === "go") { closeS(); setMode("dev"); } else if (then) then(); return; }
   if ((el = q("[data-t]"))) { taste = taste === el.dataset.t ? null : el.dataset.t; shown = 12; render(); return; }
   if ((el = q("[data-l]"))) { line = el.dataset.l; shown = 12; render(); return; }
   if ((el = q("[data-tag]"))) { tag = tag === el.dataset.tag ? null : el.dataset.tag; render(); return; }
   if (q("#more")) { shown += 12; render(); return; }
-  if (q("#cartBtn")) return cartView();
+  if (q("#cartBtn")) return devUp(cartView) || cartView();
   if ((el = q("[data-m]"))) { add(el.dataset.m, -1); return cartView(); }
   if ((el = q("[data-pl]"))) { add(el.dataset.pl, 1); return cartView(); }
   if (q("[data-engr-add]")) { engrave = ""; cartView(); toast("레이저 각인을 추가했어요 (0원)"); setTimeout(() => document.getElementById("engrText")?.focus(), 50); return; }
@@ -1075,7 +1103,7 @@ document.addEventListener("click", (e) => {
   if ((el = q("[data-color]"))) { devColor = el.dataset.color; return cartView(); }
   if ((el = q("[data-color2]"))) { devColor = el.dataset.color2; return staffView(); }
   if (q("[data-staff]")) { if (member.type === "new" && (member.phone || member.name) && !member.agree) return toast("회원등록은 개인정보 동의가 필요해요"); if ([...cart.keys()].some((id) => isHi(item(id))) && !ledgerText()) { ledgerView(); toast("손님께 패드를 건네 직접 작성해 달라고 해 주세요"); return; } if (member.type === "new" && (member.phone || member.name) && !member.agree) return toast("회원등록은 개인정보 동의가 필요해요"); return staffView(); }
-  if (q("[data-reset]") && !(incSent = null)) { cart.clear(); airxGift = "pod"; Object.assign(ledger, { name: "", gu: "", etc: "" }); engrave = null; devColor = null; review = false; Object.assign(member, { type: null, name: "", phone: "", agree: false }); render(); closeS(); setMode(""); toast("처음 화면으로 돌아왔어요"); return; }
+  if (q("[data-reset]") && !(incSent = null)) { devUpShown = false; $("#devUp").classList.remove("on"); cart.clear(); airxGift = "pod"; Object.assign(ledger, { name: "", gu: "", etc: "" }); engrave = null; devColor = null; review = false; Object.assign(member, { type: null, name: "", phone: "", agree: false }); render(); closeS(); setMode(""); toast("처음 화면으로 돌아왔어요"); return; }
   if (e.target.id === "dim") closeS();
 });
 document.addEventListener("input", (e) => { const id = e.target.id; if (id === "engrText") engrave = e.target.value; if (id === "ldName" || id === "ldEtc") { ledger[id === "ldName" ? "name" : "etc"] = e.target.value; const p = document.getElementById("ldPrev"); if (p) p.textContent = ledgerText() || "성함과 사시는 곳을 골라 주세요"; } if (id === "memName") member.name = e.target.value; if (id === "memPhone") member.phone = e.target.value.replace(/\D/g, ""); if (id === "memAgree") member.agree = e.target.checked; });
@@ -1096,6 +1124,7 @@ if ("serviceWorker" in navigator && location.protocol === "https:") {
 (() => { const top = document.querySelector('.top'); const set = () => document.documentElement.style.setProperty('--topH', top.offsetHeight + 'px'); set(); addEventListener('resize', set); new ResizeObserver(set).observe(top); })();
 </script>
 <button class="nextbar" id="nextBar"></button>
+<div class="devup" id="devUp"></div>
 <script>
 // 상담 흐름: ① 찾는 것(처음) ② 고르기(구역 들어감) ③ 담은 상품(장바구니 창) ④ 직원 확인(바코드 창)
 (() => {
@@ -1116,7 +1145,7 @@ if ("serviceWorker" in navigator && location.protocol === "https:") {
     }
     bar.classList.toggle("on", show);
   }
-  bar.addEventListener("click", () => cartView());
+  bar.addEventListener("click", () => devUp(cartView) || cartView());
   setInterval(update, 400); update();
 })();
 </script></body>
