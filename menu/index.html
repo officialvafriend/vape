@@ -585,12 +585,21 @@
   .rowg .pr small{font-family:var(--kr);font-weight:600;color:var(--grey);font-size:12px}
   .rowg{flex-wrap:wrap}
   .rowg .pkb button,.dpod .pkb button{width:auto;font-size:15px}
+  .askbox{margin-top:16px;padding:16px;border-radius:16px;background:#fff4e5}
+  .askbox > b{font-size:17px;color:#8a4b00}
+  .askhint{margin-top:6px;font-size:14px;color:var(--ink-soft)}
+  .askrow{display:flex;align-items:center;gap:10px;margin-top:12px;flex-wrap:wrap}
+  .askrow > span:first-child{font-weight:700}
+  .askrow .sq{display:flex;align-items:center;background:#fff;border-radius:12px}
+  .askrow .sq button{width:46px;height:46px;font-size:22px;font-weight:900}
+  .askrow .sq b{min-width:30px;text-align:center;font-family:var(--num);font-size:18px}
+  .askrow .b1{flex:1;min-width:200px}
 </style>
 </head>
 <body data-mode="">
 <div class="app">
   <div class="top">
-    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">v10.05-4100</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
+    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">v10.05-4200</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
     <nav class="tabs" id="tabs" style="display:none"></nav>
     <div class="flow" id="flow"><span data-st="1">① 찾는 것</span><i>›</i><span data-st="2">② 고르기</span><i>›</i><span data-st="3">③ 담은 상품</span><i>›</i><span data-st="4">④ 직원 확인</span></div>
   </div>
@@ -682,7 +691,7 @@
 
   <div id="dspList" data-for="dsp"></div>
 
-  <div class="foot"><b>시안 · 버전 10.05-4100</b> · 사진·맛·태그는 직원 교육용 액상 DB(380종), 가격은 매장 안내 책자 기준이에요. 패키지·꿀조합·이벤트 문구는 관리자 화면에서 바꾸게 만들 예정이에요. 기기패키지 기준 기기는 하복2(판매가 89,000원)이고 사진은 용트림 상품 페이지 사진에서 배경을 지운 거예요. 레이저 각인은 포스에 0원 상품으로 등록 예정. 빌런 패키지 할인 조건은 아직 확정 전이에요.</div>
+  <div class="foot"><b>시안 · 버전 10.05-4200</b> · 사진·맛·태그는 직원 교육용 액상 DB(380종), 가격은 매장 안내 책자 기준이에요. 패키지·꿀조합·이벤트 문구는 관리자 화면에서 바꾸게 만들 예정이에요. 기기패키지 기준 기기는 하복2(판매가 89,000원)이고 사진은 용트림 상품 페이지 사진에서 배경을 지운 거예요. 레이저 각인은 포스에 0원 상품으로 등록 예정. 빌런 패키지 할인 조건은 아직 확정 전이에요.</div>
 </div>
 
 <div class="srch" id="srch"><div class="hd"><input id="q" type="search" placeholder="이름·초성·맛·브랜드 (예: ㅂㄹㅈㄷ, 멘솔, 팜팜바, 말론)" autocomplete="off"><button class="cl" id="srchClose">닫기</button></div>
@@ -755,13 +764,13 @@ const REC = [ // g = 보여 줄 시리즈 (적은 순서대로)
   { k: "무니코틴", s: "제로닉 · 무", g: [/^(제로닉|무) /] },
 ];
 // 품절 표시: 업무봇이 매시간 올리는 stock.json (지점별 재고 0 상품명만, 수량 없음)
-let OUT = new Set(), STOCK_AT = "";
+let OUT = new Set(), STOCK_AT = "", STOCK_ALL = {};
 // 그 지점 포스에 없는 액상도 품절처럼 (바코드를 못 찍으니까)
 // 지점: 링크의 ?branch= 를 이 기기에 기억 → 홈 화면 설치 앱(시작 주소에 지점 없음)도 그 지점으로 열림
 const BRANCH = (() => { const u = new URLSearchParams(location.search).get("branch"); try { if (u) localStorage.setItem("vf-menu-branch", u); return u || localStorage.getItem("vf-menu-branch") || "본점"; } catch (e) { return u || "본점"; } })();
 const isOut = (x) => OUT.has(x.n) || !!(window.POS?.[BRANCH] && !window.POS[BRANCH][x.n]);
 async function loadStock() {
-  try { const j = await (await fetch("stock.json", { cache: "no-store" })).json(); const b = j[PAD.branch]; if (b) { OUT = new Set(b.out); STOCK_AT = b.at; render(); } } catch (e) {}
+  try { const j = await (await fetch("stock.json", { cache: "no-store" })).json(); STOCK_ALL = j; const b = j[PAD.branch]; if (b) { OUT = new Set(b.out); STOCK_AT = b.at; render(); } } catch (e) {}
 }
 const pickG = (gs) => gs.flatMap((re) => L.filter((x) => re.test(x.n))).sort((a, b) => isOut(a) - isOut(b));
 let rec = REC[0].k;
@@ -1182,6 +1191,23 @@ function devUp(then) {
   requestAnimationFrame(() => $("#devUp").classList.add("on"));
   return true;
 }
+// ── 다른 지점 재고 확인 (사용자 10/5): 필요 수량 정해서 요청 → 디스코드 공용 🙋요청 카드 [있음][없음]
+let askQty = 1;
+function askBox(x) {
+  const yes = Object.entries(STOCK_ALL).filter(([b, v]) => b !== PAD.branch && window.POS?.[b]?.[x.n] && !v.out.includes(x.n)).map(([b]) => b);
+  return `<div class="askbox"><b>이 지점엔 없어요 · 다른 지점에 물어볼까요?</b>
+    ${yes.length ? `<div class="askhint">포스 기준 재고 있음: <b>${yes.map(esc).join(", ")}</b> (1시간마다 갱신)</div>` : ""}
+    <div class="askrow"><span>필요 수량</span><span class="sq"><button data-aq="-1" aria-label="빼기">−</button><b id="askQ">${askQty}</b><button data-aq="1" aria-label="더하기">+</button></span>
+    <button class="b1" data-ask="${x.id}">다른 지점 재고 확인 요청</button></div></div>`;
+}
+async function askSend(id) {
+  const x = item(id);
+  try {
+    const r = await fetch(HOOK, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ content: JSON.stringify({ type: "stockask", branch: PAD.branch, pad: PAD.no, item: x.n, qty: askQty }), allowed_mentions: { parse: [] }, flags: 4096 }) });
+    if (!r.ok) throw new Error("응답 " + r.status);
+    ev("k", x.n, String(askQty)); toast(`요청했어요 · ${short(x.n)} ${askQty}개 · 답이 오면 지점 디스코드로 알려드려요`); askQty = 1;
+  } catch (e) { toast(`요청 못 했어요 (${navigator.onLine ? e.message : "인터넷 끊김"}) · 다시 눌러 주세요`); }
+}
 function detail(id) {
   const x = item(id);
   const sims = L.filter((y) => y.id !== id && y.g === x.g && y.line === x.line).sort((a, b) => (b.br === x.br) - (a.br === x.br)).slice(0, 3);
@@ -1191,6 +1217,7 @@ function detail(id) {
     <div class="chips">${[x.f, x.g, ...x.t.filter((t) => t !== "일반")].map((t) => `<span>${esc(t)}</span>`).join("")}</div>
     <div class="ben">${benefits(x).map(([n, t]) => `<div><i>${n}</i><span>${esc(t)}</span></div>`).join("")}</div>
   </div></div>
+  ${isOut(x) ? askBox(x) : ""}
   <button class="upsell" data-pkg="max10"><span><b>최고혜택 구성 보러 가기</b><small>액상 10병 + ${MAIN.name} 기기패키지로 더 저렴하게</small></span><span class="arr">→</span></button>
   <div class="btns"><button class="b1" data-add="${x.id}">담기</button></div>
   <div class="sub">비슷한 맛</div><div class="prods">${sims.map(card).join("")}</div>`);
@@ -1401,6 +1428,8 @@ document.addEventListener("click", (e) => {
   if ((el = q("[data-pkgadd]"))) { const p = PKGS.find((x) => x.id === el.dataset.pkgadd); if (p.device) add(DEVICE.id); p.items.map(byName).filter(Boolean).forEach((x) => add(x.id)); closeS(); if (p.pick) { (setMode("liq"), setTimeout(() => document.getElementById("s4").scrollIntoView({ behavior: "smooth" }), 50)); toast(`기기를 담았어요. 액상 ${p.pick}병을 골라 주세요`); } else toast("구성을 담았어요"); return; }
   if ((el = q("[data-goto]"))) { document.getElementById(el.dataset.goto).scrollIntoView({ behavior: "smooth" }); return; }
   if ((el = q("[data-pkg]"))) return pkgView(el.dataset.pkg);
+  if ((el = q("[data-aq]"))) { askQty = Math.max(1, Math.min(99, askQty + Number(el.dataset.aq))); const e2 = document.getElementById("askQ"); if (e2) e2.textContent = askQty; return; }
+  if ((el = q("[data-ask]"))) return askSend(el.dataset.ask);
   if ((el = q("[data-qa]"))) { add(el.dataset.qa); if (!devUp()) { const c = countCart(), n = c.v + c.p; toast(n < 11 ? `담았어요 · 11병까지 ${11 - n}병 남았어요` : n === 11 ? "11병 완성! 90,000원" : "담았어요"); } return; }
   if ((el = q("[data-qm]"))) { add(el.dataset.qm, -1); return; }
   if ((el = q("[data-p]"))) return detail(el.dataset.p);
