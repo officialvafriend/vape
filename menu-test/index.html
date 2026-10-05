@@ -556,7 +556,7 @@
 <body data-mode=""><div id="testRibbon" style="position:fixed;left:0;right:0;bottom:0;z-index:99999;background:#d32f2f;color:#fff;text-align:center;font:700 13px sans-serif;padding:4px;pointer-events:none">테스트판 · 손님 상담에는 정식판을 쓰세요</div>
 <div class="app">
   <div class="top">
-    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">테스트 v10.05-2300</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
+    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">테스트 v10.05-2400</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
     <nav class="tabs" id="tabs" style="display:none"></nav>
     <div class="flow" id="flow"><span data-st="1">① 찾는 것</span><i>›</i><span data-st="2">② 고르기</span><i>›</i><span data-st="3">③ 담은 상품</span><i>›</i><span data-st="4">④ 직원 확인</span></div>
   </div>
@@ -648,7 +648,7 @@
 
   <div id="dspList" data-for="dsp"></div>
 
-  <div class="foot"><b>시안 · 버전 10.05-2300</b> · 사진·맛·태그는 직원 교육용 액상 DB(380종), 가격은 매장 안내 책자 기준이에요. 패키지·꿀조합·이벤트 문구는 관리자 화면에서 바꾸게 만들 예정이에요. 기기패키지 기준 기기는 하복2(판매가 89,000원)이고 사진은 용트림 상품 페이지 사진에서 배경을 지운 거예요. 레이저 각인은 포스에 0원 상품으로 등록 예정. 빌런 패키지 할인 조건은 아직 확정 전이에요.</div>
+  <div class="foot"><b>시안 · 버전 10.05-2400</b> · 사진·맛·태그는 직원 교육용 액상 DB(380종), 가격은 매장 안내 책자 기준이에요. 패키지·꿀조합·이벤트 문구는 관리자 화면에서 바꾸게 만들 예정이에요. 기기패키지 기준 기기는 하복2(판매가 89,000원)이고 사진은 용트림 상품 페이지 사진에서 배경을 지운 거예요. 레이저 각인은 포스에 0원 상품으로 등록 예정. 빌런 패키지 할인 조건은 아직 확정 전이에요.</div>
 </div>
 
 <div class="srch" id="srch"><div class="hd"><input id="q" type="search" placeholder="이름·초성·맛·브랜드 (예: ㅂㄹㅈㄷ, 멘솔, 팜팜바, 말론)" autocomplete="off"><button class="cl" id="srchClose">닫기</button></div>
@@ -1322,6 +1322,51 @@ document.addEventListener("click", (e) => {
 });
 document.addEventListener("input", (e) => { const id = e.target.id; if (id === "engrText") engrave = e.target.value; if (id === "ldName" || id === "ldEtc") { ledger[id === "ldName" ? "name" : "etc"] = e.target.value; const p = document.getElementById("ldPrev"); if (p) p.textContent = ledgerText() || "성함과 사시는 곳을 골라 주세요"; } if (id === "memName") member.name = e.target.value; if (id === "memPhone") member.phone = e.target.value.replace(/\D/g, ""); if (id === "memAgree") member.agree = e.target.checked; });
 addEventListener("scroll", () => { const ids = (TABS[mode] || []).map(([id]) => id); let cur = ids[0]; for (const s of ids) if (document.getElementById(s).getBoundingClientRect().top < 140) cur = s; document.querySelectorAll("#tabs a").forEach((a) => a.classList.toggle("on", a.getAttribute("href") === "#" + cur)); }, { passive: true });
+// ── 사용 기록 (지점별 많이 본 상품·못 찾은 검색어·품절 비율·작동 현황 대시보드용) ──
+// 화면을 막지 않게: 패드 안에 모았다가 1분에 한 번 묶어서 웹훅으로 보냄(실패하면 다음에 다시, 최대 500건 보관).
+// 상품명·검색어·지점·시각만 — 회원 이름·전화번호·장부 내용은 보내지 않음.
+const EVQ_KEY = "vf-ev";
+const evq = (() => { try { return JSON.parse(localStorage.getItem(EVQ_KEY) || "[]"); } catch (e) { return []; } })();
+const evSave = () => { try { localStorage.setItem(EVQ_KEY, JSON.stringify(evq)); } catch (e) {} };
+function ev(k, n = "", x = "") {
+  const t = Math.round(Date.now() / 1000), last = evq[evq.length - 1];
+  if (last && last[1] === k && last[2] === String(n).slice(0, 40) && t - last[0] < 5) return; // 같은 동작 연타는 1번
+  evq.push([t, k, String(n).slice(0, 40), x]);
+  if (evq.length > 500) evq.splice(0, evq.length - 500);
+  evSave();
+}
+let evBusy = false;
+async function evFlush() {
+  if (evBusy || !evq.length || !navigator.onLine) return;
+  evBusy = true;
+  try {
+    const take = []; let len = 0;
+    for (const e of evq) { const n = JSON.stringify(e).length + 1; if (len + n > 1500) break; take.push(e); len += n; }
+    const content = JSON.stringify({ type: "ev", branch: PAD.branch, pad: PAD.no, v: (document.querySelector(".ver")?.textContent || ""), e: take });
+    const res = await fetch(HOOK, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ content, allowed_mentions: { parse: [] } }), keepalive: true });
+    if (res.ok) { evq.splice(0, take.length); evSave(); }
+  } catch (e) {} finally { evBusy = false; }
+}
+setInterval(evFlush, 60e3);
+document.addEventListener("visibilitychange", () => { if (document.hidden) evFlush(); });
+// 어떤 화면을 열었나
+{ const _setMode = setMode; setMode = (m) => { _setMode(m); if (m) ev("m", m); }; }
+{ const _detail = detail; detail = (id) => { _detail(id); const x = item(id); if (x) ev("v", x.n, isOut(x) ? "품절" : ""); }; }
+{ const _staff = staffView; staffView = () => { _staff(); const c = [...cart.values()].reduce((a, b) => a + b, 0); ev("f", "", String(c)); }; }
+{ let tq = null; const _ds = drawSearch; drawSearch = () => { _ds(); clearTimeout(tq); const q = $("#q").value.trim(); if (!q) return; tq = setTimeout(() => { const r = searchItems(q); ev("q", q, `${r.length}/${r.filter((x) => isOut(x)).length}`); }, 1500); }; }
+// 담기 (카드 + / 상세 담기 / 기기·팟·일회용 / 구성 담기)
+document.addEventListener("click", (e) => {
+  const el = e.target.closest("[data-qa],[data-add],[data-gadd],[data-pkgadd],[data-maindev],#cartBtn,#nextBar");
+  if (!el) return;
+  if (el.id === "cartBtn" || el.id === "nextBar") return ev("c", "", String([...cart.values()].reduce((a, b) => a + b, 0)));
+  const id = el.dataset.qa || el.dataset.add || el.dataset.gadd;
+  if (id) { const x = item(id); if (x) ev("a", x.n); return; }
+  if (el.dataset.pkgadd) return ev("a", "구성:" + el.dataset.pkgadd);
+  if (el.dataset.maindev != null) return ev("a", MAIN.name);
+}, true);
+ev("o", BRANCH, (document.querySelector(".ver")?.textContent || ""));
+setTimeout(evFlush, 5000);
+
 render();
 loadStock(); setInterval(loadStock, 10 * 60e3); // 패드를 켜 둔 채로도 10분마다 새 재고
 setMode("");
