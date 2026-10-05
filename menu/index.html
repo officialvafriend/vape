@@ -556,7 +556,7 @@
 <body data-mode="">
 <div class="app">
   <div class="top">
-    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">v10.05-2200</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
+    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">v10.05-2300</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
     <nav class="tabs" id="tabs" style="display:none"></nav>
     <div class="flow" id="flow"><span data-st="1">① 찾는 것</span><i>›</i><span data-st="2">② 고르기</span><i>›</i><span data-st="3">③ 담은 상품</span><i>›</i><span data-st="4">④ 직원 확인</span></div>
   </div>
@@ -648,7 +648,7 @@
 
   <div id="dspList" data-for="dsp"></div>
 
-  <div class="foot"><b>시안 · 버전 10.05-2200</b> · 사진·맛·태그는 직원 교육용 액상 DB(380종), 가격은 매장 안내 책자 기준이에요. 패키지·꿀조합·이벤트 문구는 관리자 화면에서 바꾸게 만들 예정이에요. 기기패키지 기준 기기는 하복2(판매가 89,000원)이고 사진은 용트림 상품 페이지 사진에서 배경을 지운 거예요. 레이저 각인은 포스에 0원 상품으로 등록 예정. 빌런 패키지 할인 조건은 아직 확정 전이에요.</div>
+  <div class="foot"><b>시안 · 버전 10.05-2300</b> · 사진·맛·태그는 직원 교육용 액상 DB(380종), 가격은 매장 안내 책자 기준이에요. 패키지·꿀조합·이벤트 문구는 관리자 화면에서 바꾸게 만들 예정이에요. 기기패키지 기준 기기는 하복2(판매가 89,000원)이고 사진은 용트림 상품 페이지 사진에서 배경을 지운 거예요. 레이저 각인은 포스에 0원 상품으로 등록 예정. 빌런 패키지 할인 조건은 아직 확정 전이에요.</div>
 </div>
 
 <div class="srch" id="srch"><div class="hd"><input id="q" type="search" placeholder="이름·초성·맛·브랜드 (예: ㅂㄹㅈㄷ, 멘솔, 팜팜바, 말론)" autocomplete="off"><button class="cl" id="srchClose">닫기</button></div>
@@ -720,7 +720,8 @@ const REC = [ // g = 보여 줄 시리즈 (적은 순서대로)
 // 품절 표시: 업무봇이 매시간 올리는 stock.json (지점별 재고 0 상품명만, 수량 없음)
 let OUT = new Set(), STOCK_AT = "";
 // 그 지점 포스에 없는 액상도 품절처럼 (바코드를 못 찍으니까)
-const BRANCH = new URLSearchParams(location.search).get("branch") || "본점";
+// 지점: 링크의 ?branch= 를 이 기기에 기억 → 홈 화면 설치 앱(시작 주소에 지점 없음)도 그 지점으로 열림
+const BRANCH = (() => { const u = new URLSearchParams(location.search).get("branch"); try { if (u) localStorage.setItem("vf-menu-branch", u); return u || localStorage.getItem("vf-menu-branch") || "본점"; } catch (e) { return u || "본점"; } })();
 const isOut = (x) => OUT.has(x.n) || !!(window.POS?.[BRANCH] && !window.POS[BRANCH][x.n]);
 async function loadStock() {
   try { const j = await (await fetch("stock.json", { cache: "no-store" })).json(); const b = j[PAD.branch]; if (b) { OUT = new Set(b.out); STOCK_AT = b.at; render(); } } catch (e) {}
@@ -1266,7 +1267,7 @@ async function incSend(seller) {
 }
 
 // 지점·패드 번호 (바코드는 지점 포스 기준)
-const PAD = { branch: new URLSearchParams(location.search).get("branch") || "본점", no: new URLSearchParams(location.search).get("pad") || "1" };
+const PAD = { branch: BRANCH, no: new URLSearchParams(location.search).get("pad") || "1" };
 document.addEventListener("click", (e) => {
   const q = (s) => e.target.closest(s); let el;
   if ((el = q("#sheet .scan:not(.bundle)")) && el.querySelector(".bc")) { el.classList.toggle("done"); const all = document.querySelectorAll("#sheet .scan:not(.bundle)"), d = document.querySelectorAll("#sheet .scan.done").length; if (d === all.length) toast("전부 찍었어요 ✓"); return; } // 찍은 바코드 표시
