@@ -102,6 +102,8 @@ const ITEMS = RAW.split("\n").map((l) => { const [n, v] = l.split("|"); return {
 
 const qs = new URLSearchParams(location.search);
 const B = COLS.includes(qs.get("branch")) ? qs.get("branch") : "본점";
+// ?test=1 시험 모드: 디스코드에 [시험]으로만 올라가고 노션·시트·지난 보고 숫자는 그대로 (사용자 10/5)
+const TEST = qs.get("test") === "1";
 const KEY = `vf-stock-${B}`;
 const ls = { get: (k, d) => { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } }, set: (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} } };
 // 지난 값: 이 기기에서 마지막으로 보낸 보고가 있으면 그것, 없으면 노션 값
@@ -126,6 +128,7 @@ function render() {
   const done = ITEMS.filter((_, i) => cur[i] !== undefined && cur[i] !== "").length;
   const d = new Date();
   $("#app").innerHTML = `<div class="top"><a href="${/^\/vape\/[\w-]+\/$/.test(qs.get("back") || "") ? qs.get("back") : `../staff/?branch=${encodeURIComponent(B)}`}" style="text-decoration:none;font-size:22px;color:var(--ink)">‹</a><b>아침 재고보고</b><span class="chip">${HO[B]}호 ${esc(B)}</span><span class="d">${d.getMonth() + 1}/${d.getDate()} (${"일월화수목금토"[d.getDay()]})</span></div>
+  ${TEST ? `<div class="card" style="background:#fff1f0;border:2px solid #e5484d;color:#b42318;font-weight:700">🧪 시험 모드 — 노션 재고표·시트·지난 보고 숫자는 안 바뀌어요. 디스코드에 [시험]으로만 올라가요.</div>` : ""}
   <div class="card"><div class="h">보고하는 사람</div><div class="who"><input id="who" placeholder="이름 (출근한 근무자)" value="${esc(who)}"></div>
     <div class="prog"><div class="bar"><i style="width:${(done / ITEMS.length) * 100}%"></i></div><span>${done} / ${ITEMS.length}</span></div>
     <div class="s">실제로 센 개수를 넣어 주세요. 지난 보고와 같으면 [그대로]를 누르면 돼요. 크게 다르면 빨간 테두리가 생겨요.</div></div>
@@ -152,13 +155,13 @@ const HOOK = "https://discord.com/api/webhooks/1555156884753743905/BLK7tRBQACouQ
 $("#send").addEventListener("click", async () => {
   if (!who) { $("#who").focus(); return toast("보고하는 사람 이름을 넣어 주세요"); }
   const v = ITEMS.map((_, i) => cur[i]);
-  const body = { type: "stock", branch: B, by: who, items: ITEMS.map((it, i) => [it.n, v[i], prev(i)]), ver: VER };
+  const body = { type: "stock", branch: B, by: who, items: ITEMS.map((it, i) => [it.n, v[i], prev(i)]), ver: VER, ...(TEST ? { test: true } : {}) };
   $("#send").disabled = true; $("#send").textContent = "보내는 중…";
   try {
     const r = await fetch(HOOK, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ content: JSON.stringify(body), allowed_mentions: { parse: [] } }) });
     if (!r.ok) throw new Error("디스코드 응답 " + r.status);
-    ls.set(KEY + "-last", { v, at: Date.now(), by: who }); cur = {}; ls.set(KEY + "-draft", {});
-    $("#app").innerHTML = `<div class="card done-view"><div class="big">✅</div><b>${HO[B]}호 ${esc(B)} 재고보고 완료</b><div class="s">${esc(who)} · ${new Date().toTimeString().slice(0, 5)}<br>디스코드 보고 채널과 시트에 기록돼요.</div></div>`;
+    if (!TEST) ls.set(KEY + "-last", { v, at: Date.now(), by: who }); cur = {}; ls.set(KEY + "-draft", {});
+    $("#app").innerHTML = `<div class="card done-view"><div class="big">✅</div><b>${HO[B]}호 ${esc(B)} 재고보고 ${TEST ? "시험 " : ""}완료</b><div class="s">${esc(who)} · ${new Date().toTimeString().slice(0, 5)}<br>디스코드 보고 채널과 시트에 기록돼요.</div></div>`;
     $("#foot").style.display = "none";
   } catch (err) { toast(`못 보냈어요 (${navigator.onLine ? err.message : "인터넷 끊김"}) · 입력한 숫자는 그대로 있어요`); render(); }
 });
