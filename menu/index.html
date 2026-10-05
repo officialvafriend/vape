@@ -590,7 +590,7 @@
 <body data-mode="">
 <div class="app">
   <div class="top">
-    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">v10.05-3600</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
+    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">v10.05-3700</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
     <nav class="tabs" id="tabs" style="display:none"></nav>
     <div class="flow" id="flow"><span data-st="1">① 찾는 것</span><i>›</i><span data-st="2">② 고르기</span><i>›</i><span data-st="3">③ 담은 상품</span><i>›</i><span data-st="4">④ 직원 확인</span></div>
   </div>
@@ -682,7 +682,7 @@
 
   <div id="dspList" data-for="dsp"></div>
 
-  <div class="foot"><b>시안 · 버전 10.05-3600</b> · 사진·맛·태그는 직원 교육용 액상 DB(380종), 가격은 매장 안내 책자 기준이에요. 패키지·꿀조합·이벤트 문구는 관리자 화면에서 바꾸게 만들 예정이에요. 기기패키지 기준 기기는 하복2(판매가 89,000원)이고 사진은 용트림 상품 페이지 사진에서 배경을 지운 거예요. 레이저 각인은 포스에 0원 상품으로 등록 예정. 빌런 패키지 할인 조건은 아직 확정 전이에요.</div>
+  <div class="foot"><b>시안 · 버전 10.05-3700</b> · 사진·맛·태그는 직원 교육용 액상 DB(380종), 가격은 매장 안내 책자 기준이에요. 패키지·꿀조합·이벤트 문구는 관리자 화면에서 바꾸게 만들 예정이에요. 기기패키지 기준 기기는 하복2(판매가 89,000원)이고 사진은 용트림 상품 페이지 사진에서 배경을 지운 거예요. 레이저 각인은 포스에 0원 상품으로 등록 예정. 빌런 패키지 할인 조건은 아직 확정 전이에요.</div>
 </div>
 
 <div class="srch" id="srch"><div class="hd"><input id="q" type="search" placeholder="이름·초성·맛·브랜드 (예: ㅂㄹㅈㄷ, 멘솔, 팜팜바, 말론)" autocomplete="off"><button class="cl" id="srchClose">닫기</button></div>
@@ -887,7 +887,7 @@ const POD_DEV = [
   { k: "닷모드", re: /닷/ },
 ];
 // 팩 구성 [상품명 규칙, 1팩 개수] — 확인된 것만. 모르는 팟은 낱개로만 보여 줌
-const PACK = [[/^하복2/, 2], [/^젤로0.8옴/, 3]];
+const PACK = [[/^하복2/, 2], [/^젤로0.8옴/, 3], [/^발라맥스프로팟/, 2], [/^발라코일/, 4]]; // 발라맥스프로팟 2개입·발라코일 4개입 (사용자 10/5)
 const packOf = (x) => (x && x.c === "pod" && (PACK.find(([re]) => re.test(x.n)) || [])[1]) || 0;
 const podBtns = (x, extra = "") => { const k = packOf(x); return k ? `<button class="pk1" data-gpk="${x.id}"${extra}>1팩 ${k}개 · ${won(x.price * k)}</button><button class="pk0" data-gadd="${x.id}"${extra}>낱개</button>` : `<button class="pk1" data-gadd="${x.id}"${extra}>+ 담기</button>`; };
 const podDevOf = (x) => (POD_DEV.find((d) => d.re.test(x.n)) || {}).k || "기타";
