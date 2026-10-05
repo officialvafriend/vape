@@ -84,7 +84,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.05-6";
+const VER = "10.05-7";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
 const OPEN_AT = { 동성로: "11:00", 수성: "10:30", 본점: "11:00", 율하: "10:30", 반월당: "10:30", 상인: "10:30", 광장코아: "11:00", 현풍: "11:00" };
 // 운영봇(운영봇_시험.mjs)의 CHECK와 같은 목록이어야 기록이 맞아요
@@ -156,7 +156,7 @@ function render() {
       <a href="../menu/?branch=${encodeURIComponent(B)}">🛍 판매용 메뉴판<span>손님 상담 화면</span></a>
       <a href="../stock/?branch=${encodeURIComponent(B)}&back=${encodeURIComponent(location.pathname)}">📦 재고보고<span>팟·코일·기기 개수</span></a>
     </div>
-    <div class="foot">테스트판 ${VER} · 기록은 디스코드 지점 보고 채널과 시트에도 남아요<br>오늘 기록은 이 기기 기준이에요 (다른 기기에서 한 건 디스코드에서 확인)<br><button data-go="branch">지점 바꾸기</button></div>`;
+    <div class="foot">테스트판 ${VER} · 기록은 디스코드 지점 보고 채널과 시트에도 남아요<br>오늘 기록은 이 기기 기준이에요 (다른 기기에서 한 건 디스코드에서 확인)<br><a href="../stock/?branch=${encodeURIComponent(B)}&test=1&back=${encodeURIComponent(location.pathname)}" style="color:#e5484d">🧪 재고보고 시험하기 (노션·시트 안 바뀜)</a> · <button data-go="branch">지점 바꾸기</button></div>`;
 }
 function renderPick() {
   $("#app").innerHTML = `<div class="pick"><h1>어느 지점인가요?</h1><p>이 기기에 한 번만 고르면 돼요.</p>
