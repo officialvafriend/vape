@@ -68,14 +68,23 @@
   .reqs b{display:block;font-size:16px}.reqs span{font-size:13px;color:#8b95a1}
   .chip.on{background:var(--blue);color:#fff;border-color:var(--blue)}
   textarea.input{height:auto;padding-top:12px;font:inherit}
+  .qrow{display:flex;align-items:center;gap:10px;padding:12px 0;border-top:1px solid var(--line)}
+  .qrow div{flex:1;min-width:0}.qrow b{display:block}.qrow span{display:block;font-size:13px;color:var(--ink2)}.qrow em{font-style:normal;font-size:13px;color:var(--blue);font-weight:700}
+  .qres{display:flex;flex-direction:column;gap:6px;margin-top:6px}
+  .qr{text-align:left;padding:12px 14px;border-radius:12px;background:#f2f4f6;font-weight:600}.qr i{float:right;font-style:normal;color:var(--blue);font-weight:800}
+  .qitems{margin-top:10px}.qit{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--line)}
+  .qst{display:flex;align-items:center;gap:4px}.qst button{width:40px;height:40px;border-radius:10px;background:#f2f4f6;font-size:20px;font-weight:800}.qst b{min-width:26px;text-align:center}
+  .qr small,.qit small{display:inline-block;margin-left:6px;font-size:12px;color:var(--blue);font-weight:700;background:var(--blue-soft);padding:2px 6px;border-radius:6px}
+  .done1{display:flex;flex-direction:column;gap:4px}.done1 b{color:var(--green);font-size:16px}.done1 span{font-size:13px;color:var(--ink2)}
 </style>
 </head>
 <body>
 <div class="app" id="app"></div>
 <div class="dim" id="dim"><div class="sheet" id="sheet"></div></div>
 <div class="toast" id="toast"></div>
+<script src="../menu/pos.js"></script>
 <script>
-const VER = "10.05-3";
+const VER = "10.05-5";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
 const OPEN_AT = { 동성로: "11:00", 수성: "10:30", 본점: "11:00", 율하: "10:30", 반월당: "10:30", 상인: "10:30", 광장코아: "11:00", 현풍: "11:00" };
 // 운영봇(운영봇_시험.mjs)의 CHECK와 같은 목록이어야 기록이 맞아요
@@ -121,11 +130,11 @@ function render() {
   $("#app").innerHTML = `
     <div class="top"><div class="logo">VAFRIEND <b>직원</b></div><div class="store">${esc(ho(B))}</div><div class="date">${d.getMonth() + 1}/${d.getDate()} (${"일월화수목금토"[d.getDay()]})</div></div>
     <div class="hero"><h1>${title}</h1><p>오픈 ${OPEN_AT[B]} · 출근 → 오픈 체크 → 아침 재고보고</p><div class="bar"><i style="width:${(done / 3) * 100}%"></i></div></div>
-    <div class="card"><h2>오픈</h2>
+    ${done === 3 ? `<div class="card done1"><b>✅ 오픈 완료</b><span>출근 ${esc(s.ins.map((x) => x.name).join(", "))} · 오픈 체크 ${s.open.t} · 재고보고 ${sd.t}</span></div>` : `<div class="card"><h2>오픈</h2>
       ${stepRow(1, steps[0], "출근", { t: s.ins.length ? s.ins.map((x) => `${esc(x.name)} ${x.t}${x.out ? `~${x.out}` : ""}`).join(" · ") : "아직 안 함" }, `<button class="act ${steps[0] ? "gray" : ""}" data-go="in">${steps[0] ? "추가" : "출근"}</button>`)}
       ${stepRow(2, steps[1], "오픈 체크", s.open ? { t: `${s.open.t} 완료${s.open.missed.length ? ` · 못 한 것 ${s.open.missed.length}개` : ""}`, w: s.open.missed.length } : { t: "아직 안 함" }, `<button class="act ${steps[1] ? "gray" : ""}" data-go="open">${steps[1] ? "다시" : "체크"}</button>`)}
       ${stepRow(3, steps[2], "아침 재고보고", sd ? { t: `${sd.t} 완료 · ${esc(sd.by || "")}` } : { t: "아직 안 함" }, `<a class="act ${steps[2] ? "gray" : ""}" href="../stock/?branch=${encodeURIComponent(B)}&back=${encodeURIComponent(location.pathname)}">${steps[2] ? "다시" : "하기"}</a>`)}
-    </div>
+    </div>`}
     <div class="card"><h2>마감</h2>
       ${stepRow("🌙", !!s.close, "마감 체크", s.close ? { t: `${s.close.t} 완료${s.close.missed.length ? ` · 못 한 것 ${s.close.missed.length}개` : ""}`, w: s.close.missed.length } : { t: "아직 안 함" }, `<button class="act ${s.close ? "gray" : ""}" data-go="close">${s.close ? "다시" : "체크"}</button>`)}
       ${stepRow("👋", s.ins.length > 0 && !working.length, "퇴근", { t: working.length ? `근무 중: ${working.map((x) => esc(x.name)).join(", ")}` : s.ins.length ? "모두 퇴근" : "출근 기록 없음" }, working.length ? `<button class="act gray" data-go="out">퇴근</button>` : "")}
@@ -133,12 +142,13 @@ function render() {
     <div class="card"><h2>요청 보내기</h2>
       <div class="reqs">
         <button data-req="parcel"><b>📦 고객 택배</b><span>택배로 보내기</span></button>
-        <button data-req="quick"><b>🛵 고객 퀵</b><span>가까운 지점이 보내기</span></button>
+        <button data-req="qk"><b>🛵 퀵 요청</b><span>재고 문의 → 결제 → 출발</span></button>
         <button data-req="branch"><b>🔁 다른 지점에 요청</b><span>상품 옮기기</span></button>
         <button data-req="ask"><b>🔍 재고 확인</b><span>다른 지점에 있나요?</span></button>
       </div>
       <div class="desc" style="margin:10px 0 0">요청은 디스코드 🙋요청 채널에 카드로 올라가고, 단계별 버튼으로 진행돼요.</div>
     </div>
+    ${myQuicksCard()}
     <div class="links">
       <a href="../menu/?branch=${encodeURIComponent(B)}">🛍 판매용 메뉴판<span>손님 상담 화면</span></a>
       <a href="../stock/?branch=${encodeURIComponent(B)}&back=${encodeURIComponent(location.pathname)}">📦 재고보고<span>팟·코일·기기 개수</span></a>
@@ -198,6 +208,64 @@ async function doReq() {
   $("#okRq").disabled = true;
   try { await send(body); closeSheet(); toast(rq.kind === "ask" ? "재고 확인 요청을 보냈어요 · 답은 디스코드로 와요" : "요청을 보냈어요 · 🙋요청 채널에 카드가 올라가요"); }
   catch (e) { $("#okRq").disabled = false; fail(e); }
+}
+// ── 퀵 요청 (10/5): 재고 문의 → [가능] → 결제 완료(고객정보) → 포장 → 접수 → 출발 · 대화 없이 버튼으로 ──
+let qk = null, QST = {};
+const QNAME = { ask: "⏳ 답 기다리는 중", ok: "✅ 가능 · 결제 후 아래 버튼", no: "❌ 불가", paid: "💳 결제 완료 · 포장 대기", pack: "📦 포장 완료", call: "📞 퀵 접수", go: "🛵 출발 완료" };
+const myQuicks = () => ls.get(`vf-app-${B}-quicks`, []).filter((x) => Date.now() - x.ts < 3 * 86400e3);
+function myQuicksCard() {
+  const qs = myQuicks(); if (!qs.length) return "";
+  return `<div class="card"><h2>내 퀵 요청</h2>${qs.slice().reverse().map((x) => { const st = QST[x.id]?.step || "ask";
+    return `<div class="qrow"><div><b>→ ${esc(ho(x.to))}</b><span>${x.items.map(([n, c]) => esc(n) + " " + c).join(" · ")}</span><em>${QNAME[st]}${QST[x.id]?.t ? " · " + QST[x.id].t : ""}</em></div>${st === "ok" ? `<button class="act" data-qpay="${x.id}">결제 완료</button>` : ""}</div>`; }).join("")}
+    <div class="desc" style="margin:8px 0 0">상태는 1~2분 늦게 바뀔 수 있어요</div></div>`;
+}
+async function loadQuickStatus() { try { QST = await (await fetch("quick.json", { cache: "no-store" })).json(); if (!$("#dim").classList.contains("on")) render(); } catch (e) {} }
+function sheetQuick() {
+  qk = { items: [], to: null, addr: "" };
+  openSheet(`<h2>🛵 퀵 재고 문의</h2><div class="desc">상품을 찾아 담고, 보낼 지점을 고르면 그 지점에 [가능][불가] 카드가 가요.</div>
+    <input class="input" id="qkFind" placeholder="상품 찾기 (예: 기성 찰스)"><div id="qkRes" class="qres"></div>
+    <div class="desc" style="margin:4px 0 0">여러 개면 계속 찾아서 담으세요 · 수량은 −/+</div><div id="qkItems" class="qitems"></div>
+    <input class="input" id="qkAddr" placeholder="고객 주소 (가까운 지점 추천용, 선택)" maxlength="80">
+    <div class="desc" style="margin-top:14px">보낼 지점 <span id="qkNote"></span></div><div class="chips" id="qkTo">${qkToChips(null)}</div>
+    <div class="btns"><button class="btn" data-x>취소</button><button class="btn primary" id="okQk">재고 문의 보내기</button></div>`);
+}
+const QPOS = () => window.POS?.[B] || window.POS?.["본점"] || {};
+const qkNames = () => Object.keys(QPOS()).filter((n) => n.length > 1 && !/^(사용x|x|ㅍ|\d+)$/i.test(n) && QPOS()[n][4] !== "단종");
+const ALIAS = [[/기성/g, "베이퍼"], [/발라리안 ?맥스프로/g, "발라맥스프로"], [/발라리안 ?에어/g, "발라리안에어"]]; // 직원들이 부르는 이름 → 포스 이름
+function qkFind(q) { // 띄어쓴 단어가 모두 들어간 상품 (순서 상관없음)
+  let t = q; for (const [re, to] of ALIAS) t = t.replace(re, to);
+  const words = t.split(/\s+/).filter(Boolean); if (!words.length) return [];
+  return qkNames().filter((n) => words.every((w) => n.replace(/\s/g, "").includes(w))).slice(0, 10);
+}
+function qkToChips(order) {
+  const list = (order || BR.map((b) => [b, null])).filter(([b]) => b !== B && !NO_QUICK.includes(b));
+  return list.map(([b, km], i) => `<button class="chip ${qk.to === b ? "on" : ""}" data-qto="${b}">${order && i === 0 ? "⭐ " : ""}${ho(b)}${km != null ? ` · 약 ${km < 1 ? 1 : Math.round(km)}km` : ""}</button>`).join("");
+}
+function qkDrawItems() { $("#qkItems").innerHTML = qk.items.map(([n, c], i) => `<div class="qit"><b>${esc(n)}<small>${esc(QPOS()[n]?.[4] || "")}</small></b><span class="qst"><button data-qm="${i}">−</button><b>${c}</b><button data-qp="${i}">+</button></span></div>`).join(""); }
+async function doQuick() {
+  if (!qk.items.length) return toast("상품을 담아 주세요");
+  if (!qk.to) return toast("보낼 지점을 골라 주세요");
+  const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 5), by = st().ins.filter((x) => !x.out).map((x) => x.name).join(", ");
+  $("#okQk").disabled = true;
+  try {
+    await send({ type: "quick", id, to: qk.to, items: qk.items, by });
+    ls.set(`vf-app-${B}-quicks`, [...myQuicks(), { id, to: qk.to, items: qk.items, addr: $("#qkAddr").value.trim(), ts: Date.now() }]);
+    closeSheet(); render(); toast(`${ho(qk.to)}에 재고 문의를 보냈어요`);
+  } catch (e) { $("#okQk").disabled = false; fail(e); }
+}
+function sheetPay(id) {
+  const x = myQuicks().find((y) => y.id === id); if (!x) return;
+  openSheet(`<h2>💳 결제 완료 · 퀵 요청</h2><div class="desc">${esc(ho(x.to))} · ${x.items.map(([n, c]) => esc(n) + " " + c).join(" · ")}</div>
+    <input class="input" id="pyName" placeholder="고객 이름" maxlength="20"><input class="input" id="pyPhone" placeholder="고객 연락처" inputmode="tel" maxlength="20">
+    <input class="input" id="pyAddr" placeholder="배송 주소 (동·호수까지)" maxlength="100" value="${esc(x.addr || "")}">
+    <div class="btns"><button class="btn" data-x>취소</button><button class="btn primary" id="okPay" data-id="${id}">결제 완료 보내기</button></div>`);
+}
+async function doPay(id) {
+  const v = (k) => ($(k)?.value || "").trim();
+  if (!v("#pyName") || !v("#pyPhone") || !v("#pyAddr")) return toast("이름·연락처·주소를 모두 넣어 주세요");
+  $("#okPay").disabled = true;
+  try { await send({ type: "quickpay", id, name: v("#pyName"), phone: v("#pyPhone"), addr: v("#pyAddr"), by: st().ins.filter((x) => !x.out).map((x) => x.name).join(", ") }); QST[id] = { step: "paid", t: now() }; closeSheet(); render(); toast("결제 완료를 보냈어요 · 포장이 시작돼요"); }
+  catch (e) { $("#okPay").disabled = false; fail(e); }
 }
 function openSheet(html) { $("#sheet").innerHTML = html; $("#dim").classList.add("on"); }
 const closeSheet = () => $("#dim").classList.remove("on");
@@ -264,17 +332,30 @@ document.addEventListener("click", (e) => {
   if (t.dataset.ck !== undefined) return t.classList.toggle("on");
   if (t.id === "okCk") return doCheck(t.dataset.kind);
   if (t.dataset.out) return doOut(t.dataset.out);
+  if (t.dataset.req === "qk") return sheetQuick();
   if (t.dataset.req) return sheetReq(t.dataset.req);
+  if (t.dataset.qadd) { const n = t.dataset.qadd; const it = qk.items.find((x) => x[0] === n); it ? it[1]++ : qk.items.push([n, 1]); $("#qkFind").value = ""; $("#qkRes").innerHTML = ""; return qkDrawItems(); }
+  if (t.dataset.qm) { const i = +t.dataset.qm; qk.items[i][1]--; if (qk.items[i][1] < 1) qk.items.splice(i, 1); return qkDrawItems(); }
+  if (t.dataset.qp) { qk.items[+t.dataset.qp][1]++; return qkDrawItems(); }
+  if (t.dataset.qto) { qk.to = t.dataset.qto; document.querySelectorAll("[data-qto]").forEach((x) => x.classList.toggle("on", x === t)); return; }
+  if (t.id === "okQk") return doQuick();
+  if (t.dataset.qpay) return sheetPay(t.dataset.qpay);
+  if (t.id === "okPay") return doPay(t.dataset.id);
   if (t.dataset.to) { rq.to = t.dataset.to; document.querySelectorAll("[data-to]").forEach((x) => x.classList.toggle("on", x === t)); return; }
   if (t.dataset.hd) { rq.handler = t.dataset.hd; document.querySelectorAll("[data-hd]").forEach((x) => x.classList.toggle("on", x === t)); return; }
   if (t.id === "okRq") return doReq();
 });
-document.addEventListener("input", (e) => { if (e.target.id === "rqAddr") onAddr(); });
+document.addEventListener("input", (e) => {
+  if (e.target.id === "rqAddr") onAddr();
+  if (e.target.id === "qkFind") { const q = e.target.value.trim(); $("#qkRes").innerHTML = q ? qkFind(q).map((n) => `<button class="qr" data-qadd="${esc(n)}">${esc(n)}<small>${esc(QPOS()[n]?.[4] || "")}</small> <i>+</i></button>`).join("") || '<div class="desc">못 찾았어요</div>' : ""; }
+  if (e.target.id === "qkAddr") { const o = nearOrder(e.target.value); if (o) qk.to = (o.find(([b]) => b !== B && !NO_QUICK.includes(b)) || [])[0] || qk.to; $("#qkTo").innerHTML = qkToChips(o); $("#qkNote").textContent = o ? "· 가까운 순" : ""; }
+});
 document.addEventListener("keydown", (e) => { if (e.key === "Enter" && e.target.id === "nm") doIn(e.target.value); });
 // 재고보고 갔다 오면 다시 그리기
 window.addEventListener("pageshow", render);
 document.addEventListener("visibilitychange", () => { if (!document.hidden) render(); });
 render();
+loadQuickStatus(); setInterval(loadQuickStatus, 30e3);
 </script>
 </body>
 </html>
