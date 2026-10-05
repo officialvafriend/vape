@@ -204,7 +204,9 @@
   .b2{height:56px;padding:0 20px;background:var(--panel);font-family:var(--num);font-weight:800;font-size:16px}
   .photo{height:180px;margin-top:20px;border:1px solid var(--line)}
 
-  .tastes.rec{grid-template-columns:repeat(3,1fr)}
+  .tastes.rec{grid-template-columns:repeat(4,1fr)}
+  .p .rib{top:16px;left:16px;z-index:1;border-radius:6px;padding:4px 8px;font-size:12px;letter-spacing:.06em}
+  .p .rib.hot{background:#ff7a00}
   .tastes{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:18px}
   .taste{padding:16px 12px;background:var(--panel);text-align:left}
   .taste b{font-family:var(--num);font-weight:800;font-size:18px;display:block}
@@ -512,7 +514,7 @@
 <body data-mode=""><div id="testRibbon" style="position:fixed;left:0;right:0;bottom:0;z-index:99999;background:#d32f2f;color:#fff;text-align:center;font:700 13px sans-serif;padding:4px;pointer-events:none">테스트판 · 손님 상담에는 정식판을 쓰세요</div>
 <div class="app">
   <div class="top">
-    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">테스트 v10.05-1400</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
+    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">테스트 v10.05-1500</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
     <nav class="tabs" id="tabs" style="display:none"></nav>
     <div class="flow" id="flow"><span data-st="1">① 찾는 것</span><i>›</i><span data-st="2">② 고르기</span><i>›</i><span data-st="3">③ 담은 상품</span><i>›</i><span data-st="4">④ 직원 확인</span></div>
   </div>
@@ -603,7 +605,7 @@
 
   <div id="dspList" data-for="dsp"></div>
 
-  <div class="foot"><b>시안 · 버전 10.05-1400</b> · 사진·맛·태그는 직원 교육용 액상 DB(380종), 가격은 매장 안내 책자 기준이에요. 패키지·꿀조합·이벤트 문구는 관리자 화면에서 바꾸게 만들 예정이에요. 기기패키지 기준 기기는 하복2(판매가 89,000원)이고 사진은 용트림 상품 페이지 사진에서 배경을 지운 거예요. 레이저 각인은 포스에 0원 상품으로 등록 예정. 빌런 패키지 할인 조건은 아직 확정 전이에요.</div>
+  <div class="foot"><b>시안 · 버전 10.05-1500</b> · 사진·맛·태그는 직원 교육용 액상 DB(380종), 가격은 매장 안내 책자 기준이에요. 패키지·꿀조합·이벤트 문구는 관리자 화면에서 바꾸게 만들 예정이에요. 기기패키지 기준 기기는 하복2(판매가 89,000원)이고 사진은 용트림 상품 페이지 사진에서 배경을 지운 거예요. 레이저 각인은 포스에 0원 상품으로 등록 예정. 빌런 패키지 할인 조건은 아직 확정 전이에요.</div>
 </div>
 
 <div class="srch" id="srch"><div class="hd"><input id="q" type="search" placeholder="이름·초성·맛·브랜드 (예: ㅂㄹㅈㄷ, 멘솔, 팜팜바, 말론)" autocomplete="off"><button class="cl" id="srchClose">닫기</button></div>
@@ -658,14 +660,21 @@ const PKGS = [
   { id: "honey", badge: "꿀조합", sub: "매장 추천", name: "상큼 과일 꿀조합", desc: "빌런 자두 · 청포도 · 레즈애플 + 디오 레몬 · 샤인", items: ["VF 빌런 자두", "VF 빌런 청포도", "VF 빌런 레즈애플", "디오 레몬", "디오 샤인"] },
 ];
 // 매장 추천 맛 (전지점 공통, 사용자 지정 2026-10-05) — 맛 종류별 추천 시리즈
-const REC = [
-  { k: "과일멘솔", s: "빌런 · 디오", re: /^(VF 빌런|디오) / },
-  { k: "과일 중간멘솔", s: "얌 시리즈", re: /^\(한\) ?얌/, also: /^(VF 빌런|디오) /, note: "얌은 재고가 적어서, 비슷한 과일멘솔 빌런 · 디오도 같이 추천해요" }, // 사용자 10/5: 얌 재고 적음 → 빌런·디오 위주
-  { k: "노멘솔 과일", s: "릭 시리즈", re: /^VF 릭 / },
-  { k: "시가", s: "812 시가", re: /시가812/ },
-  { k: "단일멘솔", s: "쿨멘솔", re: /쿨멘솔/ },
-  { k: "무니코틴", s: "제로닉 · 무", re: /^(제로닉|무) / },
+const BEST = [ // [이름 규칙, 표시] — 이 순서대로 목록 맨 앞에
+  [/^VF 빌런 /, "BEST"], [/^디오 /, "HOT"], [/^VF 릭 /, "BEST"], [/^느낌 무향/, "BEST"], [/시가812/, "BEST"], [/쿨멘솔/, "BEST"],
 ];
+const badgeOf = (x) => (BEST.find(([re]) => re.test(x.n)) || [])[1] || "";
+const bestRank = (x) => { const i = BEST.findIndex(([re]) => re.test(x.n)); return i < 0 ? 99 : i; };
+const REC = [ // g = 보여 줄 시리즈 (적은 순서대로)
+  { k: "과일멘솔", s: "빌런 BEST · 디오 HOT", g: [/^VF 빌런 /, /^디오 /] },
+  { k: "노멘솔 과일", s: "릭 BEST", g: [/^VF 릭 /] },
+  { k: "과일 중간멘솔", s: "얌 시리즈", g: [/^\(한\) ?얌/], also: [/^VF 빌런 /, /^디오 /], note: "얌은 재고가 적어서, 비슷한 과일멘솔 빌런 · 디오도 같이 추천해요" }, // 얌 재고 적음 → 빌런·디오 위주
+  { k: "무향", s: "느낌 무향 BEST", g: [/^느낌 무향/] },
+  { k: "시가", s: "812 시가 BEST", g: [/시가812/] },
+  { k: "단일멘솔", s: "쿨멘솔 BEST", g: [/쿨멘솔/] },
+  { k: "무니코틴", s: "제로닉 · 무", g: [/^(제로닉|무) /] },
+];
+const pickG = (gs) => gs.flatMap((re) => L.filter((x) => re.test(x.n)));
 let rec = REC[0].k;
 const TASTES = [["과일", "상큼·달콤"], ["멘솔·민트", "시원·깔끔"], ["디저트·음료", "콜라·캔디"], ["시가·타바코", "묵직한 연초"]];
 // ── 가격 규칙 (2026-10-02 사용자 확인) ──
@@ -942,7 +951,8 @@ function drawSearch() {
 document.addEventListener("input", (e) => { if (e.target.id === "q") drawSearch(); });
 
 function card(x) {
-  return `<button class="p" data-p="${x.id}"><img loading="lazy" src="${IMG + x.img}" alt=""><div class="bd">${esc(x.br)}</div><b>${esc(short(x.n))}</b><div class="tg">${esc([x.f, ...x.t.filter((t) => t !== "일반")].join(" · "))}</div></button>`;
+  const bg = badgeOf(x);
+  return `<button class="p" data-p="${x.id}">${bg ? `<span class="rib ${bg === "HOT" ? "hot" : ""}">${bg}</span>` : ""}<img loading="lazy" src="${IMG + x.img}" alt=""><div class="bd">${esc(x.br)}</div><b>${esc(short(x.n))}</b><div class="tg">${esc([x.f, ...x.t.filter((t) => t !== "일반")].join(" · "))}</div></button>`;
 }
 function renderMain() {
   $("#bestTitle").innerHTML = `${esc(MAIN.name)} 기기패키지<br>+입호흡 액상 10병`;
@@ -960,9 +970,9 @@ function render() {
     <div class="act"><button class="b1" data-pkgadd="${p.id}">이 구성 그대로 담기</button><button class="b2" data-pkg="${p.id}">자세히</button></div></div>`).join("");
   
   $("#recTabs").innerHTML = REC.map((x) => `<button class="taste ${rec === x.k ? "on" : ""}" data-rec="${x.k}"><b>${x.k}</b><span>${x.s}</span></button>`).join("");
-  { const R = REC.find((y) => y.k === rec); $("#recList").innerHTML = L.filter((x) => R.re.test(x.n)).map(card).join("") + (R.also ? `<div style="grid-column:1/-1;font-size:15px;font-weight:800;margin:14px 0 2px">${R.note}</div>` + L.filter((x) => R.also.test(x.n)).map(card).join("") : ""); }
+  { const R = REC.find((y) => y.k === rec); $("#recList").innerHTML = pickG(R.g).map(card).join("") + (R.also ? `<div style="grid-column:1/-1;font-size:15px;font-weight:800;margin:14px 0 2px">${R.note}</div>` + pickG(R.also).map(card).join("") : ""); }
   $("#tastes").innerHTML = TASTES.map(([n, d]) => `<button class="taste ${taste === n ? "on" : ""}" data-t="${n}"><b>${n}</b><span>${d}</span></button>`).join("");
-  const list = L.filter((x) => x.line === line && (!taste || x.g === taste) && (!tag || x.t.includes(tag)));
+  const list = L.filter((x) => x.line === line && (!taste || x.g === taste) && (!tag || x.t.includes(tag))).sort((a, b) => bestRank(a) - bestRank(b));
   $("#filters").innerHTML = ["프리미엄", "프라임"].map((l) => `<button class="f ${line === l ? "on" : ""}" data-l="${l}">${l}</button>`).join("") + `<span style="width:10px"></span>` +
     ["노멘솔", "무니코틴"].map((t) => `<button class="f ${tag === t ? "on" : ""}" data-tag="${t}">${t}</button>`).join("") + `<span class="cnt">${list.length}종</span>`;
   $("#prods").innerHTML = list.slice(0, shown).map(card).join("");
