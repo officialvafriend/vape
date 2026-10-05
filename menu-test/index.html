@@ -565,12 +565,20 @@
   .sq-row button{flex:none;width:48px;height:48px;border-radius:12px;background:var(--ink);color:#fff;font-size:24px;font-weight:900}
   .sq-row.sold b{color:var(--grey)}
   .sq-hint{padding:14px 0;color:var(--grey);font-size:14px}
+  .gpic img{width:100%;height:100%;object-fit:cover;border-radius:10px}
+  .gpic .gname{display:grid;place-items:center;width:100%;height:100%;font-family:var(--num);font-weight:900;font-size:18px;color:var(--ink-soft);text-align:center;padding:8px;line-height:1.25}
+  .dspec-pic{margin-top:12px;border-radius:16px;overflow:hidden;background:#fff;display:grid;place-items:center}
+  .dspec-pic img{width:100%;max-height:420px;object-fit:contain;display:block}
+  .dspec-desc{margin-top:14px;font-size:16px;line-height:1.65;color:var(--ink)}
+  .dspec-tip{margin-top:16px;border-radius:12px;background:var(--panel);padding:12px 14px}
+  .dspec-tip summary{font-weight:800;cursor:pointer}
+  .dspec-tip div{margin-top:8px;font-size:14px;line-height:1.7;color:var(--ink-soft)}
 </style>
 </head>
 <body data-mode=""><div id="testRibbon" style="position:fixed;left:0;right:0;bottom:0;z-index:99999;background:#d32f2f;color:#fff;text-align:center;font:700 13px sans-serif;padding:4px;pointer-events:none">테스트판 · 손님 상담에는 정식판을 쓰세요</div>
 <div class="app">
   <div class="top">
-    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">테스트 v10.05-3100</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
+    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">테스트 v10.05-3200</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
     <nav class="tabs" id="tabs" style="display:none"></nav>
     <div class="flow" id="flow"><span data-st="1">① 찾는 것</span><i>›</i><span data-st="2">② 고르기</span><i>›</i><span data-st="3">③ 담은 상품</span><i>›</i><span data-st="4">④ 직원 확인</span></div>
   </div>
@@ -662,7 +670,7 @@
 
   <div id="dspList" data-for="dsp"></div>
 
-  <div class="foot"><b>시안 · 버전 10.05-3100</b> · 사진·맛·태그는 직원 교육용 액상 DB(380종), 가격은 매장 안내 책자 기준이에요. 패키지·꿀조합·이벤트 문구는 관리자 화면에서 바꾸게 만들 예정이에요. 기기패키지 기준 기기는 하복2(판매가 89,000원)이고 사진은 용트림 상품 페이지 사진에서 배경을 지운 거예요. 레이저 각인은 포스에 0원 상품으로 등록 예정. 빌런 패키지 할인 조건은 아직 확정 전이에요.</div>
+  <div class="foot"><b>시안 · 버전 10.05-3200</b> · 사진·맛·태그는 직원 교육용 액상 DB(380종), 가격은 매장 안내 책자 기준이에요. 패키지·꿀조합·이벤트 문구는 관리자 화면에서 바꾸게 만들 예정이에요. 기기패키지 기준 기기는 하복2(판매가 89,000원)이고 사진은 용트림 상품 페이지 사진에서 배경을 지운 거예요. 레이저 각인은 포스에 0원 상품으로 등록 예정. 빌런 패키지 할인 조건은 아직 확정 전이에요.</div>
 </div>
 
 <div class="srch" id="srch"><div class="hd"><input id="q" type="search" placeholder="이름·초성·맛·브랜드 (예: ㅂㄹㅈㄷ, 멘솔, 팜팜바, 말론)" autocomplete="off"><button class="cl" id="srchClose">닫기</button></div>
@@ -675,6 +683,7 @@
 <script src="data.js"></script>
 <script src="pos.js"></script>
 <script src="goods.js"></script>
+<script src="devinfo.js"></script>
 <script src="JsBarcode.all.min.js"></script>
 <script>
 const IMG = "https://officialvafriend.github.io/vape/img/";
@@ -854,11 +863,15 @@ const POD_DEV = [
   { k: "말론", re: /^말론(?!S)/ },
   { k: "아스몬", re: /^아스몬/ },
   { k: "제우스", re: /^제우스/ },
-  { k: "베이비", re: /^베이비/ },
+  { k: "베이비", re: /^베이비|^AIO프로/ },
   { k: "썬더Q", re: /^썬더/ },
   { k: "브이메이트", re: /^브이메이트/ },
   { k: "맥스프로 스티그마", re: /스티그마/ },
   { k: "조바", re: /^조바/ },
+  { k: "플러키", re: /^플러키/ },
+  { k: "아르거스", re: /^아르거스/ },
+  { k: "크로스", re: /^크로스/ }, { k: "럭스Q", re: /^럭스Q/ }, { k: "AVP AX", re: /^AX/ }, { k: "소울", re: /^소울/ }, { k: "글렌트", re: /^글렌트/ },
+  { k: "에이펙스", re: /^에이펙스/ }, { k: "아스트로", re: /^아스트로/ }, { k: "벨본", re: /^벨본/ }, { k: "하부코일", re: /^하부/ }, // 교육 사이트 기기 정보로 짝 맞춤(10/5)
   { k: "닷모드", re: /닷/ },
 ];
 const podDevOf = (x) => (POD_DEV.find((d) => d.re.test(x.n)) || {}).k || "기타";
@@ -875,9 +888,43 @@ function setMode(m) {
 }
 const isMain = (x) => x && x.c === "dev" && x.model === MAIN.model;
 function modelGroups(list) { const m = new Map(); for (const x of list) { if (!m.has(x.model)) m.set(x.model, []); m.get(x.model).push(x); } return [...m]; }
+// ── 기기 상세 (교육 사이트 기기 정보 + 확인된 무게·크기) ──
+const EDU = "https://officialvafriend.github.io/vape/";
+const DEVMAP = [ // [포스 모델명 규칙, 교육 사이트 기기 이름]
+  [/^하복SE|^하복 SE|^하복$/, "하복 SE"], [/^크로스/, "베이프레소 크로스 시리즈"], [/^하부/, "하부코일"], [/^발라맥스프로|^맥스프로 스티그마/, "발라리안 맥스프로"], [/^발라리안에어|^발라리안 에어/, "발라리안 에어"],
+  [/^말론S/, "말론 S"], [/^말론/, "말론"], [/^젤로 크리스탈/, "젤로 크리스탈"], [/^젤로/, "젤로 / 젤로 맥스"], [/^플러키/, "플러키"],
+  [/^썬더Q|^위넥스Q/, "긱베이프 썬더Q / 위넥스Q"], [/^브이메이트|^브이스루/, "브이스루 / 브이메이트 시리즈"], [/^소울/, "긱베이프 소울1 / 소울2"],
+  [/^글렌트/, "글렌트"], [/^벨본/, "벨본"], [/^럭스Q/, "럭스Q / 럭스Q2"], [/^아스몬/, "아스몬 / 아스몬 하이"], [/^베이비/, "아보카도 베이비 / 베이비프로 / 베이비 AIO프로"],
+  [/에이펙스|APEX/i, "플렉서스 에이펙스 (APEX)"], [/^아스트로/, "아스트로 MK.3 모터헤드 에디션"], [/^닷/, "닷모드 닷파티"], [/^AVP|^AX/, "AVP AX"], [/^디오/, "디오 X"],
+];
+const devInfo = (model) => { const m = DEVMAP.find(([re]) => re.test(model)); return m ? (window.DEVINFO || []).find((d) => d.n === m[1]) : null; };
+// 무게·크기: 출처 확인된 값만 (DEVSIZE[교육 이름] = { w: g, h: mm, size: "가로×세로×높이" })
+const DEVSIZE = {};
+// 생활용품 비교 (대략): 계란 1개 약 60g · 비누 1개 약 100g · 립밤 높이 약 70mm · 라이터 약 80mm · 볼펜 약 140mm
+const feelW = (g) => g < 45 ? "건전지 두 개 정도로 가벼워요" : g < 80 ? "계란 하나 정도 무게예요" : g < 130 ? "비누 하나와 비슷해요" : "스마트폰보다 조금 가벼워요";
+const feelH = (mm) => mm < 78 ? "립밤만 한 길이예요" : mm < 95 ? "라이터만 한 길이예요" : mm < 120 ? "손바닥에 쏙 들어와요" : "볼펜보다 조금 짧아요";
+function devSpecView(model) {
+  const xs = G.filter((x) => x.model === model), d = devInfo(model), sz = d && DEVSIZE[d.n];
+  const prices = [...new Set(xs.map((x) => x.price))].sort((a, b) => a - b);
+  const rows = [
+    d?.b && ["배터리", d.b], d?.f && ["팟·용량", d.f], d?.o && ["저항(옴)", d.o], d?.cp && ["소모품", d.cp],
+    sz?.w && ["무게", `${sz.w}g`, feelW(sz.w)], sz?.h && ["크기", sz.size || `높이 ${sz.h}mm`, feelH(sz.h)],
+    ["AS 보증", "6개월", "베이프렌드 매장 AS · 모든 기기 동일"],
+  ].filter(Boolean);
+  open(`<div style="font-size:13px;color:var(--grey);font-weight:700">전자담배 기기</div><div class="sh" style="margin-top:6px">${esc(model)}</div>
+    ${d?.img ? `<div class="dspec-pic"><img src="${EDU + encodeURIComponent(d.img)}" alt=""></div>` : ""}
+    <div class="cv-two"><div><b>가격</b><strong>${won(prices[0])}${prices.length > 1 ? "~" : ""}</strong><span>레이저 각인 무료</span></div><div><b>호흡 방식</b><strong>${esc(xs[0].pos)}</strong><span>${xs.length}가지 색상·옵션</span></div></div>
+    ${d?.desc ? `<div class="dspec-desc">${esc(d.desc)}</div>` : ""}
+    <div class="cv-grid">${rows.map(([k, v, u]) => `<div><b>${esc(k)}</b><strong>${esc(v)}</strong>${u ? `<span>${esc(u)}</span>` : ""}</div>`).join("")}</div>
+    ${!d ? '<div class="dspec-desc" style="color:var(--grey)">상세 스펙 준비 중이에요</div>' : ""}
+    <div class="sub">색상·옵션 골라 담기</div>
+    <div class="opts">${xs.map((x) => `<button data-gadd="${x.id}" data-close="1">${esc(x.opt || x.n)}<small>${won(x.price)}</small></button>`).join("")}</div>
+    ${d?.tip ? `<details class="dspec-tip"><summary>직원용 팁</summary><div>${esc(d.tip).replace(/\n/g, "<br>")}</div></details>` : ""}`);
+}
 function gCard([model, xs]) {
   const prices = [...new Set(xs.map((x) => x.price))].sort((a, b) => a - b);
-  return `<button class="p" data-gm="${esc(model)}"><div class="gpic">${EMOJI[xs[0].c]}</div><div class="bd">${xs.length > 1 ? xs.length + "가지" : ""}</div><b>${esc(model)}</b><div class="pr">${won(prices[0])}${prices.length > 1 ? "~" : ""}</div>${xs[0].ev ? `<span class="ev">${EVN[xs[0].ev][2]}</span>` : ""}</button>`;
+  const di = model === MAIN.model ? { img: "", own: MAIN.imgs?.["블랙"] || MAIN.img } : xs[0].c === "dev" && devInfo(model);
+  return `<button class="p" data-gm="${esc(model)}"><div class="gpic">${di?.own ? `<img loading="lazy" src="${di.own}" alt="" style="object-fit:contain;background:#fff">` : di?.img ? `<img loading="lazy" src="${EDU + encodeURIComponent(di.img)}" alt="">` : xs[0].c === "dev" ? `<span class="gname">${esc(model)}</span>` : EMOJI[xs[0].c]}</div><div class="bd">${xs.length > 1 ? xs.length + "가지" : ""}</div><b>${esc(model)}</b><div class="pr">${won(prices[0])}${prices.length > 1 ? "~" : ""}</div>${xs[0].ev ? `<span class="ev">${EVN[xs[0].ev][2]}</span>` : ""}</button>`;
 }
 function renderGoods() {
   const devs = modelGroups(G.filter((x) => x.c === "dev")).sort((a, b) => (b[0] === MAIN.model) - (a[0] === MAIN.model) || a[1][0].pos.localeCompare(b[1][0].pos));
@@ -887,7 +934,7 @@ function renderGoods() {
   $("#podFilter").innerHTML = subs.map((s) => `<button class="f ${podSub === s ? "on" : ""}" data-pf="${s}">${s}</button>`).join("");
   const allPods = G.filter((x) => x.c === "pod");
   const devCnt = (k) => allPods.filter((x) => podDevOf(x) === k).length;
-  $("#podDevs").innerHTML = [...POD_DEV.filter((d) => devCnt(d.k)), { k: "기타" }].map((d) => `<button class="pdev ${podDev === d.k ? "on" : ""}" data-pdev="${esc(d.k)}">${d.img ? `<img src="${d.img}" alt=""><b>${esc(d.k)}</b>` : `<span class="ph">${esc(d.k)}</span>`}<small>${devCnt(d.k)}종</small></button>`).join("");
+  $("#podDevs").innerHTML = [...POD_DEV.filter((d) => devCnt(d.k)), { k: "기타" }].map((d) => `<button class="pdev ${podDev === d.k ? "on" : ""}" data-pdev="${esc(d.k)}">${(() => { const di = d.k !== "기타" && devInfo(d.k), src = d.img || (di?.img ? EDU + encodeURIComponent(di.img) : ""); return src ? `<img src="${src}" alt=""><b>${esc(d.k)}</b>` : `<span class="ph">${esc(d.k)}</span>`; })()}<small>${devCnt(d.k)}종</small></button>`).join("");
   const pods = allPods.filter((x) => (podDev ? podDevOf(x) === podDev : true) && (podDev || x.sub === podSub));
   $("#podList").innerHTML = (podDev ? `<div class="pdsel"><b>${esc(podDev)}</b> 에 맞는 팟·코일 · 소모품 <button data-pdev="${esc(podDev)}">다른 기기 고르기</button></div>` : "") + ["입호흡", "폐호흡"].map((p) => { const l = pods.filter((x) => x.pos === p); return l.length ? `<div class="grp"><div class="gh"><b>${p}</b><span>${l.length}종</span></div>${l.map((x) => `<div class="rowg"><b>${esc(x.n)}</b><span class="pr">${won(x.price)}</span><button data-gadd="${x.id}" aria-label="담기">+</button></div>`).join("")}</div>` : ""; }).join("");
   const dsps = modelGroups(G.filter((x) => x.c === "dsp"));
@@ -951,6 +998,7 @@ function modelView(model) {
   if (model === MAIN.model) return mainSpecView();
   const xs = G.filter((x) => x.model === model); const x0 = xs[0];
   if (x0.c === "dsp") return dspView(model);
+  if (x0.c === "dev") return devSpecView(model);
   const ben = x0.c === "dev" ? ["레이저 각인 무료 (기기 구매)", ...(model === MAIN.model ? [`기기 + 빌런&릭 5병 → 베이프렌드 기기패키지 ${won(PK.vl5)}`, `기기 + 프리미엄 5병 → 프리미엄 기기패키지 ${won(PK.pr5)}`, `기기 + 프리미엄 10병 → 프리미엄 기기패키지 10병 ${won(PK.pr10)}`] : []), "이 기기에 맞는 팟은 [액상·소모품 → 팟·코일]에서"]
     : x0.ev ? [`${EVN[x0.ev][2]} 이벤트 · 같은 이벤트끼리 맛 섞어도 돼요`] : [];
   open(`<div style="font-size:13px;color:var(--grey);font-weight:700">${{ dev: "전자담배 기기", pod: "팟·코일", dsp: "일회용" }[x0.c]}</div><div class="sh" style="margin-top:6px">${esc(model)}</div>
