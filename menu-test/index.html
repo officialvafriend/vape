@@ -402,25 +402,130 @@
   .save b{font-family:var(--num);font-weight:900;font-size:19px}
   .save .u{font-size:13.5px;opacity:.85;margin-top:3px}
   .save .price{font-size:30px;white-space:nowrap}
+
+  /* ===== 10.05 UI 정리: 따뜻한 회백 바탕 · 둥근 카드 · 빨강은 가격/주요 버튼에만 ===== */
+  :root{--paper:#faf8f5;--panel:#f1ede6;--line:#e6e1d8;--card:#fff;--r:18px;--sh:0 1px 2px rgba(21,18,15,.04),0 6px 18px rgba(21,18,15,.06)}
+  html,body{background:#e9e5de}
+  .app{background:var(--paper)}
+  .foot{display:none}
+  .ver{display:none}
+  .find,.cart,.homebtn{border-radius:12px}
+  .cart b{border-radius:8px}
+  .flow{display:none}
+  .tabs a{font-size:16px}
+  .hdr{border-bottom:0;padding-bottom:6px;align-items:center}
+  .hdr .n{font-size:15px;line-height:1;letter-spacing:.04em;color:#fff;background:var(--ink);border-radius:999px;padding:7px 10px 6px;align-self:center}
+  .hdr h2{font-size:28px;margin-top:2px}
+  .sec{padding-top:40px}
+  /* 첫 화면 */
+  .home{padding:36px var(--pad) 48px}
+  .home .hello{font-family:var(--num);font-weight:900;letter-spacing:.24em;font-size:13px;color:var(--red)}
+  .home h1{font-size:44px;line-height:1.18;margin-top:10px;letter-spacing:-.02em}
+  .ways{grid-template-columns:1fr 1fr;gap:14px;margin-top:30px}
+  .way{position:relative;display:block;overflow:hidden;border:0;border-radius:24px;padding:26px 24px;min-height:230px;background:var(--card);box-shadow:var(--sh);transition:transform .12s ease}
+  .way:active{transform:scale(.985)}
+  .way .wt{position:relative;z-index:2;max-width:62%}
+  .way .k{display:block;font-family:var(--num);font-weight:800;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--red);margin:0}
+  .way b{font-size:30px;margin-top:8px;letter-spacing:-.02em}
+  .way span{font-size:15px;color:var(--ink-soft);margin-top:8px}
+  .way i{display:inline-block;margin-top:18px;font-size:16px;font-weight:900;color:var(--ink)}
+  .way img{position:absolute;right:-6px;bottom:0;height:88%;width:auto;max-width:52%;object-fit:contain;object-position:right bottom;z-index:1}
+  .way.w-dev{grid-column:1/-1;min-height:300px;background:#15120f;color:#fff}
+  .way.w-dev .k{color:#ff6b6b}
+  .way.w-dev span{color:rgba(255,255,255,.72)}
+  .way.w-dev i{background:var(--red);color:#fff;border-radius:999px;padding:12px 20px;font-size:17px}
+  .way.w-dev img{right:-20px;height:118%;max-width:60%;bottom:-8%}
+  .way.w-liq img,.way.w-dsp img{height:62%;max-width:46%;right:10px;bottom:14px}
+  .way.w-dsp img{mix-blend-mode:multiply;max-width:58%;right:0;bottom:6px}
+  .way.w-liq .wt,.way.w-dsp .wt{max-width:100%}
+  .way.w-liq b,.way.w-dsp b{font-size:26px}
+  .way.w-liq i,.way.w-dsp i{position:absolute;left:24px;bottom:22px;margin:0;font-size:26px;color:var(--red)}
+  .home .tip{text-align:center;margin-top:24px}
+  .home .tip b{color:var(--ink)}
+  @media (max-width:560px){.ways{grid-template-columns:1fr}.way.w-dev{grid-column:auto}}
+  /* 상품 카드: 사진 바탕을 카드 색과 같게(흰 배경 사진이 떠 보이지 않게) */
+  .prods{gap:10px;border:0}
+  .p{background:var(--card);border:0;border-radius:var(--r);box-shadow:var(--sh);padding:12px 12px 14px}
+  .p img{background:var(--panel);border-radius:12px;padding:10px}
+  .p b{font-size:17px}
+  .p .bd{margin-top:10px}
+  /* 묶음표·혜택 줄 */
+  .spec{background:var(--card);border-radius:var(--r);box-shadow:var(--sh);padding:0 20px;margin-top:14px}
+  .row.best{margin-left:-20px;margin-right:-20px;padding-left:16px;padding-right:20px;border-radius:0}
+  .spec .row.best:last-child{border-radius:0 0 var(--r) var(--r)}
+  .row .tag{border-radius:6px}
+  .taste{border-radius:14px;background:var(--card);box-shadow:var(--sh)}
+  .taste.on{background:var(--ink)}
+  .f{border-radius:999px;background:var(--card)}
+  .f.on{background:var(--ink)}
+  .more{border-radius:14px;background:var(--card)}
+  .upsell,.cta{border-radius:16px}
+  .b1,.b2{border-radius:14px}
+  .badge{border-radius:6px}
+  /* 아래에서 올라오는 창: 위쪽 바를 가리지 않게, 둥근 위 모서리 + 손잡이 */
+  .sheet{border-radius:26px 26px 0 0;max-height:calc(100dvh - var(--topH, 120px) - 10px);padding-top:30px;position:relative;background:var(--paper)}
+  .sheet::before{content:"";position:absolute;left:50%;top:10px;width:44px;height:5px;border-radius:9px;background:#d6d0c6;transform:translateX(-50%)}
+  .x{border-radius:50%;background:var(--card);box-shadow:var(--sh)}
+  .line{background:var(--card);border:0;border-radius:14px;padding:10px 12px;margin-top:8px;box-shadow:var(--sh)}
+  .line img{border-radius:10px;mix-blend-mode:multiply}
+  .step{border-radius:12px;background:var(--paper)}
+  .tot2{background:var(--card);border:0;border-radius:var(--r);box-shadow:var(--sh);padding:14px 18px;margin-top:14px}
+  .tot2 .save{border-radius:10px}
+  .nudge,.engr,.pick2,.mem,.hinote,.save{border-radius:16px}
+  .pk{border-radius:12px}
+  .in{border-radius:12px}
+  .btns.stick{position:sticky;bottom:-26px;margin:18px calc(-1 * var(--pad)) -26px;padding:14px var(--pad) 22px;background:linear-gradient(rgba(250,248,245,0),var(--paper) 30%)}
+  .btns.stick .b1{height:62px;font-size:19px}
+  .nextbar{border-radius:18px;padding:16px 24px}
+  .devup{border-radius:24px 24px 0 0}
+  .devup .bt button{border-radius:14px}
+  .det .img{border-radius:var(--r)}
+  .det .img img{mix-blend-mode:multiply}
+  .chips span{border-radius:999px;background:var(--card)}
+  .dcard{border-radius:var(--r);overflow:hidden}
+  .combo{border-radius:var(--r);background:var(--card);border:0;box-shadow:var(--sh)}
+  .home{min-height:calc(100dvh - var(--topH, 82px));display:flex;flex-direction:column}
+  .ways{flex:1;grid-template-rows:1.25fr 1fr}
+  .way.w-dev{min-height:340px}
+  .way.w-dev img{height:100%;bottom:0;right:-10px}
+  .way.w-liq i,.way.w-dsp i{display:none}
+  .way.w-liq,.way.w-dsp{min-height:300px}
+  .way.w-liq .wt,.way.w-dsp .wt{position:absolute;left:24px;top:26px;right:24px}
+  .way.w-liq img{height:58%;max-width:60%;left:50%;right:auto;transform:translateX(-50%);bottom:18px;object-position:center bottom}
+  .way.w-dsp img{height:auto;max-width:none;width:92%;left:4%;right:auto;bottom:22px}
+  .devup:not(.on){visibility:hidden;transition:transform .32s cubic-bezier(.2,.8,.2,1),visibility 0s .32s}
+  .p img{background:none;padding:2px;border-radius:10px} /* 흰 배경 사진이 흰 카드에 자연스럽게 섞이게 */
+  /* 장바구니 안내: 검은 박스 대신 가벼운 카드, 두 번째부터는 한 줄로 작게 */
+  .nudge{background:var(--card);color:var(--ink);box-shadow:var(--sh);padding:16px 18px}
+  .nudge .u{color:var(--grey)}
+  .nudge .bar2{background:var(--panel);border-radius:9px;overflow:hidden;height:7px}
+  .nudge .bar2 i{border-radius:9px}
+  .nudge b{font-size:18px}
+  .nudge + .nudge{margin-top:8px;padding:12px 18px}
+  .nudge + .nudge b{font-size:15px}
+  .nudge + .nudge .bar2{display:none}
+  .pick2{background:var(--card);border:0;box-shadow:var(--sh)}
+  .pk{background:var(--paper);border:0}
+  .toast{bottom:120px!important;border-radius:999px}
 </style>
 </head>
 <body data-mode=""><div id="testRibbon" style="position:fixed;left:0;right:0;bottom:0;z-index:99999;background:#d32f2f;color:#fff;text-align:center;font:700 13px sans-serif;padding:4px;pointer-events:none">테스트판 · 손님 상담에는 정식판을 쓰세요</div>
 <div class="app">
   <div class="top">
-    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">테스트 v10.05-1300</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
+    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">테스트 v10.05-1400</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
     <nav class="tabs" id="tabs" style="display:none"></nav>
     <div class="flow" id="flow"><span data-st="1">① 찾는 것</span><i>›</i><span data-st="2">② 고르기</span><i>›</i><span data-st="3">③ 담은 상품</span><i>›</i><span data-st="4">④ 직원 확인</span></div>
   </div>
 
   <section class="home" data-for="home">
-    <h1>어떤 걸<br>찾으세요?</h1>
-    <div class="q">손님 말씀 듣고 하나만 눌러 주세요. 언제든 맨 위 [처음]으로 돌아올 수 있어요.</div>
+    <div class="hello">VAFRIEND</div>
+    <h1>오늘은 어떤 걸<br>보러 오셨어요?</h1>
     <div class="ways">
-      <button class="way red" data-mode="dev"><div class="ic">🔋</div><div><b>전자담배 기기</b><span>기기 · 기기패키지 · 레이저 각인 무료</span></div><i>→</i></button>
-      <button class="way" data-mode="liq"><div class="ic">💧</div><div><b>액상 · 소모품</b><span>액상 맛 고르기 · 묶음가 · 팟 · 코일</span></div><i>→</i></button>
-      <button class="way" data-mode="dsp"><div class="ic">🚬</div><div><b>일회용</b><span>맛 고르기 · 3+1 · 5+1 이벤트</span></div><i>→</i></button>
+      <button class="way w-dev" data-mode="dev"><div class="wt"><span class="k">Device</span><b>전자담배 기기</b><span>하복2 기기패키지 · 레이저 각인 무료</span><i>보러 가기 →</i></div><img src="dev_havok2_hero.png" alt=""></button>
+      <button class="way w-liq" data-mode="liq"><div class="wt"><span class="k">Liquid</span><b>액상 · 소모품</b><span>11병 90,000원 · 팟 · 코일</span><i>→</i></div><img src="vl_p094.png" alt=""></button>
+      <button class="way w-dsp" data-mode="dsp"><div class="wt"><span class="k">Disposable</span><b>일회용</b><span>3+1 · 5+1 이벤트</span><i>→</i></div><img src="dsp_farm_all.png" alt=""></button>
     </div>
-    <div class="tip">찾는 게 확실하면 맨 위 🔍 검색이 제일 빨라요 (초성 검색 가능)</div>
+    <div class="tip">찾는 상품이 있으면 위의 <b>검색</b>이 가장 빨라요 · 초성 검색 가능</div>
   </section>
 
   <section class="redblock" id="s1" data-for="dev">
@@ -498,7 +603,7 @@
 
   <div id="dspList" data-for="dsp"></div>
 
-  <div class="foot"><b>시안 · 버전 10.05-1300</b> · 사진·맛·태그는 직원 교육용 액상 DB(380종), 가격은 매장 안내 책자 기준이에요. 패키지·꿀조합·이벤트 문구는 관리자 화면에서 바꾸게 만들 예정이에요. 기기패키지 기준 기기는 하복2(판매가 89,000원)이고 사진은 용트림 상품 페이지 사진에서 배경을 지운 거예요. 레이저 각인은 포스에 0원 상품으로 등록 예정. 빌런 패키지 할인 조건은 아직 확정 전이에요.</div>
+  <div class="foot"><b>시안 · 버전 10.05-1400</b> · 사진·맛·태그는 직원 교육용 액상 DB(380종), 가격은 매장 안내 책자 기준이에요. 패키지·꿀조합·이벤트 문구는 관리자 화면에서 바꾸게 만들 예정이에요. 기기패키지 기준 기기는 하복2(판매가 89,000원)이고 사진은 용트림 상품 페이지 사진에서 배경을 지운 거예요. 레이저 각인은 포스에 0원 상품으로 등록 예정. 빌런 패키지 할인 조건은 아직 확정 전이에요.</div>
 </div>
 
 <div class="srch" id="srch"><div class="hd"><input id="q" type="search" placeholder="이름·초성·맛·브랜드 (예: ㅂㄹㅈㄷ, 멘솔, 팜팜바, 말론)" autocomplete="off"><button class="cl" id="srchClose">닫기</button></div>
@@ -945,7 +1050,7 @@ function cartView() {
   if (ok || dev || hasGoods) review = false;
   const mem = (items.some(([id]) => isHi(item(id))) ? `<div class="hinote"><b>화학물질 장부 작성 (고농도 2% 이상)</b><div class="u">${esc(HI_NOTE)}</div><div class="u" style="color:var(--ink);font-weight:700">${ledgerText() ? "작성됨: " + esc(ledgerText()) : "[직원에게 보여주기]를 누르면 손님이 직접 적는 화면이 나와요"}</div></div>` : "") + (!items.length ? "" : memberBox());
   const gc = goodsCalc(), est = estimate(countCart());
-  open(`<div class="sh">담은 상품</div>${nudge()}${goodsHints(gc, est.liq)}${engr}
+  open(`<div class="sh">담은 상품</div>
     <div style="margin-top:12px">${items.map(([id, n]) => { const x = item(id); return `<div class="line">${pic(x)}<div><b>${esc(short(x.n))}</b><div class="s">${x.c ? won(x.price) + (x.ev ? " · " + EVN[x.ev][2] : "") : esc(x.br)}${x.dev && devColor ? " · " + devColor : ""}</div></div><div class="step"><button data-m="${id}">−</button><span>${n}</span><button data-pl="${id}">+</button></div></div>${x.dev ? `<div class="colors"><span class="lab">색상</span>${DEV_COLORS.map((c) => `<button class="${devColor === c ? "on" : ""}" data-color="${c}">${c}</button>`).join("")}</div>` : ""}`; }).join("") || '<div style="padding:30px 0;color:var(--grey)">아직 담은 상품이 없어요</div>'}</div>
     ${review ? `<div class="line"><div class="mini" style="background:var(--red)">리뷰</div><div><b>클립 리뷰 할인</b><div class="s">네이버 클립 리뷰 업로드</div></div><b class="price" style="margin-left:auto;color:var(--red);font-size:20px">-3,000원</b></div>` : ""}
     ${items.length ? (() => {
@@ -965,9 +1070,10 @@ function cartView() {
         <div class="r pay"><span>결제 예상 금액${gc.giftDev ? " · 에어릭스 기기 증정" : ""}</span><b>${pay.toLocaleString()}<small>원</small></b></div>
         ${rows.length ? `<div class="save">총 ${won(unit - pay)} 할인 받았어요</div>` : ""}
       </div>`; })() : ""}
+    ${nudge()}${goodsHints(gc, est.liq)}${engr}
     ${!(est.how || "").includes("기기패키지") && (items.some(([id]) => !item(id).c) || (!items.length && mode !== "dsp")) ? `<button class="upsell" data-pkg="max10"><span><b>이 맛들로 기기패키지 만들기</b><small>액상 10병 + ${MAIN.name}가 가장 저렴해요</small></span><span class="arr">→</span></button>` : ""}
     ${mem}
-    <div class="btns"><button class="b1 ink" data-staff ${items.length ? "" : "disabled"}>직원에게 보여주기</button></div>`);
+    <div class="btns stick"><button class="b1 ink" data-staff ${items.length ? "" : "disabled"}>직원에게 보여주기</button></div>`);
 }
 function pkgView(id) {
   const p = PKGS.find((x) => x.id === id);
