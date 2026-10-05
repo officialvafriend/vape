@@ -578,7 +578,7 @@
 <body data-mode=""><div id="testRibbon" style="position:fixed;left:0;right:0;bottom:0;z-index:99999;background:#d32f2f;color:#fff;text-align:center;font:700 13px sans-serif;padding:4px;pointer-events:none">테스트판 · 손님 상담에는 정식판을 쓰세요</div>
 <div class="app">
   <div class="top">
-    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">테스트 v10.05-3200</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
+    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">테스트 v10.05-3300</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
     <nav class="tabs" id="tabs" style="display:none"></nav>
     <div class="flow" id="flow"><span data-st="1">① 찾는 것</span><i>›</i><span data-st="2">② 고르기</span><i>›</i><span data-st="3">③ 담은 상품</span><i>›</i><span data-st="4">④ 직원 확인</span></div>
   </div>
@@ -670,7 +670,7 @@
 
   <div id="dspList" data-for="dsp"></div>
 
-  <div class="foot"><b>시안 · 버전 10.05-3200</b> · 사진·맛·태그는 직원 교육용 액상 DB(380종), 가격은 매장 안내 책자 기준이에요. 패키지·꿀조합·이벤트 문구는 관리자 화면에서 바꾸게 만들 예정이에요. 기기패키지 기준 기기는 하복2(판매가 89,000원)이고 사진은 용트림 상품 페이지 사진에서 배경을 지운 거예요. 레이저 각인은 포스에 0원 상품으로 등록 예정. 빌런 패키지 할인 조건은 아직 확정 전이에요.</div>
+  <div class="foot"><b>시안 · 버전 10.05-3300</b> · 사진·맛·태그는 직원 교육용 액상 DB(380종), 가격은 매장 안내 책자 기준이에요. 패키지·꿀조합·이벤트 문구는 관리자 화면에서 바꾸게 만들 예정이에요. 기기패키지 기준 기기는 하복2(판매가 89,000원)이고 사진은 용트림 상품 페이지 사진에서 배경을 지운 거예요. 레이저 각인은 포스에 0원 상품으로 등록 예정. 빌런 패키지 할인 조건은 아직 확정 전이에요.</div>
 </div>
 
 <div class="srch" id="srch"><div class="hd"><input id="q" type="search" placeholder="이름·초성·맛·브랜드 (예: ㅂㄹㅈㄷ, 멘솔, 팜팜바, 말론)" autocomplete="off"><button class="cl" id="srchClose">닫기</button></div>
@@ -899,7 +899,9 @@ const DEVMAP = [ // [포스 모델명 규칙, 교육 사이트 기기 이름]
 ];
 const devInfo = (model) => { const m = DEVMAP.find(([re]) => re.test(model)); return m ? (window.DEVINFO || []).find((d) => d.n === m[1]) : null; };
 // 무게·크기: 출처 확인된 값만 (DEVSIZE[교육 이름] = { w: g, h: mm, size: "가로×세로×높이" })
-const DEVSIZE = {};
+const DEVSIZE = {
+  "하복 SE": { w: 101, h: 100, size: "42.9×19.2×100mm" }, // 유웰 공식 HAVOK(V1) 사양과 같음 — myuwell.com/products/pod-mod/havok.html (10/5 조사)
+};
 // 생활용품 비교 (대략): 계란 1개 약 60g · 비누 1개 약 100g · 립밤 높이 약 70mm · 라이터 약 80mm · 볼펜 약 140mm
 const feelW = (g) => g < 45 ? "건전지 두 개 정도로 가벼워요" : g < 80 ? "계란 하나 정도 무게예요" : g < 130 ? "비누 하나와 비슷해요" : "스마트폰보다 조금 가벼워요";
 const feelH = (mm) => mm < 78 ? "립밤만 한 길이예요" : mm < 95 ? "라이터만 한 길이예요" : mm < 120 ? "손바닥에 쏙 들어와요" : "볼펜보다 조금 짧아요";
