@@ -573,12 +573,18 @@
   .dspec-tip{margin-top:16px;border-radius:12px;background:var(--panel);padding:12px 14px}
   .dspec-tip summary{font-weight:800;cursor:pointer}
   .dspec-tip div{margin-top:8px;font-size:14px;line-height:1.7;color:var(--ink-soft)}
+  .dpods{display:grid;gap:8px;margin-top:10px}
+  .dpod{display:flex;align-items:center;gap:12px;background:var(--card);border-radius:14px;padding:10px 12px;box-shadow:var(--sh)}
+  .dpod img{width:56px;height:56px;object-fit:cover;border-radius:10px;flex:none}
+  .dpod-ph{width:56px;height:56px;border-radius:10px;background:var(--panel);display:grid;place-items:center;font-size:26px;flex:none}
+  .dpod div{flex:1;min-width:0}.dpod b{display:block;font-size:16px}.dpod span{font-size:13px;color:var(--grey)}
+  .dpod button{flex:none;height:46px;padding:0 16px;border-radius:12px;background:var(--ink);color:#fff;font-weight:800}
 </style>
 </head>
 <body data-mode=""><div id="testRibbon" style="position:fixed;left:0;right:0;bottom:0;z-index:99999;background:#d32f2f;color:#fff;text-align:center;font:700 13px sans-serif;padding:4px;pointer-events:none">테스트판 · 손님 상담에는 정식판을 쓰세요</div>
 <div class="app">
   <div class="top">
-    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">테스트 v10.05-3400</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
+    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">테스트 v10.05-3500</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
     <nav class="tabs" id="tabs" style="display:none"></nav>
     <div class="flow" id="flow"><span data-st="1">① 찾는 것</span><i>›</i><span data-st="2">② 고르기</span><i>›</i><span data-st="3">③ 담은 상품</span><i>›</i><span data-st="4">④ 직원 확인</span></div>
   </div>
@@ -670,7 +676,7 @@
 
   <div id="dspList" data-for="dsp"></div>
 
-  <div class="foot"><b>시안 · 버전 10.05-3400</b> · 사진·맛·태그는 직원 교육용 액상 DB(380종), 가격은 매장 안내 책자 기준이에요. 패키지·꿀조합·이벤트 문구는 관리자 화면에서 바꾸게 만들 예정이에요. 기기패키지 기준 기기는 하복2(판매가 89,000원)이고 사진은 용트림 상품 페이지 사진에서 배경을 지운 거예요. 레이저 각인은 포스에 0원 상품으로 등록 예정. 빌런 패키지 할인 조건은 아직 확정 전이에요.</div>
+  <div class="foot"><b>시안 · 버전 10.05-3500</b> · 사진·맛·태그는 직원 교육용 액상 DB(380종), 가격은 매장 안내 책자 기준이에요. 패키지·꿀조합·이벤트 문구는 관리자 화면에서 바꾸게 만들 예정이에요. 기기패키지 기준 기기는 하복2(판매가 89,000원)이고 사진은 용트림 상품 페이지 사진에서 배경을 지운 거예요. 레이저 각인은 포스에 0원 상품으로 등록 예정. 빌런 패키지 할인 조건은 아직 확정 전이에요.</div>
 </div>
 
 <div class="srch" id="srch"><div class="hd"><input id="q" type="search" placeholder="이름·초성·맛·브랜드 (예: ㅂㄹㅈㄷ, 멘솔, 팜팜바, 말론)" autocomplete="off"><button class="cl" id="srchClose">닫기</button></div>
@@ -905,6 +911,10 @@ const DEVSIZE = {
 // 생활용품 비교 (대략): 계란 1개 약 60g · 비누 1개 약 100g · 립밤 높이 약 70mm · 라이터 약 80mm · 볼펜 약 140mm
 const feelW = (g) => g < 45 ? "건전지 두 개 정도로 가벼워요" : g < 80 ? "계란 하나 정도 무게예요" : g < 130 ? "비누 하나와 비슷해요" : "스마트폰보다 조금 가벼워요";
 const feelH = (mm) => mm < 78 ? "립밤만 한 길이예요" : mm < 95 ? "라이터만 한 길이예요" : mm < 120 ? "손바닥에 쏙 들어와요" : "볼펜보다 조금 짧아요";
+// 기기 → 전용 팟·코일 (팟·코일 칸의 기기 타일과 같은 묶음)
+const DEVPOD = [[/^하복SE|^하복 SE/, "하복"], [/^하복2/, "하복2"], [/^발라맥스프로|^맥스프로 스티그마/, "발라리안 맥스프로"], [/^발라리안에어|^발라리안 에어/, "발라리안 에어"],
+  [/^말론S/, "말론S"], [/^말론/, "말론"], [/^젤로맥스/, "젤로맥스"], [/^젤로/, "젤로"], [/^플러키/, "플러키"], [/^썬더Q/, "썬더Q"], [/^브이메이트/, "브이메이트"], [/^조바/, "조바"], [/^제우스/, "제우스"]];
+const podsFor = (model) => { const k = (DEVPOD.find(([re]) => re.test(model)) || [])[1]; return k ? G.filter((x) => x.c === "pod" && podDevOf(x) === k) : []; };
 function devSpecView(model) {
   const xs = G.filter((x) => x.model === model), d = devInfo(model), sz = d && DEVSIZE[d.n];
   const prices = [...new Set(xs.map((x) => x.price))].sort((a, b) => a - b);
@@ -921,6 +931,7 @@ function devSpecView(model) {
     ${!d ? '<div class="dspec-desc" style="color:var(--grey)">상세 스펙 준비 중이에요</div>' : ""}
     <div class="sub">색상·옵션 골라 담기</div>
     <div class="opts">${xs.map((x) => `<button data-gadd="${x.id}" data-close="1">${esc(x.opt || x.n)}<small>${won(x.price)}</small></button>`).join("")}</div>
+    ${(() => { const ps = podsFor(model); return ps.length ? `<div class="sub">전용 소모품 <small style="font-family:var(--kr);font-size:13px;color:var(--grey);font-weight:600">이 기기에 맞는 팟·코일</small></div><div class="dpods">${ps.map((p) => `<div class="dpod">${d?.img ? `<img src="${EDU + encodeURIComponent(d.img)}" alt="">` : `<span class="dpod-ph">${EMOJI.pod}</span>`}<div><b>${esc(p.n)}</b><span>${won(p.price)}${cart.get(p.id) ? ` · 담음 ${cart.get(p.id)}` : ""}</span></div><button data-gadd="${p.id}" data-re-dev="${esc(model)}">+ 담기</button></div>`).join("")}</div>` : ""; })()}
     ${d?.tip ? `<details class="dspec-tip"><summary>직원용 팁</summary><div>${esc(d.tip).replace(/\n/g, "<br>")}</div></details>` : ""}`);
 }
 function gCard([model, xs]) {
@@ -1357,7 +1368,7 @@ document.addEventListener("click", (e) => {
   if ((el = q("[data-gpack]"))) { const st = $("#sheet").scrollTop; for (let i = 0; i < MAIN.podPack; i++) addGoods(el.dataset.gpack); toast(`담았어요 · ${GMAP.get(el.dataset.gpack).n} 1팩(${MAIN.podPack}개)`); renderGoods(); mainSpecView(); $("#sheet").scrollTop = st; return; }
   if ((el = q("[data-maindev]"))) { const x = G.find((y) => y.model === MAIN.model && y.opt === cvColor); if (x) addGoods(x.id); toast(`담았어요 · ${MAIN.name} ${cvColor}`); closeS(); return; }
   if ((el = q("[data-gm]"))) return modelView(el.dataset.gm);
-  if ((el = q("[data-gadd]"))) { addGoods(el.dataset.gadd); const x = GMAP.get(el.dataset.gadd); toast(`담았어요 · ${x.n}`); if (el.dataset.close) closeS(); renderGoods(); if (el.dataset.re) { const st = $("#sheet").scrollTop; dspView(el.dataset.re); $("#sheet").scrollTop = st; } return; }
+  if ((el = q("[data-gadd]"))) { addGoods(el.dataset.gadd); const x = GMAP.get(el.dataset.gadd); toast(`담았어요 · ${x.n}`); if (el.dataset.close) closeS(); renderGoods(); if (el.dataset.re) { const st = $("#sheet").scrollTop; dspView(el.dataset.re); $("#sheet").scrollTop = st; } if (el.dataset.reDev) { const st = $("#sheet").scrollTop; devSpecView(el.dataset.reDev); $("#sheet").scrollTop = st; } return; }
   if (q("#cartBtn2") || q("[data-cartback]")) return cartView();
   if ((el = q("[data-gu]"))) { ledger.gu = el.dataset.gu; const st = $("#sheet").scrollTop; ledgerView(); $("#sheet").scrollTop = st; if (ledger.gu === "기타") document.getElementById("ldEtc")?.focus(); return; }
   if (q("[data-ledger-ok]")) { if (!ledger.name.trim()) { document.getElementById("ldName")?.focus(); return toast("성함을 적어 주세요"); } if (!ledgerText()) return toast("사시는 곳을 골라 주세요"); toast("감사합니다! 직원에게 패드를 돌려주세요"); return staffView(); }
