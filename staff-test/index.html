@@ -84,7 +84,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.05-5";
+const VER = "10.05-6";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
 const OPEN_AT = { 동성로: "11:00", 수성: "10:30", 본점: "11:00", 율하: "10:30", 반월당: "10:30", 상인: "10:30", 광장코아: "11:00", 현풍: "11:00" };
 // 운영봇(운영봇_시험.mjs)의 CHECK와 같은 목록이어야 기록이 맞아요
@@ -145,6 +145,9 @@ function render() {
         <button data-req="qk"><b>🛵 퀵 요청</b><span>재고 문의 → 결제 → 출발</span></button>
         <button data-req="branch"><b>🔁 다른 지점에 요청</b><span>상품 옮기기</span></button>
         <button data-req="ask"><b>🔍 재고 확인</b><span>다른 지점에 있나요?</span></button>
+        <button data-req="supply"><b>🧺 비품 부족</b><span>쇼핑백·영수증 용지 등</span></button>
+        <button data-req="break"><b>🔧 고장</b><span>기기·매장 물건</span></button>
+        <button data-req="demo"><b>🧪 시연 교체</b><span>팟·코일·액상 바꿨어요</span></button>
       </div>
       <div class="desc" style="margin:10px 0 0">요청은 디스코드 🙋요청 채널에 카드로 올라가고, 단계별 버튼으로 진행돼요.</div>
     </div>
@@ -174,11 +177,19 @@ const nearOrder = (addr) => { const p = (AREA.find(([re]) => re.test(addr || "")
 const NO_QUICK = ["현풍"]; // 퀵 안 되는 지점 (사용자 10/5: 현풍은 택배만)
 const canDo = (b) => rq.how !== "퀵" || !NO_QUICK.includes(b);
 let rq = {};
+const SUPPLIES = ["쇼핑백(소)", "쇼핑백(대)", "영수증 용지", "박스테이프", "택배 박스", "종량제 봉투", "물티슈", "휴지", "소독제", "AS 스티커", "드립팁", "시연용 코일"]; // 봇과 같은 목록
+const DEMO_N = 20;
 function sheetReq(kind) {
   rq = { kind, how: kind === "quick" ? "퀵" : "택배", handler: B, to: null };
   if (!canDo(rq.handler)) rq.handler = null; // 현풍에서 퀵 요청이면 처리 지점은 주소로 고르게
-  const title = { parcel: "📦 고객 택배 요청", quick: "🛵 고객 퀵 요청", branch: "🔁 다른 지점에 요청", ask: "🔍 다른 지점 재고 확인" }[kind];
-  const body = kind === "ask" ? `<div class="desc">상품 이름과 필요한 수량을 적으면 🙋요청 채널에 [있음][없음] 카드가 올라가요.</div>
+  const title = { parcel: "📦 고객 택배 요청", quick: "🛵 고객 퀵 요청", branch: "🔁 다른 지점에 요청", ask: "🔍 다른 지점 재고 확인", supply: "🧺 비품 부족", break: "🔧 고장 신고", demo: "🧪 시연 교체" }[kind];
+  const body = kind === "supply" ? `<div class="desc">부족한 걸 모두 눌러 주세요 (여러 개 가능)</div><div class="chips">${SUPPLIES.map((x) => `<button class="chip" data-sup="${esc(x)}">${esc(x)}</button>`).join("")}</div>
+      <input class="input" id="rqEtc" placeholder="목록에 없는 것 (선택)" maxlength="40">`
+    : kind === "break" ? `<input class="input" id="rqWhat" placeholder="무엇이 고장났나요? (예: 시연대 3번 기기, 정수기)" maxlength="40">
+      <textarea class="input" id="rqSym" placeholder="어떤 상태인가요? (예: 전원이 안 켜져요)" rows="3"></textarea>`
+    : kind === "demo" ? `<div class="desc">시연 번호</div><div class="chips">${Array.from({ length: DEMO_N }, (_, i) => `<button class="chip" data-dn="${i + 1}">${i + 1}번</button>`).join("")}</div>
+      <div class="desc" style="margin-top:14px">무엇을 바꿨나요?</div><div class="chips"><button class="chip" data-dw="pod">팟·코일</button><button class="chip" data-dw="liq">액상</button><button class="chip" data-dw="both">둘 다</button></div>`
+    : kind === "ask" ? `<div class="desc">상품 이름과 필요한 수량을 적으면 🙋요청 채널에 [있음][없음] 카드가 올라가요.</div>
       <input class="input" id="rqItem" placeholder="상품 이름 (예: 디오 콜라)" maxlength="40"><input class="input" id="rqQty" type="number" min="1" max="99" value="1" placeholder="필요 수량">`
     : kind === "branch" ? `<div class="desc">어느 지점에 요청할까요?</div><div class="chips" id="rqTo">${BR.filter((b) => b !== B).map((b) => `<button class="chip" data-to="${b}">${ho(b)}</button>`).join("")}</div>
       <input class="input" id="rqTitle" placeholder="품목·수량 (예: 디오 레몬 5병)" maxlength="40"><textarea class="input" id="rqInfo" placeholder="메모 (선택)" rows="2"></textarea>`
@@ -201,12 +212,15 @@ function onAddr() {
 async function doReq() {
   const v = (id) => ($(id)?.value || "").trim();
   let body;
-  if (rq.kind === "ask") { if (!v("#rqItem")) return toast("상품 이름을 넣어 주세요"); body = { type: "stockask", item: v("#rqItem"), qty: Math.max(1, Math.min(99, +v("#rqQty") || 1)), pad: "직원앱" }; }
+  if (rq.kind === "supply") { const items = [...document.querySelectorAll("[data-sup].on")].map((x) => x.dataset.sup); if (v("#rqEtc")) items.push(v("#rqEtc")); if (!items.length) return toast("부족한 걸 골라 주세요"); body = { type: "appreq", kind: "supply", items }; }
+  else if (rq.kind === "break") { if (!v("#rqWhat")) return toast("무엇이 고장났는지 넣어 주세요"); if (!v("#rqSym")) return toast("어떤 상태인지 넣어 주세요"); body = { type: "appreq", kind: "break", what: v("#rqWhat"), sym: v("#rqSym") }; }
+  else if (rq.kind === "demo") { if (!rq.dn) return toast("시연 번호를 골라 주세요"); if (!rq.dw) return toast("무엇을 바꿨는지 골라 주세요"); body = { type: "appreq", kind: "demo", n: rq.dn, what: rq.dw }; }
+  else if (rq.kind === "ask") { if (!v("#rqItem")) return toast("상품 이름을 넣어 주세요"); body = { type: "stockask", item: v("#rqItem"), qty: Math.max(1, Math.min(99, +v("#rqQty") || 1)), pad: "직원앱" }; }
   else if (rq.kind === "branch") { if (!rq.to) return toast("요청할 지점을 골라 주세요"); if (!v("#rqTitle")) return toast("품목·수량을 넣어 주세요"); body = { type: "ticket", kind: "branch", to: rq.to, title: v("#rqTitle"), info: v("#rqInfo") }; }
   else { if (!v("#rqTitle")) return toast("품목·수량을 넣어 주세요"); if (!v("#rqAddr")) return toast("고객 주소를 넣어 주세요"); if (!rq.handler) return toast("보낼 지점을 골라 주세요"); body = { type: "ticket", kind: "customer", how: rq.how, handler: rq.handler, title: v("#rqTitle"), info: [`방법: ${rq.how}`, `주소: ${v("#rqAddr")}`, v("#rqWho") && `고객: ${v("#rqWho")}`].filter(Boolean).join("\n") }; }
   body.by = st().ins.filter((x) => !x.out).map((x) => x.name).join(", ");
   $("#okRq").disabled = true;
-  try { await send(body); closeSheet(); toast(rq.kind === "ask" ? "재고 확인 요청을 보냈어요 · 답은 디스코드로 와요" : "요청을 보냈어요 · 🙋요청 채널에 카드가 올라가요"); }
+  try { await send(body); closeSheet(); toast(rq.kind === "ask" ? "재고 확인 요청을 보냈어요 · 답은 디스코드로 와요" : rq.kind === "demo" ? `${rq.dn}번 시연 교체를 기록했어요` : "요청을 보냈어요 · 🙋요청 채널에 카드가 올라가요"); }
   catch (e) { $("#okRq").disabled = false; fail(e); }
 }
 // ── 퀵 요청 (10/5): 재고 문의 → [가능] → 결제 완료(고객정보) → 포장 → 접수 → 출발 · 대화 없이 버튼으로 ──
@@ -344,6 +358,9 @@ document.addEventListener("click", (e) => {
   if (t.dataset.to) { rq.to = t.dataset.to; document.querySelectorAll("[data-to]").forEach((x) => x.classList.toggle("on", x === t)); return; }
   if (t.dataset.hd) { rq.handler = t.dataset.hd; document.querySelectorAll("[data-hd]").forEach((x) => x.classList.toggle("on", x === t)); return; }
   if (t.id === "okRq") return doReq();
+  if (t.dataset.sup) return t.classList.toggle("on");
+  if (t.dataset.dn) { rq.dn = t.dataset.dn; document.querySelectorAll("[data-dn]").forEach((x) => x.classList.toggle("on", x === t)); return; }
+  if (t.dataset.dw) { rq.dw = t.dataset.dw; document.querySelectorAll("[data-dw]").forEach((x) => x.classList.toggle("on", x === t)); return; }
 });
 document.addEventListener("input", (e) => {
   if (e.target.id === "rqAddr") onAddr();
