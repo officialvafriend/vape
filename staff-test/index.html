@@ -75,7 +75,7 @@
 <div class="dim" id="dim"><div class="sheet" id="sheet"></div></div>
 <div class="toast" id="toast"></div>
 <script>
-const VER = "10.05-2";
+const VER = "10.05-3";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
 const OPEN_AT = { 동성로: "11:00", 수성: "10:30", 본점: "11:00", 율하: "10:30", 반월당: "10:30", 상인: "10:30", 광장코아: "11:00", 현풍: "11:00" };
 // 운영봇(운영봇_시험.mjs)의 CHECK와 같은 목록이어야 기록이 맞아요
@@ -161,9 +161,12 @@ const AREA = [ // [주소에 들어가는 말, 대략 위치] — 앞에 있을�
 ];
 const distKm = ([a, b], [c, d]) => { const R = 6371, x = (c - a) * Math.PI / 180, y = (d - b) * Math.PI / 180; const h = Math.sin(x / 2) ** 2 + Math.cos(a * Math.PI / 180) * Math.cos(c * Math.PI / 180) * Math.sin(y / 2) ** 2; return 2 * R * Math.asin(Math.sqrt(h)); };
 const nearOrder = (addr) => { const p = (AREA.find(([re]) => re.test(addr || "")) || [])[1]; return p ? BR.map((b) => [b, distKm(p, BR_POS[b])]).sort((a, b) => a[1] - b[1]) : null; };
+const NO_QUICK = ["현풍"]; // 퀵 안 되는 지점 (사용자 10/5: 현풍은 택배만)
+const canDo = (b) => rq.how !== "퀵" || !NO_QUICK.includes(b);
 let rq = {};
 function sheetReq(kind) {
   rq = { kind, how: kind === "quick" ? "퀵" : "택배", handler: B, to: null };
+  if (!canDo(rq.handler)) rq.handler = null; // 현풍에서 퀵 요청이면 처리 지점은 주소로 고르게
   const title = { parcel: "📦 고객 택배 요청", quick: "🛵 고객 퀵 요청", branch: "🔁 다른 지점에 요청", ask: "🔍 다른 지점 재고 확인" }[kind];
   const body = kind === "ask" ? `<div class="desc">상품 이름과 필요한 수량을 적으면 🙋요청 채널에 [있음][없음] 카드가 올라가요.</div>
       <input class="input" id="rqItem" placeholder="상품 이름 (예: 디오 콜라)" maxlength="40"><input class="input" id="rqQty" type="number" min="1" max="99" value="1" placeholder="필요 수량">`
@@ -176,12 +179,12 @@ function sheetReq(kind) {
   openSheet(`<h2>${title}</h2>${body}<div class="btns"><button class="btn" data-x>취소</button><button class="btn primary" id="okRq">요청 보내기</button></div>`);
 }
 function handlerChips(order) {
-  const list = order ? order.map(([b, km]) => [b, km]) : BR.map((b) => [b, null]);
+  const list = (order ? order.map(([b, km]) => [b, km]) : BR.map((b) => [b, null])).filter(([b]) => canDo(b));
   return list.map(([b, km], i) => `<button class="chip ${rq.handler === b ? "on" : ""}" data-hd="${b}">${order && i === 0 ? "⭐ " : ""}${ho(b)}${km != null ? ` · 약 ${km < 1 ? "1" : Math.round(km)}km` : ""}</button>`).join("");
 }
 function onAddr() {
   const order = nearOrder($("#rqAddr").value);
-  if (order) rq.handler = order[0][0];
+  if (order) rq.handler = order.find(([b]) => canDo(b))[0];
   $("#rqHandler").innerHTML = handlerChips(order);
   $("#rqNearNote").textContent = order ? "· 가까운 순 (구·동 기준 대략 거리)" : "· 주소에서 구·동을 못 찾았어요 — 직접 골라 주세요";
 }
@@ -190,7 +193,7 @@ async function doReq() {
   let body;
   if (rq.kind === "ask") { if (!v("#rqItem")) return toast("상품 이름을 넣어 주세요"); body = { type: "stockask", item: v("#rqItem"), qty: Math.max(1, Math.min(99, +v("#rqQty") || 1)), pad: "직원앱" }; }
   else if (rq.kind === "branch") { if (!rq.to) return toast("요청할 지점을 골라 주세요"); if (!v("#rqTitle")) return toast("품목·수량을 넣어 주세요"); body = { type: "ticket", kind: "branch", to: rq.to, title: v("#rqTitle"), info: v("#rqInfo") }; }
-  else { if (!v("#rqTitle")) return toast("품목·수량을 넣어 주세요"); if (!v("#rqAddr")) return toast("고객 주소를 넣어 주세요"); body = { type: "ticket", kind: "customer", how: rq.how, handler: rq.handler, title: v("#rqTitle"), info: [`방법: ${rq.how}`, `주소: ${v("#rqAddr")}`, v("#rqWho") && `고객: ${v("#rqWho")}`].filter(Boolean).join("\n") }; }
+  else { if (!v("#rqTitle")) return toast("품목·수량을 넣어 주세요"); if (!v("#rqAddr")) return toast("고객 주소를 넣어 주세요"); if (!rq.handler) return toast("보낼 지점을 골라 주세요"); body = { type: "ticket", kind: "customer", how: rq.how, handler: rq.handler, title: v("#rqTitle"), info: [`방법: ${rq.how}`, `주소: ${v("#rqAddr")}`, v("#rqWho") && `고객: ${v("#rqWho")}`].filter(Boolean).join("\n") }; }
   body.by = st().ins.filter((x) => !x.out).map((x) => x.name).join(", ");
   $("#okRq").disabled = true;
   try { await send(body); closeSheet(); toast(rq.kind === "ask" ? "재고 확인 요청을 보냈어요 · 답은 디스코드로 와요" : "요청을 보냈어요 · 🙋요청 채널에 카드가 올라가요"); }
