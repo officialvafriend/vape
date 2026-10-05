@@ -204,6 +204,7 @@
   .b2{height:56px;padding:0 20px;background:var(--panel);font-family:var(--num);font-weight:800;font-size:16px}
   .photo{height:180px;margin-top:20px;border:1px solid var(--line)}
 
+  .tastes.rec{grid-template-columns:repeat(3,1fr)}
   .tastes{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:18px}
   .taste{padding:16px 12px;background:var(--panel);text-align:left}
   .taste b{font-family:var(--num);font-weight:800;font-size:18px;display:block}
@@ -406,7 +407,7 @@
 <body data-mode="">
 <div class="app">
   <div class="top">
-    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">v10.05-1200</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
+    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">v10.05-1300</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
     <nav class="tabs" id="tabs" style="display:none"></nav>
     <div class="flow" id="flow"><span data-st="1">① 찾는 것</span><i>›</i><span data-st="2">② 고르기</span><i>›</i><span data-st="3">③ 담은 상품</span><i>›</i><span data-st="4">④ 직원 확인</span></div>
   </div>
@@ -460,8 +461,15 @@
     <button class="upsell" data-goto="s4"><span><b>11병 맛 고르러 가기</b><small>과일 · 멘솔 · 디저트 · 연초맛에서 골라요</small></span><span class="arr">→</span></button>
   </section>
 
+  <section class="sec" id="sRec" data-for="liq">
+    <div class="hdr"><div class="n">02</div><div><div class="eb">Our Pick</div><h2>매장 추천 맛</h2></div></div>
+    <div style="font-size:15px;color:var(--grey);margin-top:12px">어떤 맛 좋아하세요? 고르시면 매장 추천 시리즈를 보여 드려요</div>
+    <div class="tastes rec" id="recTabs"></div>
+    <div class="prods" id="recList"></div>
+  </section>
+
   <section class="sec" id="s4" data-for="liq">
-    <div class="hdr"><div class="n">02</div><div><div class="eb">Find Your Taste</div><h2>맛으로 찾기</h2></div></div>
+    <div class="hdr"><div class="n">03</div><div><div class="eb">Find Your Taste</div><h2>맛으로 찾기</h2></div></div>
     <div class="tastes" id="tastes"></div>
     <div class="filters" id="filters"></div>
     <div class="prods" id="prods"></div>
@@ -475,7 +483,7 @@
   </section>
 
   <section class="sec" id="sLiqBen" data-for="liq">
-    <div class="hdr"><div class="n">03</div><div><div class="eb">Benefits</div><h2>액상 혜택</h2></div></div>
+    <div class="hdr"><div class="n">04</div><div><div class="eb">Benefits</div><h2>액상 혜택</h2></div></div>
     <div class="spec">
       <div class="row"><div><span class="k">액상·팟 10만원 이상</span><span class="u">기기·일회용 금액은 빼고 계산</span></div><div class="v"><span class="price" style="font-size:22px">일회용 1개 증정</span></div></div>
       <div class="row"><div><span class="k">액상 10병 이상</span><span class="u">원하는 문구를 새겨 드려요</span></div><div class="v"><span class="price" style="font-size:22px">레이저 각인 무료</span></div></div>
@@ -483,14 +491,14 @@
   </section>
 
   <section class="sec" id="sPod" data-for="liq">
-    <div class="hdr"><div class="n">04</div><div><div class="eb">Pods &amp; Coils</div><h2>팟 · 코일 · 소모품</h2></div></div>
+    <div class="hdr"><div class="n">05</div><div><div class="eb">Pods &amp; Coils</div><h2>팟 · 코일 · 소모품</h2></div></div>
     <div class="filters" id="podFilter"></div>
     <div id="podList"></div>
   </section>
 
   <div id="dspList" data-for="dsp"></div>
 
-  <div class="foot"><b>시안 · 버전 10.05-1200</b> · 사진·맛·태그는 직원 교육용 액상 DB(380종), 가격은 매장 안내 책자 기준이에요. 패키지·꿀조합·이벤트 문구는 관리자 화면에서 바꾸게 만들 예정이에요. 기기패키지 기준 기기는 하복2(판매가 89,000원)이고 사진은 용트림 상품 페이지 사진에서 배경을 지운 거예요. 레이저 각인은 포스에 0원 상품으로 등록 예정. 빌런 패키지 할인 조건은 아직 확정 전이에요.</div>
+  <div class="foot"><b>시안 · 버전 10.05-1300</b> · 사진·맛·태그는 직원 교육용 액상 DB(380종), 가격은 매장 안내 책자 기준이에요. 패키지·꿀조합·이벤트 문구는 관리자 화면에서 바꾸게 만들 예정이에요. 기기패키지 기준 기기는 하복2(판매가 89,000원)이고 사진은 용트림 상품 페이지 사진에서 배경을 지운 거예요. 레이저 각인은 포스에 0원 상품으로 등록 예정. 빌런 패키지 할인 조건은 아직 확정 전이에요.</div>
 </div>
 
 <div class="srch" id="srch"><div class="hd"><input id="q" type="search" placeholder="이름·초성·맛·브랜드 (예: ㅂㄹㅈㄷ, 멘솔, 팜팜바, 말론)" autocomplete="off"><button class="cl" id="srchClose">닫기</button></div>
@@ -544,6 +552,16 @@ const PKGS = [
   { id: "fruitmint", badge: "BEST", sub: "기기패키지", name: "과일멘솔 조합", desc: `${MAIN.name} + 빌런 자두 · 청포도 · 레몬 · 레즈애플 · 청사과`, device: true, items: VILLAIN5 },
   { id: "honey", badge: "꿀조합", sub: "매장 추천", name: "상큼 과일 꿀조합", desc: "빌런 자두 · 청포도 · 레즈애플 + 디오 레몬 · 샤인", items: ["VF 빌런 자두", "VF 빌런 청포도", "VF 빌런 레즈애플", "디오 레몬", "디오 샤인"] },
 ];
+// 매장 추천 맛 (전지점 공통, 사용자 지정 2026-10-05) — 맛 종류별 추천 시리즈
+const REC = [
+  { k: "과일멘솔", s: "빌런 · 디오", re: /^(VF 빌런|디오) / },
+  { k: "과일 중간멘솔", s: "얌 시리즈", re: /^\(한\) ?얌/, also: /^(VF 빌런|디오) /, note: "얌은 재고가 적어서, 비슷한 과일멘솔 빌런 · 디오도 같이 추천해요" }, // 사용자 10/5: 얌 재고 적음 → 빌런·디오 위주
+  { k: "노멘솔 과일", s: "릭 시리즈", re: /^VF 릭 / },
+  { k: "시가", s: "812 시가", re: /시가812/ },
+  { k: "단일멘솔", s: "쿨멘솔", re: /쿨멘솔/ },
+  { k: "무니코틴", s: "제로닉 · 무", re: /^(제로닉|무) / },
+];
+let rec = REC[0].k;
 const TASTES = [["과일", "상큼·달콤"], ["멘솔·민트", "시원·깔끔"], ["디저트·음료", "콜라·캔디"], ["시가·타바코", "묵직한 연초"]];
 // ── 가격 규칙 (2026-10-02 사용자 확인) ──
 // 프리미엄 1병 15,000 · 5병 49,500 · 11병 90,000 — 빌런·릭을 다른 프리미엄과 섞어도 됨
@@ -645,7 +663,7 @@ const DSPEV = [
 let mode = "", podSub = "팟·코일";
 const TABS = {
   dev: [["s1", "최고혜택"], ["s2", "기기 패키지"], ["sDev", "기기"]],
-  liq: [["s3", "11병 90,000"], ["s4", "맛으로 찾기"], ["sLiqBen", "혜택"], ["sPod", "팟·코일"]],
+  liq: [["s3", "11병 90,000"], ["sRec", "추천 맛"], ["s4", "맛으로 찾기"], ["sLiqBen", "혜택"], ["sPod", "팟·코일"]],
   dsp: DSPEV.map((e) => [e.id, e.tab]),
 };
 function setMode(m) {
@@ -836,6 +854,8 @@ function render() {
     <div class="items">${p.device ? devBox() : ""}${p.items.map(byName).filter(Boolean).map((x) => `<img src="${IMG + x.img}" alt="">`).join("")}</div>
     <div class="act"><button class="b1" data-pkgadd="${p.id}">이 구성 그대로 담기</button><button class="b2" data-pkg="${p.id}">자세히</button></div></div>`).join("");
   
+  $("#recTabs").innerHTML = REC.map((x) => `<button class="taste ${rec === x.k ? "on" : ""}" data-rec="${x.k}"><b>${x.k}</b><span>${x.s}</span></button>`).join("");
+  { const R = REC.find((y) => y.k === rec); $("#recList").innerHTML = L.filter((x) => R.re.test(x.n)).map(card).join("") + (R.also ? `<div style="grid-column:1/-1;font-size:15px;font-weight:800;margin:14px 0 2px">${R.note}</div>` + L.filter((x) => R.also.test(x.n)).map(card).join("") : ""); }
   $("#tastes").innerHTML = TASTES.map(([n, d]) => `<button class="taste ${taste === n ? "on" : ""}" data-t="${n}"><b>${n}</b><span>${d}</span></button>`).join("");
   const list = L.filter((x) => x.line === line && (!taste || x.g === taste) && (!tag || x.t.includes(tag)));
   $("#filters").innerHTML = ["프리미엄", "프라임"].map((l) => `<button class="f ${line === l ? "on" : ""}" data-l="${l}">${l}</button>`).join("") + `<span style="width:10px"></span>` +
@@ -1082,6 +1102,7 @@ document.addEventListener("click", (e) => {
   if ((el = q("[data-p]"))) return detail(el.dataset.p);
   if ((el = q("[data-add]"))) { add(el.dataset.add); closeS(); if (!devUp()) toast("담았어요"); return; }
   if ((el = q("[data-devup]"))) { $("#devUp").classList.remove("on"); const then = devUpThen; devUpThen = null; if (el.dataset.devup === "go") { closeS(); setMode("dev"); } else if (then) then(); return; }
+  if ((el = q("[data-rec]"))) { rec = el.dataset.rec; render(); return; }
   if ((el = q("[data-t]"))) { taste = taste === el.dataset.t ? null : el.dataset.t; shown = 12; render(); return; }
   if ((el = q("[data-l]"))) { line = el.dataset.l; shown = 12; render(); return; }
   if ((el = q("[data-tag]"))) { tag = tag === el.dataset.tag ? null : el.dataset.tag; render(); return; }
