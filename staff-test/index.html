@@ -63,6 +63,11 @@
   .btn.primary{background:var(--blue);color:#fff} .btn:disabled{opacity:.5}
   .toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(20px);background:var(--dark);color:#fff;padding:14px 20px;border-radius:14px;font-weight:600;opacity:0;transition:.25s;z-index:60;max-width:90vw;text-align:center}
   .toast.on{opacity:1;transform:translateX(-50%)}
+  .reqs{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .reqs button{text-align:left;padding:14px;border-radius:14px;background:#f2f4f6}
+  .reqs b{display:block;font-size:16px}.reqs span{font-size:13px;color:#8b95a1}
+  .chip.on{background:var(--blue);color:#fff;border-color:var(--blue)}
+  textarea.input{height:auto;padding-top:12px;font:inherit}
 </style>
 </head>
 <body>
@@ -70,7 +75,7 @@
 <div class="dim" id="dim"><div class="sheet" id="sheet"></div></div>
 <div class="toast" id="toast"></div>
 <script>
-const VER = "10.05-1";
+const VER = "10.05-2";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
 const OPEN_AT = { 동성로: "11:00", 수성: "10:30", 본점: "11:00", 율하: "10:30", 반월당: "10:30", 상인: "10:30", 광장코아: "11:00", 현풍: "11:00" };
 // 운영봇(운영봇_시험.mjs)의 CHECK와 같은 목록이어야 기록이 맞아요
@@ -125,6 +130,15 @@ function render() {
       ${stepRow("🌙", !!s.close, "마감 체크", s.close ? { t: `${s.close.t} 완료${s.close.missed.length ? ` · 못 한 것 ${s.close.missed.length}개` : ""}`, w: s.close.missed.length } : { t: "아직 안 함" }, `<button class="act ${s.close ? "gray" : ""}" data-go="close">${s.close ? "다시" : "체크"}</button>`)}
       ${stepRow("👋", s.ins.length > 0 && !working.length, "퇴근", { t: working.length ? `근무 중: ${working.map((x) => esc(x.name)).join(", ")}` : s.ins.length ? "모두 퇴근" : "출근 기록 없음" }, working.length ? `<button class="act gray" data-go="out">퇴근</button>` : "")}
     </div>
+    <div class="card"><h2>요청 보내기</h2>
+      <div class="reqs">
+        <button data-req="parcel"><b>📦 고객 택배</b><span>택배로 보내기</span></button>
+        <button data-req="quick"><b>🛵 고객 퀵</b><span>가까운 지점이 보내기</span></button>
+        <button data-req="branch"><b>🔁 다른 지점에 요청</b><span>상품 옮기기</span></button>
+        <button data-req="ask"><b>🔍 재고 확인</b><span>다른 지점에 있나요?</span></button>
+      </div>
+      <div class="desc" style="margin:10px 0 0">요청은 디스코드 🙋요청 채널에 카드로 올라가고, 단계별 버튼으로 진행돼요.</div>
+    </div>
     <div class="links">
       <a href="../menu/?branch=${encodeURIComponent(B)}">🛍 판매용 메뉴판<span>손님 상담 화면</span></a>
       <a href="../stock/?branch=${encodeURIComponent(B)}&back=${encodeURIComponent(location.pathname)}">📦 재고보고<span>팟·코일·기기 개수</span></a>
@@ -136,6 +150,52 @@ function renderPick() {
     <div class="grid">${BR.map((b, i) => `<button data-b="${b}"><span>${i + 1}호</span>${b}</button>`).join("")}</div></div>`;
 }
 
+// ── 요청 보내기 (10/5) ── 고객 택배·퀵 / 지점 요청 / 재고 확인 → 웹훅 → 운영봇이 🙋요청 카드로
+// 가까운 지점: 지도 API 없이 '구·읍면' 대략 위치로 계산 (정확한 거리 아님 — 순서만 참고)
+const BR_POS = { 동성로: [35.8693, 128.5950], 수성: [35.8572, 128.6230], 본점: [35.8780, 128.6280], 율하: [35.8680, 128.6950], 반월당: [35.8655, 128.5930], 상인: [35.8180, 128.5370], 광장코아: [35.8550, 128.5470], 현풍: [35.6950, 128.4560] };
+const AREA = [ // [주소에 들어가는 말, 대략 위치] — 앞에 있을수록 먼저 봄(읍면 > 구)
+  [/현풍|유가|구지/, [35.69, 128.45]], [/논공/, [35.73, 128.43]], [/화원|옥포/, [35.80, 128.50]], [/다사|하빈/, [35.86, 128.46]], [/가창/, [35.80, 128.62]],
+  [/안심|율하|반야월|동호|신서|각산/, [35.87, 128.70]], [/동대구|신천동|신암/, [35.88, 128.63]], [/상인|월배|진천|대곡|도원/, [35.82, 128.54]], [/감삼|두류|죽전|본리/, [35.85, 128.54]],
+  [/중구/, [35.869, 128.600]], [/동구/, [35.886, 128.640]], [/서구/, [35.872, 128.559]], [/남구/, [35.846, 128.597]], [/북구/, [35.886, 128.583]],
+  [/수성구/, [35.858, 128.631]], [/달서구/, [35.830, 128.533]], [/달성군/, [35.775, 128.431]], [/경산/, [35.825, 128.741]], [/칠곡/, [35.995, 128.402]],
+];
+const distKm = ([a, b], [c, d]) => { const R = 6371, x = (c - a) * Math.PI / 180, y = (d - b) * Math.PI / 180; const h = Math.sin(x / 2) ** 2 + Math.cos(a * Math.PI / 180) * Math.cos(c * Math.PI / 180) * Math.sin(y / 2) ** 2; return 2 * R * Math.asin(Math.sqrt(h)); };
+const nearOrder = (addr) => { const p = (AREA.find(([re]) => re.test(addr || "")) || [])[1]; return p ? BR.map((b) => [b, distKm(p, BR_POS[b])]).sort((a, b) => a[1] - b[1]) : null; };
+let rq = {};
+function sheetReq(kind) {
+  rq = { kind, how: kind === "quick" ? "퀵" : "택배", handler: B, to: null };
+  const title = { parcel: "📦 고객 택배 요청", quick: "🛵 고객 퀵 요청", branch: "🔁 다른 지점에 요청", ask: "🔍 다른 지점 재고 확인" }[kind];
+  const body = kind === "ask" ? `<div class="desc">상품 이름과 필요한 수량을 적으면 🙋요청 채널에 [있음][없음] 카드가 올라가요.</div>
+      <input class="input" id="rqItem" placeholder="상품 이름 (예: 디오 콜라)" maxlength="40"><input class="input" id="rqQty" type="number" min="1" max="99" value="1" placeholder="필요 수량">`
+    : kind === "branch" ? `<div class="desc">어느 지점에 요청할까요?</div><div class="chips" id="rqTo">${BR.filter((b) => b !== B).map((b) => `<button class="chip" data-to="${b}">${ho(b)}</button>`).join("")}</div>
+      <input class="input" id="rqTitle" placeholder="품목·수량 (예: 디오 레몬 5병)" maxlength="40"><textarea class="input" id="rqInfo" placeholder="메모 (선택)" rows="2"></textarea>`
+    : `<input class="input" id="rqTitle" placeholder="품목·수량 (예: 바닐라 30ml 3병)" maxlength="40">
+      <input class="input" id="rqAddr" placeholder="고객 주소 (예: 대구 수성구 범어동 …)" maxlength="80">
+      <input class="input" id="rqWho" placeholder="고객 이름·연락처 (선택)" maxlength="40">
+      <div class="desc" style="margin-top:14px">보낼 지점 <span id="rqNearNote">· 주소를 넣으면 가까운 순으로 정렬돼요</span></div><div class="chips" id="rqHandler">${handlerChips(null)}</div>`;
+  openSheet(`<h2>${title}</h2>${body}<div class="btns"><button class="btn" data-x>취소</button><button class="btn primary" id="okRq">요청 보내기</button></div>`);
+}
+function handlerChips(order) {
+  const list = order ? order.map(([b, km]) => [b, km]) : BR.map((b) => [b, null]);
+  return list.map(([b, km], i) => `<button class="chip ${rq.handler === b ? "on" : ""}" data-hd="${b}">${order && i === 0 ? "⭐ " : ""}${ho(b)}${km != null ? ` · 약 ${km < 1 ? "1" : Math.round(km)}km` : ""}</button>`).join("");
+}
+function onAddr() {
+  const order = nearOrder($("#rqAddr").value);
+  if (order) rq.handler = order[0][0];
+  $("#rqHandler").innerHTML = handlerChips(order);
+  $("#rqNearNote").textContent = order ? "· 가까운 순 (구·동 기준 대략 거리)" : "· 주소에서 구·동을 못 찾았어요 — 직접 골라 주세요";
+}
+async function doReq() {
+  const v = (id) => ($(id)?.value || "").trim();
+  let body;
+  if (rq.kind === "ask") { if (!v("#rqItem")) return toast("상품 이름을 넣어 주세요"); body = { type: "stockask", item: v("#rqItem"), qty: Math.max(1, Math.min(99, +v("#rqQty") || 1)), pad: "직원앱" }; }
+  else if (rq.kind === "branch") { if (!rq.to) return toast("요청할 지점을 골라 주세요"); if (!v("#rqTitle")) return toast("품목·수량을 넣어 주세요"); body = { type: "ticket", kind: "branch", to: rq.to, title: v("#rqTitle"), info: v("#rqInfo") }; }
+  else { if (!v("#rqTitle")) return toast("품목·수량을 넣어 주세요"); if (!v("#rqAddr")) return toast("고객 주소를 넣어 주세요"); body = { type: "ticket", kind: "customer", how: rq.how, handler: rq.handler, title: v("#rqTitle"), info: [`방법: ${rq.how}`, `주소: ${v("#rqAddr")}`, v("#rqWho") && `고객: ${v("#rqWho")}`].filter(Boolean).join("\n") }; }
+  body.by = st().ins.filter((x) => !x.out).map((x) => x.name).join(", ");
+  $("#okRq").disabled = true;
+  try { await send(body); closeSheet(); toast(rq.kind === "ask" ? "재고 확인 요청을 보냈어요 · 답은 디스코드로 와요" : "요청을 보냈어요 · 🙋요청 채널에 카드가 올라가요"); }
+  catch (e) { $("#okRq").disabled = false; fail(e); }
+}
 function openSheet(html) { $("#sheet").innerHTML = html; $("#dim").classList.add("on"); }
 const closeSheet = () => $("#dim").classList.remove("on");
 
@@ -201,7 +261,12 @@ document.addEventListener("click", (e) => {
   if (t.dataset.ck !== undefined) return t.classList.toggle("on");
   if (t.id === "okCk") return doCheck(t.dataset.kind);
   if (t.dataset.out) return doOut(t.dataset.out);
+  if (t.dataset.req) return sheetReq(t.dataset.req);
+  if (t.dataset.to) { rq.to = t.dataset.to; document.querySelectorAll("[data-to]").forEach((x) => x.classList.toggle("on", x === t)); return; }
+  if (t.dataset.hd) { rq.handler = t.dataset.hd; document.querySelectorAll("[data-hd]").forEach((x) => x.classList.toggle("on", x === t)); return; }
+  if (t.id === "okRq") return doReq();
 });
+document.addEventListener("input", (e) => { if (e.target.id === "rqAddr") onAddr(); });
 document.addEventListener("keydown", (e) => { if (e.key === "Enter" && e.target.id === "nm") doIn(e.target.value); });
 // 재고보고 갔다 오면 다시 그리기
 window.addEventListener("pageshow", render);
