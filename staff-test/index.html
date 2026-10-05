@@ -84,7 +84,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.05-7";
+const VER = "10.05-8";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
 const OPEN_AT = { 동성로: "11:00", 수성: "10:30", 본점: "11:00", 율하: "10:30", 반월당: "10:30", 상인: "10:30", 광장코아: "11:00", 현풍: "11:00" };
 // 운영봇(운영봇_시험.mjs)의 CHECK와 같은 목록이어야 기록이 맞아요
@@ -109,10 +109,25 @@ const qs = new URLSearchParams(location.search);
 let B = qs.has("pick") ? null : BR.includes(qs.get("branch")) ? qs.get("branch") : ls.get("vf-app-branch", null);
 if (B) ls.set("vf-app-branch", B);
 const dayKey = () => `vf-app-${B}-${todayKey()}`;
-const st = () => ls.get(dayKey(), { ins: [], open: null, close: null });
+// 이 기기 기록 + 봇이 올린 오늘 현황(today.json)을 합쳐서 보여줌 — 다른 기기·브라우저에서 한 것도 보이게 (10/5)
+let SRV = null;
+const st = () => {
+  const s = ls.get(dayKey(), { ins: [], open: null, close: null });
+  if (!SRV) return s;
+  for (const a of SRV.ins || []) { const m = s.ins.find((x) => x.name === a.name); if (!m) s.ins.push({ name: a.name, t: a.t, out: a.out || undefined }); else if (a.out && !m.out) m.out = a.out; }
+  for (const k of ["open", "close"]) if (!s[k] && SRV[k]) s[k] = { t: SRV[k].t, missed: Array(SRV[k].miss || 0).fill("") };
+  return s;
+};
+async function loadToday() {
+  try {
+    const j = await (await fetch(`today.json?${Date.now()}`, { cache: "no-store" })).json();
+    const next = j.d === todayKey() ? j.br?.[B] || null : null;
+    if (JSON.stringify(next) !== JSON.stringify(SRV)) { SRV = next; if (!$("#dim").classList.contains("on")) render(); }
+  } catch {}
+}
 const saveSt = (s) => ls.set(dayKey(), s);
 // 재고보고는 재고보고 페이지(stock)가 이 기기에 남긴 기록으로 확인
-const stockDone = () => { const x = ls.get(`vf-stock-${B}-last`, null); if (!x?.at) return null; const d = new Date(x.at); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}` === todayKey() ? { t: `${pad(d.getHours())}:${pad(d.getMinutes())}`, by: x.by } : null; };
+const stockDone = () => { const x = ls.get(`vf-stock-${B}-last`, null); if (!x?.at) return SRV?.stock || null; const d = new Date(x.at); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}` === todayKey() ? { t: `${pad(d.getHours())}:${pad(d.getMinutes())}`, by: x.by } : SRV?.stock || null; };
 
 async function send(body) {
   const r = await fetch(HOOK, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ content: JSON.stringify({ ...body, branch: B, ver: VER }), allowed_mentions: { parse: [] } }) });
@@ -156,7 +171,7 @@ function render() {
       <a href="../menu/?branch=${encodeURIComponent(B)}">🛍 판매용 메뉴판<span>손님 상담 화면</span></a>
       <a href="../stock/?branch=${encodeURIComponent(B)}&back=${encodeURIComponent(location.pathname)}">📦 재고보고<span>팟·코일·기기 개수</span></a>
     </div>
-    <div class="foot">테스트판 ${VER} · 기록은 디스코드 지점 보고 채널과 시트에도 남아요<br>오늘 기록은 이 기기 기준이에요 (다른 기기에서 한 건 디스코드에서 확인)<br><a href="../stock/?branch=${encodeURIComponent(B)}&test=1&back=${encodeURIComponent(location.pathname)}" style="color:#e5484d">🧪 재고보고 시험하기 (노션·시트 안 바뀜)</a> · <button data-go="branch">지점 바꾸기</button></div>`;
+    <div class="foot">테스트판 ${VER} · 기록은 디스코드 지점 보고 채널과 시트에도 남아요<br>다른 기기에서 한 기록도 1분 안에 같이 보여요<br><a href="../stock/?branch=${encodeURIComponent(B)}&test=1&back=${encodeURIComponent(location.pathname)}" style="color:#e5484d">🧪 재고보고 시험하기 (노션·시트 안 바뀜)</a> · <button data-go="branch">지점 바꾸기</button></div>`;
 }
 function renderPick() {
   $("#app").innerHTML = `<div class="pick"><h1>어느 지점인가요?</h1><p>이 기기에 한 번만 고르면 돼요.</p>
@@ -373,6 +388,7 @@ window.addEventListener("pageshow", render);
 document.addEventListener("visibilitychange", () => { if (!document.hidden) render(); });
 render();
 loadQuickStatus(); setInterval(loadQuickStatus, 30e3);
+loadToday(); setInterval(loadToday, 30e3);
 </script>
 </body>
 </html>
