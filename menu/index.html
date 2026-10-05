@@ -551,7 +551,7 @@
 <body data-mode="">
 <div class="app">
   <div class="top">
-    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">v10.05-1800</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
+    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">v10.05-1900</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
     <nav class="tabs" id="tabs" style="display:none"></nav>
     <div class="flow" id="flow"><span data-st="1">① 찾는 것</span><i>›</i><span data-st="2">② 고르기</span><i>›</i><span data-st="3">③ 담은 상품</span><i>›</i><span data-st="4">④ 직원 확인</span></div>
   </div>
@@ -577,7 +577,7 @@
       <div class="best-dev" id="bestDev"></div></div>
     <div class="evrows">
       <div class="evrow"><div><div class="t">레이저 각인 무료 이벤트</div><div class="u">기기 구매 또는 액상 10병 이상 구매 시 원하는 문구를 새겨 드려요</div></div><div class="d">0원</div></div>
-      <div class="evrow"><div><div class="t">리뷰 작성 이벤트 <span class="evc">결제 20만원 미만</span></div><div class="u">리뷰를 쓰면 입호흡 액상 1병을 더 드려요</div></div><div class="d">+1병</div></div>
+      <div class="evrow"><div><div class="t">네이버 리뷰 이벤트</div><div class="u">네이버 리뷰를 남기면 할인쿠폰을 드려요</div></div></div>
     </div>
     <button class="cta" data-pkg="max10"><span><b>추가 혜택으로 구매하러 가기</b><small>구성과 할인 금액을 한눈에 보여 드려요</small></span><span class="arr">→</span></button>
   </section>
@@ -643,7 +643,7 @@
 
   <div id="dspList" data-for="dsp"></div>
 
-  <div class="foot"><b>시안 · 버전 10.05-1800</b> · 사진·맛·태그는 직원 교육용 액상 DB(380종), 가격은 매장 안내 책자 기준이에요. 패키지·꿀조합·이벤트 문구는 관리자 화면에서 바꾸게 만들 예정이에요. 기기패키지 기준 기기는 하복2(판매가 89,000원)이고 사진은 용트림 상품 페이지 사진에서 배경을 지운 거예요. 레이저 각인은 포스에 0원 상품으로 등록 예정. 빌런 패키지 할인 조건은 아직 확정 전이에요.</div>
+  <div class="foot"><b>시안 · 버전 10.05-1900</b> · 사진·맛·태그는 직원 교육용 액상 DB(380종), 가격은 매장 안내 책자 기준이에요. 패키지·꿀조합·이벤트 문구는 관리자 화면에서 바꾸게 만들 예정이에요. 기기패키지 기준 기기는 하복2(판매가 89,000원)이고 사진은 용트림 상품 페이지 사진에서 배경을 지운 거예요. 레이저 각인은 포스에 0원 상품으로 등록 예정. 빌런 패키지 할인 조건은 아직 확정 전이에요.</div>
 </div>
 
 <div class="srch" id="srch"><div class="hd"><input id="q" type="search" placeholder="이름·초성·맛·브랜드 (예: ㅂㄹㅈㄷ, 멘솔, 팜팜바, 말론)" autocomplete="off"><button class="cl" id="srchClose">닫기</button></div>
@@ -1055,6 +1055,7 @@ function benefits(x) {
   if (x.line === "프리미엄") out.push("프리미엄 11병 90,000원 · 5병 49,500원 (맛 섞어도 돼요)");
   if (x.line === "프라임") out.push("프라임 3병 50,000원 · 10병 160,000원");
   out.push("기기 구매 또는 액상 10병 이상이면 레이저 각인 무료");
+  out.push("네이버 리뷰 남기고 할인쿠폰 받기");
   return out.map((t, i) => [String(i + 1).padStart(2, "0"), t]);
 }
 // 액상 손님에게 기기 한 번 더 권유 — 액상 5병 이상 & 기기 없음일 때 손님당 1번 ([완료·처음으로]에서 초기화)
@@ -1151,6 +1152,7 @@ function pkgView(id) {
   const ben = ["낱개로 사는 것보다 저렴한 구성 (기기 가격 + 액상 묶음가)"];
   if (its.some((x) => x.n.includes("빌런"))) ben.push("빌런 패키지 이벤트 10,000원 추가 할인 적용");
   ben.push(p.device || p.pick >= 10 ? "레이저 각인 무료 (기기 구매 혜택)" : "5병 더 담으면 레이저 각인 무료 (액상 10병 이상)");
+  ben.push("네이버 리뷰 남기고 할인쿠폰 받기");
   open(`<span class="badge">${esc(p.badge)}</span><div class="sh" style="margin-top:12px">${esc(p.name)}</div><div style="color:var(--ink-soft);margin-top:6px;font-size:15px">${esc(p.desc)}</div>
     <div class="ben">${ben.map((t, i) => `<div><i>0${i + 1}</i><span>${esc(t)}</span></div>`).join("")}</div>
     <div style="margin-top:8px">${p.device ? `<div class="line">${pic(DEVICE)}<div><b>${MAIN.name}</b><div class="s">기기 1대 · ${won(MAIN.price)}</div></div></div>` : ""}
