@@ -552,12 +552,25 @@
   .p .qa.so{display:grid;place-items:center;background:var(--panel);color:var(--grey)}
   .stockat{font-size:13px;color:var(--grey)}
   .posw{margin-top:10px;padding:12px 14px;border-radius:12px;background:#fff4e5;color:#8a4b00;font-size:15px;line-height:1.5}
+  .scan .sq{display:flex;align-items:center;gap:2px;background:var(--paper);border-radius:10px}
+  .scan .sq button{width:44px;height:44px;font-size:22px;font-weight:900}
+  .scan .sq b{min-width:28px;text-align:center;font-family:var(--num);font-size:18px}
+  .sadd-open{display:block;width:100%;margin-top:14px;height:54px;border-radius:14px;border:2px dashed var(--line);background:var(--card);font-weight:800;font-size:16px;color:var(--ink-soft)}
+  .sadd{margin-top:14px;padding:14px;border-radius:16px;background:var(--card);box-shadow:var(--sh)}
+  .sadd-h{display:flex;align-items:center;justify-content:space-between}
+  .sadd-h b{font-family:var(--num);font-size:18px}
+  .sadd-h button{padding:10px 14px;border-radius:10px;background:var(--panel);font-weight:800}
+  .sq-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+  .sq-row div{flex:1;min-width:0}.sq-row b{display:block;font-size:16px}.sq-row span{font-size:13px;color:var(--grey)}
+  .sq-row button{flex:none;width:48px;height:48px;border-radius:12px;background:var(--ink);color:#fff;font-size:24px;font-weight:900}
+  .sq-row.sold b{color:var(--grey)}
+  .sq-hint{padding:14px 0;color:var(--grey);font-size:14px}
 </style>
 </head>
 <body data-mode=""><div id="testRibbon" style="position:fixed;left:0;right:0;bottom:0;z-index:99999;background:#d32f2f;color:#fff;text-align:center;font:700 13px sans-serif;padding:4px;pointer-events:none">테스트판 · 손님 상담에는 정식판을 쓰세요</div>
 <div class="app">
   <div class="top">
-    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">테스트 v10.05-2900</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
+    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">테스트 v10.05-3000</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
     <nav class="tabs" id="tabs" style="display:none"></nav>
     <div class="flow" id="flow"><span data-st="1">① 찾는 것</span><i>›</i><span data-st="2">② 고르기</span><i>›</i><span data-st="3">③ 담은 상품</span><i>›</i><span data-st="4">④ 직원 확인</span></div>
   </div>
@@ -649,7 +662,7 @@
 
   <div id="dspList" data-for="dsp"></div>
 
-  <div class="foot"><b>시안 · 버전 10.05-2900</b> · 사진·맛·태그는 직원 교육용 액상 DB(380종), 가격은 매장 안내 책자 기준이에요. 패키지·꿀조합·이벤트 문구는 관리자 화면에서 바꾸게 만들 예정이에요. 기기패키지 기준 기기는 하복2(판매가 89,000원)이고 사진은 용트림 상품 페이지 사진에서 배경을 지운 거예요. 레이저 각인은 포스에 0원 상품으로 등록 예정. 빌런 패키지 할인 조건은 아직 확정 전이에요.</div>
+  <div class="foot"><b>시안 · 버전 10.05-3000</b> · 사진·맛·태그는 직원 교육용 액상 DB(380종), 가격은 매장 안내 책자 기준이에요. 패키지·꿀조합·이벤트 문구는 관리자 화면에서 바꾸게 만들 예정이에요. 기기패키지 기준 기기는 하복2(판매가 89,000원)이고 사진은 용트림 상품 페이지 사진에서 배경을 지운 거예요. 레이저 각인은 포스에 0원 상품으로 등록 예정. 빌런 패키지 할인 조건은 아직 확정 전이에요.</div>
 </div>
 
 <div class="srch" id="srch"><div class="hd"><input id="q" type="search" placeholder="이름·초성·맛·브랜드 (예: ㅂㄹㅈㄷ, 멘솔, 팜팜바, 말론)" autocomplete="off"><button class="cl" id="srchClose">닫기</button></div>
@@ -1004,7 +1017,7 @@ const CHO = "ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ";
 const cho = (str) => [...str].map((ch) => { const c = ch.charCodeAt(0) - 0xac00; return c >= 0 && c < 11172 ? CHO[Math.floor(c / 588)] : ch; }).join("");
 const norm = (str) => String(str).toLowerCase().replace(/^vf\s*/, "").replace(/\s+/g, "");
 const IDX = [...L.map((x) => { const nm = norm(x.n); const all = norm([x.n, x.br, x.f, x.g, x.line, ...x.t].join(" ")); return { x, nm, all, cho: cho(nm) }; }),
-  ...(window.GOODS || []).map((x) => { const nm = norm(x.n); const all = norm([x.n, { dev: "기기", pod: "팟 코일", dsp: "일회용" }[x.c], x.sub || ""].join(" ")); return { x, nm, all, cho: cho(nm) }; })];
+  ...G.map((x) => { const nm = norm(x.n); const all = norm([x.n, { dev: "기기", pod: "팟 코일", dsp: "일회용" }[x.c], x.sub || ""].join(" ")); return { x, nm, all, cho: cho(nm) }; })];
 function searchItems(qs) {
   const q = norm(qs); if (!q) return [];
   const onlyCho = /^[ㄱ-ㅎ]+$/.test(q);
@@ -1026,7 +1039,7 @@ function drawSearch() {
   $("#srchHint").textContent = q ? `'${q}' ${r.length}개` : "초성만 쳐도 돼요 · 띄어쓰기 상관없어요";
   $("#srchRes").innerHTML = q && !r.length ? '<div style="padding:30px 0;color:var(--grey);font-size:16px">찾는 상품이 없어요. 다른 이름이나 초성으로 찾아 보세요.</div>' : `<div class="prods">${r.slice(0, 60).map((x) => (x.c ? gCard([x.model, [x]]).replace(`data-gm="${esc(x.model)}"`, `data-gadd="${x.id}"`).replace(`<b>${esc(x.model)}</b>`, `<b>${esc(x.n)}</b>`) : card(x))).join("")}</div>`;
 }
-document.addEventListener("input", (e) => { if (e.target.id === "q") drawSearch(); });
+document.addEventListener("input", (e) => { if (e.target.id === "q") drawSearch(); if (e.target.id === "sq") { staffQ = e.target.value; const box = document.getElementById("sqRes"); if (box) box.innerHTML = staffRes(); } });
 
 function card(x) {
   const bg = badgeOf(x), q = cart.get(x.id) || 0;
@@ -1185,12 +1198,20 @@ function bundleOf(dev, vl) { // 포스에 있는 묶음 상품 중 정확히 맞
   if (!dev && vl === 12) return "빌런,릭 85,200원(12병)";
   return null;
 }
-function scanBlock(title, sub, posName, n, note = "") {
+// 직원 화면에서 바로 고치기 (10/5 동성로 요청): 수량 −/+ · 상품 추가 · 찍음 체크는 다시 그려도 유지
+const scanDone = new Set(); let staffAdd = false, staffQ = "";
+function scanBlock(title, sub, posName, n, note = "", id = "") {
   const p = posName && posOf(posName);
   const code = p ? `<svg class="bc" data-v="${esc(p[1])}" data-f="${p[2]}"></svg>${p[3] ? "" : '<span class="warn">바코드 미등록 · 상품코드(' + esc(p[0]) + ')로 만든 바코드라 포스 인식 확인 필요</span>'}`
     : '<span class="warn">포스 상품을 못 찾았어요 · 포스에서 직접 검색해 주세요</span>';
-  return `<div class="scan"><div class="hd"><b>${esc(title)}</b><span class="x">× ${n}</span></div><div class="s">${esc(sub)}${note}</div>${code}</div>`;
+  return `<div class="scan ${id && scanDone.has(id) ? "done" : ""}" ${id ? `data-sid="${id}"` : ""}><div class="hd"><b>${esc(title)}</b>${id ? `<span class="sq"><button data-sm="${id}" aria-label="빼기">−</button><b>${n}</b><button data-sp="${id}" aria-label="더하기">+</button></span>` : `<span class="x">× ${n}</span>`}</div><div class="s">${esc(sub)}${note}</div>${code}</div>`;
 }
+function staffRes() {
+  if (!staffQ.trim()) return '<div class="sq-hint">찾을 상품 이름을 넣어 주세요</div>';
+  const r = searchItems(staffQ).slice(0, 12);
+  return r.length ? r.map((x) => `<div class="sq-row ${isOut(x) && !x.c ? "sold" : ""}"><div><b>${esc(x.c ? x.n : short(x.n))}</b><span>${x.c ? won(x.price) : esc(x.br)}${isOut(x) && !x.c ? " · 품절" : ""}${cart.get(x.id) ? ` · 담음 ${cart.get(x.id)}` : ""}</span></div><button data-sa="${x.id}">+</button></div>`).join("") : '<div class="sq-hint">찾는 상품이 없어요</div>';
+}
+function staffRedraw() { const st = $("#sheet").scrollTop; staffView(); $("#sheet").scrollTop = st; }
 function staffView() {
   const items = [...cart];
   const vl = items.filter(([id]) => isVL(item(id))).reduce((a, [, n]) => a + n, 0);
@@ -1198,10 +1219,10 @@ function staffView() {
   const bundle = bundleOf(dev, vl);
   const blocks = items.map(([id, n]) => {
     const x = item(id);
-    if (x.dev) return devColor ? scanBlock(`${MAIN.name} · ${devColor}`, "기기", `${MAIN.model} ${devColor}`, n)
+    if (x.dev) return devColor ? scanBlock(`${MAIN.name} · ${devColor}`, "기기", `${MAIN.model} ${devColor}`, n, "", id)
       : `<div class="scan"><div class="hd"><b>${MAIN.name}</b><span class="x">× ${n}</span></div><div class="s">색상을 골라야 바코드가 나와요</div><div class="colors" style="padding:10px 0 0">${DEV_COLORS.map((c) => `<button data-color2="${c}">${c}</button>`).join("")}</div></div>`;
-    if (x.c) return scanBlock(x.n, won(x.price) + (x.ev ? " · " + EVN[x.ev][2] + " 이벤트" : ""), x.n, n);
-    return scanBlock(short(x.n), [x.br, x.loc ? "진열 " + x.loc : ""].filter(Boolean).join(" · "), x.n, n, bundle && isVL(x) ? " · <b style='color:var(--red)'>서비스(0원) 처리</b>" : "");
+    if (x.c) return scanBlock(x.n, won(x.price) + (x.ev ? " · " + EVN[x.ev][2] + " 이벤트" : ""), x.n, n, "", id);
+    return scanBlock(short(x.n), [x.br, x.loc ? "진열 " + x.loc : ""].filter(Boolean).join(" · "), x.n, n, bundle && isVL(x) ? " · <b style='color:var(--red)'>서비스(0원) 처리</b>" : "", id);
   }).join("");
   open(`<div class="sh">직원 확인용 · 포스 스캔</div><div style="color:var(--ink-soft);margin-top:6px;font-size:14.5px">위에서부터 차례로 찍고, 찍은 건 눌러서 체크하세요. (${esc(PAD.branch)} 포스 상품 기준)</div><div class="posw">⚠️ 찍기 전에 포스가 <b>판매 화면</b>인지 확인하세요 · 회원조회·회원등록·영수증 창이 열려 있으면 포스가 멈춰요</div>
   ${incBox()}
@@ -1215,7 +1236,8 @@ function staffView() {
       return `<div class="scan bundle"><div class="hd"><b>일회용 묶음 먼저: ${esc(nm)}</b><span class="x">× ${sets}</span></div><div class="s">이걸로 돈을 받고, 아래 ${esc(who)} 중 <b style="color:var(--red)">${inSet}개는 서비스(0원)</b>${rest ? `, 나머지 ${rest}개는 정상가` : ""}로 찍어 주세요</div>${p ? `<svg class="bc" data-v="${esc(p[1])}" data-f="${p[2]}"></svg>${p[3] ? "" : '<span class="warn">바코드 미등록 · 상품코드(' + esc(p[0]) + ')로 만든 바코드라 포스 인식 확인 필요</span>'}` : '<span class="warn">포스 상품을 못 찾았어요 · 포스에서 직접 검색해 주세요</span>'}</div>`;
     }).join("");
   })()}
-  <div style="margin-top:6px">${blocks}</div>
+  <div style="margin-top:6px">${blocks || '<div style="padding:20px 0;color:var(--grey)">담은 상품이 없어요</div>'}</div>
+  ${staffAdd ? `<div class="sadd"><div class="sadd-h"><b>상품 추가</b><button data-sadd="0">닫기</button></div><input class="in" id="sq" placeholder="이름·초성으로 찾기 (액상·팟·코일·일회용·기기)" value="${esc(staffQ)}"><div id="sqRes">${staffRes()}</div></div>` : `<button class="sadd-open" data-sadd="1">＋ 상품 추가 (액상 · 팟 · 코일 · 소모품)</button>`}
   ${(() => { const gc = goodsCalc(), fr = Object.entries(gc.freeBy).filter(([k, n]) => n && !DSP_POS[k]); const base = estimate(countCart()).liq + gc.pod; return (fr.length ? `<div class="scan bundle"><div class="s" style="color:var(--ink)">일회용 이벤트 무료: ${fr.map(([k, n]) => evLabel(k) + " " + n + "개").join(", ")} → 포스에서 가장 싼 것부터 서비스(0원) 처리</div></div>` : "") + (gc.giftDev ? `<div class="scan bundle"><div class="s" style="color:var(--ink)">🎁 에어릭스 팟 10개 혜택 → 에어릭스 기기 ${gc.giftDev}대 증정 (서비스 0원 처리)</div></div>` : "") + (base >= 100000 ? `<div class="scan bundle"><div class="s" style="color:var(--ink)">🎁 액상·팟 ${won(base)} → 일회용 기기 1개 증정</div></div>` : ""); })()}
   ${engrave !== null ? `<div class="scan"><div class="hd"><b>레이저 각인 (0원)</b><span class="x">× 1</span></div><div class="s">문구: ${engrave ? esc(engrave) : "손님께 확인"}</div><span class="warn">포스에 0원 각인 상품 등록 후 바코드 연결</span></div>` : ""}
   ${review ? `<div class="line"><div class="mini" style="background:var(--red)">리뷰</div><div><b>클립 리뷰 할인 -3,000원</b><div class="s">네이버 클립 업로드 확인 후 할인</div></div></div>` : ""}
@@ -1271,7 +1293,11 @@ async function incSend(seller) {
 const PAD = { branch: BRANCH, no: new URLSearchParams(location.search).get("pad") || "1" };
 document.addEventListener("click", (e) => {
   const q = (s) => e.target.closest(s); let el;
-  if ((el = q("#sheet .scan:not(.bundle)")) && el.querySelector(".bc")) { el.classList.toggle("done"); const all = document.querySelectorAll("#sheet .scan:not(.bundle)"), d = document.querySelectorAll("#sheet .scan.done").length; if (d === all.length) toast("전부 찍었어요 ✓"); return; } // 찍은 바코드 표시
+  if ((el = q("[data-sm]"))) { add(el.dataset.sm, -1); scanDone.delete(el.dataset.sm); return staffRedraw(); }
+  if ((el = q("[data-sp]"))) { add(el.dataset.sp, 1); scanDone.delete(el.dataset.sp); return staffRedraw(); }
+  if ((el = q("[data-sadd]"))) { staffAdd = el.dataset.sadd === "1"; staffRedraw(); if (staffAdd) setTimeout(() => document.getElementById("sq")?.focus(), 50); return; }
+  if ((el = q("[data-sa]"))) { const id = el.dataset.sa; id[0] === "g" ? addGoods(id) : add(id); toast("추가했어요"); staffRedraw(); return; }
+  if ((el = q("#sheet .scan:not(.bundle)")) && el.querySelector(".bc")) { el.classList.toggle("done"); if (el.dataset.sid) el.classList.contains("done") ? scanDone.add(el.dataset.sid) : scanDone.delete(el.dataset.sid); const all = document.querySelectorAll("#sheet .scan:not(.bundle)"), d = document.querySelectorAll("#sheet .scan.done").length; if (d === all.length) toast("전부 찍었어요 ✓"); return; } // 찍은 바코드 표시
   if ((el = q("[data-inc]"))) return incSend(el.dataset.inc);
   if (q("[data-inc-go]")) return incSend($("#incName")?.value);
   if ((el = q("[data-mode]")) && el.classList.contains("way")) { setMode(el.dataset.mode); return; }
@@ -1318,7 +1344,7 @@ document.addEventListener("click", (e) => {
   if ((el = q("[data-color]"))) { devColor = el.dataset.color; return cartView(); }
   if ((el = q("[data-color2]"))) { devColor = el.dataset.color2; return staffView(); }
   if (q("[data-staff]")) { if (member.type === "new" && (member.phone || member.name) && !member.agree) return toast("회원등록은 개인정보 동의가 필요해요"); if ([...cart.keys()].some((id) => isHi(item(id))) && !ledgerText()) { ledgerView(); toast("손님께 패드를 건네 직접 작성해 달라고 해 주세요"); return; } if (member.type === "new" && (member.phone || member.name) && !member.agree) return toast("회원등록은 개인정보 동의가 필요해요"); return staffView(); }
-  if (q("[data-reset]") && !(incSent = null)) { devUpShown = false; $("#devUp").classList.remove("on"); cart.clear(); airxGift = "pod"; Object.assign(ledger, { name: "", gu: "", etc: "" }); engrave = null; devColor = null; review = false; Object.assign(member, { type: null, name: "", phone: "", agree: false }); render(); closeS(); setMode(""); toast("처음 화면으로 돌아왔어요"); return; }
+  if (q("[data-reset]") && !(incSent = null) && (scanDone.clear(), staffAdd = false, staffQ = "", true)) { devUpShown = false; $("#devUp").classList.remove("on"); cart.clear(); airxGift = "pod"; Object.assign(ledger, { name: "", gu: "", etc: "" }); engrave = null; devColor = null; review = false; Object.assign(member, { type: null, name: "", phone: "", agree: false }); render(); closeS(); setMode(""); toast("처음 화면으로 돌아왔어요"); return; }
   if (e.target.id === "dim") closeS();
 });
 document.addEventListener("input", (e) => { const id = e.target.id; if (id === "engrText") engrave = e.target.value; if (id === "ldName" || id === "ldEtc") { ledger[id === "ldName" ? "name" : "etc"] = e.target.value; const p = document.getElementById("ldPrev"); if (p) p.textContent = ledgerText() || "성함과 사시는 곳을 골라 주세요"; } if (id === "memName") member.name = e.target.value; if (id === "memPhone") member.phone = e.target.value.replace(/\D/g, ""); if (id === "memAgree") member.agree = e.target.checked; });
@@ -1357,10 +1383,10 @@ document.addEventListener("visibilitychange", () => { if (document.hidden) evFlu
 { let tq = null; const _ds = drawSearch; drawSearch = () => { _ds(); clearTimeout(tq); const q = $("#q").value.trim(); if (!q) return; tq = setTimeout(() => { const r = searchItems(q); ev("q", q, `${r.length}/${r.filter((x) => isOut(x)).length}`); }, 1500); }; }
 // 담기 (카드 + / 상세 담기 / 기기·팟·일회용 / 구성 담기)
 document.addEventListener("click", (e) => {
-  const el = e.target.closest("[data-qa],[data-add],[data-gadd],[data-pkgadd],[data-maindev],#cartBtn,#nextBar");
+  const el = e.target.closest("[data-qa],[data-add],[data-gadd],[data-pkgadd],[data-maindev],[data-sa],#cartBtn,#nextBar");
   if (!el) return;
   if (el.id === "cartBtn" || el.id === "nextBar") return ev("c", "", String([...cart.values()].reduce((a, b) => a + b, 0)));
-  const id = el.dataset.qa || el.dataset.add || el.dataset.gadd;
+  const id = el.dataset.qa || el.dataset.add || el.dataset.gadd || el.dataset.sa;
   if (id) { const x = item(id); if (x) ev("a", x.n); return; }
   if (el.dataset.pkgadd) return ev("a", "구성:" + el.dataset.pkgadd);
   if (el.dataset.maindev != null) return ev("a", MAIN.name);
