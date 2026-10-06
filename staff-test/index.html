@@ -97,7 +97,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.06-5";
+const VER = "10.06-6";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
 const OPEN_AT = { 동성로: "11:00", 수성: "10:30", 본점: "11:00", 율하: "10:30", 반월당: "10:30", 상인: "10:30", 광장코아: "11:00", 현풍: "11:00" };
 // 운영봇(운영봇_시험.mjs)의 CHECK와 같은 목록이어야 기록이 맞아요
@@ -169,6 +169,7 @@ function render() {
     ${creqCardHtml()}
     <div class="card"><h2>마감</h2>
       ${stepRow("🌙", !!s.close, "마감 체크", s.close ? { t: `${s.close.t} 완료${s.close.missed.length ? ` · 못 한 것 ${s.close.missed.length}개` : ""}`, w: s.close.missed.length } : { t: "아직 안 함" }, `<button class="act ${s.close ? "gray" : ""}" data-go="close">${s.close ? "다시" : "체크"}</button>`)}
+      ${CLOSE_OK.includes(B) ? closeRowHtml(stepRow) : ""}
       ${stepRow("👋", s.ins.length > 0 && !working.length, "퇴근", { t: working.length ? `근무 중: ${working.map((x) => esc(x.name)).join(", ")}` : s.ins.length ? "모두 퇴근" : "출근 기록 없음" }, working.length ? `<button class="act gray" data-go="out">퇴근</button>` : "")}
     </div>
     <div class="card"><h2>요청 보내기</h2>
@@ -408,6 +409,40 @@ async function doSurvey() {
     closeSheet(); toast(`${sv.nm} ${items.length}개 보냈어요 · 관리자가 확인하면 포스에 반영돼요`);
   } catch (e) { $("#okSv").disabled = false; fail(e); }
 }
+// ── 마감 보고 (10/6, 본점 먼저) ── 돈통 5만원권·1만원권 장수만 → 시재 자동 계산, 매출·카드·이체·지출은 봇이 포스에서
+// 시재 = 1만원권 − 10장(내일 준비금) + 5만원권. 보고문(매출)은 관리자 페이지에만 — 여기엔 보냈는지 상태만
+const CLOSE_OK = ["본점"];
+let CLOSE_SENT = null;
+const closeDay = () => { const d = new Date(); if (d.getHours() < 5) d.setDate(d.getDate() - 1); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; };
+function closeRowHtml(stepRow) {
+  const c = BOARD?.closing && BOARD.closing.date === closeDay() ? BOARD.closing : CLOSE_SENT;
+  const info = !c ? { t: "아직 안 함 · 돈통만 세면 돼요" } : c.status === "done" ? { t: `${c.at} 보고 완료 · ${c.by}` } : c.status === "error" ? { t: `못 만들었어요: ${c.err || ""}`, w: 1 } : { t: "보고문 만드는 중… (1~2분)" };
+  return stepRow("💰", c?.status === "done", "마감 보고", info, `<button class="act ${c?.status === "done" ? "gray" : ""}" data-go="closing">${c ? "다시" : "보고"}</button>`);
+}
+function sheetClosing() {
+  if (!working().length) return toast("먼저 출근을 눌러 주세요 · 마감 인원이 자동으로 들어가요");
+  openSheet(`<h2>💰 마감 보고</h2><div class="desc">매출·카드·이체·지출은 포스에서 자동으로 가져와요. 돈통만 세 주세요.</div>
+    <div class="desc" style="margin-top:16px">5만원권 몇 장?</div><input class="input" id="c50" inputmode="numeric" placeholder="장">
+    <div class="desc" style="margin-top:12px">1만원권 몇 장? (전부 세기)</div><input class="input" id="c10" inputmode="numeric" placeholder="장">
+    <div class="desc" id="cSij" style="margin-top:10px;font-size:16px;color:var(--ink)">시재 0원</div>
+    <div class="desc" style="margin-top:2px">만원권 10장은 내일 준비금으로 빼고 계산해요</div>
+    <div class="desc" style="margin-top:16px">리뷰 개수 · 각인 의뢰 (선택)</div><div style="display:flex;gap:8px"><input class="input" id="cRev" inputmode="numeric" placeholder="리뷰"><input class="input" id="cEng" inputmode="numeric" placeholder="각인"></div>
+    <button class="check" data-cck="hn" style="margin-top:12px"><i>✓</i>히난충 OFF 확인</button><button class="check" data-cck="vm"><i>✓</i>자판기 이상무</button>
+    <div class="desc" style="margin-top:8px">마감 인원: ${esc(working().join(", "))}</div>
+    <div class="btns"><button class="btn" data-x>취소</button><button class="btn primary" id="okClose">보고 보내기</button></div>`);
+}
+const sijae = () => { const n50 = +($("#c50")?.value || 0), n10 = +($("#c10")?.value || 0); return n50 * 50000 + Math.max(0, n10 - 10) * 10000; };
+async function doClosing() {
+  const v = (id) => ($(id).value || "").replace(/\D/g, "");
+  if (v("#c50") === "" || v("#c10") === "") return toast("5만원권·1만원권 장수를 넣어 주세요 (없으면 0)");
+  const hn = $('[data-cck="hn"]').classList.contains("on"), vm = $('[data-cck="vm"]').classList.contains("on");
+  if ((!hn || !vm) && !confirm(`${!hn ? "히난충 OFF " : ""}${!vm ? "자판기 " : ""}확인이 안 됐어요. 그대로 보낼까요?`)) return;
+  $("#okClose").disabled = true;
+  try {
+    await send({ type: "closing", n50: v("#c50"), n10: v("#c10"), rev: v("#cRev"), eng: v("#cEng"), hn, vm, by: working().join(", ") });
+    CLOSE_SENT = { date: closeDay(), status: "wait", at: now() }; closeSheet(); render(); toast(`시재 ${sijae().toLocaleString()}원으로 보냈어요 · 보고문은 1~2분 뒤 관리자 페이지에`);
+  } catch (e) { $("#okClose").disabled = false; fail(e); }
+}
 function memoCardHtml() {
   const list = memoList();
   const toName = { next: "다음 근무자", keep: "📢 계속 공지", leader: "👔 팀장님께" };
@@ -561,6 +596,9 @@ document.addEventListener("click", (e) => {
   if (t.dataset.honame) return doHandoff(t.dataset.honame);
   if (t.dataset.tdone) return doTaskDone(t.dataset.tdone);
   if (t.dataset.go === "survey") return sheetSurvey();
+  if (t.dataset.go === "closing") return sheetClosing();
+  if (t.dataset.cck) return t.classList.toggle("on");
+  if (t.id === "okClose") return doClosing();
   if (t.dataset.svc) return sheetSurveyList(t.dataset.svc);
   if (t.id === "okSv") return doSurvey();
   if (t.dataset.go === "creq") return sheetCreq();
@@ -599,6 +637,7 @@ document.addEventListener("click", (e) => {
 });
 document.addEventListener("input", (e) => {
   if (e.target.id === "rqAddr") onAddr();
+  if (e.target.id === "c50" || e.target.id === "c10") { e.target.value = e.target.value.replace(/\D/g, "").slice(0, 3); $("#cSij").textContent = `시재 ${sijae().toLocaleString()}원`; }
   if (e.target.dataset.svi !== undefined) { const i = +e.target.dataset.svi, v = e.target.value.replace(/\D/g, "").slice(0, 4); e.target.value = v; if (v === "") delete sv.cnt[i]; else sv.cnt[i] = v; e.target.closest(".sv-row").classList.toggle("done", v !== ""); $("#svN").textContent = Object.keys(sv.cnt).length; }
   if (e.target.id === "crFind") { const q = e.target.value.trim(); $("#crRes").innerHTML = q ? qkFind(q).map((n) => `<button class="qr" data-cradd="${esc(n)}">${esc(n)}<small>${esc(QPOS()[n]?.[4] || "")}</small>${OUTS.has(n) ? '<small style="color:var(--red);background:var(--red-soft)">품절</small>' : ""} <i>+</i></button>`).join("") || '<div class="desc">못 찾았어요 · 아래 칸에 직접 적어 주세요</div>' : ""; }
   if (e.target.id === "qkFind") { const q = e.target.value.trim(); $("#qkRes").innerHTML = q ? qkFind(q).map((n) => `<button class="qr" data-qadd="${esc(n)}">${esc(n)}<small>${esc(QPOS()[n]?.[4] || "")}</small> <i>+</i></button>`).join("") || '<div class="desc">못 찾았어요</div>' : ""; }
