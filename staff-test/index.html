@@ -91,7 +91,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.06-2";
+const VER = "10.06-3";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
 const OPEN_AT = { 동성로: "11:00", 수성: "10:30", 본점: "11:00", 율하: "10:30", 반월당: "10:30", 상인: "10:30", 광장코아: "11:00", 현풍: "11:00" };
 // 운영봇(운영봇_시험.mjs)의 CHECK와 같은 목록이어야 기록이 맞아요
@@ -250,10 +250,12 @@ async function doReq() {
 // ── 퀵 요청 (10/5): 재고 문의 → [가능] → 결제 완료(고객정보) → 포장 → 접수 → 출발 · 대화 없이 버튼으로 ──
 let qk = null, QST = {};
 const QNAME = { ask: "⏳ 답 기다리는 중", ok: "✅ 가능 · 결제 후 아래 버튼", no: "❌ 불가", paid: "💳 결제 완료 · 포장 대기", pack: "📦 포장 완료", call: "📞 퀵 접수", go: "🛵 출발 완료" };
+const QORD = ["ask", "ok", "no", "paid", "pack", "call", "go"];
 const myQuicks = () => ls.get(`vf-app-${B}-quicks`, []).filter((x) => Date.now() - x.ts < 3 * 86400e3);
 function myQuicksCard() {
   const qs = myQuicks(); if (!qs.length) return "";
-  return `<div class="card"><h2>내 퀵 요청</h2>${qs.slice().reverse().map((x) => { const st = QST[x.id]?.step || "ask";
+  // 상태 파일(quick.json)은 깃허브에서 몇 분 늦게 바뀔 수 있어서, 이 기기에서 이미 넘긴 단계보다 뒤로 돌아가지 않게 함 (10/6 결제 완료 후 다시 '가능'으로 보이던 문제)
+  return `<div class="card"><h2>내 퀵 요청</h2>${qs.slice().reverse().map((x) => { const sv = QST[x.id]?.step || "ask", st = QORD.indexOf(x.step || "ask") > QORD.indexOf(sv) ? x.step : sv;
     return `<div class="qrow"><div><b>→ ${esc(ho(x.to))}</b><span>${x.items.map(([n, c]) => esc(n) + " " + c).join(" · ")}</span><em>${QNAME[st]}${QST[x.id]?.t ? " · " + QST[x.id].t : ""}</em></div>${st === "ok" ? `<button class="act" data-qpay="${x.id}">결제 완료</button>` : ""}</div>`; }).join("")}
     <div class="desc" style="margin:8px 0 0">상태는 1~2분 늦게 바뀔 수 있어요</div></div>`;
 }
@@ -302,7 +304,7 @@ async function doPay(id) {
   const v = (k) => ($(k)?.value || "").trim();
   if (!v("#pyName") || !v("#pyPhone") || !v("#pyAddr")) return toast("이름·연락처·주소를 모두 넣어 주세요");
   $("#okPay").disabled = true;
-  try { await send({ type: "quickpay", id, name: v("#pyName"), phone: v("#pyPhone"), addr: v("#pyAddr"), by: st().ins.filter((x) => !x.out).map((x) => x.name).join(", ") }); QST[id] = { step: "paid", t: now() }; closeSheet(); render(); toast("결제 완료를 보냈어요 · 포장이 시작돼요"); }
+  try { await send({ type: "quickpay", id, name: v("#pyName"), phone: v("#pyPhone"), addr: v("#pyAddr"), by: st().ins.filter((x) => !x.out).map((x) => x.name).join(", ") }); QST[id] = { step: "paid", t: now() }; ls.set(`vf-app-${B}-quicks`, myQuicks().map((y) => (y.id === id ? { ...y, step: "paid" } : y))); closeSheet(); render(); toast("결제 완료를 보냈어요 · 포장이 시작돼요"); }
   catch (e) { $("#okPay").disabled = false; fail(e); }
 }
 // ── 고객요청·인수인계 (10/6) ── 노션에서 늘 빠지던 날짜·담당자·결제여부를 자동/버튼으로 받고, 입고되면 봇이 알려줌
