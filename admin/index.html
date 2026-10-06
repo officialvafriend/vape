@@ -85,6 +85,7 @@
 <div class="wrap" id="app"></div>
 <nav class="nav" id="nav" style="display:none"><div>
   <button data-tab="home"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3.2 3 10.4V20a1 1 0 0 0 1 1h5.5v-6h5v6H20a1 1 0 0 0 1-1v-9.6z"/></svg>홈</button>
+  <button data-tab="survey"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 5h16v3H4zm1 5h14v9a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1zm4 3v2h6v-2z"/></svg>재고조사</button>
   <button data-tab="tasks"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 3h8v2h3a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h3zm2 0v3h4V3zm5.3 7.3-4.3 4.3-2.3-2.3-1.4 1.4 3.7 3.7 5.7-5.7z"/></svg>업무</button>
   <button data-tab="must"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h16v4H4zm0 6h16v10H4zm5 3v2h6v-2z"/></svg>추가 필수</button>
 </div></nav>
@@ -164,7 +165,7 @@ function render() {
   document.querySelectorAll("#nav button").forEach((b) => b.classList.toggle("on", b.dataset.tab === tab));
   const [, hh, mm] = D.at.match(/(\d{2}):(\d{2})$/) || [];
   $("#app").innerHTML = `<div class="top"><div class="logo">VAFRIEND <b>관리자</b></div><div class="r"><button class="ic" data-act="reload">${hh ? `${hh}:${mm} 기준 ↻` : "새로고침"}</button><button class="ic" data-act="logout">잠그기</button></div></div>
-    ${tab === "home" ? homeHtml() : tab === "tasks" ? tasksHtml() : mustHtml()}`;
+    ${tab === "home" ? homeHtml() : tab === "survey" ? surveyHtml() : tab === "tasks" ? tasksHtml() : mustHtml()}`;
 }
 function totals() {
   const con = D.branches.filter((x) => x.connected && x.must);
@@ -189,7 +190,9 @@ function homeHtml() {
     return `<div class="item"><div class="av blue">${esc(GNAME[g][0])}</div><div class="tx"><b>${esc(GNAME[g])}</b><span>${con.map((x) => `${x.b} ${G(x, g).out.length}`).join(" · ")}</span></div><div class="val"><b>${n}개</b><span class="t-sub">${t ? Math.round((n / t) * 100) : 0}% 품절</span></div></div>`; }).join("")}</div>`;
   const pct = tAll ? Math.round((tDone / tAll) * 100) : 0;
   const order = [...D.branches].sort((a, c) => (c.connected - a.connected) || ((c.rate ?? -1) - (a.rate ?? -1)));
+  const sw = (D.surveys || []).filter((v) => v.status === "wait");
   return `<div class="card">${hero}</div>
+    ${sw.length ? `<button class="card" data-tab="survey" style="display:block;width:100%;text-align:left"><div class="eyebrow">재고조사</div><div class="headline">확인할 재고조사가<br><em>${sw.length}건</em> 있어요</div><div class="caption">${[...new Set(sw.map((v) => v.branch))].join("·")} · 포스와 다른 상품만 모아 보여드려요 ›</div></button>` : ""}
     <div class="sec">지점별</div>
     <div class="list">${order.map(branchRow).join("")}</div>
     ${groupCard}
@@ -253,6 +256,29 @@ function bindSparks() {
   });
 }
 const REP_TXT = (t) => !t ? "" : t.rep === "once" ? `${t.date.slice(5).replace("-", "/")} 한 번` : t.rep === "daily" ? "매일" : t.rep === "weekly" ? `매주 ${(t.dow || []).slice().sort((a, b) => ((a + 6) % 7) - ((b + 6) % 7)).map((d) => WD[d]).join("·")}` : `매월 ${t.dom}일`;
+// ── 재고조사 (직원앱에서 센 수량 ↔ 포스 수량). [승인](포스 반영)은 아직 꺼 둠 ──
+const SVST = { wait: ["승인 대기", "blue"], reject: ["반려", "gray"], done: ["반영 완료", "good"] };
+function surveyHtml() {
+  const L = D.surveys || [], w = L.filter((v) => v.status === "wait");
+  return `<div class="card"><div class="eyebrow">재고조사</div><div class="headline">${w.length ? `확인할 재고조사가<br><em>${w.length}건</em> 있어요` : "확인할 재고조사가 없어요"}</div>
+      <div class="caption">직원앱에서 카테고리별로 센 수량을 포스 수량과 비교해요.<br>포스 수량은 업무봇이 매시간 읽은 값이라 그 사이 판매만큼 차이가 날 수 있어요.</div></div>
+    <div class="list">${L.length ? L.map((v) => { const df = v.items.filter((r) => r.diff).length, [stt, k] = SVST[v.status] || ["", ""];
+      return `<button class="item" data-sv="${v.id}"><div class="av ${df ? (v.status === "wait" ? "warn" : "") : "good"}">${BR.indexOf(v.branch) + 1}</div>
+        <div class="tx"><b>${esc(v.branch)} · ${esc(v.cat)}</b><span>${esc(v.by)} · ${v.d.slice(5).replace("-", "/")} ${v.t} · ${v.items.length}개 셈</span></div>
+        <div class="val"><b>${df ? `${df}개 다름` : "모두 같음"}</b><span class="t-${k === "good" ? "good" : "sub"}">${stt}</span></div><span class="chev">›</span></button>`; }).join("") : '<div class="empty">아직 들어온 재고조사가 없어요</div>'}</div>`;
+}
+function sheetSurvey(id) {
+  const v = D.surveys.find((x) => x.id === id), df = v.items.filter((r) => r.diff), same = v.items.filter((r) => r.diff === 0).length, unk = v.items.filter((r) => r.pos == null);
+  const posAt = v.posAt ? new Date(v.posAt).toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" }) : "?";
+  openSheet(`<div class="eyebrow">${esc(ho(v.branch))} · ${esc(v.by)} · ${v.d.slice(5).replace("-", "/")} ${v.t}</div>
+    <h3>${esc(v.cat)} ${v.items.length}개 중<br>${df.length ? `<span class="t-warn">${df.length}개가 포스와 달라요</span>` : "모두 포스와 같아요"}</h3>
+    <div class="caption">같음 ${same}개${unk.length ? ` · 포스에 없는 이름 ${unk.length}개` : ""} · 포스 수량 ${posAt} 기준</div>
+    ${df.length ? `<div class="list">${df.sort((a, c) => Math.abs(c.diff) - Math.abs(a.diff)).map((r) => `<div class="item"><div class="tx"><b>${esc(r.n)}</b><span>포스 ${r.pos} → 실제 ${r.cnt}</span></div><div class="val"><b class="${r.diff < 0 ? "t-bad" : ""}">${r.diff > 0 ? "+" : ""}${r.diff}</b></div></div>`).join("")}</div>` : ""}
+    ${unk.length ? `<div class="lbl">포스에 없는 이름</div><div class="caption" style="margin:0">${unk.map((r) => esc(r.n) + " " + r.cnt).join(", ")}</div>` : ""}
+    ${v.status === "wait" ? `<div class="btns"><button class="btn red" data-svrej="${v.id}" style="flex:0 0 96px">반려</button><button class="btn" disabled title="준비 중">승인하고 포스에 반영</button></div>
+      <div class="caption" style="text-align:center">포스 반영은 시험이 끝나면 켜져요 · 지금은 눌러도 반영되지 않아요</div>`
+      : `<div class="caption" style="margin-top:16px">${SVST[v.status]?.[0] || ""}${v.why ? " · " + esc(v.why) : ""}${v.doneAt ? " · " + esc(v.doneAt) : ""}</div><div class="btns"><button class="btn gray" data-x>닫기</button></div>`}`);
+}
 function tasksHtml() {
   return `<div class="card"><div class="eyebrow">업무 분배</div><div class="headline">지점에 할 일을<br>나눠 줄 수 있어요</div><div class="caption">정한 날 그 지점 직원앱 '오늘 할 일'에 떠요.<br>직원이 [완료]를 누르면 여기서 바로 보여요.</div>
       <div class="btns"><button class="btn" data-act="tnew">＋ 새 업무 만들기</button></div></div>
@@ -331,6 +357,8 @@ document.addEventListener("click", async (e) => {
   if (a === "logout") { ls.set("vf-admin-key", null); KEY = D = null; return renderLogin("잠갔어요"); }
   if (t.dataset.brg) return sheetBranch(t.dataset.b, t.dataset.brg);
   if (t.dataset.br) return sheetBranch(t.dataset.br, "프리미엄 A");
+  if (t.dataset.sv) return sheetSurvey(t.dataset.sv);
+  if (t.dataset.svrej) { const why = prompt("반려 이유 (직원앱에 보여요, 비워도 돼요)", "다시 세 주세요"); if (why === null) return; try { await sendOp("surveyReject", { id: t.dataset.svrej, why }); const v = D.surveys.find((x) => x.id === t.dataset.svrej); v.status = "reject"; v.why = why; closeSheet(); render(); toast("반려했어요"); } catch { toast("반려하지 못했어요"); } return; }
   if (t.dataset.tk) return sheetTaskStatus(t.dataset.tk);
   if (t.dataset.mustgo) { mustB = t.dataset.mustgo; tab = "must"; draft = null; closeSheet(); render(); return scrollTo(0, 0); }
   // 업무
