@@ -91,7 +91,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.06-1";
+const VER = "10.06-2";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
 const OPEN_AT = { 동성로: "11:00", 수성: "10:30", 본점: "11:00", 율하: "10:30", 반월당: "10:30", 상인: "10:30", 광장코아: "11:00", 현풍: "11:00" };
 // 운영봇(운영봇_시험.mjs)의 CHECK와 같은 목록이어야 기록이 맞아요
@@ -173,14 +173,14 @@ function render() {
         <button data-req="break"><b>🔧 고장</b><span>기기·매장 물건</span></button>
         <button data-req="demo"><b>🧪 시연 교체</b><span>팟·코일·액상 바꿨어요</span></button>
       </div>
-      <div class="desc" style="margin:10px 0 0">요청은 디스코드 🙋요청 채널에 카드로 올라가고, 단계별 버튼으로 진행돼요.</div>
+      <div class="desc" style="margin:10px 0 0">요청은 디스코드 항목별 방(🔁지점요청·🔧비품·고장 등)에 카드로 올라가요.</div>
     </div>
     ${myQuicksCard()}
     <div class="links">
       <a href="../menu/?branch=${encodeURIComponent(B)}">🛍 판매용 메뉴판<span>손님 상담 화면</span></a>
       <a href="../stock/?branch=${encodeURIComponent(B)}&back=${encodeURIComponent(location.pathname)}">📦 재고보고<span>팟·코일·기기 개수</span></a>
     </div>
-    <div class="foot">테스트판 ${VER} · 기록은 디스코드 지점 보고 채널과 시트에도 남아요<br>다른 기기에서 한 기록도 1분 안에 같이 보여요<br><a href="../stock/?branch=${encodeURIComponent(B)}&test=1&back=${encodeURIComponent(location.pathname)}" style="color:#e5484d">🧪 재고보고 시험하기 (노션·시트 안 바뀜)</a> · <button data-go="branch">지점 바꾸기</button></div>`;
+    <div class="foot">테스트판 ${VER} · 기록은 디스코드 📋보고 방과 시트에도 남아요<br>다른 기기에서 한 기록도 1분 안에 같이 보여요<br><a href="../stock/?branch=${encodeURIComponent(B)}&test=1&back=${encodeURIComponent(location.pathname)}" style="color:#e5484d">🧪 재고보고 시험하기 (노션·시트 안 바뀜)</a> · <button data-go="branch">지점 바꾸기</button></div>`;
 }
 function renderPick() {
   $("#app").innerHTML = `<div class="pick"><h1>어느 지점인가요?</h1><p>이 기기에 한 번만 고르면 돼요.</p>
@@ -213,7 +213,7 @@ function sheetReq(kind) {
       <textarea class="input" id="rqSym" placeholder="어떤 상태인가요? (예: 전원이 안 켜져요)" rows="3"></textarea>`
     : kind === "demo" ? `<div class="desc">시연 번호</div><div class="chips">${Array.from({ length: DEMO_N }, (_, i) => `<button class="chip" data-dn="${i + 1}">${i + 1}번</button>`).join("")}</div>
       <div class="desc" style="margin-top:14px">무엇을 바꿨나요?</div><div class="chips"><button class="chip" data-dw="pod">팟·코일</button><button class="chip" data-dw="liq">액상</button><button class="chip" data-dw="both">둘 다</button></div>`
-    : kind === "ask" ? `<div class="desc">상품 이름과 필요한 수량을 적으면 🙋요청 채널에 [있음][없음] 카드가 올라가요.</div>
+    : kind === "ask" ? `<div class="desc">상품 이름과 필요한 수량을 적으면 🔁지점요청 방에 [있음][없음] 카드가 올라가요.</div>
       <input class="input" id="rqItem" placeholder="상품 이름 (예: 디오 콜라)" maxlength="40"><input class="input" id="rqQty" type="number" min="1" max="99" value="1" placeholder="필요 수량">`
     : kind === "branch" ? `<div class="desc">어느 지점에 요청할까요?</div><div class="chips" id="rqTo">${BR.filter((b) => b !== B).map((b) => `<button class="chip" data-to="${b}">${ho(b)}</button>`).join("")}</div>
       <input class="input" id="rqTitle" placeholder="품목·수량 (예: 디오 레몬 5병)" maxlength="40"><textarea class="input" id="rqInfo" placeholder="메모 (선택)" rows="2"></textarea>`
@@ -244,7 +244,7 @@ async function doReq() {
   else { if (!v("#rqTitle")) return toast("품목·수량을 넣어 주세요"); if (!v("#rqAddr")) return toast("고객 주소를 넣어 주세요"); if (!rq.handler) return toast("보낼 지점을 골라 주세요"); body = { type: "ticket", kind: "customer", how: rq.how, handler: rq.handler, title: v("#rqTitle"), info: [`방법: ${rq.how}`, `주소: ${v("#rqAddr")}`, v("#rqWho") && `고객: ${v("#rqWho")}`].filter(Boolean).join("\n") }; }
   body.by = st().ins.filter((x) => !x.out).map((x) => x.name).join(", ");
   $("#okRq").disabled = true;
-  try { await send(body); closeSheet(); toast(rq.kind === "ask" ? "재고 확인 요청을 보냈어요 · 답은 디스코드로 와요" : rq.kind === "demo" ? `${rq.dn}번 시연 교체를 기록했어요` : "요청을 보냈어요 · 🙋요청 채널에 카드가 올라가요"); }
+  try { await send(body); closeSheet(); toast(rq.kind === "ask" ? "재고 확인 요청을 보냈어요 · 답은 디스코드로 와요" : rq.kind === "demo" ? `${rq.dn}번 시연 교체를 기록했어요` : "요청을 보냈어요 · 디스코드에 카드가 올라가요"); }
   catch (e) { $("#okRq").disabled = false; fail(e); }
 }
 // ── 퀵 요청 (10/5): 재고 문의 → [가능] → 결제 완료(고객정보) → 포장 → 접수 → 출발 · 대화 없이 버튼으로 ──
