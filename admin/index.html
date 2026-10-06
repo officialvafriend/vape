@@ -86,7 +86,7 @@
 <nav class="nav" id="nav" style="display:none"><div>
   <button data-tab="home"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3.2 3 10.4V20a1 1 0 0 0 1 1h5.5v-6h5v6H20a1 1 0 0 0 1-1v-9.6z"/></svg>홈</button>
   <button data-tab="tasks"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 3h8v2h3a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h3zm2 0v3h4V3zm5.3 7.3-4.3 4.3-2.3-2.3-1.4 1.4 3.7 3.7 5.7-5.7z"/></svg>업무</button>
-  <button data-tab="must"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h16v4H4zm0 6h16v10H4zm5 3v2h6v-2z"/></svg>필수 상품</button>
+  <button data-tab="must"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h16v4H4zm0 6h16v10H4zm5 3v2h6v-2z"/></svg>추가 필수</button>
 </div></nav>
 <div class="dim" id="dim"><div class="sheet" id="sheet"></div></div>
 <div class="tip" id="tip"></div>
@@ -171,32 +171,39 @@ function totals() {
   const must = con.reduce((a, x) => a + x.must, 0), out = con.reduce((a, x) => a + x.out.length, 0);
   return { con, must, out, rate: must ? Math.round((out / must) * 1000) / 10 : null };
 }
+// 그룹 (본점 포스 소분류, 상품 이름으로 전 지점 공통) — 프리미엄 A그룹은 절대 떨어지면 안 되는 상품
+const G = (x, g) => (x.groups || []).find((y) => y.g === g) || { g, total: 0, out: [] };
+const GNAME = { "프리미엄 A": "A그룹", "프리미엄 B": "B그룹", "일회용": "일회용", "기기 A": "기기 A" };
 function homeHtml() {
-  const { must, out, rate } = totals(), s = ST(rate);
+  const con = D.branches.filter((x) => x.connected);
+  const aOut = con.flatMap((x) => G(x, "프리미엄 A").out.map((o) => ({ ...o, b: x.b }))), aTotal = G(con[0] || {}, "프리미엄 A").total;
   const tDone = D.branches.reduce((a, x) => a + x.tasks.done, 0), tAll = D.branches.reduce((a, x) => a + x.tasks.total, 0);
-  const noMust = D.branches.filter((x) => x.connected && !x.must);
-  const hero = rate == null
-    ? `<div class="eyebrow">결품률</div><div class="headline">꼭 있어야 할 상품을<br>먼저 정해 주세요</div><div class="caption">지점마다 '떨어지면 안 되는 상품'을 고르면<br>그중 품절이 몇 개인지 바로 알려드려요</div><div class="btns"><button class="btn sec2" data-tab="must">필수 상품 정하기</button></div>`
-    : `<div class="eyebrow">오늘 결품률 · ${s ? `<span class="t-${s.k}">${s.t}</span>` : ""}</div>
-       <div class="headline">${out ? `꼭 있어야 할 상품 중<br><em class="${s.k === "good" ? "" : "r"}">${out}개가 품절</em>이에요` : `꼭 있어야 할 상품이<br><em>모두 있어요</em>`}</div>
-       <div class="caption">필수 ${must}개 중 ${out}개 · 결품률 ${rate}%${noMust.length ? `<br>${noMust.map((x) => x.b).join("·")}은 아직 필수 상품이 없어요` : ""}</div>`;
+  const hero = `<div class="eyebrow">프리미엄 A그룹 · ${aOut.length ? '<span class="t-bad">위험</span>' : '<span class="t-good">좋아요</span>'}</div>
+     <div class="headline">${aOut.length ? `절대 떨어지면 안 되는 상품이<br><em class="r">${aOut.length}개 품절</em>이에요` : `절대 떨어지면 안 되는 상품이<br><em>모두 있어요</em>`}</div>
+     <div class="caption">A그룹 ${aTotal}종 · 지점 ${con.length}곳 기준${aOut.length ? "" : " · 빌런·릭·베이퍼·크래프트 포도"}</div>
+     ${aOut.length ? `<div class="list" style="margin:14px -20px -8px;background:none">${aOut.map((o) => `<div class="item"><div class="av bad">${BR.indexOf(o.b) + 1}</div><div class="tx"><b>${esc(o.n)}</b><span>${esc(o.b)}에서 품절</span>
+       <div>${o.others.length ? o.others.map((ob) => `<span class="tag">${esc(ob)}에 있어요</span>`).join("") : '<span class="tag gray">다른 지점에도 없어요</span>'}</div></div></div>`).join("")}</div>` : ""}`;
+  const groupCard = `<div class="sec">그룹별 품절 <small>지점 ${con.length}곳 합계</small></div><div class="list">${["프리미엄 B", "일회용", "기기 A"].map((g) => {
+    const n = con.reduce((a, x) => a + G(x, g).out.length, 0), t = con.reduce((a, x) => a + G(x, g).total, 0);
+    return `<div class="item"><div class="av blue">${esc(GNAME[g][0])}</div><div class="tx"><b>${esc(GNAME[g])}</b><span>${con.map((x) => `${x.b} ${G(x, g).out.length}`).join(" · ")}</span></div><div class="val"><b>${n}개</b><span class="t-sub">${t ? Math.round((n / t) * 100) : 0}% 품절</span></div></div>`; }).join("")}</div>`;
   const pct = tAll ? Math.round((tDone / tAll) * 100) : 0;
   const order = [...D.branches].sort((a, c) => (c.connected - a.connected) || ((c.rate ?? -1) - (a.rate ?? -1)));
   return `<div class="card">${hero}</div>
-    <div class="card"><div class="eyebrow">오늘 할 일</div>
+    <div class="sec">지점별</div>
+    <div class="list">${order.map(branchRow).join("")}</div>
+    ${groupCard}
+    <div class="card" style="margin-top:12px"><div class="eyebrow">오늘 할 일</div>
       <div class="headline">${tAll ? (tDone === tAll ? `<em>모두 끝났어요</em>` : `${tAll}개 중 <em>${tDone}개</em> 끝났어요`) : "오늘 예정된 일이 없어요"}</div>
       ${tAll ? `<div class="bar"><i style="width:${pct}%"></i></div>` : `<div class="btns"><button class="btn sec2" data-tab="tasks">업무 나눠 주기</button></div>`}</div>
-    <div class="sec">지점별 결품률</div>
-    <div class="list">${order.map(branchRow).join("")}</div>
     ${D.matrix.length ? `<div class="sec">오늘 할 일 <small>${D.matrix.length}개</small></div><div class="list">${D.matrix.map(taskRow).join("")}</div>` : ""}
-    <div class="caption" style="text-align:center;margin-top:18px">결품률 기준: 5% 이하 좋아요 · 15% 넘으면 위험</div>`;
+    <div class="caption" style="text-align:center;margin-top:18px">그룹은 본점 포스 소분류 기준 · 상품 이름으로 전 지점 공통 적용</div>`;
 }
 function branchRow(x) {
   if (!x.connected) return `<div class="item" style="opacity:.5"><div class="av">${BR.indexOf(x.b) + 1}</div><div class="tx"><b>${esc(x.b)}</b><span>포스 연결 전</span></div></div>`;
-  const s = ST(x.rate);
-  return `<button class="item" data-br="${x.b}"><div class="av ${s ? s.k : ""}">${BR.indexOf(x.b) + 1}</div>
-    <div class="tx"><b>${esc(x.b)}</b><span>${x.must ? `품절 ${x.out.length}개 · 필수 ${x.must}개` : "필수 상품을 정해 주세요"}</span></div>
-    <div class="val">${x.rate != null ? `<b>${x.rate}%</b><span class="t-${s.k}">${s.t}</span>` : `<span class="t-sub">—</span>`}</div><span class="chev">›</span></button>`;
+  const a = G(x, "프리미엄 A").out.length;
+  return `<button class="item" data-br="${x.b}"><div class="av ${a ? "bad" : "good"}">${BR.indexOf(x.b) + 1}</div>
+    <div class="tx"><b>${esc(x.b)}</b><span>B그룹 ${G(x, "프리미엄 B").out.length} · 일회용 ${G(x, "일회용").out.length} · 기기A ${G(x, "기기 A").out.length} 품절</span></div>
+    <div class="val">${a ? `<b class="t-bad">A ${a}개</b><span class="t-bad">품절</span>` : `<b class="t-good">A 이상 없음</b>`}</div><span class="chev">›</span></button>`;
 }
 function taskRow(t) {
   const due = Object.entries(t.br).filter(([, v]) => v !== null && v !== undefined), done = due.filter(([, v]) => v);
@@ -204,15 +211,19 @@ function taskRow(t) {
   return `<button class="item" data-tk="${t.id}"><div class="av ${all ? "good" : "blue"}">${all ? "✓" : done.length}</div>
     <div class="tx"><b>${esc(t.title)}</b><span>${t.time ? esc(t.time) + " · " : ""}${due.length}개 지점 중 ${done.length}곳 완료</span></div><span class="chev">›</span></button>`;
 }
-function sheetBranch(b) {
-  const x = D.branches.find((y) => y.b === b), s = ST(x.rate);
+let sheetG = "프리미엄 A";
+function sheetBranch(b, g) {
+  sheetG = g || sheetG;
+  const x = D.branches.find((y) => y.b === b), gr = sheetG === "추가 필수" ? { g: sheetG, total: x.must, out: x.out } : G(x, sheetG);
+  const tabs = ["프리미엄 A", "프리미엄 B", "일회용", "기기 A", ...(x.must ? ["추가 필수"] : [])];
+  const nm = GNAME[sheetG] || sheetG;
   openSheet(`<div class="eyebrow">${esc(ho(b))} · 재고 ${esc(x.stockAt || "")} 기준</div>
-    <h3>${x.must ? (x.out.length ? `필수 상품 ${x.must}개 중<br><span class="t-${s.k}">${x.out.length}개가 품절</span>이에요` : "필수 상품이 모두 있어요") : "필수 상품을 정해 주세요"}</h3>
-    ${sparkSvg(D.hist[b] || [])}
-    ${x.out.length ? `<div class="lbl">품절된 상품</div><div class="list">${x.out.map((o) => `<div class="item"><div class="tx"><b>${esc(o.n)}</b><span>${esc(o.m)}</span>
-      <div>${o.others.length ? o.others.map((ob) => `<span class="tag">${esc(ob)}에 있어요</span>`).join("") : '<span class="tag gray">다른 지점에도 없어요</span>'}</div></div></div>`).join("")}</div>` : ""}
-    ${x.gone.length ? `<div class="caption">포스 목록에 없는 필수 상품 ${x.gone.length}개: ${x.gone.map(esc).join(", ")}</div>` : ""}
-    <div class="btns"><button class="btn gray" data-x>닫기</button><button class="btn sec2" data-mustgo="${b}">필수 상품 고치기</button></div>`);
+    <h3>${gr.out.length ? `${esc(nm)} ${gr.total}개 중<br><span class="${sheetG === "프리미엄 A" ? "t-bad" : ""}">${gr.out.length}개가 품절</span>이에요` : `${esc(nm)} ${gr.total}개가<br>모두 있어요`}</h3>
+    ${sheetG === "프리미엄 A" ? sparkSvg(D.hist[b] || []) : ""}
+    <div class="seg" style="margin-top:16px">${tabs.map((t) => `<button class="${t === sheetG ? "on" : ""}" data-brg="${t}" data-b="${b}">${esc(GNAME[t] || t)}</button>`).join("")}</div>
+    ${gr.out.length ? `<div class="list">${gr.out.map((o) => `<div class="item"><div class="tx"><b>${esc(o.n)}</b>
+      <div>${o.others.length ? o.others.map((ob) => `<span class="tag">${esc(ob)}에 있어요</span>`).join("") : '<span class="tag gray">다른 지점에도 없어요</span>'}</div></div></div>`).join("")}</div>` : `<div class="caption" style="margin-top:16px">품절된 상품이 없어요</div>`}
+    <div class="btns"><button class="btn gray" data-x>닫기</button><button class="btn sec2" data-mustgo="${b}">추가 필수 상품 고르기</button></div>`);
   bindSparks();
 }
 function sheetTaskStatus(id) {
@@ -269,7 +280,7 @@ function mustHtml() {
   const list = prods.filter(([n, m]) => (!mustCat || m === mustCat) && words.every((w) => n.replace(/\s/g, "").includes(w)));
   const saved = new Set(D.must[mustB] || []), changed = [...draft.set].filter((n) => !saved.has(n)).length + [...saved].filter((n) => !draft.set.has(n)).length;
   const others = BR.filter((b) => b !== mustB && (D.must[b] || []).length);
-  return `<div class="card"><div class="eyebrow">필수 상품</div><div class="headline">${esc(mustB)}에서<br>떨어지면 안 되는 상품을 골라 주세요</div>
+  return `<div class="card"><div class="eyebrow">추가 필수 상품</div><div class="headline">${esc(mustB)}에서 A그룹 말고도<br>떨어지면 안 되는 상품이 있나요?</div><div class="caption">프리미엄 A그룹은 자동으로 챙겨요. 여기서 고른 상품은 지점 상세의 '추가 필수'에 보여요.</div>
       <div class="caption">지금 <b style="color:var(--ink)">${draft.set.size}개</b> 골랐어요${changed ? ` · 저장 안 한 변경 ${changed}개` : ""}</div>
       <div class="chips" style="margin-top:16px">${BR.map((b) => `<button class="chip ${mustB === b ? "on" : ""}" data-mb="${b}">${esc(b)}${(D.must[b] || []).length ? ` ${D.must[b].length}` : ""}</button>`).join("")}</div></div>
     ${!prods.length ? `<div class="card"><div class="caption" style="margin:0">${esc(mustB)}는 아직 포스가 연결되지 않아서 상품 목록이 없어요</div></div>` : `
@@ -317,7 +328,8 @@ document.addEventListener("click", async (e) => {
   const a = t.dataset.act;
   if (a === "reload") return reload();
   if (a === "logout") { ls.set("vf-admin-key", null); KEY = D = null; return renderLogin("잠갔어요"); }
-  if (t.dataset.br) return sheetBranch(t.dataset.br);
+  if (t.dataset.brg) return sheetBranch(t.dataset.b, t.dataset.brg);
+  if (t.dataset.br) return sheetBranch(t.dataset.br, "프리미엄 A");
   if (t.dataset.tk) return sheetTaskStatus(t.dataset.tk);
   if (t.dataset.mustgo) { mustB = t.dataset.mustgo; tab = "must"; draft = null; closeSheet(); render(); return scrollTo(0, 0); }
   // 업무
