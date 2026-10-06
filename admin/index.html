@@ -179,10 +179,11 @@ function homeHtml() {
   const aOut = con.flatMap((x) => G(x, "프리미엄 A").out.map((o) => ({ ...o, b: x.b }))), aTotal = G(con[0] || {}, "프리미엄 A").total;
   const tDone = D.branches.reduce((a, x) => a + x.tasks.done, 0), tAll = D.branches.reduce((a, x) => a + x.tasks.total, 0);
   const hero = `<div class="eyebrow">프리미엄 A그룹 · ${aOut.length ? '<span class="t-bad">위험</span>' : '<span class="t-good">좋아요</span>'}</div>
-     <div class="headline">${aOut.length ? `절대 떨어지면 안 되는 상품이<br><em class="r">${aOut.length}개 품절</em>이에요` : `절대 떨어지면 안 되는 상품이<br><em>모두 있어요</em>`}</div>
+     <div class="headline">${aOut.length ? `절대 떨어지면 안 되는 상품이<br><em class="r">${new Set(aOut.map((o) => o.n)).size}종 품절</em>이에요` : `절대 떨어지면 안 되는 상품이<br><em>모두 있어요</em>`}</div>
      <div class="caption">A그룹 ${aTotal}종 · 지점 ${con.length}곳 기준${aOut.length ? "" : " · 빌런·릭·베이퍼·크래프트 포도"}</div>
-     ${aOut.length ? `<div class="list" style="margin:14px -20px -8px;background:none">${aOut.map((o) => `<div class="item"><div class="av bad">${BR.indexOf(o.b) + 1}</div><div class="tx"><b>${esc(o.n)}</b><span>${esc(o.b)}에서 품절</span>
-       <div>${o.others.length ? o.others.map((ob) => `<span class="tag">${esc(ob)}에 있어요</span>`).join("") : '<span class="tag gray">다른 지점에도 없어요</span>'}</div></div></div>`).join("")}</div>` : ""}`;
+     ${aOut.length ? `<div class="list" style="margin:14px -20px -8px;background:none">${[...new Set(aOut.map((o) => o.n))].map((n) => { const xs = aOut.filter((o) => o.n === n), has = [...new Set(xs.flatMap((o) => o.others))];
+       return `<div class="item"><div class="av bad">${xs.length}</div><div class="tx"><b>${esc(n)}</b><span>${xs.map((o) => esc(o.b)).join("·")}에서 품절</span>
+       <div>${has.length ? has.map((ob) => `<span class="tag">${esc(ob)}에 있어요</span>`).join("") : '<span class="tag gray">재고 있는 지점이 없어요</span>'}</div></div></div>`; }).join("")}</div>` : ""}`;
   const groupCard = `<div class="sec">그룹별 품절 <small>지점 ${con.length}곳 합계</small></div><div class="list">${["프리미엄 B", "일회용", "기기 A"].map((g) => {
     const n = con.reduce((a, x) => a + G(x, g).out.length, 0), t = con.reduce((a, x) => a + G(x, g).total, 0);
     return `<div class="item"><div class="av blue">${esc(GNAME[g][0])}</div><div class="tx"><b>${esc(GNAME[g])}</b><span>${con.map((x) => `${x.b} ${G(x, g).out.length}`).join(" · ")}</span></div><div class="val"><b>${n}개</b><span class="t-sub">${t ? Math.round((n / t) * 100) : 0}% 품절</span></div></div>`; }).join("")}</div>`;
