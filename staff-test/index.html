@@ -76,6 +76,13 @@
   .qst{display:flex;align-items:center;gap:4px}.qst button{width:40px;height:40px;border-radius:10px;background:#f2f4f6;font-size:20px;font-weight:800}.qst b{min-width:26px;text-align:center}
   .qr small,.qit small{display:inline-block;margin-left:6px;font-size:12px;color:var(--blue);font-weight:700;background:var(--blue-soft);padding:2px 6px;border-radius:6px}
   .done1{display:flex;flex-direction:column;gap:4px}.done1 b{color:var(--green);font-size:16px}.done1 span{font-size:13px;color:var(--ink2)}
+  /* 고객요청·인수인계 (10/6) */
+  .crow{display:flex;align-items:center;gap:10px;padding:12px 0;border-top:1px solid var(--line)}
+  .card h2+.crow,.sheet .desc+.crow{border-top:0}
+  .crow>div{flex:1;min-width:0}.crow b{display:block;font-size:15px}.crow span{display:block;font-size:13px;color:var(--ink2);margin-top:2px}.crow em{display:block;font-style:normal;font-size:13px;font-weight:700;color:var(--blue);margin-top:3px}
+  .crow.late{box-shadow:inset 3px 0 0 var(--red);padding-left:10px}.crow.late span{color:var(--red)}
+  .crow.arr{background:var(--amber-soft);border-radius:12px;padding:12px;border-top:0;margin:4px 0}.crow.arr em{color:var(--amber)}
+  .pill{font-style:normal;font-weight:700;font-size:12px;padding:1px 6px;border-radius:6px}.pill.ok{background:var(--green-soft);color:var(--green)}.pill.no{background:var(--red-soft);color:var(--red)}
 </style>
 </head>
 <body>
@@ -84,7 +91,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.05-8";
+const VER = "10.06-1";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
 const OPEN_AT = { 동성로: "11:00", 수성: "10:30", 본점: "11:00", 율하: "10:30", 반월당: "10:30", 상인: "10:30", 광장코아: "11:00", 현풍: "11:00" };
 // 운영봇(운영봇_시험.mjs)의 CHECK와 같은 목록이어야 기록이 맞아요
@@ -150,6 +157,8 @@ function render() {
       ${stepRow(2, steps[1], "오픈 체크", s.open ? { t: `${s.open.t} 완료${s.open.missed.length ? ` · 못 한 것 ${s.open.missed.length}개` : ""}`, w: s.open.missed.length } : { t: "아직 안 함" }, `<button class="act ${steps[1] ? "gray" : ""}" data-go="open">${steps[1] ? "다시" : "체크"}</button>`)}
       ${stepRow(3, steps[2], "아침 재고보고", sd ? { t: `${sd.t} 완료 · ${esc(sd.by || "")}` } : { t: "아직 안 함" }, `<a class="act ${steps[2] ? "gray" : ""}" href="../stock/?branch=${encodeURIComponent(B)}&back=${encodeURIComponent(location.pathname)}">${steps[2] ? "다시" : "하기"}</a>`)}
     </div>`}
+    ${memoCardHtml()}
+    ${creqCardHtml()}
     <div class="card"><h2>마감</h2>
       ${stepRow("🌙", !!s.close, "마감 체크", s.close ? { t: `${s.close.t} 완료${s.close.missed.length ? ` · 못 한 것 ${s.close.missed.length}개` : ""}`, w: s.close.missed.length } : { t: "아직 안 함" }, `<button class="act ${s.close ? "gray" : ""}" data-go="close">${s.close ? "다시" : "체크"}</button>`)}
       ${stepRow("👋", s.ins.length > 0 && !working.length, "퇴근", { t: working.length ? `근무 중: ${working.map((x) => esc(x.name)).join(", ")}` : s.ins.length ? "모두 퇴근" : "출근 기록 없음" }, working.length ? `<button class="act gray" data-go="out">퇴근</button>` : "")}
@@ -296,6 +305,134 @@ async function doPay(id) {
   try { await send({ type: "quickpay", id, name: v("#pyName"), phone: v("#pyPhone"), addr: v("#pyAddr"), by: st().ins.filter((x) => !x.out).map((x) => x.name).join(", ") }); QST[id] = { step: "paid", t: now() }; closeSheet(); render(); toast("결제 완료를 보냈어요 · 포장이 시작돼요"); }
   catch (e) { $("#okPay").disabled = false; fail(e); }
 }
+// ── 고객요청·인수인계 (10/6) ── 노션에서 늘 빠지던 날짜·담당자·결제여부를 자동/버튼으로 받고, 입고되면 봇이 알려줌
+// 현황은 봇이 올리는 board.json (공개 주소라 고객 이름 첫 글자·번호 끝 4자리만). 이 기기에서 적은 건은 전체 번호를 이 기기에만 보관
+let BOARD = null, OUTS = new Set(), STEPS = {}, MEMO_DONE = new Set(), cr = null;
+async function loadBoard() {
+  try {
+    const j = await (await fetch(`board.json?${Date.now()}`, { cache: "no-store" })).json();
+    const next = j.br?.[B] || null;
+    if (JSON.stringify(next) !== JSON.stringify(BOARD)) { BOARD = next; if (!$("#dim").classList.contains("on")) render(); }
+  } catch {}
+}
+async function loadOuts() { try { const j = await (await fetch(`../menu/stock.json?${Date.now()}`, { cache: "no-store" })).json(); OUTS = new Set(j[B]?.out || []); } catch {} }
+const working = () => st().ins.filter((x) => !x.out).map((x) => x.name);
+const myCreqs = () => ls.get(`vf-app-${B}-creqs`, []).filter((x) => Date.now() - x.ts < 30 * 86400e3);
+const daysOld = (d) => Math.floor((Date.parse(todayKey()) - Date.parse(d)) / 86400e3);
+const CST = { wait: "⏳ 입고 대기", ready: "🧾 챙겨둠·연락함", done: "✅ 전달 완료", cancel: "취소" };
+const crItems = (r) => [...(r.items || []).map(([n, c]) => `${n} ${c}`), r.free].filter(Boolean).join(", ");
+function creqList() {
+  const srv = BOARD?.creqs || [], loc = myCreqs();
+  const list = srv.map((r) => ({ ...r, full: loc.find((l) => l.id === r.id) }));
+  for (const l of loc) if (!srv.some((r) => r.id === l.id) && Date.now() - l.ts < 86400e3) list.push({ ...l, by: l.by, pending: true, full: l });
+  for (const r of list) if (STEPS[r.id]) r.step = STEPS[r.id];
+  return list.filter((r) => r.step === "wait" || r.step === "ready");
+}
+const memoList = () => (BOARD?.memos || []).filter((m) => !MEMO_DONE.has(m.id));
+const custOf = (r) => r.full ? `${esc(r.full.name || "")} ${esc(r.full.phone)}` : `${esc(r.nm || "")} ·${esc(r.p4 || "")}`;
+function creqCardHtml() {
+  const list = creqList();
+  const rows = list.map((r) => {
+    const late = daysOld(r.d) >= 3, arr = r.step === "wait" && r.arrived;
+    const next = r.step === "wait" ? ["ready", "챙겨둠"] : ["done", "전달 완료"];
+    return `<div class="crow ${late ? "late" : ""} ${arr ? "arr" : ""}"><div>
+      <b>${esc(crItems(r))}</b>
+      <span>${esc(r.how)} · <i class="pill ${r.pay === "결제완료" ? "ok" : "no"}">${r.pay === "결제완료" ? "결제완료" : "미결제"}</i> · ${esc(r.by)} · ${r.d.slice(5).replace("-", "/")}${late ? ` · ⚠ ${daysOld(r.d)}일째` : ""}</span>
+      <span>👤 ${custOf(r)}</span>
+      <em>${arr ? "📦 입고됨! 챙기고 고객에게 연락하세요" : r.pending ? "보내는 중… (1~2분 뒤 반영)" : CST[r.step]}</em></div>
+      ${r.pending ? "" : `<button class="act ${r.step === "wait" && !arr ? "gray" : ""}" data-crs="${next[0]}" data-id="${r.id}">${next[1]}</button>`}</div>`;
+  }).join("");
+  return `<div class="card"><h2>🧾 고객요청${list.length ? ` · 진행 중 ${list.length}건` : ""}</h2>${rows || '<div class="desc" style="padding:4px 0 10px">진행 중인 고객요청이 없어요</div>'}
+    <div class="btns" style="margin:6px 0 14px"><button class="btn primary" data-go="creq">＋ 고객요청 적기</button></div></div>`;
+}
+function memoCardHtml() {
+  const list = memoList();
+  const toName = { next: "다음 근무자", keep: "📢 계속 공지", leader: "👔 팀장님께" };
+  const rows = list.map((m) => `<div class="crow"><div><b style="white-space:pre-wrap;font-weight:600">${esc(m.text)}</b><span>${esc(m.by)} · ${m.d.slice(5).replace("-", "/")} ${m.t} · ${toName[m.to] || ""}</span></div>
+      <button class="act ${m.to === "keep" ? "gray" : ""}" data-mok="${m.id}" data-keep="${m.to === "keep" ? 1 : ""}">${m.to === "keep" ? "내리기" : "확인"}</button></div>`).join("");
+  return `<div class="card"><h2>📌 인수인계${list.length ? ` · ${list.length}건` : ""}</h2>${rows || '<div class="desc" style="padding:4px 0 10px">확인할 인수인계가 없어요</div>'}
+    <div class="btns" style="margin:6px 0 14px"><button class="btn" data-go="memo">＋ 인수인계 남기기</button></div></div>`;
+}
+function sheetCreq() {
+  if (!working().length) return toast("먼저 출근을 눌러 주세요 · 담당자 이름이 자동으로 들어가요");
+  cr = { items: [], how: "방문수령", pay: null, step: "ready", manual: false };
+  loadOuts();
+  openSheet(`<h2>🧾 고객요청 적기</h2><div class="desc">날짜·담당자(${esc(working().join(", "))})는 자동으로 들어가요.</div>
+    <input class="input" id="crFind" placeholder="상품 찾기 (예: 빌런 자두)"><div id="crRes" class="qres"></div><div id="crItems" class="qitems"></div>
+    <input class="input" id="crFree" placeholder="목록에 없으면 직접 적기 (선택)" maxlength="60">
+    <div class="desc" style="margin-top:14px">받는 방법</div><div class="chips">${["방문수령", "택배", "퀵"].map((x) => `<button class="chip ${x === cr.how ? "on" : ""}" data-crh="${x}">${x}</button>`).join("")}</div>
+    <div class="desc" style="margin-top:14px">결제 <b style="color:var(--red)">*</b></div><div class="chips"><button class="chip" data-crp="결제완료">💳 결제완료</button><button class="chip" data-crp="미결제">미결제</button></div>
+    <div class="desc" style="margin-top:14px">지금 상태 <span id="crNote"></span></div><div class="chips" id="crSt">${crStChips()}</div>
+    <input class="input" id="crName" placeholder="고객 이름" maxlength="20"><input class="input" id="crPhone" placeholder="고객 연락처 (필수)" inputmode="tel" maxlength="20">
+    <input class="input" id="crMemo" placeholder="메모 (선택 · 예: 맥스프로팟 4개랑 같이 포장)" maxlength="200">
+    <div class="btns"><button class="btn" data-x>취소</button><button class="btn primary" id="okCr">저장</button></div>`);
+}
+const crStChips = () => [["ready", "지금 챙겨둠"], ["wait", "입고 기다림"]].map(([k, n]) => `<button class="chip ${cr.step === k ? "on" : ""}" data-crst="${k}">${n}</button>`).join("");
+function crDraw() {
+  $("#crItems").innerHTML = cr.items.map(([n, c], i) => `<div class="qit"><b>${esc(n)}${OUTS.has(n) ? '<small style="color:var(--red);background:var(--red-soft)">품절</small>' : ""}</b><span class="qst"><button data-crm="${i}">−</button><b>${c}</b><button data-crpl="${i}">+</button></span></div>`).join("");
+  const anyOut = cr.items.some(([n]) => OUTS.has(n));
+  if (!cr.manual) cr.step = anyOut ? "wait" : "ready";
+  $("#crSt").innerHTML = crStChips();
+  $("#crNote").textContent = anyOut ? "· 품절 상품이 있어요 → 입고되면 알려드려요" : "";
+}
+async function doCreq() {
+  const v = (k) => ($(k)?.value || "").trim();
+  if (!cr.items.length && !v("#crFree")) return toast("상품을 찾아 담거나 직접 적어 주세요");
+  if (!cr.pay) return toast("결제했는지 골라 주세요");
+  if (v("#crPhone").replace(/\D/g, "").length < 8) return toast("고객 연락처를 넣어 주세요");
+  const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 5), by = working().join(", ");
+  const body = { type: "creq", id, items: cr.items, free: v("#crFree"), how: cr.how, pay: cr.pay, step: cr.step, name: v("#crName"), phone: v("#crPhone"), memo: v("#crMemo"), by };
+  $("#okCr").disabled = true;
+  try {
+    await send(body);
+    ls.set(`vf-app-${B}-creqs`, [...myCreqs(), { ...body, d: todayKey(), t: now(), ts: Date.now() }]);
+    closeSheet(); render(); toast(cr.step === "wait" ? "저장했어요 · 입고되면 알려드려요" : "저장했어요");
+  } catch (e) { $("#okCr").disabled = false; fail(e); }
+}
+async function doCreqStep(id, k) {
+  const by = working().join(", ");
+  if (!by) return toast("먼저 출근을 눌러 주세요");
+  try { await send({ type: "creqstep", id, k, by }); STEPS[id] = k; render(); toast(k === "done" ? "전달 완료로 바꿨어요" : "챙겨둠·연락함으로 바꿨어요"); }
+  catch (e) { fail(e); }
+}
+function sheetMemo() {
+  if (!working().length) return toast("먼저 출근을 눌러 주세요 · 남긴 사람 이름이 자동으로 들어가요");
+  openSheet(`<h2>📌 인수인계 남기기</h2><div class="desc">🎤 키보드 마이크로 말해서 적어도 돼요. 비밀번호·전화번호는 앱에서 가려져 보여요.</div>
+    <textarea class="input" id="mmText" rows="4" placeholder="예) 율하에서 바닐라 3병 퀵으로 옴, 받으면 확인"></textarea>
+    <div class="desc" style="margin-top:14px">누구에게</div><div class="chips"><button class="chip on" data-mto="next">다음 근무자</button><button class="chip" data-mto="keep">📢 계속 공지 (내릴 때까지)</button><button class="chip" data-mto="leader">👔 팀장님</button></div>
+    <div class="btns"><button class="btn" data-x>취소</button><button class="btn primary" id="okMm">남기기</button></div>`);
+}
+async function sendMemo(text, to, by) { await send({ type: "memo", id: Date.now().toString(36), text, to, by }); }
+async function doMemo() {
+  const text = ($("#mmText").value || "").trim(); if (!text) return toast("내용을 적어 주세요");
+  const to = document.querySelector("[data-mto].on")?.dataset.mto || "next";
+  $("#okMm").disabled = true;
+  try { await sendMemo(text, to, working().join(", ")); closeSheet(); toast("남겼어요 · 다음 근무자가 출근하면 보여요"); }
+  catch (e) { $("#okMm").disabled = false; fail(e); }
+}
+async function doMemoOk(id, keep, by) {
+  by = by || working().join(", ");
+  if (!by) return toast("먼저 출근을 눌러 주세요");
+  try { await send({ type: keep ? "memodown" : "memook", id, by }); MEMO_DONE.add(id); render(); }
+  catch (e) { fail(e); }
+}
+// 출근하면 넘겨받은 것부터 보여주고 [확인했어요]
+function sheetHandoff(name) {
+  const ms = memoList().filter((m) => m.to !== "keep"), keep = memoList().filter((m) => m.to === "keep"), cs = creqList();
+  if (!ms.length && !cs.length && !keep.length) return false;
+  openSheet(`<h2>👋 ${esc(name)}님, 넘겨받은 것</h2>
+    ${ms.length ? `<div class="desc" style="margin-top:12px"><b>📌 인수인계 ${ms.length}건</b></div>${ms.map((m) => `<div class="crow"><div><b style="white-space:pre-wrap;font-weight:600">${esc(m.text)}</b><span>${esc(m.by)} · ${m.d.slice(5).replace("-", "/")} ${m.t}</span></div></div>`).join("")}` : ""}
+    ${keep.length ? `<div class="desc" style="margin-top:12px"><b>📢 계속 공지</b></div>${keep.map((m) => `<div class="crow"><div><b style="white-space:pre-wrap;font-weight:600">${esc(m.text)}</b></div></div>`).join("")}` : ""}
+    ${cs.length ? `<div class="desc" style="margin-top:12px"><b>🧾 진행 중 고객요청 ${cs.length}건</b></div>${cs.map((r) => `<div class="crow ${r.step === "wait" && r.arrived ? "arr" : ""}"><div><b>${esc(crItems(r))}</b><span>${CST[r.step]}${r.step === "wait" && r.arrived ? " · 📦 입고됨!" : ""} · ${esc(r.how)} · ${r.pay === "결제완료" ? "결제완료" : "미결제"}</span></div></div>`).join("")}` : ""}
+    <div class="btns"><button class="btn primary" id="okHo" data-honame="${esc(name)}">확인했어요</button></div>`);
+  return true;
+}
+async function doHandoff(name) {
+  $("#okHo").disabled = true;
+  for (const m of memoList().filter((m) => m.to !== "keep")) { try { await send({ type: "memook", id: m.id, by: name }); MEMO_DONE.add(m.id); } catch (e) { $("#okHo").disabled = false; return fail(e); } }
+  closeSheet(); render(); toast("확인했어요 · 오늘도 화이팅!");
+}
+
 function openSheet(html) { $("#sheet").innerHTML = html; $("#dim").classList.add("on"); }
 const closeSheet = () => $("#dim").classList.remove("on");
 
@@ -314,7 +451,7 @@ async function doIn(name) {
     await send({ type: "clockin", name });
     s.ins.push({ name, t: now() }); saveSt(s);
     ls.set(`vf-app-${B}-names`, [name, ...ls.get(`vf-app-${B}-names`, []).filter((n) => n !== name)].slice(0, 12));
-    closeSheet(); render(); toast(`${name}님 출근 ${now()}`);
+    render(); if (!sheetHandoff(name)) closeSheet(); toast(`${name}님 출근 ${now()}`);
   } catch (e) { $("#okIn").disabled = false; fail(e); }
 }
 function sheetCheck(kind) {
@@ -336,11 +473,13 @@ async function doCheck(kind) {
 }
 function sheetOut() {
   const w = st().ins.filter((x) => !x.out);
-  openSheet(`<h2>👋 퇴근</h2><div class="desc">누가 퇴근하나요?</div><div class="chips">${w.map((x) => `<button class="chip" data-out="${esc(x.name)}">${esc(x.name)} (출근 ${x.t})</button>`).join("")}</div>
+  const oc = creqList().length;
+  openSheet(`<h2>👋 퇴근</h2>${oc ? `<div class="desc" style="color:var(--amber)">진행 중 고객요청 ${oc}건은 다음 근무자에게 그대로 넘어가요</div>` : ""}<textarea class="input" id="outMemo" rows="2" placeholder="다음 근무자에게 남길 말 (선택)"></textarea><div class="desc" style="margin-top:12px">누가 퇴근하나요?</div><div class="chips">${w.map((x) => `<button class="chip" data-out="${esc(x.name)}">${esc(x.name)} (출근 ${x.t})</button>`).join("")}</div>
     <div class="btns"><button class="btn" data-x>취소</button></div>`);
 }
 async function doOut(name) {
   try {
+    const om = ($("#outMemo")?.value || "").trim(); if (om) await sendMemo(om, "next", name);
     await send({ type: "clockout", name });
     const s = st(); const x = s.ins.find((y) => y.name === name); if (x) x.out = now(); saveSt(s);
     closeSheet(); render(); toast(`${name}님 퇴근 ${now()}`);
@@ -356,6 +495,20 @@ document.addEventListener("click", (e) => {
   if (go === "open" || go === "close") return sheetCheck(go);
   if (go === "out") return sheetOut();
   if (go === "branch") { B = null; return render(); }
+  if (t.dataset.honame) return doHandoff(t.dataset.honame);
+  if (t.dataset.go === "creq") return sheetCreq();
+  if (t.dataset.go === "memo") return sheetMemo();
+  if (t.dataset.crs) return doCreqStep(t.dataset.id, t.dataset.crs);
+  if (t.dataset.mok) return doMemoOk(t.dataset.mok, !!t.dataset.keep);
+  if (t.dataset.cradd) { const n = t.dataset.cradd; const it = cr.items.find((x) => x[0] === n); it ? it[1]++ : cr.items.push([n, 1]); $("#crFind").value = ""; $("#crRes").innerHTML = ""; return crDraw(); }
+  if (t.dataset.crm) { const i = +t.dataset.crm; cr.items[i][1]--; if (cr.items[i][1] < 1) cr.items.splice(i, 1); return crDraw(); }
+  if (t.dataset.crpl) { cr.items[+t.dataset.crpl][1]++; return crDraw(); }
+  if (t.dataset.crh) { cr.how = t.dataset.crh; document.querySelectorAll("[data-crh]").forEach((x) => x.classList.toggle("on", x === t)); return; }
+  if (t.dataset.crp) { cr.pay = t.dataset.crp; document.querySelectorAll("[data-crp]").forEach((x) => x.classList.toggle("on", x === t)); return; }
+  if (t.dataset.crst) { cr.step = t.dataset.crst; cr.manual = true; document.querySelectorAll("[data-crst]").forEach((x) => x.classList.toggle("on", x === t)); return; }
+  if (t.dataset.mto) { document.querySelectorAll("[data-mto]").forEach((x) => x.classList.toggle("on", x === t)); return; }
+  if (t.id === "okCr") return doCreq();
+  if (t.id === "okMm") return doMemo();
   if (t.dataset.name) { $("#nm").value = t.dataset.name; return doIn(t.dataset.name); }
   if (t.id === "okIn") return doIn($("#nm").value);
   if (t.dataset.ck !== undefined) return t.classList.toggle("on");
@@ -379,6 +532,7 @@ document.addEventListener("click", (e) => {
 });
 document.addEventListener("input", (e) => {
   if (e.target.id === "rqAddr") onAddr();
+  if (e.target.id === "crFind") { const q = e.target.value.trim(); $("#crRes").innerHTML = q ? qkFind(q).map((n) => `<button class="qr" data-cradd="${esc(n)}">${esc(n)}<small>${esc(QPOS()[n]?.[4] || "")}</small>${OUTS.has(n) ? '<small style="color:var(--red);background:var(--red-soft)">품절</small>' : ""} <i>+</i></button>`).join("") || '<div class="desc">못 찾았어요 · 아래 칸에 직접 적어 주세요</div>' : ""; }
   if (e.target.id === "qkFind") { const q = e.target.value.trim(); $("#qkRes").innerHTML = q ? qkFind(q).map((n) => `<button class="qr" data-qadd="${esc(n)}">${esc(n)}<small>${esc(QPOS()[n]?.[4] || "")}</small> <i>+</i></button>`).join("") || '<div class="desc">못 찾았어요</div>' : ""; }
   if (e.target.id === "qkAddr") { const o = nearOrder(e.target.value); if (o) qk.to = (o.find(([b]) => b !== B && !NO_QUICK.includes(b)) || [])[0] || qk.to; $("#qkTo").innerHTML = qkToChips(o); $("#qkNote").textContent = o ? "· 가까운 순" : ""; }
 });
@@ -389,6 +543,7 @@ document.addEventListener("visibilitychange", () => { if (!document.hidden) rend
 render();
 loadQuickStatus(); setInterval(loadQuickStatus, 30e3);
 loadToday(); setInterval(loadToday, 30e3);
+loadBoard(); setInterval(loadBoard, 30e3); loadOuts();
 </script>
 </body>
 </html>
