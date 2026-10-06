@@ -78,6 +78,7 @@
   .toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(10px);background:#191f28;color:#fff;padding:14px 20px;border-radius:14px;font-weight:600;opacity:0;transition:.25s;z-index:70;max-width:90vw;text-align:center}
   .toast.on{opacity:1;transform:translateX(-50%)}
   .login{padding-top:14vh} .login .headline{margin-bottom:28px}
+  .report{white-space:pre-wrap;font:15px/1.6 "Pretendard Variable",Pretendard,sans-serif;background:var(--line);border-radius:16px;padding:16px 18px;margin-top:16px}
   .search{position:relative} .search .in{padding-left:44px} .search svg{position:absolute;left:15px;top:16px;width:22px;height:22px;color:var(--sub)}
 </style>
 </head>
@@ -196,11 +197,29 @@ function homeHtml() {
     <div class="sec">지점별</div>
     <div class="list">${order.map(branchRow).join("")}</div>
     ${groupCard}
+    ${closingListHtml()}
     <div class="card" style="margin-top:12px"><div class="eyebrow">오늘 할 일</div>
       <div class="headline">${tAll ? (tDone === tAll ? `<em>모두 끝났어요</em>` : `${tAll}개 중 <em>${tDone}개</em> 끝났어요`) : "오늘 예정된 일이 없어요"}</div>
       ${tAll ? `<div class="bar"><i style="width:${pct}%"></i></div>` : `<div class="btns"><button class="btn sec2" data-tab="tasks">업무 나눠 주기</button></div>`}</div>
     ${D.matrix.length ? `<div class="sec">오늘 할 일 <small>${D.matrix.length}개</small></div><div class="list">${D.matrix.map(taskRow).join("")}</div>` : ""}
     <div class="caption" style="text-align:center;margin-top:18px">그룹은 본점 포스 소분류 기준 · 상품 이름으로 전 지점 공통 적용</div>`;
+}
+// ── 마감 보고 (직원앱 시재 + 포스 숫자) ──
+const won = (n) => Math.round(+n || 0).toLocaleString("ko-KR");
+function closingListHtml() {
+  const L = (D.closings || []).slice(0, 8);
+  if (!L.length) return "";
+  return `<div class="sec">마감 보고 <small>최근</small></div><div class="list">${L.map((c, i) => `<button class="item" data-cl="${i}"><div class="av ${c.status === "done" ? "good" : c.status === "error" ? "bad" : "blue"}">${BR.indexOf(c.b) + 1}</div>
+    <div class="tx"><b>${esc(c.b)} · ${c.date.slice(5).replace("-", "/")}</b><span>${c.status === "done" ? `총 ${won(c.nums.총)} · 시재 ${won(c.sijae)}` : c.status === "error" ? esc(c.err || "실패") : "만드는 중"} · ${esc(c.by)}</span></div><span class="chev">›</span></button>`).join("")}</div>`;
+}
+function sheetClosing(i) {
+  const c = D.closings[i], n = c.nums || {};
+  openSheet(`<div class="eyebrow">${esc(ho(c.b))} · ${c.date} · ${esc(c.at)} 보냄</div><h3>${c.status === "done" ? `총매출 ${won(n.총)}원` : c.status === "error" ? "보고문을 못 만들었어요" : "보고문 만드는 중"}</h3>
+    ${c.status === "done" ? `<div class="caption">영수 ${n.영수객수}건 · 객단가 ${won(n.객단가)}원 · 일회용 ${n.kpi?.일회용 ?? "-"} · 프리미엄 ${n.kpi?.프리미엄 ?? "-"} · 지정 ${n.kpi?.지정 ?? "-"} · 발맥프로 ${n.kpi?.발맥프로 ?? "-"} · 택배 ${n.kpi?.택배 ?? "-"}</div>
+      <div class="report" id="rpt">${esc(c.text)}</div>
+      <div class="caption">시재 = 5만원권 ${c.n50}장 + 1만원권 ${c.n10}장 − 만원권 10장${(n.otherAcc || []).length ? ` · 금전현황: ${n.otherAcc.map((x) => `${esc(x.계정)} ${won(x.금액)}`).join(", ")}` : ""}</div>
+      <div class="btns"><button class="btn gray" data-x>닫기</button><button class="btn" data-act="copyrpt">보고문 복사</button></div>`
+    : `<div class="caption">${esc(c.err || "1~2분 뒤 다시 열어 주세요")}</div><div class="btns"><button class="btn gray" data-x>닫기</button></div>`}`);
 }
 function branchRow(x) {
   if (!x.connected) return `<div class="item" style="opacity:.5"><div class="av">${BR.indexOf(x.b) + 1}</div><div class="tx"><b>${esc(x.b)}</b><span>포스 연결 전</span></div></div>`;
@@ -358,6 +377,8 @@ document.addEventListener("click", async (e) => {
   if (t.dataset.brg) return sheetBranch(t.dataset.b, t.dataset.brg);
   if (t.dataset.br) return sheetBranch(t.dataset.br, "프리미엄 A");
   if (t.dataset.sv) return sheetSurvey(t.dataset.sv);
+  if (t.dataset.cl !== undefined) return sheetClosing(+t.dataset.cl);
+  if (a === "copyrpt") { try { await navigator.clipboard.writeText($("#rpt").textContent); toast("복사했어요 · 카톡에 붙여 넣으면 돼요"); } catch { toast("복사하지 못했어요 · 길게 눌러 복사해 주세요"); } return; }
   if (t.dataset.svrej) { const why = prompt("반려 이유 (직원앱에 보여요, 비워도 돼요)", "다시 세 주세요"); if (why === null) return; try { await sendOp("surveyReject", { id: t.dataset.svrej, why }); const v = D.surveys.find((x) => x.id === t.dataset.svrej); v.status = "reject"; v.why = why; closeSheet(); render(); toast("반려했어요"); } catch { toast("반려하지 못했어요"); } return; }
   if (t.dataset.tk) return sheetTaskStatus(t.dataset.tk);
   if (t.dataset.mustgo) { mustB = t.dataset.mustgo; tab = "must"; draft = null; closeSheet(); render(); return scrollTo(0, 0); }
