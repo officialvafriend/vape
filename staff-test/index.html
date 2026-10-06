@@ -97,7 +97,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.06-6";
+const VER = "10.06-7";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
 const OPEN_AT = { 동성로: "11:00", 수성: "10:30", 본점: "11:00", 율하: "10:30", 반월당: "10:30", 상인: "10:30", 광장코아: "11:00", 현풍: "11:00" };
 // 운영봇(운영봇_시험.mjs)의 CHECK와 같은 목록이어야 기록이 맞아요
@@ -158,7 +158,7 @@ function render() {
   $("#app").innerHTML = `
     <div class="top"><div class="logo">VAFRIEND <b>직원</b></div><div class="store">${esc(ho(B))}</div><div class="date">${d.getMonth() + 1}/${d.getDate()} (${"일월화수목금토"[d.getDay()]})</div></div>
     <div class="hero"><h1>${title}</h1><p>오픈 ${OPEN_AT[B]} · 출근 → 오픈 체크 → 아침 재고보고</p><div class="bar"><i style="width:${(done / 3) * 100}%"></i></div></div>
-    ${done === 3 ? `<div class="card done1"><b>✅ 오픈 완료</b><span>출근 ${esc(s.ins.map((x) => x.name).join(", "))} · 오픈 체크 ${s.open.t} · 재고보고 ${sd.t}</span></div>` : `<div class="card"><h2>오픈</h2>
+    ${done === 3 ? `<div class="card done1"><b>✅ 오픈 완료</b><span>출근 ${esc(s.ins.map((x) => x.name + (x.out ? `(${x.out} 퇴근)` : "")).join(", "))} · 오픈 체크 ${s.open.t} · 재고보고 ${sd.t}</span></div>` : `<div class="card"><h2>오픈</h2>
       ${stepRow(1, steps[0], "출근", { t: s.ins.length ? s.ins.map((x) => `${esc(x.name)} ${x.t}${x.out ? `~${x.out}` : ""}`).join(" · ") : "아직 안 함" }, `<button class="act ${steps[0] ? "gray" : ""}" data-go="in">${steps[0] ? "추가" : "출근"}</button>`)}
       ${stepRow(2, steps[1], "오픈 체크", s.open ? { t: `${s.open.t} 완료${s.open.missed.length ? ` · 못 한 것 ${s.open.missed.length}개` : ""}`, w: s.open.missed.length } : { t: "아직 안 함" }, `<button class="act ${steps[1] ? "gray" : ""}" data-go="open">${steps[1] ? "다시" : "체크"}</button>`)}
       ${stepRow(3, steps[2], "아침 재고보고", sd ? { t: `${sd.t} 완료 · ${esc(sd.by || "")}` } : { t: "아직 안 함" }, `<a class="act ${steps[2] ? "gray" : ""}" href="../stock/?branch=${encodeURIComponent(B)}&back=${encodeURIComponent(location.pathname)}">${steps[2] ? "다시" : "하기"}</a>`)}
@@ -365,7 +365,7 @@ function taskCardHtml() {
   return `<div class="card"><h2>✅ 오늘 할 일 · ${left ? `남은 것 ${left}개` : "모두 완료"}</h2>${list.map((t) => `<div class="crow"><div><b style="${t.done ? "color:var(--sub);text-decoration:line-through" : ""}">${esc(t.title)}</b><span>${t.time ? esc(t.time) + " · " : ""}${esc(t.note || "")}${t.done ? ` · ✓ ${esc(t.done.by)} ${esc(t.done.t)}` : ""}</span></div>${t.done ? "" : `<button class="act" data-tdone="${t.id}">완료</button>`}</div>`).join("")}</div>`;
 }
 async function doTaskDone(id) {
-  const by = working().join(", "); if (!by) return toast("먼저 출근을 눌러 주세요");
+  const by = working().join(", "); if (!by) return needIn(() => doTaskDone(id));
   try { await send({ type: "taskdone", id, date: todayKey(), by }); TASK_DONE[id] = { by, t: now() }; render(); toast("완료했어요"); } catch (e) { fail(e); }
 }
 // ── 재고조사 (10/6): 카테고리 골라서 센 수량만 넣고 전송 → 관리자 페이지에서 포스와 비교·승인 ──
@@ -383,7 +383,7 @@ function surveyCardHtml() {
     <div class="btns" style="margin:6px 0 14px"><button class="btn" data-go="survey">카테고리 골라서 재고조사 하기</button></div></div>`;
 }
 async function sheetSurvey() {
-  if (!working().length) return toast("먼저 출근을 눌러 주세요 · 조사한 사람 이름이 자동으로 들어가요");
+  if (!working().length) return needIn(() => sheetSurvey());
   await loadGroups();
   openSheet(`<h2>📦 재고조사</h2><div class="desc">어떤 상품을 셀까요?</div><div class="chips">${SV_CATS.map(([k, n]) => { const c = svNames(k).length; return c ? `<button class="chip" data-svc="${k}">${n} ${c}</button>` : ""; }).join("")}</div>
     <div class="btns"><button class="btn" data-x>닫기</button></div>`);
@@ -420,7 +420,7 @@ function closeRowHtml(stepRow) {
   return stepRow("💰", c?.status === "done", "마감 보고", info, `<button class="act ${c?.status === "done" ? "gray" : ""}" data-go="closing">${c ? "다시" : "보고"}</button>`);
 }
 function sheetClosing() {
-  if (!working().length) return toast("먼저 출근을 눌러 주세요 · 마감 인원이 자동으로 들어가요");
+  if (!working().length) return needIn(() => sheetClosing());
   openSheet(`<h2>💰 마감 보고</h2><div class="desc">매출·카드·이체·지출은 포스에서 자동으로 가져와요. 돈통만 세 주세요.</div>
     <div class="desc" style="margin-top:16px">5만원권 몇 장?</div><input class="input" id="c50" inputmode="numeric" placeholder="장">
     <div class="desc" style="margin-top:12px">1만원권 몇 장? (전부 세기)</div><input class="input" id="c10" inputmode="numeric" placeholder="장">
@@ -452,7 +452,7 @@ function memoCardHtml() {
     <div class="btns" style="margin:6px 0 14px"><button class="btn" data-go="memo">＋ 인수인계 남기기</button></div></div>`;
 }
 function sheetCreq() {
-  if (!working().length) return toast("먼저 출근을 눌러 주세요 · 담당자 이름이 자동으로 들어가요");
+  if (!working().length) return needIn(() => sheetCreq());
   cr = { items: [], how: "방문수령", pay: null, step: "ready", manual: false };
   loadOuts();
   openSheet(`<h2>🧾 고객요청 적기</h2><div class="desc">날짜·담당자(${esc(working().join(", "))})는 자동으로 들어가요.</div>
@@ -489,12 +489,12 @@ async function doCreq() {
 }
 async function doCreqStep(id, k) {
   const by = working().join(", ");
-  if (!by) return toast("먼저 출근을 눌러 주세요");
+  if (!by) return needIn(() => doCreqStep(id, k));
   try { await send({ type: "creqstep", id, k, by }); STEPS[id] = k; render(); toast(k === "done" ? "전달 완료로 바꿨어요" : "챙겨둠·연락함으로 바꿨어요"); }
   catch (e) { fail(e); }
 }
 function sheetMemo() {
-  if (!working().length) return toast("먼저 출근을 눌러 주세요 · 남긴 사람 이름이 자동으로 들어가요");
+  if (!working().length) return needIn(() => sheetMemo());
   openSheet(`<h2>📌 인수인계 남기기</h2><div class="desc">🎤 키보드 마이크로 말해서 적어도 돼요. 비밀번호·전화번호는 앱에서 가려져 보여요.</div>
     <textarea class="input" id="mmText" rows="4" placeholder="예) 율하에서 바닐라 3병 퀵으로 옴, 받으면 확인"></textarea>
     <div class="desc" style="margin-top:14px">누구에게</div><div class="chips"><button class="chip on" data-mto="next">다음 근무자</button><button class="chip" data-mto="keep">📢 계속 공지 (내릴 때까지)</button><button class="chip" data-mto="leader">👔 팀장님</button></div>
@@ -510,7 +510,7 @@ async function doMemo() {
 }
 async function doMemoOk(id, keep, by) {
   by = by || working().join(", ");
-  if (!by) return toast("먼저 출근을 눌러 주세요");
+  if (!by) return needIn(() => doMemoOk(id, keep));
   try { await send({ type: keep ? "memodown" : "memook", id, by }); MEMO_DONE.add(id); render(); }
   catch (e) { fail(e); }
 }
@@ -528,12 +528,20 @@ function sheetHandoff(name) {
 async function doHandoff(name) {
   $("#okHo").disabled = true;
   for (const m of memoList().filter((m) => m.to !== "keep")) { try { await send({ type: "memook", id: m.id, by: name }); MEMO_DONE.add(m.id); } catch (e) { $("#okHo").disabled = false; return fail(e); } }
-  closeSheet(); render(); toast("확인했어요 · 오늘도 화이팅!");
+  closeSheet(); render(); toast("확인했어요 · 오늘도 화이팅!"); runAfterIn();
 }
 
 function openSheet(html) { $("#sheet").innerHTML = html; $("#dim").classList.add("on"); }
 const closeSheet = () => $("#dim").classList.remove("on");
 
+// 지금 근무 중인 사람이 없으면 출근 창부터 → 출근하면 하려던 일을 이어서
+let AFTER_IN = null;
+function needIn(then) {
+  AFTER_IN = then; sheetIn();
+  const left = st().ins.filter((x) => x.out).map((x) => `${x.name}(${x.out} 퇴근)`);
+  const d = document.querySelector("#sheet .desc"); if (d) d.innerHTML = `지금 근무 중인 사람이 없어요${left.length ? ` · ${esc(left.join(", "))}` : ""}. 누가 근무 중인가요?`;
+}
+const runAfterIn = () => { const f = AFTER_IN; AFTER_IN = null; if (f) setTimeout(f, 50); };
 function sheetIn() {
   const s = st(), recent = ls.get(`vf-app-${B}-names`, []).filter((n) => !s.ins.some((x) => x.name === n));
   openSheet(`<h2>출근</h2><div class="desc">이름을 고르거나 입력해 주세요.</div>
@@ -543,13 +551,13 @@ function sheetIn() {
 }
 async function doIn(name) {
   name = name.trim(); if (!name) return toast("이름을 넣어 주세요"); if (!/[가-힣a-zA-Z]{2,}/.test(name)) return toast("이름을 두 글자 이상 정확히 넣어 주세요"); // 10/5 '0'으로 출근 기록된 일
-  const s = st(); if (s.ins.some((x) => x.name === name)) return toast("오늘 이미 출근했어요");
+  const s = st(), again = s.ins.find((x) => x.name === name); if (again && !again.out) return toast("지금 근무 중이에요"); // 퇴근했다가 다시 출근은 허용 (10/6)
   $("#okIn").disabled = true;
   try {
     await send({ type: "clockin", name });
-    s.ins.push({ name, t: now() }); saveSt(s);
+    if (again) delete again.out; else s.ins.push({ name, t: now() }); saveSt(s);
     ls.set(`vf-app-${B}-names`, [name, ...ls.get(`vf-app-${B}-names`, []).filter((n) => n !== name)].slice(0, 12));
-    render(); if (!sheetHandoff(name)) closeSheet(); toast(`${name}님 출근 ${now()}`);
+    render(); if (!sheetHandoff(name)) { closeSheet(); runAfterIn(); } toast(`${name}님 출근 ${now()}`);
   } catch (e) { $("#okIn").disabled = false; fail(e); }
 }
 function sheetCheck(kind) {
