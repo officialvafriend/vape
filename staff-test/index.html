@@ -91,7 +91,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.06-3";
+const VER = "10.06-4";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
 const OPEN_AT = { 동성로: "11:00", 수성: "10:30", 본점: "11:00", 율하: "10:30", 반월당: "10:30", 상인: "10:30", 광장코아: "11:00", 현풍: "11:00" };
 // 운영봇(운영봇_시험.mjs)의 CHECK와 같은 목록이어야 기록이 맞아요
@@ -157,6 +157,7 @@ function render() {
       ${stepRow(2, steps[1], "오픈 체크", s.open ? { t: `${s.open.t} 완료${s.open.missed.length ? ` · 못 한 것 ${s.open.missed.length}개` : ""}`, w: s.open.missed.length } : { t: "아직 안 함" }, `<button class="act ${steps[1] ? "gray" : ""}" data-go="open">${steps[1] ? "다시" : "체크"}</button>`)}
       ${stepRow(3, steps[2], "아침 재고보고", sd ? { t: `${sd.t} 완료 · ${esc(sd.by || "")}` } : { t: "아직 안 함" }, `<a class="act ${steps[2] ? "gray" : ""}" href="../stock/?branch=${encodeURIComponent(B)}&back=${encodeURIComponent(location.pathname)}">${steps[2] ? "다시" : "하기"}</a>`)}
     </div>`}
+    ${taskCardHtml()}
     ${memoCardHtml()}
     ${creqCardHtml()}
     <div class="card"><h2>마감</h2>
@@ -347,6 +348,18 @@ function creqCardHtml() {
   return `<div class="card"><h2>🧾 고객요청${list.length ? ` · 진행 중 ${list.length}건` : ""}</h2>${rows || '<div class="desc" style="padding:4px 0 10px">진행 중인 고객요청이 없어요</div>'}
     <div class="btns" style="margin:6px 0 14px"><button class="btn primary" data-go="creq">＋ 고객요청 적기</button></div></div>`;
 }
+// 관리자가 나눠 준 '오늘 할 일' (10/6) — 관리자 페이지에서 등록, 완료하면 관리자 페이지에 체크
+let TASK_DONE = {};
+function taskCardHtml() {
+  const list = (BOARD?.tasks || []).map((t) => ({ ...t, done: t.done || TASK_DONE[t.id] || null }));
+  if (!list.length) return "";
+  const left = list.filter((t) => !t.done).length;
+  return `<div class="card"><h2>✅ 오늘 할 일 · ${left ? `남은 것 ${left}개` : "모두 완료"}</h2>${list.map((t) => `<div class="crow"><div><b style="${t.done ? "color:var(--sub);text-decoration:line-through" : ""}">${esc(t.title)}</b><span>${t.time ? esc(t.time) + " · " : ""}${esc(t.note || "")}${t.done ? ` · ✓ ${esc(t.done.by)} ${esc(t.done.t)}` : ""}</span></div>${t.done ? "" : `<button class="act" data-tdone="${t.id}">완료</button>`}</div>`).join("")}</div>`;
+}
+async function doTaskDone(id) {
+  const by = working().join(", "); if (!by) return toast("먼저 출근을 눌러 주세요");
+  try { await send({ type: "taskdone", id, date: todayKey(), by }); TASK_DONE[id] = { by, t: now() }; render(); toast("완료했어요"); } catch (e) { fail(e); }
+}
 function memoCardHtml() {
   const list = memoList();
   const toName = { next: "다음 근무자", keep: "📢 계속 공지", leader: "👔 팀장님께" };
@@ -498,6 +511,7 @@ document.addEventListener("click", (e) => {
   if (go === "out") return sheetOut();
   if (go === "branch") { B = null; return render(); }
   if (t.dataset.honame) return doHandoff(t.dataset.honame);
+  if (t.dataset.tdone) return doTaskDone(t.dataset.tdone);
   if (t.dataset.go === "creq") return sheetCreq();
   if (t.dataset.go === "memo") return sheetMemo();
   if (t.dataset.crs) return doCreqStep(t.dataset.id, t.dataset.crs);
