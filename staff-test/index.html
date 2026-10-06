@@ -127,7 +127,7 @@ let SRV = null;
 const st = () => {
   const s = ls.get(dayKey(), { ins: [], open: null, close: null });
   if (!SRV) return s;
-  for (const a of SRV.ins || []) { const m = s.ins.find((x) => x.name === a.name); if (!m) s.ins.push({ name: a.name, t: a.t, out: a.out || undefined }); else if (a.out && !m.out) m.out = a.out; }
+  for (const a of SRV.ins || []) { const m = s.ins.find((x) => x.name === a.name); if (!m) s.ins.push({ name: a.name, t: a.t, out: a.out || undefined }); else if (a.out && !m.out && !(m.re && m.re > a.out)) m.out = a.out; } // 다시 출근(re)이 서버 퇴근 기록보다 뒤면 근무 중
   for (const k of ["open", "close"]) if (!s[k] && SRV[k]) s[k] = { t: SRV[k].t, missed: Array(SRV[k].miss || 0).fill("") };
   return s;
 };
@@ -555,7 +555,7 @@ async function doIn(name) {
   $("#okIn").disabled = true;
   try {
     await send({ type: "clockin", name });
-    if (again) delete again.out; else s.ins.push({ name, t: now() }); saveSt(s);
+    if (again) { delete again.out; again.re = now(); } else s.ins.push({ name, t: now() }); saveSt(s);
     ls.set(`vf-app-${B}-names`, [name, ...ls.get(`vf-app-${B}-names`, []).filter((n) => n !== name)].slice(0, 12));
     render(); if (!sheetHandoff(name)) { closeSheet(); runAfterIn(); } toast(`${name}님 출근 ${now()}`);
   } catch (e) { $("#okIn").disabled = false; fail(e); }
