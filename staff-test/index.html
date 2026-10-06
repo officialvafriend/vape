@@ -82,6 +82,12 @@
   .crow>div{flex:1;min-width:0}.crow b{display:block;font-size:15px}.crow span{display:block;font-size:13px;color:var(--ink2);margin-top:2px}.crow em{display:block;font-style:normal;font-size:13px;font-weight:700;color:var(--blue);margin-top:3px}
   .crow.late{box-shadow:inset 3px 0 0 var(--red);padding-left:10px}.crow.late span{color:var(--red)}
   .crow.arr{background:var(--amber-soft);border-radius:12px;padding:12px;border-top:0;margin:4px 0}.crow.arr em{color:var(--amber)}
+  /* 재고조사 (10/6) */
+  .sv-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--line)}
+  .sv-row b{flex:1;font-size:15px;font-weight:600;min-width:0}
+  .sv-row input{width:76px;height:44px;border-radius:12px;border:1px solid var(--line);text-align:center;font:inherit;font-size:18px;font-weight:700;outline:none}
+  .sv-row input:focus{border-color:var(--blue)} .sv-row.done input{background:var(--blue-soft);border-color:var(--blue-soft);color:var(--blue)}
+  .sv-bar{position:sticky;bottom:calc(-20px - env(safe-area-inset-bottom));background:#fff;padding:12px 0 calc(4px + env(safe-area-inset-bottom));margin-top:8px}
   .pill{font-style:normal;font-weight:700;font-size:12px;padding:1px 6px;border-radius:6px}.pill.ok{background:var(--green-soft);color:var(--green)}.pill.no{background:var(--red-soft);color:var(--red)}
 </style>
 </head>
@@ -91,7 +97,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.06-4";
+const VER = "10.06-5";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
 const OPEN_AT = { 동성로: "11:00", 수성: "10:30", 본점: "11:00", 율하: "10:30", 반월당: "10:30", 상인: "10:30", 광장코아: "11:00", 현풍: "11:00" };
 // 운영봇(운영봇_시험.mjs)의 CHECK와 같은 목록이어야 기록이 맞아요
@@ -158,6 +164,7 @@ function render() {
       ${stepRow(3, steps[2], "아침 재고보고", sd ? { t: `${sd.t} 완료 · ${esc(sd.by || "")}` } : { t: "아직 안 함" }, `<a class="act ${steps[2] ? "gray" : ""}" href="../stock/?branch=${encodeURIComponent(B)}&back=${encodeURIComponent(location.pathname)}">${steps[2] ? "다시" : "하기"}</a>`)}
     </div>`}
     ${taskCardHtml()}
+    ${surveyCardHtml()}
     ${memoCardHtml()}
     ${creqCardHtml()}
     <div class="card"><h2>마감</h2>
@@ -360,6 +367,47 @@ async function doTaskDone(id) {
   const by = working().join(", "); if (!by) return toast("먼저 출근을 눌러 주세요");
   try { await send({ type: "taskdone", id, date: todayKey(), by }); TASK_DONE[id] = { by, t: now() }; render(); toast("완료했어요"); } catch (e) { fail(e); }
 }
+// ── 재고조사 (10/6): 카테고리 골라서 센 수량만 넣고 전송 → 관리자 페이지에서 포스와 비교·승인 ──
+// 포스 수량은 일부러 안 보여줌(공개 주소 + 미리 채우면 대충 넘기기 쉬움). 빈칸 = 안 센 상품(보내지 않음)
+let GROUPS = null, sv = null;
+async function loadGroups() { if (GROUPS) return GROUPS; try { GROUPS = await (await fetch("groups.json", { cache: "no-cache" })).json(); } catch { GROUPS = {}; } return GROUPS; }
+const SV_CATS = [["프리미엄 A", "프리미엄 A그룹"], ["프리미엄 B", "프리미엄 B그룹"], ["프리미엄 C", "프리미엄 C그룹"], ["일회용", "일회용"], ["기기 A", "입호흡기기 A"], ["기기 B", "입호흡기기 B"], ["기기 C", "입호흡기기 C"], ["@팟·코일", "팟·코일"], ["@폐호흡 액상", "폐호흡 액상"]];
+function svNames(cat) {
+  const P = window.POS?.[B] || {};
+  return Object.keys(P).filter((n) => P[n][4] !== "단종" && (cat.startsWith("@") ? P[n][4] === cat.slice(1) : GROUPS?.[n] === cat)).sort((a, c) => a.localeCompare(c, "ko"));
+}
+function surveyCardHtml() {
+  const mine = BOARD?.surveys || [], st = { wait: "승인 기다리는 중", reject: "반려됨 · 다시 세 주세요", done: "포스 반영 완료" };
+  return `<div class="card"><h2>📦 재고조사</h2>${mine.map((v) => `<div class="crow"><div><b>${esc(v.cat)} ${v.n}개</b><span>${esc(v.by)} · ${v.d.slice(5).replace("-", "/")} ${v.t}</span><em style="${v.status === "reject" ? "color:var(--red)" : ""}">${st[v.status] || ""}</em></div></div>`).join("")}
+    <div class="btns" style="margin:6px 0 14px"><button class="btn" data-go="survey">카테고리 골라서 재고조사 하기</button></div></div>`;
+}
+async function sheetSurvey() {
+  if (!working().length) return toast("먼저 출근을 눌러 주세요 · 조사한 사람 이름이 자동으로 들어가요");
+  await loadGroups();
+  openSheet(`<h2>📦 재고조사</h2><div class="desc">어떤 상품을 셀까요?</div><div class="chips">${SV_CATS.map(([k, n]) => { const c = svNames(k).length; return c ? `<button class="chip" data-svc="${k}">${n} ${c}</button>` : ""; }).join("")}</div>
+    <div class="btns"><button class="btn" data-x>닫기</button></div>`);
+}
+function sheetSurveyList(cat) {
+  const names = svNames(cat), nm = (SV_CATS.find(([k]) => k === cat) || [])[1] || cat;
+  sv = { cat, nm, names, cnt: {} };
+  openSheet(`<h2>${esc(nm)} · ${names.length}개</h2><div class="desc">실제로 센 개수를 넣어 주세요. 빈칸은 '안 셈'으로 보고 보내지 않아요. 없으면 0.</div>
+    <div id="svList">${names.map((n, i) => `<div class="sv-row" id="svr${i}"><b>${esc(n)}</b><input inputmode="numeric" pattern="[0-9]*" data-svi="${i}" placeholder="-"></div>`).join("")}</div>
+    <div class="sv-bar"><div class="btns" style="margin:0"><button class="btn" data-go="survey">뒤로</button><button class="btn primary" id="okSv">전송 · <span id="svN">0</span>/${names.length}</button></div></div>`);
+}
+async function doSurvey() {
+  const entries = sv.names.map((n, i) => [n, sv.cnt[i]]).filter(([, c]) => c !== undefined && c !== "");
+  if (!entries.length) return toast("센 개수를 하나 이상 넣어 주세요");
+  const left = sv.names.length - entries.length;
+  if (left && !confirm(`안 센 상품 ${left}개는 빼고 보낼까요?`)) return;
+  const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 5), by = working().join(", ");
+  const items = entries.map(([n, c]) => [n, +c]), parts = []; let cur = [];
+  for (const it of items) { if (JSON.stringify([...cur, it]).length > 1300) { parts.push(cur); cur = []; } cur.push(it); } if (cur.length) parts.push(cur);
+  $("#okSv").disabled = true;
+  try {
+    for (let i = 0; i < parts.length; i++) { await send({ type: "survey", id, cat: sv.nm, part: i, total: parts.length, items: parts[i], by }); if (i < parts.length - 1) await new Promise((r) => setTimeout(r, 700)); }
+    closeSheet(); toast(`${sv.nm} ${items.length}개 보냈어요 · 관리자가 확인하면 포스에 반영돼요`);
+  } catch (e) { $("#okSv").disabled = false; fail(e); }
+}
 function memoCardHtml() {
   const list = memoList();
   const toName = { next: "다음 근무자", keep: "📢 계속 공지", leader: "👔 팀장님께" };
@@ -512,6 +560,9 @@ document.addEventListener("click", (e) => {
   if (go === "branch") { B = null; return render(); }
   if (t.dataset.honame) return doHandoff(t.dataset.honame);
   if (t.dataset.tdone) return doTaskDone(t.dataset.tdone);
+  if (t.dataset.go === "survey") return sheetSurvey();
+  if (t.dataset.svc) return sheetSurveyList(t.dataset.svc);
+  if (t.id === "okSv") return doSurvey();
   if (t.dataset.go === "creq") return sheetCreq();
   if (t.dataset.go === "memo") return sheetMemo();
   if (t.dataset.crs) return doCreqStep(t.dataset.id, t.dataset.crs);
@@ -548,11 +599,14 @@ document.addEventListener("click", (e) => {
 });
 document.addEventListener("input", (e) => {
   if (e.target.id === "rqAddr") onAddr();
+  if (e.target.dataset.svi !== undefined) { const i = +e.target.dataset.svi, v = e.target.value.replace(/\D/g, "").slice(0, 4); e.target.value = v; if (v === "") delete sv.cnt[i]; else sv.cnt[i] = v; e.target.closest(".sv-row").classList.toggle("done", v !== ""); $("#svN").textContent = Object.keys(sv.cnt).length; }
   if (e.target.id === "crFind") { const q = e.target.value.trim(); $("#crRes").innerHTML = q ? qkFind(q).map((n) => `<button class="qr" data-cradd="${esc(n)}">${esc(n)}<small>${esc(QPOS()[n]?.[4] || "")}</small>${OUTS.has(n) ? '<small style="color:var(--red);background:var(--red-soft)">품절</small>' : ""} <i>+</i></button>`).join("") || '<div class="desc">못 찾았어요 · 아래 칸에 직접 적어 주세요</div>' : ""; }
   if (e.target.id === "qkFind") { const q = e.target.value.trim(); $("#qkRes").innerHTML = q ? qkFind(q).map((n) => `<button class="qr" data-qadd="${esc(n)}">${esc(n)}<small>${esc(QPOS()[n]?.[4] || "")}</small> <i>+</i></button>`).join("") || '<div class="desc">못 찾았어요</div>' : ""; }
   if (e.target.id === "qkAddr") { const o = nearOrder(e.target.value); if (o) qk.to = (o.find(([b]) => b !== B && !NO_QUICK.includes(b)) || [])[0] || qk.to; $("#qkTo").innerHTML = qkToChips(o); $("#qkNote").textContent = o ? "· 가까운 순" : ""; }
 });
 document.addEventListener("keydown", (e) => { if (e.key === "Enter" && e.target.id === "nm") doIn(e.target.value); });
+// 재고조사: 엔터(키패드 다음)를 누르면 다음 칸으로
+document.addEventListener("keydown", (e) => { if (e.key === "Enter" && e.target.dataset.svi !== undefined) { e.preventDefault(); const n = document.querySelector(`[data-svi="${+e.target.dataset.svi + 1}"]`); n ? n.focus() : e.target.blur(); } });
 // 재고보고 갔다 오면 다시 그리기
 window.addEventListener("pageshow", render);
 document.addEventListener("visibilitychange", () => { if (!document.hidden) render(); });
