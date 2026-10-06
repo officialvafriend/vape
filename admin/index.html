@@ -4,81 +4,95 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex">
+<meta name="theme-color" content="#f2f4f6">
 <title>베이프렌드 관리자</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <style>
-  :root{--page:#f9f9f7;--surface:#fcfcfb;--card:#fff;--ink:#0b0b0b;--ink2:#52514e;--muted:#898781;--grid:#e1e0d9;--base:#c3c2b7;--ring:rgba(11,11,11,.10);
-    --accent:#2a78d6;--accent-soft:#e8f1fc;--good:#0ca30c;--good-ink:#006300;--warn:#fab219;--crit:#d03b3b;--chip:#f1f0ec;color-scheme:light}
-  @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--page:#0d0d0d;--surface:#1a1a19;--card:#1a1a19;--ink:#fff;--ink2:#c3c2b7;--muted:#898781;--grid:#2c2c2a;--base:#383835;--ring:rgba(255,255,255,.10);
-    --accent:#3987e5;--accent-soft:#1d2a3a;--good-ink:#0ca30c;--chip:#252523;color-scheme:dark}}
-  *{box-sizing:border-box;margin:0;padding:0}
-  body{background:var(--page);color:var(--ink);font-family:"Pretendard Variable",Pretendard,-apple-system,"Malgun Gothic",sans-serif;-webkit-font-smoothing:antialiased}
-  button,input,select{font:inherit;color:inherit}
-  button{border:0;background:none;cursor:pointer}
-  .wrap{max-width:1180px;margin:0 auto;padding:20px 16px 60px}
-  header{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:18px}
-  header h1{font-size:20px;letter-spacing:-.3px} header h1 b{color:var(--accent)}
-  .at{color:var(--muted);font-size:13px;margin-left:auto}
-  .tabs{display:flex;gap:4px;background:var(--chip);border-radius:12px;padding:4px}
-  .tabs button{padding:8px 14px;border-radius:9px;font-weight:600;font-size:14px;color:var(--ink2)}
-  .tabs button.on{background:var(--card);color:var(--ink);box-shadow:0 0 0 1px var(--ring)}
-  .card{background:var(--card);border-radius:16px;box-shadow:0 0 0 1px var(--ring);padding:18px;margin-bottom:14px}
-  .card h2{font-size:15px;font-weight:700;margin-bottom:4px} .card .sub{color:var(--muted);font-size:13px;margin-bottom:12px}
-  .hero{display:flex;align-items:flex-end;gap:18px;flex-wrap:wrap}
-  .hero .num{font-size:56px;font-weight:800;letter-spacing:-2px;line-height:1}
-  .hero .num small{font-size:24px;font-weight:700;letter-spacing:0;margin-left:2px}
-  .st{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700;padding:3px 8px;border-radius:999px;background:var(--chip);color:var(--ink2)}
-  .st i{width:8px;height:8px;border-radius:50%;display:inline-block}
-  .tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
-  .tile{background:var(--card);border-radius:14px;box-shadow:0 0 0 1px var(--ring);padding:14px 14px 10px;position:relative}
-  .tile .nm{font-weight:700;font-size:14px;display:flex;align-items:center;gap:6px}
-  .tile .v{font-size:30px;font-weight:800;letter-spacing:-1px;margin:6px 0 2px}
-  .tile .v small{font-size:15px;font-weight:700}
-  .tile .meta{font-size:12px;color:var(--muted)}
-  .tile.off{opacity:.55}
-  .spark{display:block;width:100%;height:40px;margin-top:8px}
-  .tip{position:fixed;pointer-events:none;background:var(--ink);color:var(--card);font-size:12px;padding:6px 8px;border-radius:8px;opacity:0;transition:opacity .1s;z-index:30;white-space:nowrap}
-  table{width:100%;border-collapse:collapse;font-size:14px}
-  th{font-size:12px;color:var(--muted);font-weight:600;text-align:left;padding:8px 8px;border-bottom:1px solid var(--grid)}
-  td{padding:9px 8px;border-bottom:1px solid var(--grid);vertical-align:top}
-  tr:last-child td{border-bottom:0}
-  .scroll{overflow-x:auto}
-  .chips{display:flex;gap:6px;flex-wrap:wrap}
-  .chip{padding:6px 11px;border-radius:999px;background:var(--chip);font-size:13px;font-weight:600;color:var(--ink2)}
-  .chip.on{background:var(--accent);color:#fff}
-  .mini{font-size:12px;padding:2px 7px;border-radius:6px;background:var(--accent-soft);color:var(--accent);font-weight:700;margin:0 4px 2px 0;display:inline-block}
-  .muted{color:var(--muted)}
-  .ok{color:var(--good-ink);font-weight:700}
-  .btn{height:40px;padding:0 16px;border-radius:10px;background:var(--chip);font-weight:700;font-size:14px}
-  .btn.primary{background:var(--accent);color:#fff}
-  .btn:disabled{opacity:.5}
-  .in{height:40px;border-radius:10px;border:1px solid var(--grid);background:var(--surface);padding:0 12px;font-size:15px;width:100%}
-  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
-  .lbl{font-size:13px;color:var(--muted);font-weight:600;margin:12px 0 6px}
-  .plist{max-height:60vh;overflow:auto;border-top:1px solid var(--grid)}
-  .prow{display:flex;align-items:center;gap:10px;padding:8px 2px;border-bottom:1px solid var(--grid);cursor:pointer;font-size:14px}
-  .prow input{width:18px;height:18px;accent-color:var(--accent)}
-  .prow .c{margin-left:auto;font-size:12px;color:var(--muted)}
-  .prow .x{font-size:11px;font-weight:700;color:var(--crit)}
-  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:var(--card);padding:12px 18px;border-radius:12px;font-weight:600;opacity:0;transition:.2s;z-index:40;max-width:90vw;text-align:center}
-  .toast.on{opacity:1}
-  .login{max-width:360px;margin:12vh auto;text-align:center}
-  .login h1{font-size:22px;margin-bottom:6px} .login p{color:var(--muted);font-size:14px;margin-bottom:18px}
-  .login .in{text-align:center;margin-bottom:10px}
-  .login label{font-size:13px;color:var(--ink2);display:flex;gap:6px;justify-content:center;align-items:center;margin:4px 0 14px}
-  .two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-  @media (max-width:760px){.two{grid-template-columns:1fr}.hero .num{font-size:48px}}
-  .task{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--grid)}
-  .task:last-child{border-bottom:0}
-  .task .t{flex:1;min-width:0} .task b{display:block} .task span{font-size:12px;color:var(--muted)}
+  /* 토스 스타일 (10/6 사용자 요청): 회색 바탕 + 흰 카드, 큰 글씨 한 문장, 목록 + 아래에서 올라오는 창, 아래 탭바 */
+  :root{--bg:#f2f4f6;--card:#fff;--ink:#191f28;--ink2:#4e5968;--sub:#8b95a1;--line:#f2f4f6;--line2:#e5e8eb;--blue:#3182f6;--blue-soft:#e8f3ff;
+    --green:#03b26c;--green-soft:#e5f8ef;--red:#f04452;--red-soft:#fdecee;--amber:#b77700;--amber-soft:#fff4dc;--press:#f9fafb;color-scheme:light}
+  @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#17171c;--card:#202027;--ink:#f9fafb;--ink2:#c3c9d1;--sub:#8b95a1;--line:#2c2c35;--line2:#33333d;--blue:#4593fc;--blue-soft:#1f2b3e;
+    --green:#15c47e;--green-soft:#183027;--red:#ff5b68;--red-soft:#3a2023;--amber:#ffb331;--amber-soft:#3a3020;--press:#26262e;color-scheme:dark}}
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  body{background:var(--bg);color:var(--ink);font-family:"Pretendard Variable",Pretendard,-apple-system,"Malgun Gothic",sans-serif;-webkit-font-smoothing:antialiased;letter-spacing:-.2px}
+  button,input,select{font:inherit;color:inherit} button{border:0;background:none;cursor:pointer}
+  .wrap{max-width:560px;margin:0 auto;padding:12px 16px calc(96px + env(safe-area-inset-bottom))}
+  .top{display:flex;align-items:center;padding:8px 4px 18px}
+  .top .logo{font-weight:800;font-size:17px} .top .logo b{color:var(--blue)}
+  .top .r{margin-left:auto;display:flex;gap:4px}
+  .ic{height:34px;padding:0 12px;border-radius:10px;font-size:13px;font-weight:600;color:var(--ink2)}
+  .ic:active{background:var(--line2)}
+  .card{background:var(--card);border-radius:22px;padding:22px 20px;margin-bottom:12px}
+  .eyebrow{font-size:14px;font-weight:600;color:var(--sub);margin-bottom:8px}
+  .headline{font-size:24px;font-weight:700;line-height:1.38;letter-spacing:-.6px}
+  .headline em{font-style:normal;color:var(--blue)} .headline em.r{color:var(--red)}
+  .caption{font-size:14px;color:var(--sub);margin-top:8px;line-height:1.5}
+  .bar{height:10px;border-radius:99px;background:var(--line2);overflow:hidden;margin-top:18px}
+  .bar i{display:block;height:100%;border-radius:99px;background:var(--blue);transition:width .4s}
+  .sec{font-size:18px;font-weight:700;margin:26px 4px 10px;display:flex;align-items:baseline;gap:6px} .sec small{font-size:14px;color:var(--sub);font-weight:600}
+  .list{background:var(--card);border-radius:22px;padding:6px 0;margin-bottom:12px}
+  .item{display:flex;align-items:center;gap:14px;padding:14px 20px;width:100%;text-align:left}
+  .item:active{background:var(--press)}
+  .av{width:42px;height:42px;border-radius:14px;display:grid;place-items:center;font-weight:800;font-size:15px;flex:none;background:var(--line);color:var(--ink2)}
+  .av.good{background:var(--green-soft);color:var(--green)} .av.warn{background:var(--amber-soft);color:var(--amber)} .av.bad{background:var(--red-soft);color:var(--red)} .av.blue{background:var(--blue-soft);color:var(--blue)}
+  .item .tx{flex:1;min-width:0} .item .tx b{display:block;font-size:16px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis} .item .tx span{display:block;font-size:13px;color:var(--sub);margin-top:2px}
+  .item .val{text-align:right;flex:none} .item .val b{display:block;font-size:16px;font-weight:700} .item .val span{font-size:12px;font-weight:600}
+  .t-good{color:var(--green)} .t-warn{color:var(--amber)} .t-bad{color:var(--red)} .t-sub{color:var(--sub)}
+  .chev{color:var(--line2);font-size:18px;flex:none;margin-left:-4px}
+  .empty{padding:18px 20px;color:var(--sub);font-size:14px}
+  .btn{height:56px;border-radius:16px;font-weight:700;font-size:17px;background:var(--blue);color:#fff;width:100%}
+  .btn.sec2{background:var(--blue-soft);color:var(--blue)} .btn.gray{background:var(--line2);color:var(--ink2)} .btn.red{background:var(--red-soft);color:var(--red)}
+  .btn:disabled{opacity:.4}
+  .btns{display:flex;gap:8px;margin-top:20px}
+  /* 아래 탭바 */
+  .nav{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line2);display:flex;justify-content:center;padding:6px 0 calc(6px + env(safe-area-inset-bottom));z-index:20}
+  .nav div{display:flex;width:100%;max-width:560px}
+  .nav button{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 0;font-size:11px;font-weight:600;color:var(--sub)}
+  .nav button svg{width:24px;height:24px} .nav button.on{color:var(--ink)}
+  /* 아래에서 올라오는 창 */
+  .dim{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:flex-end;justify-content:center;z-index:50}
+  .dim.on{display:flex}
+  .sheet{background:var(--card);width:min(560px,100%);border-radius:26px 26px 0 0;padding:26px 22px calc(22px + env(safe-area-inset-bottom));max-height:90vh;overflow:auto;animation:up .22s ease}
+  @keyframes up{from{transform:translateY(40px);opacity:.6}to{transform:none;opacity:1}}
+  .sheet h3{font-size:22px;font-weight:700;letter-spacing:-.5px;line-height:1.35} .sheet .caption{margin-top:6px}
+  .sheet .list{background:none;padding:0;margin:14px -22px 0} .sheet .item{padding:13px 22px}
+  .lbl{font-size:14px;font-weight:600;color:var(--sub);margin:22px 0 10px}
+  .in{width:100%;height:54px;border-radius:14px;border:0;background:var(--line);padding:0 16px;font-size:17px;outline:none}
+  .in:focus{box-shadow:inset 0 0 0 2px var(--blue)}
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{height:40px;padding:0 15px;border-radius:12px;background:var(--line);font-size:15px;font-weight:600;color:var(--ink2)}
+  .chip.on{background:var(--blue);color:#fff}
+  .chips.hs{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin-left:-16px;margin-right:-16px;padding:0 16px}.chips.hs::-webkit-scrollbar{display:none}.chips.hs .chip{flex:none}
+  .seg{display:flex;background:var(--line);border-radius:12px;padding:4px;gap:4px}
+  .seg button{flex:1;height:38px;border-radius:9px;font-weight:600;font-size:14px;color:var(--sub)} .seg button.on{background:var(--card);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+  .tag{display:inline-block;font-size:12px;font-weight:700;padding:3px 8px;border-radius:8px;background:var(--blue-soft);color:var(--blue);margin:6px 4px 0 0}
+  .tag.gray{background:var(--line);color:var(--sub)}
+  .item .tx span.tag{display:inline-block;margin-top:6px}
+  .sw{width:46px;height:28px;border-radius:99px;background:var(--line2);position:relative;flex:none;transition:.2s}
+  .sw::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.15)}
+  .sw.on{background:var(--blue)} .sw.on::after{left:21px}
+  .sticky{position:fixed;left:0;right:0;bottom:calc(64px + env(safe-area-inset-bottom));display:flex;justify-content:center;padding:0 16px;z-index:15;pointer-events:none}
+  .sticky .btn{max-width:528px;pointer-events:auto;box-shadow:0 6px 20px rgba(49,130,246,.3)}
+  .spark{display:block;width:100%;height:56px;margin-top:14px}
+  .tip{position:fixed;pointer-events:none;background:var(--ink);color:var(--card);font-size:12px;font-weight:600;padding:6px 9px;border-radius:8px;opacity:0;z-index:60;white-space:nowrap}
+  .toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(10px);background:#191f28;color:#fff;padding:14px 20px;border-radius:14px;font-weight:600;opacity:0;transition:.25s;z-index:70;max-width:90vw;text-align:center}
+  .toast.on{opacity:1;transform:translateX(-50%)}
+  .login{padding-top:14vh} .login .headline{margin-bottom:28px}
+  .search{position:relative} .search .in{padding-left:44px} .search svg{position:absolute;left:15px;top:16px;width:22px;height:22px;color:var(--sub)}
 </style>
 </head>
 <body>
 <div class="wrap" id="app"></div>
+<nav class="nav" id="nav" style="display:none"><div>
+  <button data-tab="home"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3.2 3 10.4V20a1 1 0 0 0 1 1h5.5v-6h5v6H20a1 1 0 0 0 1-1v-9.6z"/></svg>홈</button>
+  <button data-tab="tasks"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 3h8v2h3a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h3zm2 0v3h4V3zm5.3 7.3-4.3 4.3-2.3-2.3-1.4 1.4 3.7 3.7 5.7-5.7z"/></svg>업무</button>
+  <button data-tab="must"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h16v4H4zm0 6h16v10H4zm5 3v2h6v-2z"/></svg>필수 상품</button>
+</div></nav>
+<div class="dim" id="dim"><div class="sheet" id="sheet"></div></div>
 <div class="tip" id="tip"></div>
 <div class="toast" id="toast"></div>
 <script>
-// 베이프렌드 관리자 페이지 (10/6) — 데이터는 운영봇이 비밀번호로 암호화해서 올린 admin/data.enc.json 을 이 기기에서 풀어서 봄
+// 베이프렌드 관리자 페이지 — 데이터는 운영봇이 비밀번호로 암호화해서 올린 admin/data.enc.json 을 이 기기에서 풀어서 봄
 // 저장(필수 상품·업무)은 디스코드 웹훅 → 운영봇. 같은 키로 서명해서 봇이 비밀번호를 아는 사람의 요청인지 확인함
 const HOOK = "https://discord.com/api/webhooks/1555156884753743905/BLK7tRBQACouQrOE_hvOkm2-iD44gnfnxdJvQXxiBAJKXJU3MG4bjnACFsXgDkDWLBrh";
 const SRC = ["https://api.github.com/repos/officialvafriend/vape/contents/admin/data.enc.json", "data.enc.json"];
@@ -88,12 +102,12 @@ const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
 const ls = { get: (k) => { try { return localStorage.getItem(k); } catch { return null; } }, set: (k, v) => { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch {} } };
 const b64 = { to: (u8) => btoa(String.fromCharCode(...u8)), from: (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0)) };
-function toast(m) { const t = $("#toast"); t.textContent = m; t.classList.add("on"); clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove("on"), 2800); }
-// 결품률 상태 (아이콘+글자와 함께, 색만으로 구분하지 않음) — 기준은 시험값
-const STATUS = (r) => r == null ? null : r <= 5 ? { c: "var(--good)", t: "좋음", i: "✓" } : r <= 15 ? { c: "var(--warn)", t: "주의", i: "!" } : { c: "var(--crit)", t: "위험", i: "!!" };
-const stChip = (r) => { const s = STATUS(r); return s ? `<span class="st"><i style="background:${s.c}"></i>${s.i} ${s.t}</span>` : ""; };
+const WD = "일월화수목금토";
+function toast(m) { const t = $("#toast"); t.textContent = m; t.classList.add("on"); clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove("on"), 2600); }
+// 결품률 상태 — 글자와 같이 보여줌(색만으로 구분 안 함). 기준은 시험값
+const ST = (r) => r == null ? null : r <= 5 ? { k: "good", t: "좋아요" } : r <= 15 ? { k: "warn", t: "주의" } : { k: "bad", t: "위험" };
 
-let RAW = null, KEY = null, D = null, tab = ls.get("vf-admin-tab") || "home", mustB = ls.get("vf-admin-mustb") || "본점", mustCat = "", mustQ = "", draft = null, editTask = null, outFilter = "";
+let RAW = null, KEY = null, D = null, tab = ls.get("vf-admin-tab") || "home", mustB = ls.get("vf-admin-mustb") || "본점", mustCat = "", mustQ = "", draft = null, editTask = null;
 
 async function fetchEnc() {
   try { const r = await fetch(SRC[0] + "?t=" + Date.now(), { headers: { Accept: "application/vnd.github.raw" }, cache: "no-store" }); if (r.ok) return await r.json(); } catch {}
@@ -105,25 +119,26 @@ async function deriveKey(pw, salt, iter) {
 }
 async function decrypt(raw, keyBytes) {
   const k = await crypto.subtle.importKey("raw", keyBytes, "AES-GCM", false, ["decrypt"]);
-  const pt = await crypto.subtle.decrypt({ name: "AES-GCM", iv: b64.from(raw.iv) }, k, b64.from(raw.ct));
-  return JSON.parse(new TextDecoder().decode(pt));
+  return JSON.parse(new TextDecoder().decode(await crypto.subtle.decrypt({ name: "AES-GCM", iv: b64.from(raw.iv) }, k, b64.from(raw.ct))));
 }
 async function sign(op, ts, data) {
   const k = await crypto.subtle.importKey("raw", KEY, { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
-  const sig = new Uint8Array(await crypto.subtle.sign("HMAC", k, new TextEncoder().encode(`${op}|${ts}|${JSON.stringify(data)}`)));
-  return [...sig].map((x) => x.toString(16).padStart(2, "0")).join("");
+  return [...new Uint8Array(await crypto.subtle.sign("HMAC", k, new TextEncoder().encode(`${op}|${ts}|${JSON.stringify(data)}`)))].map((x) => x.toString(16).padStart(2, "0")).join("");
 }
 async function sendOp(op, data) {
   const ts = Date.now(), sig = await sign(op, ts, data);
   const r = await fetch(HOOK, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ content: JSON.stringify({ type: "admin", op, data, ts, sig }), allowed_mentions: { parse: [] } }) });
   if (!r.ok) throw new Error("응답 " + r.status);
 }
+const openSheet = (h) => { $("#sheet").innerHTML = h; $("#dim").classList.add("on"); };
+const closeSheet = () => $("#dim").classList.remove("on");
 
 function renderLogin(msg) {
-  $("#app").innerHTML = `<div class="login card"><h1>베이프렌드 관리자</h1><p>${msg || "비밀번호를 넣어 주세요"}</p>
+  $("#nav").style.display = "none";
+  $("#app").innerHTML = `<div class="login"><div class="headline">베이프렌드 관리자<br><span style="color:var(--sub);font-size:18px;font-weight:600">${msg || "비밀번호를 넣어 주세요"}</span></div>
     <input class="in" id="pw" type="password" autocomplete="current-password" placeholder="비밀번호">
-    <label><input type="checkbox" id="remember" checked> 이 기기에서 기억하기</label>
-    <button class="btn primary" id="go" style="width:100%">열기</button></div>`;
+    <label style="display:flex;gap:8px;align-items:center;margin:16px 4px;font-size:15px;color:var(--ink2)"><input type="checkbox" id="remember" checked style="width:18px;height:18px;accent-color:var(--blue)"> 이 기기에서 기억하기</label>
+    <button class="btn" id="go">열기</button></div>`;
   $("#pw").focus();
 }
 async function tryLogin() {
@@ -135,105 +150,116 @@ async function tryLogin() {
     D = await decrypt(RAW, key); KEY = key;
     if ($("#remember").checked) ls.set("vf-admin-key", b64.to(key));
     render();
-  } catch (e) { renderLogin(e?.name === "OperationError" ? "비밀번호가 맞지 않아요" : "불러오지 못했어요 · 인터넷을 확인해 주세요"); }
+  } catch (e) { renderLogin(e?.name === "OperationError" ? "비밀번호가 맞지 않아요" : "불러오지 못했어요. 인터넷을 확인해 주세요"); }
 }
 async function reload(quiet) {
-  try { RAW = await fetchEnc(); D = await decrypt(RAW, KEY); if (!draft && !editTask) render(); if (!quiet) toast("새로 불러왔어요 · " + D.at); }
+  try { RAW = await fetchEnc(); D = await decrypt(RAW, KEY); if (!draft && !$("#dim").classList.contains("on")) render(); if (!quiet) toast("새로 불러왔어요"); }
   catch (e) { if (!quiet) toast("불러오지 못했어요"); }
 }
 
 // ── 그리기 ──
 function render() {
   if (!D) return;
-  const tabs = [["home", "현황"], ["tasks", "업무 분배"], ["must", "필수 상품"]];
-  $("#app").innerHTML = `<header><h1>VAFRIEND <b>관리자</b></h1>
-      <div class="tabs">${tabs.map(([k, n]) => `<button data-tab="${k}" class="${tab === k ? "on" : ""}">${n}</button>`).join("")}</div>
-      <div class="at">${esc(D.at)} 기준 · <button data-act="reload" style="color:var(--accent);font-weight:600">새로고침</button> · <button data-act="logout" class="muted">잠그기</button></div></header>
+  $("#nav").style.display = "";
+  document.querySelectorAll("#nav button").forEach((b) => b.classList.toggle("on", b.dataset.tab === tab));
+  const [, hh, mm] = D.at.match(/(\d{2}):(\d{2})$/) || [];
+  $("#app").innerHTML = `<div class="top"><div class="logo">VAFRIEND <b>관리자</b></div><div class="r"><button class="ic" data-act="reload">${hh ? `${hh}:${mm} 기준 ↻` : "새로고침"}</button><button class="ic" data-act="logout">잠그기</button></div></div>
     ${tab === "home" ? homeHtml() : tab === "tasks" ? tasksHtml() : mustHtml()}`;
-  if (tab === "home") bindSparks();
 }
-function homeHtml() {
+function totals() {
   const con = D.branches.filter((x) => x.connected && x.must);
   const must = con.reduce((a, x) => a + x.must, 0), out = con.reduce((a, x) => a + x.out.length, 0);
-  const rate = must ? Math.round((out / must) * 1000) / 10 : null;
-  const tDone = D.branches.reduce((a, x) => a + x.tasks.done, 0), tAll = D.branches.reduce((a, x) => a + x.tasks.total, 0);
-  const outs = D.branches.flatMap((x) => x.out.map((o) => ({ ...o, b: x.b }))).filter((o) => !outFilter || o.b === outFilter);
-  const noMust = D.branches.filter((x) => x.connected && !x.must);
-  return `<div class="two">
-    <div class="card"><h2>전체 결품률</h2><div class="sub">꼭 있어야 할 상품 중 포스 재고가 0인 비율 · 포스 연결된 지점만</div>
-      <div class="hero"><div class="num">${rate == null ? "—" : rate}<small>${rate == null ? "" : "%"}</small></div>
-      <div style="padding-bottom:8px">${stChip(rate)}<div class="muted" style="font-size:13px;margin-top:6px">${rate == null ? "필수 상품을 먼저 정해 주세요" : `필수 ${must}개 중 <b style="color:var(--ink)">${out}개</b> 품절`}</div></div></div>
-      ${noMust.length ? `<div class="muted" style="font-size:13px;margin-top:12px">필수 상품이 아직 없는 지점: ${noMust.map((x) => esc(ho(x.b))).join(", ")} → <button data-tab="must" style="color:var(--accent);font-weight:600">정하기</button></div>` : ""}</div>
-    <div class="card"><h2>오늘 업무</h2><div class="sub">관리자가 나눠 준 업무 중 직원앱에서 [완료]한 것</div>
-      <div class="hero"><div class="num">${tDone}<small>/${tAll}</small></div><div class="muted" style="padding-bottom:10px;font-size:13px">${tAll ? `${Math.round((tDone / tAll) * 100)}% 완료` : "오늘 예정된 업무가 없어요"}</div></div>
-      <div style="height:8px;border-radius:99px;background:var(--accent-soft);margin-top:14px;overflow:hidden"><div style="height:100%;width:${tAll ? (tDone / tAll) * 100 : 0}%;background:var(--accent);border-radius:99px"></div></div></div>
-  </div>
-  <div class="card"><h2>지점별 결품률</h2><div class="sub">선은 최근 14일 (하루 마지막 값) · 기준: 5% 이하 좋음 · 15% 초과 위험 (시험값)</div>
-    <div class="tiles">${D.branches.map(tileHtml).join("")}</div></div>
-  <div class="card"><h2>품절된 필수 상품 <span class="muted" style="font-weight:600">${outs.length}개</span></h2><div class="sub">'다른 지점'은 그 상품이 포스 재고에 있는 지점 — 지점 이동 요청할 때 참고</div>
-    <div class="chips" style="margin-bottom:10px"><button class="chip ${!outFilter ? "on" : ""}" data-of="">전체</button>${D.branches.filter((x) => x.out.length).map((x) => `<button class="chip ${outFilter === x.b ? "on" : ""}" data-of="${x.b}">${esc(ho(x.b))} ${x.out.length}</button>`).join("")}</div>
-    ${outs.length ? `<div class="scroll"><table><thead><tr><th>지점</th><th>상품</th><th>분류</th><th>다른 지점 재고</th></tr></thead><tbody>
-      ${outs.map((o) => `<tr><td style="white-space:nowrap">${esc(ho(o.b))}</td><td><b>${esc(o.n)}</b></td><td class="muted">${esc(o.m)}</td><td>${o.others.length ? o.others.map((b) => `<span class="mini">${esc(ho(b))}</span>`).join("") : '<span class="muted">없음</span>'}</td></tr>`).join("")}
-    </tbody></table></div>` : '<div class="muted">품절된 필수 상품이 없어요</div>'}</div>
-  <div class="card"><h2>오늘 업무 현황</h2><div class="sub">✓ 완료(이름·시각) · ○ 아직 · — 오늘 대상 아님</div>${matrixHtml()}</div>`;
+  return { con, must, out, rate: must ? Math.round((out / must) * 1000) / 10 : null };
 }
-function tileHtml(x) {
-  const h = D.hist[x.b] || [];
-  if (!x.connected) return `<div class="tile off"><div class="nm">${esc(ho(x.b))}</div><div class="v">—</div><div class="meta">포스 연결 전 (지점 로그인하면 붙어요)</div></div>`;
-  if (!x.must) return `<div class="tile"><div class="nm">${esc(ho(x.b))}</div><div class="v">—</div><div class="meta">필수 상품을 정해 주세요 · 재고 ${esc(x.stockAt || "")}</div></div>`;
-  return `<div class="tile"><div class="nm">${esc(ho(x.b))} ${stChip(x.rate)}</div><div class="v">${x.rate}<small>%</small></div>
-    <div class="meta">필수 ${x.must} · 품절 ${x.out.length}${x.gone.length ? ` · 포스에 없음 ${x.gone.length}` : ""} · 재고 ${esc(x.stockAt || "")}</div>
-    ${sparkSvg(h)}<div class="meta">오늘 업무 ${x.tasks.done}/${x.tasks.total}</div></div>`;
+function homeHtml() {
+  const { must, out, rate } = totals(), s = ST(rate);
+  const tDone = D.branches.reduce((a, x) => a + x.tasks.done, 0), tAll = D.branches.reduce((a, x) => a + x.tasks.total, 0);
+  const noMust = D.branches.filter((x) => x.connected && !x.must);
+  const hero = rate == null
+    ? `<div class="eyebrow">결품률</div><div class="headline">꼭 있어야 할 상품을<br>먼저 정해 주세요</div><div class="caption">지점마다 '떨어지면 안 되는 상품'을 고르면<br>그중 품절이 몇 개인지 바로 알려드려요</div><div class="btns"><button class="btn sec2" data-tab="must">필수 상품 정하기</button></div>`
+    : `<div class="eyebrow">오늘 결품률 · ${s ? `<span class="t-${s.k}">${s.t}</span>` : ""}</div>
+       <div class="headline">${out ? `꼭 있어야 할 상품 중<br><em class="${s.k === "good" ? "" : "r"}">${out}개가 품절</em>이에요` : `꼭 있어야 할 상품이<br><em>모두 있어요</em>`}</div>
+       <div class="caption">필수 ${must}개 중 ${out}개 · 결품률 ${rate}%${noMust.length ? `<br>${noMust.map((x) => x.b).join("·")}은 아직 필수 상품이 없어요` : ""}</div>`;
+  const pct = tAll ? Math.round((tDone / tAll) * 100) : 0;
+  const order = [...D.branches].sort((a, c) => (c.connected - a.connected) || ((c.rate ?? -1) - (a.rate ?? -1)));
+  return `<div class="card">${hero}</div>
+    <div class="card"><div class="eyebrow">오늘 할 일</div>
+      <div class="headline">${tAll ? (tDone === tAll ? `<em>모두 끝났어요</em>` : `${tAll}개 중 <em>${tDone}개</em> 끝났어요`) : "오늘 예정된 일이 없어요"}</div>
+      ${tAll ? `<div class="bar"><i style="width:${pct}%"></i></div>` : `<div class="btns"><button class="btn sec2" data-tab="tasks">업무 나눠 주기</button></div>`}</div>
+    <div class="sec">지점별 결품률</div>
+    <div class="list">${order.map(branchRow).join("")}</div>
+    ${D.matrix.length ? `<div class="sec">오늘 할 일 <small>${D.matrix.length}개</small></div><div class="list">${D.matrix.map(taskRow).join("")}</div>` : ""}
+    <div class="caption" style="text-align:center;margin-top:18px">결품률 기준: 5% 이하 좋아요 · 15% 넘으면 위험</div>`;
+}
+function branchRow(x) {
+  if (!x.connected) return `<div class="item" style="opacity:.5"><div class="av">${BR.indexOf(x.b) + 1}</div><div class="tx"><b>${esc(x.b)}</b><span>포스 연결 전</span></div></div>`;
+  const s = ST(x.rate);
+  return `<button class="item" data-br="${x.b}"><div class="av ${s ? s.k : ""}">${BR.indexOf(x.b) + 1}</div>
+    <div class="tx"><b>${esc(x.b)}</b><span>${x.must ? `품절 ${x.out.length}개 · 필수 ${x.must}개` : "필수 상품을 정해 주세요"}</span></div>
+    <div class="val">${x.rate != null ? `<b>${x.rate}%</b><span class="t-${s.k}">${s.t}</span>` : `<span class="t-sub">—</span>`}</div><span class="chev">›</span></button>`;
+}
+function taskRow(t) {
+  const due = Object.entries(t.br).filter(([, v]) => v !== null && v !== undefined), done = due.filter(([, v]) => v);
+  const all = due.length && done.length === due.length;
+  return `<button class="item" data-tk="${t.id}"><div class="av ${all ? "good" : "blue"}">${all ? "✓" : done.length}</div>
+    <div class="tx"><b>${esc(t.title)}</b><span>${t.time ? esc(t.time) + " · " : ""}${due.length}개 지점 중 ${done.length}곳 완료</span></div><span class="chev">›</span></button>`;
+}
+function sheetBranch(b) {
+  const x = D.branches.find((y) => y.b === b), s = ST(x.rate);
+  openSheet(`<div class="eyebrow">${esc(ho(b))} · 재고 ${esc(x.stockAt || "")} 기준</div>
+    <h3>${x.must ? (x.out.length ? `필수 상품 ${x.must}개 중<br><span class="t-${s.k}">${x.out.length}개가 품절</span>이에요` : "필수 상품이 모두 있어요") : "필수 상품을 정해 주세요"}</h3>
+    ${sparkSvg(D.hist[b] || [])}
+    ${x.out.length ? `<div class="lbl">품절된 상품</div><div class="list">${x.out.map((o) => `<div class="item"><div class="tx"><b>${esc(o.n)}</b><span>${esc(o.m)}</span>
+      <div>${o.others.length ? o.others.map((ob) => `<span class="tag">${esc(ob)}에 있어요</span>`).join("") : '<span class="tag gray">다른 지점에도 없어요</span>'}</div></div></div>`).join("")}</div>` : ""}
+    ${x.gone.length ? `<div class="caption">포스 목록에 없는 필수 상품 ${x.gone.length}개: ${x.gone.map(esc).join(", ")}</div>` : ""}
+    <div class="btns"><button class="btn gray" data-x>닫기</button><button class="btn sec2" data-mustgo="${b}">필수 상품 고치기</button></div>`);
+  bindSparks();
+}
+function sheetTaskStatus(id) {
+  const t = D.matrix.find((y) => y.id === id), def = D.tasks.find((y) => y.id === id);
+  openSheet(`<div class="eyebrow">${esc(REP_TXT(def))}${t.time ? " · " + esc(t.time) : ""}</div><h3>${esc(t.title)}</h3>${def.note ? `<div class="caption">${esc(def.note)}</div>` : ""}
+    <div class="list">${Object.entries(t.br).map(([b, v]) => `<div class="item"><div class="av ${v ? "good" : ""}">${v ? "✓" : BR.indexOf(b) + 1}</div><div class="tx"><b>${esc(b)}</b><span>${v === null || v === undefined ? "오늘 대상 아님" : v ? `${esc(v.by)} · ${esc(v.t)}에 끝냄` : "아직이에요"}</span></div></div>`).join("")}</div>
+    <div class="btns"><button class="btn gray" data-x>닫기</button><button class="btn sec2" data-tedit="${id}">고치기</button></div>`);
 }
 function sparkSvg(h) {
   const pts = h.filter(([, v]) => v != null);
-  if (pts.length < 2) return `<div class="meta" style="height:40px;display:flex;align-items:center">추이는 이틀 이상 쌓이면 보여요</div>`;
-  const W = 200, H = 40, max = Math.max(10, ...pts.map(([, v]) => v)), n = h.length;
-  const xy = h.map(([d, v], i) => v == null ? null : [4 + (i / (n - 1)) * (W - 8), H - 4 - (v / max) * (H - 8), d, v]).filter(Boolean);
-  const path = xy.map(([x, y], i) => `${i ? "L" : "M"}${x.toFixed(1)},${y.toFixed(1)}`).join("");
+  if (pts.length < 2) return `<div class="caption">결품률 추이는 이틀 이상 쌓이면 보여요</div>`;
+  const W = 300, H = 56, max = Math.max(10, ...pts.map(([, v]) => v)), n = h.length;
+  const xy = h.map(([d, v], i) => v == null ? null : [6 + (i / (n - 1)) * (W - 12), H - 6 - (v / max) * (H - 14), d, v]).filter(Boolean);
   const last = xy.at(-1);
-  return `<svg class="spark" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" data-pts='${JSON.stringify(xy.map(([x, , d, v]) => [x, d, v]))}'>
-    <line x1="0" x2="${W}" y1="${H - 4}" y2="${H - 4}" stroke="var(--grid)" stroke-width="1" vector-effect="non-scaling-stroke"/>
-    <path d="${path}" fill="none" stroke="var(--accent)" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round" stroke-linecap="round"/>
-    <circle cx="${last[0]}" cy="${last[1]}" r="3" fill="var(--accent)" stroke="var(--card)" stroke-width="2" vector-effect="non-scaling-stroke"/></svg>`;
+  return `<svg class="spark" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" data-pts='${JSON.stringify(xy.map(([x, , d, v]) => [x, d, v]))}' aria-label="최근 14일 결품률">
+    <path d="${xy.map(([x, y], i) => `${i ? "L" : "M"}${x.toFixed(1)},${y.toFixed(1)}`).join("")}" fill="none" stroke="var(--blue)" stroke-width="2.5" vector-effect="non-scaling-stroke" stroke-linejoin="round" stroke-linecap="round"/>
+    <circle cx="${last[0]}" cy="${last[1]}" r="4" fill="var(--blue)" stroke="var(--card)" stroke-width="2" vector-effect="non-scaling-stroke"/></svg>`;
 }
 function bindSparks() {
   const tip = $("#tip");
   document.querySelectorAll(".spark").forEach((s) => {
     const pts = JSON.parse(s.dataset.pts);
-    s.addEventListener("pointermove", (e) => {
-      const r = s.getBoundingClientRect(), x = ((e.clientX - r.left) / r.width) * 200;
-      const p = pts.reduce((a, c) => (Math.abs(c[0] - x) < Math.abs(a[0] - x) ? c : a));
-      tip.textContent = `${p[1].slice(5).replace("-", "/")} · 결품률 ${p[2]}%`; tip.style.left = e.clientX + 12 + "px"; tip.style.top = e.clientY - 30 + "px"; tip.style.opacity = 1;
-    });
-    s.addEventListener("pointerleave", () => (tip.style.opacity = 0));
+    const show = (e) => { const r = s.getBoundingClientRect(), x = ((e.clientX - r.left) / r.width) * 300; const p = pts.reduce((a, c) => (Math.abs(c[0] - x) < Math.abs(a[0] - x) ? c : a));
+      tip.textContent = `${p[1].slice(5).replace("-", "/")} · ${p[2]}%`; tip.style.left = e.clientX + 10 + "px"; tip.style.top = e.clientY - 34 + "px"; tip.style.opacity = 1; };
+    s.addEventListener("pointermove", show); s.addEventListener("pointerdown", show); s.addEventListener("pointerleave", () => (tip.style.opacity = 0));
   });
 }
-function matrixHtml() {
-  if (!D.matrix.length) return '<div class="muted">등록된 업무가 없어요 · <button data-tab="tasks" style="color:var(--accent);font-weight:600">업무 분배</button>에서 만들어요</div>';
-  return `<div class="scroll"><table><thead><tr><th>업무</th>${BR.map((b) => `<th style="text-align:center">${esc(ho(b))}</th>`).join("")}</tr></thead><tbody>
-    ${D.matrix.map((t) => `<tr><td><b>${esc(t.title)}</b>${t.time ? ` <span class="muted">${esc(t.time)}</span>` : ""}</td>${BR.map((b) => { const v = t.br[b];
-      return `<td style="text-align:center;font-size:13px">${v === undefined || v === null ? '<span class="muted">—</span>' : v === false ? '<span class="muted">○</span>' : `<span class="ok">✓</span><br><span class="muted">${esc(v.by)} ${esc(v.t)}</span>`}</td>`; }).join("")}</tr>`).join("")}
-  </tbody></table></div>`;
-}
-const REP_TXT = (t) => t.rep === "once" ? `${t.date.slice(5).replace("-", "/")} 한 번` : t.rep === "daily" ? "매일" : t.rep === "weekly" ? `매주 ${(t.dow || []).map((d) => "일월화수목금토"[d]).join("·")}` : `매월 ${t.dom}일`;
+const REP_TXT = (t) => !t ? "" : t.rep === "once" ? `${t.date.slice(5).replace("-", "/")} 한 번` : t.rep === "daily" ? "매일" : t.rep === "weekly" ? `매주 ${(t.dow || []).slice().sort((a, b) => ((a + 6) % 7) - ((b + 6) % 7)).map((d) => WD[d]).join("·")}` : `매월 ${t.dom}일`;
 function tasksHtml() {
-  const t = editTask || { id: "", title: "", note: "", time: "", br: [], rep: "once", date: D.d, dow: [], dom: 1 };
-  editTask = t;
-  return `<div class="two"><div class="card"><h2>${t.id ? "업무 고치기" : "새 업무"}</h2><div class="sub">저장하면 대상 지점 직원앱 '오늘 할 일'에 떠요 (1~2분)</div>
-    <div class="lbl">무엇을</div><input class="in" id="tTitle" maxlength="60" placeholder="예) 진열장 유리 닦기" value="${esc(t.title)}">
-    <div class="lbl">메모 (선택)</div><input class="in" id="tNote" maxlength="200" placeholder="예) 사진 찍어서 디스코드에" value="${esc(t.note)}">
-    <div class="lbl">어느 지점</div><div class="chips"><button class="chip ${t.br.length === 8 ? "on" : ""}" data-tball>전체</button>${BR.map((b) => `<button class="chip ${t.br.includes(b) ? "on" : ""}" data-tb="${b}">${esc(ho(b))}</button>`).join("")}</div>
-    <div class="lbl">언제</div><div class="chips">${[["once", "한 번"], ["daily", "매일"], ["weekly", "매주"], ["monthly", "매월"]].map(([k, n]) => `<button class="chip ${t.rep === k ? "on" : ""}" data-trep="${k}">${n}</button>`).join("")}</div>
-    <div style="margin-top:10px">${t.rep === "once" ? `<input class="in" type="date" id="tDate" value="${esc(t.date)}" style="max-width:200px">`
-      : t.rep === "weekly" ? `<div class="chips">${[1, 2, 3, 4, 5, 6, 0].map((d) => `<button class="chip ${t.dow.includes(d) ? "on" : ""}" data-tdow="${d}">${"일월화수목금토"[d]}</button>`).join("")}</div>`
-      : t.rep === "monthly" ? `<div class="row"><input class="in" type="number" id="tDom" min="1" max="31" value="${t.dom}" style="max-width:100px"> <span class="muted">일</span></div>` : ""}</div>
-    <div class="lbl">시각 (선택)</div><input class="in" type="time" id="tTime" value="${esc(t.time)}" style="max-width:160px">
-    <div class="row" style="margin-top:16px"><button class="btn primary" data-act="tsave">저장</button>${t.id ? `<button class="btn" data-act="tnew">새로 만들기</button><button class="btn" data-act="tdel" style="color:var(--crit)">삭제</button>` : ""}</div></div>
-  <div class="card"><h2>등록된 업무 <span class="muted" style="font-weight:600">${D.tasks.length}개</span></h2><div class="sub">누르면 고칠 수 있어요</div>
-    ${D.tasks.length ? D.tasks.map((x) => `<div class="task"><div class="t"><b>${esc(x.title)}</b><span>${esc(REP_TXT(x))}${x.time ? " · " + esc(x.time) : ""} · ${x.br.length === 8 ? "전 지점" : x.br.map((b) => esc(ho(b))).join(", ")}</span></div><button class="btn" data-tedit="${x.id}">고치기</button></div>`).join("") : '<div class="muted">아직 없어요</div>'}
-  </div></div>
-  <div class="card"><h2>오늘 업무 현황</h2>${matrixHtml()}</div>`;
+  return `<div class="card"><div class="eyebrow">업무 분배</div><div class="headline">지점에 할 일을<br>나눠 줄 수 있어요</div><div class="caption">정한 날 그 지점 직원앱 '오늘 할 일'에 떠요.<br>직원이 [완료]를 누르면 여기서 바로 보여요.</div>
+      <div class="btns"><button class="btn" data-act="tnew">＋ 새 업무 만들기</button></div></div>
+    <div class="sec">등록된 업무 <small>${D.tasks.length}개</small></div>
+    <div class="list">${D.tasks.length ? D.tasks.map((t) => `<button class="item" data-tedit="${t.id}"><div class="av blue">${t.rep === "daily" ? "매일" : t.rep === "weekly" ? "주" : t.rep === "monthly" ? "월" : "1"}</div>
+      <div class="tx"><b>${esc(t.title)}</b><span>${esc(REP_TXT(t))}${t.time ? " · " + esc(t.time) : ""} · ${t.br.length === 8 ? "전 지점" : t.br.map(esc).join("·")}</span></div><span class="chev">›</span></button>`).join("") : '<div class="empty">아직 없어요</div>'}</div>`;
+}
+function sheetTask() {
+  const t = editTask;
+  openSheet(`<h3>${t.id && D.tasks.some((x) => x.id === t.id) ? "업무 고치기" : "새 업무"}</h3>
+    <div class="lbl">무엇을 할까요</div><input class="in" id="tTitle" maxlength="60" placeholder="예) 진열장 유리 닦기" value="${esc(t.title)}">
+    <div class="lbl">메모 <span style="font-weight:500">(선택)</span></div><input class="in" id="tNote" maxlength="200" placeholder="예) 끝나면 사진 찍어 두기" value="${esc(t.note)}">
+    <div class="lbl">어느 지점</div><div class="chips"><button class="chip ${t.br.length === 8 ? "on" : ""}" data-tball>전체</button>${BR.map((b) => `<button class="chip ${t.br.includes(b) ? "on" : ""}" data-tb="${b}">${esc(b)}</button>`).join("")}</div>
+    <div class="lbl">언제</div><div class="seg">${[["once", "한 번"], ["daily", "매일"], ["weekly", "매주"], ["monthly", "매월"]].map(([k, n]) => `<button class="${t.rep === k ? "on" : ""}" data-trep="${k}">${n}</button>`).join("")}</div>
+    <div style="margin-top:12px">${t.rep === "once" ? `<input class="in" type="date" id="tDate" value="${esc(t.date)}">`
+      : t.rep === "weekly" ? `<div class="chips">${[1, 2, 3, 4, 5, 6, 0].map((d) => `<button class="chip ${t.dow.includes(d) ? "on" : ""}" data-tdow="${d}">${WD[d]}</button>`).join("")}</div>`
+      : t.rep === "monthly" ? `<div style="display:flex;align-items:center;gap:10px"><input class="in" type="number" id="tDom" min="1" max="31" value="${t.dom}" style="max-width:120px"><span style="font-size:17px">일마다</span></div>` : ""}</div>
+    <div class="lbl">시각 <span style="font-weight:500">(선택)</span></div><input class="in" type="time" id="tTime" value="${esc(t.time)}">
+    <div class="btns">${t.id && D.tasks.some((x) => x.id === t.id) ? `<button class="btn red" data-act="tdel" style="flex:0 0 96px">삭제</button>` : `<button class="btn gray" data-x style="flex:0 0 96px">닫기</button>`}<button class="btn" data-act="tsave">저장</button></div>`);
 }
 function mustHtml() {
   const prods = D.products[mustB] || [];
@@ -242,34 +268,36 @@ function mustHtml() {
   const words = mustQ.split(/\s+/).filter(Boolean);
   const list = prods.filter(([n, m]) => (!mustCat || m === mustCat) && words.every((w) => n.replace(/\s/g, "").includes(w)));
   const saved = new Set(D.must[mustB] || []), changed = [...draft.set].filter((n) => !saved.has(n)).length + [...saved].filter((n) => !draft.set.has(n)).length;
-  const gone = [...draft.set].filter((n) => !prods.some(([p]) => p === n));
-  return `<div class="card"><h2>꼭 있어야 할 상품</h2><div class="sub">지점마다 '이건 떨어지면 안 된다'는 상품을 체크하세요. 결품률은 이 목록 기준이에요.</div>
-    <div class="chips" style="margin-bottom:12px">${BR.map((b) => `<button class="chip ${mustB === b ? "on" : ""}" data-mb="${b}">${esc(ho(b))} ${(D.must[b] || []).length || ""}</button>`).join("")}</div>
-    ${!prods.length ? `<div class="muted">${esc(ho(mustB))}는 아직 포스 상품 목록이 없어요 (지점 로그인 후 생겨요)</div>` : `
-    <div class="row"><input class="in" id="mq" placeholder="상품 찾기 (예: 빌런 자두)" value="${esc(mustQ)}" style="max-width:320px">
-      <select class="in" id="mcat" style="max-width:220px"><option value="">분류 전체</option>${cats.map((c) => `<option ${c === mustCat ? "selected" : ""}>${esc(c)}</option>`).join("")}</select>
-      <button class="btn" data-act="mall">보이는 것 모두 체크</button><button class="btn" data-act="mnone">보이는 것 모두 해제</button>
-      <select class="in" id="mcopy" style="max-width:200px"><option value="">다른 지점 목록 가져오기</option>${BR.filter((b) => b !== mustB && (D.must[b] || []).length).map((b) => `<option value="${b}">${esc(ho(b))} (${D.must[b].length})</option>`).join("")}</select></div>
-    <div class="row"><b>${draft.set.size}개 체크</b><span class="muted">${changed ? `· 바뀐 것 ${changed}개 (저장 전)` : "· 저장된 상태"}</span>
-      <button class="btn primary" data-act="msave" ${changed ? "" : "disabled"} style="margin-left:auto">저장</button></div>
-    ${gone.length ? `<div class="muted" style="font-size:13px;margin-bottom:8px">⚠ 포스 목록에 없는 필수 상품 ${gone.length}개: ${gone.map(esc).join(", ")}</div>` : ""}
-    <div class="plist">${list.slice(0, 600).map(([n, m]) => `<label class="prow"><input type="checkbox" data-mn="${esc(n)}" ${draft.set.has(n) ? "checked" : ""}><span>${esc(n)}</span><span class="c">${esc(m)}</span></label>`).join("") || '<div class="muted" style="padding:12px 0">없어요</div>'}
-    ${list.length > 600 ? `<div class="muted" style="padding:10px 0">${list.length - 600}개 더 있어요 · 검색이나 분류로 좁혀 주세요</div>` : ""}</div>`}</div>`;
+  const others = BR.filter((b) => b !== mustB && (D.must[b] || []).length);
+  return `<div class="card"><div class="eyebrow">필수 상품</div><div class="headline">${esc(mustB)}에서<br>떨어지면 안 되는 상품을 골라 주세요</div>
+      <div class="caption">지금 <b style="color:var(--ink)">${draft.set.size}개</b> 골랐어요${changed ? ` · 저장 안 한 변경 ${changed}개` : ""}</div>
+      <div class="chips" style="margin-top:16px">${BR.map((b) => `<button class="chip ${mustB === b ? "on" : ""}" data-mb="${b}">${esc(b)}${(D.must[b] || []).length ? ` ${D.must[b].length}` : ""}</button>`).join("")}</div></div>
+    ${!prods.length ? `<div class="card"><div class="caption" style="margin:0">${esc(mustB)}는 아직 포스가 연결되지 않아서 상품 목록이 없어요</div></div>` : `
+    <div class="card" style="padding:16px">
+      <div class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input class="in" id="mq" placeholder="상품 찾기" value="${esc(mustQ)}"></div>
+      <div class="chips hs" style="margin-top:12px"><button class="chip ${!mustCat ? "on" : ""}" data-mc="">전체</button>${cats.map((c) => `<button class="chip ${c === mustCat ? "on" : ""}" data-mc="${esc(c)}">${esc(c)}</button>`).join("")}</div>
+      <div style="display:flex;gap:8px;margin-top:12px"><button class="btn gray" style="height:44px;font-size:14px" data-act="mall">보이는 것 모두 고르기</button><button class="btn gray" style="height:44px;font-size:14px" data-act="mnone">모두 빼기</button></div>
+      ${others.length ? `<div style="margin-top:8px"><select class="in" id="mcopy" style="height:44px;font-size:14px"><option value="">다른 지점 목록 그대로 가져오기</option>${others.map((b) => `<option value="${b}">${esc(b)} (${D.must[b].length}개)</option>`).join("")}</select></div>` : ""}
+    </div>
+    <div class="list">${list.slice(0, 400).map(([n, m]) => `<button class="item" data-mn="${esc(n)}"><div class="tx"><b>${esc(n)}</b><span>${esc(m)}</span></div><div class="sw ${draft.set.has(n) ? "on" : ""}"></div></button>`).join("") || '<div class="empty">찾는 상품이 없어요</div>'}
+      ${list.length > 400 ? `<div class="empty">${list.length - 400}개 더 있어요 · 검색이나 분류로 좁혀 주세요</div>` : ""}</div>
+    ${changed ? `<div class="sticky"><button class="btn" data-act="msave">${changed}개 바꾼 것 저장하기</button></div>` : ""}`}`;
 }
 // 필수 상품 저장: 디스코드 메시지 길이(2000자) 때문에 나눠서 보냄
 async function saveMust() {
   const saved = new Set(D.must[mustB] || []), add = [...draft.set].filter((n) => !saved.has(n)), del = [...saved].filter((n) => !draft.set.has(n));
   const chunks = (arr) => { const out = []; let cur = []; for (const n of arr) { if (JSON.stringify([...cur, n]).length > 1200) { out.push(cur); cur = []; } cur.push(n); } if (cur.length) out.push(cur); return out; };
-  const btn = document.querySelector('[data-act="msave"]'); btn.disabled = true; btn.textContent = "저장 중…";
+  const btn = document.querySelector('[data-act="msave"]'); btn.disabled = true; btn.textContent = "저장하는 중…";
   try {
     for (const c of chunks(add)) { await sendOp("mustAdd", { b: mustB, names: c }); await new Promise((r) => setTimeout(r, 700)); }
     for (const c of chunks(del)) { await sendOp("mustDel", { b: mustB, names: c }); await new Promise((r) => setTimeout(r, 700)); }
-    D.must[mustB] = [...draft.set]; draft = null; render(); toast("저장했어요 · 결품률은 1~2분 뒤 반영돼요");
+    D.must[mustB] = [...draft.set]; draft = null; render(); toast("저장했어요. 결품률은 1~2분 뒤에 바뀌어요");
     setTimeout(() => reload(true), 90e3);
-  } catch (e) { btn.disabled = false; btn.textContent = "저장"; toast("저장 못 했어요 · 다시 눌러 주세요"); }
+  } catch (e) { btn.disabled = false; btn.textContent = "다시 저장하기"; toast("저장하지 못했어요. 다시 눌러 주세요"); }
 }
 function readTaskForm() {
-  const t = editTask; t.title = $("#tTitle").value.trim(); t.note = $("#tNote").value.trim(); t.time = $("#tTime").value;
+  const t = editTask; if (!$("#tTitle")) return;
+  t.title = $("#tTitle").value.trim(); t.note = $("#tNote").value.trim(); t.time = $("#tTime").value;
   if ($("#tDate")) t.date = $("#tDate").value; if ($("#tDom")) t.dom = +$("#tDom").value || 1;
 }
 async function saveTask() {
@@ -277,35 +305,39 @@ async function saveTask() {
   if (!t.title) return toast("무엇을 할지 적어 주세요"); if (!t.br.length) return toast("지점을 골라 주세요");
   if (t.rep === "weekly" && !t.dow.length) return toast("요일을 골라 주세요");
   t.id ||= Date.now().toString(36);
-  try { await sendOp("task", t); const i = D.tasks.findIndex((x) => x.id === t.id); i >= 0 ? (D.tasks[i] = { ...t }) : D.tasks.push({ ...t }); editTask = null; render(); toast("저장했어요 · 직원앱에는 1~2분 뒤 떠요"); setTimeout(() => reload(true), 90e3); }
-  catch (e) { toast("저장 못 했어요 · 다시 눌러 주세요"); }
+  try { await sendOp("task", t); const i = D.tasks.findIndex((x) => x.id === t.id); i >= 0 ? (D.tasks[i] = { ...t }) : D.tasks.push({ ...t }); editTask = null; closeSheet(); render(); toast("저장했어요. 직원앱에는 1~2분 뒤에 떠요"); setTimeout(() => reload(true), 90e3); }
+  catch (e) { toast("저장하지 못했어요. 다시 눌러 주세요"); }
 }
 document.addEventListener("click", async (e) => {
-  const t = e.target.closest("button,[data-mn]"); if (!t) return;
+  if (e.target.id === "dim") return closeSheet();
+  const t = e.target.closest("button"); if (!t) return;
   if (t.id === "go") return tryLogin();
-  if (t.dataset.tab) { tab = t.dataset.tab; ls.set("vf-admin-tab", tab); return render(); }
+  if (t.dataset.x !== undefined) return closeSheet();
+  if (t.dataset.tab) { tab = t.dataset.tab; ls.set("vf-admin-tab", tab); closeSheet(); render(); return scrollTo(0, 0); }
   const a = t.dataset.act;
   if (a === "reload") return reload();
   if (a === "logout") { ls.set("vf-admin-key", null); KEY = D = null; return renderLogin("잠갔어요"); }
-  if (t.dataset.of !== undefined) { outFilter = t.dataset.of; return render(); }
+  if (t.dataset.br) return sheetBranch(t.dataset.br);
+  if (t.dataset.tk) return sheetTaskStatus(t.dataset.tk);
+  if (t.dataset.mustgo) { mustB = t.dataset.mustgo; tab = "must"; draft = null; closeSheet(); render(); return scrollTo(0, 0); }
   // 업무
-  if (t.dataset.tball !== undefined) { readTaskForm(); editTask.br = editTask.br.length === 8 ? [] : [...BR]; return render(); }
-  if (t.dataset.tb) { readTaskForm(); const b = t.dataset.tb, s = new Set(editTask.br); s.has(b) ? s.delete(b) : s.add(b); editTask.br = BR.filter((x) => s.has(x)); return render(); }
-  if (t.dataset.trep) { readTaskForm(); editTask.rep = t.dataset.trep; return render(); }
-  if (t.dataset.tdow) { readTaskForm(); const d = +t.dataset.tdow, s = new Set(editTask.dow); s.has(d) ? s.delete(d) : s.add(d); editTask.dow = [...s]; return render(); }
-  if (t.dataset.tedit) { editTask = JSON.parse(JSON.stringify(D.tasks.find((x) => x.id === t.dataset.tedit))); editTask.dow ||= []; return render(); }
-  if (a === "tnew") { editTask = null; return render(); }
+  if (a === "tnew") { editTask = { id: "", title: "", note: "", time: "", br: [], rep: "once", date: D.d, dow: [], dom: 1 }; return sheetTask(); }
+  if (t.dataset.tedit) { editTask = JSON.parse(JSON.stringify(D.tasks.find((x) => x.id === t.dataset.tedit))); editTask.dow ||= []; return sheetTask(); }
+  if (t.dataset.tball !== undefined) { readTaskForm(); editTask.br = editTask.br.length === 8 ? [] : [...BR]; return sheetTask(); }
+  if (t.dataset.tb) { readTaskForm(); const b = t.dataset.tb, s = new Set(editTask.br); s.has(b) ? s.delete(b) : s.add(b); editTask.br = BR.filter((x) => s.has(x)); return sheetTask(); }
+  if (t.dataset.trep) { readTaskForm(); editTask.rep = t.dataset.trep; return sheetTask(); }
+  if (t.dataset.tdow) { readTaskForm(); const d = +t.dataset.tdow, s = new Set(editTask.dow); s.has(d) ? s.delete(d) : s.add(d); editTask.dow = [...s]; return sheetTask(); }
   if (a === "tsave") return saveTask();
-  if (a === "tdel") { if (!confirm(`'${editTask.title}' 업무를 지울까요?`)) return; try { await sendOp("taskdel", { id: editTask.id }); D.tasks = D.tasks.filter((x) => x.id !== editTask.id); editTask = null; render(); toast("지웠어요"); } catch { toast("못 지웠어요"); } return; }
+  if (a === "tdel") { if (!confirm(`'${editTask.title}' 업무를 지울까요?`)) return; try { await sendOp("taskdel", { id: editTask.id }); D.tasks = D.tasks.filter((x) => x.id !== editTask.id); D.matrix = D.matrix.filter((x) => x.id !== editTask.id); editTask = null; closeSheet(); render(); toast("지웠어요"); } catch { toast("지우지 못했어요"); } return; }
   // 필수 상품
   if (t.dataset.mb) { mustB = t.dataset.mb; ls.set("vf-admin-mustb", mustB); mustCat = ""; mustQ = ""; draft = null; return render(); }
-  if (a === "mall" || a === "mnone") { document.querySelectorAll("[data-mn]").forEach((c) => (a === "mall" ? draft.set.add(c.dataset.mn) : draft.set.delete(c.dataset.mn))); return render(); }
+  if (t.dataset.mc !== undefined) { mustCat = t.dataset.mc; return render(); }
+  if (t.dataset.mn !== undefined) { const n = t.dataset.mn; draft.set.has(n) ? draft.set.delete(n) : draft.set.add(n); const y = scrollY; render(); return scrollTo(0, y); }
+  if (a === "mall" || a === "mnone") { document.querySelectorAll("[data-mn]").forEach((c) => (a === "mall" ? draft.set.add(c.dataset.mn) : draft.set.delete(c.dataset.mn))); const y = scrollY; render(); return scrollTo(0, y); }
   if (a === "msave") return saveMust();
 });
 document.addEventListener("change", (e) => {
-  if (e.target.dataset.mn !== undefined) { e.target.checked ? draft.set.add(e.target.dataset.mn) : draft.set.delete(e.target.dataset.mn); const y = $(".plist").scrollTop; render(); $(".plist").scrollTop = y; return; }
-  if (e.target.id === "mcat") { mustCat = e.target.value; return render(); }
-  if (e.target.id === "mcopy" && e.target.value) { const from = new Set(D.must[e.target.value] || []), names = new Set((D.products[mustB] || []).map(([n]) => n)); let k = 0; for (const n of from) if (names.has(n) && !draft.set.has(n)) { draft.set.add(n); k++; } render(); toast(`${k}개 더했어요 · 저장을 눌러야 반영돼요`); }
+  if (e.target.id === "mcopy" && e.target.value) { const from = new Set(D.must[e.target.value] || []), names = new Set((D.products[mustB] || []).map(([n]) => n)); let k = 0; for (const n of from) if (names.has(n) && !draft.set.has(n)) { draft.set.add(n); k++; } render(); toast(`${k}개 더했어요. 저장을 눌러야 반영돼요`); }
 });
 let qT; document.addEventListener("input", (e) => { if (e.target.id === "mq") { clearTimeout(qT); qT = setTimeout(() => { mustQ = e.target.value.trim(); const pos = e.target.selectionStart; render(); const el = $("#mq"); el.focus(); el.setSelectionRange(pos, pos); }, 250); } });
 document.addEventListener("keydown", (e) => { if (e.key === "Enter" && e.target.id === "pw") tryLogin(); });
