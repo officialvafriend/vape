@@ -681,7 +681,7 @@
 <body data-mode=""><div id="testRibbon" style="position:fixed;left:0;right:0;bottom:0;z-index:99999;background:#d32f2f;color:#fff;text-align:center;font:700 13px sans-serif;padding:4px;pointer-events:none">테스트판 · 손님 상담에는 정식판을 쓰세요</div>
 <div class="app">
   <div class="top">
-    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">테스트 v10.07-0900</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
+    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">테스트 v10.07-1000</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
     <nav class="tabs" id="tabs" style="display:none"></nav>
     <div class="flow" id="flow"><span data-st="1">① 찾는 것</span><i>›</i><span data-st="2">② 고르기</span><i>›</i><span data-st="3">③ 담은 상품</span><i>›</i><span data-st="4">④ 직원 확인</span></div>
   </div>
@@ -1703,6 +1703,9 @@ const EV_SECT = [ // 액상 고르기 구역: [제목, 설명, 이름 규칙] �
   ["추천 액상 · 빌런 시리즈", "과일멘솔 BEST", /^VF 빌런 /], // 사용자 10/7: 추천 = 빌런
   ["릭 시리즈", "노멘솔 과일 BEST", /^VF 릭 /],
 ];
+// 빌런 카드 FLAVOR 번호 순서 (01 자두 ~ 09 석류) — 릭도 같은 과일끼리 같은 자리 (적사과=레즈애플, 소다=보석바(소다맛), 바나나=바나나라무네)
+const FL_ORDER = [/자두/, /청포도/, /레즈애플|적사과/, /청사과/, /레몬/, /파인애플/, /보석바|소다/, /바나나/, /석류/];
+const flRank = (x) => { if (!/^VF (빌런|릭) /.test(x.n)) return 0; const i = FL_ORDER.findIndex((re) => re.test(x.n)); return i < 0 ? 99 : i; };
 const LICK_IMG = { "VF 릭 청사과": "lk_sq_greenapple.jpg", "VF 릭 청포도": "lk_sq_greengrape.jpg", "VF 릭 레몬": "lk_sq_lemon.jpg", "VF 릭 파인애플": "lk_sq_pineapple.jpg", "VF 릭 자두": "lk_sq_plum.jpg", "VF 릭 석류": "lk_sq_pomegranate.jpg", "VF 릭 적사과": "lk_sq_redapple.jpg", "VF 릭 소다": "lk_sq_soda.jpg" }; // 릭 카드 (GPT 제작 10/7, 베이프렌드 포스터릭)
 const evImg = (x) => LICK_IMG[x.n] || isrc(x);
 let EV = null; // { key, color, pick: Map(액상 id → 병 수), poster }
@@ -1740,7 +1743,7 @@ function evDraw() {
   const got = [...EV.pick.values()].reduce((a, b) => a + b, 0);
   const card = evCard;
   const sect = ([h, sub, re]) => {
-    const xs = Array.isArray(re) ? re.map((n) => L.find((x) => x.n === n)).filter(Boolean) : L.filter((x) => x.line === "프리미엄" && re.test(x.n)).sort((a, b) => isOut(a) - isOut(b) || bestRank(a) - bestRank(b));
+    const xs = Array.isArray(re) ? re.map((n) => L.find((x) => x.n === n)).filter(Boolean) : L.filter((x) => x.line === "프리미엄" && re.test(x.n)).sort((a, b) => flRank(a) - flRank(b) || isOut(a) - isOut(b) || bestRank(a) - bestRank(b));
     return xs.length ? `<div class="evs"><h4>${h}<small>${sub}</small></h4><div class="evg">${xs.map(card).join("")}</div></div>` : "";
   };
   $("#evp").innerHTML = `<button class="evx" data-evclose="1" aria-label="닫기">✕</button><div class="grab"></div><div class="eb-body">
