@@ -594,25 +594,45 @@
   .askrow .sq button{width:46px;height:46px;font-size:22px;font-weight:900}
   .askrow .sq b{min-width:30px;text-align:center;font-family:var(--num);font-size:18px}
   .askrow .b1{flex:1;min-width:200px}
+
+  /* ── 포스터 첫 화면 (10/7): 전면 포스터, 손으로 밀어 넘김, 누르면 해당 구역 ── */
+  .home.pst{padding:0;min-height:calc(100dvh - var(--topH, 82px));height:calc(100dvh - var(--topH, 82px));display:flex;flex-direction:column;overflow:hidden}
+  .pv{flex:1;min-height:0;display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  .pv::-webkit-scrollbar{display:none}
+  .ps{flex:0 0 100%;scroll-snap-align:center;scroll-snap-stop:always;display:flex;align-items:center;justify-content:center;padding:14px var(--pad) 6px}
+  .pp{position:relative;width:min(100%, calc((100dvh - var(--topH, 82px) - 120px) * .8));aspect-ratio:4/5;border:0;padding:0;border-radius:22px;overflow:hidden;box-shadow:var(--sh);background:#fff;text-align:left;display:block}
+  .pp>img.full{width:100%;height:100%;object-fit:cover;display:block}
+  .pdots{display:flex;justify-content:center;gap:8px;padding:6px 0 10px}
+  .pdots i{width:8px;height:8px;border-radius:99px;background:#d6d0c8;transition:width .2s}
+  .pdots i.on{width:24px;background:var(--red)}
+  .pways{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:0 var(--pad) 12px}
+  .pways button{min-height:52px;border:0;border-radius:14px;background:var(--card);box-shadow:var(--sh);font-family:var(--num);font-weight:800;font-size:16px}
+  /* 예시 포스터 (실제 포스터 이미지 오면 img로 교체) */
+  .px{position:absolute;inset:0;padding:8% 8% 0;display:flex;flex-direction:column}
+  .px .tagx{position:absolute;top:14px;right:14px;background:rgba(0,0,0,.55);color:#fff;font-size:12px;padding:4px 10px;border-radius:99px;z-index:3}
+  .px .k{font-family:var(--num);font-weight:800;letter-spacing:.2em;font-size:13px;color:var(--red)}
+  .px h3{font-family:var(--num);font-weight:900;font-size:clamp(30px,7.5vw,54px);line-height:1.12;margin-top:10px;letter-spacing:-.02em;position:relative;z-index:2}
+  .px .sub{font-size:clamp(14px,2.6vw,19px);margin-top:12px;line-height:1.5;opacity:.8;position:relative;z-index:2}
+  .px .pr{font-family:var(--num);font-weight:900;font-size:clamp(26px,6vw,44px);margin-top:16px;color:var(--red);position:relative;z-index:2}
+  .px .pr s{font-size:.5em;color:#999;font-weight:700;margin-right:8px}
+  .px img{position:absolute;right:-4%;bottom:0;width:72%;height:58%;object-fit:contain;object-position:right bottom}
+  .px .go{position:absolute;left:8%;bottom:7%;background:var(--red);color:#fff;border-radius:99px;padding:12px 20px;font-weight:900;font-size:16px;z-index:2}
+  .px.dark{background:#15120f;color:#fff}.px.dark .k{color:#ff6b6b}.px.dark .pr{color:#fff}
+  .px.red{background:var(--red);color:#fff}.px.red .k{color:#ffd9d9}.px.red .pr{color:#fff}.px.red .go{background:#fff;color:var(--red)}
 </style>
 </head>
 <body data-mode=""><div id="testRibbon" style="position:fixed;left:0;right:0;bottom:0;z-index:99999;background:#d32f2f;color:#fff;text-align:center;font:700 13px sans-serif;padding:4px;pointer-events:none">테스트판 · 손님 상담에는 정식판을 쓰세요</div>
 <div class="app">
   <div class="top">
-    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">테스트 v10.06-0300</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
+    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">테스트 v10.07-0100</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
     <nav class="tabs" id="tabs" style="display:none"></nav>
     <div class="flow" id="flow"><span data-st="1">① 찾는 것</span><i>›</i><span data-st="2">② 고르기</span><i>›</i><span data-st="3">③ 담은 상품</span><i>›</i><span data-st="4">④ 직원 확인</span></div>
   </div>
 
-  <section class="home" data-for="home">
-    <div class="hello">VAFRIEND</div>
-    <h1>오늘은 어떤 걸<br>보러 오셨어요?</h1>
-    <div class="ways">
-      <button class="way w-dev" data-mode="dev"><div class="wt"><span class="k">Device</span><b>전자담배 기기</b><span>하복2 기기패키지 · 레이저 각인 무료</span><i>보러 가기 →</i></div><img src="dev_havok2_hero.png" alt=""></button>
-      <button class="way w-liq" data-mode="liq"><div class="wt"><span class="k">Liquid</span><b>액상 · 소모품</b><span>11병 90,000원 · 팟 · 코일</span><i>→</i></div><img src="vl_p094.png" alt=""></button>
-      <button class="way w-dsp" data-mode="dsp"><div class="wt"><span class="k">Disposable</span><b>일회용</b><span>3+1 · 5+1 이벤트</span><i>→</i></div><img src="dsp_farm_all.png" alt=""></button>
-    </div>
-    <div class="tip">찾는 상품이 있으면 위의 <b>검색</b>이 가장 빨라요 · 초성 검색 가능</div>
+  <section class="home pst" data-for="home">
+    <div class="pv" id="pv"></div>
+    <div class="pdots" id="pdots"></div>
+    <div class="pways"><button data-go="dev">전자담배 기기</button><button data-go="liq">액상 · 소모품</button><button data-go="dsp">일회용</button></div>
   </section>
 
   <section class="redblock" id="s1" data-for="dev">
@@ -1560,5 +1580,27 @@ if ("serviceWorker" in navigator && location.protocol === "https:") {
   bar.addEventListener("click", () => devUp(cartView) || cartView());
   setInterval(update, 400); update();
 })();
+
+// ── 포스터 첫 화면 (10/7) ──
+// 실제 포스터 받으면: { img: "pst_파일이름.jpg", go: "liq:s3" } 한 줄씩 (4:5, 1080×1350). go = 구역(dev/liq/dsp) 또는 구역:칸id, "spec" = 하복2 상세
+const POSTERS = [
+  { go: "liq:s3", ex: `<div class="px red"><span class="k">BULK EVENT</span><h3>대량구매 이벤트<br>프리미엄 액상<br>11병 90,000원</h3><div class="sub">1병 15,000원 → 병당 약 8,180원<br>빌런 · 릭 섞어도 돼요</div><img src="vl_p094.png" alt=""><span class="go">맛 고르러 가기 →</span></div>` },
+  { go: "dev:s1", ex: `<div class="px dark"><span class="k">DEVICE PACKAGE</span><h3>하복2<br>기기패키지</h3><div class="sub">기기 + 입호흡 액상 10병</div><div class="pr"><s>179,000원</s>164,000원</div><img src="dev_havok2_hero.png" alt=""><span class="go">패키지 보기 →</span></div>` },
+  { go: "dsp:dE1", ex: `<div class="px"><span class="k">DISPOSABLE</span><h3>일회용<br>3+1 이벤트</h3><div class="sub">팜팜바 · 모스바<br>3개 사면 1개 더</div><img src="dsp_farm_all.png" alt=""><span class="go">맛 고르러 가기 →</span></div>` },
+];
+function renderPosters() {
+  $("#pv").innerHTML = POSTERS.map((p, i) => `<div class="ps"><button class="pp" data-go="${p.go}" data-pi="${i}">${p.img ? `<img class="full" src="${p.img}" alt="">` : p.ex + '<span class="px"><span class="tagx">예시</span></span>'}</button></div>`).join("");
+  $("#pdots").innerHTML = POSTERS.map((_, i) => `<i class="${i ? "" : "on"}"></i>`).join("");
+  const pv = $("#pv");
+  pv.addEventListener("scroll", () => { const i = Math.round(pv.scrollLeft / pv.clientWidth); document.querySelectorAll("#pdots i").forEach((d, j) => d.classList.toggle("on", j === i)); }, { passive: true });
+}
+renderPosters();
+function goTo(go) {
+  if (go === "spec") return mainSpecView();
+  const [m, id] = go.split(":");
+  setMode(m);
+  if (id) setTimeout(() => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" }), 60);
+}
+document.addEventListener("click", (e) => { const el = e.target.closest("[data-go]"); if (!el) return; if (el.dataset.pi) ev("p", el.dataset.pi, el.dataset.go); goTo(el.dataset.go); });
 </script></body>
 </html>
