@@ -624,18 +624,78 @@
   .px .go{position:absolute;left:8%;bottom:7%;background:var(--red);color:#fff;border-radius:99px;padding:12px 20px;font-weight:900;font-size:16px;z-index:2}
   .px.dark{background:#15120f;color:#fff}.px.dark .k{color:#ff6b6b}.px.dark .pr{color:#fff}
   .px.red{background:var(--red);color:#fff}.px.red .k{color:#ffd9d9}.px.red .pr{color:#fff}.px.red .go{background:#fff;color:var(--red)}
+
+  /* ── 이벤트 화면 (포스터 누르면 아래에서 올라옴, 토스식) ── */
+  .evp{position:fixed;left:0;right:0;top:var(--topH, 82px);bottom:0;z-index:50;background:var(--paper, #f6f3ee);transform:translateY(105%);transition:transform .5s cubic-bezier(.22,1,.36,1);display:flex;flex-direction:column;border-radius:24px 24px 0 0;box-shadow:0 -10px 40px rgba(0,0,0,.25)}
+  .evp.on{transform:none}
+  .evp .eb-body{flex:1;overflow:auto;padding:0 var(--pad) 24px;-webkit-overflow-scrolling:touch}
+  .evp .grab{width:44px;height:5px;border-radius:9px;background:#cfc8bf;margin:10px auto 4px}
+  .evh{display:flex;gap:16px;align-items:center;padding:10px 50px 18px 0}
+  .evh img{width:92px;aspect-ratio:4/5;object-fit:cover;border-radius:14px;flex:none;box-shadow:0 6px 18px rgba(0,0,0,.18)}
+  .evh .tt{font-family:var(--num);font-weight:900;font-size:24px;line-height:1.25}
+  .evh .pr{margin-top:6px;font-family:var(--num);font-weight:900;font-size:26px;color:var(--red)}
+  .evh .pr s{font-size:15px;color:#9a948d;margin-right:8px;font-weight:700}
+  .evh .off{display:inline-block;margin-top:6px;background:var(--red);color:#fff;font-size:13px;font-weight:800;padding:4px 10px;border-radius:99px}
+  .evh .spec{margin-left:auto;align-self:center;border:0;background:#fff;border-radius:12px;padding:12px 16px;font-weight:800;font-size:15px;box-shadow:var(--sh);flex:none}
+  .evx{position:absolute;right:14px;top:14px;width:42px;height:42px;border:0;border-radius:99px;background:rgba(0,0,0,.07);font-size:20px;z-index:2}
+  .evs{margin-top:18px}
+  .evs h4{font-family:var(--num);font-weight:900;font-size:19px;margin-bottom:10px;display:flex;align-items:baseline;gap:8px}
+  .evs h4 small{font-family:inherit;font-weight:700;font-size:13px;color:#8a837b}
+  .evcol{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+  .evcol button{border:2px solid transparent;background:#fff;border-radius:16px;padding:10px 6px 8px;box-shadow:var(--sh);font-weight:800;font-size:14px}
+  .evcol button img{height:96px;width:100%;object-fit:contain;display:block;margin-bottom:6px}
+  .evcol button.on{border-color:var(--red)}
+  .evq{display:flex;gap:8px;flex-wrap:wrap}
+  .evq button{border:0;background:#15120f;color:#fff;border-radius:99px;padding:11px 16px;font-weight:800;font-size:14px}
+  .evg{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .evc{position:relative;border:2px solid transparent;background:#fff;border-radius:16px;padding:0 4px 10px;box-shadow:var(--sh);overflow:hidden;text-align:center;font-weight:800;font-size:14px;line-height:1.3;transition:transform .15s}
+  .evc:active{transform:scale(.96)}
+  .evc img{width:calc(100% + 8px);margin:0 -4px 8px;aspect-ratio:1;object-fit:cover;display:block;background:#fff}
+  .evc img.sm{object-fit:contain;padding:6px}
+  .evc.on{border-color:var(--red)}
+  .evc .cnt{position:absolute;top:8px;right:8px;min-width:32px;height:32px;border-radius:99px;background:var(--red);color:#fff;font-family:var(--num);font-size:17px;display:flex;align-items:center;justify-content:center;padding:0 8px}
+  .evc .mn{position:absolute;top:8px;left:8px;width:32px;height:32px;border-radius:99px;background:rgba(0,0,0,.65);color:#fff;font-size:20px;line-height:32px}
+  .evc .bd{position:absolute;left:8px;top:8px;background:#15120f;color:#fff;font-size:11px;padding:3px 7px;border-radius:6px}
+  .evc.on .bd{display:none}
+  .evc.out{opacity:.4;pointer-events:none}
+  .evc.txt{display:flex;flex-direction:column;justify-content:center;min-height:96px;padding:14px 8px;font-size:15px;background:#fff}
+  .evc.txt small{display:block;font-size:12px;color:#8a837b;font-weight:700;margin-top:4px}
+  .evlung{display:flex;align-items:center;gap:12px;width:100%;border:2px dashed #cfc8bf;background:#fff;border-radius:16px;padding:16px;text-align:left}
+  .evlung.on{border:2px solid var(--red)}
+  .evlung b{font-family:var(--num);font-weight:900;font-size:17px;display:block}
+  .evlung span{font-size:13px;color:#6f6861}
+  .evlung i{margin-left:auto;font-style:normal;font-weight:900;font-size:15px;white-space:nowrap;color:var(--red)}
+  .evc.out::after{content:"품절";position:absolute;top:38%;left:50%;transform:translate(-50%,-50%);background:#15120f;color:#fff;padding:4px 10px;border-radius:8px;font-size:13px}
+  .evbar{padding:12px var(--pad) 16px;background:#fff;box-shadow:0 -6px 20px rgba(0,0,0,.08)}
+  .evbar .row{display:flex;justify-content:space-between;font-weight:800;font-size:15px;margin-bottom:8px}
+  .evbar .row b{font-family:var(--num);color:var(--red)}
+  .evbar .bar{height:8px;border-radius:9px;background:#eee;overflow:hidden;margin-bottom:12px}
+  .evbar .bar i{display:block;height:100%;background:var(--red);border-radius:9px;transition:width .35s cubic-bezier(.22,1,.36,1)}
+  .evbar .go{width:100%;min-height:56px;border:0;border-radius:16px;background:var(--red);color:#fff;font-family:var(--num);font-weight:900;font-size:19px}
+  .evbar .go:disabled{background:#d8d2ca}
+  .evsrch{margin-top:14px;position:relative}
+  .evsrch input{width:100%;min-height:52px;border:2px solid #e4ded6;border-radius:14px;padding:0 16px 0 44px;font-size:17px;background:#fff}
+  .evsrch input:focus{outline:0;border-color:var(--red)}
+  .evsrch::before{content:"🔍";position:absolute;left:15px;top:50%;transform:translateY(-50%);font-size:17px}
+  .evnone{margin-top:12px;color:#8a837b;font-size:14px}
+  .evres{position:relative;margin:10px var(--pad) 0;z-index:30;flex:none;border:0;border-radius:16px;background:#fff;box-shadow:none;padding:12px 16px;display:flex;align-items:center;gap:12px;text-align:left;animation:evresIn .45s cubic-bezier(.22,1,.36,1)}
+  .evres b{font-family:var(--num);font-weight:900;font-size:17px;display:block}
+  .evres span{font-size:13px;color:#6f6861}
+  .evres i{margin-left:auto;font-style:normal;background:var(--red);color:#fff;border-radius:99px;padding:10px 16px;font-weight:900;font-size:15px;white-space:nowrap}
+  @keyframes evresIn{from{transform:translateY(20px);opacity:0}}
 </style>
 </head>
 <body data-mode="">
 <div class="app">
   <div class="top">
-    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">v10.07-0500</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
+    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">v10.07-1200</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
     <nav class="tabs" id="tabs" style="display:none"></nav>
     <div class="flow" id="flow"><span data-st="1">① 찾는 것</span><i>›</i><span data-st="2">② 고르기</span><i>›</i><span data-st="3">③ 담은 상품</span><i>›</i><span data-st="4">④ 직원 확인</span></div>
   </div>
 
   <section class="home pst" data-for="home">
     <div class="pv" id="pv"></div>
+    <button class="evres" id="evres" data-evres="1" style="display:none"></button>
     <div class="pways"><button data-go="dev">전자담배 기기</button><button data-go="liq">액상 · 소모품</button><button data-go="dsp">일회용</button></div>
   </section>
 
@@ -722,12 +782,14 @@
   <div class="hint" id="srchHint">초성만 쳐도 돼요 · 띄어쓰기 상관없어요</div>
   <div class="quick" id="srchQuick"></div>
   <div class="res" id="srchRes"></div></div>
+<div class="evp" id="evp"></div>
 <div class="dim" id="dim"><div class="sheet" id="sheet"></div></div>
 <div class="toast" id="toast"></div>
 
 <script src="data.js"></script>
 <script src="pos.js"></script>
 <script src="goods.js"></script>
+<script src="lung.js"></script>
 <script src="devinfo.js"></script>
 <script src="JsBarcode.all.min.js"></script>
 <script>
@@ -1084,8 +1146,9 @@ function addGoods(id) {
 }
 // 일회용 이벤트: 같은 이벤트끼리 (사는 개수+무료) 묶음마다 가장 싼 것 무료
 function goodsCalc() {
-  let dev = 0, pod = 0, dsp = 0; const freeBy = {}, cnt = {}, saveBy = {}; const evItems = {};
+  let dev = 0, pod = 0, dsp = 0, lungN = 0, lungFull = 0; const freeBy = {}, cnt = {}, saveBy = {}; const evItems = {};
   for (const [id, n] of cart) { const x = GMAP.get(id); if (!x) continue;
+    if (x.c === "lung") { lungN += n; lungFull += x.price * n; continue; } // 프리미엄 폐호흡 (3병 묶음가는 아래에서)
     if (x.c === "dev") dev += x.price * n; else if (x.c === "pod") pod += x.price * n;
     else if (x.ev) { (evItems[evKey(x)] ||= []).push(...Array(n).fill(x.price)); } else dsp += x.price * n; }
   let giftDev = 0;
@@ -1096,7 +1159,8 @@ function goodsCalc() {
     const freeAmt = prices.slice(prices.length - nFree).reduce((a, b) => a + b, 0);
     dsp += prices.reduce((a, b) => a + b, 0) - freeAmt; freeBy[ev] = nFree; cnt[ev] = prices.length; saveBy[ev] = freeAmt;
   }
-  return { dev, pod, dsp, total: dev + pod + dsp, freeBy, cnt, saveBy, giftDev };
+  const lung = Math.floor(lungN / 3) * ADD.lung3 + (lungFull / Math.max(1, lungN)) * (lungN % 3), lungSave = lungFull - lung; // 3병마다 40,000원
+  return { dev, pod, dsp, lung, lungN, lungSave, total: dev + pod + dsp + lung, freeBy, cnt, saveBy, giftDev };
 }
 // 에어릭스 팟 10개마다 혜택 하나: 팟 2개 무료(12개 가져가고 10개 값) 또는 에어릭스 기기(35,000원) 증정
 function airxBox(n, gc) {
@@ -1118,7 +1182,7 @@ function goodsHints(gc, liqPart) {
     if (gc.saveBy[ev]) out.push(`<div class="save"><div><b>${label} 할인</b><div class="u">${n}개 중 ${gc.freeBy[ev]}개 무료 (가장 싼 맛 기준)</div></div><span class="price">-${gc.saveBy[ev].toLocaleString()}<span class="won">원</span></span></div>`);
     if (r) out.push(`<div class="nudge"><b>${label}: ${r >= buy ? `지금 ${buy + free - r}개 더 고르면 무료` : `${buy - r}개 더 담으면 ${free}개 무료`}</b><div class="u">지금 ${n}개 · 같은 제품끼리 맛 섞어도 돼요</div></div>`);
   }
-  const base = liqPart + gc.pod;
+  const base = liqPart + gc.pod + gc.lung; // 폐호흡 액상도 액상
   if (base > 0) out.push(base >= 100000 ? `<div class="nudge" style="background:var(--red)"><b>🎁 일회용 기기 1개 증정 대상이에요</b><div class="u">액상·팟 ${won(base)} (10만원 이상)</div></div>`
     : `<div class="nudge"><b>액상·팟 ${won(100000 - base)} 더 담으면 일회용 1개 증정</b><div class="u">지금 액상·팟 ${won(base)} · 기기·일회용 금액은 빼고 계산</div><div class="bar2"><i style="width:${Math.min(100, base / 1000)}%"></i></div></div>`);
   return out.join("");
@@ -1300,12 +1364,13 @@ function cartView() {
       const e = est, c = countCart(), fr = Object.values(gc.freeBy).reduce((x, y) => x + y, 0);
       const dspFree = Object.values(gc.saveBy).reduce((x, y) => x + y, 0);
       // 낱개 가격: 기준 기기 정가 + 액상 1병가(프리미엄·빌런 15,000 / 프라임 20,000) + 소모품·일회용 정가
-      const unit = c.dev * DEVICE.price + (c.v + c.p) * 15000 + c.m * 20000 + gc.total + dspFree;
+      const unit = c.dev * DEVICE.price + (c.v + c.p) * 15000 + c.m * 20000 + gc.total + dspFree + gc.lungSave;
       const rv = review ? 3000 : 0, pay = e.total + gc.total - rv;
       const pkgOff = c.dev * DEVICE.price + (c.v + c.p) * 15000 + c.m * 20000 - e.total;
       const rows = [
         pkgOff > 0 ? [e.how ? e.how + " 할인" : "액상 묶음가 할인", pkgOff] : null,
         dspFree > 0 ? ["일회용 " + fr + "개 무료", dspFree] : null,
+        gc.lungSave > 0 ? [`폐호흡 프리미엄 3병 ${won(ADD.lung3)} 묶음가`, gc.lungSave] : null,
         rv ? ["리뷰 할인", rv] : null,
       ].filter(Boolean);
       return `<div class="tot2">
@@ -1378,9 +1443,11 @@ function staffView() {
       return `<div class="scan bundle"><div class="hd"><b>일회용 묶음 먼저: ${esc(nm)}</b><span class="x">× ${sets}</span></div><div class="s">이걸로 돈을 받고, 아래 ${esc(who)} 중 <b style="color:var(--red)">${inSet}개는 서비스(0원)</b>${rest ? `, 나머지 ${rest}개는 정상가` : ""}로 찍어 주세요</div>${p ? `<svg class="bc" data-v="${esc(p[1])}" data-f="${p[2]}"></svg>${p[3] ? "" : '<span class="warn">바코드 미등록 · 상품코드(' + esc(p[0]) + ')로 만든 바코드라 포스 인식 확인 필요</span>'}` : '<span class="warn">포스 상품을 못 찾았어요 · 포스에서 직접 검색해 주세요</span>'}</div>`;
     }).join("");
   })()}
+  ${(() => { const gc = goodsCalc(), k = Math.floor(gc.lungN / 3); if (!k) return ""; const nm = "폐 프리미엄 40,000원(3병)", p = posOf(nm);
+    return `<div class="scan bundle"><div class="hd"><b>폐호흡 묶음 먼저: ${esc(nm)}</b><span class="x">× ${k}</span></div><div class="s">이걸로 돈을 받고, 아래 폐호흡 액상 중 <b style="color:var(--red)">${k * 3}병은 서비스(0원)</b>${gc.lungN % 3 ? `, 나머지 ${gc.lungN % 3}병은 정상가` : ""}로 찍어 주세요</div>${p ? `<svg class="bc" data-v="${p[1]}" data-f="${p[2]}"></svg>` : '<span class="warn">포스 묶음 상품을 못 찾았어요 · 포스에서 직접 골라 주세요</span>'}</div>`; })()}
   <div style="margin-top:6px">${blocks || '<div style="padding:20px 0;color:var(--grey)">담은 상품이 없어요</div>'}</div>
   ${staffAdd ? `<div class="sadd"><div class="sadd-h"><b>상품 추가</b><button data-sadd="0">닫기</button></div><input class="in" id="sq" placeholder="이름·초성으로 찾기 (액상·팟·코일·일회용·기기)" value="${esc(staffQ)}"><div id="sqRes">${staffRes()}</div></div>` : `<button class="sadd-open" data-sadd="1">＋ 상품 추가 (액상 · 팟 · 코일 · 소모품)</button>`}
-  ${(() => { const gc = goodsCalc(), fr = Object.entries(gc.freeBy).filter(([k, n]) => n && !DSP_POS[k]); const base = estimate(countCart()).liq + gc.pod; return (fr.length ? `<div class="scan bundle"><div class="s" style="color:var(--ink)">일회용 이벤트 무료: ${fr.map(([k, n]) => evLabel(k) + " " + n + "개").join(", ")} → 포스에서 가장 싼 것부터 서비스(0원) 처리</div></div>` : "") + (gc.giftDev ? `<div class="scan bundle"><div class="s" style="color:var(--ink)">🎁 에어릭스 팟 10개 혜택 → 에어릭스 기기 ${gc.giftDev}대 증정 (서비스 0원 처리)</div></div>` : "") + (base >= 100000 ? `<div class="scan bundle"><div class="s" style="color:var(--ink)">🎁 액상·팟 ${won(base)} → 일회용 기기 1개 증정</div></div>` : ""); })()}
+  ${(() => { const gc = goodsCalc(), fr = Object.entries(gc.freeBy).filter(([k, n]) => n && !DSP_POS[k]); const base = estimate(countCart()).liq + gc.pod + gc.lung; return (fr.length ? `<div class="scan bundle"><div class="s" style="color:var(--ink)">일회용 이벤트 무료: ${fr.map(([k, n]) => evLabel(k) + " " + n + "개").join(", ")} → 포스에서 가장 싼 것부터 서비스(0원) 처리</div></div>` : "") + (gc.giftDev ? `<div class="scan bundle"><div class="s" style="color:var(--ink)">🎁 에어릭스 팟 10개 혜택 → 에어릭스 기기 ${gc.giftDev}대 증정 (서비스 0원 처리)</div></div>` : "") + (base >= 100000 ? `<div class="scan bundle"><div class="s" style="color:var(--ink)">🎁 액상·팟 ${won(base)} → 일회용 기기 1개 증정</div></div>` : ""); })()}
   ${engrave !== null ? `<div class="scan"><div class="hd"><b>레이저 각인 (0원)</b><span class="x">× 1</span></div><div class="s">문구: ${engrave ? esc(engrave) : "손님께 확인"}</div><span class="warn">포스에 0원 각인 상품 등록 후 바코드 연결</span></div>` : ""}
   ${review ? `<div class="line"><div class="mini" style="background:var(--red)">리뷰</div><div><b>클립 리뷰 할인 -3,000원</b><div class="s">네이버 클립 업로드 확인 후 할인</div></div></div>` : ""}
   ${(() => { const hs = items.filter(([id]) => isHi(item(id))); return hs.length ? `<div class="scan bundle"><div class="hd"><b>화학물질 장부 작성</b></div><div class="s" style="color:var(--ink);font-size:15px;margin-top:6px">${ledgerText() ? `<b>${esc(ledgerText())}</b> <span style="font-size:12.5px;color:var(--grey)">(구매자 직접 작성)</span>` : '<span class="warn">아직 작성 안 됨</span>'}</div><div class="s">${hs.map(([id, n]) => esc(item(id).n) + " ×" + n).join(" · ")}</div></div>` : ""; })()}
@@ -1588,8 +1655,8 @@ if ("serviceWorker" in navigator && location.protocol === "https:") {
 // ── 포스터 첫 화면 (10/7) ──
 // 실제 포스터 받으면: { img: "pst_파일이름.jpg", go: "liq:s3" } 한 줄씩 (4:5, 1080×1350). go = 구역(dev/liq/dsp) 또는 구역:칸id, "spec" = 하복2 상세
 const POSTERS = [
-  { go: "dev:s1", img: "pst_havok2_gpt.jpg" }, // 10/7 GPT 초안 (베이프렌드 포스터 폴더, 내가 만든 판 = pst_havok2.png)
-  { go: "liq:s3", ex: `<div class="px red"><span class="k">BULK EVENT</span><h3>대량구매 이벤트<br>프리미엄 액상<br>11병 90,000원</h3><div class="sub">1병 15,000원 → 병당 약 8,180원<br>빌런 · 릭 섞어도 돼요</div><img src="vl_p094.png" alt=""><span class="go">맛 고르러 가기 →</span></div>` },
+  { go: "dev:s1", ev: "havok10", img: "pst_havok2_gpt.jpg" }, // 10/7 GPT 초안 (베이프렌드 포스터 폴더, 내가 만든 판 = pst_havok2.png)
+  { go: "liq:s3", ev: "bulk11", ex: `<div class="px red"><span class="k">BULK EVENT</span><h3>대량구매 이벤트<br>프리미엄 액상<br>11병 90,000원</h3><div class="sub">1병 15,000원 → 병당 약 8,180원<br>빌런 · 릭 섞어도 돼요</div><img src="vl_p094.png" alt=""><span class="go">맛 고르러 가기 →</span></div>` },
   { go: "dsp:dE1", ex: `<div class="px"><span class="k">DISPOSABLE</span><h3>일회용<br>3+1 이벤트</h3><div class="sub">팜팜바 · 모스바<br>3개 사면 1개 더</div><img src="dsp_farm_all.png" alt=""><span class="go">맛 고르러 가기 →</span></div>` },
 ];
 let pCur = 0, pTimer = null, pMoved = false;
@@ -1636,6 +1703,140 @@ function goTo(go) {
   setMode(m);
   if (id) setTimeout(() => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" }), 60);
 }
-document.addEventListener("click", (e) => { const el = e.target.closest("[data-go]"); if (!el) return; if (el.dataset.pi && pMoved) { pMoved = false; return; } if (el.dataset.pi) ev("p", el.dataset.pi, el.dataset.go); goTo(el.dataset.go); });
+document.addEventListener("click", (e) => { const el = e.target.closest("[data-go]"); if (!el) return; if (el.dataset.pi && pMoved) { pMoved = false; return; } if (el.dataset.pi && POSTERS[el.dataset.pi].ev) { const P = POSTERS[el.dataset.pi]; ev("p", el.dataset.pi, P.ev); return openEvent(P.ev, P.img); } if (el.dataset.pi) ev("p", el.dataset.pi, el.dataset.go); goTo(el.dataset.go); });
+
+// ── 이벤트 화면 (10/7): 포스터 누르면 구성 고르기 → 장바구니 ──
+// EVENTS[키] = { t 제목, was 비교가, price 가격, n 고를 액상 수, color 기기 색상 고르기, spec 스펙 보기 } — POSTERS 항목에 ev: "키"
+const EVENTS = {
+  havok10: { t: `${MAIN.name} + 입호흡 액상 10병`, was: MAIN.price + ADD.ref10, price: MAIN.price + ADD.pr10, off: "15,000원 할인", n: 10, color: true, spec: true, lung: 3 }, // lung: 폐호흡 프리미엄 N병 추가(선택) — 하복2는 입·폐 공용
+  bulk11: { t: "프리미엄 액상 11병", price: 90000, sub: "1병 15,000원 → 병당 약 8,180원", n: 11 },
+};
+const EV_REC = ["디오 레몬", "디오 샤인", "디오 블루워터", "느낌 무향", "베이퍼 시가812", "베이퍼 쿨멘솔"]; // 추천 액상 6개 (순서대로)
+const EV_SECT = [ // 액상 고르기 구역: [제목, 설명, 이름 규칙] — 프리미엄 액상만
+  ["추천 액상 · 빌런 시리즈", "과일멘솔 BEST", /^VF 빌런 /], // 사용자 10/7: 추천 = 빌런
+  ["릭 시리즈", "노멘솔 과일 BEST", /^VF 릭 /],
+];
+// 빌런 카드 FLAVOR 번호 순서 (01 자두 ~ 09 석류) — 릭도 같은 과일끼리 같은 자리 (적사과=레즈애플, 소다=보석바(소다맛), 바나나=바나나라무네)
+const FL_ORDER = [/자두/, /청포도/, /레즈애플|적사과/, /청사과/, /레몬/, /파인애플/, /보석바|소다/, /바나나/, /석류/];
+const flRank = (x) => { if (!/^VF (빌런|릭) /.test(x.n)) return 0; const i = FL_ORDER.findIndex((re) => re.test(x.n)); return i < 0 ? 99 : i; };
+const LICK_IMG = { "VF 릭 바나나": "lk_sq_banana.jpg", "VF 릭 청사과": "lk_sq_greenapple.jpg", "VF 릭 청포도": "lk_sq_greengrape.jpg", "VF 릭 레몬": "lk_sq_lemon.jpg", "VF 릭 파인애플": "lk_sq_pineapple.jpg", "VF 릭 자두": "lk_sq_plum.jpg", "VF 릭 석류": "lk_sq_pomegranate.jpg", "VF 릭 적사과": "lk_sq_redapple.jpg", "VF 릭 소다": "lk_sq_soda.jpg" }; // 릭 카드 (GPT 제작 10/7, 베이프렌드 포스터릭)
+const evImg = (x) => LICK_IMG[x.n] || isrc(x);
+// 프리미엄 폐호흡 액상 (lung.js: 포스 판매가 30,000원 폐호흡 액상, 지점별) → 상품처럼 담기(c: "lung")
+// id가 g로 시작해야 상품(GMAP)으로 찾음
+const LUNG_ITEMS = ((window.LUNG || {})[BRANCH] || []).map(([n, price, st], i) => ({ id: "gL" + i, c: "lung", n, price }));
+for (const x of LUNG_ITEMS) { G.push(x); GMAP.set(x.id, x); }
+// 폐호흡 BEST (사용자 10/7): 보석바 · 오니 · 홀리 · 샤크 · 레몬소다(포스 이름 소다레몬)
+const LUNG_BEST = [/보석바/, /오니/, /홀리/, /샤크/, /소다레몬|레몬소다/];
+const lungBest = (x) => { const i = LUNG_BEST.findIndex((re) => re.test(x.n)); return i < 0 ? 99 : i; };
+const lungName = (n) => n.replace(/\s*\(?모드\)?\s*$/, "").replace(/모드$/, "");
+let EV = null; // { key, color, pick: Map(액상 id → 병 수), poster }
+function openEvent(key, poster) {
+  const resume = EV && EV.key === key;
+  if (!resume) EV = { key, color: EVENTS[key].color ? (devColor || MAIN.colors[0]) : null, pick: new Map(), lung: false, lpick: new Map(), poster, q: "" };
+  EV.open = true; evResume();
+  evDraw(); if (!resume) $("#evp .eb-body").scrollTop = 0;
+  requestAnimationFrame(() => requestAnimationFrame(() => $("#evp").classList.add("on")));
+  ev("e", key);
+}
+function closeEvent() { $("#evp").classList.remove("on"); if (EV) EV.open = false; evResume(); } // 고르던 내용은 남김 → 포스터 화면에 '이어서 고르기'
+function clearEvent() { $("#evp").classList.remove("on"); EV = null; evResume(); }
+const evGot = () => (EV ? [...EV.pick.values()].reduce((a, b) => a + b, 0) : 0);
+function evResume() {
+  const b = $("#evres"); if (!b) return;
+  if (!EV || EV.open || (!evGot() && !EV.touched)) { b.style.display = "none"; return; }
+  const E = EVENTS[EV.key];
+  b.innerHTML = `<div><b>${esc(E.t)} 고르던 중</b><span>${E.color ? esc(EV.color) + " · " : ""}액상 ${evGot()} / ${E.n}병</span></div><i>이어서 고르기 →</i>`; b.style.display = "";
+}
+function evCard(x) {
+  const c = EV.pick.get(x.id) || 0, out = isOut(x), own = OWN_IMG[x.n] || LICK_IMG[x.n], b = badgeOf(x);
+  return `<button class="evc ${c ? "on" : ""} ${out ? "out" : ""}" data-evp="${x.id}"><img src="${evImg(x)}" class="${own ? "" : "sm"}" alt="" loading="lazy">${b ? `<span class="bd">${b}</span>` : ""}${esc(x.n.replace(/^VF /, ""))}${c ? `<span class="cnt">${c}</span><span class="mn" data-evm="${x.id}">−</span>` : ""}</button>`;
+}
+// 이벤트 안 검색: 프리미엄 액상만 (패키지·묶음가에 들어가는 것)
+function evSearchDraw() {
+  const box = $("#evsr"); if (!box || !EV) return;
+  const qv = (EV.q || "").trim();
+  const xs = qv ? searchItems(qv).filter((x) => L.includes(x) && x.line === "프리미엄").slice(0, 12) : [];
+  box.innerHTML = xs.length ? `<div class="evs"><h4>검색 결과<small>${xs.length}개 · 누르면 1병씩</small></h4><div class="evg">${xs.map(evCard).join("")}</div></div>`
+    : qv ? `<div class="evnone">'${esc(qv)}' — 패키지에 넣을 수 있는 프리미엄 액상이 없어요</div>` : "";
+}
+function evDraw() {
+  const E = EVENTS[EV.key], st = $("#evp .eb-body")?.scrollTop || 0;
+  const got = [...EV.pick.values()].reduce((a, b) => a + b, 0);
+  const card = evCard;
+  const sect = ([h, sub, re]) => {
+    const xs = Array.isArray(re) ? re.map((n) => L.find((x) => x.n === n)).filter(Boolean) : L.filter((x) => x.line === "프리미엄" && re.test(x.n)).sort((a, b) => flRank(a) - flRank(b) || isOut(a) - isOut(b) || bestRank(a) - bestRank(b));
+    return xs.length ? `<div class="evs"><h4>${h}<small>${sub}</small></h4><div class="evg">${xs.map(card).join("")}</div></div>` : "";
+  };
+  $("#evp").innerHTML = `<button class="evx" data-evclose="1" aria-label="닫기">✕</button><div class="grab"></div><div class="eb-body">
+    <div class="evh">${EV.poster ? `<img src="${EV.poster}" alt="">` : ""}<div><div class="tt">${esc(E.t)}${EV.lung ? ` + 폐호흡 ${E.lung}병` : ""}</div><div class="pr">${E.was && !EV.lung ? `<s>${won(E.was)}</s>` : ""}${won(E.price + (EV.lung ? ADD.lung3 : 0))}</div>${E.off ? `<span class="off">${E.off}</span>` : E.sub ? `<div style="font-size:14px;color:#6f6861;margin-top:4px">${E.sub}</div>` : ""}</div>${E.spec ? `<button class="spec" data-mainspec="1">스펙 보기</button>` : ""}</div>
+    ${E.color ? `<div class="evs"><h4>① 기기 색상<small>${esc(EV.color)}</small></h4><div class="evcol">${MAIN.colors.map((c) => `<button class="${c === EV.color ? "on" : ""}" data-evcol="${c}"><img src="${MAIN.imgs?.[c] || MAIN.img}" alt="">${c}</button>`).join("")}</div></div>` : ""}
+    <div class="evs" id="evLiq"><h4>${E.color ? "② " : ""}액상 ${E.n}병 고르기<small>누를 때마다 1병씩 · 맛 섞어도 돼요</small></h4>
+      <div class="evq"><button data-evq="vl5">빌런 인기 5종으로 채우기</button>${got ? `<button data-evq="clear" style="background:#fff;color:#15120f;box-shadow:var(--sh)">다시 고르기</button>` : ""}</div>
+      <div class="evsrch"><input id="evq" type="search" placeholder="다른 액상 찾기 · 이름, 초성, 맛" value="${esc(EV.q || "")}" autocomplete="off"></div></div>
+    <div id="evsr"></div>
+    ${EV_SECT.map(sect).join("")}
+    ${E.lung ? (() => { const lg = [...EV.lpick.values()].reduce((a, b) => a + b, 0), xs = LUNG_ITEMS.filter((x) => !isOut(x)).sort((p, q) => lungBest(p) - lungBest(q)), nb = xs.filter((x) => lungBest(x) < 99).length;
+      const lcard = (x) => { const c = EV.lpick.get(x.id) || 0; return `<button class="evc txt ${c ? "on" : ""}" data-evl="${x.id}">${lungBest(x) < 99 ? '<span class="bd">BEST</span>' : ""}${esc(lungName(x.n))}<small>폐호흡</small>${c ? `<span class="cnt">${c}</span><span class="mn" data-evlm="${x.id}">−</span>` : ""}</button>`; };
+      return `<div class="evs" id="evLung"><h4>③ 폐호흡도 같이<small>선택 · ${MAIN.name}는 폐호흡도 돼요</small></h4>
+        <button class="evlung ${EV.lung ? "on" : ""}" data-evlung="1"><div><b>프리미엄 폐호흡 액상 ${E.lung}병 ${won(ADD.lung3)}</b><span>${EV.lung ? `${lg} / ${E.lung}병 골랐어요 · 다시 누르면 빼기` : "오니 · 홀리 · 빌런 보석바 등 · 누르면 추가"}</span></div><i>${EV.lung ? "✓ 추가됨" : "+ 추가"}</i></button>
+        ${EV.lung ? (xs.length ? `<div class="evg" style="margin-top:12px">${xs.slice(0, nb).map(lcard).join("")}</div>${xs.length > nb ? `<h4 style="margin-top:16px;font-size:16px">다른 프리미엄 폐호흡<small>${xs.length - nb}가지</small></h4><div class="evg">${xs.slice(nb).map(lcard).join("")}</div>` : ""}` : '<div class="evnone">이 지점 재고가 있는 프리미엄 폐호흡 액상이 없어요</div>') : ""}</div>`; })() : ""}
+  </div>
+  ${(() => { const lg = [...EV.lpick.values()].reduce((a, b) => a + b, 0), lneed = EV.lung ? E.lung : 0, all = E.n + lneed, done = got + lg, ok = got === E.n && lg === lneed;
+    const msg = got < E.n ? `입호흡 ${E.n - got}병 더 골라 주세요` : lg < lneed ? `폐호흡 ${lneed - lg}병 더 골라 주세요` : "이 구성으로 담기 →";
+    return `<div class="evbar"><div class="row"><span>고른 액상</span><b>입호흡 ${got} / ${E.n}병${lneed ? ` · 폐호흡 ${lg} / ${lneed}병` : ""}</b></div><div class="bar"><i style="width:${Math.min(100, done / all * 100)}%"></i></div>
+    <button class="go" data-evgo="1" ${ok ? "" : "disabled"}>${msg}</button></div>`; })()}`;
+  $("#evp .eb-body").scrollTop = st;
+  evSearchDraw();
+}
+function evAdd(id, d) {
+  const E = EVENTS[EV.key], got = [...EV.pick.values()].reduce((a, b) => a + b, 0);
+  if (d > 0 && got >= E.n) { toast(`${E.n}병을 다 골랐어요 · 바꾸려면 − 로 빼 주세요`); return; }
+  const c = (EV.pick.get(id) || 0) + d; c > 0 ? EV.pick.set(id, c) : EV.pick.delete(id); EV.touched = true; evDraw();
+}
+document.addEventListener("click", (e) => {
+  const q = (sel) => e.target.closest(sel); let el;
+  if (q("[data-reset]")) { clearEvent(); return; } // 완료·처음으로 = 고르던 것도 끝
+  if ((el = q("[data-evres]"))) { e.stopPropagation(); return openEvent(EV.key, EV.poster); }
+  if (EV?.open && q("#findBtn")) { e.stopPropagation(); const i = $("#evq"); i.scrollIntoView({ behavior: "smooth", block: "center" }); setTimeout(() => i.focus(), 300); return; } // 이벤트 중 검색 = 이벤트 안 검색칸
+  if (EV?.open && (q("#homeBtn") || q("#cartBtn"))) closeEvent(); // 처음·담은 상품 누르면 이벤트 화면만 닫기 (고르던 것 유지)
+  if (EV?.open && q("#sheet")) { // 이벤트 중 연 스펙 창: 버튼이 이벤트로 돌아오게
+    if (q("[data-maindev]")) { e.stopPropagation(); EV.color = cvColor; EV.touched = true; closeS(); evDraw(); setTimeout(() => $("#evLiq")?.scrollIntoView({ behavior: "smooth", block: "start" }), 120); toast(`${cvColor} 골랐어요 · 이제 액상을 골라 주세요`); return; }
+    if (q("[data-pkg]")) { e.stopPropagation(); closeS(); return; }
+    return;
+  }
+  if (!q("#evp") || !EV?.open) return;
+  if (q("[data-mainspec]")) { cvColor = EV.color; return; } // 스펙 보기는 원래 창으로 (지금 고른 색으로 열기)
+  e.stopPropagation();
+  if (q("[data-evclose]")) return closeEvent();
+  if ((el = q("[data-evlm]"))) { const c = (EV.lpick.get(el.dataset.evlm) || 0) - 1; c > 0 ? EV.lpick.set(el.dataset.evlm, c) : EV.lpick.delete(el.dataset.evlm); return evDraw(); }
+  if ((el = q("[data-evl]"))) { const E = EVENTS[EV.key], lg = [...EV.lpick.values()].reduce((a, b) => a + b, 0); if (lg >= E.lung) { toast(`폐호흡 ${E.lung}병을 다 골랐어요 · 바꾸려면 − 로 빼 주세요`); return; } EV.lpick.set(el.dataset.evl, (EV.lpick.get(el.dataset.evl) || 0) + 1); return evDraw(); }
+  if (q("[data-evlung]")) { EV.lung = !EV.lung; if (!EV.lung) EV.lpick.clear(); EV.touched = true; evDraw(); if (EV.lung) setTimeout(() => $("#evLung")?.scrollIntoView({ behavior: "smooth", block: "start" }), 80); return; }
+  if ((el = q("[data-evm]"))) return evAdd(el.dataset.evm, -1);
+  if ((el = q("[data-evp]"))) return evAdd(el.dataset.evp, 1);
+  if ((el = q("[data-evcol]"))) { EV.color = el.dataset.evcol; EV.touched = true; return evDraw(); }
+  if ((el = q("[data-evq]"))) {
+    EV.pick.clear();
+    if (el.dataset.evq === "vl5") { const E = EVENTS[EV.key]; const xs = VILLAIN5.map((n) => L.find((x) => x.n === n)).filter((x) => x && !isOut(x)); for (let i = 0; i < E.n && xs.length; i++) { const x = xs[i % xs.length]; EV.pick.set(x.id, (EV.pick.get(x.id) || 0) + 1); } }
+    return evDraw();
+  }
+  if (q("[data-evgo]")) {
+    const E = EVENTS[EV.key];
+    if (E.color) { add(DEVICE.id); devColor = EV.color; }
+    for (const [id, c] of EV.pick) add(id, c);
+    if (EV.lung) for (const [id, c] of EV.lpick) add(id, c);
+    ev("eg", EV.key, String([...EV.pick.values()].reduce((a, b) => a + b, 0)));
+    clearEvent(); setTimeout(() => cartView(), 250); return;
+  }
+}, true);
+document.addEventListener("input", (e) => { if (e.target.id === "evq" && EV) { EV.q = e.target.value; evSearchDraw(); } });
+// 스펙 창을 이벤트 중에 열면 버튼 이름을 이벤트용으로
+{ const _ms = mainSpecView; mainSpecView = (c) => { _ms(c); if (EV?.open) { const a = $("#sheet [data-maindev]"), b = $("#sheet [data-pkg]"); if (a) a.textContent = "이 색으로 고르기"; if (b) b.textContent = "패키지 계속 고르기"; } }; }
+// 맨 위에서 아래로 쓸어내리면 닫기
+(() => {
+  let y0 = null; const p = $("#evp");
+  p.addEventListener("touchstart", (e) => { const b = p.querySelector(".eb-body"); y0 = (!b || b.scrollTop <= 0) ? e.touches[0].clientY : null; }, { passive: true });
+  p.addEventListener("touchmove", (e) => { if (y0 === null) return; const dy = e.touches[0].clientY - y0; if (dy > 0) { p.style.transition = "none"; p.style.transform = `translateY(${dy}px)`; } }, { passive: true });
+  p.addEventListener("touchend", (e) => { if (y0 === null) return; const dy = e.changedTouches[0].clientY - y0; p.style.transition = ""; p.style.transform = ""; y0 = null; if (dy > 120) closeEvent(); });
+})();
 </script></body>
 </html>
