@@ -666,18 +666,29 @@
   .evbar .bar i{display:block;height:100%;background:var(--red);border-radius:9px;transition:width .35s cubic-bezier(.22,1,.36,1)}
   .evbar .go{width:100%;min-height:56px;border:0;border-radius:16px;background:var(--red);color:#fff;font-family:var(--num);font-weight:900;font-size:19px}
   .evbar .go:disabled{background:#d8d2ca}
+  .evsrch{margin-top:14px;position:relative}
+  .evsrch input{width:100%;min-height:52px;border:2px solid #e4ded6;border-radius:14px;padding:0 16px 0 44px;font-size:17px;background:#fff}
+  .evsrch input:focus{outline:0;border-color:var(--red)}
+  .evsrch::before{content:"🔍";position:absolute;left:15px;top:50%;transform:translateY(-50%);font-size:17px}
+  .evnone{margin-top:12px;color:#8a837b;font-size:14px}
+  .evres{position:relative;margin:10px var(--pad) 0;z-index:30;flex:none;border:0;border-radius:16px;background:#fff;box-shadow:none;padding:12px 16px;display:flex;align-items:center;gap:12px;text-align:left;animation:evresIn .45s cubic-bezier(.22,1,.36,1)}
+  .evres b{font-family:var(--num);font-weight:900;font-size:17px;display:block}
+  .evres span{font-size:13px;color:#6f6861}
+  .evres i{margin-left:auto;font-style:normal;background:var(--red);color:#fff;border-radius:99px;padding:10px 16px;font-weight:900;font-size:15px;white-space:nowrap}
+  @keyframes evresIn{from{transform:translateY(20px);opacity:0}}
 </style>
 </head>
 <body data-mode=""><div id="testRibbon" style="position:fixed;left:0;right:0;bottom:0;z-index:99999;background:#d32f2f;color:#fff;text-align:center;font:700 13px sans-serif;padding:4px;pointer-events:none">테스트판 · 손님 상담에는 정식판을 쓰세요</div>
 <div class="app">
   <div class="top">
-    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">테스트 v10.07-0800</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
+    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">테스트 v10.07-0900</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
     <nav class="tabs" id="tabs" style="display:none"></nav>
     <div class="flow" id="flow"><span data-st="1">① 찾는 것</span><i>›</i><span data-st="2">② 고르기</span><i>›</i><span data-st="3">③ 담은 상품</span><i>›</i><span data-st="4">④ 직원 확인</span></div>
   </div>
 
   <section class="home pst" data-for="home">
     <div class="pv" id="pv"></div>
+    <button class="evres" id="evres" data-evres="1" style="display:none"></button>
     <div class="pways"><button data-go="dev">전자담배 기기</button><button data-go="liq">액상 · 소모품</button><button data-go="dsp">일회용</button></div>
   </section>
 
@@ -1692,23 +1703,42 @@ const EV_SECT = [ // 액상 고르기 구역: [제목, 설명, 이름 규칙] �
   ["추천 액상 · 빌런 시리즈", "과일멘솔 BEST", /^VF 빌런 /], // 사용자 10/7: 추천 = 빌런
   ["릭 시리즈", "노멘솔 과일 BEST", /^VF 릭 /],
 ];
-const LICK_IMG = { "VF 릭 청사과": "lk_sq_greenapple.jpg", "VF 릭 청포도": "lk_sq_greengrape.jpg", "VF 릭 파인애플": "lk_sq_pineapple.jpg", "VF 릭 자두": "lk_sq_plum.jpg", "VF 릭 석류": "lk_sq_pomegranate.jpg", "VF 릭 소다": "lk_sq_soda.jpg" }; // 릭 카드 (GPT 제작 10/7, 베이프렌드 포스터릭)
+const LICK_IMG = { "VF 릭 청사과": "lk_sq_greenapple.jpg", "VF 릭 청포도": "lk_sq_greengrape.jpg", "VF 릭 레몬": "lk_sq_lemon.jpg", "VF 릭 파인애플": "lk_sq_pineapple.jpg", "VF 릭 자두": "lk_sq_plum.jpg", "VF 릭 석류": "lk_sq_pomegranate.jpg", "VF 릭 적사과": "lk_sq_redapple.jpg", "VF 릭 소다": "lk_sq_soda.jpg" }; // 릭 카드 (GPT 제작 10/7, 베이프렌드 포스터릭)
 const evImg = (x) => LICK_IMG[x.n] || isrc(x);
 let EV = null; // { key, color, pick: Map(액상 id → 병 수), poster }
 function openEvent(key, poster) {
-  EV = { key, color: EVENTS[key].color ? (devColor || MAIN.colors[0]) : null, pick: new Map(), poster };
-  evDraw(); $("#evp .eb-body").scrollTop = 0;
+  const resume = EV && EV.key === key;
+  if (!resume) EV = { key, color: EVENTS[key].color ? (devColor || MAIN.colors[0]) : null, pick: new Map(), poster, q: "" };
+  EV.open = true; evResume();
+  evDraw(); if (!resume) $("#evp .eb-body").scrollTop = 0;
   requestAnimationFrame(() => requestAnimationFrame(() => $("#evp").classList.add("on")));
   ev("e", key);
 }
-function closeEvent() { $("#evp").classList.remove("on"); EV = null; }
+function closeEvent() { $("#evp").classList.remove("on"); if (EV) EV.open = false; evResume(); } // 고르던 내용은 남김 → 포스터 화면에 '이어서 고르기'
+function clearEvent() { $("#evp").classList.remove("on"); EV = null; evResume(); }
+const evGot = () => (EV ? [...EV.pick.values()].reduce((a, b) => a + b, 0) : 0);
+function evResume() {
+  const b = $("#evres"); if (!b) return;
+  if (!EV || EV.open || (!evGot() && !EV.touched)) { b.style.display = "none"; return; }
+  const E = EVENTS[EV.key];
+  b.innerHTML = `<div><b>${esc(E.t)} 고르던 중</b><span>${E.color ? esc(EV.color) + " · " : ""}액상 ${evGot()} / ${E.n}병</span></div><i>이어서 고르기 →</i>`; b.style.display = "";
+}
+function evCard(x) {
+  const c = EV.pick.get(x.id) || 0, out = isOut(x), own = OWN_IMG[x.n] || LICK_IMG[x.n], b = badgeOf(x);
+  return `<button class="evc ${c ? "on" : ""} ${out ? "out" : ""}" data-evp="${x.id}"><img src="${evImg(x)}" class="${own ? "" : "sm"}" alt="" loading="lazy">${b ? `<span class="bd">${b}</span>` : ""}${esc(x.n.replace(/^VF /, ""))}${c ? `<span class="cnt">${c}</span><span class="mn" data-evm="${x.id}">−</span>` : ""}</button>`;
+}
+// 이벤트 안 검색: 프리미엄 액상만 (패키지·묶음가에 들어가는 것)
+function evSearchDraw() {
+  const box = $("#evsr"); if (!box || !EV) return;
+  const qv = (EV.q || "").trim();
+  const xs = qv ? searchItems(qv).filter((x) => L.includes(x) && x.line === "프리미엄").slice(0, 12) : [];
+  box.innerHTML = xs.length ? `<div class="evs"><h4>검색 결과<small>${xs.length}개 · 누르면 1병씩</small></h4><div class="evg">${xs.map(evCard).join("")}</div></div>`
+    : qv ? `<div class="evnone">'${esc(qv)}' — 패키지에 넣을 수 있는 프리미엄 액상이 없어요</div>` : "";
+}
 function evDraw() {
   const E = EVENTS[EV.key], st = $("#evp .eb-body")?.scrollTop || 0;
   const got = [...EV.pick.values()].reduce((a, b) => a + b, 0);
-  const card = (x) => {
-    const c = EV.pick.get(x.id) || 0, out = isOut(x), own = OWN_IMG[x.n] || LICK_IMG[x.n], b = badgeOf(x);
-    return `<button class="evc ${c ? "on" : ""} ${out ? "out" : ""}" data-evp="${x.id}"><img src="${evImg(x)}" class="${own ? "" : "sm"}" alt="" loading="lazy">${b ? `<span class="bd">${b}</span>` : ""}${esc(x.n.replace(/^VF /, ""))}${c ? `<span class="cnt">${c}</span><span class="mn" data-evm="${x.id}">−</span>` : ""}</button>`;
-  };
+  const card = evCard;
   const sect = ([h, sub, re]) => {
     const xs = Array.isArray(re) ? re.map((n) => L.find((x) => x.n === n)).filter(Boolean) : L.filter((x) => x.line === "프리미엄" && re.test(x.n)).sort((a, b) => isOut(a) - isOut(b) || bestRank(a) - bestRank(b));
     return xs.length ? `<div class="evs"><h4>${h}<small>${sub}</small></h4><div class="evg">${xs.map(card).join("")}</div></div>` : "";
@@ -1716,29 +1746,40 @@ function evDraw() {
   $("#evp").innerHTML = `<button class="evx" data-evclose="1" aria-label="닫기">✕</button><div class="grab"></div><div class="eb-body">
     <div class="evh">${EV.poster ? `<img src="${EV.poster}" alt="">` : ""}<div><div class="tt">${esc(E.t)}</div><div class="pr">${E.was ? `<s>${won(E.was)}</s>` : ""}${won(E.price)}</div>${E.off ? `<span class="off">${E.off}</span>` : E.sub ? `<div style="font-size:14px;color:#6f6861;margin-top:4px">${E.sub}</div>` : ""}</div>${E.spec ? `<button class="spec" data-mainspec="1">스펙 보기</button>` : ""}</div>
     ${E.color ? `<div class="evs"><h4>① 기기 색상<small>${esc(EV.color)}</small></h4><div class="evcol">${MAIN.colors.map((c) => `<button class="${c === EV.color ? "on" : ""}" data-evcol="${c}"><img src="${MAIN.imgs?.[c] || MAIN.img}" alt="">${c}</button>`).join("")}</div></div>` : ""}
-    <div class="evs"><h4>${E.color ? "② " : ""}액상 ${E.n}병 고르기<small>누를 때마다 1병씩 · 맛 섞어도 돼요</small></h4>
-      <div class="evq"><button data-evq="vl5">빌런 인기 5종으로 채우기</button>${got ? `<button data-evq="clear" style="background:#fff;color:#15120f;box-shadow:var(--sh)">다시 고르기</button>` : ""}</div></div>
+    <div class="evs" id="evLiq"><h4>${E.color ? "② " : ""}액상 ${E.n}병 고르기<small>누를 때마다 1병씩 · 맛 섞어도 돼요</small></h4>
+      <div class="evq"><button data-evq="vl5">빌런 인기 5종으로 채우기</button>${got ? `<button data-evq="clear" style="background:#fff;color:#15120f;box-shadow:var(--sh)">다시 고르기</button>` : ""}</div>
+      <div class="evsrch"><input id="evq" type="search" placeholder="다른 액상 찾기 · 이름, 초성, 맛" value="${esc(EV.q || "")}" autocomplete="off"></div></div>
+    <div id="evsr"></div>
     ${EV_SECT.map(sect).join("")}
   </div>
   <div class="evbar"><div class="row"><span>고른 액상</span><b>${got} / ${E.n}병</b></div><div class="bar"><i style="width:${Math.min(100, got / E.n * 100)}%"></i></div>
     <button class="go" data-evgo="1" ${got === E.n ? "" : "disabled"}>${got === E.n ? "이 구성으로 담기 →" : `${E.n - got}병 더 골라 주세요`}</button></div>`;
   $("#evp .eb-body").scrollTop = st;
+  evSearchDraw();
 }
 function evAdd(id, d) {
   const E = EVENTS[EV.key], got = [...EV.pick.values()].reduce((a, b) => a + b, 0);
   if (d > 0 && got >= E.n) { toast(`${E.n}병을 다 골랐어요 · 바꾸려면 − 로 빼 주세요`); return; }
-  const c = (EV.pick.get(id) || 0) + d; c > 0 ? EV.pick.set(id, c) : EV.pick.delete(id); evDraw();
+  const c = (EV.pick.get(id) || 0) + d; c > 0 ? EV.pick.set(id, c) : EV.pick.delete(id); EV.touched = true; evDraw();
 }
 document.addEventListener("click", (e) => {
   const q = (sel) => e.target.closest(sel); let el;
-  if (EV && (q("#homeBtn") || q("#cartBtn"))) closeEvent(); // 처음·담은 상품 누르면 이벤트 화면 닫기
-  if (!q("#evp") || !EV) return;
-  if (q("[data-mainspec]")) return; // 스펙 보기는 원래 처리(아래 창)로
+  if (q("[data-reset]")) { clearEvent(); return; } // 완료·처음으로 = 고르던 것도 끝
+  if ((el = q("[data-evres]"))) { e.stopPropagation(); return openEvent(EV.key, EV.poster); }
+  if (EV?.open && q("#findBtn")) { e.stopPropagation(); const i = $("#evq"); i.scrollIntoView({ behavior: "smooth", block: "center" }); setTimeout(() => i.focus(), 300); return; } // 이벤트 중 검색 = 이벤트 안 검색칸
+  if (EV?.open && (q("#homeBtn") || q("#cartBtn"))) closeEvent(); // 처음·담은 상품 누르면 이벤트 화면만 닫기 (고르던 것 유지)
+  if (EV?.open && q("#sheet")) { // 이벤트 중 연 스펙 창: 버튼이 이벤트로 돌아오게
+    if (q("[data-maindev]")) { e.stopPropagation(); EV.color = cvColor; EV.touched = true; closeS(); evDraw(); setTimeout(() => $("#evLiq")?.scrollIntoView({ behavior: "smooth", block: "start" }), 120); toast(`${cvColor} 골랐어요 · 이제 액상을 골라 주세요`); return; }
+    if (q("[data-pkg]")) { e.stopPropagation(); closeS(); return; }
+    return;
+  }
+  if (!q("#evp") || !EV?.open) return;
+  if (q("[data-mainspec]")) { cvColor = EV.color; return; } // 스펙 보기는 원래 창으로 (지금 고른 색으로 열기)
   e.stopPropagation();
   if (q("[data-evclose]")) return closeEvent();
   if ((el = q("[data-evm]"))) return evAdd(el.dataset.evm, -1);
   if ((el = q("[data-evp]"))) return evAdd(el.dataset.evp, 1);
-  if ((el = q("[data-evcol]"))) { EV.color = el.dataset.evcol; return evDraw(); }
+  if ((el = q("[data-evcol]"))) { EV.color = el.dataset.evcol; EV.touched = true; return evDraw(); }
   if ((el = q("[data-evq]"))) {
     EV.pick.clear();
     if (el.dataset.evq === "vl5") { const E = EVENTS[EV.key]; const xs = VILLAIN5.map((n) => L.find((x) => x.n === n)).filter((x) => x && !isOut(x)); for (let i = 0; i < E.n && xs.length; i++) { const x = xs[i % xs.length]; EV.pick.set(x.id, (EV.pick.get(x.id) || 0) + 1); } }
@@ -1749,9 +1790,12 @@ document.addEventListener("click", (e) => {
     if (E.color) { add(DEVICE.id); devColor = EV.color; }
     for (const [id, c] of EV.pick) add(id, c);
     ev("eg", EV.key, String([...EV.pick.values()].reduce((a, b) => a + b, 0)));
-    closeEvent(); setTimeout(() => cartView(), 250); return;
+    clearEvent(); setTimeout(() => cartView(), 250); return;
   }
 }, true);
+document.addEventListener("input", (e) => { if (e.target.id === "evq" && EV) { EV.q = e.target.value; evSearchDraw(); } });
+// 스펙 창을 이벤트 중에 열면 버튼 이름을 이벤트용으로
+{ const _ms = mainSpecView; mainSpecView = (c) => { _ms(c); if (EV?.open) { const a = $("#sheet [data-maindev]"), b = $("#sheet [data-pkg]"); if (a) a.textContent = "이 색으로 고르기"; if (b) b.textContent = "패키지 계속 고르기"; } }; }
 // 맨 위에서 아래로 쓸어내리면 닫기
 (() => {
   let y0 = null; const p = $("#evp");
