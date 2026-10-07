@@ -624,7 +624,7 @@
 <body data-mode=""><div id="testRibbon" style="position:fixed;left:0;right:0;bottom:0;z-index:99999;background:#d32f2f;color:#fff;text-align:center;font:700 13px sans-serif;padding:4px;pointer-events:none">테스트판 · 손님 상담에는 정식판을 쓰세요</div>
 <div class="app">
   <div class="top">
-    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">테스트 v10.07-0100</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
+    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">테스트 v10.07-0200</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
     <nav class="tabs" id="tabs" style="display:none"></nav>
     <div class="flow" id="flow"><span data-st="1">① 찾는 것</span><i>›</i><span data-st="2">② 고르기</span><i>›</i><span data-st="3">③ 담은 상품</span><i>›</i><span data-st="4">④ 직원 확인</span></div>
   </div>
@@ -1584,8 +1584,8 @@ if ("serviceWorker" in navigator && location.protocol === "https:") {
 // ── 포스터 첫 화면 (10/7) ──
 // 실제 포스터 받으면: { img: "pst_파일이름.jpg", go: "liq:s3" } 한 줄씩 (4:5, 1080×1350). go = 구역(dev/liq/dsp) 또는 구역:칸id, "spec" = 하복2 상세
 const POSTERS = [
+  { go: "dev:s1", img: "pst_havok2.png" }, // 10/7 초안 (베이프렌드 포스터 폴더)
   { go: "liq:s3", ex: `<div class="px red"><span class="k">BULK EVENT</span><h3>대량구매 이벤트<br>프리미엄 액상<br>11병 90,000원</h3><div class="sub">1병 15,000원 → 병당 약 8,180원<br>빌런 · 릭 섞어도 돼요</div><img src="vl_p094.png" alt=""><span class="go">맛 고르러 가기 →</span></div>` },
-  { go: "dev:s1", ex: `<div class="px dark"><span class="k">DEVICE PACKAGE</span><h3>하복2<br>기기패키지</h3><div class="sub">기기 + 입호흡 액상 10병</div><div class="pr"><s>179,000원</s>164,000원</div><img src="dev_havok2_hero.png" alt=""><span class="go">패키지 보기 →</span></div>` },
   { go: "dsp:dE1", ex: `<div class="px"><span class="k">DISPOSABLE</span><h3>일회용<br>3+1 이벤트</h3><div class="sub">팜팜바 · 모스바<br>3개 사면 1개 더</div><img src="dsp_farm_all.png" alt=""><span class="go">맛 고르러 가기 →</span></div>` },
 ];
 function renderPosters() {
