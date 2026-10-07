@@ -671,7 +671,7 @@
 <body data-mode=""><div id="testRibbon" style="position:fixed;left:0;right:0;bottom:0;z-index:99999;background:#d32f2f;color:#fff;text-align:center;font:700 13px sans-serif;padding:4px;pointer-events:none">테스트판 · 손님 상담에는 정식판을 쓰세요</div>
 <div class="app">
   <div class="top">
-    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">테스트 v10.07-0700</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
+    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">테스트 v10.07-0800</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
     <nav class="tabs" id="tabs" style="display:none"></nav>
     <div class="flow" id="flow"><span data-st="1">① 찾는 것</span><i>›</i><span data-st="2">② 고르기</span><i>›</i><span data-st="3">③ 담은 상품</span><i>›</i><span data-st="4">④ 직원 확인</span></div>
   </div>
@@ -1692,7 +1692,7 @@ const EV_SECT = [ // 액상 고르기 구역: [제목, 설명, 이름 규칙] �
   ["추천 액상 · 빌런 시리즈", "과일멘솔 BEST", /^VF 빌런 /], // 사용자 10/7: 추천 = 빌런
   ["릭 시리즈", "노멘솔 과일 BEST", /^VF 릭 /],
 ];
-const LICK_IMG = {}; // 릭 카드 사진 (만들면 채움): { "VF 릭 자두": "lk_sq_plum.jpg" }
+const LICK_IMG = { "VF 릭 청사과": "lk_sq_greenapple.jpg", "VF 릭 청포도": "lk_sq_greengrape.jpg", "VF 릭 파인애플": "lk_sq_pineapple.jpg", "VF 릭 자두": "lk_sq_plum.jpg", "VF 릭 석류": "lk_sq_pomegranate.jpg", "VF 릭 소다": "lk_sq_soda.jpg" }; // 릭 카드 (GPT 제작 10/7, 베이프렌드 포스터릭)
 const evImg = (x) => LICK_IMG[x.n] || isrc(x);
 let EV = null; // { key, color, pick: Map(액상 id → 병 수), poster }
 function openEvent(key, poster) {
