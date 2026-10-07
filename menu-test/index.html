@@ -658,6 +658,10 @@
   .evc .bd{position:absolute;left:8px;top:8px;background:#15120f;color:#fff;font-size:11px;padding:3px 7px;border-radius:6px}
   .evc.on .bd{display:none}
   .evc.out{opacity:.4;pointer-events:none}
+  .stp{display:flex;gap:12px;align-items:center;margin:22px 0 8px}
+  .stp i{flex:none;width:30px;height:30px;border-radius:99px;background:var(--red);color:#fff;font-style:normal;font-family:var(--num);font-weight:900;display:flex;align-items:center;justify-content:center}
+  .stp b{font-family:var(--num);font-weight:900;font-size:18px;display:block}
+  .stp span{font-size:13.5px;color:var(--ink-soft)}
   .evc.txt{display:flex;flex-direction:column;justify-content:center;min-height:96px;padding:14px 8px;font-size:15px;background:#fff}
   .evc.txt small{display:block;font-size:12px;color:#8a837b;font-weight:700;margin-top:4px}
   .evlung{display:flex;align-items:center;gap:12px;width:100%;border:2px dashed #cfc8bf;background:#fff;border-radius:16px;padding:16px;text-align:left}
@@ -688,7 +692,7 @@
 <body data-mode=""><div id="testRibbon" style="position:fixed;left:0;right:0;bottom:0;z-index:99999;background:#d32f2f;color:#fff;text-align:center;font:700 13px sans-serif;padding:4px;pointer-events:none">테스트판 · 손님 상담에는 정식판을 쓰세요</div>
 <div class="app">
   <div class="top">
-    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">테스트 v10.07-1200</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
+    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">테스트 v10.07-1300</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
     <nav class="tabs" id="tabs" style="display:none"></nav>
     <div class="flow" id="flow"><span data-st="1">① 찾는 것</span><i>›</i><span data-st="2">② 고르기</span><i>›</i><span data-st="3">③ 담은 상품</span><i>›</i><span data-st="4">④ 직원 확인</span></div>
   </div>
@@ -875,7 +879,7 @@ const vlPrice = (n) => best(n, [[12, 85200], [10, 85000], [6, 49600], [5, 49500]
 const prPrice = (n) => best(n, [[11, 90000], [5, 49500]], 15000);
 const pmPrice = (n) => best(n, [[10, 160000], [3, 50000]], 20000);
 // 빌런·릭 v병 중 k병은 전용가로, 나머지는 다른 프리미엄 p병과 섞어 프리미엄 묶음가로 — 가장 싼 나누기
-const liqPrice = (v, p, m) => { let b = Infinity; for (let k = 0; k <= v; k++) b = Math.min(b, vlPrice(k) + prPrice(v - k + p)); return b + pmPrice(m); };
+const liqPrice = (v, p, m) => prPrice(v + p) + pmPrice(m); // 10/7: 빌런·릭 전용 묶음가(vlPrice) 안 씀 — 프리미엄 묶음가와 같이 계산
 function estimate(c) { // c = { dev, v, p, m }
   let lq = liqPrice(c.v, c.p, c.m), b = c.dev * DEVICE.price + lq, how = "";
   if (c.dev && c.v >= 5) { const l2 = liqPrice(c.v - 5, c.p, c.m), t = (c.dev - 1) * DEVICE.price + PK.vl5 + l2; if (t < b) { b = t; lq = l2; how = "베이프렌드 기기패키지"; } }
@@ -1419,33 +1423,60 @@ function staffRes() {
   return r.length ? r.map((x) => `<div class="sq-row ${isOut(x) && !x.c ? "sold" : ""}"><div><b>${esc(x.c ? x.n : short(x.n))}</b><span>${x.c ? won(x.price) : esc(x.br)}${isOut(x) && !x.c ? " · 품절" : ""}${cart.get(x.id) ? ` · 담음 ${cart.get(x.id)}` : ""}</span></div><button data-sa="${x.id}">+</button></div>`).join("") : '<div class="sq-hint">찾는 상품이 없어요</div>';
 }
 function staffRedraw() { const st = $("#sheet").scrollTop; staffView(); $("#sheet").scrollTop = st; }
+// 결제 계획: 장바구니 계산(estimate·goodsCalc)과 똑같이 나눠서 포스 묶음 상품을 고름
+const POS_BUNDLE = {
+  pr10: ["입호흡 기기 패키지 75,000원 (10병)", "입호흡 패키지 75,000원 (10병)"], pr5: ["입호흡 패키지 40,000원 (5병)"], vl5: ["빌런,릭 패키지 30,000원 (5병)"],
+  p11: ["프리미엄 90,000원(11병)"], p5: ["프리미엄 49,500원(5병)"], m10: ["프라임 160,000원(10병)"], m3: ["프라임 50,000원(3병)"], l3: ["폐 프리미엄 40,000원(3병)"],
+};
+const posBundle = (k) => POS_BUNDLE[k].find((n) => posOf(n)) || POS_BUNDLE[k][0];
+function setsOf(n, deals, unit) { // 가장 싼 묶음 조합: [[병 수, 가격, 세트 수]]
+  const f = [{ c: 0, s: [] }];
+  for (let k = 1; k <= n; k++) { let b = { c: f[k - 1].c + unit, s: f[k - 1].s }; for (const [q, p] of deals) if (k >= q && f[k - q].c + p < b.c) b = { c: f[k - q].c + p, s: [...f[k - q].s, q] }; f[k] = b; }
+  return deals.map(([q, p, key]) => [q, p, key, f[n].s.filter((x) => x === q).length]).filter((x) => x[3]);
+}
+function payPlan() {
+  const c = countCart(), e = estimate(c), gc = goodsCalc(), out = [];
+  const pk = /10병/.test(e.how) ? ["pr10", 10, PK.pr10 - DEVICE.price] : e.how === "프리미엄 기기패키지" ? ["pr5", 5, PK.pr5 - DEVICE.price] : e.how === "베이프렌드 기기패키지" ? ["vl5", 5, PK.vl5 - DEVICE.price] : null;
+  const card = (key, k, sub) => { const nm = posBundle(key), p = posOf(nm);
+    return `<div class="scan bundle"><div class="hd"><b>${esc(nm)}</b><span class="x">× ${k}</span></div><div class="s">${sub}</div>${p ? `<svg class="bc" data-v="${esc(p[1])}" data-f="${p[2]}"></svg>${p[3] ? "" : '<span class="warn">바코드 미등록 · 포스 인식 확인 필요</span>'}` : `<span class="warn">${esc(PAD.branch)} 포스에 이 묶음 상품이 없어요 · 포스에서 같은 금액 상품을 직접 골라 주세요</span>`}</div>`; };
+  if (pk) out.push(card(pk[0], 1, `기기패키지 액상 ${pk[1]}병 값 ${won(pk[2])}`));
+  const prN = c.v + c.p - (pk ? pk[1] : 0), prSets = setsOf(prN, [[11, 90000, "p11"], [5, 49500, "p5"]], 15000), pmSets = setsOf(c.m, [[10, 160000, "m10"], [3, 50000, "m3"]], 20000);
+  for (const [q, p, key, k] of [...prSets, ...pmSets]) out.push(card(key, k, `${q}병 ${won(p)}`));
+  const lk = Math.floor(gc.lungN / 3); if (lk) out.push(card("l3", lk, `폐호흡 3병 ${won(ADD.lung3)}`));
+  for (const [k, nf] of Object.entries(gc.freeBy).filter(([k, nf]) => nf && DSP_POS[k])) { const [buy, free] = EVN[evB(k)], sets = nf / free, nm = DSP_POS[k], p = posOf(nm);
+    out.push(`<div class="scan bundle"><div class="hd"><b>${esc(nm)}</b><span class="x">× ${sets}</span></div><div class="s">일회용 ${buy}+${free} 묶음</div>${p ? `<svg class="bc" data-v="${esc(p[1])}" data-f="${p[2]}"></svg>` : '<span class="warn">포스 상품을 못 찾았어요</span>'}</div>`); }
+  const prSvc = (pk ? pk[1] : 0) + prSets.reduce((a, [q, , , k]) => a + q * k, 0), pmSvc = pmSets.reduce((a, [q, , , k]) => a + q * k, 0), lSvc = lk * 3;
+  const liqN = c.v + c.p, notes = [];
+  if (liqN) notes.push(prSvc >= liqN ? `입호흡 액상 ${liqN}병 전부 서비스(0원)` : prSvc ? `입호흡 액상 ${liqN}병 중 ${prSvc}병 서비스(0원), ${liqN - prSvc}병은 1병 15,000원` : "");
+  if (c.m) notes.push(pmSvc >= c.m ? `프라임 ${c.m}병 전부 서비스(0원)` : pmSvc ? `프라임 ${c.m}병 중 ${pmSvc}병 서비스(0원)` : "");
+  if (gc.lungN) notes.push(lSvc >= gc.lungN ? `폐호흡 ${gc.lungN}병 전부 서비스(0원)` : lSvc ? `폐호흡 ${gc.lungN}병 중 ${lSvc}병 서비스(0원), ${gc.lungN - lSvc}병 정상가` : "");
+  return { html: out.join(""), prAll: liqN && prSvc >= liqN, pmAll: c.m && pmSvc >= c.m, lungAll: gc.lungN && lSvc >= gc.lungN, note: notes.filter(Boolean).join(" · ") };
+}
 function staffView() {
   const items = [...cart];
   const vl = items.filter(([id]) => isVL(item(id))).reduce((a, [, n]) => a + n, 0);
   const dev = cart.get(DEVICE.id) || 0;
-  const bundle = bundleOf(dev, vl);
-  const blocks = items.map(([id, n]) => {
+  const plan = payPlan();
+  const step = (n, t, sub) => `<div class="stp"><i>${n}</i><div><b>${t}</b>${sub ? `<span>${sub}</span>` : ""}</div></div>`;
+  const devIds = items.filter(([id]) => item(id).dev || item(id).c === "dev");
+  const blockOf = ([id, n]) => {
     const x = item(id);
     if (x.dev) return devColor ? scanBlock(`${MAIN.name} · ${devColor}`, "기기", `${MAIN.model} ${devColor}`, n, "", id)
       : `<div class="scan"><div class="hd"><b>${MAIN.name}</b><span class="x">× ${n}</span></div><div class="s">색상을 골라야 바코드가 나와요</div><div class="colors" style="padding:10px 0 0">${DEV_COLORS.map((c) => `<button data-color2="${c}">${c}</button>`).join("")}</div></div>`;
+    const svc = " · <b style='color:var(--red)'>서비스(0원)</b>";
+    if (x.c === "lung") return scanBlock(x.n, "폐호흡", x.n, n, plan.lungAll ? svc : "", id);
     if (x.c) return scanBlock(x.n, won(x.price) + (x.ev ? " · " + EVN[x.ev][2] + " 이벤트" : ""), x.n, n, "", id);
-    return scanBlock(short(x.n), [x.br, x.loc ? "진열 " + x.loc : ""].filter(Boolean).join(" · "), x.n, n, bundle && isVL(x) ? " · <b style='color:var(--red)'>서비스(0원) 처리</b>" : "", id);
-  }).join("");
+    return scanBlock(short(x.n), [x.br, x.loc ? "진열 " + x.loc : ""].filter(Boolean).join(" · "), x.n, n, (x.line === "프라임" ? plan.pmAll : plan.prAll) ? svc : "", id);
+  };
+  const devBlocks = devIds.map(blockOf).join("");
+  const restBlocks = items.filter(([id]) => !devIds.some(([d]) => d === id)).map(blockOf).join("");
+  const blocks = devBlocks + restBlocks;
   open(`<div class="sh">직원 확인용 · 포스 스캔</div><div style="color:var(--ink-soft);margin-top:6px;font-size:14.5px">위에서부터 차례로 찍고, 찍은 건 눌러서 체크하세요. (${esc(PAD.branch)} 포스 상품 기준)</div><div class="posw">⚠️ 찍기 전에 포스가 <b>판매 화면</b>인지 확인하세요 · 회원조회·회원등록·영수증 창이 열려 있으면 포스가 멈춰요</div>
   ${incBox()}
-  ${bundle ? `<div class="scan bundle"><div class="hd"><b>① 묶음 상품 먼저: ${esc(bundle)}</b><span class="x">× 1</span></div><div class="s">이걸로 돈을 받고, 아래 빌런·릭은 낱개로 찍어 서비스(0원) 처리</div>${(() => { const p = posOf(bundle); return p ? `<svg class="bc" data-v="${p[1]}" data-f="${p[2]}"></svg>${p[3] ? "" : '<span class="warn">바코드 미등록 · 상품코드(' + p[0] + ')로 만든 바코드라 포스 인식 확인 필요</span>'}` : '<span class="warn">포스 상품을 못 찾았어요</span>'; })()}</div>`
-    : vl >= 5 ? `<div class="scan bundle"><div class="s" style="color:var(--ink)">빌런·릭 ${vl}병 묶음가는 포스에서 묶음 상품을 직접 골라 주세요</div></div>` : ""}
-  ${(() => { // 일회용 이벤트 묶음 상품 (포스에 있는 것): 묶음으로 돈 받고 낱개는 서비스(0원)
-    const gc = goodsCalc();
-    return Object.entries(gc.freeBy).filter(([k, nf]) => nf && DSP_POS[k]).map(([k, nf]) => {
-      const [buy, free] = EVN[evB(k)], sets = nf / free, inSet = sets * (buy + free), rest = gc.cnt[k] - inSet, nm = DSP_POS[k], p = posOf(nm);
-      const who = k.includes("|") ? dInfo(k.split("|")[1]).name : "에어릭스 팟";
-      return `<div class="scan bundle"><div class="hd"><b>일회용 묶음 먼저: ${esc(nm)}</b><span class="x">× ${sets}</span></div><div class="s">이걸로 돈을 받고, 아래 ${esc(who)} 중 <b style="color:var(--red)">${inSet}개는 서비스(0원)</b>${rest ? `, 나머지 ${rest}개는 정상가` : ""}로 찍어 주세요</div>${p ? `<svg class="bc" data-v="${esc(p[1])}" data-f="${p[2]}"></svg>${p[3] ? "" : '<span class="warn">바코드 미등록 · 상품코드(' + esc(p[0]) + ')로 만든 바코드라 포스 인식 확인 필요</span>'}` : '<span class="warn">포스 상품을 못 찾았어요 · 포스에서 직접 검색해 주세요</span>'}</div>`;
-    }).join("");
-  })()}
-  ${(() => { const gc = goodsCalc(), k = Math.floor(gc.lungN / 3); if (!k) return ""; const nm = "폐 프리미엄 40,000원(3병)", p = posOf(nm);
-    return `<div class="scan bundle"><div class="hd"><b>폐호흡 묶음 먼저: ${esc(nm)}</b><span class="x">× ${k}</span></div><div class="s">이걸로 돈을 받고, 아래 폐호흡 액상 중 <b style="color:var(--red)">${k * 3}병은 서비스(0원)</b>${gc.lungN % 3 ? `, 나머지 ${gc.lungN % 3}병은 정상가` : ""}로 찍어 주세요</div>${p ? `<svg class="bc" data-v="${p[1]}" data-f="${p[2]}"></svg>` : '<span class="warn">포스 묶음 상품을 못 찾았어요 · 포스에서 직접 골라 주세요</span>'}</div>`; })()}
-  <div style="margin-top:6px">${blocks || '<div style="padding:20px 0;color:var(--grey)">담은 상품이 없어요</div>'}</div>
+  ${devBlocks ? step(1, "기기 먼저 찍기", "") + devBlocks : ""}
+  ${plan.html || (() => { const gc = goodsCalc(); return Object.entries(gc.freeBy).some(([k, nf]) => nf && DSP_POS[k]) ? "x" : ""; })() ? step(devBlocks ? 2 : 1, "묶음 상품으로 돈 받기", "이 바코드로 결제 금액이 잡혀요") + plan.html : ""}
+  ${restBlocks ? step(devBlocks || plan.html ? (devBlocks && plan.html ? 3 : 2) : 1, "낱개로 찍기", plan.note) : ""}
+  <div style="margin-top:6px">${restBlocks || (devBlocks ? "" : '<div style="padding:20px 0;color:var(--grey)">담은 상품이 없어요</div>')}</div>
   ${staffAdd ? `<div class="sadd"><div class="sadd-h"><b>상품 추가</b><button data-sadd="0">닫기</button></div><input class="in" id="sq" placeholder="이름·초성으로 찾기 (액상·팟·코일·일회용·기기)" value="${esc(staffQ)}"><div id="sqRes">${staffRes()}</div></div>` : `<button class="sadd-open" data-sadd="1">＋ 상품 추가 (액상 · 팟 · 코일 · 소모품)</button>`}
   ${(() => { const gc = goodsCalc(), fr = Object.entries(gc.freeBy).filter(([k, n]) => n && !DSP_POS[k]); const base = estimate(countCart()).liq + gc.pod + gc.lung; return (fr.length ? `<div class="scan bundle"><div class="s" style="color:var(--ink)">일회용 이벤트 무료: ${fr.map(([k, n]) => evLabel(k) + " " + n + "개").join(", ")} → 포스에서 가장 싼 것부터 서비스(0원) 처리</div></div>` : "") + (gc.giftDev ? `<div class="scan bundle"><div class="s" style="color:var(--ink)">🎁 에어릭스 팟 10개 혜택 → 에어릭스 기기 ${gc.giftDev}대 증정 (서비스 0원 처리)</div></div>` : "") + (base >= 100000 ? `<div class="scan bundle"><div class="s" style="color:var(--ink)">🎁 액상·팟 ${won(base)} → 일회용 기기 1개 증정</div></div>` : ""); })()}
   ${engrave !== null ? `<div class="scan"><div class="hd"><b>레이저 각인 (0원)</b><span class="x">× 1</span></div><div class="s">문구: ${engrave ? esc(engrave) : "손님께 확인"}</div><span class="warn">포스에 0원 각인 상품 등록 후 바코드 연결</span></div>` : ""}
