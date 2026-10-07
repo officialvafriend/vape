@@ -611,6 +611,7 @@
   .pways{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:10px var(--pad) 12px;background:#0f0d0b}
   .pways button{min-height:50px;border:0;border-radius:14px;background:rgba(255,255,255,.1);color:#fff;font-family:var(--num);font-weight:800;font-size:16px}
   .pways button:active{transform:scale(.97)}
+  .extag{position:absolute;top:14px;left:14px;z-index:3;background:rgba(0,0,0,.55);color:#fff;font-size:12px;padding:4px 10px;border-radius:99px}
   /* 예시 포스터 (실제 포스터 이미지 오면 img로 교체) */
   .px{position:absolute;inset:0;padding:8% 8% 0;display:flex;flex-direction:column;background:#f5f2ed;color:#15120f}
   .px .tagx{position:absolute;top:14px;right:14px;background:rgba(0,0,0,.55);color:#fff;font-size:12px;padding:4px 10px;border-radius:99px;z-index:3}
@@ -628,7 +629,7 @@
 <body data-mode=""><div id="testRibbon" style="position:fixed;left:0;right:0;bottom:0;z-index:99999;background:#d32f2f;color:#fff;text-align:center;font:700 13px sans-serif;padding:4px;pointer-events:none">테스트판 · 손님 상담에는 정식판을 쓰세요</div>
 <div class="app">
   <div class="top">
-    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">테스트 v10.07-0400</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
+    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">테스트 v10.07-0500</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
     <nav class="tabs" id="tabs" style="display:none"></nav>
     <div class="flow" id="flow"><span data-st="1">① 찾는 것</span><i>›</i><span data-st="2">② 고르기</span><i>›</i><span data-st="3">③ 담은 상품</span><i>›</i><span data-st="4">④ 직원 확인</span></div>
   </div>
@@ -1595,7 +1596,7 @@ let pCur = 0, pTimer = null, pMoved = false;
 const P_AUTO = 5000; // 자동으로 넘어가는 간격(ms), 손대면 다시 셈
 function renderPosters() {
   const pv = $("#pv"), n = POSTERS.length;
-  pv.innerHTML = POSTERS.map((p, i) => `<div class="ps" data-ps="${i}">${p.img ? `<div class="bg" style="background-image:url('${p.img}')"></div>` : ""}<button class="pp" data-go="${p.go}" data-pi="${i}">${p.img ? `<img class="full" src="${p.img}" alt="" draggable="false">` : p.ex + '<span class="px"><span class="tagx">예시</span></span>'}</button></div>`).join("")
+  pv.innerHTML = POSTERS.map((p, i) => `<div class="ps" data-ps="${i}">${p.img ? `<div class="bg" style="background-image:url('${p.img}')"></div>` : ""}<button class="pp" data-go="${p.go}" data-pi="${i}">${p.img ? `<img class="full" src="${p.img}" alt="" draggable="false">` : p.ex + '<span class="extag">예시</span>'}</button></div>`).join("")
     + `<div class="pdots">${POSTERS.map(() => "<i></i>").join("")}</div><div class="pcount"></div>`;
   const W = () => pv.clientWidth;
   const place = (dx = 0) => {
