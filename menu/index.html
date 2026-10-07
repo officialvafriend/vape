@@ -594,25 +594,49 @@
   .askrow .sq button{width:46px;height:46px;font-size:22px;font-weight:900}
   .askrow .sq b{min-width:30px;text-align:center;font-family:var(--num);font-size:18px}
   .askrow .b1{flex:1;min-width:200px}
+
+  /* ── 포스터 첫 화면 (10/7): 전면 포스터, 손으로 밀어 넘김, 누르면 해당 구역 ── */
+  .home.pst{padding:0;min-height:calc(100dvh - var(--topH, 82px));height:calc(100dvh - var(--topH, 82px));display:flex;flex-direction:column;overflow:hidden;background:#0f0d0b}
+  /* 토스식 배너: 한 장씩 꽉 차게, 손가락 따라 움직이고 놓으면 부드럽게 붙음, 옆 장은 살짝 작고 어둡게 */
+  .pv{position:relative;flex:1;min-height:0;overflow:hidden;touch-action:pan-y;user-select:none;-webkit-user-select:none}
+  .ps{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;will-change:transform;transition:transform .55s cubic-bezier(.22,1,.36,1),opacity .55s cubic-bezier(.22,1,.36,1),filter .55s}
+  .pv.drag .ps{transition:none}
+  .ps .bg{position:absolute;inset:-40px;background-size:cover;background-position:center;filter:blur(36px) brightness(.45);transform:scale(1.1)}
+  .pp{position:relative;height:100%;max-width:100%;aspect-ratio:4/5;border:0;padding:0;overflow:hidden;background:#111;text-align:left;display:block;-webkit-tap-highlight-color:transparent}
+  .pp>img.full{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none;-webkit-user-drag:none}
+  .pdots{position:absolute;left:0;right:0;bottom:18px;display:flex;justify-content:center;gap:7px;z-index:20;pointer-events:none}
+  .pdots i{width:7px;height:7px;border-radius:99px;background:rgba(255,255,255,.4);transition:width .4s cubic-bezier(.22,1,.36,1),background .4s}
+  .pdots i.on{width:22px;background:#fff}
+  .pcount{position:absolute;right:16px;top:14px;z-index:5;background:rgba(0,0,0,.45);color:#fff;font-size:13px;font-weight:700;padding:5px 11px;border-radius:99px;font-family:var(--num);pointer-events:none;z-index:20}
+  .pways{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:10px var(--pad) 12px;background:#0f0d0b}
+  .pways button{min-height:50px;border:0;border-radius:14px;background:rgba(255,255,255,.1);color:#fff;font-family:var(--num);font-weight:800;font-size:16px}
+  .pways button:active{transform:scale(.97)}
+  .extag{position:absolute;top:14px;left:14px;z-index:3;background:rgba(0,0,0,.55);color:#fff;font-size:12px;padding:4px 10px;border-radius:99px}
+  /* 예시 포스터 (실제 포스터 이미지 오면 img로 교체) */
+  .px{position:absolute;inset:0;padding:8% 8% 0;display:flex;flex-direction:column;background:#f5f2ed;color:#15120f}
+  .px .tagx{position:absolute;top:14px;right:14px;background:rgba(0,0,0,.55);color:#fff;font-size:12px;padding:4px 10px;border-radius:99px;z-index:3}
+  .px .k{font-family:var(--num);font-weight:800;letter-spacing:.2em;font-size:13px;color:var(--red)}
+  .px h3{font-family:var(--num);font-weight:900;font-size:clamp(30px,7.5vw,54px);line-height:1.12;margin-top:10px;letter-spacing:-.02em;position:relative;z-index:2}
+  .px .sub{font-size:clamp(14px,2.6vw,19px);margin-top:12px;line-height:1.5;opacity:.8;position:relative;z-index:2}
+  .px .pr{font-family:var(--num);font-weight:900;font-size:clamp(26px,6vw,44px);margin-top:16px;color:var(--red);position:relative;z-index:2}
+  .px .pr s{font-size:.5em;color:#999;font-weight:700;margin-right:8px}
+  .px img{position:absolute;right:-4%;bottom:0;width:72%;height:58%;object-fit:contain;object-position:right bottom}
+  .px .go{position:absolute;left:8%;bottom:7%;background:var(--red);color:#fff;border-radius:99px;padding:12px 20px;font-weight:900;font-size:16px;z-index:2}
+  .px.dark{background:#15120f;color:#fff}.px.dark .k{color:#ff6b6b}.px.dark .pr{color:#fff}
+  .px.red{background:var(--red);color:#fff}.px.red .k{color:#ffd9d9}.px.red .pr{color:#fff}.px.red .go{background:#fff;color:var(--red)}
 </style>
 </head>
 <body data-mode="">
 <div class="app">
   <div class="top">
-    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">v10.06-0300</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
+    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">v10.07-0500</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
     <nav class="tabs" id="tabs" style="display:none"></nav>
     <div class="flow" id="flow"><span data-st="1">① 찾는 것</span><i>›</i><span data-st="2">② 고르기</span><i>›</i><span data-st="3">③ 담은 상품</span><i>›</i><span data-st="4">④ 직원 확인</span></div>
   </div>
 
-  <section class="home" data-for="home">
-    <div class="hello">VAFRIEND</div>
-    <h1>오늘은 어떤 걸<br>보러 오셨어요?</h1>
-    <div class="ways">
-      <button class="way w-dev" data-mode="dev"><div class="wt"><span class="k">Device</span><b>전자담배 기기</b><span>하복2 기기패키지 · 레이저 각인 무료</span><i>보러 가기 →</i></div><img src="dev_havok2_hero.png" alt=""></button>
-      <button class="way w-liq" data-mode="liq"><div class="wt"><span class="k">Liquid</span><b>액상 · 소모품</b><span>11병 90,000원 · 팟 · 코일</span><i>→</i></div><img src="vl_p094.png" alt=""></button>
-      <button class="way w-dsp" data-mode="dsp"><div class="wt"><span class="k">Disposable</span><b>일회용</b><span>3+1 · 5+1 이벤트</span><i>→</i></div><img src="dsp_farm_all.png" alt=""></button>
-    </div>
-    <div class="tip">찾는 상품이 있으면 위의 <b>검색</b>이 가장 빨라요 · 초성 검색 가능</div>
+  <section class="home pst" data-for="home">
+    <div class="pv" id="pv"></div>
+    <div class="pways"><button data-go="dev">전자담배 기기</button><button data-go="liq">액상 · 소모품</button><button data-go="dsp">일회용</button></div>
   </section>
 
   <section class="redblock" id="s1" data-for="dev">
@@ -1560,5 +1584,58 @@ if ("serviceWorker" in navigator && location.protocol === "https:") {
   bar.addEventListener("click", () => devUp(cartView) || cartView());
   setInterval(update, 400); update();
 })();
+
+// ── 포스터 첫 화면 (10/7) ──
+// 실제 포스터 받으면: { img: "pst_파일이름.jpg", go: "liq:s3" } 한 줄씩 (4:5, 1080×1350). go = 구역(dev/liq/dsp) 또는 구역:칸id, "spec" = 하복2 상세
+const POSTERS = [
+  { go: "dev:s1", img: "pst_havok2_gpt.jpg" }, // 10/7 GPT 초안 (베이프렌드 포스터 폴더, 내가 만든 판 = pst_havok2.png)
+  { go: "liq:s3", ex: `<div class="px red"><span class="k">BULK EVENT</span><h3>대량구매 이벤트<br>프리미엄 액상<br>11병 90,000원</h3><div class="sub">1병 15,000원 → 병당 약 8,180원<br>빌런 · 릭 섞어도 돼요</div><img src="vl_p094.png" alt=""><span class="go">맛 고르러 가기 →</span></div>` },
+  { go: "dsp:dE1", ex: `<div class="px"><span class="k">DISPOSABLE</span><h3>일회용<br>3+1 이벤트</h3><div class="sub">팜팜바 · 모스바<br>3개 사면 1개 더</div><img src="dsp_farm_all.png" alt=""><span class="go">맛 고르러 가기 →</span></div>` },
+];
+let pCur = 0, pTimer = null, pMoved = false;
+const P_AUTO = 5000; // 자동으로 넘어가는 간격(ms), 손대면 다시 셈
+function renderPosters() {
+  const pv = $("#pv"), n = POSTERS.length;
+  pv.innerHTML = POSTERS.map((p, i) => `<div class="ps" data-ps="${i}">${p.img ? `<div class="bg" style="background-image:url('${p.img}')"></div>` : ""}<button class="pp" data-go="${p.go}" data-pi="${i}">${p.img ? `<img class="full" src="${p.img}" alt="" draggable="false">` : p.ex + '<span class="extag">예시</span>'}</button></div>`).join("")
+    + `<div class="pdots">${POSTERS.map(() => "<i></i>").join("")}</div><div class="pcount"></div>`;
+  const W = () => pv.clientWidth;
+  const place = (dx = 0) => {
+    pv.querySelectorAll(".ps").forEach((el, i) => {
+      let o = i - pCur; if (n > 2) { if (o > n / 2) o -= n; if (o < -n / 2) o += n; } // 끝에서 처음으로 이어짐
+      const x = o + dx / W(), a = Math.min(Math.abs(x), 1);
+      el.style.transform = `translateX(${x * 100}%) scale(${1 - a * 0.08})`;
+      el.style.opacity = 1 - a * 0.5; el.style.zIndex = 10 - Math.round(Math.abs(x) * 2);
+      el.style.visibility = Math.abs(o) > 1 ? "hidden" : "";
+    });
+    pv.querySelectorAll(".pdots i").forEach((d, j) => d.classList.toggle("on", j === pCur));
+    pv.querySelector(".pcount").textContent = `${pCur + 1} / ${n}`;
+  };
+  const go = (k) => { pCur = (k + n) % n; place(); auto(); };
+  const auto = () => { clearTimeout(pTimer); if (n > 1) pTimer = setTimeout(() => { if (document.body.dataset.mode === "") go(pCur + 1); else auto(); }, P_AUTO); };
+  let x0 = null, y0 = 0, dx = 0, t0 = 0, horiz = null;
+  pv.addEventListener("pointerdown", (e) => { x0 = e.clientX; y0 = e.clientY; dx = 0; t0 = Date.now(); horiz = null; pMoved = false; clearTimeout(pTimer); });
+  pv.addEventListener("pointermove", (e) => {
+    if (x0 === null) return; dx = e.clientX - x0; const dy = e.clientY - y0;
+    if (horiz === null && (Math.abs(dx) > 6 || Math.abs(dy) > 6)) { horiz = Math.abs(dx) > Math.abs(dy); if (horiz) { pv.classList.add("drag"); pv.setPointerCapture(e.pointerId); } }
+    if (horiz) { pMoved = true; place(n > 1 ? dx : dx * 0.25); }
+  });
+  const end = () => {
+    if (x0 === null) return; pv.classList.remove("drag");
+    const v = Math.abs(dx) / Math.max(1, Date.now() - t0); // 빠르게 튕기면 짧게 밀어도 넘어감
+    if (horiz && n > 1 && (Math.abs(dx) > W() * 0.22 || (v > 0.45 && Math.abs(dx) > 20))) go(pCur + (dx < 0 ? 1 : -1)); else { place(); auto(); }
+    x0 = null; horiz = null;
+  };
+  pv.addEventListener("pointerup", end); pv.addEventListener("pointercancel", end);
+  addEventListener("resize", () => place());
+  place(); auto();
+}
+renderPosters();
+function goTo(go) {
+  if (go === "spec") return mainSpecView();
+  const [m, id] = go.split(":");
+  setMode(m);
+  if (id) setTimeout(() => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" }), 60);
+}
+document.addEventListener("click", (e) => { const el = e.target.closest("[data-go]"); if (!el) return; if (el.dataset.pi && pMoved) { pMoved = false; return; } if (el.dataset.pi) ev("p", el.dataset.pi, el.dataset.go); goTo(el.dataset.go); });
 </script></body>
 </html>
