@@ -694,7 +694,7 @@
 <body data-mode="">
 <div class="app">
   <div class="top">
-    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">v10.08-0500</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
+    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">v10.08-0900</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
     <nav class="tabs" id="tabs" style="display:none"></nav>
     <div class="flow" id="flow"><span data-st="1">① 찾는 것</span><i>›</i><span data-st="2">② 고르기</span><i>›</i><span data-st="3">③ 담은 상품</span><i>›</i><span data-st="4">④ 직원 확인</span></div>
   </div>
@@ -1689,7 +1689,7 @@ if ("serviceWorker" in navigator && location.protocol === "https:") {
 // ── 포스터 첫 화면 (10/7) ──
 // 실제 포스터 받으면: { img: "pst_파일이름.jpg", go: "liq:s3" } 한 줄씩 (4:5, 1080×1350). go = 구역(dev/liq/dsp) 또는 구역:칸id, "spec" = 하복2 상세
 const POSTERS = [
-  { go: "dev:s1", ev: "havok10", img: "pst_havok2_gpt.jpg" }, // 10/7 GPT 초안 (베이프렌드 포스터 폴더, 내가 만든 판 = pst_havok2.png)
+  { go: "dev:s1", ev: "havok10", img: "pst_havok2_v7.jpg" }, // 10/8 손에 든 역광 실버 (디자인작업/261008_하복2거대설치물/gpt_v7), 이전 = pst_havok2_gpt.jpg
   { go: "liq:sRec", img: "pst_bulk3050.jpg", info: "bulk3050" }, // 10/8 대량특가 30병/50병 (디자인작업/261008_대량특가), 11병 예시 대체. 누르면 안내창(INFO) → 맛 고르러 가기
   { go: "dsp", img: "pst_dsp105.jpg", info: "dsp105" }, // 10/8 일회용 대량 10+5 (디자인작업/261008_일회용10+5), 3+1 예시 대체
 ];
@@ -1699,15 +1699,12 @@ const INFO = {
   dsp105: () => `<div style="padding:8px 4px 4px"><div style="font-size:13px;font-weight:800;letter-spacing:.2em;color:#e8262c">VAFRIEND 일회용 대량</div>
     <h2 style="font-size:30px;margin:6px 0 4px;letter-spacing:-.02em">10개 사면 5개 더!</h2>
     <div style="font-size:15px;color:#6f6861;margin-bottom:16px">팜팜바 또는 모스바 원하는 맛으로 15개</div>
-    <div style="display:flex;align-items:center;gap:16px;padding:20px 20px;border-radius:20px;background:#fff0f6;box-shadow:inset 0 0 0 2px #ff3d9a">
-      <div style="flex:none;width:118px;height:118px;border-radius:50%;background:#e8262c;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1"><span style="font-size:14px;font-weight:800">약</span><b style="font-size:44px;letter-spacing:-.03em">33%</b><span style="font-size:16px;font-weight:800">할인</span></div>
-      <div><div style="font-size:15px;color:#6f6861">15개 한 번에</div><b style="font-size:36px;letter-spacing:-.02em;color:#e8262c">250,000원</b><div style="font-size:20px;font-weight:800;margin-top:4px">개당 약 16,700원</div></div>
+    <div style="padding:18px 20px 16px;border-radius:20px;background:#fff0f6;box-shadow:inset 0 0 0 2px #ff3d9a">
+      <div style="display:flex;align-items:baseline;gap:6px;color:#e8262c;line-height:1"><span style="font-size:18px;font-weight:800;color:#6f6861">최대</span><b class="price" style="font-size:64px;letter-spacing:-.01em">33<span style="font-size:40px">%</span></b><span style="font-size:24px;font-weight:900">할인</span></div>
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-top:12px;padding-top:12px;border-top:1px dashed #f3a6c8"><span style="font-size:16px;color:#6f6861">15개 한 번에 <b class="price" style="font-size:26px;color:#15120f">250,000<span style="font-size:16px">원</span></b></span><b style="font-size:20px">개당 약 16,700원</b></div>
     </div>
-    <div style="display:grid;gap:8px;margin:14px 0">
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-radius:14px;background:#f4f2ef;font-size:15px"><span><b>팜팜바</b> 낱개 24,900원 × 15개 = <s>373,500원</s></span><b style="color:#e8262c">123,500원 아껴요</b></div>
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-radius:14px;background:#f4f2ef;font-size:15px"><span><b>모스바</b> 낱개 25,000원 × 15개 = <s>375,000원</s></span><b style="color:#e8262c">125,000원 아껴요</b></div>
-    </div>
-    <div style="margin:0 0 18px;padding:14px 16px;border-radius:14px;background:#15120f;color:#fff;font-size:18px;font-weight:800;text-align:center">3개 중 1개가 공짜인 셈이에요</div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin:12px 0 10px;padding:14px 16px;border-radius:14px;background:#f4f2ef;font-size:16px"><span>낱개로 15개 사면 약 <s>375,000원</s></span><b style="color:#e8262c">12만 원 넘게 아껴요</b></div>
+    <div style="margin:2px 0 16px;font-size:15px;color:#6f6861;text-align:center">10개 값에 15개, <b style="color:#15120f">2개 값에 3개</b> 가져가는 셈이에요</div>
     <button data-go="dsp" style="width:100%;border:0;border-radius:16px;background:#e8262c;color:#fff;font-size:18px;font-weight:800;padding:16px">일회용 맛 고르러 가기 →</button></div>`,
   bulk3050: () => `<div style="padding:8px 4px 4px"><div style="font-size:13px;font-weight:800;letter-spacing:.2em;color:#e8262c">VAFRIEND 대량 특가</div>
     <h2 style="font-size:30px;margin:6px 0 4px;letter-spacing:-.02em">많이 담을수록 더 싸게</h2>
