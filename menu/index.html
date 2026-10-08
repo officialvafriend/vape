@@ -687,12 +687,14 @@
   .evres span{font-size:13px;color:#6f6861}
   .evres i{margin-left:auto;font-style:normal;background:var(--red);color:#fff;border-radius:99px;padding:10px 16px;font-weight:900;font-size:15px;white-space:nowrap}
   @keyframes evresIn{from{transform:translateY(20px);opacity:0}}
+  .p .lno{position:absolute;top:10px;right:10px;z-index:1;min-width:26px;padding:3px 6px;border-radius:7px;background:#15120f;color:#fff;font-family:var(--num);font-weight:800;font-size:13px;text-align:center;line-height:1.2}
+  .lno.in{position:static;display:inline-block;padding:1px 7px;margin-right:4px;border-radius:6px;background:#15120f;color:#fff;font-size:12px}
 </style>
 </head>
 <body data-mode="">
 <div class="app">
   <div class="top">
-    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">v10.07-1300</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
+    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">v10.08-0100</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
     <nav class="tabs" id="tabs" style="display:none"></nav>
     <div class="flow" id="flow"><span data-st="1">① 찾는 것</span><i>›</i><span data-st="2">② 고르기</span><i>›</i><span data-st="3">③ 담은 상품</span><i>›</i><span data-st="4">④ 직원 확인</span></div>
   </div>
@@ -801,6 +803,8 @@ const IMG = "https://officialvafriend.github.io/vape/img/";
 // 안 파는 액상(단종·취급 안 함)은 목록에서 뺌 — 품절(일시적으로 0)과 다름. 사용자 10/5: 디오 딸기망고 없음
 const HIDE = new Set(["디오 딸기망고", "디오 콜라"]);
 const L = (window.LIQ || []).filter((x) => !HIDE.has(x.n));
+const LABELNO = {"VF 빌런 보석바":1,"VF 빌런 청사과":2,"VF 빌런 석류":3,"VF 빌런 레몬":4,"VF 빌런 청포도":5,"VF 빌런 레즈애플":6,"VF 빌런 파인애플":7,"VF 빌런 자두":8,"VF 빌런 바나나라무네":9,"베이퍼 시가812":10,"베이퍼 쿨멘솔":11,"VF 릭 청포도":12,"VF 릭 석류":13,"VF 릭 청사과":14,"VF 릭 파인애플":15,"VF 릭 소다":16,"VF 릭 자두":17,"VF 릭 적사과":18,"VF 릭 레몬":19,"VF 릭 바나나":20,"디오 레몬":21,"디오 샤인":22,"디오 블루마린":23,"디오 블랙티":24,"디오 알포":25,"디오 블루워터":26,"디오 로젤하트":27,"디오 멜론":28,"딸기 요거트":29,"피치 요거트":30,"환타지아":31,"크림타바코":32,"아쿠아":35,"스피아민트":36,"블루스위트":37,"백도우롱차":40,"땡모반":41,"말라이트":42,"카라망고":50,"콘치즈":51,"알로에포도":52,"스쿨사과":53,"고창수박":54,"메론바":55,"자두사탕":56,"에비앙":57,"알로에라임":59,"초코콕콕":61,"샤인머쓱캣":63,"얼음공주 자몽":64,"얼음공주 밀키소다":65,"느낌 무향":66,"(한) 와 블루레몬":67,"(한) 솔의눈":68,"(한) 레드포카리":69,"(한) 블루스카이":70,"(한) 뱅뱅":71,"(한) 아이스샷":72,"(한) 토바코샷":73,"제이코리아 블랙멘솔":74,"(한) 화이트 멘솔시가":77,"(한) 화이트 파인애플":78,"(한) 화이트 워터멜론":79,"(한) 화이트 화이트멜론":80,"(한) 화이트 블루레몬":81,"(한) 화이트 알로에베라":82,"(한) 화이트 크랜베리애플":83,"(한) 화이트 피치":84,"(한) 화이트 체리":85,"(한) 화이트 소다":86,"(한) 화이트 자몽":87,"(한) 화이트 라임":88,"(한) 마피아퀸":89,"(한) 사무라이퀸":90,"(한) 크루세이더퀸":91,"(한) 아마조네스퀸":92,"제로닉 석류":93,"제로닉 거봉":94,"제로닉 샤인머스캣":95,"제로닉 콜라":96,"제로닉 민트":97,"제로닉 노멘솔 포도":98,"제로닉 노멘솔 자몽":99,"제로닉 노멘솔알로에":100,"제로닉 노멘솔 체리":101,"제로닉 아이스스노우":103,"방그레 스피아민트":104,"크래프트 포도":105,"크래프트 자두":106,"(한) 크래스프라이트":107,"크래알포":108,"크래망고":109,"메가킥 마르키사":110,"메가킥 딸기":111,"메가킥 망고":113,"메가킥 피치":114,"메가킥 사과":115,"메가킥 샤인":116,"메가킥 소다":117,"메가킥 수박":118,"메가킥 자몽":119,"메가킥 포도":120,"메가킥 자두":121,"메가킥 파인애플":122,"스위든 멘솔마스터":125,"스위든 쿠반시가":126,"스위든 체어맨":127,"스위든 그린티":128,"스위든 아이스그린티":129,"스위든 선인장":130,"마샤 샤인":131,"마샤 블랙":132,"마샤 유자":133,"마샤 딸기":134,"마샤 더블샤인":135,"마르키사":136,"마르키사 라즈":137,"잽알베":138,"프라임 파워멘솔":139,"톡스 로젤하트":140,"슴오크쿠반":141,"파이 토트":142,"갱쥬스 알베":144,"컵콘":145,"더블슬블":146,"크오크":147,"용트림체리":148,"더블라임":149,"라임알로에":150,"모코 하와이":151,"모코 그레이프사워":152,"모코 더블망고":153,"모코 더블샤인":154,"설향 딸기":155,"설향 라임":156,"설향 자두":157}; // 액상 라벨 번호 (액상_라벨_전체목록.xlsx 10/8, 58번~ 초안) — 메뉴판 이름 기준
+L.forEach((x) => { if (LABELNO[x.n]) x.no = LABELNO[x.n]; });
 // 빌런 9종은 사장님이 준 정사각 이미지로 (10/5) — 메뉴판과 같이 올라가는 파일, 나머지는 공용 img/
 const OWN_IMG = { "VF 빌런 레몬": "vl_sq_lemon.jpg", "VF 빌런 레즈애플": "vl_sq_redsapple.jpg", "VF 빌런 바나나라무네": "vl_sq_banana.jpg", "VF 빌런 보석바": "vl_sq_bosukbar.jpg", "VF 빌런 석류": "vl_sq_pomegranate.jpg", "VF 빌런 자두": "vl_sq_plum.jpg", "VF 빌런 청사과": "vl_sq_greenapple.jpg", "VF 빌런 청포도": "vl_sq_greengrape.jpg", "VF 빌런 파인애플": "vl_sq_pineapple.jpg" };
 const isrc = (x) => OWN_IMG[x.n] || IMG + x.img;
@@ -1207,6 +1211,7 @@ const IDX = [...L.map((x) => { const nm = norm(x.n); const all = norm([x.n, x.br
   ...G.map((x) => { const nm = norm(x.n); const all = norm([x.n, { dev: "기기", pod: "팟 코일", dsp: "일회용" }[x.c], x.sub || ""].join(" ")); return { x, nm, all, cho: cho(nm) }; })];
 function searchItems(qs) {
   const q = norm(qs); if (!q) return [];
+  if (/^\d{1,3}$/.test(q)) return L.filter((x) => String(x.no) === q); // 숫자 = 라벨 번호
   const onlyCho = /^[ㄱ-ㅎ]+$/.test(q);
   const noNo = !q.includes("노멘솔") && q.includes("멘솔"); // "멘솔"로 찾을 때 노멘솔은 빼기
   return IDX.map((o0) => {
@@ -1231,7 +1236,7 @@ document.addEventListener("input", (e) => { if (e.target.id === "q") drawSearch(
 function card(x) {
   const bg = badgeOf(x), q = cart.get(x.id) || 0;
   const so = isOut(x) && !q;
-  return `<div class="p ${q ? "got" : ""} ${so ? "sold" : ""}" data-p="${x.id}" role="button">${so ? `<span class="rib so">품절</span>` : bg ? `<span class="rib ${bg === "HOT" ? "hot" : ""}">${bg}</span>` : ""}<img loading="lazy" src="${isrc(x)}" alt=""><div class="bd">${esc(x.br)}</div><b>${esc(short(x.n))}</b><div class="tg">${esc([x.f, ...x.t.filter((t) => t !== "일반")].join(" · "))}</div>${q ? `<div class="qs"><button data-qm="${x.id}" aria-label="빼기">−</button><span>${q}병</span><button data-qa="${x.id}" aria-label="담기">+</button></div>` : so ? `<div class="qa so">품절</div>` : `<button class="qa" data-qa="${x.id}" aria-label="담기">+ 담기</button>`}</div>`;
+  return `<div class="p ${q ? "got" : ""} ${so ? "sold" : ""}" data-p="${x.id}" role="button">${so ? `<span class="rib so">품절</span>` : bg ? `<span class="rib ${bg === "HOT" ? "hot" : ""}">${bg}</span>` : ""}${x.no ? `<span class="lno">${x.no}</span>` : ""}<img loading="lazy" src="${isrc(x)}" alt=""><div class="bd">${esc(x.br)}</div><b>${esc(short(x.n))}</b><div class="tg">${esc([x.f, ...x.t.filter((t) => t !== "일반")].join(" · "))}</div>${q ? `<div class="qs"><button data-qm="${x.id}" aria-label="빼기">−</button><span>${q}병</span><button data-qa="${x.id}" aria-label="담기">+</button></div>` : so ? `<div class="qa so">품절</div>` : `<button class="qa" data-qa="${x.id}" aria-label="담기">+ 담기</button>`}</div>`;
 }
 function renderMain() {
   $("#bestTitle").innerHTML = `${esc(MAIN.name)} 기기패키지<br>+입호흡 액상 10병`;
@@ -1316,7 +1321,7 @@ function detail(id) {
   const x = item(id);
   const sims = L.filter((y) => y.id !== id && y.g === x.g && y.line === x.line).sort((a, b) => (b.br === x.br) - (a.br === x.br)).slice(0, 3);
   open(`<div class="det"><div class="img"><img src="${isrc(x)}" alt=""></div><div>
-    <div style="font-size:13px;color:var(--grey);font-weight:700">${esc(x.br)} · ${esc(x.line)}</div>
+    <div style="font-size:13px;color:var(--grey);font-weight:700">${x.no ? `<span class="lno in">${x.no}번</span> ` : ""}${esc(x.br)} · ${esc(x.line)}</div>
     <h3>${esc(short(x.n))}</h3>
     <div class="chips">${[x.f, x.g, ...x.t.filter((t) => t !== "일반")].map((t) => `<span>${esc(t)}</span>`).join("")}</div>
     <div class="ben">${benefits(x).map(([n, t]) => `<div><i>${n}</i><span>${esc(t)}</span></div>`).join("")}</div>
@@ -1466,7 +1471,7 @@ function staffView() {
     const svc = " · <b style='color:var(--red)'>서비스(0원)</b>";
     if (x.c === "lung") return scanBlock(x.n, "폐호흡", x.n, n, plan.lungAll ? svc : "", id);
     if (x.c) return scanBlock(x.n, won(x.price) + (x.ev ? " · " + EVN[x.ev][2] + " 이벤트" : ""), x.n, n, "", id);
-    return scanBlock(short(x.n), [x.br, x.loc ? "진열 " + x.loc : ""].filter(Boolean).join(" · "), x.n, n, (x.line === "프라임" ? plan.pmAll : plan.prAll) ? svc : "", id);
+    return scanBlock(short(x.n), [x.no ? "라벨 " + x.no + "번" : "", x.br, x.loc ? "진열 " + x.loc : ""].filter(Boolean).join(" · "), x.n, n, (x.line === "프라임" ? plan.pmAll : plan.prAll) ? svc : "", id);
   };
   const devBlocks = devIds.map(blockOf).join("");
   const restBlocks = items.filter(([id]) => !devIds.some(([d]) => d === id)).map(blockOf).join("");
