@@ -694,7 +694,7 @@
 <body data-mode=""><div id="testRibbon" style="position:fixed;left:0;right:0;bottom:0;z-index:99999;background:#d32f2f;color:#fff;text-align:center;font:700 13px sans-serif;padding:4px;pointer-events:none">테스트판 · 손님 상담에는 정식판을 쓰세요</div>
 <div class="app">
   <div class="top">
-    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">테스트 v10.08-0100</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
+    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">테스트 v10.08-0200</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
     <nav class="tabs" id="tabs" style="display:none"></nav>
     <div class="flow" id="flow"><span data-st="1">① 찾는 것</span><i>›</i><span data-st="2">② 고르기</span><i>›</i><span data-st="3">③ 담은 상품</span><i>›</i><span data-st="4">④ 직원 확인</span></div>
   </div>
@@ -1692,9 +1692,21 @@ if ("serviceWorker" in navigator && location.protocol === "https:") {
 // 실제 포스터 받으면: { img: "pst_파일이름.jpg", go: "liq:s3" } 한 줄씩 (4:5, 1080×1350). go = 구역(dev/liq/dsp) 또는 구역:칸id, "spec" = 하복2 상세
 const POSTERS = [
   { go: "dev:s1", ev: "havok10", img: "pst_havok2_gpt.jpg" }, // 10/7 GPT 초안 (베이프렌드 포스터 폴더, 내가 만든 판 = pst_havok2.png)
-  { go: "liq:s3", ev: "bulk11", ex: `<div class="px red"><span class="k">BULK EVENT</span><h3>대량구매 이벤트<br>프리미엄 액상<br>11병 90,000원</h3><div class="sub">1병 15,000원 → 병당 약 8,180원<br>빌런 · 릭 섞어도 돼요</div><img src="vl_p094.png" alt=""><span class="go">맛 고르러 가기 →</span></div>` },
+  { go: "liq:s3", img: "pst_bulk3050.jpg", info: "bulk3050" }, // 10/8 대량특가 30병/50병 (디자인작업/261008_대량특가), 11병 예시 대체. 누르면 안내창(INFO) → 맛 고르러 가기
   { go: "dsp:dE1", ex: `<div class="px"><span class="k">DISPOSABLE</span><h3>일회용<br>3+1 이벤트</h3><div class="sub">팜팜바 · 모스바<br>3개 사면 1개 더</div><img src="dsp_farm_all.png" alt=""><span class="go">맛 고르러 가기 →</span></div>` },
 ];
+// 포스터 누르면 뜨는 안내창 (POSTERS 항목에 info: "키") — 사장님 10/8: 최대 혜택 = 50병 구매 시 병당 6,800원
+const INFO = {
+  bulk3050: () => `<div style="padding:8px 4px 4px"><div style="font-size:13px;font-weight:800;letter-spacing:.2em;color:#e8262c">VAFRIEND 대량 특가</div>
+    <h2 style="font-size:30px;margin:6px 0 4px;letter-spacing:-.02em">많이 담을수록 더 싸게</h2>
+    <div style="font-size:15px;color:#6f6861;margin-bottom:16px">빌런, 릭, 디오, 아이스샷, 토바코샷 원하는 맛 섞어서</div>
+    <div style="display:grid;gap:10px">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-radius:18px;background:#f4f2ef"><div><b style="font-size:22px">30병</b><div style="font-size:14px;color:#6f6861">병당 7,000원</div></div><b style="font-size:28px;letter-spacing:-.02em">210,000원</b></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-radius:18px;background:#fff0f6;box-shadow:inset 0 0 0 2px #ff3d9a"><div><b style="font-size:22px">50병</b> <span style="font-size:12px;font-weight:800;color:#fff;background:#ff3d9a;border-radius:99px;padding:3px 8px;vertical-align:3px">최대 혜택</span><div style="font-size:14px;color:#6f6861">병당 6,800원</div></div><b style="font-size:28px;letter-spacing:-.02em;color:#e8262c">340,000원</b></div>
+    </div>
+    <div style="margin:16px 0 18px;padding:14px 16px;border-radius:14px;background:#15120f;color:#fff;font-size:18px;font-weight:800;text-align:center">최대 혜택은 <span style="color:#ff6fb5">50병 구매 시 병당 6,800원</span>입니다</div>
+    <button data-go="liq:s3" style="width:100%;border:0;border-radius:16px;background:#e8262c;color:#fff;font-size:18px;font-weight:800;padding:16px">맛 고르러 가기 →</button></div>`,
+};
 let pCur = 0, pTimer = null, pMoved = false;
 const P_AUTO = 5000; // 자동으로 넘어가는 간격(ms), 손대면 다시 셈
 function renderPosters() {
@@ -1739,7 +1751,7 @@ function goTo(go) {
   setMode(m);
   if (id) setTimeout(() => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" }), 60);
 }
-document.addEventListener("click", (e) => { const el = e.target.closest("[data-go]"); if (!el) return; if (el.dataset.pi && pMoved) { pMoved = false; return; } if (el.dataset.pi && POSTERS[el.dataset.pi].ev) { const P = POSTERS[el.dataset.pi]; ev("p", el.dataset.pi, P.ev); return openEvent(P.ev, P.img); } if (el.dataset.pi) ev("p", el.dataset.pi, el.dataset.go); goTo(el.dataset.go); });
+document.addEventListener("click", (e) => { const el = e.target.closest("[data-go]"); if (!el) return; if (el.dataset.pi && pMoved) { pMoved = false; return; } if (el.dataset.pi && POSTERS[el.dataset.pi].info) { const P = POSTERS[el.dataset.pi]; ev("p", el.dataset.pi, P.info); return open(INFO[P.info]()); } if (el.closest("#sheet")) closeS(); if (el.dataset.pi && POSTERS[el.dataset.pi].ev) { const P = POSTERS[el.dataset.pi]; ev("p", el.dataset.pi, P.ev); return openEvent(P.ev, P.img); } if (el.dataset.pi) ev("p", el.dataset.pi, el.dataset.go); goTo(el.dataset.go); });
 
 // ── 이벤트 화면 (10/7): 포스터 누르면 구성 고르기 → 장바구니 ──
 // EVENTS[키] = { t 제목, was 비교가, price 가격, n 고를 액상 수, color 기기 색상 고르기, spec 스펙 보기 } — POSTERS 항목에 ev: "키"
