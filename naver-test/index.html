@@ -157,6 +157,24 @@
   }
   @media (max-width:600px){ .ch{grid-template-columns:18px 56px 1fr auto} .ch .wh{display:none} }
 
+  /* 홈 v3 */
+  .alerts{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
+  .alert{display:flex;align-items:baseline;gap:10px;width:100%;text-align:left;padding:16px 18px;border-radius:14px;font-size:17px;background:#fff;border:1px solid var(--line)}
+  .alert span{margin-left:auto;color:var(--sub);font-size:13px}
+  .alert.red{background:var(--red-soft);border-color:transparent} .alert.red strong{color:var(--red)}
+  .alert.ok{background:var(--green-soft);border-color:transparent;color:#027a4b;font-weight:700}
+  .alert.none{color:var(--ink2)}
+  .more{color:var(--sub);font-size:13px;padding-left:4px}
+  .rows{padding:6px 8px}
+  .row{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:15px 12px;border-radius:10px;font-size:16px}
+  .row+.row{border-top:1px solid var(--line);border-radius:0}
+  .row:hover{background:#f7f9fc}
+  .row b{width:72px;flex:none;font-size:17px}
+  .row .tx{flex:1;color:var(--ink2);min-width:0}
+  .row .gt{color:#c4c9cf;font-size:20px}
+  .sd{width:12px;height:12px;border-radius:50%;flex:none}
+  .sd.red{background:var(--red)} .sd.amber{background:#f5b400} .sd.green{background:var(--green)}
+
 </style>
 </head>
 <body>
@@ -165,7 +183,7 @@
 <div class="dim" id="dim"><div class="sheet" id="sheet"></div></div>
 <div class="toast" id="toast"></div>
 <script>
-const VER = "10.09-2";
+const VER = "10.09-3";
 const APPS_URL = ""; // 네이버앱_AppsScript 배포 주소(…/exec)
 const KIND = ["대표사진", "소개글", "블로그 발행", "리뷰", "트래픽 작업", "가격표, 소식", "키워드", "기타"];
 const COLORS = ["#3182f6", "#f04452", "#03b26c", "#b77700", "#8b5cf6"];
@@ -256,91 +274,67 @@ function weeklyFor(name) {
 }
 
 // ── 홈 ──
-// 어제와 달라진 것: 키워드 하나하나 비교해서 바뀐 칸만 뽑는다
-function diffs() {
+// 신경 쓸 변화만: 순위 2칸 이상, 10위 안↔밖, 블로그 3개 이상
+function bigDiffs() {
   if (!PREV) return [];
   const out = [];
-  const push = (b, what, k, a, z, lowerBetter, fmt) => {
+  const rank = (b, what, k, a, z) => {
     if (a == null || z == null) return;
     const A = a >= 101 ? 11 : a, Z = z >= 101 ? 11 : z;
-    const diff = lowerBetter ? Z - A : A - Z; // + 좋아짐
-    if (diff) out.push({ b, what, k, from: fmt(z), to: fmt(a), diff });
+    if (Math.abs(A - Z) >= 2 || (a >= 101) !== (z >= 101)) out.push({ b, what, k, from: rk(z), to: rk(a), down: A > Z });
   };
-  const cnt = (n) => n + "개";
+  const cnt = (b, k, a, z) => { if (a != null && z != null && Math.abs(a - z) >= 3) out.push({ b, what: "블로그", k, from: z + "개", to: a + "개", down: a < z }); };
   for (const br of D.branches) {
-    for (const k of br.place) {
-      push(br.name, "플레이스", k, pRank(br.name, k, LAST), pRank(br.name, k, PREV), true, rk);
-      push(br.name, "웹노출", k, wRank(k, LAST), wRank(k, PREV), true, rk);
-    }
-    for (const k of [...br.blog, ...br.product]) push(br.name, "블로그", k, bCnt(br.name, k, LAST), bCnt(br.name, k, PREV), false, cnt);
-    push(br.name, "플레이스", D.common, pRank(br.name, D.common, LAST), pRank(br.name, D.common, PREV), true, rk);
+    for (const k of br.place) { rank(br.name, "플레이스", k, pRank(br.name, k, LAST), pRank(br.name, k, PREV)); rank(br.name, "웹노출", k, wRank(k, LAST), wRank(k, PREV)); }
+    for (const k of br.blog) cnt(br.name, k, bCnt(br.name, k, LAST), bCnt(br.name, k, PREV));
+    rank(br.name, "플레이스", D.common, pRank(br.name, D.common, LAST), pRank(br.name, D.common, PREV));
   }
-  push("공통", "블로그", D.common, bCnt("대구 전체", D.common, LAST), bCnt("대구 전체", D.common, PREV), false, cnt);
-  push("공통", "웹노출", D.common, wRank(D.common, LAST), wRank(D.common, PREV), true, rk);
-  return out.sort((a, b) => a.diff - b.diff); // 떨어진 것 먼저
+  return out.sort((a, b) => b.down - a.down);
 }
-// 비교할 어제가 없을 때: 지금 약한 칸
-function weak() {
-  const out = [];
-  for (const br of D.branches) {
-    for (const k of br.place) {
-      const p = pRank(br.name, k, LAST), w = wRank(k, LAST);
-      if (p != null && p >= 4) out.push({ b: br.name, what: "플레이스", k, v: rk(p) });
-      if (w != null && w >= 4) out.push({ b: br.name, what: "웹노출", k, v: rk(w) });
-    }
-    for (const k of br.blog) { const n = bCnt(br.name, k, LAST); if (n != null && n <= 5) out.push({ b: br.name, what: "블로그", k, v: n + "개" }); }
+// 지점 한 줄 요약
+function branchLine(br, big) {
+  const mine = big.filter((x) => x.b === br.name);
+  const bits = mine.filter((x) => x.down).map((x) => `${x.what} ${x.from}→${x.to} (${x.k})`);
+  const weakBits = [];
+  for (const k of br.place) {
+    const p = pRank(br.name, k, LAST), w = wRank(k, LAST);
+    if (p != null && p >= 4) weakBits.push(`플레이스 ${rk(p)} (${k})`);
+    if (w != null && w >= 4) weakBits.push(`웹 ${rk(w)} (${k})`);
   }
-  return out;
+  for (const k of br.blog) { const n = bCnt(br.name, k, LAST); if (n != null && n <= 5) weakBits.push(`블로그 ${n}개 (${k})`); }
+  const ups = mine.filter((x) => !x.down).map((x) => `${x.what} ${x.from}→${x.to}`);
+  if (bits.length) return { st: "red", txt: "떨어짐: " + bits.slice(0, 2).join(", ") + (weakBits.length ? ` · 약함 ${weakBits.length}칸` : "") };
+  if (weakBits.length) return { st: "amber", txt: "약함: " + weakBits.slice(0, 2).join(", ") + (weakBits.length > 2 ? ` 외 ${weakBits.length - 2}` : "") };
+  return { st: "green", txt: ups.length ? "올라감: " + ups.slice(0, 2).join(", ") : "문제 없음" };
 }
 
 function renderHome() {
-  const ds = diffs();
-  const downs = ds.filter((x) => x.diff < 0), ups = ds.filter((x) => x.diff > 0);
+  const big = bigDiffs();
+  const downs = big.filter((x) => x.down);
   const go = (b) => (b === "공통" ? "" : `openBranch('${b}')`);
-  const line = (x) => `<button class="ch ${x.diff < 0 ? "dn" : "upc"}" onclick="${go(x.b)}"><span class="ar">${x.diff < 0 ? "▼" : "▲"}</span><b>${esc(x.b)}</b><span class="wh">${x.what}</span><span class="kw">${esc(x.k)}</span><span class="ft">${x.from} → <strong>${x.to}</strong></span></button>`;
-  let top;
-  if (!PREV) {
-    const wk = weak();
-    top = `<div class="sec"><div class="sh"><h2>어제와 달라진 것</h2><span>${md(LAST)}이 첫 기록이라 비교할 어제가 없어요. ${md(addDays(LAST, 1))} 9시 이후부터 여기에 바뀐 것만 뜹니다.</span></div>
-      <div class="sh sub"><h3>대신, 지금 약한 곳 ${wk.length}칸</h3><span>플레이스, 웹노출 4위 아래 · 블로그 점유 5개 이하</span></div>
-      <div class="chs">${wk.map((x) => `<button class="ch wk" onclick="${go(x.b)}"><span class="ar">!</span><b>${esc(x.b)}</b><span class="wh">${x.what}</span><span class="kw">${esc(x.k)}</span><span class="ft"><strong>${x.v}</strong></span></button>`).join("")}</div></div>`;
-  } else {
-    top = `<div class="sec"><div class="sh"><h2>어제와 달라진 것</h2><span>${md(PREV)} → ${md(LAST)} · 떨어짐 ${downs.length} · 올라감 ${ups.length}</span></div>
-      ${ds.length ? `<div class="chs">${ds.map(line).join("")}</div>` : `<div class="empty">어제와 똑같아요. 바뀐 순위가 없습니다.</div>`}</div>`;
-  }
+  const head = !PREV
+    ? `<div class="alert none">${md(LAST)} 첫 기록이에요. 내일부터 크게 바뀐 것만 여기에 뜹니다.</div>`
+    : downs.length
+      ? downs.slice(0, 4).map((x) => `<button class="alert red" onclick="${go(x.b)}"><b>${esc(x.b)}</b> ${x.what} ${x.from} → <strong>${x.to}</strong><span>${esc(x.k)}</span></button>`).join("") + (downs.length > 4 ? `<div class="more">외 ${downs.length - 4}건은 지점을 눌러서</div>` : "")
+      : `<div class="alert ok">오늘은 신경 쓸 변화 없음</div>`;
 
-  // 전체 표: 지점 > 키워드
-  const cell = (now, prev, lowerBetter, fmt, weakIf) => {
-    if (now == null) return `<td class="na">-</td>`;
-    const d = delta(now, prev, lowerBetter);
-    return `<td class="${d.cls} ${weakIf(now) ? "weak" : ""}">${fmt(now)}${d.cls ? d.txt : ""}</td>`;
-  };
-  const rowsFor = (br) => {
-    const kws = [...new Set([...br.place, ...br.blog])];
-    return kws.map((k, i) => `<tr onclick="openBranch('${br.name}')">${i === 0 ? `<th rowspan="${kws.length}" class="bn">${br.name}<small>${br.no}호</small></th>` : ""}<td class="kw">${esc(k)}</td>
-      ${br.place.includes(k) ? cell(pRank(br.name, k, LAST), PREV ? pRank(br.name, k, PREV) : null, true, rk, (v) => v >= 4) : `<td class="na">-</td>`}
-      ${cell(bCnt(br.name, k, LAST), PREV ? bCnt(br.name, k, PREV) : null, false, (v) => v + "개", (v) => v <= 5)}
-      ${br.place.includes(k) ? cell(wRank(k, LAST), PREV ? wRank(k, PREV) : null, true, rk, (v) => v >= 4) : `<td class="na">-</td>`}</tr>`).join("");
-  };
-  const c = D.common;
-  const cPlace = D.branches.map((b) => [b.name, pRank(b.name, c, LAST)]).filter(([, r]) => r != null && r < 101).sort((a, b) => a[1] - b[1]);
-  const table = `<div class="sec"><div class="sh"><h2>전체 순위</h2><span>모바일 네이버 첫 화면 기준 · 플레이스, 웹노출 = 순위(10위 밖은 "밖") · 블로그 = 상위 30개 중 우리 글 수 · 노란 칸 = 약한 곳 · 줄을 누르면 지점 자세히</span></div>
-    <div class="scroll"><table class="big"><thead><tr><th class="l">지점</th><th class="l">키워드</th><th>플레이스</th><th>블로그</th><th>웹노출</th></tr></thead><tbody>
-    <tr class="cm"><th class="bn">공통</th><td class="kw">${esc(c)}</td><td class="l">${cPlace.length ? cPlace.map(([n, r]) => `${n} ${r}위`).join(", ") : "10위 안 없음"}</td><td>${bCnt("대구 전체", c, LAST) ?? "-"}개</td><td>${rk(wRank(c, LAST))}</td></tr>
-    ${D.branches.map(rowsFor).join("")}</tbody></table></div></div>`;
+  const rows = D.branches.map((br) => {
+    const l = branchLine(br, big);
+    return `<button class="row" onclick="openBranch('${br.name}')"><span class="sd ${l.st}"></span><b>${br.name}</b><span class="tx">${esc(l.txt)}</span><span class="gt">›</span></button>`;
+  }).join("");
 
   const td = todos();
   const todoHtml = R
-    ? (td.length ? td.slice().reverse().slice(0, 12).map((t) => `<button class="todo ${t.status === "함" ? "done" : t.status === "안 함" ? "skip" : ""}" onclick="cycleTodo(${t.row},'${t.status}')"><i>${t.status === "함" ? "✓" : t.status === "안 함" ? "–" : ""}</i><div><b>${esc(t.branch)} · ${esc(t.text)}</b><span>${esc(t.why)}${t.doneAt ? ` · ${esc(t.status)} ${esc(t.doneAt)}` : ""}</span></div></button>`).join("") : `<div class="empty">아직 할 일이 없어요. 월요일 정리 때 채워집니다.</div>`)
+    ? (td.length ? td.slice().reverse().slice(0, 12).map((t) => `<button class="todo ${t.status === "함" ? "done" : t.status === "안 함" ? "skip" : ""}" onclick="cycleTodo(${t.row},'${t.status}')"><i>${t.status === "함" ? "✓" : t.status === "안 함" ? "–" : ""}</i><div><b>${esc(t.branch)} · ${esc(t.text)}</b><span>${esc(t.why)}${t.doneAt ? ` · ${esc(t.status)} ${esc(t.doneAt)}` : ""}</span></div></button>`).join("") : `<div class="empty">월요일 정리 때 채워집니다.</div>`)
     : `<div class="empty">🔒 ${lockMsg()}</div>`;
 
   $("#home").innerHTML = `
     <div class="bar"><div class="logo">베이프렌드 <b>네이버</b></div><span class="tag">테스트판 ${VER}</span>
-      <span class="when">${LAST ? md(LAST) + " 9시 기준" : ""}</span><button class="act sm" onclick="openRecord()">＋ 바꾼 것 기록</button></div>
-    ${top}
-    <div class="two">${table}<div class="sec"><div class="sh"><h2>이번 주 할 일</h2><span>${R ? "누르면 함 / 안 함 / 할 일" : ""}</span></div>${todoHtml}</div></div>
-    <div class="foot">데이터 ${D.updated ? new Date(D.updated).toLocaleString("ko-KR") : ""} · 매일 9시 순위감지봇<br>
-      <button onclick="openKey()">${key ? "열쇠 바꾸기" : "열쇠 넣기"}</button><button onclick="toggleHide()">${hide ? "숫자 보이기" : "숫자 숨기기"}</button><button onclick="reload()">새로고침</button></div>`;
+      <span class="when">${LAST ? md(LAST) + " 기준" : ""}</span><button class="act sm" onclick="openRecord()">＋ 바꾼 것 기록</button></div>
+    <div class="alerts">${head}</div>
+    <div class="two"><div class="sec rows">${rows}</div>
+      <div class="sec"><div class="sh"><h2>이번 주 할 일</h2></div>${todoHtml}</div></div>
+    <div class="foot"><button onclick="openKey()">${key ? "열쇠 바꾸기" : "열쇠 넣기"}</button><button onclick="toggleHide()">${hide ? "숫자 보이기" : "숫자 숨기기"}</button><button onclick="reload()">새로고침</button></div>`;
 }
 
 // ── 지점 상세 ──
