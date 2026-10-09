@@ -148,7 +148,7 @@
 <div class="dim" id="dim"><div class="sheet" id="sheet"></div></div>
 <div class="toast" id="toast"></div>
 <script>
-const VER = "10.09-4";
+const VER = "10.09-5";
 const APPS_URL = ""; // 네이버앱_AppsScript 배포 주소(…/exec)
 const KIND = ["대표사진", "소개글", "블로그 발행", "리뷰", "트래픽 작업", "가격표, 소식", "키워드", "기타"];
 const LINE = ["#3B4A6B", "#8A97B5", "#C3CBDB"];
@@ -237,19 +237,32 @@ function bigDiffs() {
   }
   return out.sort((a, b) => b.down - a.down);
 }
-function weakList(br) {
+// 평소 순위: 주간통계 시트 지도검색 순위(최근 8주) + 봇 기록(최근 14일)의 가운데 값
+// 시트에 같은 키워드가 없으면 그 지점 시트 순위로 대신함 (공통 키워드는 같은 키워드만)
+const median = (v) => { const s = v.slice().sort((a, b) => a - b), m = s.length >> 1; return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; };
+function placeBase(b, k) {
+  const W = D.weeklyRank || [];
+  const bot = DATES.filter((d) => d < LAST && d >= addDays(LAST, -14)).map((d) => pRank(b, k, d)).filter((v) => v != null).map(n11);
+  let src = W.filter((x) => x.b === b && x.k === k).slice(-8).map((x) => n11(x.r));
+  if (!src.length && k !== D.common) src = W.filter((x) => x.b === b && x.k !== D.common).slice(-8).map((x) => n11(x.r));
+  const vals = [...src, ...bot];
+  return vals.length ? Math.round(median(vals)) : null;
+}
+// 평소보다 떨어짐: 평소보다 2칸 이상 아래, 또는 평소 10위 안인데 오늘 밖
+function vsBase(b, k) {
+  const r = pRank(b, k, LAST), base = placeBase(b, k);
+  if (r == null || base == null) return null;
+  const now = n11(r), diff = now - base;
+  return { r, base, down: diff >= 2 || (now === 11 && base <= 10), up: diff <= -2 };
+}
+function baseDowns() {
   const out = [];
-  for (const k of br.place) {
-    const p = pRank(br.name, k, LAST), w = wRank(k, LAST);
-    if (p != null && p >= 4) out.push({ b: br.name, what: "플레이스", k, v: rk(p) });
-    if (w != null && w >= 4) out.push({ b: br.name, what: "웹노출", k, v: rk(w) });
-  }
-  for (const k of br.blog) { const n = bCnt(br.name, k, LAST); if (n != null && n <= 5) out.push({ b: br.name, what: "블로그", k, v: n + "개" }); }
+  for (const br of D.branches) for (const k of br.place) { const v = vsBase(br.name, k); if (v && v.down) out.push({ b: br.name, k, ...v }); }
   return out;
 }
 function status(br, big) {
   if (big.some((x) => x.b === br.name && x.down)) return "red";
-  return weakList(br).length ? "amber" : "";
+  return br.place.some((k) => (vsBase(br.name, k) || {}).down) ? "red" : "";
 }
 
 // ── 그래프 (13번 Performance 느낌) ──
@@ -294,16 +307,15 @@ function renderSide() {
 function renderOverview() {
   const big = bigDiffs(), downs = big.filter((x) => x.down);
   const allPlace = D.branches.flatMap((b) => b.place.map((k) => [b.name, k]));
-  const out10 = allPlace.filter(([b, k]) => (pRank(b, k, LAST) ?? 0) >= 101).length;
-  const weakBlog = D.branches.flatMap((b) => b.blog.map((k) => bCnt(b.name, k, LAST))).filter((n) => n != null && n <= 5).length;
+  const bd = baseDowns();
+  const ups = allPlace.filter(([b, k]) => (vsBase(b, k) || {}).up).length;
   const td = todos(), left = td.filter((t) => t.status === "할 일").length;
   const avg = (d) => { const v = allPlace.map(([b, k]) => pRank(b, k, d)).filter((r) => r != null).map(n11); return v.length ? v.reduce((a, c) => a + c, 0) / v.length : null; };
   const avgNow = avg(LAST), avgPrev = PREV ? avg(PREV) : null;
 
-  const weakAll = D.branches.flatMap(weakList);
-  const listHtml = PREV
-    ? (downs.length ? downs.slice(0, 5).map((x) => `<button class="li" onclick="go('${x.b}')"><b>${esc(x.b)}</b><span class="v">${x.what} ${x.from} → <b class="dn">${x.to}</b></span><span class="k">${esc(x.k)}</span></button>`).join("") : `<div class="empty">오늘은 크게 떨어진 곳이 없어요.</div>`)
-    : weakAll.slice(0, 5).map((x) => `<button class="li" onclick="go('${x.b}')"><b>${esc(x.b)}</b><span class="v">${x.what} ${x.v}</span><span class="k">${esc(x.k)}</span></button>`).join("");
+  const listHtml = bd.length
+    ? bd.slice(0, 6).map((x) => `<button class="li" onclick="go('${x.b}')"><b>${esc(x.b)}</b><span class="v">평소 ${x.base}위 → <b class="dn">${rk(x.r)}</b></span><span class="k">${esc(x.k)}</span></button>`).join("")
+    : `<div class="empty">모든 지점이 평소 순위대로예요.</div>`;
 
   const todoHtml = R
     ? (td.length ? td.slice().reverse().slice(0, 6).map((t) => `<button class="li todo ${t.status === "함" ? "done" : t.status === "안 함" ? "skip" : ""}" onclick="cycleTodo(${t.row},'${t.status}')"><i>${t.status === "함" ? "✓" : t.status === "안 함" ? "–" : ""}</i><span class="t">${esc(t.branch)} · ${esc(t.text)}<small>${esc(t.why)}</small></span></button>`).join("") : `<div class="empty">월요일 정리 때 채워집니다.</div>`)
@@ -312,16 +324,16 @@ function renderOverview() {
   $("#main").innerHTML = `
     <div class="head"><h1>개요</h1><span class="when">${PREV ? `${md(PREV)} → ${md(LAST)} 비교` : `${md(LAST)} 첫 기록 · 비교는 내일부터`}</span></div>
     <div class="stats">
-      <div class="card stat"><div class="ct">신경 쓸 변화</div><div class="big">${PREV ? downs.length : "–"}<em>건</em></div><div class="sub">${PREV ? "어제보다 크게 떨어진 칸" : "내일부터 계산돼요"}</div></div>
-      <div class="card stat"><div class="ct">10위 밖 키워드</div><div class="big">${out10}<em>/ ${allPlace.length}</em></div><div class="sub">플레이스 지정 키워드 중</div></div>
-      <div class="card stat"><div class="ct">블로그 약한 곳</div><div class="big">${weakBlog}<em>곳</em></div><div class="sub">상위 30개 중 우리 글 5개 이하</div></div>
+      <div class="card stat"><div class="ct">평소보다 떨어짐</div><div class="big">${bd.length}<em>/ ${allPlace.length}</em></div><div class="sub">플레이스 키워드 · 평소보다 2칸 이상 아래</div></div>
+      <div class="card stat"><div class="ct">평소보다 올라감</div><div class="big">${ups}<em>/ ${allPlace.length}</em></div><div class="sub">플레이스 키워드 · 평소보다 2칸 이상 위</div></div>
+      <div class="card stat"><div class="ct">어제보다 크게 바뀜</div><div class="big">${PREV ? big.length : "–"}<em>칸</em></div><div class="sub">${PREV ? `떨어짐 ${downs.length} · 올라감 ${big.length - downs.length}` : "내일부터 계산돼요"}</div></div>
       <div class="card stat"><div class="ct">이번 주 할 일</div><div class="big">${R ? left : "–"}<em>${R ? "남음" : ""}</em></div><div class="sub">${R ? `전체 ${td.length}개` : "🔒 열쇠 필요"}</div></div>
     </div>
     <div class="card chartc"><div class="ct">플레이스 평균 순위<small>${avgNow != null ? `오늘 ${avgNow.toFixed(1)}위` : ""}${avgPrev != null ? ` · 어제 ${avgPrev.toFixed(1)}위` : ""}</small></div>
       <div class="cs">8개 지점 지정 키워드 평균 · 위로 갈수록 좋음 · 점선 = 바꾼 날</div>
       <div class="area">${chart([{ color: LINE[0], val: (d) => avg(d) }], changes())}</div></div>
     <div class="split">
-      <div class="card"><div class="ct">${PREV ? "신경 쓸 변화" : "지금 약한 곳"}<small>${PREV ? "" : `${weakAll.length}칸 중 5개`}</small></div><div class="list">${listHtml}</div></div>
+      <div class="card"><div class="ct">평소보다 떨어진 곳<small>평소 = 주간통계 지도검색 순위 + 최근 2주 기록</small></div><div class="list">${listHtml}</div></div>
       <div class="card"><div class="ct">이번 주 할 일<small>${R ? "누르면 함 / 안 함" : ""}</small></div><div class="list">${todoHtml}</div></div>
     </div>`;
 }
@@ -345,7 +357,8 @@ function renderBranch() {
   const kws = [...new Set([...br.place, ...br.blog])];
   const kwHtml = kws.map((k) => {
     const n = bCnt(br.name, k, LAST);
-    const right = br.place.includes(k) ? `플레이스 ${rk(pRank(br.name, k, LAST))} · 웹 ${rk(wRank(k, LAST))}` : "";
+    const vb = br.place.includes(k) ? vsBase(br.name, k) : null;
+    const right = br.place.includes(k) ? `플레이스 ${vb && vb.down ? `<b class="dn">${rk(pRank(br.name, k, LAST))}</b>` : rk(pRank(br.name, k, LAST))}${vb ? ` <small style="color:var(--sub)">(평소 ${vb.base}위)</small>` : ""} · 웹 ${rk(wRank(k, LAST))}` : "";
     return `<div class="kw"><div class="r1"><b>${esc(k)}</b><span>${right}</span></div>
       ${n != null ? `<div class="seg">${Array.from({ length: 30 }, (_, i) => `<i class="${i < n ? "on" : ""}"></i>`).join("")}</div><div class="r2">블로그 ${n} / 30${PREV && bCnt(br.name, k, PREV) != null ? ` · 어제 ${bCnt(br.name, k, PREV)}` : ""}</div>` : ""}</div>`;
   }).join("");
@@ -356,7 +369,7 @@ function renderBranch() {
   $("#main").innerHTML = `
     <div class="head"><h1>${br.name}<small>${br.no}호</small></h1><span class="when">${md(LAST)} 기준</span></div>
     <div class="stats three">
-      <div class="card stat"><div class="ct">플레이스 최고</div><div class="big">${pNow == null ? "–" : pNow >= 101 ? "밖" : pNow}<em>${pNow != null && pNow < 101 ? "위" : ""}</em></div><div class="sub">${dRank(pNow, pPrev) || `키워드 ${br.place.length}개 중 가장 높은 순위`}</div></div>
+      <div class="card stat"><div class="ct">플레이스 최고</div><div class="big">${pNow == null ? "–" : pNow >= 101 ? "밖" : pNow}<em>${pNow != null && pNow < 101 ? "위" : ""}</em></div><div class="sub">${(() => { const bs = br.place.map((k) => placeBase(br.name, k)).filter((v) => v != null); return bs.length ? `평소 ${Math.min(...bs)}위` : ""; })()}${dRank(pNow, pPrev) ? " · " + dRank(pNow, pPrev) : ""}</div></div>
       <div class="card stat"><div class="ct">블로그 점유</div><div class="big">${bNow ?? "–"}<em>/ 30</em></div><div class="sub">${dCnt(bNow, bPrev) || esc(bk || "")}</div></div>
       <div class="card stat"><div class="ct">웹노출 최고</div><div class="big">${wNow == null ? "–" : wNow >= 101 ? "밖" : wNow}<em>${wNow != null && wNow < 101 ? "위" : ""}</em></div><div class="sub">${dRank(wNow, wPrev) || "우리 사이트 중 가장 높은 순위"}</div></div>
     </div>
