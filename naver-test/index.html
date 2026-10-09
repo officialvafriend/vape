@@ -150,6 +150,11 @@
   .wd{font-size:13px;color:var(--ink);margin-top:4px;font-weight:600} .wd span{color:var(--sub);font-weight:400}
   .wb{display:flex;align-items:flex-end;gap:6px;height:48px;margin-top:14px} .wb i{flex:1;border-radius:3px}
   @media (max-width:900px){ .wgrid{grid-template-columns:1fr 1fr;gap:10px} .wv{font-size:24px} }
+  .row64{display:grid;grid-template-columns:6fr 4fr;gap:16px;margin-bottom:16px;align-items:stretch}
+  .row64>*,.row11>*{min-width:0}
+  .kwc{height:320px;overflow:auto}
+  .row11{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+  @media (max-width:900px){ .row64,.row11{grid-template-columns:1fr;gap:10px} .kwc{height:auto} }
 </style>
 </head>
 <body>
@@ -158,7 +163,7 @@
 <div class="dim" id="dim"><div class="sheet" id="sheet"></div></div>
 <div class="toast" id="toast"></div>
 <script>
-const VER = "10.09-11";
+const VER = "10.09-12";
 const APPS_URL = "https://script.google.com/macros/s/AKfycbyLK49pLpgbSpZ6TT47V8rezYHme0lFk_6dn_4NPvkbPINm0szww9TmuPAellcHv9Ry/exec";
 const KIND = ["대표사진", "소개글", "블로그 발행", "리뷰", "트래픽 작업", "가격표, 소식", "키워드", "기타"];
 const LINE = ["#3B4A6B", "#8A97B5", "#C3CBDB"];
@@ -285,7 +290,7 @@ function chart(series, chs) {
   let s = `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">`;
   for (const r of [1, 3, 5, 7, 10]) s += `<line x1="${L}" x2="${W - Rt}" y1="${y(r)}" y2="${y(r)}" stroke="#F1F2F4"/><text x="${L - 8}" y="${y(r) + 4}" font-size="12" fill="#B0B8C1" text-anchor="end">${r}</text>`;
   s += `<text x="${L - 8}" y="${y(11) + 4}" font-size="12" fill="#B0B8C1" text-anchor="end">밖</text>`;
-  chs.forEach((c) => { const i = days.findIndex((d) => d >= c.date); if (i < 0) return; s += `<line x1="${x(i)}" x2="${x(i)}" y1="${T}" y2="${H - B}" stroke="#3B4A6B" stroke-dasharray="3 4" opacity=".5"/><text x="${x(i) + 4}" y="${T + 10}" font-size="11" fill="#3B4A6B">${esc(c.kind)}</text>`; });
+  chs.forEach((c) => { if (!days.length || c.date < days[0]) return; const i = days.findIndex((d) => d >= c.date); if (i < 0) return; s += `<line x1="${x(i)}" x2="${x(i)}" y1="${T}" y2="${H - B}" stroke="#3B4A6B" stroke-dasharray="3 4" opacity=".5"/><text x="${x(i) + 4}" y="${T + 10}" font-size="11" fill="#3B4A6B">${esc(c.kind)}</text>`; });
   series.forEach((ser, si) => {
     const pts = days.map((d, i) => [i, ser.val(d)]).filter(([, v]) => v != null);
     if (!pts.length) return;
@@ -409,17 +414,17 @@ function renderBranch() {
       <div class="card stat"><div class="ct">블로그 점유</div><div class="big">${bNow ?? "–"}<em>/ 30</em></div><div class="sub">${dCnt(bNow, bPrev) || esc(bk || "")}</div></div>
       <div class="card stat"><div class="ct">웹노출 최고</div><div class="big">${wNow == null ? "–" : wNow >= 101 ? "밖" : wNow}<em>${wNow != null && wNow < 101 ? "위" : ""}</em></div><div class="sub">${dRank(wNow, wPrev) || "우리 사이트 중 가장 높은 순위"}</div></div>
     </div>
-    <div class="card chartc"><div class="ct">플레이스 순위 흐름<small><span class="legend">${br.place.map((k, i) => `<span><i style="background:${LINE[i % 3]}"></i>${esc(k)}</span>`).join("")}</span></small></div>
-      <div class="cs">위로 갈수록 좋음 · 점선 = 바꾼 날</div>
-      <div class="area">${chart(br.place.map((k, i) => ({ color: LINE[i % 3], val: (d) => { const r = pRank(br.name, k, d); return r == null ? null : n11(r); } })), chs)}</div></div>
-    <div class="split">
-      <div class="card"><div class="ct">키워드</div><div class="list">${kwHtml}</div></div>
-      <div style="display:flex;flex-direction:column;gap:16px">
-        <div class="card"><div class="ct">바꾼 것과 그 뒤 순위<small>${chs.length ? `전체 ${chs.length}건` : ""}</small></div><div class="list">${!R ? `<div class="empty">🔒 ${lockMsg()}</div>` : chs.length ? chgList(br, chs) : `<div class="empty">아직 기록이 없어요.</div>`}</div></div>
-        <div class="card"><div class="ct">지난 주간 분석에서 ${br.name}</div><div class="list">${!R ? `<div class="empty">🔒 ${lockMsg()}</div>` : (() => { const a = analysis().filter((x) => x.b === br.name).reverse().slice(0, 4); return a.length ? a.map((x) => `<div class="li" style="align-items:flex-start"><b style="min-width:52px">${esc(x.wk)}</b><span class="v at ${m}" style="flex:1;line-height:1.6"><small style="color:var(--ink);font-weight:600">${x.sec === "집중 관리" ? `<span class="dot red" style="display:inline-block;margin-right:6px"></span>` : ""}${esc(x.sec)}</small><br>${hl(x.t)}</span></div>`).join("") : `<div class="empty">언급된 적 없어요.</div>`; })()}</div></div>
-      </div>
+    <div class="card" style="margin-bottom:16px"><div class="ct">주간 통계<small>${wk && wk.length ? `${esc(wk[wk.length - 1].wk)} ${esc(wk[wk.length - 1].per)} · 팀장님 캡처 기준 · 막대 = 최근 6주` : "팀장님 캡처 기준"}</small></div>${weeklyHtml}</div>
+    <div class="row64">
+      <div class="card chartc" style="margin-bottom:0"><div class="ct">플레이스 순위 흐름<small><span class="legend">${br.place.map((k, i) => `<span><i style="background:${LINE[i % 3]}"></i>${esc(k)}</span>`).join("")}</span></small></div>
+        <div class="cs">위로 갈수록 좋음 · 점선 = 바꾼 날</div>
+        <div class="area">${chart(br.place.map((k, i) => ({ color: LINE[i % 3], val: (d) => { const r = pRank(br.name, k, d); return r == null ? null : n11(r); } })), chs)}</div></div>
+      <div class="card kwc"><div class="ct">키워드</div><div class="list">${kwHtml}</div></div>
     </div>
-    <div class="card" style="margin-top:16px"><div class="ct">주간 통계<small>${wk && wk.length ? `${esc(wk[wk.length - 1].wk)} ${esc(wk[wk.length - 1].per)} · 팀장님 캡처 기준 · 막대 = 최근 6주` : "팀장님 캡처 기준"}</small></div>${weeklyHtml}</div>`;
+    <div class="row11">
+      <div class="card"><div class="ct">바꾼 것과 그 뒤 순위<small>${chs.length ? `전체 ${chs.length}건` : ""}</small></div><div class="list">${!R ? `<div class="empty">🔒 ${lockMsg()}</div>` : chs.length ? chgList(br, chs) : `<div class="empty">아직 기록이 없어요.</div>`}</div></div>
+      <div class="card"><div class="ct">지난 주간 분석에서 ${br.name}<small>최근 3건</small></div><div class="list">${!R ? `<div class="empty">🔒 ${lockMsg()}</div>` : (() => { const a = analysis().filter((x) => x.b === br.name).reverse(); return a.length ? a.slice(0, 3).map((x) => `<div class="li" style="align-items:flex-start"><b style="min-width:52px">${esc(x.wk)}</b><span class="v at ${m}" style="flex:1;line-height:1.6"><small style="color:var(--ink);font-weight:600">${x.sec === "집중 관리" ? `<span class="dot red" style="display:inline-block;margin-right:6px"></span>` : ""}${esc(x.sec)}</small><br>${hl(x.t)}</span></div>`).join("") + (a.length > 3 ? `<button class="li" onclick="go('주간 분석')" style="justify-content:center;color:var(--navy);font-weight:600;font-size:14px">주간 분석에서 전체 보기 (${a.length}건)</button>` : "") : `<div class="empty">언급된 적 없어요.</div>`; })()}</div></div>
+    </div>`;
 }
 
 // 바꾼 것 목록: 최근 3건 펼침, 이전 것은 한 줄(누르면 펼침), 한 줄 목록은 5개까지 → 더 보기
