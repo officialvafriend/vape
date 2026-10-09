@@ -148,7 +148,7 @@
 <div class="dim" id="dim"><div class="sheet" id="sheet"></div></div>
 <div class="toast" id="toast"></div>
 <script>
-const VER = "10.09-6";
+const VER = "10.09-7";
 const APPS_URL = "https://script.google.com/macros/s/AKfycbyLK49pLpgbSpZ6TT47V8rezYHme0lFk_6dn_4NPvkbPINm0szww9TmuPAellcHv9Ry/exec";
 const KIND = ["대표사진", "소개글", "블로그 발행", "리뷰", "트래픽 작업", "가격표, 소식", "키워드", "기타"];
 const LINE = ["#3B4A6B", "#8A97B5", "#C3CBDB"];
@@ -214,6 +214,7 @@ async function post(body) {
 }
 const changes = () => (R ? R.changes.map((x) => ({ row: x.row, date: x.v[1], branch: x.v[2], kind: x.v[3], text: x.v[4] })) : []);
 const todos = () => (R ? R.todos.map((x) => ({ row: x.row, week: x.v[0], branch: x.v[1], text: x.v[2], why: x.v[3], status: x.v[4] || "할 일", doneAt: x.v[5] })) : []);
+const analysis = () => (R && R.analysis ? R.analysis.map((x) => ({ wk: x.v[0], per: x.v[1], sec: x.v[2], b: x.v[3], t: x.v[4] })) : []);
 const lockMsg = () => ({ setup: "시트 연결 준비 중 (Apps Script 배포 후 열림)", nokey: "열쇠를 넣으면 보여요", badkey: "열쇠가 맞지 않아요", fail: "시트를 불러오지 못했어요" }[remoteErr] || "");
 function weeklyFor(name) {
   if (!R || !R.weekly || !R.weekly.length) return null;
@@ -294,6 +295,7 @@ function renderSide() {
   $("#side").innerHTML = `
     <div class="logo">베이프렌드 네이버<span class="tag">테스트 ${VER}</span><small>${LAST ? md(LAST) + " 9시 기준" : ""}</small></div>
     <button class="nav ${VIEW === "개요" ? "on" : ""}" onclick="go('개요')">개요</button>
+    <button class="nav ${VIEW === "주간 분석" ? "on" : ""}" onclick="go('주간 분석')">주간 분석</button>
     <div class="nav-h">지점</div>
     ${D.branches.map((b) => `<button class="nav ${VIEW === b.name ? "on" : ""}" onclick="go('${b.name}')"><span class="dot ${status(b, big)}"></span>${b.name}<span class="no">${b.no}호</span></button>`).join("")}
     <div class="bottom">
@@ -341,7 +343,19 @@ function renderOverview() {
 // ── 지점 ──
 function effect(br, c) {
   const base = onOrBefore(c.date);
-  if (!base) return "기록 전 변경이라 비교할 순위가 없어요";
+  if (!base) {
+    // 봇 기록 전 변경은 주간통계 시트의 주차별 지도검색 순위로 비교
+    const W = (D.weeklyRank || []).filter((x) => x.b === br.name && x.k !== D.common).map((x) => {
+      const m = (x.per || "").match(/(\d+)\/(\d+)\s*~\s*(\d+)\/(\d+)/); if (!m) return null;
+      const p = (a, b) => `2026-${String(a).padStart(2, "0")}-${String(b).padStart(2, "0")}`;
+      return { s: p(m[1], m[2]), e: p(m[3], m[4]), k: x.k, r: x.r };
+    }).filter(Boolean);
+    if (!W.length) return "기록 전 변경이라 비교할 순위가 없어요";
+    const before = W.filter((w) => w.e < c.date).pop(), after = W.filter((w) => w.s >= c.date).slice(0, 3);
+    if (!before && !after.length) return "기록 전 변경이라 비교할 순위가 없어요";
+    const f = (w) => `${md(w.s)}주 ${rk(w.r)}`;
+    return `주간통계 시트 ${esc((before || after[0]).k)}: ${[before ? "변경 전 " + f(before) : "", ...after.map(f)].filter(Boolean).join(" → ")}`;
+  }
   return br.place.map((k) => {
     const parts = [rk(pRank(br.name, k, base))];
     for (const n of [3, 7, 14]) { const t = addDays(c.date, n); parts.push(t > LAST ? `${n}일 후 –` : `${n}일 후 ${rk(pRank(br.name, k, onOrBefore(t)))}`); }
@@ -381,11 +395,26 @@ function renderBranch() {
       <div style="display:flex;flex-direction:column;gap:16px">
         <div class="card"><div class="ct">바꾼 것과 그 뒤 순위</div><div class="list">${!R ? `<div class="empty">🔒 ${lockMsg()}</div>` : chs.length ? chs.map((c) => `<div class="chg"><div class="t">${md(c.date)}<em>${esc(c.kind)}</em><button onclick="delChange(${c.row})">지우기</button></div><p>${esc(c.text)}</p><div class="eff">${effect(br, c)}</div></div>`).join("") : `<div class="empty">아직 기록이 없어요.</div>`}</div></div>
         <div class="card"><div class="ct">주간 통계<small>팀장님 캡처 기준</small></div>${weeklyHtml}</div>
+        <div class="card"><div class="ct">지난 주간 분석에서 ${br.name}</div><div class="list">${!R ? `<div class="empty">🔒 ${lockMsg()}</div>` : (() => { const a = analysis().filter((x) => x.b === br.name).reverse().slice(0, 4); return a.length ? a.map((x) => `<div class="li" style="align-items:flex-start"><b style="min-width:52px">${esc(x.wk)}</b><span class="v ${m}" style="flex:1;line-height:1.55"><small style="color:var(--sub)">${esc(x.sec)}</small><br>${esc(x.t)}</span></div>`).join("") : `<div class="empty">언급된 적 없어요.</div>`; })()}</div></div>
       </div>
     </div>`;
 }
 
-function render() { renderSide(); VIEW === "개요" ? renderOverview() : renderBranch(); }
+// ── 주간 분석 (기존 '플레이스 순위변화 분석' 탭들을 옮긴 것) ──
+const SECS = ["상승", "집중 관리", "공통", "다음 주 할 일", "종합 판단", "주의점"];
+function renderAnalysis() {
+  const A = analysis(), m = hide ? "mask" : "";
+  const weeks = [...new Set(A.map((a) => a.wk))].reverse();
+  const body = !R ? `<div class="card"><div class="empty">🔒 ${lockMsg()}</div></div>` : !weeks.length ? `<div class="card"><div class="empty">아직 주간 분석이 없어요.</div></div>` :
+    weeks.map((w) => {
+      const rows = A.filter((a) => a.wk === w);
+      return `<div class="card" style="margin-bottom:16px"><div class="ct" style="font-size:16px;color:var(--ink);font-weight:600">${esc(w)}주<small>${esc(rows[0].per)}</small></div>
+        ${SECS.map((s) => { const r = rows.filter((a) => a.sec === s); return r.length ? `<div class="nav-h" style="padding:16px 0 4px">${s}</div>${r.map((a) => `<div class="li" style="align-items:flex-start"><b>${esc(a.b) || "–"}</b><span class="v ${m}" style="flex:1;line-height:1.55">${esc(a.t)}</span></div>`).join("")}` : ""; }).join("")}</div>`;
+    }).join("");
+  $("#main").innerHTML = `<div class="head"><h1>주간 분석</h1><span class="when">기존 주간통계 시트의 주차별 분석</span></div>${body}`;
+}
+
+function render() { renderSide(); VIEW === "개요" ? renderOverview() : VIEW === "주간 분석" ? renderAnalysis() : renderBranch(); }
 function go(v) { if (v === VIEW) return; VIEW = v; history.pushState({ v }, ""); render(); window.scrollTo(0, 0); }
 window.addEventListener("popstate", (e) => { if ($("#dim").classList.contains("on")) { $("#dim").classList.remove("on"); return; } VIEW = (e.state && e.state.v) || "개요"; render(); });
 
