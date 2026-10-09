@@ -152,7 +152,7 @@
 <div class="dim" id="dim"><div class="sheet" id="sheet"></div></div>
 <div class="toast" id="toast"></div>
 <script>
-const VER = "10.09-9";
+const VER = "10.09-10";
 const APPS_URL = "https://script.google.com/macros/s/AKfycbyLK49pLpgbSpZ6TT47V8rezYHme0lFk_6dn_4NPvkbPINm0szww9TmuPAellcHv9Ry/exec";
 const KIND = ["대표사진", "소개글", "블로그 발행", "리뷰", "트래픽 작업", "가격표, 소식", "키워드", "기타"];
 const LINE = ["#3B4A6B", "#8A97B5", "#C3CBDB"];
@@ -421,21 +421,22 @@ function chgList(br, chs) {
 // 분석 문장: 숫자만 검정 굵게
 const hl = (t) => esc(t).replace(/[+-]?d[d,.]*(%|원|건|회|위|일|명)?/g, (m) => `<b class="num">${m}</b>`);
 const SECS = ["상승", "집중 관리", "공통", "다음 주 할 일", "종합 판단", "주의점"];
-const OPENW = new Set();
+const OPENW = new Set(); let initW = false;
 function renderAnalysis() {
   const A = analysis(), m = hide ? "mask" : "";
   const weeks = [...new Set(A.map((a) => a.wk))].reverse();
+  if (!initW && weeks.length) { OPENW.add(weeks[0]); initW = true; } // 처음엔 최근 1주만 펼침
   const body = !R ? `<div class="card"><div class="empty">🔒 ${lockMsg()}</div></div>` : !weeks.length ? `<div class="card"><div class="empty">아직 주간 분석이 없어요.</div></div>` :
     weeks.map((w, i) => {
       const rows = A.filter((a) => a.wk === w);
-      const open = i === 0 || OPENW.has(w);
-      const head = `<div class="ct" style="font-size:16px;color:var(--ink);font-weight:600">${esc(w)}주<small>${esc(rows[0].per)}${i ? (open ? " · 접기 ▴" : " · 펼치기 ▾") : ""}</small></div>`;
+      const open = OPENW.has(w);
+      const head = `<div class="ct" style="font-size:16px;color:var(--ink);font-weight:600">${esc(w)}주<small>${esc(rows[0].per)}${open ? "  접기 ▴" : "  펼치기 ▾"}</small></div>`;
       if (!open) {
         const brief = rows.filter((a) => a.sec === "집중 관리").map((a) => a.b).filter(Boolean).join(", ");
         return `<button class="card" style="display:block;width:100%;text-align:left;margin-bottom:10px;padding:18px 24px" onclick="OPENW.add('${w}');render()">${head}<div style="font-size:14px;color:var(--sub);margin-top:6px">집중 관리: ${esc(brief || "없음")}</div></button>`;
       }
-      return `<div class="card" style="margin-bottom:16px"><div ${i ? `onclick="OPENW.delete('${w}');render()" style="cursor:pointer"` : ""}>${head}</div>
-        ${SECS.map((s) => { const r = rows.filter((a) => a.sec === s); return r.length ? `<div class="sech">${s === "집중 관리" ? `<span class="dot red"></span>` : ""}${s}</div>${r.map((a) => `<div class="li" style="align-items:flex-start"><b>${esc(a.b) || "–"}</b><span class="v at ${m}" style="flex:1;line-height:1.6">${hl(a.t)}</span></div>`).join("")}` : ""; }).join("")}</div>`;
+      return `<div class="card" style="margin-bottom:16px"><div onclick="OPENW.delete('${w}');render()" style="cursor:pointer">${head}</div>
+        ${SECS.map((s) => { const r = rows.filter((a) => a.sec === s); return r.length ? `<div class="sech">${s === "집중 관리" ? `<span class="dot red"></span>` : ""}${s}</div>${r.map((a) => `<div class="li" style="align-items:flex-start"><b>${esc(a.b) || "–"}</b><span class="v at ${m}" style="flex:1;line-height:1.6">${hl(a.t)}</span></div>`).join("")}` : ""; }).join("")}<button class="li" onclick="OPENW.delete('${w}');render()" style="justify-content:center;color:var(--navy);font-weight:600;font-size:14px;margin-top:8px">접기 ▴</button></div>`;
     }).join("");
   $("#main").innerHTML = `<div class="head"><h1>주간 분석</h1><span class="when">기존 주간통계 시트의 주차별 분석</span></div>${body}`;
 }
