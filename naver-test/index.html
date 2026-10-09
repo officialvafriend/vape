@@ -64,6 +64,7 @@
 
   /* 아래 6:4 */
   .split{display:grid;grid-template-columns:6fr 4fr;gap:16px;align-items:start}
+  .split>*{min-width:0}
   .list{margin-top:10px}
   .li{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:12px 0;border-top:1px solid var(--line);font-size:15px}
   .li:first-child{border-top:0}
@@ -148,7 +149,7 @@
 <div class="dim" id="dim"><div class="sheet" id="sheet"></div></div>
 <div class="toast" id="toast"></div>
 <script>
-const VER = "10.09-7";
+const VER = "10.09-8";
 const APPS_URL = "https://script.google.com/macros/s/AKfycbyLK49pLpgbSpZ6TT47V8rezYHme0lFk_6dn_4NPvkbPINm0szww9TmuPAellcHv9Ry/exec";
 const KIND = ["대표사진", "소개글", "블로그 발행", "리뷰", "트래픽 작업", "가격표, 소식", "키워드", "기타"];
 const LINE = ["#3B4A6B", "#8A97B5", "#C3CBDB"];
@@ -393,29 +394,49 @@ function renderBranch() {
     <div class="split">
       <div class="card"><div class="ct">키워드</div><div class="list">${kwHtml}</div></div>
       <div style="display:flex;flex-direction:column;gap:16px">
-        <div class="card"><div class="ct">바꾼 것과 그 뒤 순위</div><div class="list">${!R ? `<div class="empty">🔒 ${lockMsg()}</div>` : chs.length ? chs.map((c) => `<div class="chg"><div class="t">${md(c.date)}<em>${esc(c.kind)}</em><button onclick="delChange(${c.row})">지우기</button></div><p>${esc(c.text)}</p><div class="eff">${effect(br, c)}</div></div>`).join("") : `<div class="empty">아직 기록이 없어요.</div>`}</div></div>
+        <div class="card"><div class="ct">바꾼 것과 그 뒤 순위<small>${chs.length ? `전체 ${chs.length}건` : ""}</small></div><div class="list">${!R ? `<div class="empty">🔒 ${lockMsg()}</div>` : chs.length ? chgList(br, chs) : `<div class="empty">아직 기록이 없어요.</div>`}</div></div>
         <div class="card"><div class="ct">주간 통계<small>팀장님 캡처 기준</small></div>${weeklyHtml}</div>
         <div class="card"><div class="ct">지난 주간 분석에서 ${br.name}</div><div class="list">${!R ? `<div class="empty">🔒 ${lockMsg()}</div>` : (() => { const a = analysis().filter((x) => x.b === br.name).reverse().slice(0, 4); return a.length ? a.map((x) => `<div class="li" style="align-items:flex-start"><b style="min-width:52px">${esc(x.wk)}</b><span class="v ${m}" style="flex:1;line-height:1.55"><small style="color:var(--sub)">${esc(x.sec)}</small><br>${esc(x.t)}</span></div>`).join("") : `<div class="empty">언급된 적 없어요.</div>`; })()}</div></div>
       </div>
     </div>`;
 }
 
+// 바꾼 것 목록: 최근 3건 펼침, 이전 것은 한 줄(누르면 펼침), 한 줄 목록은 5개까지 → 더 보기
+const OPEN = new Set(); let allChg = false;
+function chgList(br, chs) {
+  const full = (c) => `<div class="chg"><div class="t">${md(c.date)}<em>${esc(c.kind)}</em><button onclick="delChange(${c.row})">지우기</button></div><p>${esc(c.text)}</p><div class="eff">${effect(br, c)}</div></div>`;
+  const rest = chs.slice(3), shown = allChg ? rest : rest.slice(0, 5);
+  const line = (c) => OPEN.has(c.row) ? `<div onclick="OPEN.delete(${c.row});render()" style="cursor:pointer">${full(c)}</div>`
+    : `<button class="li" onclick="OPEN.add(${c.row});render()" style="font-size:14px"><b style="min-width:44px;font-weight:500;color:var(--sub)">${md(c.date)}</b><span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink2)">${esc(c.kind)} ${esc(c.text)}</span><span style="color:var(--faint)">›</span></button>`;
+  return chs.slice(0, 3).map(full).join("")
+    + (rest.length ? `<div class="nav-h" style="padding:14px 0 2px">이전 기록</div>${shown.map(line).join("")}` : "")
+    + (rest.length > 5 ? `<button class="li" onclick="allChg=!allChg;render()" style="justify-content:center;color:var(--navy);font-weight:600;font-size:14px">${allChg ? "접기" : `이전 기록 ${rest.length - 5}건 더 보기`}</button>` : "");
+}
+
 // ── 주간 분석 (기존 '플레이스 순위변화 분석' 탭들을 옮긴 것) ──
+// 최근 1주만 펼치고 지난 주차는 한 줄로 접어 둠 (누르면 펼침)
 const SECS = ["상승", "집중 관리", "공통", "다음 주 할 일", "종합 판단", "주의점"];
+const OPENW = new Set();
 function renderAnalysis() {
   const A = analysis(), m = hide ? "mask" : "";
   const weeks = [...new Set(A.map((a) => a.wk))].reverse();
   const body = !R ? `<div class="card"><div class="empty">🔒 ${lockMsg()}</div></div>` : !weeks.length ? `<div class="card"><div class="empty">아직 주간 분석이 없어요.</div></div>` :
-    weeks.map((w) => {
+    weeks.map((w, i) => {
       const rows = A.filter((a) => a.wk === w);
-      return `<div class="card" style="margin-bottom:16px"><div class="ct" style="font-size:16px;color:var(--ink);font-weight:600">${esc(w)}주<small>${esc(rows[0].per)}</small></div>
+      const open = i === 0 || OPENW.has(w);
+      const head = `<div class="ct" style="font-size:16px;color:var(--ink);font-weight:600">${esc(w)}주<small>${esc(rows[0].per)}${i ? (open ? " · 접기 ▴" : " · 펼치기 ▾") : ""}</small></div>`;
+      if (!open) {
+        const brief = rows.filter((a) => a.sec === "집중 관리").map((a) => a.b).filter(Boolean).join(", ");
+        return `<button class="card" style="display:block;width:100%;text-align:left;margin-bottom:10px;padding:18px 24px" onclick="OPENW.add('${w}');render()">${head}<div style="font-size:14px;color:var(--sub);margin-top:6px">집중 관리: ${esc(brief || "없음")}</div></button>`;
+      }
+      return `<div class="card" style="margin-bottom:16px"><div ${i ? `onclick="OPENW.delete('${w}');render()" style="cursor:pointer"` : ""}>${head}</div>
         ${SECS.map((s) => { const r = rows.filter((a) => a.sec === s); return r.length ? `<div class="nav-h" style="padding:16px 0 4px">${s}</div>${r.map((a) => `<div class="li" style="align-items:flex-start"><b>${esc(a.b) || "–"}</b><span class="v ${m}" style="flex:1;line-height:1.55">${esc(a.t)}</span></div>`).join("")}` : ""; }).join("")}</div>`;
     }).join("");
   $("#main").innerHTML = `<div class="head"><h1>주간 분석</h1><span class="when">기존 주간통계 시트의 주차별 분석</span></div>${body}`;
 }
 
 function render() { renderSide(); VIEW === "개요" ? renderOverview() : VIEW === "주간 분석" ? renderAnalysis() : renderBranch(); }
-function go(v) { if (v === VIEW) return; VIEW = v; history.pushState({ v }, ""); render(); window.scrollTo(0, 0); }
+function go(v) { if (v === VIEW) return; VIEW = v; allChg = false; history.pushState({ v }, ""); render(); window.scrollTo(0, 0); }
 window.addEventListener("popstate", (e) => { if ($("#dim").classList.contains("on")) { $("#dim").classList.remove("on"); return; } VIEW = (e.state && e.state.v) || "개요"; render(); });
 
 // ── 기록하기 ──
