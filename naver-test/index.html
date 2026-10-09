@@ -144,6 +144,12 @@
   .sech{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:700;color:var(--ink);padding:24px 0 6px}
   .at{color:var(--ink2);font-size:14px}
   .at b.num{color:var(--ink);font-weight:600}
+  .wgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:12px}
+  .wm{background:#F7F8FA;border-radius:14px;padding:16px}
+  .wv{font-size:28px;font-weight:300;letter-spacing:-.5px;margin-top:10px;font-variant-numeric:tabular-nums}
+  .wd{font-size:13px;color:var(--ink);margin-top:4px;font-weight:600} .wd span{color:var(--sub);font-weight:400}
+  .wb{display:flex;align-items:flex-end;gap:6px;height:48px;margin-top:14px} .wb i{flex:1;border-radius:3px}
+  @media (max-width:900px){ .wgrid{grid-template-columns:1fr 1fr;gap:10px} .wv{font-size:24px} }
 </style>
 </head>
 <body>
@@ -152,7 +158,7 @@
 <div class="dim" id="dim"><div class="sheet" id="sheet"></div></div>
 <div class="toast" id="toast"></div>
 <script>
-const VER = "10.09-10";
+const VER = "10.09-11";
 const APPS_URL = "https://script.google.com/macros/s/AKfycbyLK49pLpgbSpZ6TT47V8rezYHme0lFk_6dn_4NPvkbPINm0szww9TmuPAellcHv9Ry/exec";
 const KIND = ["대표사진", "소개글", "블로그 발행", "리뷰", "트래픽 작업", "가격표, 소식", "키워드", "기타"];
 const LINE = ["#3B4A6B", "#8A97B5", "#C3CBDB"];
@@ -226,7 +232,7 @@ function weeklyFor(name) {
   if (hi < 0) return null;
   const H = v[hi].map((c) => String(c).replace(/\s/g, "")), col = (n) => H.findIndex((h) => h.includes(n));
   const C = { wk: col("주차"), per: col("기간"), br: col("지점명"), view: col("플레이스조회수"), call: col("전화"), guest: col("객수"), sales: col("매출") };
-  return v.slice(hi + 1).filter((r) => { const n = String(r[C.br] || "").trim(); return n === name || n === name + "점"; }).slice(-5)
+  return v.slice(hi + 1).filter((r) => { const n = String(r[C.br] || "").trim(); return n === name || n === name + "점"; }).slice(-6)
     .map((r) => ({ wk: r[C.wk], per: r[C.per], view: r[C.view], call: r[C.call], guest: r[C.guest], sales: r[C.sales] }));
 }
 
@@ -381,8 +387,20 @@ function renderBranch() {
       ${n != null ? `<div class="seg">${Array.from({ length: 30 }, (_, i) => `<i class="${i < n ? "on" : ""}"></i>`).join("")}</div><div class="r2">블로그 ${n} / 30${PREV && bCnt(br.name, k, PREV) != null ? ` · 어제 ${bCnt(br.name, k, PREV)}` : ""}</div>` : ""}</div>`;
   }).join("");
   const wk = weeklyFor(br.name), m = hide ? "mask" : "";
+  // 주간 통계: 지표 4칸 (최근 주 숫자 + 전주 대비 + 최근 6주 막대)
+  const num = (v) => { const n = parseFloat(String(v ?? "").replace(/[^\d.\-]/g, "")); return isNaN(n) ? null : n; };
+  const metric = (label, key, priv) => {
+    const vals = wk.map((w) => ({ wk: w.wk, per: w.per, raw: w[key], n: num(w[key]) }));
+    const last = vals[vals.length - 1], prev = vals[vals.length - 2];
+    const pct = last && prev && last.n != null && prev.n ? Math.round(((last.n - prev.n) / prev.n) * 100) : null;
+    const max = Math.max(1, ...vals.map((v) => v.n || 0));
+    const bars = vals.map((v, i) => `<i title="${esc(v.wk)} ${esc(v.per)} : ${esc(v.raw || "-")}" style="height:${v.n ? Math.max(4, (v.n / max) * 48) : 2}px;background:${i === vals.length - 1 ? "var(--navy)" : "#E5E8EB"}"></i>`).join("");
+    return `<div class="wm"><div class="ct">${label}</div><div class="wv ${priv ? m : ""}">${last && last.raw ? esc(last.raw) : "–"}</div>
+      <div class="wd ${priv ? m : ""}">${pct == null ? "&nbsp;" : `${pct > 0 ? "▲" : pct < 0 ? "▼" : ""} ${Math.abs(pct)}% <span>(${esc(prev.wk)} ${esc(prev.raw)})</span>`}</div>
+      <div class="wb ${priv ? m : ""}">${bars}</div></div>`;
+  };
   const weeklyHtml = !R ? `<div class="empty">🔒 ${lockMsg()}</div>` : !wk || !wk.length ? `<div class="empty">주간통계 시트에 ${br.name} 기록이 없어요.</div>` :
-    `<div class="scroll"><table><tr><th>주차</th><th>조회수</th><th>전화</th><th>객수</th><th>매출</th></tr>${wk.slice().reverse().map((w) => `<tr><td>${esc(w.wk)}<small>${esc(w.per)}</small></td><td>${esc(w.view)}</td><td class="${m}">${esc(w.call)}</td><td class="${m}">${esc(w.guest)}</td><td class="${m}">${esc(w.sales)}</td></tr>`).join("")}</table></div>`;
+    `<div class="wgrid">${metric("조회수", "view", false)}${metric("전화", "call", true)}${metric("객수", "guest", true)}${metric("매출", "sales", true)}</div>`;
 
   $("#main").innerHTML = `
     <div class="head"><h1>${br.name}<small>${br.no}호</small></h1><span class="when">${md(LAST)} 기준</span></div>
@@ -398,10 +416,10 @@ function renderBranch() {
       <div class="card"><div class="ct">키워드</div><div class="list">${kwHtml}</div></div>
       <div style="display:flex;flex-direction:column;gap:16px">
         <div class="card"><div class="ct">바꾼 것과 그 뒤 순위<small>${chs.length ? `전체 ${chs.length}건` : ""}</small></div><div class="list">${!R ? `<div class="empty">🔒 ${lockMsg()}</div>` : chs.length ? chgList(br, chs) : `<div class="empty">아직 기록이 없어요.</div>`}</div></div>
-        <div class="card"><div class="ct">주간 통계<small>팀장님 캡처 기준</small></div>${weeklyHtml}</div>
         <div class="card"><div class="ct">지난 주간 분석에서 ${br.name}</div><div class="list">${!R ? `<div class="empty">🔒 ${lockMsg()}</div>` : (() => { const a = analysis().filter((x) => x.b === br.name).reverse().slice(0, 4); return a.length ? a.map((x) => `<div class="li" style="align-items:flex-start"><b style="min-width:52px">${esc(x.wk)}</b><span class="v at ${m}" style="flex:1;line-height:1.6"><small style="color:var(--ink);font-weight:600">${x.sec === "집중 관리" ? `<span class="dot red" style="display:inline-block;margin-right:6px"></span>` : ""}${esc(x.sec)}</small><br>${hl(x.t)}</span></div>`).join("") : `<div class="empty">언급된 적 없어요.</div>`; })()}</div></div>
       </div>
-    </div>`;
+    </div>
+    <div class="card" style="margin-top:16px"><div class="ct">주간 통계<small>${wk && wk.length ? `${esc(wk[wk.length - 1].wk)} ${esc(wk[wk.length - 1].per)} · 팀장님 캡처 기준 · 막대 = 최근 6주` : "팀장님 캡처 기준"}</small></div>${weeklyHtml}</div>`;
 }
 
 // 바꾼 것 목록: 최근 3건 펼침, 이전 것은 한 줄(누르면 펼침), 한 줄 목록은 5개까지 → 더 보기
