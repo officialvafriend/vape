@@ -141,6 +141,9 @@
     .fab{position:fixed;right:16px;bottom:20px;background:var(--navy);color:#fff;border-radius:14px;padding:14px 18px;font-weight:600;box-shadow:0 6px 18px rgba(0,0,0,.15);z-index:30}
   }
   @media (min-width:901px){ .fab{display:none} }
+  .sech{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:700;color:var(--ink);padding:24px 0 6px}
+  .at{color:var(--ink2);font-size:14px}
+  .at b.num{color:var(--ink);font-weight:600}
 </style>
 </head>
 <body>
@@ -149,7 +152,7 @@
 <div class="dim" id="dim"><div class="sheet" id="sheet"></div></div>
 <div class="toast" id="toast"></div>
 <script>
-const VER = "10.09-8";
+const VER = "10.09-9";
 const APPS_URL = "https://script.google.com/macros/s/AKfycbyLK49pLpgbSpZ6TT47V8rezYHme0lFk_6dn_4NPvkbPINm0szww9TmuPAellcHv9Ry/exec";
 const KIND = ["대표사진", "소개글", "블로그 발행", "리뷰", "트래픽 작업", "가격표, 소식", "키워드", "기타"];
 const LINE = ["#3B4A6B", "#8A97B5", "#C3CBDB"];
@@ -396,7 +399,7 @@ function renderBranch() {
       <div style="display:flex;flex-direction:column;gap:16px">
         <div class="card"><div class="ct">바꾼 것과 그 뒤 순위<small>${chs.length ? `전체 ${chs.length}건` : ""}</small></div><div class="list">${!R ? `<div class="empty">🔒 ${lockMsg()}</div>` : chs.length ? chgList(br, chs) : `<div class="empty">아직 기록이 없어요.</div>`}</div></div>
         <div class="card"><div class="ct">주간 통계<small>팀장님 캡처 기준</small></div>${weeklyHtml}</div>
-        <div class="card"><div class="ct">지난 주간 분석에서 ${br.name}</div><div class="list">${!R ? `<div class="empty">🔒 ${lockMsg()}</div>` : (() => { const a = analysis().filter((x) => x.b === br.name).reverse().slice(0, 4); return a.length ? a.map((x) => `<div class="li" style="align-items:flex-start"><b style="min-width:52px">${esc(x.wk)}</b><span class="v ${m}" style="flex:1;line-height:1.55"><small style="color:var(--sub)">${esc(x.sec)}</small><br>${esc(x.t)}</span></div>`).join("") : `<div class="empty">언급된 적 없어요.</div>`; })()}</div></div>
+        <div class="card"><div class="ct">지난 주간 분석에서 ${br.name}</div><div class="list">${!R ? `<div class="empty">🔒 ${lockMsg()}</div>` : (() => { const a = analysis().filter((x) => x.b === br.name).reverse().slice(0, 4); return a.length ? a.map((x) => `<div class="li" style="align-items:flex-start"><b style="min-width:52px">${esc(x.wk)}</b><span class="v at ${m}" style="flex:1;line-height:1.6"><small style="color:var(--ink);font-weight:600">${x.sec === "집중 관리" ? `<span class="dot red" style="display:inline-block;margin-right:6px"></span>` : ""}${esc(x.sec)}</small><br>${hl(x.t)}</span></div>`).join("") : `<div class="empty">언급된 적 없어요.</div>`; })()}</div></div>
       </div>
     </div>`;
 }
@@ -415,6 +418,8 @@ function chgList(br, chs) {
 
 // ── 주간 분석 (기존 '플레이스 순위변화 분석' 탭들을 옮긴 것) ──
 // 최근 1주만 펼치고 지난 주차는 한 줄로 접어 둠 (누르면 펼침)
+// 분석 문장: 숫자만 검정 굵게
+const hl = (t) => esc(t).replace(/[+-]?d[d,.]*(%|원|건|회|위|일|명)?/g, (m) => `<b class="num">${m}</b>`);
 const SECS = ["상승", "집중 관리", "공통", "다음 주 할 일", "종합 판단", "주의점"];
 const OPENW = new Set();
 function renderAnalysis() {
@@ -430,7 +435,7 @@ function renderAnalysis() {
         return `<button class="card" style="display:block;width:100%;text-align:left;margin-bottom:10px;padding:18px 24px" onclick="OPENW.add('${w}');render()">${head}<div style="font-size:14px;color:var(--sub);margin-top:6px">집중 관리: ${esc(brief || "없음")}</div></button>`;
       }
       return `<div class="card" style="margin-bottom:16px"><div ${i ? `onclick="OPENW.delete('${w}');render()" style="cursor:pointer"` : ""}>${head}</div>
-        ${SECS.map((s) => { const r = rows.filter((a) => a.sec === s); return r.length ? `<div class="nav-h" style="padding:16px 0 4px">${s}</div>${r.map((a) => `<div class="li" style="align-items:flex-start"><b>${esc(a.b) || "–"}</b><span class="v ${m}" style="flex:1;line-height:1.55">${esc(a.t)}</span></div>`).join("")}` : ""; }).join("")}</div>`;
+        ${SECS.map((s) => { const r = rows.filter((a) => a.sec === s); return r.length ? `<div class="sech">${s === "집중 관리" ? `<span class="dot red"></span>` : ""}${s}</div>${r.map((a) => `<div class="li" style="align-items:flex-start"><b>${esc(a.b) || "–"}</b><span class="v at ${m}" style="flex:1;line-height:1.6">${hl(a.t)}</span></div>`).join("")}` : ""; }).join("")}</div>`;
     }).join("");
   $("#main").innerHTML = `<div class="head"><h1>주간 분석</h1><span class="when">기존 주간통계 시트의 주차별 분석</span></div>${body}`;
 }
