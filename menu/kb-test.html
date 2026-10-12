@@ -692,13 +692,15 @@
   .p .lno{position:absolute;top:10px;right:10px;z-index:1;min-width:26px;padding:3px 6px;border-radius:7px;background:#15120f;color:#fff;font-family:var(--num);font-weight:800;font-size:13px;text-align:center;line-height:1.2}
   .lno.in{position:static;display:inline-block;padding:1px 7px;margin-right:4px;border-radius:6px;background:#15120f;color:#fff;font-size:12px}
   .lno[class*="lc-"]{color:#15120f;border:1.5px solid #15120f} .lno.lc-w{background:#fff} .lno.lc-b{background:#9cc8f0} .lno.lc-o{background:#ffb066} .lno.lc-g{background:#d3d3d3} .lno.lc-gr{background:#9ad39a} .lno.lc-y{background:#ffe36b} .lno.lc-v{background:#d4bff0} /* 라벨지 색 */
-  /* 키보드로 고른 칸 (10/12): 테두리 대신 통통 튀며 살짝 커짐 + 그림자, 안의 사진은 더 확대 */
+  /* 키보드로 고른 칸 (10/12): 테두리 없이 카드가 통통 튀며 커지고, 사진은 가장자리가 투명하게 번지며 볼록하게 */
   .kbx{transition:transform .38s cubic-bezier(.34,1.56,.64,1),box-shadow .3s ease!important}
-  .kbx img{transition:transform .45s cubic-bezier(.34,1.56,.64,1)!important}
-  .kbf{transform:scale(1.07)!important;z-index:30!important;box-shadow:0 18px 40px rgba(0,0,0,.28),0 0 0 3px rgba(232,38,44,.35)!important;outline:none!important}
-  .kbf img{transform:scale(1.12)}
-  #pv .pp.kbf{transform:scale(1.025)!important;box-shadow:0 0 0 4px rgba(255,255,255,.55),0 24px 50px rgba(0,0,0,.45)!important}
-  #pv .pp.kbf img{transform:none}
+  .kbx img{transition:transform .5s cubic-bezier(.34,1.56,.64,1),filter .3s ease,-webkit-mask-size .4s ease,mask-size .4s ease!important}
+  .kbf{transform:scale(1.05)!important;z-index:30!important;box-shadow:0 22px 48px rgba(0,0,0,.22),0 6px 14px rgba(0,0,0,.08)!important;outline:none!important}
+  .kbf.dcard,.kbf .dimg{overflow:visible!important}
+  .kbf img{transform:scale(1.16) translateY(-3%);filter:saturate(1.08) contrast(1.03);
+    -webkit-mask-image:radial-gradient(ellipse 72% 72% at 50% 48%,#000 58%,rgba(0,0,0,.55) 78%,transparent 100%);mask-image:radial-gradient(ellipse 72% 72% at 50% 48%,#000 58%,rgba(0,0,0,.55) 78%,transparent 100%)}
+  #pv .pp.kbf{transform:scale(1.02)!important;box-shadow:0 26px 56px rgba(0,0,0,.45)!important}
+  #pv .pp.kbf img{transform:none;filter:none;-webkit-mask-image:none;mask-image:none}
   .kbf:is(input,textarea){transform:none!important}
 </style>
 </head>
