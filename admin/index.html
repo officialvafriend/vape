@@ -80,6 +80,36 @@
   .login{padding-top:14vh} .login .headline{margin-bottom:28px}
   .report{white-space:pre-wrap;font:15px/1.6 "Pretendard Variable",Pretendard,sans-serif;background:var(--line);border-radius:16px;padding:16px 18px;margin-top:16px}
   .search{position:relative} .search .in{padding-left:44px} .search svg{position:absolute;left:15px;top:16px;width:22px;height:22px;color:var(--sub)}
+  /* ── PC 배치 (10/12, 900px 이상): 폰 화면은 그대로, 넓은 화면에서는 왼쪽 메뉴 + 요약 + 두 열 ── */
+  .warn{color:var(--red);font-weight:600;background:var(--red-soft);border-radius:12px;padding:10px 14px;margin-top:8px;font-size:14px;line-height:1.5}
+  .okline{color:var(--green);font-weight:700;margin-top:14px;font-size:15px}
+  @media (min-width:900px){
+    .wrap{max-width:none;padding:0}
+    .nav{display:none!important}
+    .login{max-width:420px;margin:0 auto;padding-top:22vh}
+    .shell{display:grid;grid-template-columns:236px minmax(0,1fr);min-height:100vh}
+    .side{position:sticky;top:0;height:100vh;padding:30px 16px 24px;background:var(--card);border-right:1px solid var(--line2);display:flex;flex-direction:column;gap:4px}
+    .side .logo{font-size:19px;font-weight:800;padding:0 12px 26px;letter-spacing:-.4px} .side .logo b{color:var(--blue)}
+    .navb{display:flex;align-items:center;gap:12px;height:48px;padding:0 14px;border-radius:14px;font-size:15px;font-weight:600;color:var(--ink2);width:100%;text-align:left;transition:background .15s}
+    .navb svg{width:22px;height:22px;flex:none} .navb:hover{background:var(--press)} .navb.on{background:var(--blue-soft);color:var(--blue)}
+    .side .foot{margin-top:auto;display:flex;flex-direction:column;gap:4px} .side .foot .navb{font-size:14px;height:42px}
+    .main{padding:38px 44px 80px;max-width:1320px;width:100%}
+    .narrow{max-width:720px}
+    .pchead{display:flex;align-items:baseline;gap:14px;margin-bottom:22px} .pchead h1{font-size:30px;font-weight:800;letter-spacing:-.9px} .pchead .caption{margin:0}
+    .kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:24px}
+    .kpi{background:var(--card);border-radius:22px;padding:22px 24px 20px;min-height:122px;text-align:left;transition:transform .15s,box-shadow .15s;display:block}
+    button.kpi:hover{transform:translateY(-2px);box-shadow:0 12px 30px rgba(0,0,0,.07)}
+    .kpi .eyebrow{margin-bottom:10px} .kpi .num{font-size:36px;font-weight:800;letter-spacing:-1.2px;line-height:1} .kpi .num small{font-size:15px;font-weight:600;color:var(--sub);margin-left:5px;letter-spacing:0} .kpi .caption{margin-top:9px}
+    .cols{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:22px;align-items:start}
+    .panel{position:sticky;top:28px;background:var(--card);border-radius:26px;padding:28px 28px 24px;min-height:460px;max-height:calc(100vh - 56px);overflow:auto;animation:none}
+    .panel .list{background:none;padding:0;margin:14px -28px 0} .panel .item{padding:13px 28px}
+    .panel .btns .btn{height:50px;font-size:16px}
+    .item{cursor:pointer} .item:hover{background:var(--press)}
+    .sec{margin-top:22px}
+    .dim{align-items:center} .sheet{border-radius:26px;max-height:86vh;width:min(620px,100%);padding-bottom:26px}
+    .sticky{left:236px;bottom:28px} .sticky .btn{max-width:480px}
+    .toast{bottom:40px}
+  }
 </style>
 </head>
 <body>
@@ -132,8 +162,11 @@ async function sendOp(op, data) {
   const r = await fetch(HOOK, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ content: JSON.stringify({ type: "admin", op, data, ts, sig }), allowed_mentions: { parse: [] } }) });
   if (!r.ok) throw new Error("응답 " + r.status);
 }
-const openSheet = (h) => { $("#sheet").innerHTML = h; $("#dim").classList.add("on"); };
-const closeSheet = () => $("#dim").classList.remove("on");
+const isPC = () => matchMedia("(min-width:900px)").matches;
+let panelKeep = ""; // PC 홈의 오른쪽 상세 패널 내용 (다시 그릴 때 유지)
+const usePanel = () => isPC() && tab === "home" && $("#panel");
+const openSheet = (h) => { if (usePanel()) { panelKeep = h; $("#panel").innerHTML = h; $("#panel").scrollTop = 0; return; } $("#sheet").innerHTML = h; $("#dim").classList.add("on"); };
+const closeSheet = () => { $("#dim").classList.remove("on"); if (usePanel()) { panelKeep = ""; $("#panel").innerHTML = panelDefault(); bindSparks(); } };
 
 function renderLogin(msg) {
   $("#nav").style.display = "none";
@@ -160,13 +193,70 @@ async function reload(quiet) {
 }
 
 // ── 그리기 ──
+const ICON = {
+  home: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3.2 3 10.4V20a1 1 0 0 0 1 1h5.5v-6h5v6H20a1 1 0 0 0 1-1v-9.6z"/></svg>',
+  survey: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 5h16v3H4zm1 5h14v9a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1zm4 3v2h6v-2z"/></svg>',
+  tasks: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 3h8v2h3a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h3zm2 0v3h4V3zm5.3 7.3-4.3 4.3-2.3-2.3-1.4 1.4 3.7 3.7 5.7-5.7z"/></svg>',
+  must: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h16v4H4zm0 6h16v10H4zm5 3v2h6v-2z"/></svg>',
+};
 function render() {
   if (!D) return;
-  $("#nav").style.display = "";
+  const pc = isPC();
+  $("#nav").style.display = pc ? "none" : "";
   document.querySelectorAll("#nav button").forEach((b) => b.classList.toggle("on", b.dataset.tab === tab));
   const [, hh, mm] = D.at.match(/(\d{2}):(\d{2})$/) || [];
-  $("#app").innerHTML = `<div class="top"><div class="logo">VAFRIEND <b>관리자</b></div><div class="r"><button class="ic" data-act="reload">${hh ? `${hh}:${mm} 기준 ↻` : "새로고침"}</button><button class="ic" data-act="logout">잠그기</button></div></div>
-    ${tab === "home" ? homeHtml() : tab === "survey" ? surveyHtml() : tab === "tasks" ? tasksHtml() : mustHtml()}`;
+  const body = tab === "home" ? (pc ? homePC() : homeHtml()) : tab === "survey" ? surveyHtml() : tab === "tasks" ? tasksHtml() : mustHtml();
+  if (!pc) { $("#app").innerHTML = `<div class="top"><div class="logo">VAFRIEND <b>관리자</b></div><div class="r"><button class="ic" data-act="reload">${hh ? `${hh}:${mm} 기준 ↻` : "새로고침"}</button><button class="ic" data-act="logout">잠그기</button></div></div>${body}`; return; }
+  const navs = [["home", "홈"], ["survey", "재고조사"], ["tasks", "업무"], ["must", "추가 필수"]];
+  $("#app").innerHTML = `<div class="shell"><aside class="side"><div class="logo">VAFRIEND <b>관리자</b></div>
+      ${navs.map(([k, n]) => `<button class="navb ${tab === k ? "on" : ""}" data-tab="${k}">${ICON[k]}${n}</button>`).join("")}
+      <div class="foot"><button class="navb" data-act="reload">↻ ${hh ? `${hh}:${mm} 기준` : "새로고침"}</button><button class="navb" data-act="logout">🔒 잠그기</button></div></aside>
+    <main class="main">${tab === "home" ? body : `<div class="narrow">${body}</div>`}</main></div>`;
+  if (tab === "home") { $("#panel").innerHTML = panelKeep || panelDefault(); bindSparks(); }
+}
+// PC 홈: 요약 4칸 + 지점별 마감 목록(왼쪽) + 상세 패널(오른쪽)
+const closingOf = (b) => (D.closings || []).find((c) => c.b === b && c.date === D.d);
+function homePC() {
+  const con = D.branches.filter((x) => x.connected);
+  const reported = con.filter((x) => closingOf(x.b)?.status === "done").length;
+  const warnN = (D.closings || []).filter((c) => c.date === D.d && (c.warn || []).length).length;
+  const aOut = new Set(con.flatMap((x) => G(x, "프리미엄 A").out.map((o) => o.n))).size;
+  const tDone = D.branches.reduce((a, x) => a + x.tasks.done, 0), tAll = D.branches.reduce((a, x) => a + x.tasks.total, 0), pct = tAll ? Math.round((tDone / tAll) * 100) : 0;
+  const kpis = `<div class="kpis">
+    <div class="kpi"><div class="eyebrow">오늘 마감 보고</div><div class="num">${reported}<small>/ ${con.length}곳</small></div><div class="caption">${con.length && reported === con.length ? "모든 지점이 보고했어요" : "아직 안 온 지점이 있어요"}</div></div>
+    <div class="kpi"><div class="eyebrow">확인 필요</div><div class="num ${warnN ? "t-bad" : "t-good"}">${warnN}<small>곳</small></div><div class="caption">${warnN ? "현금·이체가 안 맞는 보고" : "안 맞는 보고가 없어요"}</div></div>
+    <div class="kpi"><div class="eyebrow">A그룹 품절</div><div class="num ${aOut ? "t-bad" : "t-good"}">${aOut}<small>종</small></div><div class="caption">절대 떨어지면 안 되는 상품</div></div>
+    <div class="kpi"><div class="eyebrow">오늘 할 일</div><div class="num">${pct}<small>%</small></div><div class="caption">${tAll ? `${tAll}개 중 ${tDone}개 완료` : "예정된 일이 없어요"}</div></div></div>`;
+  const order = [...D.branches].sort((a, c) => (c.connected - a.connected) || (((closingOf(c.b)?.warn || []).length) - ((closingOf(a.b)?.warn || []).length)));
+  const rows = order.map((x) => {
+    const n = BR.indexOf(x.b) + 1;
+    if (!x.connected) return `<div class="item" style="opacity:.5"><div class="av">${n}</div><div class="tx"><b>${esc(x.b)}</b><span>포스 연결 전</span></div></div>`;
+    const c = closingOf(x.b), a = G(x, "프리미엄 A").out.length, w = (c?.warn || []).length;
+    const st = !c ? ["미보고", "t-sub"] : c.status !== "done" ? ["만드는 중", "t-sub"] : w ? [`확인 ${w}건`, "t-bad"] : ["이상 없음", "t-good"];
+    return `<button class="item" data-brpc="${x.b}"><div class="av ${!c ? "" : w ? "bad" : c.status === "done" ? "good" : "blue"}">${n}</div>
+      <div class="tx"><b>${esc(x.b)}</b><span>A그룹 품절 ${a} · 할 일 ${x.tasks.done}/${x.tasks.total}${c ? ` · ${esc(c.at)} ${esc(c.by)}` : ""}</span></div>
+      <div class="val"><b class="${st[1]}">${st[0]}</b><span class="t-sub">마감</span></div><span class="chev">›</span></button>`;
+  }).join("");
+  const sw = (D.surveys || []).filter((v) => v.status === "wait");
+  return `<div class="pchead"><h1>오늘 한눈에</h1><div class="caption">${esc(D.d)} · ${esc(D.at.slice(-5))} 기준</div></div>${kpis}
+    <div class="cols"><div>
+      <div class="sec" style="margin-top:0">지점별 마감 <small>오늘 · 누르면 오른쪽에 상세</small></div><div class="list">${rows}</div>
+      ${sw.length ? `<button class="card" data-tab="survey" style="display:block;width:100%;text-align:left"><div class="eyebrow">재고조사</div><div class="headline">확인할 재고조사가 <em>${sw.length}건</em></div></button>` : ""}
+      ${closingListHtml()}
+    </div><div class="sheet panel" id="panel"></div></div>`;
+}
+function panelDefault() { return heroHtml() + groupCardHtml() + tasksCardHtml() + (D.matrix.length ? `<div class="sec">오늘 할 일 <small>${D.matrix.length}개</small></div><div class="list">${D.matrix.map(taskRow).join("")}</div>` : ""); }
+// 지점 상세 패널: 오늘 마감 보고(경고 포함) + 품절
+function panelBranch(b, g) {
+  const c = closingOf(b), n = c?.nums || {};
+  const cl = !c ? `<div class="eyebrow">${esc(ho(b))} · 오늘 마감</div><h3>아직 마감 보고가 없어요</h3><div class="caption">직원앱에서 마감 보고를 보내면 여기에 바로 떠요</div>`
+    : c.status !== "done" ? `<div class="eyebrow">${esc(ho(b))} · ${esc(c.at)} 보냄</div><h3>${c.status === "error" ? "보고문을 못 만들었어요" : "보고문 만드는 중"}</h3><div class="caption">${esc(c.err || "1~2분 뒤 다시 열어 주세요")}</div>`
+    : `<div class="eyebrow">${esc(ho(b))} · ${esc(c.at)} 보냄 · ${esc(c.by)}</div><h3>총매출 ${won(n.총)}원 ${(c.warn || []).length ? '<span class="t-bad">· 확인 필요</span>' : '<span class="t-good">· 이상 없음</span>'}</h3>
+      <div class="caption">현금 ${won(n.현)} · 카드 ${won(n.카)} · 이체 ${won(n.입)} · 시재 ${won(c.sijae)}${c.drawer != null ? ` · 돈통 ${won(c.drawer)}` : ""} · 영수 ${n.영수객수}건</div>
+      ${(c.warn || []).length ? c.warn.map((w) => `<div class="warn">⚠️ ${esc(w)}</div>`).join("") : c.close ? '<div class="okline">✅ 현금·이체 이상 없음</div>' : ""}
+      <div class="btns" style="margin-top:14px"><button class="btn gray" data-clb="${esc(b)}" style="height:46px;font-size:15px">보고문 전체 보기</button></div>`;
+  openSheet(cl + `<div style="height:1px;background:var(--line2);margin:22px -28px 8px"></div>` + branchHtml(b, g || "프리미엄 A"));
+  bindSparks();
 }
 function totals() {
   const con = D.branches.filter((x) => x.connected && x.must);
@@ -176,31 +266,38 @@ function totals() {
 // 그룹 (본점 포스 소분류, 상품 이름으로 전 지점 공통) — 프리미엄 A그룹은 절대 떨어지면 안 되는 상품
 const G = (x, g) => (x.groups || []).find((y) => y.g === g) || { g, total: 0, out: [] };
 const GNAME = { "프리미엄 A": "A그룹", "프리미엄 B": "B그룹", "일회용": "일회용", "기기 A": "기기 A" };
-function homeHtml() {
+function heroHtml() {
   const con = D.branches.filter((x) => x.connected);
   const aOut = con.flatMap((x) => G(x, "프리미엄 A").out.map((o) => ({ ...o, b: x.b }))), aTotal = G(con[0] || {}, "프리미엄 A").total;
-  const tDone = D.branches.reduce((a, x) => a + x.tasks.done, 0), tAll = D.branches.reduce((a, x) => a + x.tasks.total, 0);
-  const hero = `<div class="eyebrow">프리미엄 A그룹 · ${aOut.length ? '<span class="t-bad">위험</span>' : '<span class="t-good">좋아요</span>'}</div>
+  return `<div class="card"><div class="eyebrow">프리미엄 A그룹 · ${aOut.length ? '<span class="t-bad">위험</span>' : '<span class="t-good">좋아요</span>'}</div>
      <div class="headline">${aOut.length ? `절대 떨어지면 안 되는 상품이<br><em class="r">${new Set(aOut.map((o) => o.n)).size}종 품절</em>이에요` : `절대 떨어지면 안 되는 상품이<br><em>모두 있어요</em>`}</div>
      <div class="caption">A그룹 ${aTotal}종 · 지점 ${con.length}곳 기준${aOut.length ? "" : " · 빌런·릭·베이퍼·크래프트 포도"}</div>
      ${aOut.length ? `<div class="list" style="margin:14px -20px -8px;background:none">${[...new Set(aOut.map((o) => o.n))].map((n) => { const xs = aOut.filter((o) => o.n === n), has = [...new Set(xs.flatMap((o) => o.others))];
        return `<div class="item"><div class="av bad">${xs.length}</div><div class="tx"><b>${esc(n)}</b><span>${xs.map((o) => esc(o.b)).join("·")}에서 품절</span>
-       <div>${has.length ? has.map((ob) => `<span class="tag">${esc(ob)}에 있어요</span>`).join("") : '<span class="tag gray">재고 있는 지점이 없어요</span>'}</div></div></div>`; }).join("")}</div>` : ""}`;
-  const groupCard = `<div class="sec">그룹별 품절 <small>지점 ${con.length}곳 합계</small></div><div class="list">${["프리미엄 B", "일회용", "기기 A"].map((g) => {
+       <div>${has.length ? has.map((ob) => `<span class="tag">${esc(ob)}에 있어요</span>`).join("") : '<span class="tag gray">재고 있는 지점이 없어요</span>'}</div></div></div>`; }).join("")}</div>` : ""}</div>`;
+}
+function groupCardHtml() {
+  const con = D.branches.filter((x) => x.connected);
+  return `<div class="sec">그룹별 품절 <small>지점 ${con.length}곳 합계</small></div><div class="list">${["프리미엄 B", "일회용", "기기 A"].map((g) => {
     const n = con.reduce((a, x) => a + G(x, g).out.length, 0), t = con.reduce((a, x) => a + G(x, g).total, 0);
     return `<div class="item"><div class="av blue">${esc(GNAME[g][0])}</div><div class="tx"><b>${esc(GNAME[g])}</b><span>${con.map((x) => `${x.b} ${G(x, g).out.length}`).join(" · ")}</span></div><div class="val"><b>${n}개</b><span class="t-sub">${t ? Math.round((n / t) * 100) : 0}% 품절</span></div></div>`; }).join("")}</div>`;
-  const pct = tAll ? Math.round((tDone / tAll) * 100) : 0;
+}
+function tasksCardHtml() {
+  const tDone = D.branches.reduce((a, x) => a + x.tasks.done, 0), tAll = D.branches.reduce((a, x) => a + x.tasks.total, 0), pct = tAll ? Math.round((tDone / tAll) * 100) : 0;
+  return `<div class="card" style="margin-top:12px"><div class="eyebrow">오늘 할 일</div>
+      <div class="headline">${tAll ? (tDone === tAll ? `<em>모두 끝났어요</em>` : `${tAll}개 중 <em>${tDone}개</em> 끝났어요`) : "오늘 예정된 일이 없어요"}</div>
+      ${tAll ? `<div class="bar"><i style="width:${pct}%"></i></div>` : `<div class="btns"><button class="btn sec2" data-tab="tasks">업무 나눠 주기</button></div>`}</div>`;
+}
+function homeHtml() {
   const order = [...D.branches].sort((a, c) => (c.connected - a.connected) || ((c.rate ?? -1) - (a.rate ?? -1)));
   const sw = (D.surveys || []).filter((v) => v.status === "wait");
-  return `<div class="card">${hero}</div>
+  return `${heroHtml()}
     ${sw.length ? `<button class="card" data-tab="survey" style="display:block;width:100%;text-align:left"><div class="eyebrow">재고조사</div><div class="headline">확인할 재고조사가<br><em>${sw.length}건</em> 있어요</div><div class="caption">${[...new Set(sw.map((v) => v.branch))].join("·")} · 포스와 다른 상품만 모아 보여드려요 ›</div></button>` : ""}
     <div class="sec">지점별</div>
     <div class="list">${order.map(branchRow).join("")}</div>
-    ${groupCard}
+    ${groupCardHtml()}
     ${closingListHtml()}
-    <div class="card" style="margin-top:12px"><div class="eyebrow">오늘 할 일</div>
-      <div class="headline">${tAll ? (tDone === tAll ? `<em>모두 끝났어요</em>` : `${tAll}개 중 <em>${tDone}개</em> 끝났어요`) : "오늘 예정된 일이 없어요"}</div>
-      ${tAll ? `<div class="bar"><i style="width:${pct}%"></i></div>` : `<div class="btns"><button class="btn sec2" data-tab="tasks">업무 나눠 주기</button></div>`}</div>
+    ${tasksCardHtml()}
     ${D.matrix.length ? `<div class="sec">오늘 할 일 <small>${D.matrix.length}개</small></div><div class="list">${D.matrix.map(taskRow).join("")}</div>` : ""}
     <div class="caption" style="text-align:center;margin-top:18px">그룹은 본점 포스 소분류 기준 · 상품 이름으로 전 지점 공통 적용</div>`;
 }
@@ -209,13 +306,14 @@ const won = (n) => Math.round(+n || 0).toLocaleString("ko-KR");
 function closingListHtml() {
   const L = (D.closings || []).slice(0, 8);
   if (!L.length) return "";
-  return `<div class="sec">마감 보고 <small>최근</small></div><div class="list">${L.map((c, i) => `<button class="item" data-cl="${i}"><div class="av ${c.status === "done" ? "good" : c.status === "error" ? "bad" : "blue"}">${BR.indexOf(c.b) + 1}</div>
-    <div class="tx"><b>${esc(c.b)} · ${c.date.slice(5).replace("-", "/")}</b><span>${c.status === "done" ? `총 ${won(c.nums.총)} · 시재 ${won(c.sijae)}` : c.status === "error" ? esc(c.err || "실패") : "만드는 중"} · ${esc(c.by)}</span></div><span class="chev">›</span></button>`).join("")}</div>`;
+  return `<div class="sec">마감 보고 <small>최근</small></div><div class="list">${L.map((c, i) => `<button class="item" data-cl="${i}"><div class="av ${c.status === "done" ? ((c.warn || []).length ? "bad" : "good") : c.status === "error" ? "bad" : "blue"}">${BR.indexOf(c.b) + 1}</div>
+    <div class="tx"><b>${esc(c.b)} · ${c.date.slice(5).replace("-", "/")}${(c.warn || []).length ? ` <span class="t-bad">⚠️ ${c.warn.length}</span>` : ""}</b><span>${c.status === "done" ? `총 ${won(c.nums.총)} · 시재 ${won(c.sijae)}` : c.status === "error" ? esc(c.err || "실패") : "만드는 중"} · ${esc(c.by)}</span></div><span class="chev">›</span></button>`).join("")}</div>`;
 }
 function sheetClosing(i) {
   const c = D.closings[i], n = c.nums || {};
   openSheet(`<div class="eyebrow">${esc(ho(c.b))} · ${c.date} · ${esc(c.at)} 보냄</div><h3>${c.status === "done" ? `총매출 ${won(n.총)}원` : c.status === "error" ? "보고문을 못 만들었어요" : "보고문 만드는 중"}</h3>
     ${c.status === "done" ? `<div class="caption">영수 ${n.영수객수}건 · 객단가 ${won(n.객단가)}원 · 일회용 ${n.kpi?.일회용 ?? "-"} · 프리미엄 ${n.kpi?.프리미엄 ?? "-"} · 지정 ${n.kpi?.지정 ?? "-"} · 발맥프로 ${n.kpi?.발맥프로 ?? "-"} · 택배 ${n.kpi?.택배 ?? "-"}</div>
+      ${(c.warn || []).length ? c.warn.map((w) => `<div class="warn">⚠️ ${esc(w)}</div>`).join("") : c.close ? '<div class="okline">✅ 현금·이체 이상 없음</div>' : ""}
       <div class="report" id="rpt">${esc(c.text)}</div>
       <div class="caption">시재 = 5만원권 ${c.n50}장 + 1만원권 ${c.n10}장 − 만원권 10장${(n.otherAcc || []).length ? ` · 금전현황: ${n.otherAcc.map((x) => `${esc(x.계정)} ${won(x.금액)}`).join(", ")}` : ""}</div>
       <div class="btns"><button class="btn gray" data-x>닫기</button><button class="btn" data-act="copyrpt">보고문 복사</button></div>`
@@ -235,20 +333,20 @@ function taskRow(t) {
     <div class="tx"><b>${esc(t.title)}</b><span>${t.time ? esc(t.time) + " · " : ""}${due.length}개 지점 중 ${done.length}곳 완료</span></div><span class="chev">›</span></button>`;
 }
 let sheetG = "프리미엄 A";
-function sheetBranch(b, g) {
+function branchHtml(b, g) {
   sheetG = g || sheetG;
   const x = D.branches.find((y) => y.b === b), gr = sheetG === "추가 필수" ? { g: sheetG, total: x.must, out: x.out } : G(x, sheetG);
   const tabs = ["프리미엄 A", "프리미엄 B", "일회용", "기기 A", ...(x.must ? ["추가 필수"] : [])];
   const nm = GNAME[sheetG] || sheetG;
-  openSheet(`<div class="eyebrow">${esc(ho(b))} · 재고 ${esc(x.stockAt || "")} 기준</div>
+  return (`<div class="eyebrow">${esc(ho(b))} · 재고 ${esc(x.stockAt || "")} 기준</div>
     <h3>${gr.out.length ? `${esc(nm)} ${gr.total}개 중<br><span class="${sheetG === "프리미엄 A" ? "t-bad" : ""}">${gr.out.length}개가 품절</span>이에요` : `${esc(nm)} ${gr.total}개가<br>모두 있어요`}</h3>
     ${sheetG === "프리미엄 A" ? sparkSvg(D.hist[b] || []) : ""}
     <div class="seg" style="margin-top:16px">${tabs.map((t) => `<button class="${t === sheetG ? "on" : ""}" data-brg="${t}" data-b="${b}">${esc(GNAME[t] || t)}</button>`).join("")}</div>
     ${gr.out.length ? `<div class="list">${gr.out.map((o) => `<div class="item"><div class="tx"><b>${esc(o.n)}</b>
       <div>${o.others.length ? o.others.map((ob) => `<span class="tag">${esc(ob)}에 있어요</span>`).join("") : '<span class="tag gray">다른 지점에도 없어요</span>'}</div></div></div>`).join("")}</div>` : `<div class="caption" style="margin-top:16px">품절된 상품이 없어요</div>`}
     <div class="btns"><button class="btn gray" data-x>닫기</button><button class="btn sec2" data-mustgo="${b}">추가 필수 상품 고르기</button></div>`);
-  bindSparks();
 }
+function sheetBranch(b, g) { openSheet(branchHtml(b, g)); bindSparks(); }
 function sheetTaskStatus(id) {
   const t = D.matrix.find((y) => y.id === id), def = D.tasks.find((y) => y.id === id);
   openSheet(`<div class="eyebrow">${esc(REP_TXT(def))}${t.time ? " · " + esc(t.time) : ""}</div><h3>${esc(t.title)}</h3>${def.note ? `<div class="caption">${esc(def.note)}</div>` : ""}
@@ -374,7 +472,9 @@ document.addEventListener("click", async (e) => {
   const a = t.dataset.act;
   if (a === "reload") return reload();
   if (a === "logout") { ls.set("vf-admin-key", null); KEY = D = null; return renderLogin("잠갔어요"); }
-  if (t.dataset.brg) return sheetBranch(t.dataset.b, t.dataset.brg);
+  if (t.dataset.brpc) return panelBranch(t.dataset.brpc, "프리미엄 A");
+  if (t.dataset.clb) { const i = (D.closings || []).findIndex((c) => c.b === t.dataset.clb && c.date === D.d); if (i >= 0) return sheetClosing(i); }
+  if (t.dataset.brg) return usePanel() && panelKeep.includes("data-brpc") === false && panelKeep.includes("오늘 마감") ? panelBranch(t.dataset.b, t.dataset.brg) : sheetBranch(t.dataset.b, t.dataset.brg);
   if (t.dataset.br) return sheetBranch(t.dataset.br, "프리미엄 A");
   if (t.dataset.sv) return sheetSurvey(t.dataset.sv);
   if (t.dataset.cl !== undefined) return sheetClosing(+t.dataset.cl);
@@ -411,6 +511,7 @@ document.addEventListener("keydown", (e) => { if (e.key === "Enter" && e.target.
   catch { ls.set("vf-admin-key", null); KEY = null; renderLogin(); }
 })();
 setInterval(() => KEY && reload(true), 3 * 60e3);
+matchMedia("(min-width:900px)").addEventListener("change", () => { panelKeep = ""; if (D) render(); });
 </script>
 </body>
 </html>
