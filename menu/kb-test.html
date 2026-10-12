@@ -702,6 +702,7 @@
   #pv .pp.kbf{transform:scale(1.02)!important;box-shadow:0 26px 56px rgba(0,0,0,.45)!important}
   #pv .pp.kbf img{transform:none;filter:none;-webkit-mask-image:none;mask-image:none}
   .kbf:is(input,textarea){transform:none!important}
+  .kbx:focus,.kbx:focus-visible{outline:none!important} /* 브라우저 기본 초점 테두리가 번쩍이지 않게 */
 </style>
 </head>
 <body data-mode=""><div id="testRibbon" style="position:fixed;left:0;right:0;bottom:0;z-index:99999;background:#1f6feb;color:#fff;text-align:center;font:700 13px sans-serif;padding:4px;pointer-events:none">키보드 시험판 · 정식판과 같고 키보드 조작만 더함</div>
@@ -1929,9 +1930,9 @@ document.addEventListener("input", (e) => { if (e.target.id === "evq" && EV) { E
   };
   let cur = null;
   const mark = (el) => {
-    document.querySelectorAll(".kbf").forEach((x) => x.classList.remove("kbf"));
+    document.querySelectorAll(".kbf").forEach((x) => x !== el && x.classList.remove("kbf")); // 같은 칸은 빼지 않음 (빼면 깜빡임)
     cur = el; if (!el) return;
-    el.classList.add("kbx"); if (getComputedStyle(el).position === "static") el.style.position = "relative"; setTimeout(() => { document.querySelectorAll(".kbf").forEach((x) => x !== cur && x.classList.remove("kbf")); if (cur === el) el.classList.add("kbf"); }, 16);
+    if (getComputedStyle(el).position === "static") el.style.position = "relative"; el.classList.add("kbx", "kbf");
     if (!/^(INPUT|SELECT|TEXTAREA)$/.test(el.tagName)) { if (!el.hasAttribute("tabindex") && el.tagName !== "BUTTON" && el.tagName !== "A") el.setAttribute("tabindex", "-1"); el.focus({ preventScroll: true }); } else el.focus();
     // 포스터는 자체 넘김(transform)이라 scrollIntoView를 쓰면 #pv가 옆으로 밀려 버림(10/12 버그) → 세로로만 맞춤
     const pv = document.getElementById("pv");
