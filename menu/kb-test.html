@@ -692,8 +692,14 @@
   .p .lno{position:absolute;top:10px;right:10px;z-index:1;min-width:26px;padding:3px 6px;border-radius:7px;background:#15120f;color:#fff;font-family:var(--num);font-weight:800;font-size:13px;text-align:center;line-height:1.2}
   .lno.in{position:static;display:inline-block;padding:1px 7px;margin-right:4px;border-radius:6px;background:#15120f;color:#fff;font-size:12px}
   .lno[class*="lc-"]{color:#15120f;border:1.5px solid #15120f} .lno.lc-w{background:#fff} .lno.lc-b{background:#9cc8f0} .lno.lc-o{background:#ffb066} .lno.lc-g{background:#d3d3d3} .lno.lc-gr{background:#9ad39a} .lno.lc-y{background:#ffe36b} .lno.lc-v{background:#d4bff0} /* 라벨지 색 */
-  .kbf{outline:4px solid #e8262c!important;outline-offset:3px!important} /* 키보드로 고른 칸 (10/12) */
-  #pv .pp.kbf{outline-offset:-6px!important} /* 포스터는 테두리를 안쪽에 (밖은 잘림) */
+  /* 키보드로 고른 칸 (10/12): 테두리 대신 통통 튀며 살짝 커짐 + 그림자, 안의 사진은 더 확대 */
+  .kbx{transition:transform .38s cubic-bezier(.34,1.56,.64,1),box-shadow .3s ease!important}
+  .kbx img{transition:transform .45s cubic-bezier(.34,1.56,.64,1)!important}
+  .kbf{transform:scale(1.07)!important;z-index:30!important;box-shadow:0 18px 40px rgba(0,0,0,.28),0 0 0 3px rgba(232,38,44,.35)!important;outline:none!important}
+  .kbf img{transform:scale(1.12)}
+  #pv .pp.kbf{transform:scale(1.025)!important;box-shadow:0 0 0 4px rgba(255,255,255,.55),0 24px 50px rgba(0,0,0,.45)!important}
+  #pv .pp.kbf img{transform:none}
+  .kbf:is(input,textarea){transform:none!important}
 </style>
 </head>
 <body data-mode=""><div id="testRibbon" style="position:fixed;left:0;right:0;bottom:0;z-index:99999;background:#1f6feb;color:#fff;text-align:center;font:700 13px sans-serif;padding:4px;pointer-events:none">키보드 시험판 · 정식판과 같고 키보드 조작만 더함</div>
@@ -1923,7 +1929,7 @@ document.addEventListener("input", (e) => { if (e.target.id === "evq" && EV) { E
   const mark = (el) => {
     document.querySelectorAll(".kbf").forEach((x) => x.classList.remove("kbf"));
     cur = el; if (!el) return;
-    el.classList.add("kbf");
+    el.classList.add("kbx"); if (getComputedStyle(el).position === "static") el.style.position = "relative"; requestAnimationFrame(() => { document.querySelectorAll(".kbf").forEach((x) => x !== cur && x.classList.remove("kbf")); if (cur === el) el.classList.add("kbf"); });
     if (!/^(INPUT|SELECT|TEXTAREA)$/.test(el.tagName)) { if (!el.hasAttribute("tabindex") && el.tagName !== "BUTTON" && el.tagName !== "A") el.setAttribute("tabindex", "-1"); el.focus({ preventScroll: true }); } else el.focus();
     // 포스터는 자체 넘김(transform)이라 scrollIntoView를 쓰면 #pv가 옆으로 밀려 버림(10/12 버그) → 세로로만 맞춤
     const pv = document.getElementById("pv");
