@@ -97,7 +97,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.06-7";
+const VER = "10.12-1";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
 const OPEN_AT = { 동성로: "11:00", 수성: "10:30", 본점: "11:00", 율하: "10:30", 반월당: "10:30", 상인: "10:30", 광장코아: "11:00", 현풍: "11:00" };
 // 운영봇(운영봇_시험.mjs)의 CHECK와 같은 목록이어야 기록이 맞아요
@@ -416,7 +416,7 @@ let CLOSE_SENT = null;
 const closeDay = () => { const d = new Date(); if (d.getHours() < 5) d.setDate(d.getDate() - 1); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; };
 function closeRowHtml(stepRow) {
   const c = BOARD?.closing && BOARD.closing.date === closeDay() ? BOARD.closing : CLOSE_SENT;
-  const info = !c ? { t: "아직 안 함 · 돈통만 세면 돼요" } : c.status === "done" ? { t: `${c.at} 보고 완료 · ${c.by}` } : c.status === "error" ? { t: `못 만들었어요: ${c.err || ""}`, w: 1 } : { t: "보고문 만드는 중… (1~2분)" };
+  const info = !c ? { t: "아직 안 함 · 돈통만 세면 돼요" } : c.status === "done" ? ((c.warn || []).length ? { t: `${c.at} 보고됨 · 확인 필요: ` + c.warn.join(" / "), w: 1 } : { t: `${c.at} 보고 완료 · ${c.by} · 현금·이체 이상 없음` }) : c.status === "error" ? { t: `못 만들었어요: ${c.err || ""}`, w: 1 } : { t: "보고문 만드는 중… (1~2분)" };
   return stepRow("💰", c?.status === "done", "마감 보고", info, `<button class="act ${c?.status === "done" ? "gray" : ""}" data-go="closing">${c ? "다시" : "보고"}</button>`);
 }
 function sheetClosing() {
@@ -424,6 +424,7 @@ function sheetClosing() {
   openSheet(`<h2>💰 마감 보고</h2><div class="desc">매출·카드·이체·지출은 포스에서 자동으로 가져와요. 돈통만 세 주세요.</div>
     <div class="desc" style="margin-top:16px">5만원권 몇 장?</div><input class="input" id="c50" inputmode="numeric" placeholder="장">
     <div class="desc" style="margin-top:12px">1만원권 몇 장? (전부 세기)</div><input class="input" id="c10" inputmode="numeric" placeholder="장">
+    <div class="desc" style="margin-top:12px">그 외 잔돈 합계 (5천원 · 1천원 · 동전 다 더해서, 원)</div><input class="input" id="cCoin" inputmode="numeric" placeholder="원 (없으면 0)">
     <div class="desc" id="cSij" style="margin-top:10px;font-size:16px;color:var(--ink)">시재 0원</div>
     <div class="desc" style="margin-top:2px">만원권 10장은 내일 준비금으로 빼고 계산해요</div>
     <div class="desc" style="margin-top:16px">리뷰 개수 · 각인 의뢰 (선택)</div><div style="display:flex;gap:8px"><input class="input" id="cRev" inputmode="numeric" placeholder="리뷰"><input class="input" id="cEng" inputmode="numeric" placeholder="각인"></div>
@@ -434,12 +435,12 @@ function sheetClosing() {
 const sijae = () => { const n50 = +($("#c50")?.value || 0), n10 = +($("#c10")?.value || 0); return n50 * 50000 + Math.max(0, n10 - 10) * 10000; };
 async function doClosing() {
   const v = (id) => ($(id).value || "").replace(/\D/g, "");
-  if (v("#c50") === "" || v("#c10") === "") return toast("5만원권·1만원권 장수를 넣어 주세요 (없으면 0)");
+  if (v("#c50") === "" || v("#c10") === "" || v("#cCoin") === "") return toast("5만원권·1만원권 장수와 잔돈 합계를 넣어 주세요 (없으면 0)");
   const hn = $('[data-cck="hn"]').classList.contains("on"), vm = $('[data-cck="vm"]').classList.contains("on");
   if ((!hn || !vm) && !confirm(`${!hn ? "히난충 OFF " : ""}${!vm ? "자판기 " : ""}확인이 안 됐어요. 그대로 보낼까요?`)) return;
   $("#okClose").disabled = true;
   try {
-    await send({ type: "closing", n50: v("#c50"), n10: v("#c10"), rev: v("#cRev"), eng: v("#cEng"), hn, vm, by: working().join(", ") });
+    await send({ type: "closing", n50: v("#c50"), n10: v("#c10"), coin: v("#cCoin"), rev: v("#cRev"), eng: v("#cEng"), hn, vm, by: working().join(", ") });
     CLOSE_SENT = { date: closeDay(), status: "wait", at: now() }; closeSheet(); render(); toast(`시재 ${sijae().toLocaleString()}원으로 보냈어요 · 보고문은 1~2분 뒤 관리자 페이지에`);
   } catch (e) { $("#okClose").disabled = false; fail(e); }
 }
