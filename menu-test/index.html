@@ -704,12 +704,13 @@
   .lno.in{position:static;display:inline-block;padding:1px 7px;margin-right:4px;border-radius:6px;background:#15120f;color:#fff;font-size:12px}
   .lno[class*="lc-"]{color:#15120f;border:1.5px solid #15120f} .lno.lc-w{background:#fff} .lno.lc-b{background:#9cc8f0} .lno.lc-o{background:#ffb066} .lno.lc-g{background:#d3d3d3} .lno.lc-gr{background:#9ad39a} .lno.lc-y{background:#ffe36b} .lno.lc-v{background:#d4bff0} /* 라벨지 색 */
   .kbf{outline:4px solid #e8262c!important;outline-offset:3px!important} /* 키보드로 고른 칸 (10/12) */
+  #pv .pp.kbf{outline-offset:-6px!important} /* 포스터는 테두리를 안쪽에 (밖은 잘림) */
 </style>
 </head>
 <body data-mode=""><div id="testRibbon" style="position:fixed;left:0;right:0;bottom:0;z-index:99999;background:#d32f2f;color:#fff;text-align:center;font:700 13px sans-serif;padding:4px;pointer-events:none">테스트판 · 손님 상담에는 정식판을 쓰세요</div>
 <div class="app">
   <div class="top">
-    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">테스트 v10.12-0400</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
+    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">테스트 v10.12-0500</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
     <nav class="tabs" id="tabs" style="display:none"></nav>
     <div class="flow" id="flow"><span data-st="1">① 찾는 것</span><i>›</i><span data-st="2">② 고르기</span><i>›</i><span data-st="3">③ 담은 상품</span><i>›</i><span data-st="4">④ 직원 확인</span></div>
   </div>
@@ -1976,7 +1977,10 @@ document.addEventListener("input", (e) => { if (e.target.id === "evq" && EV) { E
     cur = el; if (!el) return;
     el.classList.add("kbf");
     if (!/^(INPUT|SELECT|TEXTAREA)$/.test(el.tagName)) { if (!el.hasAttribute("tabindex") && el.tagName !== "BUTTON" && el.tagName !== "A") el.setAttribute("tabindex", "-1"); el.focus({ preventScroll: true }); } else el.focus();
-    el.scrollIntoView({ block: "center", inline: "nearest", behavior: "smooth" });
+    // 포스터는 자체 넘김(transform)이라 scrollIntoView를 쓰면 #pv가 옆으로 밀려 버림(10/12 버그) → 세로로만 맞춤
+    const pv = document.getElementById("pv");
+    if (pv && pv.contains(el)) { pv.scrollLeft = 0; const r = pv.getBoundingClientRect(); if (r.top < 0 || r.bottom > innerHeight) scrollTo({ top: Math.max(0, scrollY + r.top - 80), behavior: "smooth" }); }
+    else el.scrollIntoView({ block: "center", inline: "nearest", behavior: "smooth" });
   };
   const move = (key) => {
     const els = items(); if (!els.length) return;
