@@ -708,7 +708,7 @@
 <body data-mode=""><div id="testRibbon" style="position:fixed;left:0;right:0;bottom:0;z-index:99999;background:#d32f2f;color:#fff;text-align:center;font:700 13px sans-serif;padding:4px;pointer-events:none">테스트판 · 손님 상담에는 정식판을 쓰세요</div>
 <div class="app">
   <div class="top">
-    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">테스트 v10.12-0200</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
+    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">테스트 v10.12-0300</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
     <nav class="tabs" id="tabs" style="display:none"></nav>
     <div class="flow" id="flow"><span data-st="1">① 찾는 것</span><i>›</i><span data-st="2">② 고르기</span><i>›</i><span data-st="3">③ 담은 상품</span><i>›</i><span data-st="4">④ 직원 확인</span></div>
   </div>
@@ -975,25 +975,25 @@ const evLabel = (k) => { const [e, m] = k.split("|"); return (m ? dInfo(m).name 
 // 포스 일회용 이벤트 묶음 상품 (본점 '단종' 중분류, 10/2 조회) — 이걸로 돈 받고 낱개는 서비스(0원)
 const DSP_POS = { "DSP-3+1|팜팜바": "팜팜바 74,700원(3+1)", "DSP-3+1|모스바": "모스바 75,000원(3+1)", "DSP-AIRX": "에어릭스 75,000원 (10+2)" };
 // 10+5 (사장님 10/8·10/12): 팜팜바·모스바 15개 250,000원. 3+1과 같이 진행하되 구매 유도는 10+5로. 15개마다 10+5가 3+1보다 항상 싸서 먼저 묶고, 남는 건 3+1
-const BULK = { ev: "DSP-3+1", n: 15, price: 250000, pos: ["일회용 250,000원(10+5)", "팜팜바·모스바 250,000원(10+5)", "일회용 10+5 250,000원"] }; // pos = 포스 묶음 상품 이름 후보 (아직 포스에 없으면 안내만)
-const BULK_UNIT = Math.round(BULK.price / BULK.n / 100) * 100; // 개당 약 16,700원
+const BULK = { ev: "DSP-3+1", n: 15, buy: 10, free: 5 }; // 사장님 10/12: 포스 묶음 상품 없이, 15개 중 비싼 10개는 정가로 찍고 가장 싼 5개는 서비스(0원)
+const bulkUnit = (p) => Math.round((p * BULK.buy) / BULK.n / 100) * 100; // 개당 약 (팜팜바 16,600 · 모스바 16,700)
 const evName = (ev) => (evB(ev) === BULK.ev ? "10+5 · 3+1" : EVN[evB(ev)][2]);
 // 개당 가격 사다리 (1개 → 4개 3+1 → 15개 10+5): 많이 살수록 개당 얼마가 되는지 한눈에
 function tierHtml() {
   const ps = G.filter((x) => x.ev === BULK.ev).map((x) => x.price); if (!ps.length) return "";
   const p = Math.min(...ps), [buy, free] = EVN[BULK.ev], u31 = Math.round((buy * p) / (buy + free) / 100) * 100;
-  return `<div class="tiers"><div><b>1개</b><small>낱개</small><span>${won(p)}</span></div><i>→</i><div><b>4개</b><small>3+1</small><span>개당 약 ${won(u31)}</span></div><i>→</i><div class="top"><b>15개</b><small>10+5</small><span>개당 약 ${won(BULK_UNIT)}</span><em>최대 혜택</em></div></div>`;
+  return `<div class="tiers"><div><b>1개</b><small>낱개</small><span>${won(p)}</span></div><i>→</i><div><b>4개</b><small>3+1</small><span>개당 약 ${won(u31)}</span></div><i>→</i><div class="top"><b>15개</b><small>10+5</small><span>개당 약 ${won(bulkUnit(p))}</span><em>최대 혜택</em></div></div>`;
 }
 // 10+5 안내 상자: 적용 중이면 아낀 금액, 아니면 '몇 개 더 담으면' 진행바. key = 브랜드별 3+1 키(맛 고르기 창), 없으면 담은 상품 화면
 function bulkBox(gc, key, brand) {
   const { n, k, save } = gc.bulk, r = n - k * BULK.n, need = BULK.n - r, [buy, free] = EVN[BULK.ev];
   let h = "";
-  if (k) h += `<div class="save"><div><b>10+5 적용 중 · 15개 ${won(BULK.price)}${k > 1 ? ` × ${k}` : ""}</b><div class="u">개당 약 ${won(BULK_UNIT)} · 낱개보다 ${won(save)} 아껴요</div></div><span class="price">-${save.toLocaleString()}<span class="won">원</span></span></div>`;
+  if (k) h += `<div class="save"><div><b>10+5 적용 중 · 15개 중 5개 무료${k > 1 ? ` × ${k}` : ""}</b><div class="u">10개 값만 받아요 · 낱개보다 ${won(save)} 아껴요</div></div><span class="price">-${save.toLocaleString()}<span class="won">원</span></span></div>`;
   if (key && gc.saveBy[key]) h += `<div class="save"><div><b>3+1 할인 적용 중</b><div class="u">${brand} ${gc.cnt[key]}개 중 ${gc.freeBy[key]}개 무료</div></div><span class="price">-${gc.saveBy[key].toLocaleString()}<span class="won">원</span></span></div>`;
   if (r || !n) {
     const rb = key ? (gc.cnt[key] || 0) % (buy + free) : 0;
     const sub = key && rb ? (rb >= buy ? `지금 ${buy + free - rb}개 더 고르면 무료 (3+1)` : `${brand} ${buy - rb}개 더 담으면 1개 무료 (3+1)`) : "3개마다 1개는 지금도 무료 (3+1)";
-    h += `<div class="nudge tier"><div class="th"><b>${need}개 더 담으면 10+5</b><span>15개 ${won(BULK.price)}</span></div><div class="bar2"><i style="width:${Math.round((r / BULK.n) * 100)}%"></i></div><div class="u">지금 ${r}개${k ? ` (10+5 ${k}묶음 빼고)` : ""} · 팜팜바·모스바 섞어도 돼요 · ${sub}</div></div>`;
+    h += `<div class="nudge tier"><div class="th"><b>${need}개 더 담으면 10+5</b><span>10개 값에 15개</span></div><div class="bar2"><i style="width:${Math.round((r / BULK.n) * 100)}%"></i></div><div class="u">지금 ${r}개${k ? ` (10+5 ${k}묶음 빼고)` : ""} · 팜팜바·모스바 섞어도 돼요 · ${sub}</div></div>`;
   }
   return h;
 }
@@ -1130,7 +1130,7 @@ function dCard([model, xs]) {
     ${inCart ? `<span class="inc">${inCart}개 담음</span>` : ""}
     <div class="db"><b>${esc(i.name)}</b>${i.d ? `<div class="dm">${esc(i.d)}</div>` : ""}${i.w ? `<div class="dm warn">${esc(i.w)}</div>` : ""}${i.hi ? `<div class="hitag">고농도 · 구매 시 장부 작성</div>` : ""}
     <div class="dp">${won(p)}${many ? "~" : ""} <small>· ${xs.length}가지</small></div>
-    ${dl && evB(xs[0].ev) === BULK.ev ? `<div class="deal"><span>15개 ${won(BULK.price)}</span><span>개당 약 ${won(BULK_UNIT)}</span></div><div class="deal2">3개만 사도 1개 더 · 4개 ${won(dl.pay)}</div>` : dl ? `<div class="deal"><span>${dl.n}개 ${won(dl.pay)}</span><span>${won(dl.save)} 할인</span></div>` : ""}</div></button>`;
+    ${dl && evB(xs[0].ev) === BULK.ev ? `<div class="deal"><span>10개 값에 15개</span><span>개당 약 ${won(bulkUnit(p))}</span></div><div class="deal2">3개만 사도 1개 더 · 4개 ${won(dl.pay)}</div>` : dl ? `<div class="deal"><span>${dl.n}개 ${won(dl.pay)}</span><span>${won(dl.save)} 할인</span></div>` : ""}</div></button>`;
 }
 let curDsp = null; // 지금 열린 일회용 맛 고르기 화면 (에어릭스 혜택 고를 때 다시 그리기용)
 // 일회용 맛 고르기: 여러 맛을 연달아 담고, 이벤트 할인이 얼마나 붙는지 바로 보이게
@@ -1190,20 +1190,23 @@ function addGoods(id) {
 }
 // 일회용 이벤트: 같은 이벤트끼리 (사는 개수+무료) 묶음마다 가장 싼 것 무료
 function goodsCalc() {
-  let dev = 0, pod = 0, dsp = 0, lungN = 0, lungFull = 0; const freeBy = {}, cnt = {}, saveBy = {}; const evItems = {};
+  let dev = 0, pod = 0, dsp = 0, lungN = 0, lungFull = 0; const freeBy = {}, cnt = {}, saveBy = {}; const evItems = {}, evObj = {};
   for (const [id, n] of cart) { const x = GMAP.get(id); if (!x) continue;
     if (x.c === "lung") { lungN += n; lungFull += x.price * n; continue; } // 프리미엄 폐호흡 (3병 묶음가는 아래에서)
     if (x.c === "dev") dev += x.price * n; else if (x.c === "pod") pod += x.price * n;
-    else if (x.ev) { (evItems[evKey(x)] ||= []).push(...Array(n).fill(x.price)); } else dsp += x.price * n; }
+    else if (x.ev) { const kk = evKey(x); (evItems[kk] ||= []).push(...Array(n).fill(x.price)); (evObj[kk] ||= []).push(...Array(n).fill({ id, price: x.price })); } else dsp += x.price * n; }
   let giftDev = 0;
-  const bulk = { k: 0, n: 0, pay: 0, list: 0, save: 0 }; // 10+5: 팜팜바·모스바 합쳐 15개마다 250,000원, 남는 건 아래 3+1
+  const bulk = { k: 0, n: 0, pay: 0, list: 0, save: 0, freeById: {} }; // 10+5: 팜팜바·모스바 합쳐 15개마다 비싼 10개 정가 + 싼 5개 0원, 남는 건 아래 3+1
   { const keys = Object.keys(evItems).filter((k) => evB(k) === BULK.ev), tot = keys.reduce((a, k) => a + evItems[k].length, 0); bulk.n = tot;
     if (tot >= BULK.n) { const k = Math.floor(tot / BULK.n), take = k * BULK.n, [buy, free] = EVN[BULK.ev], cnts = keys.map((key) => evItems[key].length); let best = null;
       // 어느 브랜드에서 몇 개를 10+5로 빼야 남는 것으로 3+1이 가장 많이 되는지 (브랜드 2개까지는 전부 따져 봄)
       if (cnts.length <= 2) { for (let x = Math.max(0, take - (cnts[1] || 0)); x <= Math.min(cnts[0], take); x++) { const t = cnts.length === 2 ? [x, take - x] : [x]; const sc = t.reduce((a, v, i) => a + Math.floor((cnts[i] - v) / (buy + free)), 0); if (!best || sc > best.sc) best = { sc, t }; } }
       else { let left = take; best = { t: cnts.map((c) => { const v = Math.min(c, left); left -= v; return v; }) }; }
-      keys.forEach((key, i) => { const ps = evItems[key]; ps.sort((a, b) => b - a); bulk.list += ps.splice(0, best.t[i]).reduce((a, b) => a + b, 0); });
-      bulk.k = k; bulk.pay = k * BULK.price; bulk.save = bulk.list - bulk.pay; dsp += bulk.pay; } }
+      const taken = [];
+      keys.forEach((key, i) => { const ps = evItems[key]; ps.sort((a, b) => b - a); ps.splice(0, best.t[i]); const os = evObj[key]; os.sort((a, b) => b.price - a.price); taken.push(...os.splice(0, best.t[i])); });
+      taken.sort((a, b) => a.price - b.price); const nFree = k * BULK.free;
+      taken.forEach((o, i) => { bulk.list += o.price; if (i < nFree) { bulk.save += o.price; bulk.freeById[o.id] = (bulk.freeById[o.id] || 0) + 1; } else bulk.pay += o.price; });
+      bulk.k = k; dsp += bulk.pay; } }
   for (const [ev, prices] of Object.entries(evItems)) {
     const [buy, free] = EVN[evB(ev)]; prices.sort((a, b) => b - a);
     if (ev === "DSP-AIRX" && airxGift === "dev") { giftDev = Math.floor(prices.length / buy); dsp += prices.reduce((a, b) => a + b, 0); freeBy[ev] = 0; cnt[ev] = prices.length; saveBy[ev] = 0; continue; }
@@ -1455,7 +1458,7 @@ function pkgView(id) {
 // 포스에 찍을 값: 바코드가 등록된 상품은 바코드, 없으면 상품코드를 CODE128로 (포스 인식은 매장에서 확인 필요)
 const posOf = (name) => (window.POS?.[PAD.branch] || {})[name];
 function bundleOf(dev, vl) { // 포스에 있는 묶음 상품 중 정확히 맞는 것만 (확인된 것)
-  if (dev && vl === 5) return "빌런,릭 패키지 30,000원 (5병)";
+  if (dev && vl === 5) return posOf("빌런,릭,디오 패키지 30,000원 (5병)") ? "빌런,릭,디오 패키지 30,000원 (5병)" : "빌런,릭 패키지 30,000원 (5병)";
   if (!dev && vl === 6) return "빌런,릭 49,600원(6병)";
   if (!dev && vl === 12) return "빌런,릭 85,200원(12병)";
   return null;
@@ -1476,7 +1479,7 @@ function staffRes() {
 function staffRedraw() { const st = $("#sheet").scrollTop; staffView(); $("#sheet").scrollTop = st; }
 // 결제 계획: 장바구니 계산(estimate·goodsCalc)과 똑같이 나눠서 포스 묶음 상품을 고름
 const POS_BUNDLE = {
-  pr10: ["입호흡 기기 패키지 75,000원 (10병)", "입호흡 패키지 75,000원 (10병)"], pr5: ["입호흡 패키지 40,000원 (5병)"], vl5: ["빌런,릭 패키지 30,000원 (5병)"],
+  pr10: ["입호흡 기기 패키지 75,000원 (10병)", "입호흡 패키지 75,000원 (10병)"], pr5: ["입호흡 패키지 40,000원 (5병)"], vl5: ["빌런,릭,디오 패키지 30,000원 (5병)", "빌런,릭 패키지 30,000원 (5병)"],
   p11: ["프리미엄 90,000원(11병)"], p5: ["프리미엄 49,500원(5병)"], m10: ["프라임 160,000원(10병)"], m3: ["프라임 50,000원(3병)"], l3: ["폐 프리미엄 40,000원(3병)"],
 };
 const posBundle = (k) => POS_BUNDLE[k].find((n) => posOf(n)) || POS_BUNDLE[k][0];
@@ -1494,14 +1497,15 @@ function payPlan() {
   const prN = c.v + c.p - (pk ? pk[1] : 0), prSets = setsOf(prN, [[11, 90000, "p11"], [5, 49500, "p5"]], 15000), pmSets = setsOf(c.m, [[10, 160000, "m10"], [3, 50000, "m3"]], 20000);
   for (const [q, p, key, k] of [...prSets, ...pmSets]) out.push(card(key, k, `${q}병 ${won(p)}`));
   const lk = Math.floor(gc.lungN / 3); if (lk) out.push(card("l3", lk, `폐호흡 3병 ${won(ADD.lung3)}`));
-  if (gc.bulk.k) { const nm = BULK.pos.find((n) => posOf(n)) || BULK.pos[0], p = posOf(nm);
+  if (false) { const nm = "", p = null;
     out.push(`<div class="scan bundle"><div class="hd"><b>${esc(nm)}</b><span class="x">× ${gc.bulk.k}</span></div><div class="s">일회용 10+5 묶음 (15개 ${won(BULK.price)})</div>${p ? `<svg class="bc" data-v="${esc(p[1])}" data-f="${p[2]}"></svg>` : `<span class="warn">${esc(PAD.branch)} 포스에 10+5 묶음 상품이 없어요 · 포스에서 250,000원 상품을 직접 골라 주세요</span>`}</div>`); }
   for (const [k, nf] of Object.entries(gc.freeBy).filter(([k, nf]) => nf && DSP_POS[k])) { const [buy, free] = EVN[evB(k)], sets = nf / free, nm = DSP_POS[k], p = posOf(nm);
     out.push(`<div class="scan bundle"><div class="hd"><b>${esc(nm)}</b><span class="x">× ${sets}</span></div><div class="s">일회용 ${buy}+${free} 묶음</div>${p ? `<svg class="bc" data-v="${esc(p[1])}" data-f="${p[2]}"></svg>` : '<span class="warn">포스 상품을 못 찾았어요</span>'}</div>`); }
   const prSvc = (pk ? pk[1] : 0) + prSets.reduce((a, [q, , , k]) => a + q * k, 0), pmSvc = pmSets.reduce((a, [q, , , k]) => a + q * k, 0), lSvc = lk * 3;
   const liqN = c.v + c.p, notes = [];
-  const dspSvc = gc.bulk.k * BULK.n + Object.entries(gc.freeBy).filter(([k, nf]) => nf && DSP_POS[k]).reduce((a, [k, nf]) => { const [b, f] = EVN[evB(k)]; return a + (nf / f) * (b + f); }, 0);
-  if (dspSvc) notes.push(`일회용 묶음 ${dspSvc}개는 서비스(0원)`);
+  const dspSvc = Object.entries(gc.freeBy).filter(([k, nf]) => nf && DSP_POS[k]).reduce((a, [k, nf]) => { const [b, f] = EVN[evB(k)]; return a + (nf / f) * (b + f); }, 0);
+  if (gc.bulk.k) notes.push(`일회용 10+5: 15개 중 가장 싼 ${gc.bulk.k * BULK.free}개 서비스(0원), 나머지 ${gc.bulk.k * BULK.buy}개 정가`);
+  if (dspSvc) notes.push(`일회용 3+1 묶음 ${dspSvc}개는 서비스(0원)`);
   if (liqN) notes.push(prSvc >= liqN ? `입호흡 액상 ${liqN}병 전부 서비스(0원)` : prSvc ? `입호흡 액상 ${liqN}병 중 ${prSvc}병 서비스(0원), ${liqN - prSvc}병은 1병 15,000원` : "");
   if (c.m) notes.push(pmSvc >= c.m ? `프라임 ${c.m}병 전부 서비스(0원)` : pmSvc ? `프라임 ${c.m}병 중 ${pmSvc}병 서비스(0원)` : "");
   if (gc.lungN) notes.push(lSvc >= gc.lungN ? `폐호흡 ${gc.lungN}병 전부 서비스(0원)` : lSvc ? `폐호흡 ${gc.lungN}병 중 ${lSvc}병 서비스(0원), ${gc.lungN - lSvc}병 정상가` : "");
@@ -1511,7 +1515,7 @@ function staffView() {
   const items = [...cart];
   const vl = items.filter(([id]) => isVL(item(id))).reduce((a, [, n]) => a + n, 0);
   const dev = cart.get(DEVICE.id) || 0;
-  const plan = payPlan();
+  const plan = payPlan(), gcB = goodsCalc().bulk;
   const step = (n, t, sub) => `<div class="stp"><i>${n}</i><div><b>${t}</b>${sub ? `<span>${sub}</span>` : ""}</div></div>`;
   const devIds = items.filter(([id]) => item(id).dev || item(id).c === "dev");
   const blockOf = ([id, n]) => {
@@ -1520,7 +1524,7 @@ function staffView() {
       : `<div class="scan"><div class="hd"><b>${MAIN.name}</b><span class="x">× ${n}</span></div><div class="s">색상을 골라야 바코드가 나와요</div><div class="colors" style="padding:10px 0 0">${DEV_COLORS.map((c) => `<button data-color2="${c}">${c}</button>`).join("")}</div></div>`;
     const svc = " · <b style='color:var(--red)'>서비스(0원)</b>";
     if (x.c === "lung") return scanBlock(x.n, "폐호흡", x.n, n, plan.lungAll ? svc : "", id);
-    if (x.c) return scanBlock(x.n, won(x.price) + (x.ev ? " · " + evName(x.ev) + " 이벤트" : ""), x.n, n, "", id);
+    if (x.c) { const f = gcB.freeById[id] || 0; return scanBlock(x.n, won(x.price) + (x.ev ? " · " + evName(x.ev) + " 이벤트" : ""), x.n, n, f ? ` · <b style='color:var(--red)'>서비스(0원) ${f >= n ? "전부" : f + "개"}</b>` : "", id); }
     return scanBlock(short(x.n), [x.no ? "라벨 " + x.no + "번" : "", x.br, x.loc ? "진열 " + x.loc : ""].filter(Boolean).join(" · "), x.n, n, (x.line === "프라임" ? plan.pmAll : plan.prAll) ? svc : "", id);
   };
   const devBlocks = devIds.map(blockOf).join("");
@@ -1753,7 +1757,7 @@ const INFO = {
     <div style="font-size:15px;color:#6f6861;margin-bottom:16px">팜팜바 또는 모스바 원하는 맛으로 15개</div>
     <div style="padding:18px 20px 16px;border-radius:20px;background:#fff0f6;box-shadow:inset 0 0 0 2px #ff3d9a">
       <div style="display:flex;align-items:baseline;gap:6px;color:#e8262c;line-height:1"><span style="font-size:18px;font-weight:800;color:#6f6861">최대</span><b class="price" style="font-size:64px;letter-spacing:-.01em">33<span style="font-size:40px">%</span></b><span style="font-size:24px;font-weight:900">할인</span></div>
-      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-top:12px;padding-top:12px;border-top:1px dashed #f3a6c8"><span style="font-size:16px;color:#6f6861">15개 한 번에 <b class="price" style="font-size:26px;color:#15120f">250,000<span style="font-size:16px">원</span></b></span><b style="font-size:20px">개당 약 16,700원</b></div>
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-top:12px;padding-top:12px;border-top:1px dashed #f3a6c8"><span style="font-size:16px;color:#6f6861">15개에 10개 값만 <b class="price" style="font-size:26px;color:#15120f">약 250,000<span style="font-size:16px">원</span></b></span><b style="font-size:20px">개당 약 16,700원</b></div>
     </div>
     <div style="display:flex;justify-content:space-between;align-items:center;margin:12px 0 10px;padding:14px 16px;border-radius:14px;background:#f4f2ef;font-size:16px"><span>낱개로 15개 사면 약 <s>375,000원</s></span><b style="color:#e8262c">12만 원 넘게 아껴요</b></div>
     <div style="margin:2px 0 16px;font-size:15px;color:#6f6861;text-align:center">10개 값에 15개, <b style="color:#15120f">2개 값에 3개</b> 가져가는 셈이에요</div>
