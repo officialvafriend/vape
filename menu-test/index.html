@@ -1981,7 +1981,7 @@ document.addEventListener("input", (e) => { if (e.target.id === "evq" && EV) { E
   const mark = (el) => {
     document.querySelectorAll(".kbf").forEach((x) => x.classList.remove("kbf"));
     cur = el; if (!el) return;
-    el.classList.add("kbx"); if (getComputedStyle(el).position === "static") el.style.position = "relative"; requestAnimationFrame(() => { document.querySelectorAll(".kbf").forEach((x) => x !== cur && x.classList.remove("kbf")); if (cur === el) el.classList.add("kbf"); });
+    el.classList.add("kbx"); if (getComputedStyle(el).position === "static") el.style.position = "relative"; setTimeout(() => { document.querySelectorAll(".kbf").forEach((x) => x !== cur && x.classList.remove("kbf")); if (cur === el) el.classList.add("kbf"); }, 16);
     if (!/^(INPUT|SELECT|TEXTAREA)$/.test(el.tagName)) { if (!el.hasAttribute("tabindex") && el.tagName !== "BUTTON" && el.tagName !== "A") el.setAttribute("tabindex", "-1"); el.focus({ preventScroll: true }); } else el.focus();
     // 포스터는 자체 넘김(transform)이라 scrollIntoView를 쓰면 #pv가 옆으로 밀려 버림(10/12 버그) → 세로로만 맞춤
     const pv = document.getElementById("pv");
