@@ -155,6 +155,22 @@
   .kwc{height:320px;overflow:auto}
   .row11{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
   @media (max-width:900px){ .row64,.row11{grid-template-columns:1fr;gap:10px} .kwc{height:auto} }
+
+  /* 대구전자담배 */
+  .rt{margin-bottom:16px}
+  .rt .li{min-height:56px;padding:8px 0}
+  .rt .li b{min-width:88px}
+  .rt .rk{font-size:24px;font-weight:700;min-width:64px;font-variant-numeric:tabular-nums}
+  .rt .rk.out{color:var(--faint);font-weight:600;font-size:20px}
+  .rt .cg{font-size:13px;color:var(--sub);min-width:96px}
+  .mini{display:flex;align-items:flex-end;gap:3px;height:28px;margin-left:auto}
+  .mini i{width:10px;border-radius:2px;background:#E5E8EB}
+  .mini i.in{background:var(--navy)}
+  .tp .li b{min-width:36px;font-variant-numeric:tabular-nums}
+  .tp .li.our{color:var(--navy);font-weight:700}
+  .tag2{font-size:11px;font-weight:600;color:var(--navy);background:#E9ECF3;border-radius:6px;padding:2px 7px;margin-left:auto;white-space:nowrap}
+  .tag2.warn{color:#B26B00;background:#FFF4DC}
+  @media (max-width:900px){ .rt{margin-bottom:10px} .rt .li b{min-width:64px} .rt .cg{min-width:72px} .mini i{width:7px} }
 </style>
 </head>
 <body>
@@ -163,7 +179,7 @@
 <div class="dim" id="dim"><div class="sheet" id="sheet"></div></div>
 <div class="toast" id="toast"></div>
 <script>
-const VER = "10.09-12";
+const VER = "10.12-1";
 const APPS_URL = "https://script.google.com/macros/s/AKfycbyLK49pLpgbSpZ6TT47V8rezYHme0lFk_6dn_4NPvkbPINm0szww9TmuPAellcHv9Ry/exec";
 const KIND = ["대표사진", "소개글", "블로그 발행", "리뷰", "트래픽 작업", "가격표, 소식", "키워드", "기타"];
 const LINE = ["#3B4A6B", "#8A97B5", "#C3CBDB"];
@@ -310,6 +326,7 @@ function renderSide() {
   $("#side").innerHTML = `
     <div class="logo">베이프렌드 네이버<small>${LAST ? md(LAST) + " 9시 기준" : ""}</small></div>
     <button class="nav ${VIEW === "개요" ? "on" : ""}" onclick="go('개요')">개요</button>
+    <button class="nav ${VIEW === "대구전자담배" ? "on" : ""}" onclick="go('대구전자담배')">대구전자담배</button>
     <button class="nav ${VIEW === "주간 분석" ? "on" : ""}" onclick="go('주간 분석')">주간 분석</button>
     <div class="nav-h">지점</div>
     ${D.branches.map((b) => `<button class="nav ${VIEW === b.name ? "on" : ""}" onclick="go('${b.name}')"><span class="dot ${status(b, big)}"></span>${b.name}<span class="no">${b.no}호</span></button>`).join("")}
@@ -353,6 +370,49 @@ function renderOverview() {
       <div class="card"><div class="ct">평소보다 떨어진 곳<small>평소 = 주간통계 지도검색 순위 + 최근 2주 기록</small></div><div class="list">${listHtml}</div></div>
       <div class="card"><div class="ct">이번 주 할 일<small>${R ? "누르면 함 / 안 함" : ""}</small></div><div class="list">${todoHtml}</div></div>
     </div>`;
+}
+
+// ── 대구전자담배 (공통 키워드 지도 순위, 8개 지점) ──
+const BR_COLOR = ["#3B4A6B", "#F04452", "#03B26C", "#F5B400", "#7B61FF", "#00A3D9", "#E0679B", "#8B95A1"];
+function renderCommon() {
+  const K = D.common;
+  const now = (b) => pRank(b, K, LAST), prev = (b) => (PREV ? pRank(b, K, PREV) : null);
+  const rows = D.branches.map((b, i) => ({ b, i, r: now(b.name), p: prev(b.name) }))
+    .sort((a, z) => n11(a.r ?? 101) - n11(z.r ?? 101) || a.b.no - z.b.no);
+  const inCnt = rows.filter((x) => x.r != null && x.r < 101).length;
+  const last7 = DATES.slice(-7);
+  const mini = (name) => `<span class="mini" title="최근 ${last7.length}일">${last7.map((d) => { const r = pRank(name, K, d); return r == null ? `<i style="height:2px"></i>` : r >= 101 ? `<i style="height:4px" title="${md(d)} 밖"></i>` : `<i class="in" style="height:${Math.max(6, (11 - r) * 2.8)}px" title="${md(d)} ${r}위"></i>`; }).join("")}</span>`;
+  const cg = (r, p) => { if (r == null || p == null) return ""; const d = n11(p) - n11(r); return d > 0 ? `<b class="upc">▲${d}</b>` : d < 0 ? `<b class="dn">▼${-d}</b>` : "어제와 같음"; };
+  const tableHtml = rows.map((x) => `<button class="li" onclick="go('${x.b.name}')"><b>${esc(x.b.name)}</b><span class="rk ${x.r == null || x.r >= 101 ? "out" : ""}">${x.r == null ? "-" : x.r >= 101 ? "밖" : x.r + "위"}</span><span class="cg">${cg(x.r, x.p)}</span>${mini(x.b.name)}</button>`).join("");
+
+  // 그래프: 최근 30일 안에 10위 안에 든 적 있는 지점만
+  const days = DATES.slice(-30);
+  const shown = D.branches.map((b, i) => ({ b, color: BR_COLOR[i % BR_COLOR.length] }))
+    .filter((x) => days.some((d) => { const r = pRank(x.b.name, K, d); return r != null && r < 101; }));
+  const legend = shown.map((x) => `<span><i style="background:${x.color}"></i>${esc(x.b.name)}</span>`).join("");
+
+  // 1~10위 가게 목록 (봇이 10/12부터 저장)
+  const T = (D.commonTop || []).slice().sort((a, z) => (a.d < z.d ? -1 : 1)).pop();
+  const topHtml = T
+    ? T.list.map((x) => { const our = x.ours, vf = !our && /베이프렌드|vafriend/i.test(x.n); return `<div class="li ${our ? "our" : ""}"><b>${x.r}</b><span>${esc(x.n || "(이름 못 읽음)")}</span>${our ? `<span class="tag2">우리</span>` : vf ? `<span class="tag2 warn">우리 이름, 봇 미등록</span>` : ""}</div>`; }).join("")
+    : `<div class="empty">내일 9시부터 채워져요.</div>`;
+
+  // 주간통계 시트에 남은 예전 순위
+  const W = (D.weeklyRank || []).filter((x) => x.k === K);
+  const wHtml = W.length
+    ? W.slice().reverse().map((x) => `<div class="li"><b>${esc(x.b)}</b><span class="v">${rk(x.r)}</span><span class="k">${esc(x.per)}</span></div>`).join("")
+    : `<div class="empty">시트에 기록이 없어요.</div>`;
+
+  $("#main").innerHTML = `
+    <div class="head"><h1>대구전자담배 <small>지도 순위</small></h1><span class="when">${LAST ? `${md(LAST)} 9시 기준` : ""}${PREV ? ` · ${md(PREV)}과 비교` : ""}</span></div>
+    <div class="card rt"><div class="ct">8개 지점 순위<small>10위 안 ${inCnt}곳 · 10위 밖은 '밖' · 누르면 지점 화면</small></div><div class="list">${tableHtml}</div></div>
+    <div class="row64">
+      <div class="card chartc" style="margin-bottom:0"><div class="ct">순위 흐름<small><span class="legend">${legend}</span></small></div>
+        <div class="cs">10위 안에 든 적 있는 지점만 · 위로 갈수록 좋음</div>
+        <div class="area">${shown.length ? chart(shown.map((x) => ({ color: x.color, val: (d) => pRank(x.b.name, K, d) })), []) : `<div class="note">10위 안에 든 지점이 없어요.</div>`}</div></div>
+      <div class="card kwc tp"><div class="ct">1~10위 가게<small>${T ? md(T.d) + (T.note ? " " + esc(T.note) : "") : ""}</small></div><div class="list">${topHtml}</div></div>
+    </div>
+    <div class="card"><div class="ct">주간통계 시트 기록<small>예전 주차별 대구전자담배 순위</small></div><div class="list">${wHtml}</div></div>`;
 }
 
 // ── 지점 ──
@@ -464,7 +524,7 @@ function renderAnalysis() {
   $("#main").innerHTML = `<div class="head"><h1>주간 분석</h1><span class="when">기존 주간통계 시트의 주차별 분석</span></div>${body}`;
 }
 
-function render() { renderSide(); VIEW === "개요" ? renderOverview() : VIEW === "주간 분석" ? renderAnalysis() : renderBranch(); }
+function render() { renderSide(); VIEW === "개요" ? renderOverview() : VIEW === "대구전자담배" ? renderCommon() : VIEW === "주간 분석" ? renderAnalysis() : renderBranch(); }
 function go(v) { if (v === VIEW) return; VIEW = v; allChg = false; history.pushState({ v }, ""); render(); window.scrollTo(0, 0); }
 window.addEventListener("popstate", (e) => { if ($("#dim").classList.contains("on")) { $("#dim").classList.remove("on"); return; } VIEW = (e.state && e.state.v) || "개요"; render(); });
 
