@@ -703,12 +703,13 @@
   .p .lno{position:absolute;top:10px;right:10px;z-index:1;min-width:26px;padding:3px 6px;border-radius:7px;background:#15120f;color:#fff;font-family:var(--num);font-weight:800;font-size:13px;text-align:center;line-height:1.2}
   .lno.in{position:static;display:inline-block;padding:1px 7px;margin-right:4px;border-radius:6px;background:#15120f;color:#fff;font-size:12px}
   .lno[class*="lc-"]{color:#15120f;border:1.5px solid #15120f} .lno.lc-w{background:#fff} .lno.lc-b{background:#9cc8f0} .lno.lc-o{background:#ffb066} .lno.lc-g{background:#d3d3d3} .lno.lc-gr{background:#9ad39a} .lno.lc-y{background:#ffe36b} .lno.lc-v{background:#d4bff0} /* 라벨지 색 */
+  .kbf{outline:4px solid #e8262c!important;outline-offset:3px!important} /* 키보드로 고른 칸 (10/12) */
 </style>
 </head>
 <body data-mode=""><div id="testRibbon" style="position:fixed;left:0;right:0;bottom:0;z-index:99999;background:#d32f2f;color:#fff;text-align:center;font:700 13px sans-serif;padding:4px;pointer-events:none">테스트판 · 손님 상담에는 정식판을 쓰세요</div>
 <div class="app">
   <div class="top">
-    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">테스트 v10.12-0300</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
+    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">테스트 v10.12-0400</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
     <nav class="tabs" id="tabs" style="display:none"></nav>
     <div class="flow" id="flow"><span data-st="1">① 찾는 것</span><i>›</i><span data-st="2">② 고르기</span><i>›</i><span data-st="3">③ 담은 상품</span><i>›</i><span data-st="4">④ 직원 확인</span></div>
   </div>
@@ -1791,6 +1792,7 @@ function renderPosters() {
     pv.querySelector(".pcount").textContent = `${pCur + 1} / ${n}`;
   };
   const go = (k) => { pCur = (k + n) % n; place(); auto(); };
+  pv._go = (d) => go(pCur + d); pv._cur = () => pCur; // 키보드 ←→ 로 포스터 넘기기 (10/12)
   const auto = () => { clearTimeout(pTimer); if (n > 1) pTimer = setTimeout(() => { if (document.body.dataset.mode === "") go(pCur + 1); else auto(); }, P_AUTO); };
   let x0 = null, y0 = 0, dx = 0, t0 = 0, horiz = null;
   pv.addEventListener("pointerdown", (e) => { x0 = e.clientX; y0 = e.clientY; dx = 0; t0 = Date.now(); horiz = null; pMoved = false; clearTimeout(pTimer); });
@@ -1950,6 +1952,88 @@ document.addEventListener("input", (e) => { if (e.target.id === "evq" && EV) { E
   p.addEventListener("touchstart", (e) => { const b = p.querySelector(".eb-body"); y0 = (!b || b.scrollTop <= 0) ? e.touches[0].clientY : null; }, { passive: true });
   p.addEventListener("touchmove", (e) => { if (y0 === null) return; const dy = e.touches[0].clientY - y0; if (dy > 0) { p.style.transition = "none"; p.style.transform = `translateY(${dy}px)`; } }, { passive: true });
   p.addEventListener("touchend", (e) => { if (y0 === null) return; const dy = e.changedTouches[0].clientY - y0; p.style.transition = ""; p.style.transform = ""; y0 = null; if (dy > 120) closeEvent(); });
+})();
+// ── 키보드 조작 (10/12 시험): 터치 안 해도 직원이 키보드로 응대 ──
+// / 검색 · ↑↓←→ 화면 위치대로 이동 · Enter 누르기 · Esc 닫기/뒤로 · 첫 화면 포스터에서 ←→ 넘기기
+(() => {
+  const ATTR = /^data-(?!for$|st$|ps$|mode$|v$)/; // 누르면 동작하는 칸은 data-* 속성을 가짐 (구역 표시용 data-for 등은 제외)
+  const layer = () => { for (const s of ["#devUp.on", "#dim.on", "#evp.on", "#srch.on"]) { const el = document.querySelector(s); if (el) return el; } return document.querySelector(".app"); };
+  const shown = (el) => { const r = el.getBoundingClientRect(); if (!r.width || !r.height) return false; if (r.right < 4 || r.left > innerWidth - 4) return false; const cs = getComputedStyle(el); return cs.visibility !== "hidden" && cs.display !== "none" && !el.closest("[style*='display:none'],[style*='display: none']"); };
+  const items = () => {
+    const L = layer(), out = [];
+    L.querySelectorAll("button, a[href], input, select, textarea, .p, .scan, [data-p], [data-qa], [data-qm], [data-t], [data-l], [data-tag], [data-rec], [data-pdev], [data-pf], [data-gm], [data-gadd], [data-gpk], [data-go], [data-pkg], [data-sa], [data-qk], [data-x]").forEach((el) => {
+      if (el.disabled || !shown(el)) return;
+      if (el.matches("#pv .pp") && +el.dataset.pi !== document.getElementById("pv")._cur?.()) return; // 옆 포스터(살짝 보이는 것)는 건너뜀
+      if (!/^(BUTTON|A|INPUT|SELECT|TEXTAREA)$/.test(el.tagName) && ![...el.attributes].some((a) => ATTR.test(a.name)) && !el.matches(".scan")) return;
+      if (L === document.querySelector(".app") && el.closest(".top") && !el.matches("#homeBtn,#findBtn,#cartBtn")) return;
+      out.push(el);
+    });
+    return out;
+  };
+  let cur = null;
+  const mark = (el) => {
+    document.querySelectorAll(".kbf").forEach((x) => x.classList.remove("kbf"));
+    cur = el; if (!el) return;
+    el.classList.add("kbf");
+    if (!/^(INPUT|SELECT|TEXTAREA)$/.test(el.tagName)) { if (!el.hasAttribute("tabindex") && el.tagName !== "BUTTON" && el.tagName !== "A") el.setAttribute("tabindex", "-1"); el.focus({ preventScroll: true }); } else el.focus();
+    el.scrollIntoView({ block: "center", inline: "nearest", behavior: "smooth" });
+  };
+  const move = (key) => {
+    const els = items(); if (!els.length) return;
+    if (!cur || !els.includes(cur) || !document.contains(cur)) {
+      const top = document.querySelector(".top")?.getBoundingClientRect().bottom || 0;
+      const pool = els.filter((e) => !e.matches("[data-x], #srchClose")); // 새 창이 열리면 닫기(✕)가 아니라 내용 첫 칸부터
+      return mark(pool.find((e) => e.getBoundingClientRect().top >= top) || pool[0] || els[0]);
+    }
+    const r = cur.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+    // 위아래: 가장 가까운 '다음 줄'을 먼저 찾고, 그 줄 안에서 가로로 가장 가까운 칸 / 좌우: 같은 줄에서 가장 가까운 칸
+    const vert = key === "ArrowDown" || key === "ArrowUp", cand = [];
+    for (const el of els) {
+      if (el === cur) continue;
+      const q = el.getBoundingClientRect(), x = q.left + q.width / 2, dx = x - cx;
+      const dy = key === "ArrowDown" ? q.top - (r.bottom - 4) : key === "ArrowUp" ? (r.top + 4) - q.bottom : (q.top + q.height / 2) - cy;
+      if (vert ? dy < 0 : !(key === "ArrowRight" ? dx > 8 : dx < -8) || Math.abs(dy) > Math.max(r.height, q.height) * 0.6) continue;
+      cand.push({ el, dx: Math.abs(dx), dy: Math.abs(dy) });
+    }
+    if (!cand.length) return;
+    let best;
+    if (vert) { const m = Math.min(...cand.map((c) => c.dy)); best = cand.filter((c) => c.dy <= m + 24).sort((a, b) => a.dx - b.dx)[0]; }
+    else best = cand.sort((a, b) => a.dx + a.dy * 3 - (b.dx + b.dy * 3))[0];
+    mark(best.el);
+  };
+  const back = () => {
+    if (document.querySelector("#devUp.on")) return $("#devUp").classList.remove("on");
+    if (document.querySelector("#dim.on")) return closeS();
+    if (document.querySelector("#evp.on")) return closeEvent();
+    if (document.querySelector("#srch.on")) return $("#srch").classList.remove("on");
+    if (document.body.dataset.mode) return $("#homeBtn").click();
+  };
+  addEventListener("keydown", (e) => {
+    if (e.ctrlKey || e.metaKey || e.altKey || e.isComposing) return;
+    const t = e.target, typing = /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName);
+    if (e.key === "Escape") { e.preventDefault(); if (typing) t.blur(); back(); cur = null; return setTimeout(() => move("ArrowDown"), 80); }
+    if (typing) { if (e.key === "ArrowDown" && t.type !== "number") { e.preventDefault(); t.blur(); cur = t; move("ArrowDown"); } return; }
+    if (e.key === "/" ) { e.preventDefault(); return openSearch(); }
+    if (e.key.startsWith("Arrow")) {
+      e.preventDefault();
+      const pv = document.getElementById("pv");
+      if (cur && cur.matches?.("#pv .pp") && (e.key === "ArrowLeft" || e.key === "ArrowRight") && pv?._go) { pv._go(e.key === "ArrowRight" ? 1 : -1); return setTimeout(() => mark(pv.querySelector(`.pp[data-pi="${pv._cur()}"]`)), 30); }
+      return move(e.key);
+    }
+    if (e.key === "Enter" || e.key === " ") {
+      if (!cur || !document.contains(cur)) { e.preventDefault(); return move("ArrowDown"); }
+      e.preventDefault();
+      const was = cur, L0 = layer(), a = [...was.attributes].find((x) => ATTR.test(x.name)), key = a ? `[${a.name}="${CSS.escape(a.value)}"]` : null; cur.click();
+      // 같은 창이 다시 그려졌으면 같은 칸을 다시 찾고, 화면이 바뀌면(창이 열리거나 닫힘) 새 화면 첫 칸으로
+      setTimeout(() => {
+        if (layer() === L0 && document.contains(was) && shown(was)) return mark(was);
+        const again = layer() === L0 && key ? [...L0.querySelectorAll(key)].find(shown) : null;
+        if (again) return mark(again);
+        cur = null; move("ArrowDown");
+      }, 120);
+    }
+  });
+  addEventListener("pointerdown", () => { document.querySelectorAll(".kbf").forEach((x) => x.classList.remove("kbf")); cur = null; }, true); // 손으로 만지면 키보드 표시 끔
 })();
 </script></body>
 </html>
