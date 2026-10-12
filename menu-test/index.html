@@ -392,6 +392,17 @@
   .dcard .deal{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-top:6px;padding:9px 10px;background:rgba(216,31,42,.08);color:var(--red);font-family:var(--num);font-weight:900;font-size:15px}
   .dcards:not(.two) .dcard .deal{flex-direction:column;align-items:flex-start;gap:2px}
   .dcards.two .dcard .deal{font-size:17px}
+  .dcard .deal2{margin-top:4px;font-size:12.5px;color:var(--grey);font-family:var(--kr)}
+  .tiers{display:flex;align-items:stretch;gap:8px;margin:14px 0 2px}
+  .tiers>div{flex:1;background:rgba(255,255,255,.14);border-radius:14px;padding:10px 12px;display:flex;flex-direction:column;gap:1px;position:relative}
+  .tiers>div b{font-family:var(--num);font-size:20px;font-weight:900}
+  .tiers>div small{font-size:12px;opacity:.85}
+  .tiers>div span{font-size:14px;font-weight:700;margin-top:3px}
+  .tiers>div.top{background:#fff;color:var(--red);box-shadow:0 6px 18px rgba(0,0,0,.15)}
+  .tiers>div.top em{position:absolute;top:-9px;right:10px;font-style:normal;font-size:11px;font-weight:800;background:var(--ink);color:#fff;border-radius:99px;padding:2px 8px}
+  .tiers>i{align-self:center;font-style:normal;opacity:.7}
+  .nudge.tier .th{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+  .nudge.tier .th span{font-size:14px;font-weight:700;white-space:nowrap}
   .dcard .deal s{color:var(--grey);font-weight:700;font-size:12.5px;font-family:var(--kr)}
   .dcard .inc{position:absolute;top:8px;right:8px;background:var(--ink);color:#fff;font-family:var(--num);font-weight:800;font-size:13px;padding:4px 9px}
   @media (max-width:600px){.dcards{grid-template-columns:repeat(2,1fr)}.dev2 .big{font-size:56px}.dcards.two .dcard b{font-size:19px}}
@@ -697,7 +708,7 @@
 <body data-mode=""><div id="testRibbon" style="position:fixed;left:0;right:0;bottom:0;z-index:99999;background:#d32f2f;color:#fff;text-align:center;font:700 13px sans-serif;padding:4px;pointer-events:none">테스트판 · 손님 상담에는 정식판을 쓰세요</div>
 <div class="app">
   <div class="top">
-    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">테스트 v10.12-0100</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
+    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">테스트 v10.12-0200</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
     <nav class="tabs" id="tabs" style="display:none"></nav>
     <div class="flow" id="flow"><span data-st="1">① 찾는 것</span><i>›</i><span data-st="2">② 고르기</span><i>›</i><span data-st="3">③ 담은 상품</span><i>›</i><span data-st="4">④ 직원 확인</span></div>
   </div>
@@ -963,9 +974,32 @@ const evB = (k) => k.split("|")[0];
 const evLabel = (k) => { const [e, m] = k.split("|"); return (m ? dInfo(m).name + " " : "") + EVN[e][2]; };
 // 포스 일회용 이벤트 묶음 상품 (본점 '단종' 중분류, 10/2 조회) — 이걸로 돈 받고 낱개는 서비스(0원)
 const DSP_POS = { "DSP-3+1|팜팜바": "팜팜바 74,700원(3+1)", "DSP-3+1|모스바": "모스바 75,000원(3+1)", "DSP-AIRX": "에어릭스 75,000원 (10+2)" };
+// 10+5 (사장님 10/8·10/12): 팜팜바·모스바 15개 250,000원. 3+1과 같이 진행하되 구매 유도는 10+5로. 15개마다 10+5가 3+1보다 항상 싸서 먼저 묶고, 남는 건 3+1
+const BULK = { ev: "DSP-3+1", n: 15, price: 250000, pos: ["일회용 250,000원(10+5)", "팜팜바·모스바 250,000원(10+5)", "일회용 10+5 250,000원"] }; // pos = 포스 묶음 상품 이름 후보 (아직 포스에 없으면 안내만)
+const BULK_UNIT = Math.round(BULK.price / BULK.n / 100) * 100; // 개당 약 16,700원
+const evName = (ev) => (evB(ev) === BULK.ev ? "10+5 · 3+1" : EVN[evB(ev)][2]);
+// 개당 가격 사다리 (1개 → 4개 3+1 → 15개 10+5): 많이 살수록 개당 얼마가 되는지 한눈에
+function tierHtml() {
+  const ps = G.filter((x) => x.ev === BULK.ev).map((x) => x.price); if (!ps.length) return "";
+  const p = Math.min(...ps), [buy, free] = EVN[BULK.ev], u31 = Math.round((buy * p) / (buy + free) / 100) * 100;
+  return `<div class="tiers"><div><b>1개</b><small>낱개</small><span>${won(p)}</span></div><i>→</i><div><b>4개</b><small>3+1</small><span>개당 약 ${won(u31)}</span></div><i>→</i><div class="top"><b>15개</b><small>10+5</small><span>개당 약 ${won(BULK_UNIT)}</span><em>최대 혜택</em></div></div>`;
+}
+// 10+5 안내 상자: 적용 중이면 아낀 금액, 아니면 '몇 개 더 담으면' 진행바. key = 브랜드별 3+1 키(맛 고르기 창), 없으면 담은 상품 화면
+function bulkBox(gc, key, brand) {
+  const { n, k, save } = gc.bulk, r = n - k * BULK.n, need = BULK.n - r, [buy, free] = EVN[BULK.ev];
+  let h = "";
+  if (k) h += `<div class="save"><div><b>10+5 적용 중 · 15개 ${won(BULK.price)}${k > 1 ? ` × ${k}` : ""}</b><div class="u">개당 약 ${won(BULK_UNIT)} · 낱개보다 ${won(save)} 아껴요</div></div><span class="price">-${save.toLocaleString()}<span class="won">원</span></span></div>`;
+  if (key && gc.saveBy[key]) h += `<div class="save"><div><b>3+1 할인 적용 중</b><div class="u">${brand} ${gc.cnt[key]}개 중 ${gc.freeBy[key]}개 무료</div></div><span class="price">-${gc.saveBy[key].toLocaleString()}<span class="won">원</span></span></div>`;
+  if (r || !n) {
+    const rb = key ? (gc.cnt[key] || 0) % (buy + free) : 0;
+    const sub = key && rb ? (rb >= buy ? `지금 ${buy + free - rb}개 더 고르면 무료 (3+1)` : `${brand} ${buy - rb}개 더 담으면 1개 무료 (3+1)`) : "3개마다 1개는 지금도 무료 (3+1)";
+    h += `<div class="nudge tier"><div class="th"><b>${need}개 더 담으면 10+5</b><span>15개 ${won(BULK.price)}</span></div><div class="bar2"><i style="width:${Math.round((r / BULK.n) * 100)}%"></i></div><div class="u">지금 ${r}개${k ? ` (10+5 ${k}묶음 빼고)` : ""} · 팜팜바·모스바 섞어도 돼요 · ${sub}</div></div>`;
+  }
+  return h;
+}
 const dealOf = (ev, price) => { const [buy, free] = EVN[ev]; return { n: buy + free, pay: buy * price, list: (buy + free) * price, save: free * price }; };
 const DSPEV = [
-  { ev: "DSP-3+1", id: "dE1", tab: "3+1", red: true, badge: "BEST", t: "3개 사면 1개 더", s: "팜팜바는 팜팜바끼리, 모스바는 모스바끼리 맛을 섞어도 돼요" },
+  { ev: "DSP-3+1", id: "dE1", tab: "10+5", big: "10+5", tier: true, red: true, badge: "BEST", t: "10개 사면 5개 더", s: "팜팜바·모스바 원하는 맛으로 15개 250,000원 · 3개만 사도 1개 더 (3+1, 같은 제품끼리)" },
   { ev: "DSP-5+1", id: "dE2", tab: "5+1", t: "5개 사면 1개 더", s: "같은 5+1 제품끼리는 맛을 섞어도 돼요" },
   { ev: "DSP-AIRX", id: "dE3", tab: "에어릭스 10+2", t: "에어릭스 팟 10개 사면 팟 2개 더 또는 기기 증정", s: "팟 2개 더 받기 / 에어릭스 기기(35,000원) 받기 중 골라요 · 하카 기기 호환" },
   { ev: "", id: "dE4", tab: "배터리", t: "배터리 · 기타", s: "팟형 일회용은 배터리가 따로 필요해요" },
@@ -1084,7 +1118,7 @@ function renderGoods() {
     const gs = dsps.filter(([, xs]) => (xs[0].ev || "") === e.ev).sort((a, b) => !!dInfo(b[0]).img - !!dInfo(a[0]).img || b[1].length - a[1].length);
     if (!gs.length) return `<div id="${e.id}"></div>`;
     const big = gs.length <= 2;
-    return `<section class="dev2 ${e.red ? "red" : ""}" id="${e.id}"><div class="eh">${e.ev ? `<div class="big">${EVN[e.ev][2]}</div>` : ""}<div>${e.badge ? `<span class="badge">${e.badge}</span>` : ""}<div class="et">${esc(e.t)}</div><div class="es">${esc(e.s)}</div></div></div>
+    return `<section class="dev2 ${e.red ? "red" : ""}" id="${e.id}"><div class="eh">${e.ev ? `<div class="big">${e.big || EVN[e.ev][2]}</div>` : ""}<div>${e.badge ? `<span class="badge">${e.badge}</span>` : ""}<div class="et">${esc(e.t)}</div><div class="es">${esc(e.s)}</div></div></div>${e.tier ? tierHtml() : ""}
       <div class="dcards ${big ? "two" : ""}">${gs.map(dCard).join("")}</div></section>`;
   }).join("") + `<div class="dnote">사진을 누르면 맛을 골라 담을 수 있어요</div>`;
 }
@@ -1096,7 +1130,7 @@ function dCard([model, xs]) {
     ${inCart ? `<span class="inc">${inCart}개 담음</span>` : ""}
     <div class="db"><b>${esc(i.name)}</b>${i.d ? `<div class="dm">${esc(i.d)}</div>` : ""}${i.w ? `<div class="dm warn">${esc(i.w)}</div>` : ""}${i.hi ? `<div class="hitag">고농도 · 구매 시 장부 작성</div>` : ""}
     <div class="dp">${won(p)}${many ? "~" : ""} <small>· ${xs.length}가지</small></div>
-    ${dl ? `<div class="deal"><span>${dl.n}개 ${won(dl.pay)}</span><span>${won(dl.save)} 할인</span></div>` : ""}</div></button>`;
+    ${dl && evB(xs[0].ev) === BULK.ev ? `<div class="deal"><span>15개 ${won(BULK.price)}</span><span>개당 약 ${won(BULK_UNIT)}</span></div><div class="deal2">3개만 사도 1개 더 · 4개 ${won(dl.pay)}</div>` : dl ? `<div class="deal"><span>${dl.n}개 ${won(dl.pay)}</span><span>${won(dl.save)} 할인</span></div>` : ""}</div></button>`;
 }
 let curDsp = null; // 지금 열린 일회용 맛 고르기 화면 (에어릭스 혜택 고를 때 다시 그리기용)
 // 일회용 맛 고르기: 여러 맛을 연달아 담고, 이벤트 할인이 얼마나 붙는지 바로 보이게
@@ -1105,6 +1139,7 @@ function dspView(model) {
   const gc = goodsCalc(), ev = x0.ev;
   let save = ""; curDsp = model;
   if (ev === "DSP-AIRX") save = airxBox(gc.cnt[ev] || 0, gc);
+  else if (evB(ev) === BULK.ev) save = bulkBox(gc, evKey(x0), i.name);
   else if (ev) {
     const k = evKey(x0), [buy, free, label] = EVN[ev], n = gc.cnt[k] || 0, r = n % (buy + free), off = gc.saveBy[k] || 0;
     const next = r >= buy ? `지금 ${buy + free - r}개 더 고르면 무료` : `${buy - r}개 더 담으면 ${free}개 무료`;
@@ -1112,7 +1147,7 @@ function dspView(model) {
     save = (off ? `<div class="save"><div><b>${label} 할인 적용 중</b><div class="u">${n}개 중 ${gc.freeBy[k]}개 무료</div></div><span class="price">-${off.toLocaleString()}<span class="won">원</span></span></div>` : "")
       + (r || !n ? `<div class="save" style="background:var(--ink)"><div><b>${next}</b><div class="u">${mix} · 지금 ${n}개</div></div><span class="price">-${won(free * x0.price)}</span></div>` : "");
   }
-  open(`<div style="font-size:13px;color:var(--grey);font-weight:700">일회용${ev ? " · " + EVN[ev][2] + " 이벤트" : ""}</div><div class="sh" style="margin:6px 0 14px">${esc(i.name)}</div>
+  open(`<div style="font-size:13px;color:var(--grey);font-weight:700">일회용${ev ? " · " + evName(ev) + " 이벤트" : ""}</div><div class="sh" style="margin:6px 0 14px">${esc(i.name)}</div>
     ${i.img ? `<div class="dhero"><img src="${dsrc(i.hero || i.img)}" alt=""></div>` : ""}
     ${i.d || i.w ? `<div style="margin-top:10px;font-size:15px;color:var(--ink-soft)">${esc(i.d)}${i.w ? ` <b style="color:var(--red)">· ${esc(i.w)}</b>` : ""}</div>` : ""}
     ${i.hi ? `<div class="hinote"><b>고농도 제품 · 화학물질 장부 작성</b><div class="u">${esc(HI_NOTE)}</div></div>` : ""}
@@ -1161,6 +1196,14 @@ function goodsCalc() {
     if (x.c === "dev") dev += x.price * n; else if (x.c === "pod") pod += x.price * n;
     else if (x.ev) { (evItems[evKey(x)] ||= []).push(...Array(n).fill(x.price)); } else dsp += x.price * n; }
   let giftDev = 0;
+  const bulk = { k: 0, n: 0, pay: 0, list: 0, save: 0 }; // 10+5: 팜팜바·모스바 합쳐 15개마다 250,000원, 남는 건 아래 3+1
+  { const keys = Object.keys(evItems).filter((k) => evB(k) === BULK.ev), tot = keys.reduce((a, k) => a + evItems[k].length, 0); bulk.n = tot;
+    if (tot >= BULK.n) { const k = Math.floor(tot / BULK.n), take = k * BULK.n, [buy, free] = EVN[BULK.ev], cnts = keys.map((key) => evItems[key].length); let best = null;
+      // 어느 브랜드에서 몇 개를 10+5로 빼야 남는 것으로 3+1이 가장 많이 되는지 (브랜드 2개까지는 전부 따져 봄)
+      if (cnts.length <= 2) { for (let x = Math.max(0, take - (cnts[1] || 0)); x <= Math.min(cnts[0], take); x++) { const t = cnts.length === 2 ? [x, take - x] : [x]; const sc = t.reduce((a, v, i) => a + Math.floor((cnts[i] - v) / (buy + free)), 0); if (!best || sc > best.sc) best = { sc, t }; } }
+      else { let left = take; best = { t: cnts.map((c) => { const v = Math.min(c, left); left -= v; return v; }) }; }
+      keys.forEach((key, i) => { const ps = evItems[key]; ps.sort((a, b) => b - a); bulk.list += ps.splice(0, best.t[i]).reduce((a, b) => a + b, 0); });
+      bulk.k = k; bulk.pay = k * BULK.price; bulk.save = bulk.list - bulk.pay; dsp += bulk.pay; } }
   for (const [ev, prices] of Object.entries(evItems)) {
     const [buy, free] = EVN[evB(ev)]; prices.sort((a, b) => b - a);
     if (ev === "DSP-AIRX" && airxGift === "dev") { giftDev = Math.floor(prices.length / buy); dsp += prices.reduce((a, b) => a + b, 0); freeBy[ev] = 0; cnt[ev] = prices.length; saveBy[ev] = 0; continue; }
@@ -1169,7 +1212,7 @@ function goodsCalc() {
     dsp += prices.reduce((a, b) => a + b, 0) - freeAmt; freeBy[ev] = nFree; cnt[ev] = prices.length; saveBy[ev] = freeAmt;
   }
   const lung = Math.floor(lungN / 3) * ADD.lung3 + (lungFull / Math.max(1, lungN)) * (lungN % 3), lungSave = lungFull - lung; // 3병마다 40,000원
-  return { dev, pod, dsp, lung, lungN, lungSave, total: dev + pod + dsp + lung, freeBy, cnt, saveBy, giftDev };
+  return { dev, pod, dsp, lung, lungN, lungSave, total: dev + pod + dsp + lung, freeBy, cnt, saveBy, giftDev, bulk };
 }
 // 에어릭스 팟 10개마다 혜택 하나: 팟 2개 무료(12개 가져가고 10개 값) 또는 에어릭스 기기(35,000원) 증정
 function airxBox(n, gc) {
@@ -1185,11 +1228,12 @@ function airxBox(n, gc) {
 }
 function goodsHints(gc, liqPart) {
   const out = [];
+  if (gc.bulk.n) out.push(bulkBox(gc, "", ""));
   for (const [ev, n] of Object.entries(gc.cnt)) {
     const [buy, free] = EVN[evB(ev)], label = evLabel(ev); const r = n % (buy + free);
     if (ev === "DSP-AIRX") { out.push(airxBox(n, gc)); continue; }
     if (gc.saveBy[ev]) out.push(`<div class="save"><div><b>${label} 할인</b><div class="u">${n}개 중 ${gc.freeBy[ev]}개 무료 (가장 싼 맛 기준)</div></div><span class="price">-${gc.saveBy[ev].toLocaleString()}<span class="won">원</span></span></div>`);
-    if (r) out.push(`<div class="nudge"><b>${label}: ${r >= buy ? `지금 ${buy + free - r}개 더 고르면 무료` : `${buy - r}개 더 담으면 ${free}개 무료`}</b><div class="u">지금 ${n}개 · 같은 제품끼리 맛 섞어도 돼요</div></div>`);
+    if (r && evB(ev) !== BULK.ev) out.push(`<div class="nudge"><b>${label}: ${r >= buy ? `지금 ${buy + free - r}개 더 고르면 무료` : `${buy - r}개 더 담으면 ${free}개 무료`}</b><div class="u">지금 ${n}개 · 같은 제품끼리 맛 섞어도 돼요</div></div>`);
   }
   const base = liqPart + gc.pod + gc.lung; // 폐호흡 액상도 액상
   if (base > 0) out.push(base >= 100000 ? `<div class="nudge" style="background:var(--red)"><b>🎁 일회용 기기 1개 증정 대상이에요</b><div class="u">액상·팟 ${won(base)} (10만원 이상)</div></div>`
@@ -1450,10 +1494,14 @@ function payPlan() {
   const prN = c.v + c.p - (pk ? pk[1] : 0), prSets = setsOf(prN, [[11, 90000, "p11"], [5, 49500, "p5"]], 15000), pmSets = setsOf(c.m, [[10, 160000, "m10"], [3, 50000, "m3"]], 20000);
   for (const [q, p, key, k] of [...prSets, ...pmSets]) out.push(card(key, k, `${q}병 ${won(p)}`));
   const lk = Math.floor(gc.lungN / 3); if (lk) out.push(card("l3", lk, `폐호흡 3병 ${won(ADD.lung3)}`));
+  if (gc.bulk.k) { const nm = BULK.pos.find((n) => posOf(n)) || BULK.pos[0], p = posOf(nm);
+    out.push(`<div class="scan bundle"><div class="hd"><b>${esc(nm)}</b><span class="x">× ${gc.bulk.k}</span></div><div class="s">일회용 10+5 묶음 (15개 ${won(BULK.price)})</div>${p ? `<svg class="bc" data-v="${esc(p[1])}" data-f="${p[2]}"></svg>` : `<span class="warn">${esc(PAD.branch)} 포스에 10+5 묶음 상품이 없어요 · 포스에서 250,000원 상품을 직접 골라 주세요</span>`}</div>`); }
   for (const [k, nf] of Object.entries(gc.freeBy).filter(([k, nf]) => nf && DSP_POS[k])) { const [buy, free] = EVN[evB(k)], sets = nf / free, nm = DSP_POS[k], p = posOf(nm);
     out.push(`<div class="scan bundle"><div class="hd"><b>${esc(nm)}</b><span class="x">× ${sets}</span></div><div class="s">일회용 ${buy}+${free} 묶음</div>${p ? `<svg class="bc" data-v="${esc(p[1])}" data-f="${p[2]}"></svg>` : '<span class="warn">포스 상품을 못 찾았어요</span>'}</div>`); }
   const prSvc = (pk ? pk[1] : 0) + prSets.reduce((a, [q, , , k]) => a + q * k, 0), pmSvc = pmSets.reduce((a, [q, , , k]) => a + q * k, 0), lSvc = lk * 3;
   const liqN = c.v + c.p, notes = [];
+  const dspSvc = gc.bulk.k * BULK.n + Object.entries(gc.freeBy).filter(([k, nf]) => nf && DSP_POS[k]).reduce((a, [k, nf]) => { const [b, f] = EVN[evB(k)]; return a + (nf / f) * (b + f); }, 0);
+  if (dspSvc) notes.push(`일회용 묶음 ${dspSvc}개는 서비스(0원)`);
   if (liqN) notes.push(prSvc >= liqN ? `입호흡 액상 ${liqN}병 전부 서비스(0원)` : prSvc ? `입호흡 액상 ${liqN}병 중 ${prSvc}병 서비스(0원), ${liqN - prSvc}병은 1병 15,000원` : "");
   if (c.m) notes.push(pmSvc >= c.m ? `프라임 ${c.m}병 전부 서비스(0원)` : pmSvc ? `프라임 ${c.m}병 중 ${pmSvc}병 서비스(0원)` : "");
   if (gc.lungN) notes.push(lSvc >= gc.lungN ? `폐호흡 ${gc.lungN}병 전부 서비스(0원)` : lSvc ? `폐호흡 ${gc.lungN}병 중 ${lSvc}병 서비스(0원), ${gc.lungN - lSvc}병 정상가` : "");
@@ -1472,7 +1520,7 @@ function staffView() {
       : `<div class="scan"><div class="hd"><b>${MAIN.name}</b><span class="x">× ${n}</span></div><div class="s">색상을 골라야 바코드가 나와요</div><div class="colors" style="padding:10px 0 0">${DEV_COLORS.map((c) => `<button data-color2="${c}">${c}</button>`).join("")}</div></div>`;
     const svc = " · <b style='color:var(--red)'>서비스(0원)</b>";
     if (x.c === "lung") return scanBlock(x.n, "폐호흡", x.n, n, plan.lungAll ? svc : "", id);
-    if (x.c) return scanBlock(x.n, won(x.price) + (x.ev ? " · " + EVN[x.ev][2] + " 이벤트" : ""), x.n, n, "", id);
+    if (x.c) return scanBlock(x.n, won(x.price) + (x.ev ? " · " + evName(x.ev) + " 이벤트" : ""), x.n, n, "", id);
     return scanBlock(short(x.n), [x.no ? "라벨 " + x.no + "번" : "", x.br, x.loc ? "진열 " + x.loc : ""].filter(Boolean).join(" · "), x.n, n, (x.line === "프라임" ? plan.pmAll : plan.prAll) ? svc : "", id);
   };
   const devBlocks = devIds.map(blockOf).join("");
