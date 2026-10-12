@@ -1,0 +1,1991 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="robots" content="noindex">
+<title>베이프렌드 상담패드 (시안)</title>
+<!-- 매장 안내 책자와 같은 서체·로고·사진 (NanumSquare, KBLJump) -->
+<link rel="stylesheet" href="brand.css">
+<script>/* 앱 설치 시 지점 유지 (10/6): 아이폰은 처음 읽은 설치 정보만 써서 나중에 바꾸면 늦음 → 처음부터 지점 설치 정보를 넣음. 홈 화면 앱은 브라우저 저장값을 못 받으므로 시작 주소에 branch를 넣음 */(function(){var B=["동성로","수성","본점","율하","반월당","상인","광장코아","현풍"],b=null;try{b=new URLSearchParams(location.search).get("branch")||localStorage.getItem("vf-menu-branch")}catch(e){}document.write('<link rel="manifest" href="'+(B.indexOf(b)>=0?"manifest-"+encodeURIComponent(b)+".json":"manifest.json")+'">')})();</script>
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="VF 메뉴판">
+<meta name="theme-color" content="#15120f">
+<style>
+  :root{
+    --paper:#fff; --panel:#efece5; --ink:#15120f; --ink-soft:#54504a; --grey:#8d887f; --line:#e1ddd4;
+    --red:#d81f2a; --red-deep:#98131c;
+    --kr:"NanumSquare","Pretendard","Malgun Gothic",sans-serif;
+    --num:"KBLJump","Arial Black","NanumSquare",sans-serif;
+    --pad:28px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:#dcd9d3}
+  body{font-family:var(--kr);color:var(--ink);-webkit-font-smoothing:antialiased;word-break:keep-all}
+  button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+  .app{max-width:834px;margin:0 auto;background:var(--paper);min-height:100vh;position:relative}
+  /* 10/12 갤럭시탭 S8 울트라(14.6", 2960×1848, 16:10) 세로: 834px 넘는 세로 패드에서는 양옆 빈칸 없이 화면 전체 사용 */
+  @media (min-width:835px) and (orientation:portrait){.app{max-width:none}.sheet{width:100%}}
+  .num{font-family:var(--num)}
+  .price{font-family:var(--num);font-weight:900;font-variant-numeric:tabular-nums}
+  .won{font-family:var(--kr);font-weight:700;font-size:.5em;margin-left:.15em}
+
+  .top{position:sticky;top:0;z-index:20;background:var(--ink);color:#fff}
+  .bar{display:flex;align-items:center;gap:12px;padding:16px var(--pad)}
+  .bar .vf-logo{width:40px;height:36px;background-size:contain;background-repeat:no-repeat;background-position:center}
+  .bar .w{font-family:var(--num);font-weight:900;font-size:22px;color:var(--red);letter-spacing:.02em}
+  .bar .s{font-size:12px;letter-spacing:.2em;color:rgba(255,255,255,.55);font-family:var(--num)}
+  .find{margin-left:auto;background:rgba(255,255,255,.12);color:#fff;padding:12px 16px;font-family:var(--num);font-weight:800;font-size:16px}
+  .cart{margin-left:8px;display:flex;align-items:center;gap:10px;background:var(--red);color:#fff;padding:12px 18px;font-family:var(--num);font-weight:800;font-size:16px}
+  .cart b{background:#fff;color:var(--red);min-width:26px;height:26px;display:grid;place-items:center;font-size:14px;padding:0 6px}
+  .tabs{display:flex;padding:0 var(--pad);gap:26px;overflow-x:auto;scrollbar-width:none}
+  .tabs a{flex:none;color:rgba(255,255,255,.6);text-decoration:none;font-family:var(--num);font-weight:800;font-size:17px;padding:10px 0 14px;border-bottom:3px solid transparent}
+  .tabs a.on{color:#fff;border-color:var(--red)}
+
+  .sec{padding:34px var(--pad) 10px;scroll-margin-top:120px}
+  .hdr{display:flex;align-items:flex-end;gap:16px;padding-bottom:16px;border-bottom:1px solid var(--line)}
+  .hdr .n{font-family:var(--num);font-weight:900;font-size:64px;line-height:.76;letter-spacing:-.03em}
+  .hdr .eb{font-family:var(--num);font-weight:800;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--red)}
+  .hdr h2{font-family:var(--num);font-weight:800;font-size:26px;line-height:1.25;margin-top:4px}
+
+  .redblock{background:var(--red);color:#fff;padding:30px var(--pad) 26px;scroll-margin-top:120px}
+  .redblock .hdr{border-color:rgba(255,255,255,.3)}
+  .redblock .hdr .n{color:#fff}.redblock .hdr .eb{color:#f7c3c6}
+  .best-title{font-family:var(--num);font-weight:900;font-size:clamp(38px,6.6vw,54px);line-height:1.18;margin-top:22px}
+  .best-sub{margin-top:12px;font-size:19px;line-height:1.6;color:rgba(255,255,255,.88)}
+  /* 오늘 가장 큰 혜택: 왼쪽 글·액상, 오른쪽 여백에 기기를 크게 */
+  .best-grid{display:flex;align-items:center;gap:16px}
+  .best-left{flex:1;min-width:0}
+  .best-dev{flex:none;position:relative;z-index:3;width:min(205px,26vw);padding-bottom:12px;margin-right:6px;margin-top:-80px;align-self:flex-end} /* 위 구분선 위까지 올라가게 */
+  .best-dev img{display:block;width:100%;height:auto;position:relative;z-index:1}
+  .spec-hit{display:block;width:100%;position:relative;padding:0;background:none;border:0;cursor:pointer}
+  .spec-hit i{position:absolute;left:50%;bottom:-12px;width:120%;height:22px;transform:translateX(-50%);border-radius:50%;background:radial-gradient(closest-side,rgba(0,0,0,.35),rgba(0,0,0,0))}
+  .spec-tag{position:absolute;right:-4px;top:30%;z-index:2;background:#fff;color:var(--red);font-weight:800;font-size:12px;padding:6px 10px;border-radius:999px;box-shadow:0 2px 8px rgba(0,0,0,.2)}
+  .cv-name{font-family:var(--num);font-weight:900;font-size:28px}
+  .cv-sub{color:var(--grey);font-size:14px;margin-top:4px}
+  .cv-hero{position:relative;height:300px;margin-top:8px}
+  .cv-hero img{position:absolute;left:50%;bottom:30px;transform:translateX(-50%);height:250px;width:auto;z-index:1}
+  .cv-sh{position:absolute;left:50%;bottom:22px;transform:translateX(-50%);width:170px;height:22px;border-radius:50%;background:radial-gradient(closest-side,rgba(0,0,0,.22),rgba(0,0,0,0))}
+  .cv-cl{position:absolute;left:50%;bottom:4px;transform:translateX(-50%);font-size:13px;color:#9aa3ad;font-weight:700}
+  .cv-colors{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
+  .cv-colors button{background:#f3f4f6;border:2px solid transparent;border-radius:14px;padding:10px 4px 8px;display:flex;flex-direction:column;align-items:center;gap:4px;font-weight:700;font-size:14px}
+  .cv-colors button img{height:64px;width:auto}
+  .cv-colors button.on{border-color:var(--ink);background:#fff}
+  .cv-two{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
+  .cv-two div,.cv-grid div{background:#f3f4f6;border-radius:16px;padding:14px 16px;display:flex;flex-direction:column;gap:4px}
+  .cv-two b,.cv-grid b{color:#3182f6;font-size:13px;font-weight:700}
+  .cv-two strong{font-size:22px;font-weight:800}
+  .cv-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+  .cv-grid strong{font-size:18px;font-weight:800}
+  .cv-two span,.cv-grid span{font-size:13px;color:var(--grey)}
+  .cv-h{font-family:var(--num);font-weight:800;font-size:20px;margin-top:24px}
+  .cv-h small{font-family:var(--kr);font-size:13px;color:var(--grey);font-weight:600;margin-left:6px}
+  .cv-pods{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+  .cv-pods button{position:relative;border:2px solid var(--ink);border-radius:16px;padding:16px;display:flex;flex-direction:column;align-items:flex-start;gap:8px;text-align:left;background:#fff}
+  .cv-pods .cvp-in{position:absolute;top:12px;right:12px;font-size:12px;font-weight:800;color:#fff;background:#03b26c;border-radius:999px;padding:4px 9px}
+  .cv-pods .cvp-k{font-size:14px;font-weight:800;color:#3182f6}
+  .cv-pods .cvp-p small{font-family:var(--kr);font-size:13px;color:var(--grey);font-weight:600}
+  .cv-pods .cvp-p{align-self:stretch;display:flex;align-items:baseline;justify-content:space-between;background:#f3f4f6;border-radius:12px;padding:12px 14px;font-size:24px;font-weight:800;color:var(--red)}
+  .cv-pods .cvp-add{align-self:stretch;text-align:center;background:var(--ink);color:#fff;border-radius:10px;padding:12px 0;font-weight:800;font-size:16px}
+  .cv-tips{margin-top:14px;font-size:14px;color:var(--ink-soft);line-height:1.8}
+  .spec2{margin-top:14px;border-top:2px solid var(--ink)}
+  .spec2 div{display:grid;grid-template-columns:110px 1fr;gap:12px;padding:12px 0;border-bottom:1px solid var(--line);font-size:15px;line-height:1.5}
+  .spec2 b{color:var(--grey);font-weight:700}
+  .spec-pic{display:flex;justify-content:center;margin-top:12px;background:var(--panel);padding:16px 0}
+  .spec-pic img{height:200px;width:auto}
+  .best-ph{position:relative;z-index:1;height:min(390px,52vw);border-radius:26px;background:linear-gradient(160deg,#2b2724,#0d0b0a);border:2px solid rgba(255,255,255,.35);display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:var(--num);font-weight:900;font-size:26px;gap:6px}
+  .best-ph small{font-family:var(--kr);font-size:13px;font-weight:600;opacity:.6}
+  .best-dev i{position:absolute;left:50%;bottom:0;width:120%;height:22px;transform:translateX(-50%);border-radius:50%;background:radial-gradient(closest-side,rgba(0,0,0,.35),rgba(0,0,0,0))}
+  .best-pics{display:flex;align-items:flex-end;gap:2px;margin-top:20px}
+  .best-pics img{width:84px;height:110px;object-fit:contain;filter:drop-shadow(0 8px 10px rgba(0,0,0,.28))}
+  .dev{flex:none;width:72px;height:128px;background:#fff;overflow:hidden;border:2px solid rgba(255,255,255,.5);border-radius:18px;display:grid;place-items:center;color:#fff;font-family:var(--num);font-weight:800;font-size:11px;text-align:center;line-height:1.3;margin-right:8px}
+  .cta{margin-top:22px;width:100%;background:#fff;color:var(--red);padding:20px 22px;display:flex;align-items:center;gap:12px;text-align:left}
+  .cta b{font-family:var(--num);font-weight:900;font-size:20px;display:block}
+  .cta small{display:block;font-size:14px;color:var(--ink-soft);margin-top:4px;font-weight:700}
+  .cta .arr{margin-left:auto;font-family:var(--num);font-size:30px;font-weight:900}
+  .evrows{margin-top:22px}
+  /* 첫 화면(오늘 가장 큰 혜택)을 패드 화면 높이에 꽉 차게: 상단 바(--topH)를 뺀 높이, 이벤트·버튼은 아래쪽 끝에 */
+  #s1{min-height:calc(100dvh - var(--topH, 130px));display:flex;flex-direction:column}
+  #s1 .best-grid{flex:1}
+  /* 받침대 있는 넓은 사진: 오른쪽에 크게 깔고(양옆 빈 곳은 글자 밑으로), 위 구분선까지 올라가게 */
+  #s1 .best-grid{position:relative;min-height:440px;align-items:center}
+  #s1 .best-left{position:relative;z-index:2;max-width:min(500px,64vw)}
+  #s1{overflow:hidden}
+  #s1 .best-dev{position:absolute;right:-56px;top:-95px;bottom:14px;width:auto;margin:0;padding:0;z-index:1}
+  #s1 .best-dev .spec-hit,#s1 .best-dev img{height:100%;width:auto}
+  /* 좁은 화면(휴대폰·좁은 창): 사진을 글 위에 따로 */
+  @media (max-width:699px){
+    #s1 .best-grid{flex-direction:column-reverse;min-height:0}
+    #s1 .best-left{max-width:none}
+    #s1 .best-dev{position:relative;top:auto;right:auto;bottom:auto;width:64%;margin:-10px auto 0}
+    #s1 .best-dev .spec-hit,#s1 .best-dev img{height:auto;width:100%}
+  }
+  #s1 .best-dev .spec-hit i{display:none}
+  #s1 .spec-tag{right:22%;top:34%}
+  #s1 .best-title{font-size:clamp(32px,5.5vw,45px)}
+  #s1 .best-price b{font-size:clamp(34px,5.6vw,46px)}
+  #s1 .best-sub{font-size:20px}
+  .best-price{display:flex;align-items:baseline;flex-wrap:wrap;gap:6px 14px;margin-top:22px}
+  .best-price s{font-size:24px;color:rgba(255,255,255,.65);font-weight:700}
+  .best-price b{font-family:var(--num);font-size:clamp(40px,6.4vw,54px);font-weight:900;color:#fff}
+  .best-price small{flex-basis:100%;font-size:14px;color:rgba(255,255,255,.8)}
+  .tot2{margin-top:16px;border-top:2px solid var(--ink);padding-top:10px}
+  .tot2 .r{display:flex;justify-content:space-between;align-items:baseline;padding:6px 0;font-size:16px}
+  .tot2 .r s{color:var(--grey);font-size:17px}
+  .tot2 .r.off span{color:var(--ink-soft)} .tot2 .r.off b{color:var(--red);font-weight:800}
+  .tot2 .r.pay{border-top:1px solid var(--line);margin-top:6px;padding-top:12px;font-weight:800}
+  .tot2 .r.pay b{font-family:var(--num);font-size:32px;font-weight:900} .tot2 .r.pay small{font-size:16px;margin-left:2px}
+  .tot2 .save{margin-top:8px;background:var(--red);color:#fff;text-align:center;font-weight:800;padding:10px;font-size:16px}
+  /* 상담 흐름: 단계 표시 + 다음 단계 버튼 */
+  .flow{display:flex;align-items:center;gap:6px;padding:7px var(--pad);background:#211d1a;font-size:13px;font-weight:700;color:rgba(255,255,255,.45);overflow:hidden;white-space:nowrap}
+  .flow i{font-style:normal;opacity:.5}
+  .flow span.done{color:rgba(255,255,255,.8)} .flow span.on{color:#fff;background:var(--red);padding:3px 9px;border-radius:999px}
+  .nextbar{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:40;display:none;align-items:center;gap:14px;background:var(--ink);color:#fff;padding:14px 22px;border-radius:999px;box-shadow:0 6px 20px rgba(0,0,0,.3);font-weight:800;font-size:17px;max-width:calc(100% - 32px)}
+  .nextbar.on{display:flex} .nextbar small{font-weight:600;opacity:.75;font-size:14px} .nextbar b{color:#ffd2d4}
+  .inc{margin-top:14px;border:2px dashed var(--red);background:#fff5f5;padding:14px 16px;display:flex;flex-direction:column;gap:6px}
+  .inc b{font-size:16px} .inc span{font-size:13px;color:var(--ink-soft)}
+  .inc.done{border-style:solid;background:#eefaf3;border-color:#03b26c} .inc.done b{color:#03b26c}
+  .incn{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+  .incn button{padding:10px 14px;background:#fff;border:1px solid var(--line);font-weight:800;font-size:15px}
+  .incn input{flex:1;min-width:120px;height:42px;border:1px solid var(--line);padding:0 12px;font:inherit}
+  .incn .go{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .evc{font-family:var(--kr);font-size:12px;font-weight:700;background:rgba(255,255,255,.18);border-radius:999px;padding:2px 8px;margin-left:6px;vertical-align:middle}
+  .best-price em{font-style:normal;background:#fff;color:var(--red);font-weight:900;font-size:18px;padding:6px 12px;border-radius:999px}
+  #s1 .evrows{margin-top:auto;padding-top:10px}
+  #s1 .evrow{padding:12px 0}
+  /* 첫 화면 이벤트 줄: 오른쪽 숫자는 기기 사진에 가려져서 빼고, 줄과 버튼은 사진 위로 */
+  #s1 .evrow .d{display:none}
+  #s1 .evrow{grid-template-columns:1fr}
+  #s1 .evrows,#s1 .cta{position:relative;z-index:3}
+  #s1 .cta{margin-top:14px}
+  .evrow{display:grid;grid-template-columns:1fr auto;align-items:center;gap:14px;padding:16px 0;border-top:1px solid rgba(255,255,255,.3)}
+  .evrow:last-child{border-bottom:1px solid rgba(255,255,255,.3)}
+  .evrow .t{font-family:var(--num);font-weight:800;font-size:19px}
+  .evrow .u{font-size:14px;color:rgba(255,255,255,.8);margin-top:3px}
+  .evrow .d{font-family:var(--num);font-weight:900;font-size:28px;white-space:nowrap}
+
+  .spec{margin-top:6px}
+  .row{display:grid;grid-template-columns:1fr auto;align-items:center;gap:16px;padding:20px 0;border-top:1px solid var(--line)}
+  .row:first-child{border-top:0}
+  .row .k{font-family:var(--num);font-weight:800;font-size:21px}
+  .row .k .op{color:var(--grey);margin:0 .3em}
+  .row .u{display:block;font-size:14px;color:var(--grey);margin-top:5px}
+  .row .tag{display:inline-block;margin-top:8px;font-family:var(--num);font-weight:800;font-size:13px;color:#fff;background:var(--red);padding:4px 10px}
+  .row .v{text-align:right}
+  .row .v .note{display:block;font-size:12.5px;font-weight:700;color:var(--grey);margin-bottom:2px}
+  .row .v .price{font-size:30px}
+  .row.hi,.row.hi .u{color:var(--red)}
+  .row.best{background:rgba(216,31,42,.06);border-left:4px solid var(--red);padding-left:14px;margin-left:-18px}
+
+  .combo{margin-top:18px;border:1px solid var(--line);padding:20px}
+  .combo .lab{display:flex;gap:6px}
+  .badge{display:inline-block;font-family:var(--num);font-weight:800;font-size:12px;letter-spacing:.06em;padding:5px 10px;background:var(--red);color:#fff}
+  .badge.line{background:none;color:var(--red);border:1.5px solid var(--red)}
+  .combo h3{font-family:var(--num);font-weight:800;font-size:23px;margin-top:12px}
+  .combo .names{font-size:15px;color:var(--ink-soft);margin-top:6px;line-height:1.6}
+  .combo .items{display:flex;align-items:flex-end;gap:6px;margin-top:14px}
+  .combo .items img{width:70px;height:92px;object-fit:contain}
+  .combo .items .dev{width:56px;height:100px;border-radius:14px;font-size:10px;background:#fff;border-color:#ccc}
+  .dev img{width:100%;height:100%;object-fit:contain;display:block}
+  .combo .act{display:flex;gap:8px;margin-top:16px}
+  /* 태블릿(레노버 탭 M11 세로 약 800px): 조합 카드 2개를 나란히 → 기기 패키지 칸이 한 화면에 */
+  @media (min-width:700px){
+    #combos{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}
+    #combos .combo{margin-top:0;padding:16px;display:flex;flex-direction:column}
+    #combos .combo h3{font-size:20px}
+    #combos .combo .names{font-size:13px}
+    #combos .combo .items{gap:3px}
+    #combos .combo .items img{width:46px;height:70px}
+    #combos .combo .items .dev{width:42px;height:76px}
+    #combos .combo .act{margin-top:auto;padding-top:14px}
+  }
+  .b1{flex:1;height:56px;background:var(--red);color:#fff;font-family:var(--num);font-weight:900;font-size:17px}
+  .b1.ink{background:var(--ink)}
+  .b2{height:56px;padding:0 20px;background:var(--panel);font-family:var(--num);font-weight:800;font-size:16px}
+  .photo{height:180px;margin-top:20px;border:1px solid var(--line)}
+
+  .tastes.rec{grid-template-columns:repeat(4,1fr)}
+  .p .rib{top:16px;left:16px;z-index:1;border-radius:6px;padding:4px 8px;font-size:12px;letter-spacing:.06em}
+  .p .rib.hot{background:#ff7a00}
+  .tastes{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:18px}
+  .taste{padding:16px 12px;background:var(--panel);text-align:left}
+  .taste b{font-family:var(--num);font-weight:800;font-size:18px;display:block}
+  .taste span{font-size:12.5px;color:var(--grey)}
+  .taste.on{background:var(--ink);color:#fff}.taste.on span{color:rgba(255,255,255,.6)}
+  .filters{display:flex;gap:6px;margin-top:12px;flex-wrap:wrap}
+  .f{font-family:var(--num);font-weight:800;font-size:14px;padding:9px 14px;border:1.5px solid var(--line)}
+  .f.on{border-color:var(--ink);background:var(--ink);color:#fff}
+  .cnt{margin-left:auto;align-self:center;font-size:13px;color:var(--grey)}
+  .prods{display:grid;grid-template-columns:repeat(3,1fr);margin-top:14px;border-top:1px solid var(--line);border-left:1px solid var(--line)}
+  .p{text-align:left;padding:14px 14px 16px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);position:relative}
+  .p img{width:100%;aspect-ratio:1;object-fit:contain}
+  .p .bd{font-size:12px;color:var(--grey);margin-top:6px;font-weight:700}
+  .p b{display:block;font-family:var(--num);font-weight:800;font-size:16.5px;line-height:1.3;margin-top:2px}
+  .p .tg{font-size:12.5px;color:var(--ink-soft);margin-top:5px}
+  .p .rib{position:absolute;top:10px;left:10px;font-family:var(--num);font-weight:800;font-size:11px;background:var(--red);color:#fff;padding:3px 7px}
+  .more{display:block;width:100%;margin-top:14px;height:54px;border:1.5px solid var(--ink);font-family:var(--num);font-weight:800;font-size:16px}
+
+  .foot{margin-top:30px;background:var(--ink);color:rgba(255,255,255,.6);padding:24px var(--pad) 40px;font-size:13px;line-height:1.8}
+  .foot b{color:#fff}
+
+  .dim{position:fixed;inset:0;background:rgba(21,18,15,.5);display:none;align-items:flex-end;justify-content:center;z-index:55}
+  .dim.on{display:flex}
+  .sheet{background:#fff;width:min(834px,100%);max-height:88vh;overflow:auto;padding:28px var(--pad) 26px;animation:up .2s ease}
+  @keyframes up{from{transform:translateY(30px);opacity:.6}to{transform:none;opacity:1}}
+  .x{float:right;width:44px;height:44px;background:var(--panel);font-size:20px}
+  .det{display:grid;grid-template-columns:260px 1fr;gap:24px;clear:both;padding-top:6px}
+  .det .img{background:var(--panel);aspect-ratio:1;display:grid;place-items:center}
+  .det .img img{width:88%;height:88%;object-fit:contain}
+  .det h3{font-family:var(--num);font-weight:900;font-size:30px;line-height:1.2;margin-top:6px}
+  .chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+  .chips span{font-size:13px;font-weight:700;padding:5px 10px;background:var(--panel)}
+  .ben{margin-top:16px;border-top:2px solid var(--red)}
+  .ben div{display:grid;grid-template-columns:auto 1fr;gap:10px;padding:11px 0;border-bottom:1px solid var(--line);font-size:15px;line-height:1.5}
+  .ben i{font-style:normal;font-family:var(--num);font-weight:900;color:var(--red)}
+  .upsell{margin-top:16px;width:100%;background:var(--red);color:#fff;padding:18px;display:flex;align-items:center;gap:12px;text-align:left}
+  .upsell b{font-family:var(--num);font-weight:900;font-size:18px;display:block}
+  .upsell small{display:block;font-size:13.5px;color:rgba(255,255,255,.85);margin-top:3px}
+  .upsell .arr{margin-left:auto;font-family:var(--num);font-weight:900;font-size:26px}
+  .btns{display:flex;gap:8px;margin-top:16px}
+  .sh{font-family:var(--num);font-weight:900;font-size:26px}
+  .sub{font-family:var(--num);font-weight:800;font-size:18px;margin-top:26px}
+  .line{display:flex;align-items:center;gap:14px;padding:12px 0;border-top:1px solid var(--line)}
+  .line img{width:54px;height:54px;object-fit:contain;background:var(--panel)}
+  .line .mini{flex:none;width:54px;height:54px;background:var(--ink);color:#fff;display:grid;place-items:center;font-family:var(--num);font-size:9px;text-align:center;line-height:1.2}
+  .line b{font-family:var(--num);font-weight:800;font-size:17px}
+  .line .s{font-size:13px;color:var(--grey)}
+  .step{margin-left:auto;display:flex;align-items:center;border:1.5px solid var(--line)}
+  .step button{width:46px;height:46px;font-size:20px}
+  .step span{min-width:30px;text-align:center;font-family:var(--num);font-weight:800;font-size:18px}
+  /* 액상 손님 기기 권유 카드 (아래에서 올라옴) */
+  .devup{position:fixed;left:50%;bottom:0;transform:translate(-50%,110%);transition:transform .32s cubic-bezier(.2,.8,.2,1);z-index:60;width:min(640px,100%);background:#15120f;color:#fff;padding:22px 22px 20px;box-shadow:0 -10px 30px rgba(0,0,0,.35);display:grid;grid-template-columns:1fr 128px;gap:4px 14px}
+  .devup.on{transform:translate(-50%,0)}
+  .devup .t{font-family:var(--num);font-weight:900;font-size:22px;line-height:1.3;letter-spacing:-.02em}
+  .devup .t em{font-style:normal;color:#ff4b4b}
+  .devup .pr{margin-top:10px;font-size:16px;color:rgba(255,255,255,.75)}
+  .devup .pr b{display:block;color:#fff;font-family:var(--num);font-weight:900;font-size:26px;margin-top:2px}
+  .devup .pr s{color:rgba(255,255,255,.45)} .devup .pr i{font-style:normal;color:#ff4b4b;font-weight:800}
+  .devup img{grid-column:2;grid-row:1/3;width:128px;height:160px;object-fit:contain;align-self:end}
+  .devup .bt{grid-column:1/-1;display:grid;grid-template-columns:1.4fr 1fr;gap:10px;margin-top:16px}
+  .devup .bt button{padding:16px 10px;font-weight:800;font-size:17px}
+  .devup .bt .go{background:#e3191f;color:#fff} .devup .bt .no{background:rgba(255,255,255,.1);color:#fff}
+  .nudge{margin-top:16px;background:var(--ink);color:#fff;padding:18px}
+  .nudge b{font-family:var(--num);font-weight:900;font-size:19px}
+  .nudge .u{font-size:14px;color:rgba(255,255,255,.7);margin-top:4px}
+  .nudge .bar2{height:8px;background:rgba(255,255,255,.18);margin-top:12px}
+  .nudge .bar2 i{display:block;height:100%;background:var(--red)}
+  .engr{display:flex;align-items:center;gap:14px;margin-top:12px;padding:16px 18px;border:2px solid var(--red);background:rgba(216,31,42,.05)}
+  .engr b{font-family:var(--num);font-weight:900;font-size:18px;color:var(--red)}
+  .engr .u{font-size:14px;color:var(--ink-soft);margin-top:4px}
+  .engr .b1{flex:none;padding:0 22px;margin-left:auto}
+  .engr.on{border-color:var(--ink);background:#fff}.engr.on b{color:var(--ink)}
+  .engr input{display:block;width:100%;margin-top:10px;height:50px;border:1.5px solid var(--line);padding:0 14px;font:inherit;font-size:17px}
+  .engr.off{border-style:dashed;border-color:var(--grey);background:none}.engr.off b{color:var(--ink)}
+  .pick2{margin-top:12px;border:2px solid var(--red);padding:16px 18px;background:rgba(216,31,42,.04)}
+  .pk-h{font-family:var(--num);font-weight:900;font-size:17px;color:var(--red);margin-bottom:10px}
+  .pk{display:grid;grid-template-columns:1fr auto;align-items:center;column-gap:12px;width:100%;text-align:left;background:#fff;border:1.5px solid var(--line);padding:14px 16px;margin-top:8px}
+  .pk b{font-family:var(--num);font-weight:900;font-size:17px}
+  .pk span{grid-column:1;font-size:13.5px;color:var(--ink-soft);margin-top:3px}
+  .pk i{grid-row:1/3;grid-column:2;font-style:normal;font-family:var(--num);font-weight:900;font-size:24px;color:var(--red)}
+  .pk.on{border-color:var(--red);background:#fff}.pk.on .b2{grid-row:1/3;grid-column:2;height:44px}
+  .pk-or{text-align:center;font-size:13px;color:var(--grey);margin-top:8px;font-weight:700}
+  .mem{margin-top:16px;padding:18px;background:var(--panel)}
+  .mem .pk{border-color:#fff}
+  .in{display:block;width:100%;height:54px;margin-top:10px;border:1.5px solid var(--line);padding:0 14px;font:inherit;font-size:17px;background:#fff}
+  .agree{display:flex;gap:8px;align-items:flex-start;margin-top:10px;font-size:13.5px;color:var(--ink-soft);line-height:1.5}
+  .agree input{width:20px;height:20px;flex:none;margin-top:1px}
+  .lnk{font-size:13px;color:var(--grey);text-decoration:underline;margin-left:8px;font-family:var(--kr)}
+  .colors{display:flex;gap:6px;flex-wrap:wrap;padding:0 0 12px 68px}
+  .colors button{padding:8px 14px;border:1.5px solid var(--line);font-family:var(--num);font-weight:800;font-size:14px}
+  .colors button.on{border-color:var(--ink);background:var(--ink);color:#fff}
+  .colors .lab{align-self:center;font-size:13px;color:var(--grey);margin-right:4px}
+  .scan{border-top:1px solid var(--line);padding:14px 0}
+  .scan .hd{display:flex;align-items:baseline;gap:10px}
+  .scan .hd b{font-family:var(--num);font-weight:900;font-size:19px}
+  .scan .hd .x{margin-left:auto;font-family:var(--num);font-weight:900;font-size:22px;color:var(--red);float:none;width:auto;height:auto;background:none}
+  .scan .s{font-size:13px;color:var(--grey);margin-top:3px}
+  .scan svg{display:block;max-width:100%;height:auto;margin-top:8px;background:#fff}
+  .scan .warn{display:inline-block;margin-top:6px;font-size:12.5px;font-weight:700;color:var(--red)}
+  .scan.bundle{background:rgba(216,31,42,.05);border:2px solid var(--red);padding:14px 16px;margin-top:12px}
+  .total{display:flex;align-items:baseline;justify-content:space-between;margin-top:16px;padding-top:16px;border-top:2px solid var(--ink)}
+  .total .price{font-size:34px}
+  .srch{position:fixed;inset:0;background:var(--paper);z-index:50;display:none;flex-direction:column}
+  .srch.on{display:flex}
+  .srch .hd{display:flex;gap:10px;align-items:center;padding:14px var(--pad);background:var(--ink)}
+  .srch input{flex:1;height:56px;border:0;padding:0 16px;font:inherit;font-size:20px;font-family:var(--kr);font-weight:700;background:#fff;color:var(--ink)}
+  .srch input:focus{outline:3px solid var(--red)}
+  .srch .cl{color:#fff;font-family:var(--num);font-weight:800;font-size:16px;padding:0 6px}
+  .srch .hint{padding:14px var(--pad) 4px;font-size:14px;color:var(--grey)}
+  .srch .quick{display:flex;gap:6px;flex-wrap:wrap;padding:6px var(--pad) 0}
+  .srch .quick button{padding:9px 14px;border:1.5px solid var(--line);font-family:var(--num);font-weight:800;font-size:14px}
+  .srch .res{flex:1;overflow:auto;padding:10px var(--pad) 40px}
+  .srch .res .prods{margin-top:6px}
+  /* 세 갈래 (기기 / 액상·소모품 / 일회용) */
+  body[data-mode=""] [data-for]:not([data-for~="home"]),
+  body[data-mode="dev"] [data-for]:not([data-for~="dev"]),
+  body[data-mode="liq"] [data-for]:not([data-for~="liq"]),
+  body[data-mode="dsp"] [data-for]:not([data-for~="dsp"]){display:none!important} /* !important: #s1 display:flex가 이기던 문제 */
+  .ver{font-size:11px;color:rgba(255,255,255,.45);font-family:var(--kr);margin-left:2px}
+  .homebtn{background:rgba(255,255,255,.12);color:#fff;padding:12px 14px;font-family:var(--num);font-weight:800;font-size:15px;margin-left:12px}
+  .home{padding:40px var(--pad) 60px}
+  .home h1{font-family:var(--num);font-weight:900;font-size:40px;line-height:1.2}
+  .home .q{font-size:17px;color:var(--ink-soft);margin-top:10px}
+  .ways{display:grid;gap:14px;margin-top:28px}
+  .way{display:grid;grid-template-columns:96px 1fr auto;align-items:center;gap:18px;text-align:left;padding:26px 24px;border:2px solid var(--ink);background:#fff}
+  .way .ic{font-size:54px;text-align:center}
+  .way b{font-family:var(--num);font-weight:900;font-size:28px;display:block}
+  .way span{display:block;font-size:15px;color:var(--ink-soft);margin-top:6px;line-height:1.5}
+  .way i{font-style:normal;font-family:var(--num);font-weight:900;font-size:34px;color:var(--red)}
+  .way.red{background:var(--red);border-color:var(--red);color:#fff}.way.red span{color:rgba(255,255,255,.85)}.way.red i{color:#fff}
+  .home .tip{margin-top:22px;font-size:14px;color:var(--grey);line-height:1.7}
+  /* 상품 묶음(모델·브랜드) 카드 */
+  .gpic{width:100%;aspect-ratio:1;background:var(--panel);display:grid;place-items:center;font-size:44px}
+  .gpic small{display:block;font-size:12px;font-family:var(--num);font-weight:800;color:var(--grey);margin-top:-30px}
+  .p .pr{font-family:var(--num);font-weight:900;font-size:17px;margin-top:6px}
+  .p .ev{display:inline-block;margin-top:6px;font-family:var(--num);font-weight:800;font-size:11.5px;background:var(--red);color:#fff;padding:3px 7px}
+  .opts{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+  .opts button{padding:12px 14px;border:1.5px solid var(--line);font-family:var(--num);font-weight:800;font-size:15px;background:#fff;text-align:left}
+  .opts button small{display:block;font-family:var(--kr);font-size:12px;color:var(--grey);font-weight:700;margin-top:2px}
+  .opts button.sel{border-color:var(--ink);background:var(--ink);color:#fff}.opts button.sel small{color:rgba(255,255,255,.7)}
+  .grp{margin-top:22px}
+  .grp .gh{display:flex;align-items:baseline;gap:10px;padding-bottom:8px;border-bottom:2px solid var(--ink)}
+  .grp .gh b{font-family:var(--num);font-weight:900;font-size:21px}
+  .grp .gh span{font-size:13px;color:var(--grey)}
+  .grp .gh .ev{margin-left:auto;font-family:var(--num);font-weight:800;font-size:13px;background:var(--red);color:#fff;padding:4px 9px}
+  .rowg{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
+  .rowg b{font-family:var(--num);font-weight:800;font-size:16px}
+  .rowg .pr{margin-left:auto;font-family:var(--num);font-weight:900;font-size:16px;white-space:nowrap}
+  .rowg button{flex:none;width:46px;height:46px;background:var(--ink);color:#fff;font-size:22px;font-weight:900}
+  .evband{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:16px}
+  .evband div{background:var(--red);color:#fff;padding:14px}
+  .evband b{font-family:var(--num);font-weight:900;font-size:26px;display:block}
+  .evband span{font-size:13px;opacity:.9}
+  .toast{position:fixed;left:50%;bottom:30px;transform:translateX(-50%) translateY(16px);background:var(--ink);color:#fff;padding:16px 22px;font-family:var(--num);font-weight:800;opacity:0;transition:.25s;z-index:60;pointer-events:none}
+  .toast.on{opacity:1;transform:translateX(-50%)}
+  /* 일회용: 이벤트별 사진 카드 */
+  .dev2{padding:30px var(--pad) 28px;scroll-margin-top:120px}
+  .dev2.red{background:var(--red);color:#fff}
+  .dev2 .eh{display:flex;align-items:center;gap:18px}
+  .dev2 .big{font-family:var(--num);font-weight:900;font-size:76px;line-height:.85;letter-spacing:-.03em}
+  .dev2 .eh .badge{background:#fff;color:var(--red)}
+  .dev2:not(.red) .big{color:var(--red)}
+  .dev2:not(.red) .eh .badge{background:var(--red);color:#fff}
+  .dev2 .et{font-family:var(--num);font-weight:900;font-size:24px;margin-top:6px}
+  .dev2 .es{font-size:15px;margin-top:4px;opacity:.85}
+  .dcards{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:20px}
+  .dcards.two{grid-template-columns:repeat(2,1fr)}
+  .dcard{background:#fff;color:var(--ink);text-align:left;border:1.5px solid var(--line);display:flex;flex-direction:column;position:relative}
+  .dev2.red .dcard{border:0}
+  .dcard .dimg{aspect-ratio:4/3;background:var(--panel);overflow:hidden;display:grid;place-items:center}
+  .dcards.two .dcard .dimg{aspect-ratio:14/5;background:#f3f3f3}
+  .dcard .dimg img{width:100%;height:100%;object-fit:cover}
+  .dcard .dimg .no{font-family:var(--num);font-weight:900;font-size:24px;color:var(--ink);letter-spacing:-.01em;text-align:center;padding:0 10px}
+  .dcard .db{padding:12px 14px 14px;display:flex;flex-direction:column;gap:4px;flex:1}
+  .dcard b{font-family:var(--num);font-weight:900;font-size:19px}
+  .dcards.two .dcard b{font-size:24px}
+  .dcard .dm{font-size:13px;color:var(--ink-soft);line-height:1.45}
+  .dcard .dm.warn{color:var(--red);font-weight:700}
+  .dcard .dp{margin-top:auto;padding-top:6px;font-family:var(--num);font-weight:900;font-size:17px}
+  .dcard .dp small{font-family:var(--kr);font-weight:700;font-size:12.5px;color:var(--grey)}
+  .dcard .deal{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-top:6px;padding:9px 10px;background:rgba(216,31,42,.08);color:var(--red);font-family:var(--num);font-weight:900;font-size:15px}
+  .dcards:not(.two) .dcard .deal{flex-direction:column;align-items:flex-start;gap:2px}
+  .dcards.two .dcard .deal{font-size:17px}
+  .dcard .deal s{color:var(--grey);font-weight:700;font-size:12.5px;font-family:var(--kr)}
+  .dcard .inc{position:absolute;top:8px;right:8px;background:var(--ink);color:#fff;font-family:var(--num);font-weight:800;font-size:13px;padding:4px 9px}
+  @media (max-width:600px){.dcards{grid-template-columns:repeat(2,1fr)}.dev2 .big{font-size:56px}.dcards.two .dcard b{font-size:19px}}
+  .hitag{align-self:flex-start;margin-top:2px;font-family:var(--num);font-weight:800;font-size:12px;color:#fff;background:var(--ink);padding:3px 8px}
+  .hinote{margin-top:12px;padding:16px 18px;border:2px solid var(--ink);background:#fff}
+  .hinote b{font-family:var(--num);font-weight:900;font-size:17px}
+  .hinote .u{font-size:14px;color:var(--ink-soft);margin-top:4px;line-height:1.55}
+  .dnote{font-size:13px;color:var(--grey);padding:14px var(--pad) 0}
+  .dhero{margin:-4px 0 0;background:#f3f3f3;display:grid;place-items:center;overflow:hidden}
+  .dhero img{width:100%;max-height:300px;object-fit:contain;display:block}
+  .save{display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding:16px 18px;background:var(--red);color:#fff}
+  .save b{font-family:var(--num);font-weight:900;font-size:19px}
+  .save .u{font-size:13.5px;opacity:.85;margin-top:3px}
+  .save .price{font-size:30px;white-space:nowrap}
+
+  /* ===== 10.05 UI 정리: 따뜻한 회백 바탕 · 둥근 카드 · 빨강은 가격/주요 버튼에만 ===== */
+  :root{--paper:#faf8f5;--panel:#f1ede6;--line:#e6e1d8;--card:#fff;--r:18px;--sh:0 1px 2px rgba(21,18,15,.04),0 6px 18px rgba(21,18,15,.06)}
+  html,body{background:#e9e5de}
+  .app{background:var(--paper)}
+  .foot{display:none}
+  .ver{display:inline-block;font-size:12px;color:rgba(255,255,255,.7);background:rgba(255,255,255,.1);border-radius:999px;padding:5px 10px;margin-left:6px;cursor:pointer;white-space:nowrap} /* 버전·지점 확인 (누르면 새로고침) */
+  .find,.cart,.homebtn{border-radius:12px}
+  .cart b{border-radius:8px}
+  .flow{display:none}
+  .tabs a{font-size:16px}
+  .hdr{border-bottom:0;padding-bottom:6px;align-items:center}
+  .hdr .n{font-size:15px;line-height:1;letter-spacing:.04em;color:#fff;background:var(--ink);border-radius:999px;padding:7px 10px 6px;align-self:center}
+  .hdr h2{font-size:28px;margin-top:2px}
+  .sec{padding-top:40px}
+  /* 첫 화면 */
+  .home{padding:36px var(--pad) 48px}
+  .home .hello{font-family:var(--num);font-weight:900;letter-spacing:.24em;font-size:13px;color:var(--red)}
+  .home h1{font-size:44px;line-height:1.18;margin-top:10px;letter-spacing:-.02em}
+  .ways{grid-template-columns:1fr 1fr;gap:14px;margin-top:30px}
+  .way{position:relative;display:block;overflow:hidden;border:0;border-radius:24px;padding:26px 24px;min-height:230px;background:var(--card);box-shadow:var(--sh);transition:transform .12s ease}
+  .way:active{transform:scale(.985)}
+  .way .wt{position:relative;z-index:2;max-width:62%}
+  .way .k{display:block;font-family:var(--num);font-weight:800;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--red);margin:0}
+  .way b{font-size:30px;margin-top:8px;letter-spacing:-.02em}
+  .way span{font-size:15px;color:var(--ink-soft);margin-top:8px}
+  .way i{display:inline-block;margin-top:18px;font-size:16px;font-weight:900;color:var(--ink)}
+  .way img{position:absolute;right:-6px;bottom:0;height:88%;width:auto;max-width:52%;object-fit:contain;object-position:right bottom;z-index:1}
+  .way.w-dev{grid-column:1/-1;min-height:300px;background:#15120f;color:#fff}
+  .way.w-dev .k{color:#ff6b6b}
+  .way.w-dev span{color:rgba(255,255,255,.72)}
+  .way.w-dev i{background:var(--red);color:#fff;border-radius:999px;padding:12px 20px;font-size:17px}
+  .way.w-dev img{right:-20px;height:118%;max-width:60%;bottom:-8%}
+  .way.w-liq img,.way.w-dsp img{height:62%;max-width:46%;right:10px;bottom:14px}
+  .way.w-dsp img{mix-blend-mode:multiply;max-width:58%;right:0;bottom:6px}
+  .way.w-liq .wt,.way.w-dsp .wt{max-width:100%}
+  .way.w-liq b,.way.w-dsp b{font-size:26px}
+  .way.w-liq i,.way.w-dsp i{position:absolute;left:24px;bottom:22px;margin:0;font-size:26px;color:var(--red)}
+  .home .tip{text-align:center;margin-top:24px}
+  .home .tip b{color:var(--ink)}
+  @media (max-width:560px){.ways{grid-template-columns:1fr}.way.w-dev{grid-column:auto}}
+  /* 상품 카드: 사진 바탕을 카드 색과 같게(흰 배경 사진이 떠 보이지 않게) */
+  .prods{gap:10px;border:0}
+  .p{background:var(--card);border:0;border-radius:var(--r);box-shadow:var(--sh);padding:12px 12px 14px}
+  .p img{background:var(--panel);border-radius:12px;padding:10px}
+  .p b{font-size:17px}
+  .p .bd{margin-top:10px}
+  /* 묶음표·혜택 줄 */
+  .spec{background:var(--card);border-radius:var(--r);box-shadow:var(--sh);padding:0 20px;margin-top:14px}
+  .row.best{margin-left:-20px;margin-right:-20px;padding-left:16px;padding-right:20px;border-radius:0}
+  .spec .row.best:last-child{border-radius:0 0 var(--r) var(--r)}
+  .row .tag{border-radius:6px}
+  .taste{border-radius:14px;background:var(--card);box-shadow:var(--sh)}
+  .taste.on{background:var(--ink)}
+  .f{border-radius:999px;background:var(--card)}
+  .f.on{background:var(--ink)}
+  .more{border-radius:14px;background:var(--card)}
+  .upsell,.cta{border-radius:16px}
+  .b1,.b2{border-radius:14px}
+  .badge{border-radius:6px}
+  /* 아래에서 올라오는 창: 위쪽 바를 가리지 않게, 둥근 위 모서리 + 손잡이 */
+  .sheet{border-radius:26px 26px 0 0;max-height:calc(100dvh - var(--topH, 120px) - 10px);padding-top:30px;position:relative;background:var(--paper)}
+  .sheet::before{content:"";position:absolute;left:50%;top:10px;width:44px;height:5px;border-radius:9px;background:#d6d0c6;transform:translateX(-50%)}
+  .x{border-radius:50%;background:var(--card);box-shadow:var(--sh)}
+  .line{background:var(--card);border:0;border-radius:14px;padding:10px 12px;margin-top:8px;box-shadow:var(--sh)}
+  .line img{border-radius:10px;mix-blend-mode:multiply}
+  .step{border-radius:12px;background:var(--paper)}
+  .tot2{background:var(--card);border:0;border-radius:var(--r);box-shadow:var(--sh);padding:14px 18px;margin-top:14px}
+  .tot2 .save{border-radius:10px}
+  .nudge,.engr,.pick2,.mem,.hinote,.save{border-radius:16px}
+  .pk{border-radius:12px}
+  .in{border-radius:12px}
+  .btns.stick{position:sticky;bottom:-26px;margin:18px calc(-1 * var(--pad)) -26px;padding:14px var(--pad) 22px;background:linear-gradient(rgba(250,248,245,0),var(--paper) 30%)}
+  .btns.stick .b1{height:62px;font-size:19px}
+  .nextbar{border-radius:18px;padding:16px 24px}
+  .devup{border-radius:24px 24px 0 0}
+  .devup .bt button{border-radius:14px}
+  .det .img{border-radius:var(--r)}
+  .det .img img{mix-blend-mode:multiply}
+  .chips span{border-radius:999px;background:var(--card)}
+  .dcard{border-radius:var(--r);overflow:hidden}
+  .combo{border-radius:var(--r);background:var(--card);border:0;box-shadow:var(--sh)}
+  .home{min-height:calc(100dvh - var(--topH, 82px));display:flex;flex-direction:column}
+  .ways{flex:1;grid-template-rows:1.25fr 1fr}
+  .way.w-dev{min-height:340px}
+  .way.w-dev img{height:100%;bottom:0;right:-10px}
+  .way.w-liq i,.way.w-dsp i{display:none}
+  .way.w-liq,.way.w-dsp{min-height:300px}
+  .way.w-liq .wt,.way.w-dsp .wt{position:absolute;left:24px;top:26px;right:24px}
+  .way.w-liq img{height:58%;max-width:60%;left:50%;right:auto;transform:translateX(-50%);bottom:18px;object-position:center bottom}
+  .way.w-dsp img{height:auto;max-width:none;width:92%;left:4%;right:auto;bottom:22px}
+  .devup:not(.on){visibility:hidden;transition:transform .32s cubic-bezier(.2,.8,.2,1),visibility 0s .32s}
+  .p img{background:none;padding:2px;border-radius:10px} /* 흰 배경 사진이 흰 카드에 자연스럽게 섞이게 */
+  /* 장바구니 안내: 검은 박스 대신 가벼운 카드, 두 번째부터는 한 줄로 작게 */
+  .nudge{background:var(--card);color:var(--ink);box-shadow:var(--sh);padding:16px 18px}
+  .nudge .u{color:var(--grey)}
+  .nudge .bar2{background:var(--panel);border-radius:9px;overflow:hidden;height:7px}
+  .nudge .bar2 i{border-radius:9px}
+  .nudge b{font-size:18px}
+  .nudge + .nudge{margin-top:8px;padding:12px 18px}
+  .nudge + .nudge b{font-size:15px}
+  .nudge + .nudge .bar2{display:none}
+  .pick2{background:var(--card);border:0;box-shadow:var(--sh)}
+  .pk{background:var(--paper);border:0}
+  .toast{bottom:120px!important;border-radius:999px}
+  /* 카드에서 바로 담기 */
+  .p{cursor:pointer;display:flex;flex-direction:column}
+  .p.got{box-shadow:0 0 0 2.5px var(--ink),var(--sh)}
+  .p .qa{margin-top:auto;align-self:stretch;margin-top:12px;height:48px;border-radius:12px;background:var(--ink);color:#fff;font-family:var(--num);font-weight:900;font-size:17px}
+  .p .qs{margin-top:12px;display:grid;grid-template-columns:48px 1fr 48px;align-items:center;height:48px;border-radius:12px;background:var(--red);color:#fff;overflow:hidden}
+  .p .qs button{height:100%;color:#fff;font-size:24px;font-weight:900}
+  .p .qs span{text-align:center;font-family:var(--num);font-weight:900;font-size:18px}
+  .p .tg{flex:1}
+  .nextbar .pgt{display:flex;flex-direction:column;gap:6px;font-size:15px;white-space:nowrap}
+  .nextbar .pgt em{font-style:normal;color:#ff8a8f}
+  .nextbar .pg{display:block;width:150px;height:6px;border-radius:9px;background:rgba(255,255,255,.2);overflow:hidden}
+  .nextbar .pg i{display:block;height:100%;background:var(--red);border-radius:9px}
+  /* 팟·코일 기기 타일 */
+  .pdevs{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:14px}
+  .pdev{background:var(--card);border-radius:14px;box-shadow:var(--sh);padding:10px 8px 10px;display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center}
+  .pdev img{height:74px;width:auto;object-fit:contain}
+  .pdev .ph{height:74px;width:100%;border-radius:10px;background:var(--panel);display:grid;place-items:center;font-family:var(--num);font-weight:900;font-size:15px;color:var(--ink-soft);padding:0 6px;line-height:1.25}
+  .pdev b{font-family:var(--num);font-weight:800;font-size:14px;line-height:1.25}
+  .pdev small{font-size:12px;color:var(--grey)}
+  .pdev.on{box-shadow:0 0 0 2.5px var(--red),var(--sh)}
+  .pdsel{margin-top:18px;padding:14px 16px;border-radius:14px;background:var(--ink);color:#fff;display:flex;align-items:center;gap:6px;font-size:15px}
+  .pdsel b{font-family:var(--num);font-size:18px}
+  .pdsel button{margin-left:auto;background:rgba(255,255,255,.14);color:#fff;border-radius:10px;padding:9px 12px;font-weight:800;font-size:14px}
+  @media (max-width:560px){.pdevs{grid-template-columns:repeat(3,1fr)}}
+  /* 검수: 누르는 곳 최소 44px, 손님이 읽는 글씨 13px 이상 */
+  .f{min-height:44px;padding:0 18px;display:inline-flex;align-items:center}
+  .tabs a{padding:12px 8px 14px;min-width:44px;text-align:center}
+  .tabs{gap:14px}
+  .homebtn,.find,.cart{min-height:46px}
+  .p .bd{font-size:13px}
+  .p .tg{font-size:14px;line-height:1.4}
+  .p .rib{font-size:12px}
+  .row .u,.row .v .note{font-size:14px}
+  .pdev small{font-size:13px}
+  .scan{position:relative;cursor:pointer;transition:opacity .15s ease}
+  .scan.done{opacity:.32}
+  .scan.done::after{content:"✓ 찍음";position:absolute;right:0;bottom:16px;background:#03b26c;color:#fff;font-weight:900;font-size:16px;padding:8px 14px;border-radius:999px;opacity:1}
+  .p.sold img{opacity:.35;filter:grayscale(1)}
+  .p.sold b,.p.sold .tg,.p.sold .bd{color:var(--grey)}
+  .p .rib.so{background:#8d887f}
+  .p .qa.so{display:grid;place-items:center;background:var(--panel);color:var(--grey)}
+  .stockat{font-size:13px;color:var(--grey)}
+  .posw{margin-top:10px;padding:12px 14px;border-radius:12px;background:#fff4e5;color:#8a4b00;font-size:15px;line-height:1.5}
+  .scan .sq{display:flex;align-items:center;gap:2px;background:var(--paper);border-radius:10px}
+  .scan .sq button{width:44px;height:44px;font-size:22px;font-weight:900}
+  .scan .sq b{min-width:28px;text-align:center;font-family:var(--num);font-size:18px}
+  .sadd-open{display:block;width:100%;margin-top:14px;height:54px;border-radius:14px;border:2px dashed var(--line);background:var(--card);font-weight:800;font-size:16px;color:var(--ink-soft)}
+  .sadd{margin-top:14px;padding:14px;border-radius:16px;background:var(--card);box-shadow:var(--sh)}
+  .sadd-h{display:flex;align-items:center;justify-content:space-between}
+  .sadd-h b{font-family:var(--num);font-size:18px}
+  .sadd-h button{padding:10px 14px;border-radius:10px;background:var(--panel);font-weight:800}
+  .sq-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+  .sq-row div{flex:1;min-width:0}.sq-row b{display:block;font-size:16px}.sq-row span{font-size:13px;color:var(--grey)}
+  .sq-row button{flex:none;width:48px;height:48px;border-radius:12px;background:var(--ink);color:#fff;font-size:24px;font-weight:900}
+  .sq-row.sold b{color:var(--grey)}
+  .sq-hint{padding:14px 0;color:var(--grey);font-size:14px}
+  .gpic img{width:100%;height:100%;object-fit:cover;border-radius:10px}
+  .gpic .gname{display:grid;place-items:center;width:100%;height:100%;font-family:var(--num);font-weight:900;font-size:18px;color:var(--ink-soft);text-align:center;padding:8px;line-height:1.25}
+  .dspec-pic{margin-top:12px;border-radius:16px;overflow:hidden;background:#fff;display:grid;place-items:center}
+  .dspec-pic img{width:100%;max-height:420px;object-fit:contain;display:block}
+  .dspec-desc{margin-top:14px;font-size:16px;line-height:1.65;color:var(--ink)}
+  .dspec-tip{margin-top:16px;border-radius:12px;background:var(--panel);padding:12px 14px}
+  .dspec-tip summary{font-weight:800;cursor:pointer}
+  .dspec-tip div{margin-top:8px;font-size:14px;line-height:1.7;color:var(--ink-soft)}
+  .dpods{display:grid;gap:8px;margin-top:10px}
+  .dpod{display:flex;align-items:center;gap:12px;background:var(--card);border-radius:14px;padding:10px 12px;box-shadow:var(--sh)}
+  .dpod img{width:56px;height:56px;object-fit:cover;border-radius:10px;flex:none}
+  .dpod-ph{width:56px;height:56px;border-radius:10px;background:var(--panel);display:grid;place-items:center;font-size:26px;flex:none}
+  .dpod div{flex:1;min-width:0}.dpod b{display:block;font-size:16px}.dpod span{font-size:13px;color:var(--grey)}
+  .dpod button{flex:none;height:46px;padding:0 16px;border-radius:12px;background:var(--ink);color:#fff;font-weight:800}
+  .pkb{display:flex;gap:6px;flex:none}
+  .pkb .pk1{height:46px;padding:0 14px;border-radius:12px;background:var(--ink);color:#fff;font-weight:800;font-size:15px;white-space:nowrap}
+  .pkb .pk0{height:46px;padding:0 12px;border-radius:12px;background:var(--panel);font-weight:700;font-size:14px}
+  .rowg .pr small{font-family:var(--kr);font-weight:600;color:var(--grey);font-size:12px}
+  .rowg{flex-wrap:wrap}
+  .rowg .pkb button,.dpod .pkb button{width:auto;font-size:15px}
+  .askbox{margin-top:16px;padding:16px;border-radius:16px;background:#fff4e5}
+  .askbox > b{font-size:17px;color:#8a4b00}
+  .askhint{margin-top:6px;font-size:14px;color:var(--ink-soft)}
+  .askrow{display:flex;align-items:center;gap:10px;margin-top:12px;flex-wrap:wrap}
+  .askrow > span:first-child{font-weight:700}
+  .askrow .sq{display:flex;align-items:center;background:#fff;border-radius:12px}
+  .askrow .sq button{width:46px;height:46px;font-size:22px;font-weight:900}
+  .askrow .sq b{min-width:30px;text-align:center;font-family:var(--num);font-size:18px}
+  .askrow .b1{flex:1;min-width:200px}
+
+  /* ── 포스터 첫 화면 (10/7): 전면 포스터, 손으로 밀어 넘김, 누르면 해당 구역 ── */
+  .home.pst{padding:0;min-height:calc(100dvh - var(--topH, 82px));height:calc(100dvh - var(--topH, 82px));display:flex;flex-direction:column;overflow:hidden;background:#0f0d0b}
+  /* 토스식 배너: 한 장씩 꽉 차게, 손가락 따라 움직이고 놓으면 부드럽게 붙음, 옆 장은 살짝 작고 어둡게 */
+  .pv{position:relative;flex:1;min-height:0;overflow:hidden;touch-action:pan-y;user-select:none;-webkit-user-select:none}
+  .ps{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;will-change:transform;transition:transform .55s cubic-bezier(.22,1,.36,1),opacity .55s cubic-bezier(.22,1,.36,1),filter .55s}
+  .pv.drag .ps{transition:none}
+  .ps .bg{position:absolute;inset:-40px;background-size:cover;background-position:center;filter:blur(36px) brightness(.45);transform:scale(1.1)}
+  .pp{position:relative;height:100%;max-width:100%;aspect-ratio:4/5;border:0;padding:0;overflow:hidden;background:#111;text-align:left;display:block;-webkit-tap-highlight-color:transparent}
+  .pp>img.full{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none;-webkit-user-drag:none}
+  .pdots{position:absolute;left:0;right:0;bottom:18px;display:flex;justify-content:center;gap:7px;z-index:20;pointer-events:none}
+  .pdots i{width:7px;height:7px;border-radius:99px;background:rgba(255,255,255,.4);transition:width .4s cubic-bezier(.22,1,.36,1),background .4s}
+  .pdots i.on{width:22px;background:#fff}
+  .pcount{position:absolute;right:16px;top:14px;z-index:5;background:rgba(0,0,0,.45);color:#fff;font-size:13px;font-weight:700;padding:5px 11px;border-radius:99px;font-family:var(--num);pointer-events:none;z-index:20}
+  .pways{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:10px var(--pad) 12px;background:#0f0d0b}
+  .pways button{min-height:50px;border:0;border-radius:14px;background:rgba(255,255,255,.1);color:#fff;font-family:var(--num);font-weight:800;font-size:16px}
+  .pways button:active{transform:scale(.97)}
+  .extag{position:absolute;top:14px;left:14px;z-index:3;background:rgba(0,0,0,.55);color:#fff;font-size:12px;padding:4px 10px;border-radius:99px}
+  /* 예시 포스터 (실제 포스터 이미지 오면 img로 교체) */
+  .px{position:absolute;inset:0;padding:8% 8% 0;display:flex;flex-direction:column;background:#f5f2ed;color:#15120f}
+  .px .tagx{position:absolute;top:14px;right:14px;background:rgba(0,0,0,.55);color:#fff;font-size:12px;padding:4px 10px;border-radius:99px;z-index:3}
+  .px .k{font-family:var(--num);font-weight:800;letter-spacing:.2em;font-size:13px;color:var(--red)}
+  .px h3{font-family:var(--num);font-weight:900;font-size:clamp(30px,7.5vw,54px);line-height:1.12;margin-top:10px;letter-spacing:-.02em;position:relative;z-index:2}
+  .px .sub{font-size:clamp(14px,2.6vw,19px);margin-top:12px;line-height:1.5;opacity:.8;position:relative;z-index:2}
+  .px .pr{font-family:var(--num);font-weight:900;font-size:clamp(26px,6vw,44px);margin-top:16px;color:var(--red);position:relative;z-index:2}
+  .px .pr s{font-size:.5em;color:#999;font-weight:700;margin-right:8px}
+  .px img{position:absolute;right:-4%;bottom:0;width:72%;height:58%;object-fit:contain;object-position:right bottom}
+  .px .go{position:absolute;left:8%;bottom:7%;background:var(--red);color:#fff;border-radius:99px;padding:12px 20px;font-weight:900;font-size:16px;z-index:2}
+  .px.dark{background:#15120f;color:#fff}.px.dark .k{color:#ff6b6b}.px.dark .pr{color:#fff}
+  .px.red{background:var(--red);color:#fff}.px.red .k{color:#ffd9d9}.px.red .pr{color:#fff}.px.red .go{background:#fff;color:var(--red)}
+
+  /* ── 이벤트 화면 (포스터 누르면 아래에서 올라옴, 토스식) ── */
+  .evp{position:fixed;left:0;right:0;top:var(--topH, 82px);bottom:0;z-index:50;background:var(--paper, #f6f3ee);transform:translateY(105%);transition:transform .5s cubic-bezier(.22,1,.36,1);display:flex;flex-direction:column;border-radius:24px 24px 0 0;box-shadow:0 -10px 40px rgba(0,0,0,.25)}
+  .evp.on{transform:none}
+  .evp .eb-body{flex:1;overflow:auto;padding:0 var(--pad) 24px;-webkit-overflow-scrolling:touch}
+  .evp .grab{width:44px;height:5px;border-radius:9px;background:#cfc8bf;margin:10px auto 4px}
+  .evh{display:flex;gap:16px;align-items:center;padding:10px 50px 18px 0}
+  .evh img{width:92px;aspect-ratio:4/5;object-fit:cover;border-radius:14px;flex:none;box-shadow:0 6px 18px rgba(0,0,0,.18)}
+  .evh .tt{font-family:var(--num);font-weight:900;font-size:24px;line-height:1.25}
+  .evh .pr{margin-top:6px;font-family:var(--num);font-weight:900;font-size:26px;color:var(--red)}
+  .evh .pr s{font-size:15px;color:#9a948d;margin-right:8px;font-weight:700}
+  .evh .off{display:inline-block;margin-top:6px;background:var(--red);color:#fff;font-size:13px;font-weight:800;padding:4px 10px;border-radius:99px}
+  .evh .spec{margin-left:auto;align-self:center;border:0;background:#fff;border-radius:12px;padding:12px 16px;font-weight:800;font-size:15px;box-shadow:var(--sh);flex:none}
+  .evx{position:absolute;right:14px;top:14px;width:42px;height:42px;border:0;border-radius:99px;background:rgba(0,0,0,.07);font-size:20px;z-index:2}
+  .evs{margin-top:18px}
+  .evs h4{font-family:var(--num);font-weight:900;font-size:19px;margin-bottom:10px;display:flex;align-items:baseline;gap:8px}
+  .evs h4 small{font-family:inherit;font-weight:700;font-size:13px;color:#8a837b}
+  .evcol{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+  .evcol button{border:2px solid transparent;background:#fff;border-radius:16px;padding:10px 6px 8px;box-shadow:var(--sh);font-weight:800;font-size:14px}
+  .evcol button img{height:96px;width:100%;object-fit:contain;display:block;margin-bottom:6px}
+  .evcol button.on{border-color:var(--red)}
+  .evq{display:flex;gap:8px;flex-wrap:wrap}
+  .evq button{border:0;background:#15120f;color:#fff;border-radius:99px;padding:11px 16px;font-weight:800;font-size:14px}
+  .evg{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .evc{position:relative;border:2px solid transparent;background:#fff;border-radius:16px;padding:0 4px 10px;box-shadow:var(--sh);overflow:hidden;text-align:center;font-weight:800;font-size:14px;line-height:1.3;transition:transform .15s}
+  .evc:active{transform:scale(.96)}
+  .evc img{width:calc(100% + 8px);margin:0 -4px 8px;aspect-ratio:1;object-fit:cover;display:block;background:#fff}
+  .evc img.sm{object-fit:contain;padding:6px}
+  .evc.on{border-color:var(--red)}
+  .evc .cnt{position:absolute;top:8px;right:8px;min-width:32px;height:32px;border-radius:99px;background:var(--red);color:#fff;font-family:var(--num);font-size:17px;display:flex;align-items:center;justify-content:center;padding:0 8px}
+  .evc .mn{position:absolute;top:8px;left:8px;width:32px;height:32px;border-radius:99px;background:rgba(0,0,0,.65);color:#fff;font-size:20px;line-height:32px}
+  .evc .bd{position:absolute;left:8px;top:8px;background:#15120f;color:#fff;font-size:11px;padding:3px 7px;border-radius:6px}
+  .evc.on .bd{display:none}
+  .evc.out{opacity:.4;pointer-events:none}
+  .stp{display:flex;gap:12px;align-items:center;margin:22px 0 8px}
+  .stp i{flex:none;width:30px;height:30px;border-radius:99px;background:var(--red);color:#fff;font-style:normal;font-family:var(--num);font-weight:900;display:flex;align-items:center;justify-content:center}
+  .stp b{font-family:var(--num);font-weight:900;font-size:18px;display:block}
+  .stp span{font-size:13.5px;color:var(--ink-soft)}
+  .evc.txt{display:flex;flex-direction:column;justify-content:center;min-height:96px;padding:14px 8px;font-size:15px;background:#fff}
+  .evc.txt small{display:block;font-size:12px;color:#8a837b;font-weight:700;margin-top:4px}
+  .evlung{display:flex;align-items:center;gap:12px;width:100%;border:2px dashed #cfc8bf;background:#fff;border-radius:16px;padding:16px;text-align:left}
+  .evlung.on{border:2px solid var(--red)}
+  .evlung b{font-family:var(--num);font-weight:900;font-size:17px;display:block}
+  .evlung span{font-size:13px;color:#6f6861}
+  .evlung i{margin-left:auto;font-style:normal;font-weight:900;font-size:15px;white-space:nowrap;color:var(--red)}
+  .evc.out::after{content:"품절";position:absolute;top:38%;left:50%;transform:translate(-50%,-50%);background:#15120f;color:#fff;padding:4px 10px;border-radius:8px;font-size:13px}
+  .evbar{padding:12px var(--pad) 16px;background:#fff;box-shadow:0 -6px 20px rgba(0,0,0,.08)}
+  .evbar .row{display:flex;justify-content:space-between;font-weight:800;font-size:15px;margin-bottom:8px}
+  .evbar .row b{font-family:var(--num);color:var(--red)}
+  .evbar .bar{height:8px;border-radius:9px;background:#eee;overflow:hidden;margin-bottom:12px}
+  .evbar .bar i{display:block;height:100%;background:var(--red);border-radius:9px;transition:width .35s cubic-bezier(.22,1,.36,1)}
+  .evbar .go{width:100%;min-height:56px;border:0;border-radius:16px;background:var(--red);color:#fff;font-family:var(--num);font-weight:900;font-size:19px}
+  .evbar .go:disabled{background:#d8d2ca}
+  .evsrch{margin-top:14px;position:relative}
+  .evsrch input{width:100%;min-height:52px;border:2px solid #e4ded6;border-radius:14px;padding:0 16px 0 44px;font-size:17px;background:#fff}
+  .evsrch input:focus{outline:0;border-color:var(--red)}
+  .evsrch::before{content:"🔍";position:absolute;left:15px;top:50%;transform:translateY(-50%);font-size:17px}
+  .evnone{margin-top:12px;color:#8a837b;font-size:14px}
+  .evres{position:relative;margin:10px var(--pad) 0;z-index:30;flex:none;border:0;border-radius:16px;background:#fff;box-shadow:none;padding:12px 16px;display:flex;align-items:center;gap:12px;text-align:left;animation:evresIn .45s cubic-bezier(.22,1,.36,1)}
+  .evres b{font-family:var(--num);font-weight:900;font-size:17px;display:block}
+  .evres span{font-size:13px;color:#6f6861}
+  .evres i{margin-left:auto;font-style:normal;background:var(--red);color:#fff;border-radius:99px;padding:10px 16px;font-weight:900;font-size:15px;white-space:nowrap}
+  @keyframes evresIn{from{transform:translateY(20px);opacity:0}}
+  .p .lno{position:absolute;top:10px;right:10px;z-index:1;min-width:26px;padding:3px 6px;border-radius:7px;background:#15120f;color:#fff;font-family:var(--num);font-weight:800;font-size:13px;text-align:center;line-height:1.2}
+  .lno.in{position:static;display:inline-block;padding:1px 7px;margin-right:4px;border-radius:6px;background:#15120f;color:#fff;font-size:12px}
+  .lno[class*="lc-"]{color:#15120f;border:1.5px solid #15120f} .lno.lc-w{background:#fff} .lno.lc-b{background:#9cc8f0} .lno.lc-o{background:#ffb066} .lno.lc-g{background:#d3d3d3} .lno.lc-gr{background:#9ad39a} .lno.lc-y{background:#ffe36b} .lno.lc-v{background:#d4bff0} /* 라벨지 색 */
+  .kbf{outline:4px solid #e8262c!important;outline-offset:3px!important} /* 키보드로 고른 칸 (10/12) */
+  #pv .pp.kbf{outline-offset:-6px!important} /* 포스터는 테두리를 안쪽에 (밖은 잘림) */
+</style>
+</head>
+<body data-mode=""><div id="testRibbon" style="position:fixed;left:0;right:0;bottom:0;z-index:99999;background:#1f6feb;color:#fff;text-align:center;font:700 13px sans-serif;padding:4px;pointer-events:none">키보드 시험판 · 정식판과 같고 키보드 조작만 더함</div>
+<div class="app">
+  <div class="top">
+    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">키보드시험 v10.12-0100</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
+    <nav class="tabs" id="tabs" style="display:none"></nav>
+    <div class="flow" id="flow"><span data-st="1">① 찾는 것</span><i>›</i><span data-st="2">② 고르기</span><i>›</i><span data-st="3">③ 담은 상품</span><i>›</i><span data-st="4">④ 직원 확인</span></div>
+  </div>
+
+  <section class="home pst" data-for="home">
+    <div class="pv" id="pv"></div>
+    <button class="evres" id="evres" data-evres="1" style="display:none"></button>
+    <div class="pways"><button data-go="dev">전자담배 기기</button><button data-go="liq">액상 · 소모품</button><button data-go="dsp">일회용</button></div>
+  </section>
+
+  <section class="redblock" id="s1" data-for="dev">
+    <div class="hdr"><div class="n">01</div><div><div class="eb">Best Deal</div><h2>오늘 가장 큰 혜택</h2></div></div>
+    <div class="best-grid"><div class="best-left">
+      <div class="best-title" id="bestTitle"></div>
+      <div class="best-sub">낱개로 사는 것보다 가장 저렴한 구성이에요.<br>원하는 맛으로 10병을 골라 담으면 돼요.</div>
+      <div class="best-price" id="bestPrice"></div>
+      </div>
+      <div class="best-dev" id="bestDev"></div></div>
+    <div class="evrows">
+      <div class="evrow"><div><div class="t">레이저 각인 무료 이벤트</div><div class="u">기기 구매 또는 액상 10병 이상 구매 시 원하는 문구를 새겨 드려요</div></div><div class="d">0원</div></div>
+      <div class="evrow"><div><div class="t">네이버 리뷰 이벤트</div><div class="u">네이버 리뷰를 남기면 할인쿠폰을 드려요</div></div></div>
+    </div>
+    <button class="cta" data-pkg="max10"><span><b>추가 혜택으로 구매하러 가기</b><small>구성과 할인 금액을 한눈에 보여 드려요</small></span><span class="arr">→</span></button>
+  </section>
+
+  <section class="sec" id="s2" data-for="dev">
+    <div class="hdr"><div class="n">02</div><div><div class="eb">Starter Package</div><h2>기기 패키지</h2></div></div>
+    <div class="spec">
+      <div class="row"><div><span class="k">하복2 풀패키지</span><span class="u">기기 + 입호흡 액상 10병 + 폐호흡 프리미엄 3병</span><span class="tag" data-pk-tag="full"></span></div><div class="v"><span class="note" data-pk-note="full"></span><span class="price" data-pk="full"></span></div></div>
+      <div class="row"><div><span class="k">프리미엄 기기패키지 10병</span><span class="u">기기 + 프리미엄 액상 10병 · 병당 7,500원</span><span class="tag">단품가보다 24,000원 저렴</span></div><div class="v"><span class="note" data-pk-note="pr10"></span><span class="price" data-pk="pr10"></span></div></div>
+      <div class="row"><div><span class="k">프리미엄 기기패키지</span><span class="u">기기 + 프리미엄 액상 5병</span><span class="tag">단품가보다 9,500원 저렴</span></div><div class="v"><span class="note" data-pk-note="pr5"></span><span class="price" data-pk="pr5"></span></div></div>
+      <div class="row"><div><span class="k">베이프렌드 기기패키지</span><span class="u">기기 + 빌런&amp;릭 5병 · 입문자 최적가</span><span class="tag">19,500원 이득</span></div><div class="v"><span class="note" data-pk-note="vl5"></span><span class="price" data-pk="vl5"></span></div></div>
+    </div>
+    <div id="combos"></div>
+  </section>
+
+  <!-- 10/8 사장님 요청으로 "프리미엄 액상 11병 90,000원" 칸(#s3) 삭제. 원본은 menu_백업_10.08-0200.html -->
+  <section class="sec" id="sRec" data-for="liq">
+    <div class="hdr"><div class="n">01</div><div><div class="eb">Our Pick</div><h2>매장 추천 맛</h2></div></div>
+    <div style="font-size:15px;color:var(--grey);margin-top:12px">어떤 맛 좋아하세요? 고르시면 매장 추천 시리즈를 보여 드려요<span class="stockat" id="stockAt"></span></div>
+    <div class="tastes rec" id="recTabs"></div>
+    <div class="prods" id="recList"></div>
+  </section>
+
+  <section class="sec" id="s4" data-for="liq">
+    <div class="hdr"><div class="n">02</div><div><div class="eb">Find Your Taste</div><h2>맛으로 찾기</h2></div></div>
+    <div class="tastes" id="tastes"></div>
+    <div class="filters" id="filters"></div>
+    <div class="prods" id="prods"></div>
+    <button class="more" id="more">더 보기</button>
+  </section>
+
+  <section class="sec" id="sDev" data-for="dev">
+    <div class="hdr"><div class="n">03</div><div><div class="eb">Devices</div><h2>전자담배 기기</h2></div></div>
+    <div style="font-size:14px;color:var(--grey);margin-top:12px">기기를 사면 레이저 각인 무료 · 기기 + 액상 5병이면 기기패키지가 더 싸요</div>
+    <div class="prods" id="devList"></div>
+  </section>
+
+  <section class="sec" id="sLiqBen" data-for="liq">
+    <div class="hdr"><div class="n">03</div><div><div class="eb">Benefits</div><h2>액상 혜택</h2></div></div>
+    <div class="spec">
+      <div class="row"><div><span class="k">액상·팟 10만원 이상</span><span class="u">기기·일회용 금액은 빼고 계산</span></div><div class="v"><span class="price" style="font-size:22px">일회용 1개 증정</span></div></div>
+      <div class="row"><div><span class="k">액상 10병 이상</span><span class="u">원하는 문구를 새겨 드려요</span></div><div class="v"><span class="price" style="font-size:22px">레이저 각인 무료</span></div></div>
+    </div>
+  </section>
+
+  <section class="sec" id="sPod" data-for="liq">
+    <div class="hdr"><div class="n">04</div><div><div class="eb">Pods &amp; Coils</div><h2>팟 · 코일 · 소모품</h2></div></div>
+    <div style="font-size:15px;color:var(--grey);margin-top:12px">쓰시는 기기를 고르면 맞는 팟·코일만 보여 드려요</div>
+    <div class="pdevs" id="podDevs"></div>
+    <div class="filters" id="podFilter"></div>
+    <div id="podList"></div>
+  </section>
+
+  <div id="dspList" data-for="dsp"></div>
+
+  <div class="foot"><b>시안 · 버전 10.05-4700</b> · 사진·맛·태그는 직원 교육용 액상 DB(380종), 가격은 매장 안내 책자 기준이에요. 패키지·꿀조합·이벤트 문구는 관리자 화면에서 바꾸게 만들 예정이에요. 기기패키지 기준 기기는 하복2(판매가 89,000원)이고 사진은 용트림 상품 페이지 사진에서 배경을 지운 거예요. 레이저 각인은 포스에 0원 상품으로 등록 예정. 빌런 패키지 할인 조건은 아직 확정 전이에요.</div>
+</div>
+
+<div class="srch" id="srch"><div class="hd"><input id="q" type="search" placeholder="이름·초성·맛·브랜드 (예: ㅂㄹㅈㄷ, 멘솔, 팜팜바, 말론)" autocomplete="off"><button class="cl" id="srchClose">닫기</button></div>
+  <div class="hint" id="srchHint">초성만 쳐도 돼요 · 띄어쓰기 상관없어요</div>
+  <div class="quick" id="srchQuick"></div>
+  <div class="res" id="srchRes"></div></div>
+<div class="evp" id="evp"></div>
+<div class="dim" id="dim"><div class="sheet" id="sheet"></div></div>
+<div class="toast" id="toast"></div>
+
+<script src="data.js"></script>
+<script src="pos.js"></script>
+<script src="goods.js"></script>
+<script src="lung.js"></script>
+<script src="devinfo.js"></script>
+<script src="JsBarcode.all.min.js"></script>
+<script>
+const IMG = "https://officialvafriend.github.io/vape/img/";
+// 안 파는 액상(단종·취급 안 함)은 목록에서 뺌 — 품절(일시적으로 0)과 다름. 사용자 10/5: 디오 딸기망고 없음
+const HIDE = new Set(["디오 딸기망고", "디오 콜라"]);
+const L = (window.LIQ || []).filter((x) => !HIDE.has(x.n));
+const LABELNO = {"VF 빌런 보석바":1,"VF 빌런 청사과":2,"VF 빌런 석류":3,"VF 빌런 레몬":4,"VF 빌런 청포도":5,"VF 빌런 레즈애플":6,"VF 빌런 파인애플":7,"VF 빌런 자두":8,"VF 빌런 바나나라무네":9,"베이퍼 시가812":29,"베이퍼 쿨멘솔":27,"VF 릭 청포도":18,"VF 릭 석류":19,"VF 릭 청사과":20,"VF 릭 파인애플":21,"VF 릭 소다":22,"VF 릭 자두":23,"VF 릭 적사과":24,"VF 릭 레몬":25,"VF 릭 바나나":26,"디오 레몬":10,"디오 샤인":11,"디오 블루마린":12,"디오 블랙티":13,"디오 알포":14,"디오 블루워터":15,"디오 로젤하트":16,"디오 멜론":17,"딸기 요거트":35,"피치 요거트":36,"환타지아":37,"크림타바코":38,"아쿠아":41,"스피아민트":42,"블루스위트":43,"백도우롱차":46,"땡모반":47,"말라이트":48,"카라망고":56,"콘치즈":57,"알로에포도":58,"스쿨사과":59,"고창수박":60,"메론바":61,"자두사탕":62,"에비앙":63,"알로에라임":65,"초코콕콕":67,"샤인머쓱캣":69,"얼음공주 자몽":70,"얼음공주 밀키소다":71,"느낌 무향":72,"(한) 와 블루레몬":73,"(한) 솔의눈":74,"(한) 레드포카리":75,"(한) 블루스카이":76,"(한) 뱅뱅":77,"(한) 아이스샷":78,"(한) 토바코샷":79,"제이코리아 블랙멘솔":80,"(한) 화이트 멘솔시가":83,"(한) 화이트 파인애플":84,"(한) 화이트 워터멜론":85,"(한) 화이트 화이트멜론":86,"(한) 화이트 블루레몬":87,"(한) 화이트 알로에베라":88,"(한) 화이트 크랜베리애플":89,"(한) 화이트 피치":90,"(한) 화이트 체리":91,"(한) 화이트 소다":92,"(한) 화이트 자몽":93,"(한) 화이트 라임":94,"(한) 마피아퀸":95,"(한) 사무라이퀸":96,"(한) 크루세이더퀸":97,"(한) 아마조네스퀸":98,"제로닉 석류":99,"제로닉 거봉":100,"제로닉 샤인머스캣":101,"제로닉 콜라":102,"제로닉 민트":103,"제로닉 노멘솔 포도":104,"제로닉 노멘솔 자몽":105,"제로닉 노멘솔알로에":106,"제로닉 노멘솔 체리":107,"제로닉 아이스스노우":109,"방그레 스피아민트":110,"크래프트 포도":111,"크래프트 자두":112,"(한) 크래스프라이트":113,"크래알포":114,"크래망고":115,"메가킥 마르키사":116,"메가킥 딸기":117,"메가킥 망고":34,"메가킥 피치":33,"메가킥 사과":119,"메가킥 샤인":120,"메가킥 소다":121,"메가킥 수박":122,"메가킥 자몽":32,"메가킥 포도":123,"메가킥 자두":31,"메가킥 파인애플":124,"스위든 멘솔마스터":127,"스위든 쿠반시가":128,"스위든 체어맨":129,"스위든 그린티":130,"스위든 아이스그린티":131,"스위든 선인장":132,"마샤 샤인":133,"마샤 블랙":134,"마샤 유자":135,"마샤 딸기":136,"마샤 더블샤인":137,"마르키사":138,"마르키사 라즈":139,"잽알베":140,"프라임 파워멘솔":141,"톡스 로젤하트":142,"슴오크쿠반":143,"파이 토트":144,"갱쥬스 알베":146,"컵콘":147,"더블슬블":148,"크오크":149,"용트림체리":150,"더블라임":151,"라임알로에":152,"모코 하와이":153,"모코 그레이프사워":154,"모코 더블망고":155,"모코 더블샤인":156,"설향 딸기":157,"설향 라임":158,"설향 자두":159};
+const LABELCOL = {"VF 빌런 보석바":"w","VF 빌런 청사과":"w","VF 빌런 석류":"w","VF 빌런 레몬":"w","VF 빌런 청포도":"w","VF 빌런 레즈애플":"w","VF 빌런 파인애플":"w","VF 빌런 자두":"w","VF 빌런 바나나라무네":"w","베이퍼 시가812":"g","베이퍼 쿨멘솔":"o","VF 릭 청포도":"b","VF 릭 석류":"b","VF 릭 청사과":"b","VF 릭 파인애플":"b","VF 릭 소다":"b","VF 릭 자두":"b","VF 릭 적사과":"b","VF 릭 레몬":"b","VF 릭 바나나":"b","디오 레몬":"w","디오 샤인":"w","디오 블루마린":"w","디오 블랙티":"w","디오 알포":"w","디오 블루워터":"w","디오 로젤하트":"w","디오 멜론":"w","딸기 요거트":"y","피치 요거트":"y","환타지아":"w","크림타바코":"g","아쿠아":"w","스피아민트":"o","블루스위트":"w","백도우롱차":"w","땡모반":"w","말라이트":"g","카라망고":"w","콘치즈":"y","알로에포도":"w","스쿨사과":"w","고창수박":"w","메론바":"w","자두사탕":"w","에비앙":"o","알로에라임":"w","초코콕콕":"y","샤인머쓱캣":"w","얼음공주 자몽":"w","얼음공주 밀키소다":"w","느낌 무향":"b","(한) 와 블루레몬":"w","(한) 솔의눈":"w","(한) 레드포카리":"w","(한) 블루스카이":"w","(한) 뱅뱅":"w","(한) 아이스샷":"o","(한) 토바코샷":"g","제이코리아 블랙멘솔":"o","(한) 화이트 멘솔시가":"o","(한) 화이트 파인애플":"w","(한) 화이트 워터멜론":"w","(한) 화이트 화이트멜론":"w","(한) 화이트 블루레몬":"w","(한) 화이트 알로에베라":"w","(한) 화이트 크랜베리애플":"w","(한) 화이트 피치":"w","(한) 화이트 체리":"w","(한) 화이트 소다":"w","(한) 화이트 자몽":"w","(한) 화이트 라임":"w","(한) 마피아퀸":"w","(한) 사무라이퀸":"w","(한) 크루세이더퀸":"w","(한) 아마조네스퀸":"w","제로닉 석류":"gr","제로닉 거봉":"gr","제로닉 샤인머스캣":"gr","제로닉 콜라":"gr","제로닉 민트":"gr","제로닉 노멘솔 포도":"gr","제로닉 노멘솔 자몽":"gr","제로닉 노멘솔알로에":"gr","제로닉 노멘솔 체리":"gr","제로닉 아이스스노우":"gr","방그레 스피아민트":"gr","크래프트 포도":"gr","크래프트 자두":"gr","(한) 크래스프라이트":"gr","크래알포":"gr","크래망고":"gr","메가킥 마르키사":"gr","메가킥 딸기":"gr","메가킥 망고":"gr","메가킥 피치":"gr","메가킥 사과":"gr","메가킥 샤인":"gr","메가킥 소다":"gr","메가킥 수박":"gr","메가킥 자몽":"gr","메가킥 포도":"gr","메가킥 자두":"gr","메가킥 파인애플":"gr","스위든 멘솔마스터":"o","스위든 쿠반시가":"g","스위든 체어맨":"g","스위든 그린티":"b","스위든 아이스그린티":"w","스위든 선인장":"w","마샤 샤인":"w","마샤 블랙":"w","마샤 유자":"w","마샤 딸기":"w","마샤 더블샤인":"w","마르키사":"w","마르키사 라즈":"w","잽알베":"w","프라임 파워멘솔":"o","톡스 로젤하트":"w","슴오크쿠반":"g","파이 토트":"g","갱쥬스 알베":"w","컵콘":"y","더블슬블":"w","크오크":"g","용트림체리":"w","더블라임":"w","라임알로에":"w","모코 하와이":"w","모코 그레이프사워":"w","모코 더블망고":"w","모코 더블샤인":"w","설향 딸기":"w","설향 라임":"w","설향 자두":"w"}; // 라벨지 색 (w흰색 b파랑 o주황 g연회색 gr초록 y노랑) — 액상_라벨_전체목록.xlsx 10/9 // 액상 라벨 번호 (액상_라벨_전체목록.xlsx 10/8, 58번~ 초안) — 메뉴판 이름 기준
+L.forEach((x) => { if (LABELNO[x.n]) { x.no = LABELNO[x.n]; x.lc = LABELCOL[x.n]; } });
+// 빌런 9종은 사장님이 준 정사각 이미지로 (10/5) — 메뉴판과 같이 올라가는 파일, 나머지는 공용 img/
+const OWN_IMG = { "VF 빌런 레몬": "vl_sq_lemon.jpg", "VF 빌런 레즈애플": "vl_sq_redsapple.jpg", "VF 빌런 바나나라무네": "vl_sq_banana.jpg", "VF 빌런 보석바": "vl_sq_bosukbar.jpg", "VF 빌런 석류": "vl_sq_pomegranate.jpg", "VF 빌런 자두": "vl_sq_plum.jpg", "VF 빌런 청사과": "vl_sq_greenapple.jpg", "VF 빌런 청포도": "vl_sq_greengrape.jpg", "VF 빌런 파인애플": "vl_sq_pineapple.jpg" };
+const isrc = (x) => OWN_IMG[x.n] || IMG + x.img;
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+const byName = (n) => L.find((x) => x.n === n);
+const isVL = (x) => !x.c && /VF (빌런|릭) /.test(x.n);
+const short = (n) => n.replace(/^VF /, "");
+// ── 기기패키지 기준 기기 (여기만 바꾸면 패키지 가격·문구가 같이 바뀜) ──
+// model = 포스 상품 모델명, colors = 포스 색상, img = 누끼 사진(없으면 이름 상자)
+const MAIN = { model: "하복2", name: "하복2", price: 89000, colors: ["블랙", "실버", "올리브", "네이비"], img: "dev_havok2_hero.png", // 메인 사진 = 용트림 홍보 이미지(검정) 누끼
+  imgs: { 블랙: "dev_havok2_black.png", 실버: "dev_havok2_silver.png", 올리브: "dev_havok2_olive.png", 네이비: "dev_havok2_navy.png" },
+  podPack: 2, podPackPrice: 12000 }; // 전용 팟 1팩 2개입 12,000원 (용트림 소비자 권장가) — 포스에는 낱개 6,000원이라 팩이면 2번 찍음
+// 기기에 더하는 액상 금액 (맥스프로 때와 같은 금액 · 하복2 확정 전)
+const ADD = { vl5: 30000, pr5: 40000, pr10: 75000, ref10: 90000, lung3: 40000 }; // lung3 = 폐 프리미엄 40,000원(3병) 포스 묶음 상품
+const REVIEW_LINE = 200000; // 결제 20만원 이상 = 클립 리뷰 3,000원 할인 / 미만 = 리뷰 작성 시 입호흡 액상 1병 // ref10 = 비교용 평소가(프리미엄 11병 90,000원)
+// 기준 기기 스펙 (출처: 용트림 하복2 상세페이지 '제품 사양'·FAQ)
+const MAIN_SPEC = [
+  ["카트리지", "5.5ml", "일체형으로 편하게 교체 가능해요."],
+  ["배터리", "2,800mAh", "Type-C 고속충전 5V/2A"],
+  ["입호흡", "0.6Ω · 14~28W", "기기박스 아래에 들어있어요."],
+  ["폐호흡", "0.15Ω · 40~80W", "기본 장착"],
+  ["크기", "106.5mm", "44.8 × 20.6 × 106.5mm"],
+  ["무게", "117g", "비누 하나와 비슷해요."],
+  ["AS 보증", "6개월", "베이프렌드 매장 AS · 모든 기기 동일"],
+  ["구성품", "카트리지 2개", "충전케이블과 설명서 그리고 컬러드립팁이 들어있어요."],
+];
+const MAIN_TIPS = ["입호흡과 폐호흡은 PG/VG 비율이 달라요.", "팟은 입호흡 기준 액상 1병당 1개씩 교체해줘야해요. 기간은 7~10일에 한번씩 교체를 권장해요.", "기존 하복 코일·카트리지와는 호환되지 않아요"];
+const DEVICE = { id: "dev_main", n: MAIN.name, br: "기기", dev: true, price: MAIN.price };
+const PK = { vl5: MAIN.price + ADD.vl5, pr5: MAIN.price + ADD.pr5, pr10: MAIN.price + ADD.pr10, full: MAIN.price + ADD.pr10 + ADD.lung3 };
+const devBox = () => MAIN.img ? `<div class="dev"><img src="${MAIN.img}" alt="${MAIN.name}"></div>` : `<div class="dev" style="background:#15120f;color:#fff">${MAIN.name}</div>`;
+const pic = (x) => x.c === "dsp" && dImg(x) ? `<img src="${dImg(x)}" alt="" style="object-fit:cover">` : x.dev ? (MAIN.img ? `<img src="${MAIN.img}" alt="" style="object-fit:contain;background:#fff">` : `<div class="mini" style="background:#15120f;color:#fff">${MAIN.name}</div>`) : x.c ? `<div class="mini" style="font-size:26px;background:var(--panel)">${{ dev: "🔋", pod: "🧩", dsp: "🚬" }[x.c]}</div>` : `<img src="${isrc(x)}" alt="">`;
+
+// ── 관리자 화면에서 정할 값 (시안에서는 고정) ──
+const VILLAIN5 = ["VF 빌런 자두", "VF 빌런 청포도", "VF 빌런 레몬", "VF 빌런 레즈애플", "VF 빌런 청사과"];
+const PKGS = [
+  { id: "max10", badge: "최고 혜택", name: `${MAIN.name} + 액상 10병`, desc: "기기 가격 + 액상 10병 75,000원 (병당 7,500원) · 원하는 맛 10병을 골라 구성", device: true, items: [], pick: 10 },
+  { id: "fruitmint", badge: "BEST", sub: "기기패키지", name: "과일멘솔 조합", desc: `${MAIN.name} + 빌런 자두 · 청포도 · 레몬 · 레즈애플 · 청사과`, device: true, items: VILLAIN5 },
+  { id: "honey", badge: "꿀조합", sub: "매장 추천", name: "상큼 과일 꿀조합", desc: "빌런 자두 · 청포도 · 레즈애플 + 디오 레몬 · 샤인", items: ["VF 빌런 자두", "VF 빌런 청포도", "VF 빌런 레즈애플", "디오 레몬", "디오 샤인"] },
+];
+// 매장 추천 맛 (전지점 공통, 사용자 지정 2026-10-05) — 맛 종류별 추천 시리즈
+const BEST = [ // [이름 규칙, 표시] — 이 순서대로 목록 맨 앞에
+  [/^VF 빌런 /, "BEST"], [/^디오 /, "HOT"], [/^VF 릭 /, "BEST"], [/^느낌 무향/, "BEST"], [/시가812/, "BEST"], [/쿨멘솔/, "BEST"],
+];
+const badgeOf = (x) => (BEST.find(([re]) => re.test(x.n)) || [])[1] || "";
+const bestRank = (x) => { const i = BEST.findIndex(([re]) => re.test(x.n)); return i < 0 ? 99 : i; };
+const REC = [ // g = 보여 줄 시리즈 (적은 순서대로)
+  { k: "과일멘솔", s: "빌런 BEST · 디오 HOT", g: [/^VF 빌런 /, /^디오 /] },
+  { k: "노멘솔 과일", s: "릭 BEST", g: [/^VF 릭 /] },
+  { k: "과일 중간멘솔", s: "얌 시리즈", g: [/^\(한\) ?얌/], also: [/^VF 빌런 /, /^디오 /], note: "얌은 재고가 적어서, 비슷한 과일멘솔 빌런 · 디오도 같이 추천해요" }, // 얌 재고 적음 → 빌런·디오 위주
+  { k: "무향", s: "느낌 무향 BEST", g: [/^느낌 무향/] },
+  { k: "시가", s: "812 시가 BEST", g: [/시가812/] },
+  { k: "단일멘솔", s: "쿨멘솔 BEST", g: [/쿨멘솔/] },
+  { k: "무니코틴", s: "제로닉 · 무", g: [/^(제로닉|무) /] },
+];
+// 품절 표시: 업무봇이 매시간 올리는 stock.json (지점별 재고 0 상품명만, 수량 없음)
+let OUT = new Set(), STOCK_AT = "", STOCK_ALL = {};
+// 그 지점 포스에 없는 액상도 품절처럼 (바코드를 못 찍으니까)
+// 지점: 링크의 ?branch= 를 이 기기에 기억 → 홈 화면 설치 앱(시작 주소에 지점 없음)도 그 지점으로 열림
+const BRANCH = (() => { const u = new URLSearchParams(location.search).get("branch"); try { if (u) localStorage.setItem("vf-menu-branch", u); return u || localStorage.getItem("vf-menu-branch") || "본점"; } catch (e) { return u || "본점"; } })();
+const isOut = (x) => OUT.has(x.n) || !!(window.POS?.[BRANCH] && !window.POS[BRANCH][x.n]);
+async function loadStock() {
+  try { const j = await (await fetch("stock.json", { cache: "no-store" })).json(); STOCK_ALL = j; const b = j[PAD.branch]; if (b) { OUT = new Set(b.out); STOCK_AT = b.at; render(); } } catch (e) {}
+}
+// 시연팟(라벨) 번호 순서 (사장님 10/8): 번호 작은 시리즈가 먼저, 시리즈 안에서는 번호순. 번호 없는 건 뒤로
+const noOf = (x) => x.no || 9999;
+const serOf = (x) => (x.br === "VF" ? x.n.split(" ").slice(0, 2).join(" ") : x.br || x.n);
+function byLabel(xs) {
+  const m = new Map(); xs.forEach((x) => { const k = serOf(x); m.set(k, Math.min(m.has(k) ? m.get(k) : 9999, noOf(x))); });
+  return xs.sort((a, b) => m.get(serOf(a)) - m.get(serOf(b)) || bestRank(a) - bestRank(b) || serOf(a).localeCompare(serOf(b)) || noOf(a) - noOf(b));
+}
+const pickG = (gs) => byLabel([...new Set(gs.flatMap((re) => L.filter((x) => re.test(x.n))))]);
+let rec = REC[0].k;
+const TASTES = [["과일", "상큼·달콤"], ["멘솔·민트", "시원·깔끔"], ["디저트·음료", "콜라·캔디"], ["시가·타바코", "묵직한 연초"]];
+// ── 가격 규칙 (2026-10-02 사용자 확인) ──
+// 프리미엄 1병 15,000 · 5병 49,500 · 11병 90,000 — 빌런·릭을 다른 프리미엄과 섞어도 됨
+// 빌런&릭 전용가 5병 49,500 · 6병 49,600 · 10병 85,000 · 12병 85,200 — 빌런·릭'만'으로 채울 때만
+// 프라임 1병 20,000 · 3병 50,000 · 10병 160,000
+// 기기 = MAIN.price · 베이프렌드 기기패키지 = 기기 + 빌런&릭 5병 30,000 · 프리미엄 기기패키지 = 기기 + 프리미엄 5병 40,000
+// 프리미엄 기기패키지 10병 = 기기 + 프리미엄 10병 75,000 (빌런·릭 섞어도 됨, 2026-10-02 사용자 확인)
+const best = (n, deals, unit) => { const memo = {}; const f = (k) => { if (k <= 0) return 0; if (memo[k] != null) return memo[k]; let b = k * unit; for (const [q, p] of deals) if (k >= q) b = Math.min(b, p + f(k - q)); return (memo[k] = b); }; return f(n); };
+const vlPrice = (n) => best(n, [[12, 85200], [10, 85000], [6, 49600], [5, 49500]], 15000);
+const prPrice = (n) => best(n, [[11, 90000], [5, 49500]], 15000);
+const pmPrice = (n) => best(n, [[10, 160000], [3, 50000]], 20000);
+// 빌런·릭 v병 중 k병은 전용가로, 나머지는 다른 프리미엄 p병과 섞어 프리미엄 묶음가로 — 가장 싼 나누기
+const liqPrice = (v, p, m) => prPrice(v + p) + pmPrice(m); // 10/7: 빌런·릭 전용 묶음가(vlPrice) 안 씀 — 프리미엄 묶음가와 같이 계산
+function estimate(c) { // c = { dev, v, p, m }
+  let lq = liqPrice(c.v, c.p, c.m), b = c.dev * DEVICE.price + lq, how = "";
+  if (c.dev && c.v >= 5) { const l2 = liqPrice(c.v - 5, c.p, c.m), t = (c.dev - 1) * DEVICE.price + PK.vl5 + l2; if (t < b) { b = t; lq = l2; how = "베이프렌드 기기패키지"; } }
+  if (c.dev && c.v + c.p >= 5) for (let a = 0; a <= Math.min(5, c.v); a++) { if (5 - a > c.p) continue; const l2 = liqPrice(c.v - a, c.p - (5 - a), c.m), t = (c.dev - 1) * DEVICE.price + PK.pr5 + l2; if (t < b) { b = t; lq = l2; how = "프리미엄 기기패키지"; } }
+  if (c.dev && c.v + c.p >= 10) for (let a = 0; a <= Math.min(10, c.v); a++) { if (10 - a > c.p) continue; const l2 = liqPrice(c.v - a, c.p - (10 - a), c.m), t = (c.dev - 1) * DEVICE.price + PK.pr10 + l2; if (t < b) { b = t; lq = l2; how = "프리미엄 기기패키지 10병"; } }
+  return { total: b, how, liq: lq }; // liq = 기기패키지에 들어간 액상을 뺀 액상 금액
+}
+// 다른 프리미엄을 빌런·릭으로 바꾸면(필요하면 몇 병 더 담아서) 더 싸지는지 — 직원이 권할 문구
+function swapHint(c) {
+  if (!c.p) return "";
+  const now = estimate(c).total, n = c.v + c.p;
+  // 아끼는 돈 + 더 받는 병(1병≈7,000원 가치)으로 가장 이득인 안내 하나
+  let pick = null;
+  for (const extra of [0, 1, 2]) {
+    const alt = estimate({ ...c, v: n + extra, p: 0 }).total, save = now - alt;
+    if (save < -1000) continue;
+    const score = save + extra * 7000;
+    if (score > 0 && (!pick || score > pick.score)) pick = { extra, alt, save, score };
+  }
+  if (pick) { const { extra, alt, save } = pick;
+    return `<div class="nudge"><b>다른 프리미엄 ${c.p}병을 빌런·릭으로 바꾸면${extra ? ` + ${extra}병 더` : ""} ${alt.toLocaleString()}원</b><div class="u">빌런·릭만 ${n + extra}병 · ${save > 0 ? save.toLocaleString() + "원 아끼고" : save === 0 ? "같은 금액에" : (-save).toLocaleString() + "원만 더 내고"}${extra ? ` ${extra}병 더` : ""}</div></div>`; }
+  return "";
+}
+const countCart = () => { const c = { dev: 0, v: 0, p: 0, m: 0 }; for (const [id, n] of cart) { const x = item(id); if (x.c) continue; if (x.dev) c.dev += n; else if (isVL(x)) c.v += n; else if (x.line === "프라임") c.m += n; else c.p += n; } return c; };
+// ── 기기·팟·일회용 (goods.js, 오케이포스 본점 재고 있는 상품) ──
+const G = window.GOODS_BY?.[BRANCH] || window.GOODS || []; // 지점별 기기·팟·일회용 (재고·판매가가 지점마다 다름)
+const GMAP = new Map(G.map((x) => [x.id, x]));
+const EMOJI = { dev: "🔋", pod: "🧩", dsp: "🚬" };
+const EVN = { "DSP-3+1": [3, 1, "3+1"], "DSP-5+1": [5, 1, "5+1"], "DSP-AIRX": [10, 2, "10+2"] }; // [사는 개수, 무료 개수, 표시]
+const won = (n) => n.toLocaleString() + "원";
+// 일회용 사진·설명 — 직원 교육 사이트(vafriend_disposable_reference)와 같은 사진. 포스 상품명 앞부분(model) 기준
+const VAPE = "https://officialvafriend.github.io/vape/";
+const DSPINFO = {
+  "팜팜바": { name: "팜팜바", img: "dsp_farm.png", hero: "dsp_farm_all.png", d: "30,000펌프 · 멘솔량 조절 가능" },
+  "모스바": { name: "모스바", img: "dsp_moss.png", hero: "dsp_moss_all.png", d: "30,000펌프 · 작아서 휴대성 좋음" },
+  "드래곤바": { name: "드래곤바", img: "product_3_3.png", d: "40,000펌프 · 액상 30mL 대용량" },
+  "엘프바25000": { name: "엘프바 1%", img: "엘프바1_15.png", d: "25,000펌프 · 멘솔 5단계 조절" },
+  "(50)엘프바": { name: "엘프바 5%", img: "엘프바5_16.png", d: "25,000펌프 · 고농도 5%", hi: true },
+  "엘프바": { name: "엘프바", img: "엘프바1_15.png", d: "" },
+  "네스티원": { name: "네스티원 팟", img: "dsp_nasty.png", hero: "dsp_nasty_all.png", d: "40,000펌프", w: "네스티원 배터리가 있어야 써요" },
+  "립클링": { name: "립클링 1%", img: "dsp_lip.jpg", d: "20,000펌프", w: "립클링 배터리가 있어야 써요" },
+  "(고)립클링": { name: "립클링 2%", img: "dsp_lip.jpg", d: "20,000펌프 · 고농도 2%", w: "립클링 배터리가 있어야 써요", hi: true },
+  "립클링배터리": { name: "립클링 배터리", img: "", d: "립클링 팟과 함께 써요" },
+  "(무) 말론바": { name: "말론바 무니코틴", img: "product_13_13.png", d: "35,000펌프 · 무니코틴" },
+  "에어릭스": { name: "에어릭스 팟", img: "", d: "고농도 2% · 하카 기기 호환", w: "에어릭스 기기나 하카 기기가 있어야 써요", hi: true },
+  "인피": { name: "인피", img: "dsp_infy.jpg", d: "" },
+};
+const dInfo = (model) => DSPINFO[model] || { name: model, img: "", d: "" };
+// 니코틴 2% 이상 고농도: 구매 시 화학물질 장부 작성 (구매 수량은 매장이 알고 있으니 '사는 구 + 성함'만, 예: 대구 동구 홍길동)
+const isHi = (x) => !!(x && x.c === "dsp" && dInfo(x.model).hi);
+// 장부는 구매자가 패드에 직접 작성 (성함 + 사시는 구)
+const ledger = { name: "", gu: "", etc: "" };
+const GU = ["중구", "동구", "서구", "남구", "북구", "수성구", "달서구", "달성군", "군위군"];
+const ledgerText = () => { const where = ledger.gu === "기타" ? ledger.etc.trim() : ledger.gu ? "대구 " + ledger.gu : ""; return where && ledger.name.trim() ? `${where} ${ledger.name.trim()}` : ""; };
+function ledgerView() {
+  const hs = [...cart].filter(([id]) => isHi(item(id)));
+  open(`<div style="font-size:13px;color:var(--red);font-weight:800">구매자 직접 작성</div><div class="sh" style="margin-top:6px">화학물질 구매 장부</div>
+    <div style="margin-top:10px;font-size:16px;line-height:1.65;color:var(--ink-soft)">니코틴 2% 이상 고농도 제품은 법에 따라 구매 장부를 남겨야 해요.<br>번거로우시겠지만 <b style="color:var(--ink)">성함과 사시는 구</b>만 직접 적어 주세요. 양해 부탁드려요.</div>
+    <div class="hinote" style="border-width:1px"><div class="u" style="margin:0">구매 제품: ${hs.map(([id, n]) => esc(item(id).n) + " " + n + "개").join(" · ")}</div></div>
+    <div class="sub">성함</div>
+    <input class="in" id="ldName" placeholder="예: 홍길동" value="${esc(ledger.name)}" autocomplete="off">
+    <div class="sub">사시는 곳 <span style="font-size:13px;color:var(--grey);font-family:var(--kr)">대구</span></div>
+    <div class="opts">${[...GU, "기타"].map((g) => `<button data-gu="${g}" class="${ledger.gu === g ? "sel" : ""}">${g === "기타" ? "대구 외 지역" : g}</button>`).join("")}</div>
+    ${ledger.gu === "기타" ? `<input class="in" id="ldEtc" placeholder="예: 경북 경산시" value="${esc(ledger.etc)}" autocomplete="off">` : ""}
+    <div class="save" style="background:var(--ink);margin-top:18px"><div><b>장부에 이렇게 적혀요</b><div class="u" id="ldPrev">${esc(ledgerText() || "성함과 사시는 곳을 골라 주세요")}</div></div></div>
+    <div class="btns"><button class="b2" data-cartback>뒤로</button><button class="b1" data-ledger-ok>작성 완료 · 직원에게 돌려주기</button></div>`);
+}
+const HI_NOTE = "니코틴 2% 이상 고농도 제품이라 구매하실 때 화학물질 장부를 직접 작성해 주셔야 해요. 성함과 사시는 구만 적으시면 돼요 (예: 대구 동구 홍길동)";
+const AIRX_DEV = 35000; let airxGift = "pod"; // 에어릭스 팟 10개마다: "pod" = 팟 2개 무료, "dev" = 에어릭스 기기 증정
+const dsrc = (f) => /^dsp_/.test(f) ? f : VAPE + encodeURIComponent(f); // dsp_*.png = 메뉴판 폴더 안 사진(톡톡 메뉴 이미지에서 자름)
+const dImg = (x) => { const i = x && x.c === "dsp" && dInfo(x.model).img; return i ? dsrc(i) : ""; };
+// 이벤트 묶음 하나(예: 3+1 = 4개)를 같은 맛 가격으로 샀을 때
+// 이벤트 묶음 단위: 3+1은 포스 묶음 상품이 브랜드별(팜팜바/모스바)이라 같은 브랜드끼리만 묶음
+const evKey = (x) => x.ev === "DSP-3+1" ? x.ev + "|" + x.model : x.ev;
+const evB = (k) => k.split("|")[0];
+const evLabel = (k) => { const [e, m] = k.split("|"); return (m ? dInfo(m).name + " " : "") + EVN[e][2]; };
+// 포스 일회용 이벤트 묶음 상품 (본점 '단종' 중분류, 10/2 조회) — 이걸로 돈 받고 낱개는 서비스(0원)
+const DSP_POS = { "DSP-3+1|팜팜바": "팜팜바 74,700원(3+1)", "DSP-3+1|모스바": "모스바 75,000원(3+1)", "DSP-AIRX": "에어릭스 75,000원 (10+2)" };
+const dealOf = (ev, price) => { const [buy, free] = EVN[ev]; return { n: buy + free, pay: buy * price, list: (buy + free) * price, save: free * price }; };
+const DSPEV = [
+  { ev: "DSP-3+1", id: "dE1", tab: "3+1", red: true, badge: "BEST", t: "3개 사면 1개 더", s: "팜팜바는 팜팜바끼리, 모스바는 모스바끼리 맛을 섞어도 돼요" },
+  { ev: "DSP-5+1", id: "dE2", tab: "5+1", t: "5개 사면 1개 더", s: "같은 5+1 제품끼리는 맛을 섞어도 돼요" },
+  { ev: "DSP-AIRX", id: "dE3", tab: "에어릭스 10+2", t: "에어릭스 팟 10개 사면 팟 2개 더 또는 기기 증정", s: "팟 2개 더 받기 / 에어릭스 기기(35,000원) 받기 중 골라요 · 하카 기기 호환" },
+  { ev: "", id: "dE4", tab: "배터리", t: "배터리 · 기타", s: "팟형 일회용은 배터리가 따로 필요해요" },
+];
+let mode = "", podSub = "팟·코일", podDev = "";
+// 팟·코일 → 기기 계열 (상품명 규칙으로 묶음). img = 기기 사진(없으면 이름 타일, 사진은 들어오는 대로 채움)
+const POD_DEV = [
+  { k: "하복2", re: /^하복2/, img: "dev_havok2_black.png" },
+  { k: "하복", re: /^하복(코일|공팟)/ },
+  { k: "발라리안 맥스프로", re: /발라맥스|발라\(맥\)/, img: "dev_maxpro.png" },
+  { k: "발라리안 에어", re: /^발라리안 에어/ },
+  { k: "발라리안", re: /^발라(클리어|R|코일)/ },
+  { k: "젤로맥스", re: /^젤로맥스/ },
+  { k: "젤로", re: /^젤로(?!맥스)/ },
+  { k: "말론S", re: /^말론S/ },
+  { k: "말론", re: /^말론(?!S)/ },
+  { k: "아스몬", re: /^아스몬/ },
+  { k: "제우스", re: /^제우스/ },
+  { k: "베이비", re: /^베이비|^AIO프로/ },
+  { k: "썬더Q", re: /^썬더/ },
+  { k: "브이메이트", re: /^브이메이트/ },
+  { k: "맥스프로 스티그마", re: /스티그마/ },
+  { k: "조바", re: /^조바/ },
+  { k: "플러키", re: /^플러키/ },
+  { k: "아르거스", re: /^아르거스/ },
+  { k: "크로스", re: /^크로스/ }, { k: "럭스Q", re: /^럭스Q/ }, { k: "AVP AX", re: /^AX/ }, { k: "소울", re: /^소울/ }, { k: "글렌트", re: /^글렌트/ },
+  { k: "에이펙스", re: /^에이펙스/ }, { k: "아스트로", re: /^아스트로/ }, { k: "벨본", re: /^벨본/ }, { k: "하부코일", re: /^하부/ }, // 교육 사이트 기기 정보로 짝 맞춤(10/5)
+  { k: "닷모드", re: /닷/ },
+];
+// 팩 구성 [상품명 규칙, 1팩 개수] — 확인된 것만. 모르는 팟은 낱개로만 보여 줌
+const PACK = [ // [상품명 규칙, 1팩 개수] — 사용자 확인 + 국내 판매처 상품명에 개수가 적힌 것만 (10/5 조사, 해외 기준·검색요약만 있는 건 제외)
+  [/^하복2/, 2], [/^젤로0\.8옴/, 3], [/^발라맥스프로팟/, 2], [/^발라코일/, 4], // 사용자 확인
+  [/^말론팟/, 2], [/^발라리안 에어 .*팟/, 2], [/^발라R /, 4], [/^발라\(맥\)/, 4], [/^하복코일/, 4], [/^젤로맥스 0\.6옴팟$/, 3], [/^젤로 울트라팟/, 2],
+  [/^썬더Q /, 3], [/^아스몬 0\.6옴$/, 3], [/^아스몬 하이팟/, 2], [/^글렌트/, 3], [/^벨본/, 3], [/^베이비0\.7옴팟/, 3], [/^베이비프로|^AIO프로/, 3],
+  [/^아르거스/, 3], [/^디오x팟/i, 3], [/^닷스틱코일/, 5],
+  // 사용자 10/5 동성로 목록 (이름 그대로 맞춤)
+  [/^크로스0.8옴팟$/, 4], [/^썬더유 0.7옴 팟$/, 3], [/^럭스Q팟 0.6옴$/, 4], [/^브이메이트v2팟$/, 3], [/^AX 0.6옴팟$/, 2], [/^오리즌 0.6옴팟$/, 3], [/^페보 0.6옴팟$/, 2],
+  [/^소울 0.6옴팟$/, 2], [/^파티 닷모드 ?팟( 0.4옴)?$/, 2], [/^젤로 크리스탈 0.6옴 팟$/, 2], [/^아스트로 (레드|블랙)팟$/, 2], [/^에이펙스 팟$/, 2], [/^말론S 0.[46]옴팟$/, 2],
+  [/^젤로맥스 0.6옴팟 5ml$/, 3], [/^조바 0.7옴팟$/, 2],
+  [/^플러키/, 2], [/^베놈 레드팟/, 2], // 사용자 10/5: 플러키 2개입 / 베놈 레드팟은 2개입·1개입 둘 다 있음 → 1팩(2개) 버튼 + [낱개]로 1개입 대응
+];
+const packOf = (x) => (x && x.c === "pod" && (PACK.find(([re]) => re.test(x.n)) || [])[1]) || 0;
+const podBtns = (x, extra = "") => { const k = packOf(x); return k ? `<button class="pk1" data-gpk="${x.id}"${extra}>1팩 ${k}개 · ${won(x.price * k)}</button><button class="pk0" data-gadd="${x.id}"${extra}>낱개</button>` : `<button class="pk1" data-gadd="${x.id}"${extra}>+ 담기</button>`; };
+const podDevOf = (x) => (POD_DEV.find((d) => d.re.test(x.n)) || {}).k || "기타";
+const TABS = {
+  dev: [["s1", "최고혜택"], ["s2", "기기 패키지"], ["sDev", "기기"]],
+  liq: [["sRec", "추천 맛"], ["s4", "맛으로 찾기"], ["sLiqBen", "혜택"], ["sPod", "팟·코일"]],
+  dsp: DSPEV.map((e) => [e.id, e.tab]),
+};
+function setMode(m) {
+  mode = m; document.body.dataset.mode = m;
+  $("#tabs").innerHTML = (TABS[m] || []).map(([id, t], i) => `<a href="#${id}" class="${i ? "" : "on"}">${t}</a>`).join("");
+  $("#tabs").style.display = m ? "" : "none";
+  scrollTo(0, 0);
+}
+const isMain = (x) => x && x.c === "dev" && x.model === MAIN.model;
+function modelGroups(list) { const m = new Map(); for (const x of list) { if (!m.has(x.model)) m.set(x.model, []); m.get(x.model).push(x); } return [...m]; }
+// ── 기기 상세 (교육 사이트 기기 정보 + 확인된 무게·크기) ──
+const EDU = "https://officialvafriend.github.io/vape/";
+const DEVMAP = [ // [포스 모델명 규칙, 교육 사이트 기기 이름]
+  [/^하복SE|^하복 SE|^하복$/, "하복 SE"], [/^크로스/, "베이프레소 크로스 시리즈"], [/^하부/, "하부코일"], [/^발라맥스프로|^맥스프로 스티그마/, "발라리안 맥스프로"], [/^발라리안에어|^발라리안 에어/, "발라리안 에어"],
+  [/^말론S/, "말론 S"], [/^말론/, "말론"], [/^젤로 크리스탈/, "젤로 크리스탈"], [/^젤로/, "젤로 / 젤로 맥스"], [/^플러키/, "플러키"],
+  [/^썬더Q|^위넥스Q/, "긱베이프 썬더Q / 위넥스Q"], [/^브이메이트|^브이스루/, "브이스루 / 브이메이트 시리즈"], [/^소울/, "긱베이프 소울1 / 소울2"],
+  [/^글렌트/, "글렌트"], [/^벨본/, "벨본"], [/^럭스Q/, "럭스Q / 럭스Q2"], [/^아스몬/, "아스몬 / 아스몬 하이"], [/^베이비/, "아보카도 베이비 / 베이비프로 / 베이비 AIO프로"],
+  [/에이펙스|APEX/i, "플렉서스 에이펙스 (APEX)"], [/^아스트로/, "아스트로 MK.3 모터헤드 에디션"], [/^닷/, "닷모드 닷파티"], [/^AVP|^AX/, "AVP AX"], [/^디오/, "디오 X"],
+];
+const devInfo = (model) => { const m = DEVMAP.find(([re]) => re.test(model)); return m ? (window.DEVINFO || []).find((d) => d.n === m[1]) : null; };
+// 무게·크기: 출처 확인된 값만 (DEVSIZE[교육 이름] = { w: g, h: mm, size: "가로×세로×높이" })
+const DEVSIZE = {
+  "하복 SE": { w: 101, h: 100, size: "42.9×19.2×100mm" }, // 유웰 공식 HAVOK(V1) 사양과 같음 — myuwell.com/products/pod-mod/havok.html (10/5 조사)
+};
+// 생활용품 비교 (대략): 계란 1개 약 60g · 비누 1개 약 100g · 립밤 높이 약 70mm · 라이터 약 80mm · 볼펜 약 140mm
+const feelW = (g) => g < 45 ? "건전지 두 개 정도로 가벼워요" : g < 80 ? "계란 하나 정도 무게예요" : g < 130 ? "비누 하나와 비슷해요" : "스마트폰보다 조금 가벼워요";
+const feelH = (mm) => mm < 78 ? "립밤만 한 길이예요" : mm < 95 ? "라이터만 한 길이예요" : mm < 120 ? "손바닥에 쏙 들어와요" : "볼펜보다 조금 짧아요";
+// 기기 → 전용 팟·코일 (팟·코일 칸의 기기 타일과 같은 묶음)
+const DEVPOD = [[/^하복SE|^하복 SE/, "하복"], [/^하복2/, "하복2"], [/^발라맥스프로|^맥스프로 스티그마/, "발라리안 맥스프로"], [/^발라리안에어|^발라리안 에어/, "발라리안 에어"],
+  [/^말론S/, "말론S"], [/^말론/, "말론"], [/^젤로맥스/, "젤로맥스"], [/^젤로/, "젤로"], [/^플러키/, "플러키"], [/^썬더Q/, "썬더Q"], [/^브이메이트/, "브이메이트"], [/^조바/, "조바"], [/^제우스/, "제우스"]];
+const podsFor = (model) => { const k = (DEVPOD.find(([re]) => re.test(model)) || [])[1]; return k ? G.filter((x) => x.c === "pod" && podDevOf(x) === k) : []; };
+function devSpecView(model) {
+  const xs = G.filter((x) => x.model === model), d = devInfo(model), sz = d && DEVSIZE[d.n];
+  const prices = [...new Set(xs.map((x) => x.price))].sort((a, b) => a - b);
+  const rows = [
+    d?.b && ["배터리", d.b], d?.f && ["팟·용량", d.f], d?.o && ["저항(옴)", d.o], d?.cp && ["소모품", d.cp],
+    sz?.w && ["무게", `${sz.w}g`, feelW(sz.w)], sz?.h && ["크기", sz.size || `높이 ${sz.h}mm`, feelH(sz.h)],
+    ["AS 보증", "6개월", "베이프렌드 매장 AS · 모든 기기 동일"],
+  ].filter(Boolean);
+  open(`<div style="font-size:13px;color:var(--grey);font-weight:700">전자담배 기기</div><div class="sh" style="margin-top:6px">${esc(model)}</div>
+    ${d?.img ? `<div class="dspec-pic"><img src="${EDU + encodeURIComponent(d.img)}" alt=""></div>` : ""}
+    <div class="cv-two"><div><b>가격</b><strong>${won(prices[0])}${prices.length > 1 ? "~" : ""}</strong><span>레이저 각인 무료</span></div><div><b>호흡 방식</b><strong>${esc(xs[0].pos)}</strong><span>${xs.length}가지 색상·옵션</span></div></div>
+    ${d?.desc ? `<div class="dspec-desc">${esc(d.desc)}</div>` : ""}
+    <div class="cv-grid">${rows.map(([k, v, u]) => `<div><b>${esc(k)}</b><strong>${esc(v)}</strong>${u ? `<span>${esc(u)}</span>` : ""}</div>`).join("")}</div>
+    ${!d ? '<div class="dspec-desc" style="color:var(--grey)">상세 스펙 준비 중이에요</div>' : ""}
+    <div class="sub">색상·옵션 골라 담기</div>
+    <div class="opts">${xs.map((x) => `<button data-gadd="${x.id}" data-close="1">${esc(x.opt || x.n)}<small>${won(x.price)}</small></button>`).join("")}</div>
+    ${(() => { const ps = podsFor(model); return ps.length ? `<div class="sub">전용 소모품 <small style="font-family:var(--kr);font-size:13px;color:var(--grey);font-weight:600">이 기기에 맞는 팟·코일</small></div><div class="dpods">${ps.map((p) => `<div class="dpod">${d?.img ? `<img src="${EDU + encodeURIComponent(d.img)}" alt="">` : `<span class="dpod-ph">${EMOJI.pod}</span>`}<div><b>${esc(p.n)}</b><span>${won(p.price)}${cart.get(p.id) ? ` · 담음 ${cart.get(p.id)}` : ""}</span></div><span class="pkb">${podBtns(p, ` data-re-dev="${esc(model)}"`)}</span></div>`).join("")}</div>` : ""; })()}
+    ${d?.tip ? `<details class="dspec-tip"><summary>직원용 팁</summary><div>${esc(d.tip).replace(/\n/g, "<br>")}</div></details>` : ""}`);
+}
+function gCard([model, xs]) {
+  const prices = [...new Set(xs.map((x) => x.price))].sort((a, b) => a - b);
+  const di = model === MAIN.model ? { img: "", own: MAIN.imgs?.["블랙"] || MAIN.img } : xs[0].c === "dev" && devInfo(model);
+  return `<button class="p" data-gm="${esc(model)}"><div class="gpic">${di?.own ? `<img loading="lazy" src="${di.own}" alt="" style="object-fit:contain;background:#fff">` : di?.img ? `<img loading="lazy" src="${EDU + encodeURIComponent(di.img)}" alt="">` : xs[0].c === "dev" ? `<span class="gname">${esc(model)}</span>` : EMOJI[xs[0].c]}</div><div class="bd">${xs.length > 1 ? xs.length + "가지" : ""}</div><b>${esc(model)}</b><div class="pr">${won(prices[0])}${prices.length > 1 ? "~" : ""}</div>${xs[0].ev ? `<span class="ev">${EVN[xs[0].ev][2]}</span>` : ""}</button>`;
+}
+function renderGoods() {
+  const devs = modelGroups(G.filter((x) => x.c === "dev")).sort((a, b) => (b[0] === MAIN.model) - (a[0] === MAIN.model) || a[1][0].pos.localeCompare(b[1][0].pos));
+  $("#devList").innerHTML = devs.map(gCard).join("");
+  const subs = ["팟·코일", "케이스·드립팁·기타"];
+  $("#podFilter").style.display = podDev ? "none" : "";
+  $("#podFilter").innerHTML = subs.map((s) => `<button class="f ${podSub === s ? "on" : ""}" data-pf="${s}">${s}</button>`).join("");
+  const allPods = G.filter((x) => x.c === "pod");
+  const devCnt = (k) => allPods.filter((x) => podDevOf(x) === k).length;
+  $("#podDevs").innerHTML = [...POD_DEV.filter((d) => devCnt(d.k)), { k: "기타" }].map((d) => `<button class="pdev ${podDev === d.k ? "on" : ""}" data-pdev="${esc(d.k)}">${(() => { const di = d.k !== "기타" && devInfo(d.k), src = d.img || (di?.img ? EDU + encodeURIComponent(di.img) : ""); return src ? `<img src="${src}" alt=""><b>${esc(d.k)}</b>` : `<span class="ph">${esc(d.k)}</span>`; })()}<small>${devCnt(d.k)}종</small></button>`).join("");
+  const pods = allPods.filter((x) => (podDev ? podDevOf(x) === podDev : true) && (podDev || x.sub === podSub));
+  $("#podList").innerHTML = (podDev ? `<div class="pdsel"><b>${esc(podDev)}</b> 에 맞는 팟·코일 · 소모품 <button data-pdev="${esc(podDev)}">다른 기기 고르기</button></div>` : "") + ["입호흡", "폐호흡"].map((p) => { const l = pods.filter((x) => x.pos === p); return l.length ? `<div class="grp"><div class="gh"><b>${p}</b><span>${l.length}종</span></div>${l.map((x) => `<div class="rowg"><b>${esc(x.n)}</b><span class="pr">${won(x.price)}${packOf(x) ? `<small> · 1팩 ${packOf(x)}개</small>` : ""}</span><span class="pkb">${podBtns(x)}</span></div>`).join("")}</div>` : ""; }).join("");
+  const dsps = modelGroups(G.filter((x) => x.c === "dsp"));
+  $("#dspList").innerHTML = DSPEV.map((e) => {
+    const gs = dsps.filter(([, xs]) => (xs[0].ev || "") === e.ev).sort((a, b) => !!dInfo(b[0]).img - !!dInfo(a[0]).img || b[1].length - a[1].length);
+    if (!gs.length) return `<div id="${e.id}"></div>`;
+    const big = gs.length <= 2;
+    return `<section class="dev2 ${e.red ? "red" : ""}" id="${e.id}"><div class="eh">${e.ev ? `<div class="big">${EVN[e.ev][2]}</div>` : ""}<div>${e.badge ? `<span class="badge">${e.badge}</span>` : ""}<div class="et">${esc(e.t)}</div><div class="es">${esc(e.s)}</div></div></div>
+      <div class="dcards ${big ? "two" : ""}">${gs.map(dCard).join("")}</div></section>`;
+  }).join("") + `<div class="dnote">사진을 누르면 맛을 골라 담을 수 있어요</div>`;
+}
+function dCard([model, xs]) {
+  const i = dInfo(model), p = Math.min(...xs.map((x) => x.price)), many = new Set(xs.map((x) => x.price)).size > 1;
+  const inCart = xs.reduce((a, x) => a + (cart.get(x.id) || 0), 0);
+  const dl = xs[0].ev && dealOf(xs[0].ev, p);
+  return `<button class="dcard" data-gm="${esc(model)}"><div class="dimg">${i.img ? `<img loading="lazy" src="${dsrc(i.img)}" alt="">` : `<span class="no">${esc(i.name)}</span>`}</div>
+    ${inCart ? `<span class="inc">${inCart}개 담음</span>` : ""}
+    <div class="db"><b>${esc(i.name)}</b>${i.d ? `<div class="dm">${esc(i.d)}</div>` : ""}${i.w ? `<div class="dm warn">${esc(i.w)}</div>` : ""}${i.hi ? `<div class="hitag">고농도 · 구매 시 장부 작성</div>` : ""}
+    <div class="dp">${won(p)}${many ? "~" : ""} <small>· ${xs.length}가지</small></div>
+    ${dl ? `<div class="deal"><span>${dl.n}개 ${won(dl.pay)}</span><span>${won(dl.save)} 할인</span></div>` : ""}</div></button>`;
+}
+let curDsp = null; // 지금 열린 일회용 맛 고르기 화면 (에어릭스 혜택 고를 때 다시 그리기용)
+// 일회용 맛 고르기: 여러 맛을 연달아 담고, 이벤트 할인이 얼마나 붙는지 바로 보이게
+function dspView(model) {
+  const xs = G.filter((x) => x.model === model), x0 = xs[0], i = dInfo(model);
+  const gc = goodsCalc(), ev = x0.ev;
+  let save = ""; curDsp = model;
+  if (ev === "DSP-AIRX") save = airxBox(gc.cnt[ev] || 0, gc);
+  else if (ev) {
+    const k = evKey(x0), [buy, free, label] = EVN[ev], n = gc.cnt[k] || 0, r = n % (buy + free), off = gc.saveBy[k] || 0;
+    const next = r >= buy ? `지금 ${buy + free - r}개 더 고르면 무료` : `${buy - r}개 더 담으면 ${free}개 무료`;
+    const mix = k.includes("|") ? `${i.name}끼리 맛 섞어도 돼요` : `${label} 제품끼리 맛 섞어도 돼요`;
+    save = (off ? `<div class="save"><div><b>${label} 할인 적용 중</b><div class="u">${n}개 중 ${gc.freeBy[k]}개 무료</div></div><span class="price">-${off.toLocaleString()}<span class="won">원</span></span></div>` : "")
+      + (r || !n ? `<div class="save" style="background:var(--ink)"><div><b>${next}</b><div class="u">${mix} · 지금 ${n}개</div></div><span class="price">-${won(free * x0.price)}</span></div>` : "");
+  }
+  open(`<div style="font-size:13px;color:var(--grey);font-weight:700">일회용${ev ? " · " + EVN[ev][2] + " 이벤트" : ""}</div><div class="sh" style="margin:6px 0 14px">${esc(i.name)}</div>
+    ${i.img ? `<div class="dhero"><img src="${dsrc(i.hero || i.img)}" alt=""></div>` : ""}
+    ${i.d || i.w ? `<div style="margin-top:10px;font-size:15px;color:var(--ink-soft)">${esc(i.d)}${i.w ? ` <b style="color:var(--red)">· ${esc(i.w)}</b>` : ""}</div>` : ""}
+    ${i.hi ? `<div class="hinote"><b>고농도 제품 · 화학물질 장부 작성</b><div class="u">${esc(HI_NOTE)}</div></div>` : ""}
+    ${save}
+    <div class="sub">맛 고르기 <span style="font-size:13px;color:var(--grey);font-family:var(--kr)">누를 때마다 1개씩 담겨요</span></div>
+    <div class="opts">${xs.map((x) => `<button data-gadd="${x.id}" data-re="${esc(model)}" class="${cart.get(x.id) ? "sel" : ""}">${esc(x.opt)}${cart.get(x.id) ? ` ×${cart.get(x.id)}` : ""}<small>${won(x.price)}</small></button>`).join("")}</div>
+    <div class="btns"><button class="b2" data-x>더 고르기</button><button class="b1" id="cartBtn2">담은 상품 보기</button></div>`);
+}
+let cvColor = null; // 스펙 창에서 고른 색
+function mainSpecView(color) {
+  cvColor = color || cvColor || devColor || MAIN.colors[0];
+  const pods = G.filter((x) => x.c === "pod" && x.n.startsWith(MAIN.model + " "));
+  open(`<div class="cv">
+    <div class="cv-name">${esc(MAIN.name)}</div><div class="cv-sub">입호흡+폐호흡</div>
+    <div class="cv-hero"><img id="cvImg" src="${MAIN.imgs[cvColor] || MAIN.img}" alt=""><i class="cv-sh"></i><span class="cv-cl" id="cvCl">${esc(cvColor)}</span></div>
+    <div class="cv-colors">${MAIN.colors.map((k) => `<button data-cvc="${k}" class="${k === cvColor ? "on" : ""}"><img src="${MAIN.imgs[k] || MAIN.img}" alt=""><span>${k}</span></button>`).join("")}</div>
+    <div class="cv-two"><div><b>가격</b><strong>${won(MAIN.price)}</strong><span>온라인판매가</span></div><div><b>호흡 방식</b><strong>입호흡 + 폐호흡</strong><span>팟만 바꿔 끼우면 돼요</span></div></div>
+    <div class="cv-grid">${MAIN_SPEC.map(([k, v, sub]) => `<div><b>${esc(k)}</b><strong>${esc(v)}</strong>${sub ? `<span>${esc(sub)}</span>` : ""}</div>`).join("")}</div>
+    ${pods.length ? `<div class="cv-h">전용 팟 <small>1팩 ${MAIN.podPack}개입 · 팩 단위로 담아요</small></div>
+    <div class="cv-pods">${pods.map((x) => { const inc = Math.floor((cart.get(x.id) || 0) / MAIN.podPack); return `<button data-gpack="${x.id}"><span class="cvp-k">${/0\.15/.test(x.n) ? "폐호흡" : "입호흡"}</span><span class="cvp-t">${esc(x.n.replace(MAIN.model + " ", ""))}</span><span class="cvp-p">${won(MAIN.podPackPrice)}<small>1팩 ${MAIN.podPack}개입</small></span>${inc ? `<span class="cvp-in">${inc}팩 담았어요</span>` : ""}<span class="cvp-add">1팩 담기</span></button>`; }).join("")}</div>` : ""}
+    <div class="cv-tips">${MAIN_TIPS.map((t) => `<div>· ${esc(t)}</div>`).join("")}</div>
+    <div class="btns"><button class="b2" data-maindev="1">이 색으로 기기 담기</button><button class="b1" data-pkg="max10">기기패키지 보러 가기</button></div></div>`);
+}
+function modelView(model) {
+  if (model === MAIN.model) return mainSpecView();
+  const xs = G.filter((x) => x.model === model); const x0 = xs[0];
+  if (x0.c === "dsp") return dspView(model);
+  if (x0.c === "dev") return devSpecView(model);
+  const ben = x0.c === "dev" ? ["레이저 각인 무료 (기기 구매)", ...(model === MAIN.model ? [`기기 + 빌런&릭 5병 → 베이프렌드 기기패키지 ${won(PK.vl5)}`, `기기 + 프리미엄 5병 → 프리미엄 기기패키지 ${won(PK.pr5)}`, `기기 + 프리미엄 10병 → 프리미엄 기기패키지 10병 ${won(PK.pr10)}`] : []), "이 기기에 맞는 팟은 [액상·소모품 → 팟·코일]에서"]
+    : x0.ev ? [`${EVN[x0.ev][2]} 이벤트 · 같은 이벤트끼리 맛 섞어도 돼요`] : [];
+  open(`<div style="font-size:13px;color:var(--grey);font-weight:700">${{ dev: "전자담배 기기", pod: "팟·코일", dsp: "일회용" }[x0.c]}</div><div class="sh" style="margin-top:6px">${esc(model)}</div>
+    ${ben.length ? `<div class="ben">${ben.map((t, i) => `<div><i>0${i + 1}</i><span>${esc(t)}</span></div>`).join("")}</div>` : ""}
+    <div class="sub">${xs.length > 1 ? "골라 담기" : "담기"}</div>
+    <div class="opts">${xs.map((x) => `<button data-gadd="${x.id}" data-close="1">${esc(x.opt || x.n)}<small>${won(x.price)}</small></button>`).join("")}</div>`);
+}
+function addGoods(id) {
+  const x = GMAP.get(id); if (!x) return;
+  if (isMain(x)) { add(DEVICE.id); devColor = x.opt; return; } // 기준 기기는 기기패키지 계산 때문에 기기 칸으로
+  add(id);
+}
+// 일회용 이벤트: 같은 이벤트끼리 (사는 개수+무료) 묶음마다 가장 싼 것 무료
+function goodsCalc() {
+  let dev = 0, pod = 0, dsp = 0, lungN = 0, lungFull = 0; const freeBy = {}, cnt = {}, saveBy = {}; const evItems = {};
+  for (const [id, n] of cart) { const x = GMAP.get(id); if (!x) continue;
+    if (x.c === "lung") { lungN += n; lungFull += x.price * n; continue; } // 프리미엄 폐호흡 (3병 묶음가는 아래에서)
+    if (x.c === "dev") dev += x.price * n; else if (x.c === "pod") pod += x.price * n;
+    else if (x.ev) { (evItems[evKey(x)] ||= []).push(...Array(n).fill(x.price)); } else dsp += x.price * n; }
+  let giftDev = 0;
+  for (const [ev, prices] of Object.entries(evItems)) {
+    const [buy, free] = EVN[evB(ev)]; prices.sort((a, b) => b - a);
+    if (ev === "DSP-AIRX" && airxGift === "dev") { giftDev = Math.floor(prices.length / buy); dsp += prices.reduce((a, b) => a + b, 0); freeBy[ev] = 0; cnt[ev] = prices.length; saveBy[ev] = 0; continue; }
+    const sets = Math.floor(prices.length / (buy + free)); const nFree = sets * free;
+    const freeAmt = prices.slice(prices.length - nFree).reduce((a, b) => a + b, 0);
+    dsp += prices.reduce((a, b) => a + b, 0) - freeAmt; freeBy[ev] = nFree; cnt[ev] = prices.length; saveBy[ev] = freeAmt;
+  }
+  const lung = Math.floor(lungN / 3) * ADD.lung3 + (lungFull / Math.max(1, lungN)) * (lungN % 3), lungSave = lungFull - lung; // 3병마다 40,000원
+  return { dev, pod, dsp, lung, lungN, lungSave, total: dev + pod + dsp + lung, freeBy, cnt, saveBy, giftDev };
+}
+// 에어릭스 팟 10개마다 혜택 하나: 팟 2개 무료(12개 가져가고 10개 값) 또는 에어릭스 기기(35,000원) 증정
+function airxBox(n, gc) {
+  const k = Math.floor(n / 10), r12 = n % 12;
+  if (!k) return `<div class="nudge"><b>에어릭스 팟 ${10 - n}개 더 담으면 팟 2개 무료 또는 기기 증정</b><div class="u">지금 ${n}개 · 맛 섞어도 돼요</div><div class="bar2"><i style="width:${n * 10}%"></i></div></div>`;
+  const pick = (v, t, sub) => `<button class="pk ${airxGift === v ? "on" : ""}" data-airx="${v}"><b>${t}</b><span>${sub}</span><i>${airxGift === v ? "✓" : "→"}</i></button>`;
+  const podSub = gc.saveBy["DSP-AIRX"] ? `-${won(gc.saveBy["DSP-AIRX"])} 할인 적용 중` : "";
+  const podMore = r12 >= 10 ? `무료 팟 ${12 - r12}개를 더 골라 담아 주세요` : "";
+  return `<div class="pick2"><div class="pk-h">에어릭스 팟 ${n}개 · 혜택 하나를 골라 주세요</div>
+    ${pick("pod", "팟 2개 더 받기", [podMore, podSub].filter(Boolean).join(" · ") || "10개 값으로 12개")}
+    <div class="pk-or">또는</div>
+    ${pick("dev", `에어릭스 기기 ${k > 1 ? k + "대 " : ""}받기 (${won(k * AIRX_DEV)} 상당)`, "팟은 그대로 결제하고 기기를 무료로 드려요")}</div>`;
+}
+function goodsHints(gc, liqPart) {
+  const out = [];
+  for (const [ev, n] of Object.entries(gc.cnt)) {
+    const [buy, free] = EVN[evB(ev)], label = evLabel(ev); const r = n % (buy + free);
+    if (ev === "DSP-AIRX") { out.push(airxBox(n, gc)); continue; }
+    if (gc.saveBy[ev]) out.push(`<div class="save"><div><b>${label} 할인</b><div class="u">${n}개 중 ${gc.freeBy[ev]}개 무료 (가장 싼 맛 기준)</div></div><span class="price">-${gc.saveBy[ev].toLocaleString()}<span class="won">원</span></span></div>`);
+    if (r) out.push(`<div class="nudge"><b>${label}: ${r >= buy ? `지금 ${buy + free - r}개 더 고르면 무료` : `${buy - r}개 더 담으면 ${free}개 무료`}</b><div class="u">지금 ${n}개 · 같은 제품끼리 맛 섞어도 돼요</div></div>`);
+  }
+  const base = liqPart + gc.pod + gc.lung; // 폐호흡 액상도 액상
+  if (base > 0) out.push(base >= 100000 ? `<div class="nudge" style="background:var(--red)"><b>🎁 일회용 기기 1개 증정 대상이에요</b><div class="u">액상·팟 ${won(base)} (10만원 이상)</div></div>`
+    : `<div class="nudge"><b>액상·팟 ${won(100000 - base)} 더 담으면 일회용 1개 증정</b><div class="u">지금 액상·팟 ${won(base)} · 기기·일회용 금액은 빼고 계산</div><div class="bar2"><i style="width:${Math.min(100, base / 1000)}%"></i></div></div>`);
+  return out.join("");
+}
+const cart = new Map();
+let review = false; // 액상만 구매 시 리뷰 3,000원 즉시할인
+const member = { type: null, name: "", phone: "", agree: false };
+let engrave = null;
+let devColor = null; // 기준 기기 색상 (포스 상품이 색상별로 나뉘어 있음)
+const DEV_COLORS = MAIN.colors; // null=각인 안 함, 문자열=각인 문구
+let taste = null, line = "프리미엄", tag = null, shown = 12;
+
+// ── 검색: 이름·초성·브랜드·맛·태그. 띄어쓰기·대소문자·'VF ' 무시 ──
+const CHO = "ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ";
+const cho = (str) => [...str].map((ch) => { const c = ch.charCodeAt(0) - 0xac00; return c >= 0 && c < 11172 ? CHO[Math.floor(c / 588)] : ch; }).join("");
+const norm = (str) => String(str).toLowerCase().replace(/^vf\s*/, "").replace(/\s+/g, "");
+const IDX = [...L.map((x) => { const nm = norm(x.n); const all = norm([x.n, x.br, x.f, x.g, x.line, ...x.t].join(" ")); return { x, nm, all, cho: cho(nm) }; }),
+  ...G.map((x) => { const nm = norm(x.n); const all = norm([x.n, { dev: "기기", pod: "팟 코일", dsp: "일회용" }[x.c], x.sub || ""].join(" ")); return { x, nm, all, cho: cho(nm) }; })];
+function searchItems(qs) {
+  const q = norm(qs); if (!q) return [];
+  if (/^\d{1,3}$/.test(q)) return L.filter((x) => String(x.no) === q); // 숫자 = 라벨 번호
+  const onlyCho = /^[ㄱ-ㅎ]+$/.test(q);
+  const noNo = !q.includes("노멘솔") && q.includes("멘솔"); // "멘솔"로 찾을 때 노멘솔은 빼기
+  return IDX.map((o0) => {
+    const o = noNo ? { ...o0, nm: o0.nm.replace(/노멘솔/g, ""), all: o0.all.replace(/노멘솔/g, "") } : o0;
+    let sc = 0;
+    if (onlyCho) { if (o.cho.startsWith(q)) sc = 3; else if (o.cho.includes(q)) sc = 2; }
+    else if (o.nm.startsWith(q)) sc = 4; else if (o.nm.includes(q)) sc = 3; else if (o.all.includes(q)) sc = 1;
+    return [sc, o.x];
+  }).filter(([sc]) => sc).sort((a, b) => b[0] - a[0]).map(([, x]) => x);
+}
+function openSearch() {
+  $("#srch").classList.add("on"); const i = $("#q"); i.value = ""; drawSearch(); setTimeout(() => i.focus(), 50);
+}
+function drawSearch() {
+  const q = $("#q").value, r = searchItems(q);
+  $("#srchQuick").innerHTML = q ? "" : ["빌런", "디오", "멘솔", "노멘솔", "무니코틴", "과일", "디저트", "시가"].map((k) => `<button data-qk="${k}">${k}</button>`).join("");
+  $("#srchHint").textContent = q ? `'${q}' ${r.length}개` : "초성만 쳐도 돼요 · 띄어쓰기 상관없어요";
+  $("#srchRes").innerHTML = q && !r.length ? '<div style="padding:30px 0;color:var(--grey);font-size:16px">찾는 상품이 없어요. 다른 이름이나 초성으로 찾아 보세요.</div>' : `<div class="prods">${r.slice(0, 60).map((x) => (x.c ? gCard([x.model, [x]]).replace(`data-gm="${esc(x.model)}"`, `data-gadd="${x.id}"`).replace(`<b>${esc(x.model)}</b>`, `<b>${esc(x.n)}</b>`) : card(x))).join("")}</div>`;
+}
+document.addEventListener("input", (e) => { if (e.target.id === "q") drawSearch(); if (e.target.id === "sq") { staffQ = e.target.value; const box = document.getElementById("sqRes"); if (box) box.innerHTML = staffRes(); } });
+
+function card(x) {
+  const bg = badgeOf(x), q = cart.get(x.id) || 0;
+  const so = isOut(x) && !q;
+  return `<div class="p ${q ? "got" : ""} ${so ? "sold" : ""}" data-p="${x.id}" role="button">${so ? `<span class="rib so">품절</span>` : bg ? `<span class="rib ${bg === "HOT" ? "hot" : ""}">${bg}</span>` : ""}${x.no ? `<span class="lno lc-${x.lc}">${x.no}</span>` : ""}<img loading="lazy" src="${isrc(x)}" alt=""><div class="bd">${esc(x.br)}</div><b>${esc(short(x.n))}</b><div class="tg">${esc([x.f, ...x.t.filter((t) => t !== "일반")].join(" · "))}</div>${q ? `<div class="qs"><button data-qm="${x.id}" aria-label="빼기">−</button><span>${q}병</span><button data-qa="${x.id}" aria-label="담기">+</button></div>` : so ? `<div class="qa so">품절</div>` : `<button class="qa" data-qa="${x.id}" aria-label="담기">+ 담기</button>`}</div>`;
+}
+function renderMain() {
+  $("#bestTitle").innerHTML = `${esc(MAIN.name)} 기기패키지<br>+입호흡 액상 10병`;
+  $("#bestDev").innerHTML = MAIN.img ? `<button class="spec-hit" data-mainspec="1" aria-label="기기 스펙 보기"><img src="${MAIN.img}" alt="${esc(MAIN.name)}"><i></i><span class="spec-tag">스펙 보기</span></button>` : `<div class="best-ph">${esc(MAIN.name)}<small>사진 준비 중</small></div>`;
+  { const reg = MAIN.price + ADD.ref10; $("#bestPrice").innerHTML = `<s>${won(reg)}</s><b>${won(PK.pr10)}</b><em>${won(reg - PK.pr10)} 할인</em><small>${esc(MAIN.name)} + 입호흡 액상 10병 패키지로 구매 시</small>`; } // 원래가 = 기기 + 프리미엄 11병 90,000원 (사용자 기준: 평소 11병 90,000 → 기기 구매 시 10병 75,000)
+  document.querySelectorAll("[data-pk]").forEach((el) => { el.innerHTML = `${PK[el.dataset.pk].toLocaleString()}<span class="won">원</span>`; });
+  document.querySelectorAll("[data-pk-note]").forEach((el) => { el.textContent = el.dataset.pkNote === "full" ? `패키지 ${won(PK.pr10)} + 폐호흡 3병 ${won(ADD.lung3)}` : `${MAIN.name} ${won(MAIN.price)} + ${won(ADD[el.dataset.pkNote])}`; });
+  document.querySelectorAll("[data-pk-tag]").forEach((el) => { el.style.display = "none"; });
+}
+function render() {
+  renderMain();
+  $("#combos").innerHTML = PKGS.slice(1).map((p) => `<div class="combo"><div class="lab"><span class="badge">${esc(p.badge)}</span>${p.sub ? `<span class="badge line">${esc(p.sub)}</span>` : ""}</div>
+    <h3>${esc(p.name)}</h3><div class="names">${esc(p.desc)}</div>
+    <div class="items">${p.device ? devBox() : ""}${p.items.map(byName).filter(Boolean).map((x) => `<img src="${isrc(x)}" alt="">`).join("")}</div>
+    <div class="act"><button class="b1" data-pkgadd="${p.id}">이 구성 그대로 담기</button><button class="b2" data-pkg="${p.id}">자세히</button></div></div>`).join("");
+  
+  $("#stockAt").textContent = STOCK_AT ? ` · 재고 ${STOCK_AT} 기준` : "";
+  $("#recTabs").innerHTML = REC.map((x) => `<button class="taste ${rec === x.k ? "on" : ""}" data-rec="${x.k}"><b>${x.k}</b><span>${x.s}</span></button>`).join("");
+  { const R = REC.find((y) => y.k === rec); $("#recList").innerHTML = pickG(R.g).map(card).join("") + (R.also ? `<div style="grid-column:1/-1;font-size:15px;font-weight:800;margin:14px 0 2px">${R.note}</div>` + pickG(R.also).map(card).join("") : ""); }
+  $("#tastes").innerHTML = TASTES.map(([n, d]) => `<button class="taste ${taste === n ? "on" : ""}" data-t="${n}"><b>${n}</b><span>${d}</span></button>`).join("");
+  const list = L.filter((x) => x.line === line && (!taste || x.g === taste) && (!tag || x.t.includes(tag)));
+  byLabel(list);
+  $("#filters").innerHTML = ["프리미엄", "프라임"].map((l) => `<button class="f ${line === l ? "on" : ""}" data-l="${l}">${l}</button>`).join("") + `<span style="width:10px"></span>` +
+    ["노멘솔", "무니코틴"].map((t) => `<button class="f ${tag === t ? "on" : ""}" data-tag="${t}">${t}</button>`).join("") + `<span class="cnt">${list.length}종</span>`;
+  $("#prods").innerHTML = list.slice(0, shown).map(card).join("");
+  $("#more").style.display = list.length > shown ? "block" : "none";
+  $("#cartN").textContent = [...cart.values()].reduce((a, b) => a + b, 0);
+  renderGoods();
+}
+
+function toast(m) { const t = $("#toast"); t.textContent = m; t.classList.add("on"); clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove("on"), 1900); }
+function open(html) { $("#sheet").innerHTML = `<button class="x" data-x>✕</button>` + html; $("#dim").classList.add("on"); $("#sheet").scrollTop = 0; }
+const closeS = () => $("#dim").classList.remove("on");
+const add = (id, n = 1) => { cart.set(id, (cart.get(id) || 0) + n); if (cart.get(id) <= 0) cart.delete(id); render(); };
+const item = (id) => id === DEVICE.id ? DEVICE : id[0] === "g" ? GMAP.get(id) : L.find((y) => y.id === id);
+
+function benefits(x) {
+  const out = [];
+  if (x.line === "프리미엄") out.push("프리미엄 11병 90,000원 · 5병 49,500원 (맛 섞어도 돼요)");
+  if (x.line === "프라임") out.push("프라임 3병 50,000원 · 10병 160,000원");
+  out.push("기기 구매 또는 액상 10병 이상이면 레이저 각인 무료");
+  out.push("네이버 리뷰 남기고 할인쿠폰 받기");
+  return out.map((t, i) => [String(i + 1).padStart(2, "0"), t]);
+}
+// 액상 손님에게 기기 한 번 더 권유 — 액상 5병 이상 & 기기 없음일 때 손님당 1번 ([완료·처음으로]에서 초기화)
+let devUpShown = false, devUpThen = null;
+const hasDev = () => cart.has(DEVICE.id) || [...cart.keys()].some((id) => item(id).c === "dev");
+function devUp(then) {
+  const c = countCart(), n = c.v + c.p + c.m;
+  if (devUpShown || hasDev() || n < 5) return false;
+  devUpShown = true; devUpThen = then || null;
+  const reg = MAIN.price + ADD.ref10;
+  $("#devUp").innerHTML = `<div class="t">지금 담으신 액상 <em>${n}병</em>,<br>기기랑 같이 사면 더 싸져요</div>
+    <div class="pr">${esc(MAIN.name)} + 입호흡 액상 10병<b>${won(PK.pr10)}</b>따로 사면 <s>${won(reg)}</s> → <i>${won(reg - PK.pr10)} 아껴요</i></div>
+    ${MAIN.img ? `<img src="${MAIN.img}" alt="">` : ""}
+    <div class="bt"><button class="go" data-devup="go">${esc(MAIN.name)} 패키지 보기</button><button class="no" data-devup="no">액상만 살게요</button></div>`;
+  requestAnimationFrame(() => $("#devUp").classList.add("on"));
+  return true;
+}
+// ── 다른 지점 재고 확인 (사용자 10/5): 필요 수량 정해서 요청 → 디스코드 공용 🙋요청 카드 [있음][없음]
+let askQty = 1;
+function askBox(x) {
+  const yes = Object.entries(STOCK_ALL).filter(([b, v]) => b !== PAD.branch && window.POS?.[b]?.[x.n] && !v.out.includes(x.n)).map(([b]) => b);
+  return `<div class="askbox"><b>이 지점엔 없어요 · 다른 지점에 물어볼까요?</b>
+    ${yes.length ? `<div class="askhint">포스 기준 재고 있음: <b>${yes.map(esc).join(", ")}</b> (1시간마다 갱신)</div>` : ""}
+    <div class="askrow"><span>필요 수량</span><span class="sq"><button data-aq="-1" aria-label="빼기">−</button><b id="askQ">${askQty}</b><button data-aq="1" aria-label="더하기">+</button></span>
+    <button class="b1" data-ask="${x.id}">다른 지점 재고 확인 요청</button></div></div>`;
+}
+const asked = new Map(); // 상품 → 요청 보낸 시각 (연타 막기)
+async function askSend(id) {
+  const x = item(id), btn = document.querySelector(`[data-ask="${id}"]`);
+  if (Date.now() - (asked.get(x.n) || 0) < 10 * 60e3) return toast(`이미 요청했어요 · ${short(x.n)} · 답이 오면 지점 디스코드로 알려드려요`);
+  if (btn?.disabled) return;
+  if (btn) { btn.disabled = true; btn.textContent = "요청 보내는 중…"; }
+  try {
+    const r = await fetch(HOOK, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ content: JSON.stringify({ type: "stockask", branch: PAD.branch, pad: PAD.no, item: x.n, qty: askQty }), allowed_mentions: { parse: [] }, flags: 4096 }) });
+    if (!r.ok) throw new Error("응답 " + r.status);
+    asked.set(x.n, Date.now()); if (btn) btn.textContent = "✓ 요청 보냄";
+    ev("k", x.n, String(askQty)); toast(`요청했어요 · ${short(x.n)} ${askQty}개 · 답이 오면 지점 디스코드로 알려드려요`); askQty = 1;
+  } catch (e) { if (btn) { btn.disabled = false; btn.textContent = "다른 지점 재고 확인 요청"; } toast(`요청 못 했어요 (${navigator.onLine ? e.message : "인터넷 끊김"}) · 다시 눌러 주세요`); }
+}
+function detail(id) {
+  const x = item(id);
+  const sims = L.filter((y) => y.id !== id && y.g === x.g && y.line === x.line).sort((a, b) => (b.br === x.br) - (a.br === x.br)).slice(0, 3);
+  open(`<div class="det"><div class="img"><img src="${isrc(x)}" alt=""></div><div>
+    <div style="font-size:13px;color:var(--grey);font-weight:700">${x.no ? `<span class="lno in lc-${x.lc}">${x.no}번</span> ` : ""}${esc(x.br)} · ${esc(x.line)}</div>
+    <h3>${esc(short(x.n))}</h3>
+    <div class="chips">${[x.f, x.g, ...x.t.filter((t) => t !== "일반")].map((t) => `<span>${esc(t)}</span>`).join("")}</div>
+    <div class="ben">${benefits(x).map(([n, t]) => `<div><i>${n}</i><span>${esc(t)}</span></div>`).join("")}</div>
+  </div></div>
+  ${isOut(x) ? askBox(x) : ""}
+  <button class="upsell" data-pkg="max10"><span><b>최고혜택 구성 보러 가기</b><small>액상 10병 + ${MAIN.name} 기기패키지로 더 저렴하게</small></span><span class="arr">→</span></button>
+  <div class="btns"><button class="b1" data-add="${x.id}">담기</button></div>
+  <div class="sub">비슷한 맛</div><div class="prods">${sims.map(card).join("")}</div>`);
+}
+function nudge() {
+  const c = countCart(), n = c.v + c.p;
+  if (!n || c.dev) return ""; // 기기가 있으면 기기패키지 안내가 따로 나옴
+  if (n >= 11) return `<div class="nudge"><b>프리미엄 11병 90,000원 적용 중</b><div class="u">지금 ${n}병</div></div>`;
+  const goal = n < 5 ? 5 : 11, more = goal - n, diff = liqPrice(c.v, c.p + more, c.m) - liqPrice(c.v, c.p, c.m);
+  const msg = diff < 0 ? `${more}병 더 담으면 오히려 ${(-diff).toLocaleString()}원 싸져요` : `${more}병 더 담으면 ${goal}병 ${goal === 5 ? "49,500" : "90,000"}원`;
+  return `<div class="nudge"><b>${msg}</b><div class="u">지금 ${n}병 · 목표 ${goal === 5 ? "5병 49,500원" : "11병 90,000원 (병당 약 8,200원)"}</div><div class="bar2"><i style="width:${Math.min(100, (n / goal) * 100)}%"></i></div></div>`;
+}
+function memberBox() {
+  if (!member.type) return `<div class="mem"><div class="sub" style="margin-top:0">혹시 처음 오셨나요?</div>
+    <button class="pk" data-mem="new"><b>처음이에요 · 회원등록하고 적립하기!</b><span>오늘 구매부터 바로 적립돼요</span><i>→</i></button>
+    <button class="pk" data-mem="old"><b>회원이에요 · 회원정보 입력하기</b><span>휴대폰 번호만 입력하면 적립돼요 &gt;.&lt;</span><i>→</i></button></div>`;
+  if (member.type === "new") return `<div class="mem"><div class="sub" style="margin-top:0">회원등록 <button class="lnk" data-mem-x>다시 고르기</button></div>
+    <input class="in" id="memName" placeholder="이름" value="${esc(member.name)}"><input class="in" id="memPhone" inputmode="numeric" placeholder="휴대폰 번호 (- 없이)" value="${esc(member.phone)}">
+    <label class="agree"><input type="checkbox" id="memAgree" ${member.agree ? "checked" : ""}> 적립을 위한 개인정보(이름·휴대폰 번호) 수집·이용에 동의해요</label></div>`;
+  return `<div class="mem"><div class="sub" style="margin-top:0">회원정보 입력 <button class="lnk" data-mem-x>다시 고르기</button></div>
+    <input class="in" id="memPhone" inputmode="numeric" placeholder="가입하신 휴대폰 번호 (- 없이)" value="${esc(member.phone)}"></div>`;
+}
+function cartView() {
+  curDsp = null;
+  const items = [...cart];
+  const vl = items.filter(([id]) => isVL(item(id))).reduce((a, [, n]) => a + n, 0);
+  const dev = (cart.get(DEVICE.id) || 0) + items.filter(([id]) => item(id).c === "dev").reduce((a, [, n]) => a + n, 0);
+  const liq = items.filter(([id]) => !item(id).dev && !item(id).c).reduce((a, [, n]) => a + n, 0);
+  const hasGoods = items.some(([id]) => item(id).c);
+  const ok = dev > 0 || liq >= 10;
+  if (!ok) engrave = null;
+  const engr = !items.length || (!liq && !dev) ? "" : ok && engrave === null
+    ? `<div class="engr"><div><b>레이저 각인 무료 대상이에요!</b><div class="u">각인을 원하시면 [각인 추가 0원]을 눌러 주세요</div></div><button class="b1" data-engr-add>각인 추가 0원</button></div>`
+    : ok ? `<div class="engr on"><div style="flex:1"><b>레이저 각인 · 0원</b><input id="engrText" maxlength="20" placeholder="새길 문구 (이름·이니셜 등, 20자 이내)" value="${esc(engrave)}"></div><button class="b2" data-engr-del>빼기</button></div>`
+    : `<div class="pick2"><div class="pk-h">지금 ${liq}병 · 이런 혜택도 받을 수 있어요</div>
+      <button class="pk" data-more-liq><b>액상 ${10 - liq}병 더 담고 레이저 각인 무료</b><span>10병 이상이면 원하는 문구를 무료로 새겨 드려요</span><i>→</i></button></div>`;
+  if (ok || dev || hasGoods) review = false;
+  const mem = (items.some(([id]) => isHi(item(id))) ? `<div class="hinote"><b>화학물질 장부 작성 (고농도 2% 이상)</b><div class="u">${esc(HI_NOTE)}</div><div class="u" style="color:var(--ink);font-weight:700">${ledgerText() ? "작성됨: " + esc(ledgerText()) : "[직원에게 보여주기]를 누르면 손님이 직접 적는 화면이 나와요"}</div></div>` : "") + (!items.length ? "" : memberBox());
+  const gc = goodsCalc(), est = estimate(countCart());
+  open(`<div class="sh">담은 상품</div>
+    <div style="margin-top:12px">${items.map(([id, n]) => { const x = item(id); return `<div class="line">${pic(x)}<div><b>${esc(short(x.n))}</b><div class="s">${x.c ? won(x.price) + (x.ev ? " · " + EVN[x.ev][2] : "") : esc(x.br)}${x.dev && devColor ? " · " + devColor : ""}</div></div><div class="step"><button data-m="${id}">−</button><span>${n}</span><button data-pl="${id}">+</button></div></div>${x.dev ? `<div class="colors"><span class="lab">색상</span>${DEV_COLORS.map((c) => `<button class="${devColor === c ? "on" : ""}" data-color="${c}">${c}</button>`).join("")}</div>` : ""}`; }).join("") || '<div style="padding:30px 0;color:var(--grey)">아직 담은 상품이 없어요</div>'}</div>
+    ${review ? `<div class="line"><div class="mini" style="background:var(--red)">리뷰</div><div><b>클립 리뷰 할인</b><div class="s">네이버 클립 리뷰 업로드</div></div><b class="price" style="margin-left:auto;color:var(--red);font-size:20px">-3,000원</b></div>` : ""}
+    ${items.length ? (() => {
+      const e = est, c = countCart(), fr = Object.values(gc.freeBy).reduce((x, y) => x + y, 0);
+      const dspFree = Object.values(gc.saveBy).reduce((x, y) => x + y, 0);
+      // 낱개 가격: 기준 기기 정가 + 액상 1병가(프리미엄·빌런 15,000 / 프라임 20,000) + 소모품·일회용 정가
+      const unit = c.dev * DEVICE.price + (c.v + c.p) * 15000 + c.m * 20000 + gc.total + dspFree + gc.lungSave;
+      const rv = review ? 3000 : 0, pay = e.total + gc.total - rv;
+      const pkgOff = c.dev * DEVICE.price + (c.v + c.p) * 15000 + c.m * 20000 - e.total;
+      const rows = [
+        pkgOff > 0 ? [e.how ? e.how + " 할인" : "액상 묶음가 할인", pkgOff] : null,
+        dspFree > 0 ? ["일회용 " + fr + "개 무료", dspFree] : null,
+        gc.lungSave > 0 ? [`폐호흡 프리미엄 3병 ${won(ADD.lung3)} 묶음가`, gc.lungSave] : null,
+        rv ? ["리뷰 할인", rv] : null,
+      ].filter(Boolean);
+      return `<div class="tot2">
+        ${rows.length ? `<div class="r"><span>낱개로 샀을 때</span><s>${won(unit)}</s></div>${rows.map(([k, v]) => `<div class="r off"><span>${esc(k)}</span><b>-${won(v)}</b></div>`).join("")}` : ""}
+        <div class="r pay"><span>결제 예상 금액${gc.giftDev ? " · 에어릭스 기기 증정" : ""}</span><b>${pay.toLocaleString()}<small>원</small></b></div>
+        ${rows.length ? `<div class="save">총 ${won(unit - pay)} 할인 받았어요</div>` : ""}
+      </div>`; })() : ""}
+    ${nudge()}${goodsHints(gc, est.liq)}${engr}
+    ${!(est.how || "").includes("기기패키지") && (items.some(([id]) => !item(id).c) || (!items.length && mode !== "dsp")) ? `<button class="upsell" data-pkg="max10"><span><b>이 맛들로 기기패키지 만들기</b><small>액상 10병 + ${MAIN.name}가 가장 저렴해요</small></span><span class="arr">→</span></button>` : ""}
+    ${mem}
+    <div class="btns stick"><button class="b1 ink" data-staff ${items.length ? "" : "disabled"}>직원에게 보여주기</button></div>`);
+}
+function pkgView(id) {
+  const p = PKGS.find((x) => x.id === id);
+  const its = p.items.map(byName).filter(Boolean);
+  const ben = ["낱개로 사는 것보다 저렴한 구성 (기기 가격 + 액상 묶음가)"];
+  if (its.some((x) => x.n.includes("빌런"))) ben.push("빌런 패키지 이벤트 10,000원 추가 할인 적용");
+  ben.push(p.device || p.pick >= 10 ? "레이저 각인 무료 (기기 구매 혜택)" : "5병 더 담으면 레이저 각인 무료 (액상 10병 이상)");
+  ben.push("네이버 리뷰 남기고 할인쿠폰 받기");
+  open(`<span class="badge">${esc(p.badge)}</span><div class="sh" style="margin-top:12px">${esc(p.name)}</div><div style="color:var(--ink-soft);margin-top:6px;font-size:15px">${esc(p.desc)}</div>
+    <div class="ben">${ben.map((t, i) => `<div><i>0${i + 1}</i><span>${esc(t)}</span></div>`).join("")}</div>
+    <div style="margin-top:8px">${p.device ? `<div class="line">${pic(DEVICE)}<div><b>${MAIN.name}</b><div class="s">기기 1대 · ${won(MAIN.price)}</div></div></div>` : ""}
+    ${its.map((x) => `<div class="line">${pic(x)}<div><b>${esc(short(x.n))}</b><div class="s">${esc(x.f)}</div></div></div>`).join("")}
+    ${p.pick ? `<div class="line" style="color:var(--grey);font-size:15px">+ 맛으로 찾기에서 액상 ${p.pick}병을 골라 담아 주세요</div>` : ""}</div>
+    <div class="btns"><button class="b1" data-pkgadd="${p.id}">${p.pick ? "기기 담고 맛 고르러 가기" : "이 구성 그대로 담기"}</button></div>`);
+}
+// 포스에 찍을 값: 바코드가 등록된 상품은 바코드, 없으면 상품코드를 CODE128로 (포스 인식은 매장에서 확인 필요)
+const posOf = (name) => (window.POS?.[PAD.branch] || {})[name];
+function bundleOf(dev, vl) { // 포스에 있는 묶음 상품 중 정확히 맞는 것만 (확인된 것)
+  if (dev && vl === 5) return "빌런,릭 패키지 30,000원 (5병)";
+  if (!dev && vl === 6) return "빌런,릭 49,600원(6병)";
+  if (!dev && vl === 12) return "빌런,릭 85,200원(12병)";
+  return null;
+}
+// 직원 화면에서 바로 고치기 (10/5 동성로 요청): 수량 −/+ · 상품 추가 · 찍음 체크는 다시 그려도 유지
+const scanDone = new Set(); let staffAdd = false, staffQ = "";
+function scanBlock(title, sub, posName, n, note = "", id = "") {
+  const p = posName && posOf(posName);
+  const code = p ? `<svg class="bc" data-v="${esc(p[1])}" data-f="${p[2]}"></svg>${p[3] ? "" : '<span class="warn">바코드 미등록 · 상품코드(' + esc(p[0]) + ')로 만든 바코드라 포스 인식 확인 필요</span>'}`
+    : '<span class="warn">포스 상품을 못 찾았어요 · 포스에서 직접 검색해 주세요</span>';
+  return `<div class="scan ${id && scanDone.has(id) ? "done" : ""}" ${id ? `data-sid="${id}"` : ""}><div class="hd"><b>${esc(title)}</b>${id ? `<span class="sq"><button data-sm="${id}" aria-label="빼기">−</button><b>${n}</b><button data-sp="${id}" aria-label="더하기">+</button></span>` : `<span class="x">× ${n}</span>`}</div><div class="s">${esc(sub)}${note}</div>${code}</div>`;
+}
+function staffRes() {
+  if (!staffQ.trim()) return '<div class="sq-hint">찾을 상품 이름을 넣어 주세요</div>';
+  const r = searchItems(staffQ).slice(0, 12);
+  return r.length ? r.map((x) => `<div class="sq-row ${isOut(x) && !x.c ? "sold" : ""}"><div><b>${esc(x.c ? x.n : short(x.n))}</b><span>${x.c ? won(x.price) : esc(x.br)}${isOut(x) && !x.c ? " · 품절" : ""}${cart.get(x.id) ? ` · 담음 ${cart.get(x.id)}` : ""}</span></div><button data-sa="${x.id}">+</button></div>`).join("") : '<div class="sq-hint">찾는 상품이 없어요</div>';
+}
+function staffRedraw() { const st = $("#sheet").scrollTop; staffView(); $("#sheet").scrollTop = st; }
+// 결제 계획: 장바구니 계산(estimate·goodsCalc)과 똑같이 나눠서 포스 묶음 상품을 고름
+const POS_BUNDLE = {
+  pr10: ["입호흡 기기 패키지 75,000원 (10병)", "입호흡 패키지 75,000원 (10병)"], pr5: ["입호흡 패키지 40,000원 (5병)"], vl5: ["빌런,릭 패키지 30,000원 (5병)"],
+  p11: ["프리미엄 90,000원(11병)"], p5: ["프리미엄 49,500원(5병)"], m10: ["프라임 160,000원(10병)"], m3: ["프라임 50,000원(3병)"], l3: ["폐 프리미엄 40,000원(3병)"],
+};
+const posBundle = (k) => POS_BUNDLE[k].find((n) => posOf(n)) || POS_BUNDLE[k][0];
+function setsOf(n, deals, unit) { // 가장 싼 묶음 조합: [[병 수, 가격, 세트 수]]
+  const f = [{ c: 0, s: [] }];
+  for (let k = 1; k <= n; k++) { let b = { c: f[k - 1].c + unit, s: f[k - 1].s }; for (const [q, p] of deals) if (k >= q && f[k - q].c + p < b.c) b = { c: f[k - q].c + p, s: [...f[k - q].s, q] }; f[k] = b; }
+  return deals.map(([q, p, key]) => [q, p, key, f[n].s.filter((x) => x === q).length]).filter((x) => x[3]);
+}
+function payPlan() {
+  const c = countCart(), e = estimate(c), gc = goodsCalc(), out = [];
+  const pk = /10병/.test(e.how) ? ["pr10", 10, PK.pr10 - DEVICE.price] : e.how === "프리미엄 기기패키지" ? ["pr5", 5, PK.pr5 - DEVICE.price] : e.how === "베이프렌드 기기패키지" ? ["vl5", 5, PK.vl5 - DEVICE.price] : null;
+  const card = (key, k, sub) => { const nm = posBundle(key), p = posOf(nm);
+    return `<div class="scan bundle"><div class="hd"><b>${esc(nm)}</b><span class="x">× ${k}</span></div><div class="s">${sub}</div>${p ? `<svg class="bc" data-v="${esc(p[1])}" data-f="${p[2]}"></svg>${p[3] ? "" : '<span class="warn">바코드 미등록 · 포스 인식 확인 필요</span>'}` : `<span class="warn">${esc(PAD.branch)} 포스에 이 묶음 상품이 없어요 · 포스에서 같은 금액 상품을 직접 골라 주세요</span>`}</div>`; };
+  if (pk) out.push(card(pk[0], 1, `기기패키지 액상 ${pk[1]}병 값 ${won(pk[2])}`));
+  const prN = c.v + c.p - (pk ? pk[1] : 0), prSets = setsOf(prN, [[11, 90000, "p11"], [5, 49500, "p5"]], 15000), pmSets = setsOf(c.m, [[10, 160000, "m10"], [3, 50000, "m3"]], 20000);
+  for (const [q, p, key, k] of [...prSets, ...pmSets]) out.push(card(key, k, `${q}병 ${won(p)}`));
+  const lk = Math.floor(gc.lungN / 3); if (lk) out.push(card("l3", lk, `폐호흡 3병 ${won(ADD.lung3)}`));
+  for (const [k, nf] of Object.entries(gc.freeBy).filter(([k, nf]) => nf && DSP_POS[k])) { const [buy, free] = EVN[evB(k)], sets = nf / free, nm = DSP_POS[k], p = posOf(nm);
+    out.push(`<div class="scan bundle"><div class="hd"><b>${esc(nm)}</b><span class="x">× ${sets}</span></div><div class="s">일회용 ${buy}+${free} 묶음</div>${p ? `<svg class="bc" data-v="${esc(p[1])}" data-f="${p[2]}"></svg>` : '<span class="warn">포스 상품을 못 찾았어요</span>'}</div>`); }
+  const prSvc = (pk ? pk[1] : 0) + prSets.reduce((a, [q, , , k]) => a + q * k, 0), pmSvc = pmSets.reduce((a, [q, , , k]) => a + q * k, 0), lSvc = lk * 3;
+  const liqN = c.v + c.p, notes = [];
+  if (liqN) notes.push(prSvc >= liqN ? `입호흡 액상 ${liqN}병 전부 서비스(0원)` : prSvc ? `입호흡 액상 ${liqN}병 중 ${prSvc}병 서비스(0원), ${liqN - prSvc}병은 1병 15,000원` : "");
+  if (c.m) notes.push(pmSvc >= c.m ? `프라임 ${c.m}병 전부 서비스(0원)` : pmSvc ? `프라임 ${c.m}병 중 ${pmSvc}병 서비스(0원)` : "");
+  if (gc.lungN) notes.push(lSvc >= gc.lungN ? `폐호흡 ${gc.lungN}병 전부 서비스(0원)` : lSvc ? `폐호흡 ${gc.lungN}병 중 ${lSvc}병 서비스(0원), ${gc.lungN - lSvc}병 정상가` : "");
+  return { html: out.join(""), prAll: liqN && prSvc >= liqN, pmAll: c.m && pmSvc >= c.m, lungAll: gc.lungN && lSvc >= gc.lungN, note: notes.filter(Boolean).join(" · ") };
+}
+function staffView() {
+  const items = [...cart];
+  const vl = items.filter(([id]) => isVL(item(id))).reduce((a, [, n]) => a + n, 0);
+  const dev = cart.get(DEVICE.id) || 0;
+  const plan = payPlan();
+  const step = (n, t, sub) => `<div class="stp"><i>${n}</i><div><b>${t}</b>${sub ? `<span>${sub}</span>` : ""}</div></div>`;
+  const devIds = items.filter(([id]) => item(id).dev || item(id).c === "dev");
+  const blockOf = ([id, n]) => {
+    const x = item(id);
+    if (x.dev) return devColor ? scanBlock(`${MAIN.name} · ${devColor}`, "기기", `${MAIN.model} ${devColor}`, n, "", id)
+      : `<div class="scan"><div class="hd"><b>${MAIN.name}</b><span class="x">× ${n}</span></div><div class="s">색상을 골라야 바코드가 나와요</div><div class="colors" style="padding:10px 0 0">${DEV_COLORS.map((c) => `<button data-color2="${c}">${c}</button>`).join("")}</div></div>`;
+    const svc = " · <b style='color:var(--red)'>서비스(0원)</b>";
+    if (x.c === "lung") return scanBlock(x.n, "폐호흡", x.n, n, plan.lungAll ? svc : "", id);
+    if (x.c) return scanBlock(x.n, won(x.price) + (x.ev ? " · " + EVN[x.ev][2] + " 이벤트" : ""), x.n, n, "", id);
+    return scanBlock(short(x.n), [x.no ? "라벨 " + x.no + "번" : "", x.br, x.loc ? "진열 " + x.loc : ""].filter(Boolean).join(" · "), x.n, n, (x.line === "프라임" ? plan.pmAll : plan.prAll) ? svc : "", id);
+  };
+  const devBlocks = devIds.map(blockOf).join("");
+  const restBlocks = items.filter(([id]) => !devIds.some(([d]) => d === id)).map(blockOf).join("");
+  const blocks = devBlocks + restBlocks;
+  open(`<div class="sh">직원 확인용 · 포스 스캔</div><div style="color:var(--ink-soft);margin-top:6px;font-size:14.5px">위에서부터 차례로 찍고, 찍은 건 눌러서 체크하세요. (${esc(PAD.branch)} 포스 상품 기준)</div><div class="posw">⚠️ 찍기 전에 포스가 <b>판매 화면</b>인지 확인하세요 · 회원조회·회원등록·영수증 창이 열려 있으면 포스가 멈춰요</div>
+  ${incBox()}
+  ${devBlocks ? step(1, "기기 먼저 찍기", "") + devBlocks : ""}
+  ${plan.html || (() => { const gc = goodsCalc(); return Object.entries(gc.freeBy).some(([k, nf]) => nf && DSP_POS[k]) ? "x" : ""; })() ? step(devBlocks ? 2 : 1, "묶음 상품으로 돈 받기", "이 바코드로 결제 금액이 잡혀요") + plan.html : ""}
+  ${restBlocks ? step(devBlocks || plan.html ? (devBlocks && plan.html ? 3 : 2) : 1, "낱개로 찍기", plan.note) : ""}
+  <div style="margin-top:6px">${restBlocks || (devBlocks ? "" : '<div style="padding:20px 0;color:var(--grey)">담은 상품이 없어요</div>')}</div>
+  ${staffAdd ? `<div class="sadd"><div class="sadd-h"><b>상품 추가</b><button data-sadd="0">닫기</button></div><input class="in" id="sq" placeholder="이름·초성으로 찾기 (액상·팟·코일·일회용·기기)" value="${esc(staffQ)}"><div id="sqRes">${staffRes()}</div></div>` : `<button class="sadd-open" data-sadd="1">＋ 상품 추가 (액상 · 팟 · 코일 · 소모품)</button>`}
+  ${(() => { const gc = goodsCalc(), fr = Object.entries(gc.freeBy).filter(([k, n]) => n && !DSP_POS[k]); const base = estimate(countCart()).liq + gc.pod + gc.lung; return (fr.length ? `<div class="scan bundle"><div class="s" style="color:var(--ink)">일회용 이벤트 무료: ${fr.map(([k, n]) => evLabel(k) + " " + n + "개").join(", ")} → 포스에서 가장 싼 것부터 서비스(0원) 처리</div></div>` : "") + (gc.giftDev ? `<div class="scan bundle"><div class="s" style="color:var(--ink)">🎁 에어릭스 팟 10개 혜택 → 에어릭스 기기 ${gc.giftDev}대 증정 (서비스 0원 처리)</div></div>` : "") + (base >= 100000 ? `<div class="scan bundle"><div class="s" style="color:var(--ink)">🎁 액상·팟 ${won(base)} → 일회용 기기 1개 증정</div></div>` : ""); })()}
+  ${engrave !== null ? `<div class="scan"><div class="hd"><b>레이저 각인 (0원)</b><span class="x">× 1</span></div><div class="s">문구: ${engrave ? esc(engrave) : "손님께 확인"}</div><span class="warn">포스에 0원 각인 상품 등록 후 바코드 연결</span></div>` : ""}
+  ${review ? `<div class="line"><div class="mini" style="background:var(--red)">리뷰</div><div><b>클립 리뷰 할인 -3,000원</b><div class="s">네이버 클립 업로드 확인 후 할인</div></div></div>` : ""}
+  ${(() => { const hs = items.filter(([id]) => isHi(item(id))); return hs.length ? `<div class="scan bundle"><div class="hd"><b>화학물질 장부 작성</b></div><div class="s" style="color:var(--ink);font-size:15px;margin-top:6px">${ledgerText() ? `<b>${esc(ledgerText())}</b> <span style="font-size:12.5px;color:var(--grey)">(구매자 직접 작성)</span>` : '<span class="warn">아직 작성 안 됨</span>'}</div><div class="s">${hs.map(([id, n]) => esc(item(id).n) + " ×" + n).join(" · ")}</div></div>` : ""; })()}
+  ${member.type ? `<div class="line"><div class="mini">회원</div><div><b>${member.type === "new" ? "신규 회원등록" : "기존 회원 적립"}</b><div class="s">${esc([member.name, member.phone].filter(Boolean).join(" · ") || "정보 미입력")}</div></div></div>` : `<div class="line"><div class="mini">회원</div><div><b>회원 정보 없음</b><div class="s">적립 원하시는지 한 번 여쭤봐 주세요</div></div></div>`}
+  <div class="btns"><button class="b2" data-x>수정</button><button class="b1" data-reset>완료 · 처음으로</button></div>`);
+  document.querySelectorAll("#sheet svg.bc").forEach((el) => {
+    try { JsBarcode(el, el.dataset.v, { format: el.dataset.f, height: 70, width: 2.4, fontSize: 18, margin: 8 }); }
+    catch { JsBarcode(el, el.dataset.v, { format: "CODE128", height: 70, width: 2.4, fontSize: 18, margin: 8 }); }
+  });
+}
+
+// ── 프리미엄 11병 인센티브 (건당 1,000원 · 지금은 TEST 기록) ──
+const INC_TEST = true, INC_UNIT = 1000;
+// 신호: 디스코드 웹훅(🔌패드연결) → 운영봇 → 시트 '인센티브' 탭 + 현황 채널 (재고보고 페이지와 같은 웹훅)
+const HOOK = "https://discord.com/api/webhooks/1555156884753743905/BLK7tRBQACouQrOE_hvOkm2-iD44gnfnxdJvQXxiBAJKXJU3MG4bjnACFsXgDkDWLBrh";
+// 프리미엄 묶음가(5병 49,500 · 11병 90,000) 가장 싼 조합에서 11병 묶음이 몇 번 쓰였는지
+function count11() {
+  const c = countCart(), e = estimate(c);
+  const used = /10병/.test(e.how) ? 10 : /기기패키지/.test(e.how) ? 5 : 0; // 기기패키지에 들어간 액상은 빼고
+  const n = Math.max(0, c.v + c.p - used);
+  const dp = [{ cost: 0, k: 0 }];
+  for (let i = 1; i <= n; i++) {
+    let b = { cost: dp[i - 1].cost + 15000, k: dp[i - 1].k };
+    if (i >= 5 && dp[i - 5].cost + 49500 < b.cost) b = { cost: dp[i - 5].cost + 49500, k: dp[i - 5].k };
+    if (i >= 11 && dp[i - 11].cost + 90000 <= b.cost) b = { cost: dp[i - 11].cost + 90000, k: dp[i - 11].k + 1 };
+    dp.push(b);
+  }
+  return dp[n].k;
+}
+let incSent = null; // 이번 장바구니에서 이미 기록했으면 판매자 이름
+const incNames = () => { try { const d = new Date(), k = `vf-app-${PAD.branch}-${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; const today = (JSON.parse(localStorage.getItem(k)) || { ins: [] }).ins.filter((x) => !x.out).map((x) => x.name); const recent = JSON.parse(localStorage.getItem(`vf-app-${PAD.branch}-names`)) || []; return [...new Set([...today, ...recent])].slice(0, 8); } catch { return []; } };
+function incBox() {
+  const k = count11(); if (!k) return "";
+  if (incSent) return `<div class="inc done"><b>${INC_TEST ? "🧪 TEST · " : ""}11병 판매 기록됨 · ${esc(incSent)}</b><span>프리미엄 11병 ${k}건 · 인센티브 ${won(k * INC_UNIT)}</span></div>`;
+  const names = incNames();
+  return `<div class="inc"><b>${INC_TEST ? "🧪 TEST · " : ""}프리미엄 11병 ${k}건 · 판매자를 눌러 주세요</b><span>누르면 날짜·구매 내역과 함께 자동 기록돼요 (인센티브 ${won(k * INC_UNIT)}) — 영수증 따로 안 뽑아도 돼요</span>
+    <div class="incn">${names.map((x) => `<button data-inc="${esc(x)}">${esc(x)}</button>`).join("")}<input id="incName" maxlength="20" placeholder="이름 직접 입력"><button data-inc-go="1" class="go">기록</button></div></div>`;
+}
+async function incSend(seller) {
+  seller = String(seller || "").trim(); if (!seller) return toast("판매자 이름을 눌러 주세요");
+  const k = count11(), gc = goodsCalc(), e = estimate(countCart());
+  const body = { type: "incentive", branch: PAD.branch, pad: PAD.no, seller, n11: k, amount: k * INC_UNIT, total: e.total + gc.total - (review ? 3000 : 0), items: [...cart].map(([id, q]) => [item(id).n, q]), test: INC_TEST };
+  try {
+    const r = await fetch(HOOK, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ content: JSON.stringify(body), allowed_mentions: { parse: [] } }) });
+    if (!r.ok) throw new Error("응답 " + r.status);
+    incSent = seller; toast(`기록했어요 · ${seller} · 11병 ${k}건${INC_TEST ? " (TEST)" : ""}`);
+    const st = $("#sheet").scrollTop; staffView(); $("#sheet").scrollTop = st;
+  } catch (err) { toast(`기록 못 했어요 (${navigator.onLine ? err.message : "인터넷 끊김"}) · 다시 눌러 주세요`); }
+}
+
+// 지점·패드 번호 (바코드는 지점 포스 기준)
+const PAD = { branch: BRANCH, no: new URLSearchParams(location.search).get("pad") || "1" };
+document.addEventListener("click", (e) => {
+  const q = (s) => e.target.closest(s); let el;
+  if ((el = q("[data-sm]"))) { add(el.dataset.sm, -1); scanDone.delete(el.dataset.sm); return staffRedraw(); }
+  if ((el = q("[data-sp]"))) { add(el.dataset.sp, 1); scanDone.delete(el.dataset.sp); return staffRedraw(); }
+  if ((el = q("[data-sadd]"))) { staffAdd = el.dataset.sadd === "1"; staffRedraw(); if (staffAdd) setTimeout(() => document.getElementById("sq")?.focus(), 50); return; }
+  if ((el = q("[data-sa]"))) { const id = el.dataset.sa; id[0] === "g" ? addGoods(id) : add(id); toast("추가했어요"); staffRedraw(); return; }
+  if ((el = q("#sheet .scan:not(.bundle)")) && el.querySelector(".bc")) { el.classList.toggle("done"); if (el.dataset.sid) el.classList.contains("done") ? scanDone.add(el.dataset.sid) : scanDone.delete(el.dataset.sid); const all = document.querySelectorAll("#sheet .scan:not(.bundle)"), d = document.querySelectorAll("#sheet .scan.done").length; if (d === all.length) toast("전부 찍었어요 ✓"); return; } // 찍은 바코드 표시
+  if ((el = q("[data-inc]"))) return incSend(el.dataset.inc);
+  if (q("[data-inc-go]")) return incSend($("#incName")?.value);
+  if ((el = q("[data-mode]")) && el.classList.contains("way")) { setMode(el.dataset.mode); return; }
+  if (q("#homeBtn")) { $("#devUp").classList.remove("on"); closeS(); $("#srch").classList.remove("on"); setMode(""); return; }
+  if ((el = q("[data-mainspec]"))) return mainSpecView();
+  if ((el = q("[data-cvc]"))) { cvColor = el.dataset.cvc; $("#cvImg").src = MAIN.imgs[cvColor] || MAIN.img; $("#cvCl").textContent = cvColor; document.querySelectorAll("[data-cvc]").forEach((b) => b.classList.toggle("on", b === el)); return; }
+  if ((el = q("[data-gpack]"))) { const st = $("#sheet").scrollTop; for (let i = 0; i < MAIN.podPack; i++) addGoods(el.dataset.gpack); toast(`담았어요 · ${GMAP.get(el.dataset.gpack).n} 1팩(${MAIN.podPack}개)`); renderGoods(); mainSpecView(); $("#sheet").scrollTop = st; return; }
+  if ((el = q("[data-maindev]"))) { const x = G.find((y) => y.model === MAIN.model && y.opt === cvColor); if (x) addGoods(x.id); toast(`담았어요 · ${MAIN.name} ${cvColor}`); closeS(); return; }
+  if ((el = q("[data-gm]"))) return modelView(el.dataset.gm);
+  if ((el = q("[data-gpk]"))) { const x = GMAP.get(el.dataset.gpk), k = packOf(x); for (let i = 0; i < k; i++) addGoods(x.id); toast(`담았어요 · ${x.n} 1팩(${k}개)`); renderGoods(); if (el.dataset.reDev) { const st = $("#sheet").scrollTop; devSpecView(el.dataset.reDev); $("#sheet").scrollTop = st; } return; }
+  if ((el = q("[data-gadd]"))) { addGoods(el.dataset.gadd); const x = GMAP.get(el.dataset.gadd); toast(`담았어요 · ${x.n}`); if (el.dataset.close) closeS(); renderGoods(); if (el.dataset.re) { const st = $("#sheet").scrollTop; dspView(el.dataset.re); $("#sheet").scrollTop = st; } if (el.dataset.reDev) { const st = $("#sheet").scrollTop; devSpecView(el.dataset.reDev); $("#sheet").scrollTop = st; } return; }
+  if (q("#cartBtn2") || q("[data-cartback]")) return cartView();
+  if ((el = q("[data-gu]"))) { ledger.gu = el.dataset.gu; const st = $("#sheet").scrollTop; ledgerView(); $("#sheet").scrollTop = st; if (ledger.gu === "기타") document.getElementById("ldEtc")?.focus(); return; }
+  if (q("[data-ledger-ok]")) { if (!ledger.name.trim()) { document.getElementById("ldName")?.focus(); return toast("성함을 적어 주세요"); } if (!ledgerText()) return toast("사시는 곳을 골라 주세요"); toast("감사합니다! 직원에게 패드를 돌려주세요"); return staffView(); }
+  if ((el = q("[data-airx]"))) { airxGift = el.dataset.airx; const st = $("#sheet").scrollTop; curDsp ? dspView(curDsp) : cartView(); $("#sheet").scrollTop = st; return; }
+  if ((el = q("[data-pf]"))) { podSub = el.dataset.pf; podDev = ""; renderGoods(); return; }
+  if ((el = q("[data-pdev]"))) { podDev = podDev === el.dataset.pdev ? "" : el.dataset.pdev; renderGoods(); scrollTo({ top: document.getElementById("podList").getBoundingClientRect().top + scrollY - (document.querySelector(".top").offsetHeight + 16), behavior: "smooth" }); return; }
+  if (q("#findBtn")) return openSearch();
+  if (q("#srchClose")) { $("#srch").classList.remove("on"); return; }
+  if ((el = q("[data-qk]"))) { $("#q").value = el.dataset.qk; drawSearch(); return; }
+  if (q("[data-x]")) return closeS();
+  if ((el = q("[data-pkgadd]"))) { const p = PKGS.find((x) => x.id === el.dataset.pkgadd); if (p.device) add(DEVICE.id); p.items.map(byName).filter(Boolean).forEach((x) => add(x.id)); closeS(); if (p.pick) { (setMode("liq"), setTimeout(() => document.getElementById("s4").scrollIntoView({ behavior: "smooth" }), 50)); toast(`기기를 담았어요. 액상 ${p.pick}병을 골라 주세요`); } else toast("구성을 담았어요"); return; }
+  if ((el = q("[data-goto]"))) { document.getElementById(el.dataset.goto).scrollIntoView({ behavior: "smooth" }); return; }
+  if ((el = q("[data-pkg]"))) return pkgView(el.dataset.pkg);
+  if ((el = q("[data-aq]"))) { askQty = Math.max(1, Math.min(99, askQty + Number(el.dataset.aq))); const e2 = document.getElementById("askQ"); if (e2) e2.textContent = askQty; return; }
+  if ((el = q("[data-ask]"))) return askSend(el.dataset.ask);
+  if ((el = q("[data-qa]"))) { add(el.dataset.qa); if (!devUp()) { const c = countCart(), n = c.v + c.p; toast(n < 11 ? `담았어요 · 11병까지 ${11 - n}병 남았어요` : n === 11 ? "11병 완성! 90,000원" : "담았어요"); } return; }
+  if ((el = q("[data-qm]"))) { add(el.dataset.qm, -1); return; }
+  if ((el = q("[data-p]"))) return detail(el.dataset.p);
+  if ((el = q("[data-add]"))) { add(el.dataset.add); closeS(); if (!devUp()) toast("담았어요"); return; }
+  if ((el = q("[data-devup]"))) { $("#devUp").classList.remove("on"); const then = devUpThen; devUpThen = null; if (el.dataset.devup === "go") { closeS(); setMode("dev"); } else if (then) then(); return; }
+  if ((el = q("[data-rec]"))) { rec = el.dataset.rec; render(); return; }
+  if ((el = q("[data-t]"))) { taste = taste === el.dataset.t ? null : el.dataset.t; shown = 12; render(); return; }
+  if ((el = q("[data-l]"))) { line = el.dataset.l; shown = 12; render(); return; }
+  if ((el = q("[data-tag]"))) { tag = tag === el.dataset.tag ? null : el.dataset.tag; render(); return; }
+  if (q("#more")) { shown += 12; render(); return; }
+  if (q("#cartBtn")) return devUp(cartView) || cartView();
+  if ((el = q("[data-m]"))) { add(el.dataset.m, -1); return cartView(); }
+  if ((el = q("[data-pl]"))) { add(el.dataset.pl, 1); cartView(); devUp(); return; }
+  if (q("[data-engr-add]")) { engrave = ""; cartView(); toast("레이저 각인을 추가했어요 (0원)"); setTimeout(() => document.getElementById("engrText")?.focus(), 50); return; }
+  if (q("[data-engr-del]")) { engrave = null; return cartView(); }
+  if (q("[data-more-liq]")) { closeS(); (setMode("liq"), setTimeout(() => document.getElementById("s4").scrollIntoView({ behavior: "smooth" }), 50)); toast("맛을 골라 10병을 채우면 각인이 무료예요"); return; }
+  if (q("[data-review]")) { review = true; toast("리뷰 3,000원 즉시할인을 적용했어요"); return cartView(); }
+  if (q("[data-review-del]")) { review = false; return cartView(); }
+  if ((el = q("[data-mem]"))) { member.type = el.dataset.mem; cartView(); setTimeout(() => document.querySelector(".mem .in")?.focus(), 50); return; }
+  if (q("[data-mem-x]")) { Object.assign(member, { type: null, name: "", phone: "", agree: false }); return cartView(); }
+  if ((el = q("[data-color]"))) { devColor = el.dataset.color; return cartView(); }
+  if ((el = q("[data-color2]"))) { devColor = el.dataset.color2; return staffView(); }
+  if (q("[data-staff]")) { if (member.type === "new" && (member.phone || member.name) && !member.agree) return toast("회원등록은 개인정보 동의가 필요해요"); if ([...cart.keys()].some((id) => isHi(item(id))) && !ledgerText()) { ledgerView(); toast("손님께 패드를 건네 직접 작성해 달라고 해 주세요"); return; } if (member.type === "new" && (member.phone || member.name) && !member.agree) return toast("회원등록은 개인정보 동의가 필요해요"); return staffView(); }
+  if (q("[data-reset]") && !(incSent = null) && (scanDone.clear(), staffAdd = false, staffQ = "", true)) { devUpShown = false; $("#devUp").classList.remove("on"); cart.clear(); airxGift = "pod"; Object.assign(ledger, { name: "", gu: "", etc: "" }); engrave = null; devColor = null; review = false; Object.assign(member, { type: null, name: "", phone: "", agree: false }); render(); closeS(); setMode(""); toast("처음 화면으로 돌아왔어요"); return; }
+  if (e.target.id === "dim") closeS();
+});
+document.addEventListener("input", (e) => { const id = e.target.id; if (id === "engrText") engrave = e.target.value; if (id === "ldName" || id === "ldEtc") { ledger[id === "ldName" ? "name" : "etc"] = e.target.value; const p = document.getElementById("ldPrev"); if (p) p.textContent = ledgerText() || "성함과 사시는 곳을 골라 주세요"; } if (id === "memName") member.name = e.target.value; if (id === "memPhone") member.phone = e.target.value.replace(/\D/g, ""); if (id === "memAgree") member.agree = e.target.checked; });
+addEventListener("scroll", () => { const ids = (TABS[mode] || []).map(([id]) => id); let cur = ids[0]; for (const s of ids) if (document.getElementById(s).getBoundingClientRect().top < 140) cur = s; document.querySelectorAll("#tabs a").forEach((a) => a.classList.toggle("on", a.getAttribute("href") === "#" + cur)); }, { passive: true });
+// ── 사용 기록 (지점별 많이 본 상품·못 찾은 검색어·품절 비율·작동 현황 대시보드용) ──
+// 화면을 막지 않게: 패드 안에 모았다가 1분에 한 번 묶어서 웹훅으로 보냄(실패하면 다음에 다시, 최대 500건 보관).
+// 상품명·검색어·지점·시각만 — 회원 이름·전화번호·장부 내용은 보내지 않음.
+const EVQ_KEY = "vf-ev";
+const evq = (() => { try { return JSON.parse(localStorage.getItem(EVQ_KEY) || "[]"); } catch (e) { return []; } })();
+const evSave = () => { try { localStorage.setItem(EVQ_KEY, JSON.stringify(evq)); } catch (e) {} };
+function ev(k, n = "", x = "") {
+  const t = Math.round(Date.now() / 1000), last = evq[evq.length - 1];
+  if (last && last[1] === k && last[2] === String(n).slice(0, 40) && t - last[0] < 5) return; // 같은 동작 연타는 1번
+  evq.push([t, k, String(n).slice(0, 40), x]);
+  if (evq.length > 500) evq.splice(0, evq.length - 500);
+  evSave();
+}
+let evBusy = false;
+async function evFlush() {
+  if (evBusy || !evq.length || !navigator.onLine) return;
+  evBusy = true;
+  try {
+    const take = []; let len = 0;
+    for (const e of evq) { const n = JSON.stringify(e).length + 1; if (len + n > 1500) break; take.push(e); len += n; }
+    const content = JSON.stringify({ type: "ev", branch: PAD.branch, pad: PAD.no, v: (document.querySelector(".ver")?.dataset.v || document.querySelector(".ver")?.textContent || ""), e: take });
+    const res = await fetch(HOOK, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ content, allowed_mentions: { parse: [] }, flags: 4096 }), keepalive: true }); // 4096 = 알림 없이 보내기(디스코드 무음 메시지)
+    if (res.ok) { evq.splice(0, take.length); evSave(); }
+  } catch (e) {} finally { evBusy = false; }
+}
+setInterval(evFlush, 60e3);
+document.addEventListener("visibilitychange", () => { if (document.hidden) evFlush(); });
+// 어떤 화면을 열었나
+{ const _setMode = setMode; setMode = (m) => { _setMode(m); if (m) ev("m", m); }; }
+{ const _detail = detail; detail = (id) => { _detail(id); const x = item(id); if (x) ev("v", x.n, isOut(x) ? "품절" : ""); }; }
+{ const _staff = staffView; staffView = () => { _staff(); const c = [...cart.values()].reduce((a, b) => a + b, 0); ev("f", "", String(c)); }; }
+{ let tq = null; const _ds = drawSearch; drawSearch = () => { _ds(); clearTimeout(tq); const q = $("#q").value.trim(); if (!q) return; tq = setTimeout(() => { const r = searchItems(q); ev("q", q, `${r.length}/${r.filter((x) => isOut(x)).length}`); }, 1500); }; }
+// 담기 (카드 + / 상세 담기 / 기기·팟·일회용 / 구성 담기)
+document.addEventListener("click", (e) => {
+  const el = e.target.closest("[data-qa],[data-add],[data-gadd],[data-gpk],[data-pkgadd],[data-maindev],[data-sa],#cartBtn,#nextBar");
+  if (!el) return;
+  if (el.id === "cartBtn" || el.id === "nextBar") return ev("c", "", String([...cart.values()].reduce((a, b) => a + b, 0)));
+  const id = el.dataset.qa || el.dataset.add || el.dataset.gadd || el.dataset.gpk || el.dataset.sa;
+  if (id) { const x = item(id); if (x) ev("a", x.n); return; }
+  if (el.dataset.pkgadd) return ev("a", "구성:" + el.dataset.pkgadd);
+  if (el.dataset.maindev != null) return ev("a", MAIN.name);
+}, true);
+{ const v = document.querySelector(".ver"); if (v) { v.dataset.v = v.textContent; v.textContent = BRANCH + " · " + v.dataset.v + " · " + innerWidth + "×" + innerHeight; v.title = "누르면 최신 버전으로 새로고침"; v.addEventListener("click", () => location.reload()); } }
+ev("o", BRANCH, (document.querySelector(".ver")?.dataset.v || document.querySelector(".ver")?.textContent || ""));
+setTimeout(evFlush, 5000);
+
+render();
+loadStock(); setInterval(loadStock, 10 * 60e3); // 패드를 켜 둔 채로도 10분마다 새 재고
+setMode("");
+// 오프라인 저장 + 사진 미리 받아 두기 (와이파이가 끊겨도 메뉴판이 열리게)
+if ("serviceWorker" in navigator && location.protocol === "https:") {
+  navigator.serviceWorker.register("sw.js").then(() => navigator.serviceWorker.ready).then(() => {
+    const urls = [...new Set(L.map(isrc))]; let i = 0;
+    const next = () => { const batch = urls.slice(i, i += 8); if (batch.length) Promise.all(batch.map((u) => fetch(u).catch(() => {}))).then(() => setTimeout(next, 300)); };
+    setTimeout(next, 3000);
+  }).catch(() => {});
+}
+</script>
+<script>
+// 상단 바 실제 높이를 --topH로 (첫 화면 꽉 차게 계산용) — 탭 줄이 보였다 안 보였다 해서 바뀔 때마다 다시 잼
+(() => { const top = document.querySelector('.top'); const set = () => document.documentElement.style.setProperty('--topH', top.offsetHeight + 'px'); set(); addEventListener('resize', set); new ResizeObserver(set).observe(top); })();
+</script>
+<button class="nextbar" id="nextBar"></button>
+<div class="devup" id="devUp"></div>
+<script>
+// 상담 흐름: ① 찾는 것(처음) ② 고르기(구역 들어감) ③ 담은 상품(장바구니 창) ④ 직원 확인(바코드 창)
+(() => {
+  const flow = document.getElementById("flow"), bar = document.getElementById("nextBar");
+  function step() {
+    const sh = document.getElementById("sheet"), open = document.getElementById("dim").classList.contains("on");
+    if (open && sh.querySelector(".scan")) return 4;
+    if (open && sh.querySelector(".tot2, [data-staff]")) return 3;
+    return mode ? 2 : 1;
+  }
+  function update() {
+    const st = step(), n = [...cart.values()].reduce((a, b) => a + b, 0);
+    flow.querySelectorAll("span").forEach((el) => { const k = +el.dataset.st; el.classList.toggle("on", k === st); el.classList.toggle("done", k < st); });
+    const show = st === 2 && n > 0 && !document.getElementById("dim").classList.contains("on");
+    if (show) {
+      const gc = goodsCalc(), e = estimate(countCart());
+      const c = countCart(), pn = c.v + c.p;
+      bar.innerHTML = mode === "liq" && pn && !c.dev
+        ? `<span class="pgt"><span>${pn < 11 ? `11병까지 <em>${11 - pn}병</em>` : "11병 90,000원 완성"}</span><i class="pg"><i style="width:${Math.min(100, pn / 11 * 100)}%"></i></i></span><b>${(e.total + gc.total).toLocaleString()}원</b><span>담은 상품 →</span>`
+        : `<span>담은 상품 보기 <small>${n}개</small></span><b>${(e.total + gc.total).toLocaleString()}원</b><span>→</span>`;
+    }
+    bar.classList.toggle("on", show);
+  }
+  bar.addEventListener("click", () => devUp(cartView) || cartView());
+  setInterval(update, 400); update();
+})();
+
+// ── 포스터 첫 화면 (10/7) ──
+// 실제 포스터 받으면: { img: "pst_파일이름.jpg", go: "liq:s3" } 한 줄씩 (4:5, 1080×1350). go = 구역(dev/liq/dsp) 또는 구역:칸id, "spec" = 하복2 상세
+const POSTERS = [
+  { go: "dev:s1", ev: "havok10", img: "pst_havok2_v7.jpg" }, // 10/8 손에 든 역광 실버 (디자인작업/261008_하복2거대설치물/gpt_v7), 이전 = pst_havok2_gpt.jpg
+  { go: "liq:sRec", img: "pst_bulk3050.jpg", info: "bulk3050" }, // 10/8 대량특가 30병/50병 (디자인작업/261008_대량특가), 11병 예시 대체. 누르면 안내창(INFO) → 맛 고르러 가기
+  { go: "dsp", img: "pst_dsp105.jpg", info: "dsp105" }, // 10/8 일회용 대량 10+5 (디자인작업/261008_일회용10+5), 3+1 예시 대체
+];
+// 포스터 누르면 뜨는 안내창 (POSTERS 항목에 info: "키") — 사장님 10/8: 최대 혜택 = 50병 구매 시 병당 6,800원
+const INFO = {
+  // 사장님 10/8: 할인율 확실하게 — 15개 250,000원 = 개당 약 16,700원, 낱개(팜팜바 24,900 / 모스바 25,000) 대비 약 33% 할인
+  dsp105: () => `<div style="padding:8px 4px 4px"><div style="font-size:13px;font-weight:800;letter-spacing:.2em;color:#e8262c">VAFRIEND 일회용 대량</div>
+    <h2 style="font-size:30px;margin:6px 0 4px;letter-spacing:-.02em">10개 사면 5개 더!</h2>
+    <div style="font-size:15px;color:#6f6861;margin-bottom:16px">팜팜바 또는 모스바 원하는 맛으로 15개</div>
+    <div style="padding:18px 20px 16px;border-radius:20px;background:#fff0f6;box-shadow:inset 0 0 0 2px #ff3d9a">
+      <div style="display:flex;align-items:baseline;gap:6px;color:#e8262c;line-height:1"><span style="font-size:18px;font-weight:800;color:#6f6861">최대</span><b class="price" style="font-size:64px;letter-spacing:-.01em">33<span style="font-size:40px">%</span></b><span style="font-size:24px;font-weight:900">할인</span></div>
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-top:12px;padding-top:12px;border-top:1px dashed #f3a6c8"><span style="font-size:16px;color:#6f6861">15개 한 번에 <b class="price" style="font-size:26px;color:#15120f">250,000<span style="font-size:16px">원</span></b></span><b style="font-size:20px">개당 약 16,700원</b></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin:12px 0 10px;padding:14px 16px;border-radius:14px;background:#f4f2ef;font-size:16px"><span>낱개로 15개 사면 약 <s>375,000원</s></span><b style="color:#e8262c">12만 원 넘게 아껴요</b></div>
+    <div style="margin:2px 0 16px;font-size:15px;color:#6f6861;text-align:center">10개 값에 15개, <b style="color:#15120f">2개 값에 3개</b> 가져가는 셈이에요</div>
+    <button data-go="dsp" style="width:100%;border:0;border-radius:16px;background:#e8262c;color:#fff;font-size:18px;font-weight:800;padding:16px">일회용 맛 고르러 가기 →</button></div>`,
+  bulk3050: () => `<div style="padding:8px 4px 4px"><div style="font-size:13px;font-weight:800;letter-spacing:.2em;color:#e8262c">VAFRIEND 대량 특가</div>
+    <h2 style="font-size:30px;margin:6px 0 4px;letter-spacing:-.02em">많이 담을수록 더 싸게</h2>
+    <div style="font-size:15px;color:#6f6861;margin-bottom:16px">빌런, 릭, 디오, 아이스샷, 토바코샷 원하는 맛 섞어서</div>
+    <div style="display:grid;gap:10px">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-radius:18px;background:#f4f2ef"><div><b style="font-size:22px">30병</b><div style="font-size:14px;color:#6f6861">병당 7,000원</div></div><b style="font-size:28px;letter-spacing:-.02em">210,000원</b></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-radius:18px;background:#fff0f6;box-shadow:inset 0 0 0 2px #ff3d9a"><div><b style="font-size:22px">50병</b> <span style="font-size:12px;font-weight:800;color:#fff;background:#ff3d9a;border-radius:99px;padding:3px 8px;vertical-align:3px">최대 혜택</span><div style="font-size:14px;color:#6f6861">병당 6,800원</div></div><b style="font-size:28px;letter-spacing:-.02em;color:#e8262c">340,000원</b></div>
+    </div>
+    <div style="margin:16px 0 18px;padding:14px 16px;border-radius:14px;background:#15120f;color:#fff;font-size:18px;font-weight:800;text-align:center">최대 혜택은 <span style="color:#ff6fb5">50병 구매 시 병당 6,800원</span>입니다</div>
+    <button data-go="liq:sRec" style="width:100%;border:0;border-radius:16px;background:#e8262c;color:#fff;font-size:18px;font-weight:800;padding:16px">맛 고르러 가기 →</button></div>`,
+};
+let pCur = 0, pTimer = null, pMoved = false;
+const P_AUTO = 5000; // 자동으로 넘어가는 간격(ms), 손대면 다시 셈
+function renderPosters() {
+  const pv = $("#pv"), n = POSTERS.length;
+  pv.innerHTML = POSTERS.map((p, i) => `<div class="ps" data-ps="${i}">${p.img ? `<div class="bg" style="background-image:url('${p.img}')"></div>` : ""}<button class="pp" data-go="${p.go}" data-pi="${i}">${p.img ? `<img class="full" src="${p.img}" alt="" draggable="false">` : p.ex + '<span class="extag">예시</span>'}</button></div>`).join("")
+    + `<div class="pdots">${POSTERS.map(() => "<i></i>").join("")}</div><div class="pcount"></div>`;
+  const W = () => pv.clientWidth;
+  const place = (dx = 0) => {
+    pv.querySelectorAll(".ps").forEach((el, i) => {
+      let o = i - pCur; if (n > 2) { if (o > n / 2) o -= n; if (o < -n / 2) o += n; } // 끝에서 처음으로 이어짐
+      const x = o + dx / W(), a = Math.min(Math.abs(x), 1);
+      el.style.transform = `translateX(${x * 100}%) scale(${1 - a * 0.08})`;
+      el.style.opacity = 1 - a * 0.5; el.style.zIndex = 10 - Math.round(Math.abs(x) * 2);
+      el.style.visibility = Math.abs(o) > 1 ? "hidden" : "";
+    });
+    pv.querySelectorAll(".pdots i").forEach((d, j) => d.classList.toggle("on", j === pCur));
+    pv.querySelector(".pcount").textContent = `${pCur + 1} / ${n}`;
+  };
+  const go = (k) => { pCur = (k + n) % n; place(); auto(); };
+  pv._go = (d) => go(pCur + d); pv._cur = () => pCur; // 키보드 ←→ 로 포스터 넘기기 (10/12)
+  const auto = () => { clearTimeout(pTimer); if (n > 1) pTimer = setTimeout(() => { if (document.body.dataset.mode === "") go(pCur + 1); else auto(); }, P_AUTO); };
+  let x0 = null, y0 = 0, dx = 0, t0 = 0, horiz = null;
+  pv.addEventListener("pointerdown", (e) => { x0 = e.clientX; y0 = e.clientY; dx = 0; t0 = Date.now(); horiz = null; pMoved = false; clearTimeout(pTimer); });
+  pv.addEventListener("pointermove", (e) => {
+    if (x0 === null) return; dx = e.clientX - x0; const dy = e.clientY - y0;
+    if (horiz === null && (Math.abs(dx) > 6 || Math.abs(dy) > 6)) { horiz = Math.abs(dx) > Math.abs(dy); if (horiz) { pv.classList.add("drag"); pv.setPointerCapture(e.pointerId); } }
+    if (horiz) { pMoved = true; place(n > 1 ? dx : dx * 0.25); }
+  });
+  const end = () => {
+    if (x0 === null) return; pv.classList.remove("drag");
+    const v = Math.abs(dx) / Math.max(1, Date.now() - t0); // 빠르게 튕기면 짧게 밀어도 넘어감
+    if (horiz && n > 1 && (Math.abs(dx) > W() * 0.22 || (v > 0.45 && Math.abs(dx) > 20))) go(pCur + (dx < 0 ? 1 : -1)); else { place(); auto(); }
+    x0 = null; horiz = null;
+  };
+  pv.addEventListener("pointerup", end); pv.addEventListener("pointercancel", end);
+  addEventListener("resize", () => place());
+  place(); auto();
+}
+renderPosters();
+function goTo(go) {
+  if (go === "spec") return mainSpecView();
+  const [m, id] = go.split(":");
+  setMode(m);
+  if (id) setTimeout(() => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" }), 60);
+}
+document.addEventListener("click", (e) => { const el = e.target.closest("[data-go]"); if (!el) return; if (el.dataset.pi && pMoved) { pMoved = false; return; } if (el.dataset.pi && POSTERS[el.dataset.pi].info) { const P = POSTERS[el.dataset.pi]; ev("p", el.dataset.pi, P.info); return open(INFO[P.info]()); } if (el.closest("#sheet")) closeS(); if (el.dataset.pi && POSTERS[el.dataset.pi].ev) { const P = POSTERS[el.dataset.pi]; ev("p", el.dataset.pi, P.ev); return openEvent(P.ev, P.img); } if (el.dataset.pi) ev("p", el.dataset.pi, el.dataset.go); goTo(el.dataset.go); });
+
+// ── 이벤트 화면 (10/7): 포스터 누르면 구성 고르기 → 장바구니 ──
+// EVENTS[키] = { t 제목, was 비교가, price 가격, n 고를 액상 수, color 기기 색상 고르기, spec 스펙 보기 } — POSTERS 항목에 ev: "키"
+const EVENTS = {
+  havok10: { t: `${MAIN.name} + 입호흡 액상 10병`, was: MAIN.price + ADD.ref10, price: MAIN.price + ADD.pr10, off: "15,000원 할인", n: 10, color: true, spec: true, lung: 3 }, // lung: 폐호흡 프리미엄 N병 추가(선택) — 하복2는 입·폐 공용
+  bulk11: { t: "프리미엄 액상 11병", price: 90000, sub: "1병 15,000원 → 병당 약 8,180원", n: 11 },
+};
+const EV_REC = ["디오 레몬", "디오 샤인", "디오 블루워터", "느낌 무향", "베이퍼 시가812", "베이퍼 쿨멘솔"]; // 추천 액상 6개 (순서대로)
+const EV_SECT = [ // 액상 고르기 구역: [제목, 설명, 이름 규칙] — 프리미엄 액상만
+  ["추천 액상 · 빌런 시리즈", "과일멘솔 BEST", /^VF 빌런 /], // 사용자 10/7: 추천 = 빌런
+  ["릭 시리즈", "노멘솔 과일 BEST", /^VF 릭 /],
+];
+// 빌런 카드 FLAVOR 번호 순서 (01 자두 ~ 09 석류) — 릭도 같은 과일끼리 같은 자리 (적사과=레즈애플, 소다=보석바(소다맛), 바나나=바나나라무네)
+const FL_ORDER = [/자두/, /청포도/, /레즈애플|적사과/, /청사과/, /레몬/, /파인애플/, /보석바|소다/, /바나나/, /석류/];
+const flRank = (x) => { if (!/^VF (빌런|릭) /.test(x.n)) return 0; const i = FL_ORDER.findIndex((re) => re.test(x.n)); return i < 0 ? 99 : i; };
+const LICK_IMG = { "VF 릭 바나나": "lk_sq_banana.jpg", "VF 릭 청사과": "lk_sq_greenapple.jpg", "VF 릭 청포도": "lk_sq_greengrape.jpg", "VF 릭 레몬": "lk_sq_lemon.jpg", "VF 릭 파인애플": "lk_sq_pineapple.jpg", "VF 릭 자두": "lk_sq_plum.jpg", "VF 릭 석류": "lk_sq_pomegranate.jpg", "VF 릭 적사과": "lk_sq_redapple.jpg", "VF 릭 소다": "lk_sq_soda.jpg" }; // 릭 카드 (GPT 제작 10/7, 베이프렌드 포스터릭)
+const evImg = (x) => LICK_IMG[x.n] || isrc(x);
+// 프리미엄 폐호흡 액상 (lung.js: 포스 판매가 30,000원 폐호흡 액상, 지점별) → 상품처럼 담기(c: "lung")
+// id가 g로 시작해야 상품(GMAP)으로 찾음
+const LUNG_ITEMS = ((window.LUNG || {})[BRANCH] || []).map(([n, price, st], i) => ({ id: "gL" + i, c: "lung", n, price }));
+for (const x of LUNG_ITEMS) { G.push(x); GMAP.set(x.id, x); }
+// 폐호흡 BEST (사용자 10/7): 보석바 · 오니 · 홀리 · 샤크 · 레몬소다(포스 이름 소다레몬)
+const LUNG_BEST = [/보석바/, /오니/, /홀리/, /샤크/, /소다레몬|레몬소다/];
+const lungBest = (x) => { const i = LUNG_BEST.findIndex((re) => re.test(x.n)); return i < 0 ? 99 : i; };
+const lungName = (n) => n.replace(/\s*\(?모드\)?\s*$/, "").replace(/모드$/, "");
+let EV = null; // { key, color, pick: Map(액상 id → 병 수), poster }
+function openEvent(key, poster) {
+  const resume = EV && EV.key === key;
+  if (!resume) EV = { key, color: EVENTS[key].color ? (devColor || MAIN.colors[0]) : null, pick: new Map(), lung: false, lpick: new Map(), poster, q: "" };
+  EV.open = true; evResume();
+  evDraw(); if (!resume) $("#evp .eb-body").scrollTop = 0;
+  requestAnimationFrame(() => requestAnimationFrame(() => $("#evp").classList.add("on")));
+  ev("e", key);
+}
+function closeEvent() { $("#evp").classList.remove("on"); if (EV) EV.open = false; evResume(); } // 고르던 내용은 남김 → 포스터 화면에 '이어서 고르기'
+function clearEvent() { $("#evp").classList.remove("on"); EV = null; evResume(); }
+const evGot = () => (EV ? [...EV.pick.values()].reduce((a, b) => a + b, 0) : 0);
+function evResume() {
+  const b = $("#evres"); if (!b) return;
+  if (!EV || EV.open || (!evGot() && !EV.touched)) { b.style.display = "none"; return; }
+  const E = EVENTS[EV.key];
+  b.innerHTML = `<div><b>${esc(E.t)} 고르던 중</b><span>${E.color ? esc(EV.color) + " · " : ""}액상 ${evGot()} / ${E.n}병</span></div><i>이어서 고르기 →</i>`; b.style.display = "";
+}
+function evCard(x) {
+  const c = EV.pick.get(x.id) || 0, out = isOut(x), own = OWN_IMG[x.n] || LICK_IMG[x.n], b = badgeOf(x);
+  return `<button class="evc ${c ? "on" : ""} ${out ? "out" : ""}" data-evp="${x.id}"><img src="${evImg(x)}" class="${own ? "" : "sm"}" alt="" loading="lazy">${b ? `<span class="bd">${b}</span>` : ""}${esc(x.n.replace(/^VF /, ""))}${c ? `<span class="cnt">${c}</span><span class="mn" data-evm="${x.id}">−</span>` : ""}</button>`;
+}
+// 이벤트 안 검색: 프리미엄 액상만 (패키지·묶음가에 들어가는 것)
+function evSearchDraw() {
+  const box = $("#evsr"); if (!box || !EV) return;
+  const qv = (EV.q || "").trim();
+  const xs = qv ? searchItems(qv).filter((x) => L.includes(x) && x.line === "프리미엄").slice(0, 12) : [];
+  box.innerHTML = xs.length ? `<div class="evs"><h4>검색 결과<small>${xs.length}개 · 누르면 1병씩</small></h4><div class="evg">${xs.map(evCard).join("")}</div></div>`
+    : qv ? `<div class="evnone">'${esc(qv)}' — 패키지에 넣을 수 있는 프리미엄 액상이 없어요</div>` : "";
+}
+function evDraw() {
+  const E = EVENTS[EV.key], st = $("#evp .eb-body")?.scrollTop || 0;
+  const got = [...EV.pick.values()].reduce((a, b) => a + b, 0);
+  const card = evCard;
+  const sect = ([h, sub, re]) => {
+    const xs = Array.isArray(re) ? re.map((n) => L.find((x) => x.n === n)).filter(Boolean) : L.filter((x) => x.line === "프리미엄" && re.test(x.n)).sort((a, b) => flRank(a) - flRank(b) || isOut(a) - isOut(b) || bestRank(a) - bestRank(b));
+    return xs.length ? `<div class="evs"><h4>${h}<small>${sub}</small></h4><div class="evg">${xs.map(card).join("")}</div></div>` : "";
+  };
+  $("#evp").innerHTML = `<button class="evx" data-evclose="1" aria-label="닫기">✕</button><div class="grab"></div><div class="eb-body">
+    <div class="evh">${EV.poster ? `<img src="${EV.poster}" alt="">` : ""}<div><div class="tt">${esc(E.t)}${EV.lung ? ` + 폐호흡 ${E.lung}병` : ""}</div><div class="pr">${E.was && !EV.lung ? `<s>${won(E.was)}</s>` : ""}${won(E.price + (EV.lung ? ADD.lung3 : 0))}</div>${E.off ? `<span class="off">${E.off}</span>` : E.sub ? `<div style="font-size:14px;color:#6f6861;margin-top:4px">${E.sub}</div>` : ""}</div>${E.spec ? `<button class="spec" data-mainspec="1">스펙 보기</button>` : ""}</div>
+    ${E.color ? `<div class="evs"><h4>① 기기 색상<small>${esc(EV.color)}</small></h4><div class="evcol">${MAIN.colors.map((c) => `<button class="${c === EV.color ? "on" : ""}" data-evcol="${c}"><img src="${MAIN.imgs?.[c] || MAIN.img}" alt="">${c}</button>`).join("")}</div></div>` : ""}
+    <div class="evs" id="evLiq"><h4>${E.color ? "② " : ""}액상 ${E.n}병 고르기<small>누를 때마다 1병씩 · 맛 섞어도 돼요</small></h4>
+      <div class="evq"><button data-evq="vl5">빌런 인기 5종으로 채우기</button>${got ? `<button data-evq="clear" style="background:#fff;color:#15120f;box-shadow:var(--sh)">다시 고르기</button>` : ""}</div>
+      <div class="evsrch"><input id="evq" type="search" placeholder="다른 액상 찾기 · 이름, 초성, 맛" value="${esc(EV.q || "")}" autocomplete="off"></div></div>
+    <div id="evsr"></div>
+    ${EV_SECT.map(sect).join("")}
+    ${E.lung ? (() => { const lg = [...EV.lpick.values()].reduce((a, b) => a + b, 0), xs = LUNG_ITEMS.filter((x) => !isOut(x)).sort((p, q) => lungBest(p) - lungBest(q)), nb = xs.filter((x) => lungBest(x) < 99).length;
+      const lcard = (x) => { const c = EV.lpick.get(x.id) || 0; return `<button class="evc txt ${c ? "on" : ""}" data-evl="${x.id}">${lungBest(x) < 99 ? '<span class="bd">BEST</span>' : ""}${esc(lungName(x.n))}<small>폐호흡</small>${c ? `<span class="cnt">${c}</span><span class="mn" data-evlm="${x.id}">−</span>` : ""}</button>`; };
+      return `<div class="evs" id="evLung"><h4>③ 폐호흡도 같이<small>선택 · ${MAIN.name}는 폐호흡도 돼요</small></h4>
+        <button class="evlung ${EV.lung ? "on" : ""}" data-evlung="1"><div><b>프리미엄 폐호흡 액상 ${E.lung}병 ${won(ADD.lung3)}</b><span>${EV.lung ? `${lg} / ${E.lung}병 골랐어요 · 다시 누르면 빼기` : "오니 · 홀리 · 빌런 보석바 등 · 누르면 추가"}</span></div><i>${EV.lung ? "✓ 추가됨" : "+ 추가"}</i></button>
+        ${EV.lung ? (xs.length ? `<div class="evg" style="margin-top:12px">${xs.slice(0, nb).map(lcard).join("")}</div>${xs.length > nb ? `<h4 style="margin-top:16px;font-size:16px">다른 프리미엄 폐호흡<small>${xs.length - nb}가지</small></h4><div class="evg">${xs.slice(nb).map(lcard).join("")}</div>` : ""}` : '<div class="evnone">이 지점 재고가 있는 프리미엄 폐호흡 액상이 없어요</div>') : ""}</div>`; })() : ""}
+  </div>
+  ${(() => { const lg = [...EV.lpick.values()].reduce((a, b) => a + b, 0), lneed = EV.lung ? E.lung : 0, all = E.n + lneed, done = got + lg, ok = got === E.n && lg === lneed;
+    const msg = got < E.n ? `입호흡 ${E.n - got}병 더 골라 주세요` : lg < lneed ? `폐호흡 ${lneed - lg}병 더 골라 주세요` : "이 구성으로 담기 →";
+    return `<div class="evbar"><div class="row"><span>고른 액상</span><b>입호흡 ${got} / ${E.n}병${lneed ? ` · 폐호흡 ${lg} / ${lneed}병` : ""}</b></div><div class="bar"><i style="width:${Math.min(100, done / all * 100)}%"></i></div>
+    <button class="go" data-evgo="1" ${ok ? "" : "disabled"}>${msg}</button></div>`; })()}`;
+  $("#evp .eb-body").scrollTop = st;
+  evSearchDraw();
+}
+function evAdd(id, d) {
+  const E = EVENTS[EV.key], got = [...EV.pick.values()].reduce((a, b) => a + b, 0);
+  if (d > 0 && got >= E.n) { toast(`${E.n}병을 다 골랐어요 · 바꾸려면 − 로 빼 주세요`); return; }
+  const c = (EV.pick.get(id) || 0) + d; c > 0 ? EV.pick.set(id, c) : EV.pick.delete(id); EV.touched = true; evDraw();
+}
+document.addEventListener("click", (e) => {
+  const q = (sel) => e.target.closest(sel); let el;
+  if (q("[data-reset]")) { clearEvent(); return; } // 완료·처음으로 = 고르던 것도 끝
+  if ((el = q("[data-evres]"))) { e.stopPropagation(); return openEvent(EV.key, EV.poster); }
+  if (EV?.open && q("#findBtn")) { e.stopPropagation(); const i = $("#evq"); i.scrollIntoView({ behavior: "smooth", block: "center" }); setTimeout(() => i.focus(), 300); return; } // 이벤트 중 검색 = 이벤트 안 검색칸
+  if (EV?.open && (q("#homeBtn") || q("#cartBtn"))) closeEvent(); // 처음·담은 상품 누르면 이벤트 화면만 닫기 (고르던 것 유지)
+  if (EV?.open && q("#sheet")) { // 이벤트 중 연 스펙 창: 버튼이 이벤트로 돌아오게
+    if (q("[data-maindev]")) { e.stopPropagation(); EV.color = cvColor; EV.touched = true; closeS(); evDraw(); setTimeout(() => $("#evLiq")?.scrollIntoView({ behavior: "smooth", block: "start" }), 120); toast(`${cvColor} 골랐어요 · 이제 액상을 골라 주세요`); return; }
+    if (q("[data-pkg]")) { e.stopPropagation(); closeS(); return; }
+    return;
+  }
+  if (!q("#evp") || !EV?.open) return;
+  if (q("[data-mainspec]")) { cvColor = EV.color; return; } // 스펙 보기는 원래 창으로 (지금 고른 색으로 열기)
+  e.stopPropagation();
+  if (q("[data-evclose]")) return closeEvent();
+  if ((el = q("[data-evlm]"))) { const c = (EV.lpick.get(el.dataset.evlm) || 0) - 1; c > 0 ? EV.lpick.set(el.dataset.evlm, c) : EV.lpick.delete(el.dataset.evlm); return evDraw(); }
+  if ((el = q("[data-evl]"))) { const E = EVENTS[EV.key], lg = [...EV.lpick.values()].reduce((a, b) => a + b, 0); if (lg >= E.lung) { toast(`폐호흡 ${E.lung}병을 다 골랐어요 · 바꾸려면 − 로 빼 주세요`); return; } EV.lpick.set(el.dataset.evl, (EV.lpick.get(el.dataset.evl) || 0) + 1); return evDraw(); }
+  if (q("[data-evlung]")) { EV.lung = !EV.lung; if (!EV.lung) EV.lpick.clear(); EV.touched = true; evDraw(); if (EV.lung) setTimeout(() => $("#evLung")?.scrollIntoView({ behavior: "smooth", block: "start" }), 80); return; }
+  if ((el = q("[data-evm]"))) return evAdd(el.dataset.evm, -1);
+  if ((el = q("[data-evp]"))) return evAdd(el.dataset.evp, 1);
+  if ((el = q("[data-evcol]"))) { EV.color = el.dataset.evcol; EV.touched = true; return evDraw(); }
+  if ((el = q("[data-evq]"))) {
+    EV.pick.clear();
+    if (el.dataset.evq === "vl5") { const E = EVENTS[EV.key]; const xs = VILLAIN5.map((n) => L.find((x) => x.n === n)).filter((x) => x && !isOut(x)); for (let i = 0; i < E.n && xs.length; i++) { const x = xs[i % xs.length]; EV.pick.set(x.id, (EV.pick.get(x.id) || 0) + 1); } }
+    return evDraw();
+  }
+  if (q("[data-evgo]")) {
+    const E = EVENTS[EV.key];
+    if (E.color) { add(DEVICE.id); devColor = EV.color; }
+    for (const [id, c] of EV.pick) add(id, c);
+    if (EV.lung) for (const [id, c] of EV.lpick) add(id, c);
+    ev("eg", EV.key, String([...EV.pick.values()].reduce((a, b) => a + b, 0)));
+    clearEvent(); setTimeout(() => cartView(), 250); return;
+  }
+}, true);
+document.addEventListener("input", (e) => { if (e.target.id === "evq" && EV) { EV.q = e.target.value; evSearchDraw(); } });
+// 스펙 창을 이벤트 중에 열면 버튼 이름을 이벤트용으로
+{ const _ms = mainSpecView; mainSpecView = (c) => { _ms(c); if (EV?.open) { const a = $("#sheet [data-maindev]"), b = $("#sheet [data-pkg]"); if (a) a.textContent = "이 색으로 고르기"; if (b) b.textContent = "패키지 계속 고르기"; } }; }
+// 맨 위에서 아래로 쓸어내리면 닫기
+(() => {
+  let y0 = null; const p = $("#evp");
+  p.addEventListener("touchstart", (e) => { const b = p.querySelector(".eb-body"); y0 = (!b || b.scrollTop <= 0) ? e.touches[0].clientY : null; }, { passive: true });
+  p.addEventListener("touchmove", (e) => { if (y0 === null) return; const dy = e.touches[0].clientY - y0; if (dy > 0) { p.style.transition = "none"; p.style.transform = `translateY(${dy}px)`; } }, { passive: true });
+  p.addEventListener("touchend", (e) => { if (y0 === null) return; const dy = e.changedTouches[0].clientY - y0; p.style.transition = ""; p.style.transform = ""; y0 = null; if (dy > 120) closeEvent(); });
+})();
+// ── 키보드 조작 (10/12 시험): 터치 안 해도 직원이 키보드로 응대 ──
+// / 검색 · ↑↓←→ 화면 위치대로 이동 · Enter 누르기 · Esc 닫기/뒤로 · 첫 화면 포스터에서 ←→ 넘기기
+(() => {
+  const ATTR = /^data-(?!for$|st$|ps$|mode$|v$)/; // 누르면 동작하는 칸은 data-* 속성을 가짐 (구역 표시용 data-for 등은 제외)
+  const layer = () => { for (const s of ["#devUp.on", "#dim.on", "#evp.on", "#srch.on"]) { const el = document.querySelector(s); if (el) return el; } return document.querySelector(".app"); };
+  const shown = (el) => { const r = el.getBoundingClientRect(); if (!r.width || !r.height) return false; if (r.right < 4 || r.left > innerWidth - 4) return false; const cs = getComputedStyle(el); return cs.visibility !== "hidden" && cs.display !== "none" && !el.closest("[style*='display:none'],[style*='display: none']"); };
+  const items = () => {
+    const L = layer(), out = [];
+    L.querySelectorAll("button, a[href], input, select, textarea, .p, .scan, [data-p], [data-qa], [data-qm], [data-t], [data-l], [data-tag], [data-rec], [data-pdev], [data-pf], [data-gm], [data-gadd], [data-gpk], [data-go], [data-pkg], [data-sa], [data-qk], [data-x]").forEach((el) => {
+      if (el.disabled || !shown(el)) return;
+      if (el.matches("#pv .pp") && +el.dataset.pi !== document.getElementById("pv")._cur?.()) return; // 옆 포스터(살짝 보이는 것)는 건너뜀
+      if (!/^(BUTTON|A|INPUT|SELECT|TEXTAREA)$/.test(el.tagName) && ![...el.attributes].some((a) => ATTR.test(a.name)) && !el.matches(".scan")) return;
+      if (L === document.querySelector(".app") && el.closest(".top") && !el.matches("#homeBtn,#findBtn,#cartBtn")) return;
+      out.push(el);
+    });
+    return out;
+  };
+  let cur = null;
+  const mark = (el) => {
+    document.querySelectorAll(".kbf").forEach((x) => x.classList.remove("kbf"));
+    cur = el; if (!el) return;
+    el.classList.add("kbf");
+    if (!/^(INPUT|SELECT|TEXTAREA)$/.test(el.tagName)) { if (!el.hasAttribute("tabindex") && el.tagName !== "BUTTON" && el.tagName !== "A") el.setAttribute("tabindex", "-1"); el.focus({ preventScroll: true }); } else el.focus();
+    // 포스터는 자체 넘김(transform)이라 scrollIntoView를 쓰면 #pv가 옆으로 밀려 버림(10/12 버그) → 세로로만 맞춤
+    const pv = document.getElementById("pv");
+    if (pv && pv.contains(el)) { pv.scrollLeft = 0; const r = pv.getBoundingClientRect(); if (r.top < 0 || r.bottom > innerHeight) scrollTo({ top: Math.max(0, scrollY + r.top - 80), behavior: "smooth" }); }
+    else el.scrollIntoView({ block: "center", inline: "nearest", behavior: "smooth" });
+  };
+  const move = (key) => {
+    const els = items(); if (!els.length) return;
+    if (!cur || !els.includes(cur) || !document.contains(cur)) {
+      const top = document.querySelector(".top")?.getBoundingClientRect().bottom || 0;
+      const pool = els.filter((e) => !e.matches("[data-x], #srchClose")); // 새 창이 열리면 닫기(✕)가 아니라 내용 첫 칸부터
+      return mark(pool.find((e) => e.getBoundingClientRect().top >= top) || pool[0] || els[0]);
+    }
+    const r = cur.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+    // 위아래: 가장 가까운 '다음 줄'을 먼저 찾고, 그 줄 안에서 가로로 가장 가까운 칸 / 좌우: 같은 줄에서 가장 가까운 칸
+    const vert = key === "ArrowDown" || key === "ArrowUp", cand = [];
+    for (const el of els) {
+      if (el === cur) continue;
+      const q = el.getBoundingClientRect(), x = q.left + q.width / 2, dx = x - cx;
+      const dy = key === "ArrowDown" ? q.top - (r.bottom - 4) : key === "ArrowUp" ? (r.top + 4) - q.bottom : (q.top + q.height / 2) - cy;
+      if (vert ? dy < 0 : !(key === "ArrowRight" ? dx > 8 : dx < -8) || Math.abs(dy) > Math.max(r.height, q.height) * 0.6) continue;
+      cand.push({ el, dx: Math.abs(dx), dy: Math.abs(dy) });
+    }
+    if (!cand.length) return;
+    let best;
+    if (vert) { const m = Math.min(...cand.map((c) => c.dy)); best = cand.filter((c) => c.dy <= m + 24).sort((a, b) => a.dx - b.dx)[0]; }
+    else best = cand.sort((a, b) => a.dx + a.dy * 3 - (b.dx + b.dy * 3))[0];
+    mark(best.el);
+  };
+  const back = () => {
+    if (document.querySelector("#devUp.on")) return $("#devUp").classList.remove("on");
+    if (document.querySelector("#dim.on")) return closeS();
+    if (document.querySelector("#evp.on")) return closeEvent();
+    if (document.querySelector("#srch.on")) return $("#srch").classList.remove("on");
+    if (document.body.dataset.mode) return $("#homeBtn").click();
+  };
+  addEventListener("keydown", (e) => {
+    if (e.ctrlKey || e.metaKey || e.altKey || e.isComposing) return;
+    const t = e.target, typing = /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName);
+    if (e.key === "Escape") { e.preventDefault(); if (typing) t.blur(); back(); cur = null; return setTimeout(() => move("ArrowDown"), 80); }
+    if (typing) { if (e.key === "ArrowDown" && t.type !== "number") { e.preventDefault(); t.blur(); cur = t; move("ArrowDown"); } return; }
+    if (e.key === "/" ) { e.preventDefault(); return openSearch(); }
+    if (e.key.startsWith("Arrow")) {
+      e.preventDefault();
+      const pv = document.getElementById("pv");
+      if (cur && cur.matches?.("#pv .pp") && (e.key === "ArrowLeft" || e.key === "ArrowRight") && pv?._go) { pv._go(e.key === "ArrowRight" ? 1 : -1); return setTimeout(() => mark(pv.querySelector(`.pp[data-pi="${pv._cur()}"]`)), 30); }
+      return move(e.key);
+    }
+    if (e.key === "Enter" || e.key === " ") {
+      if (!cur || !document.contains(cur)) { e.preventDefault(); return move("ArrowDown"); }
+      e.preventDefault();
+      const was = cur, L0 = layer(), a = [...was.attributes].find((x) => ATTR.test(x.name)), key = a ? `[${a.name}="${CSS.escape(a.value)}"]` : null; cur.click();
+      // 같은 창이 다시 그려졌으면 같은 칸을 다시 찾고, 화면이 바뀌면(창이 열리거나 닫힘) 새 화면 첫 칸으로
+      setTimeout(() => {
+        if (layer() === L0 && document.contains(was) && shown(was)) return mark(was);
+        const again = layer() === L0 && key ? [...L0.querySelectorAll(key)].find(shown) : null;
+        if (again) return mark(again);
+        cur = null; move("ArrowDown");
+      }, 120);
+    }
+  });
+  addEventListener("pointerdown", () => { document.querySelectorAll(".kbf").forEach((x) => x.classList.remove("kbf")); cur = null; }, true); // 손으로 만지면 키보드 표시 끔
+})();
+</script></body>
+</html>
