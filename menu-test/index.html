@@ -715,12 +715,80 @@
   .kbf:is(input,textarea){transform:none!important}
   .kbx:focus,.kbx:focus-visible{outline:none!important} /* 브라우저 기본 초점 테두리가 번쩍이지 않게 */
   .kbf *:not(img){z-index:3} /* HOT·번호 표시는 커진 사진 위로 (위치 지정된 것만 적용됨) */
+
+  /* ══ 가로판 (10/13, 갤럭시탭 S8 울트라 가로): 가로 + 폭 1000px 이상일 때만. 세로 패드(레노버 M11)·폰은 그대로 ══
+     오른쪽 담은 상품 칸 340px 고정 / 첫 화면 = 왼쪽 포스터(4:5) + 오른쪽 큰 버튼 3개 / 상품 4열 / 이벤트 창 좌우 2칸 / 직원 화면 2열 */
+  .side,.evside{display:none}
+  @media (orientation:landscape) and (min-width:1000px){
+    :root{--sideW:340px}
+    .app{max-width:none;padding-right:var(--sideW)}
+    .top{margin-right:calc(-1 * var(--sideW))}
+    .nextbar{display:none!important} /* 합계는 오른쪽 칸에 항상 보임 */
+    /* 오른쪽 담은 상품 칸 */
+    .side{display:flex;flex-direction:column;position:fixed;right:0;top:var(--topH, 82px);bottom:0;width:var(--sideW);z-index:15;background:var(--card);border-left:1px solid var(--line)}
+    .sd-h{display:flex;align-items:baseline;gap:8px;padding:20px 20px 12px}
+    .sd-h b{font-family:var(--num);font-weight:900;font-size:22px}
+    .sd-h span{font-family:var(--num);font-weight:800;font-size:15px;color:#fff;background:var(--red);border-radius:99px;padding:3px 10px}
+    .sd-l{flex:1;overflow:auto;padding:0 14px}
+    .sd-r{display:flex;align-items:center;gap:10px;padding:10px 6px;border-bottom:1px solid var(--line)}
+    .sd-r img,.sd-r .mini{flex:none;width:44px;height:44px;object-fit:contain;border-radius:8px;mix-blend-mode:multiply}
+    .sd-r .mini{font-size:8px}
+    .sd-r div{flex:1;min-width:0}
+    .sd-r b{display:block;font-family:var(--num);font-weight:800;font-size:15px;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .sd-r small{font-size:13px;color:var(--grey)}
+    .sd-r .step{margin:0;flex:none}
+    .sd-r .step button{width:38px;height:40px;font-size:18px}
+    .sd-r .step span{min-width:24px;font-size:16px}
+    .sd-e{padding:40px 12px;color:var(--grey);font-size:15px;line-height:1.6;text-align:center}
+    .sd-t{padding:14px 20px 0;border-top:2px solid var(--ink)}
+    .sd-t .r{display:flex;justify-content:space-between;align-items:baseline;font-size:15px;padding:3px 0}
+    .sd-t .r s{color:var(--grey)}
+    .sd-t .r.off b{color:var(--red);font-weight:800}
+    .sd-t .r.pay{margin-top:6px;font-weight:800}
+    .sd-t .r.pay b{font-family:var(--num);font-weight:900;font-size:30px}
+    .sd-t .sv{margin-top:8px;background:var(--red);color:#fff;text-align:center;font-weight:800;font-size:16px;padding:10px;border-radius:10px}
+    .side .b1{flex:none;margin:12px 20px 20px;height:60px;font-size:18px}
+    .side .b1:disabled{background:#d8d2ca}
+    /* 첫 화면: 왼쪽 포스터, 오른쪽 기기/액상/일회용 */
+    .home.pst{display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto 1fr}
+    .home.pst .pv{grid-column:1;grid-row:1/3;width:calc((100dvh - var(--topH, 82px)) * .8);height:100%}
+    .home.pst .evres{grid-column:2;grid-row:1;margin:16px 16px 0}
+    .home.pst .pways{grid-column:2;grid-row:2;grid-template-columns:1fr;grid-auto-rows:1fr;gap:12px;padding:16px}
+    .pways button{font-size:34px;font-weight:900;border-radius:20px;text-align:left;padding:0 32px}
+    .pways button:first-child{background:var(--red)}
+    /* 상품 카드 열 수 */
+    .prods{grid-template-columns:repeat(4,1fr)}
+    .dcards{grid-template-columns:repeat(4,1fr)}
+    .dcards.two{grid-template-columns:repeat(3,1fr)}
+    .pdevs{grid-template-columns:repeat(6,1fr)}
+    .tastes{grid-template-columns:repeat(6,1fr)}
+    .tastes.rec{grid-template-columns:repeat(5,1fr)}
+    #combos{grid-template-columns:repeat(3,1fr)}
+    /* 아래서 올라오는 창(담은 상품·스펙·직원 화면): 넓게 */
+    .sheet{width:min(1180px,100% - 40px)}
+    .scg{display:grid;grid-template-columns:1fr 1fr;column-gap:28px}
+    /* 이벤트 창: 왼쪽 38% 포스터·가격·진행막대 고정 / 오른쪽 맛 고르기 */
+    .evp{display:grid;grid-template-columns:38% 1fr;grid-template-rows:1fr auto}
+    .evp .grab{display:none}
+    .evp .eb-body{grid-column:2;grid-row:1/3;padding-top:24px}
+    .evp .eb-body>.evh{display:none}
+    .evside{display:flex;flex-direction:column;grid-column:1;grid-row:1;min-height:0;overflow:auto;padding:24px 24px 0 var(--pad);border-right:1px solid var(--line)}
+    .evside img{flex:1 1 auto;min-height:0;max-height:52vh;width:auto;max-width:100%;aspect-ratio:4/5;object-fit:cover;border-radius:18px;align-self:center;box-shadow:0 10px 30px rgba(0,0,0,.18)}
+    .evside .tt{margin-top:18px;font-family:var(--num);font-weight:900;font-size:28px;line-height:1.25}
+    .evside .pr{margin-top:8px;font-family:var(--num);font-weight:900;font-size:36px;color:var(--red)}
+    .evside .pr s{font-size:18px;color:#9a948d;margin-right:10px;font-weight:700}
+    .evside .off{display:inline-block;margin-top:8px;background:var(--red);color:#fff;font-size:15px;font-weight:800;padding:5px 12px;border-radius:99px;align-self:flex-start}
+    .evside .spec{margin-top:14px;align-self:flex-start;border:0;background:#fff;border-radius:12px;padding:12px 18px;font-weight:800;font-size:15px;box-shadow:var(--sh)}
+    .evp .evbar{grid-column:1;grid-row:2;box-shadow:none;border-right:1px solid var(--line);background:var(--paper)}
+    .evg{grid-template-columns:repeat(5,1fr)}
+    .evcol{grid-template-columns:repeat(4,1fr);max-width:620px}
+  }
 </style>
 </head>
 <body data-mode=""><div id="testRibbon" style="position:fixed;left:0;right:0;bottom:0;z-index:99999;background:#d32f2f;color:#fff;text-align:center;font:700 13px sans-serif;padding:4px;pointer-events:none">테스트판 · 손님 상담에는 정식판을 쓰세요</div>
 <div class="app">
   <div class="top">
-    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">테스트 v10.12-0700</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
+    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">테스트 v10.13-0100</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
     <nav class="tabs" id="tabs" style="display:none"></nav>
     <div class="flow" id="flow"><span data-st="1">① 찾는 것</span><i>›</i><span data-st="2">② 고르기</span><i>›</i><span data-st="3">③ 담은 상품</span><i>›</i><span data-st="4">④ 직원 확인</span></div>
   </div>
@@ -804,6 +872,7 @@
   <div class="hint" id="srchHint">초성만 쳐도 돼요 · 띄어쓰기 상관없어요</div>
   <div class="quick" id="srchQuick"></div>
   <div class="res" id="srchRes"></div></div>
+<aside class="side" id="side"></aside>
 <div class="evp" id="evp"></div>
 <div class="dim" id="dim"><div class="sheet" id="sheet"></div></div>
 <div class="toast" id="toast"></div>
@@ -934,6 +1003,10 @@ function swapHint(c) {
 const countCart = () => { const c = { dev: 0, v: 0, p: 0, m: 0 }; for (const [id, n] of cart) { const x = item(id); if (x.c) continue; if (x.dev) c.dev += n; else if (isVL(x)) c.v += n; else if (x.line === "프라임") c.m += n; else c.p += n; } return c; };
 // ── 기기·팟·일회용 (goods.js, 오케이포스 본점 재고 있는 상품) ──
 const G = window.GOODS_BY?.[BRANCH] || window.GOODS || []; // 지점별 기기·팟·일회용 (재고·판매가가 지점마다 다름)
+// 기기 이름 끝이 색상이면 항상 '기기 + 색상'으로 묶음 (10/12 사장님: 젤로맥스 티파니 = 젤로맥스의 티파니 색, 하복SE 블랙 = 하복SE의 블랙)
+// 지점에 색상이 1개만 있으면 지점데이터.cjs가 이름 전체를 기기로 잡아서 따로 떠 보였음
+{ const COLOR = /^(블랙|화이트|실버|티파니|네이비|블루|핑크|퍼플|레드|골드|건메탈|올리브|레인보우|그레이|그린|민트|오렌지|옐로우|한정판)$/;
+  for (const x of G) if (x.c === "dev" && !x.opt) { const i = x.n.lastIndexOf(" "), last = i > 0 ? x.n.slice(i + 1) : ""; if (COLOR.test(last)) { x.model = x.n.slice(0, i); x.opt = last; } } }
 const GMAP = new Map(G.map((x) => [x.id, x]));
 const EMOJI = { dev: "🔋", pod: "🧩", dsp: "🚬" };
 const EVN = { "DSP-3+1": [3, 1, "3+1"], "DSP-5+1": [5, 1, "5+1"], "DSP-AIRX": [10, 2, "10+2"] }; // [사는 개수, 무료 개수, 표시]
@@ -1544,10 +1617,10 @@ function staffView() {
   const blocks = devBlocks + restBlocks;
   open(`<div class="sh">직원 확인용 · 포스 스캔</div><div style="color:var(--ink-soft);margin-top:6px;font-size:14.5px">위에서부터 차례로 찍고, 찍은 건 눌러서 체크하세요. (${esc(PAD.branch)} 포스 상품 기준)</div><div class="posw">⚠️ 찍기 전에 포스가 <b>판매 화면</b>인지 확인하세요 · 회원조회·회원등록·영수증 창이 열려 있으면 포스가 멈춰요</div>
   ${incBox()}
-  ${devBlocks ? step(1, "기기 먼저 찍기", "") + devBlocks : ""}
-  ${plan.html || (() => { const gc = goodsCalc(); return Object.entries(gc.freeBy).some(([k, nf]) => nf && DSP_POS[k]) ? "x" : ""; })() ? step(devBlocks ? 2 : 1, "묶음 상품으로 돈 받기", "이 바코드로 결제 금액이 잡혀요") + plan.html : ""}
+  ${devBlocks ? step(1, "기기 먼저 찍기", "") + `<div class="scg">${devBlocks}</div>` : ""}
+  ${plan.html || (() => { const gc = goodsCalc(); return Object.entries(gc.freeBy).some(([k, nf]) => nf && DSP_POS[k]) ? "x" : ""; })() ? step(devBlocks ? 2 : 1, "묶음 상품으로 돈 받기", "이 바코드로 결제 금액이 잡혀요") + `<div class="scg">${plan.html}</div>` : ""}
   ${restBlocks ? step(devBlocks || plan.html ? (devBlocks && plan.html ? 3 : 2) : 1, "낱개로 찍기", plan.note) : ""}
-  <div style="margin-top:6px">${restBlocks || (devBlocks ? "" : '<div style="padding:20px 0;color:var(--grey)">담은 상품이 없어요</div>')}</div>
+  <div class="scg" style="margin-top:6px">${restBlocks || (devBlocks ? "" : '<div style="padding:20px 0;color:var(--grey)">담은 상품이 없어요</div>')}</div>
   ${staffAdd ? `<div class="sadd"><div class="sadd-h"><b>상품 추가</b><button data-sadd="0">닫기</button></div><input class="in" id="sq" placeholder="이름·초성으로 찾기 (액상·팟·코일·일회용·기기)" value="${esc(staffQ)}"><div id="sqRes">${staffRes()}</div></div>` : `<button class="sadd-open" data-sadd="1">＋ 상품 추가 (액상 · 팟 · 코일 · 소모품)</button>`}
   ${(() => { const gc = goodsCalc(), fr = Object.entries(gc.freeBy).filter(([k, n]) => n && !DSP_POS[k]); const base = estimate(countCart()).liq + gc.pod + gc.lung; return (fr.length ? `<div class="scan bundle"><div class="s" style="color:var(--ink)">일회용 이벤트 무료: ${fr.map(([k, n]) => evLabel(k) + " " + n + "개").join(", ")} → 포스에서 가장 싼 것부터 서비스(0원) 처리</div></div>` : "") + (gc.giftDev ? `<div class="scan bundle"><div class="s" style="color:var(--ink)">🎁 에어릭스 팟 10개 혜택 → 에어릭스 기기 ${gc.giftDev}대 증정 (서비스 0원 처리)</div></div>` : "") + (base >= 100000 ? `<div class="scan bundle"><div class="s" style="color:var(--ink)">🎁 액상·팟 ${won(base)} → 일회용 기기 1개 증정</div></div>` : ""); })()}
   ${engrave !== null ? `<div class="scan"><div class="hd"><b>레이저 각인 (0원)</b><span class="x">× 1</span></div><div class="s">문구: ${engrave ? esc(engrave) : "손님께 확인"}</div><span class="warn">포스에 0원 각인 상품 등록 후 바코드 연결</span></div>` : ""}
@@ -1754,6 +1827,36 @@ if ("serviceWorker" in navigator && location.protocol === "https:") {
   setInterval(update, 400); update();
 })();
 
+// ── 가로판 오른쪽 담은 상품 칸 (10/13): 장바구니가 바뀔 때만 다시 그림. 금액 계산은 cartView()와 같은 식 ──
+(() => {
+  let sig = "";
+  function draw() {
+    const box = $("#side"); if (!box || getComputedStyle(box).display === "none") { sig = ""; return; }
+    const items = [...cart], s = JSON.stringify([items, review, devColor]);
+    if (s === sig) return; sig = s;
+    const n = items.reduce((a, [, q]) => a + q, 0);
+    let tot = "";
+    if (items.length) {
+      const c = countCart(), e = estimate(c), gc = goodsCalc();
+      const dspFree = Object.values(gc.saveBy).reduce((x, y) => x + y, 0);
+      const unit = c.dev * DEVICE.price + (c.v + c.p) * 15000 + c.m * 20000 + gc.total + dspFree + gc.lungSave;
+      const pay = e.total + gc.total - (review ? 3000 : 0);
+      tot = `<div class="sd-t">${unit > pay ? `<div class="r"><span>낱개로 샀을 때</span><s>${won(unit)}</s></div><div class="r off"><span>${esc(e.how ? e.how + " 할인" : "할인")}</span><b>-${won(unit - pay)}</b></div>` : ""}
+        <div class="r pay"><span>결제 예상</span><b>${pay.toLocaleString()}<small style="font-size:15px">원</small></b></div>${unit > pay ? `<div class="sv">총 ${won(unit - pay)} 할인</div>` : ""}</div>`;
+    }
+    box.innerHTML = `<div class="sd-h"><b>담은 상품</b><span>${n}</span></div>
+      <div class="sd-l">${items.map(([id, q]) => { const x = item(id); return `<div class="sd-r">${pic(x)}<div><b>${esc(short(x.n))}</b><small>${x.c ? won(x.price) : esc(x.br || "")}${x.dev && devColor ? " · " + esc(devColor) : ""}</small></div><div class="step"><button data-sdm="${id}" aria-label="빼기">−</button><span>${q}</span><button data-sdp="${id}" aria-label="더하기">+</button></div></div>`; }).join("") || '<div class="sd-e">고르신 상품이 여기에 쌓여요<br>할인 금액도 바로 계산돼요</div>'}</div>
+      ${tot}<button class="b1 ink" data-cartback="1" ${items.length ? "" : "disabled"}>혜택 확인 · 직원에게 보여주기 →</button>`;
+  }
+  document.addEventListener("click", (e) => {
+    const el = e.target.closest("[data-sdm],[data-sdp]"); if (!el) return;
+    e.stopPropagation();
+    if (el.dataset.sdm) add(el.dataset.sdm, -1); else add(el.dataset.sdp, 1);
+    draw();
+  }, true);
+  setInterval(draw, 300); addEventListener("resize", draw); draw();
+})();
+
 // ── 포스터 첫 화면 (10/7) ──
 // 실제 포스터 받으면: { img: "pst_파일이름.jpg", go: "liq:s3" } 한 줄씩 (4:5, 1080×1350). go = 구역(dev/liq/dsp) 또는 구역:칸id, "spec" = 하복2 상세
 const POSTERS = [
@@ -1893,7 +1996,9 @@ function evDraw() {
     const xs = Array.isArray(re) ? re.map((n) => L.find((x) => x.n === n)).filter(Boolean) : L.filter((x) => x.line === "프리미엄" && re.test(x.n)).sort((a, b) => flRank(a) - flRank(b) || isOut(a) - isOut(b) || bestRank(a) - bestRank(b));
     return xs.length ? `<div class="evs"><h4>${h}<small>${sub}</small></h4><div class="evg">${xs.map(card).join("")}</div></div>` : "";
   };
-  $("#evp").innerHTML = `<button class="evx" data-evclose="1" aria-label="닫기">✕</button><div class="grab"></div><div class="eb-body">
+  $("#evp").innerHTML = `<button class="evx" data-evclose="1" aria-label="닫기">✕</button><div class="grab"></div>
+    <div class="evside">${EV.poster ? `<img src="${EV.poster}" alt="">` : ""}<div class="tt">${esc(E.t)}${EV.lung ? ` + 폐호흡 ${E.lung}병` : ""}</div><div class="pr">${E.was && !EV.lung ? `<s>${won(E.was)}</s>` : ""}${won(E.price + (EV.lung ? ADD.lung3 : 0))}</div>${E.off ? `<span class="off">${E.off}</span>` : E.sub ? `<div style="font-size:15px;color:#6f6861;margin-top:6px">${E.sub}</div>` : ""}${E.spec ? `<button class="spec" data-mainspec="1">스펙 보기</button>` : ""}</div>
+    <div class="eb-body">
     <div class="evh">${EV.poster ? `<img src="${EV.poster}" alt="">` : ""}<div><div class="tt">${esc(E.t)}${EV.lung ? ` + 폐호흡 ${E.lung}병` : ""}</div><div class="pr">${E.was && !EV.lung ? `<s>${won(E.was)}</s>` : ""}${won(E.price + (EV.lung ? ADD.lung3 : 0))}</div>${E.off ? `<span class="off">${E.off}</span>` : E.sub ? `<div style="font-size:14px;color:#6f6861;margin-top:4px">${E.sub}</div>` : ""}</div>${E.spec ? `<button class="spec" data-mainspec="1">스펙 보기</button>` : ""}</div>
     ${E.color ? `<div class="evs"><h4>① 기기 색상<small>${esc(EV.color)}</small></h4><div class="evcol">${MAIN.colors.map((c) => `<button class="${c === EV.color ? "on" : ""}" data-evcol="${c}"><img src="${MAIN.imgs?.[c] || MAIN.img}" alt="">${c}</button>`).join("")}</div></div>` : ""}
     <div class="evs" id="evLiq"><h4>${E.color ? "② " : ""}액상 ${E.n}병 고르기<small>누를 때마다 1병씩 · 맛 섞어도 돼요</small></h4>
