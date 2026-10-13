@@ -392,6 +392,17 @@
   .dcard .deal{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-top:6px;padding:9px 10px;background:rgba(216,31,42,.08);color:var(--red);font-family:var(--num);font-weight:900;font-size:15px}
   .dcards:not(.two) .dcard .deal{flex-direction:column;align-items:flex-start;gap:2px}
   .dcards.two .dcard .deal{font-size:17px}
+  .dcard .deal2{margin-top:4px;font-size:12.5px;color:var(--grey);font-family:var(--kr)}
+  .tiers{display:flex;align-items:stretch;gap:8px;margin:14px 0 2px}
+  .tiers>div{flex:1;background:rgba(255,255,255,.14);border-radius:14px;padding:10px 12px;display:flex;flex-direction:column;gap:1px;position:relative}
+  .tiers>div b{font-family:var(--num);font-size:20px;font-weight:900}
+  .tiers>div small{font-size:12px;opacity:.85}
+  .tiers>div span{font-size:14px;font-weight:700;margin-top:3px}
+  .tiers>div.top{background:#fff;color:var(--red);box-shadow:0 6px 18px rgba(0,0,0,.15)}
+  .tiers>div.top em{position:absolute;top:-9px;right:10px;font-style:normal;font-size:11px;font-weight:800;background:var(--ink);color:#fff;border-radius:99px;padding:2px 8px}
+  .tiers>i{align-self:center;font-style:normal;opacity:.7}
+  .nudge.tier .th{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+  .nudge.tier .th span{font-size:14px;font-weight:700;white-space:nowrap}
   .dcard .deal s{color:var(--grey);font-weight:700;font-size:12.5px;font-family:var(--kr)}
   .dcard .inc{position:absolute;top:8px;right:8px;background:var(--ink);color:#fff;font-family:var(--num);font-weight:800;font-size:13px;padding:4px 9px}
   @media (max-width:600px){.dcards{grid-template-columns:repeat(2,1fr)}.dev2 .big{font-size:56px}.dcards.two .dcard b{font-size:19px}}
@@ -692,12 +703,92 @@
   .p .lno{position:absolute;top:10px;right:10px;z-index:1;min-width:26px;padding:3px 6px;border-radius:7px;background:#15120f;color:#fff;font-family:var(--num);font-weight:800;font-size:13px;text-align:center;line-height:1.2}
   .lno.in{position:static;display:inline-block;padding:1px 7px;margin-right:4px;border-radius:6px;background:#15120f;color:#fff;font-size:12px}
   .lno[class*="lc-"]{color:#15120f;border:1.5px solid #15120f} .lno.lc-w{background:#fff} .lno.lc-b{background:#9cc8f0} .lno.lc-o{background:#ffb066} .lno.lc-g{background:#d3d3d3} .lno.lc-gr{background:#9ad39a} .lno.lc-y{background:#ffe36b} .lno.lc-v{background:#d4bff0} /* 라벨지 색 */
+  /* 키보드로 고른 칸 (10/12): 테두리 없이 카드가 통통 튀며 커지고, 사진은 가장자리가 투명하게 번지며 볼록하게 */
+  .kbx{transition:transform .38s cubic-bezier(.34,1.56,.64,1),box-shadow .3s ease!important}
+  .kbx img{transition:transform .5s cubic-bezier(.34,1.56,.64,1),filter .3s ease,-webkit-mask-size .4s ease,mask-size .4s ease!important}
+  .kbf{transform:scale(1.05)!important;z-index:30!important;box-shadow:0 22px 48px rgba(0,0,0,.22),0 6px 14px rgba(0,0,0,.08)!important;outline:none!important}
+  .kbf.dcard,.kbf .dimg{overflow:visible!important}
+  .kbf img{transform:scale(1.16) translateY(-3%);filter:saturate(1.08) contrast(1.03);
+    -webkit-mask-image:radial-gradient(ellipse 72% 72% at 50% 48%,#000 58%,rgba(0,0,0,.55) 78%,transparent 100%);mask-image:radial-gradient(ellipse 72% 72% at 50% 48%,#000 58%,rgba(0,0,0,.55) 78%,transparent 100%)}
+  #pv .pp.kbf{transform:scale(1.02)!important;box-shadow:0 26px 56px rgba(0,0,0,.45)!important}
+  #pv .pp.kbf img{transform:none;filter:none;-webkit-mask-image:none;mask-image:none}
+  .kbf:is(input,textarea){transform:none!important}
+  .kbx:focus,.kbx:focus-visible{outline:none!important} /* 브라우저 기본 초점 테두리가 번쩍이지 않게 */
+  .kbf *:not(img){z-index:3} /* HOT·번호 표시는 커진 사진 위로 (위치 지정된 것만 적용됨) */
+
+  /* ══ 가로판 (10/13, 갤럭시탭 S8 울트라 가로): 가로 + 폭 1000px 이상일 때만. 세로 패드(레노버 M11)·폰은 그대로 ══
+     오른쪽 담은 상품 칸 340px 고정 / 첫 화면 = 왼쪽 포스터(4:5) + 오른쪽 큰 버튼 3개 / 상품 4열 / 이벤트 창 좌우 2칸 / 직원 화면 2열 */
+  .side,.evside{display:none}
+  @media (orientation:landscape) and (min-width:1000px){
+    :root{--sideW:340px}
+    .app{max-width:none;padding-right:var(--sideW)}
+    .top{margin-right:calc(-1 * var(--sideW))}
+    .nextbar{display:none!important} /* 합계는 오른쪽 칸에 항상 보임 */
+    /* 오른쪽 담은 상품 칸 */
+    .side{display:flex;flex-direction:column;position:fixed;right:0;top:var(--topH, 82px);bottom:0;width:var(--sideW);z-index:15;background:var(--card);border-left:1px solid var(--line)}
+    .sd-h{display:flex;align-items:baseline;gap:8px;padding:20px 20px 12px}
+    .sd-h b{font-family:var(--num);font-weight:900;font-size:22px}
+    .sd-h span{font-family:var(--num);font-weight:800;font-size:15px;color:#fff;background:var(--red);border-radius:99px;padding:3px 10px}
+    .sd-l{flex:1;overflow:auto;padding:0 14px}
+    .sd-r{display:flex;align-items:center;gap:10px;padding:10px 6px;border-bottom:1px solid var(--line)}
+    .sd-r img,.sd-r .mini{flex:none;width:44px;height:44px;object-fit:contain;border-radius:8px;mix-blend-mode:multiply}
+    .sd-r .mini{font-size:8px}
+    .sd-r div{flex:1;min-width:0}
+    .sd-r b{display:block;font-family:var(--num);font-weight:800;font-size:15px;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .sd-r small{font-size:13px;color:var(--grey)}
+    .sd-r .step{margin:0;flex:none}
+    .sd-r .step button{width:38px;height:40px;font-size:18px}
+    .sd-r .step span{min-width:24px;font-size:16px}
+    .sd-e{padding:40px 12px;color:var(--grey);font-size:15px;line-height:1.6;text-align:center}
+    .sd-t{padding:14px 20px 0;border-top:2px solid var(--ink)}
+    .sd-t .r{display:flex;justify-content:space-between;align-items:baseline;font-size:15px;padding:3px 0}
+    .sd-t .r s{color:var(--grey)}
+    .sd-t .r.off b{color:var(--red);font-weight:800}
+    .sd-t .r.pay{margin-top:6px;font-weight:800}
+    .sd-t .r.pay b{font-family:var(--num);font-weight:900;font-size:30px}
+    .sd-t .sv{margin-top:8px;background:var(--red);color:#fff;text-align:center;font-weight:800;font-size:16px;padding:10px;border-radius:10px}
+    .side .b1{flex:none;margin:12px 20px 20px;height:60px;font-size:18px}
+    .side .b1:disabled{background:#d8d2ca}
+    /* 첫 화면: 왼쪽 포스터, 오른쪽 기기/액상/일회용 */
+    .home.pst{display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto 1fr}
+    .home.pst .pv{grid-column:1;grid-row:1/3;width:calc((100dvh - var(--topH, 82px)) * .8);height:100%}
+    .home.pst .evres{grid-column:2;grid-row:1;margin:16px 16px 0}
+    .home.pst .pways{grid-column:2;grid-row:2;grid-template-columns:1fr;grid-auto-rows:1fr;gap:12px;padding:16px}
+    .pways button{font-size:34px;font-weight:900;border-radius:20px;text-align:left;padding:0 32px}
+    .pways button:first-child{background:var(--red)}
+    /* 상품 카드 열 수 */
+    .prods{grid-template-columns:repeat(4,1fr)}
+    .dcards{grid-template-columns:repeat(4,1fr)}
+    .dcards.two{grid-template-columns:repeat(3,1fr)}
+    .pdevs{grid-template-columns:repeat(6,1fr)}
+    .tastes{grid-template-columns:repeat(6,1fr)}
+    .tastes.rec{grid-template-columns:repeat(5,1fr)}
+    #combos{grid-template-columns:repeat(3,1fr)}
+    /* 아래서 올라오는 창(담은 상품·스펙·직원 화면): 넓게 */
+    .sheet{width:min(1180px,100% - 40px)}
+    .scg{display:grid;grid-template-columns:1fr 1fr;column-gap:28px}
+    /* 이벤트 창: 왼쪽 38% 포스터·가격·진행막대 고정 / 오른쪽 맛 고르기 */
+    .evp{display:grid;grid-template-columns:38% 1fr;grid-template-rows:1fr auto}
+    .evp .grab{display:none}
+    .evp .eb-body{grid-column:2;grid-row:1/3;padding-top:24px}
+    .evp .eb-body>.evh{display:none}
+    .evside{display:flex;flex-direction:column;grid-column:1;grid-row:1;min-height:0;overflow:auto;padding:24px 24px 0 var(--pad);border-right:1px solid var(--line)}
+    .evside img{flex:1 1 auto;min-height:0;max-height:52vh;width:auto;max-width:100%;aspect-ratio:4/5;object-fit:cover;border-radius:18px;align-self:center;box-shadow:0 10px 30px rgba(0,0,0,.18)}
+    .evside .tt{margin-top:18px;font-family:var(--num);font-weight:900;font-size:28px;line-height:1.25}
+    .evside .pr{margin-top:8px;font-family:var(--num);font-weight:900;font-size:36px;color:var(--red)}
+    .evside .pr s{font-size:18px;color:#9a948d;margin-right:10px;font-weight:700}
+    .evside .off{display:inline-block;margin-top:8px;background:var(--red);color:#fff;font-size:15px;font-weight:800;padding:5px 12px;border-radius:99px;align-self:flex-start}
+    .evside .spec{margin-top:14px;align-self:flex-start;border:0;background:#fff;border-radius:12px;padding:12px 18px;font-weight:800;font-size:15px;box-shadow:var(--sh)}
+    .evp .evbar{grid-column:1;grid-row:2;box-shadow:none;border-right:1px solid var(--line);background:var(--paper)}
+    .evg{grid-template-columns:repeat(5,1fr)}
+    .evcol{grid-template-columns:repeat(4,1fr);max-width:620px}
+  }
 </style>
 </head>
 <body data-mode="">
 <div class="app">
   <div class="top">
-    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">v10.12-0100</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
+    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">v10.13-0100</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
     <nav class="tabs" id="tabs" style="display:none"></nav>
     <div class="flow" id="flow"><span data-st="1">① 찾는 것</span><i>›</i><span data-st="2">② 고르기</span><i>›</i><span data-st="3">③ 담은 상품</span><i>›</i><span data-st="4">④ 직원 확인</span></div>
   </div>
@@ -781,6 +872,7 @@
   <div class="hint" id="srchHint">초성만 쳐도 돼요 · 띄어쓰기 상관없어요</div>
   <div class="quick" id="srchQuick"></div>
   <div class="res" id="srchRes"></div></div>
+<aside class="side" id="side"></aside>
 <div class="evp" id="evp"></div>
 <div class="dim" id="dim"><div class="sheet" id="sheet"></div></div>
 <div class="toast" id="toast"></div>
@@ -911,6 +1003,10 @@ function swapHint(c) {
 const countCart = () => { const c = { dev: 0, v: 0, p: 0, m: 0 }; for (const [id, n] of cart) { const x = item(id); if (x.c) continue; if (x.dev) c.dev += n; else if (isVL(x)) c.v += n; else if (x.line === "프라임") c.m += n; else c.p += n; } return c; };
 // ── 기기·팟·일회용 (goods.js, 오케이포스 본점 재고 있는 상품) ──
 const G = window.GOODS_BY?.[BRANCH] || window.GOODS || []; // 지점별 기기·팟·일회용 (재고·판매가가 지점마다 다름)
+// 기기 이름 끝이 색상이면 항상 '기기 + 색상'으로 묶음 (10/12 사장님: 젤로맥스 티파니 = 젤로맥스의 티파니 색, 하복SE 블랙 = 하복SE의 블랙)
+// 지점에 색상이 1개만 있으면 지점데이터.cjs가 이름 전체를 기기로 잡아서 따로 떠 보였음
+{ const COLOR = /^(블랙|화이트|실버|티파니|네이비|블루|핑크|퍼플|레드|골드|건메탈|올리브|레인보우|그레이|그린|민트|오렌지|옐로우|한정판)$/;
+  for (const x of G) if (x.c === "dev" && !x.opt) { const i = x.n.lastIndexOf(" "), last = i > 0 ? x.n.slice(i + 1) : ""; if (COLOR.test(last)) { x.model = x.n.slice(0, i); x.opt = last; } } }
 const GMAP = new Map(G.map((x) => [x.id, x]));
 const EMOJI = { dev: "🔋", pod: "🧩", dsp: "🚬" };
 const EVN = { "DSP-3+1": [3, 1, "3+1"], "DSP-5+1": [5, 1, "5+1"], "DSP-AIRX": [10, 2, "10+2"] }; // [사는 개수, 무료 개수, 표시]
@@ -963,9 +1059,32 @@ const evB = (k) => k.split("|")[0];
 const evLabel = (k) => { const [e, m] = k.split("|"); return (m ? dInfo(m).name + " " : "") + EVN[e][2]; };
 // 포스 일회용 이벤트 묶음 상품 (본점 '단종' 중분류, 10/2 조회) — 이걸로 돈 받고 낱개는 서비스(0원)
 const DSP_POS = { "DSP-3+1|팜팜바": "팜팜바 74,700원(3+1)", "DSP-3+1|모스바": "모스바 75,000원(3+1)", "DSP-AIRX": "에어릭스 75,000원 (10+2)" };
+// 10+5 (사장님 10/8·10/12): 팜팜바·모스바 15개 250,000원. 3+1과 같이 진행하되 구매 유도는 10+5로. 15개마다 10+5가 3+1보다 항상 싸서 먼저 묶고, 남는 건 3+1
+const BULK = { ev: "DSP-3+1", n: 15, buy: 10, free: 5 }; // 사장님 10/12: 포스 묶음 상품 없이, 15개 중 비싼 10개는 정가로 찍고 가장 싼 5개는 서비스(0원)
+const bulkUnit = (p) => Math.round((p * BULK.buy) / BULK.n / 100) * 100; // 개당 약 (팜팜바 16,600 · 모스바 16,700)
+const evName = (ev) => (evB(ev) === BULK.ev ? "10+5 · 3+1" : EVN[evB(ev)][2]);
+// 개당 가격 사다리 (1개 → 4개 3+1 → 15개 10+5): 많이 살수록 개당 얼마가 되는지 한눈에
+function tierHtml() {
+  const ps = G.filter((x) => x.ev === BULK.ev).map((x) => x.price); if (!ps.length) return "";
+  const p = Math.min(...ps), [buy, free] = EVN[BULK.ev], u31 = Math.round((buy * p) / (buy + free) / 100) * 100;
+  return `<div class="tiers"><div><b>1개</b><small>낱개</small><span>${won(p)}</span></div><i>→</i><div><b>4개</b><small>3+1</small><span>개당 약 ${won(u31)}</span></div><i>→</i><div class="top"><b>15개</b><small>10+5</small><span>개당 약 ${won(bulkUnit(p))}</span><em>최대 혜택</em></div></div>`;
+}
+// 10+5 안내 상자: 적용 중이면 아낀 금액, 아니면 '몇 개 더 담으면' 진행바. key = 브랜드별 3+1 키(맛 고르기 창), 없으면 담은 상품 화면
+function bulkBox(gc, key, brand) {
+  const { n, k, save } = gc.bulk, r = n - k * BULK.n, need = BULK.n - r, [buy, free] = EVN[BULK.ev];
+  let h = "";
+  if (k) h += `<div class="save"><div><b>10+5 적용 중 · 15개 중 5개 무료${k > 1 ? ` × ${k}` : ""}</b><div class="u">10개 값만 받아요 · 낱개보다 ${won(save)} 아껴요</div></div><span class="price">-${save.toLocaleString()}<span class="won">원</span></span></div>`;
+  if (key && gc.saveBy[key]) h += `<div class="save"><div><b>3+1 할인 적용 중</b><div class="u">${brand} ${gc.cnt[key]}개 중 ${gc.freeBy[key]}개 무료</div></div><span class="price">-${gc.saveBy[key].toLocaleString()}<span class="won">원</span></span></div>`;
+  if (r || !n) {
+    const rb = key ? (gc.cnt[key] || 0) % (buy + free) : 0;
+    const sub = key && rb ? (rb >= buy ? `지금 ${buy + free - rb}개 더 고르면 무료 (3+1)` : `${brand} ${buy - rb}개 더 담으면 1개 무료 (3+1)`) : "3개마다 1개는 지금도 무료 (3+1)";
+    h += `<div class="nudge tier"><div class="th"><b>${need}개 더 담으면 10+5</b><span>10개 값에 15개</span></div><div class="bar2"><i style="width:${Math.round((r / BULK.n) * 100)}%"></i></div><div class="u">지금 ${r}개${k ? ` (10+5 ${k}묶음 빼고)` : ""} · 팜팜바·모스바 섞어도 돼요 · ${sub}</div></div>`;
+  }
+  return h;
+}
 const dealOf = (ev, price) => { const [buy, free] = EVN[ev]; return { n: buy + free, pay: buy * price, list: (buy + free) * price, save: free * price }; };
 const DSPEV = [
-  { ev: "DSP-3+1", id: "dE1", tab: "3+1", red: true, badge: "BEST", t: "3개 사면 1개 더", s: "팜팜바는 팜팜바끼리, 모스바는 모스바끼리 맛을 섞어도 돼요" },
+  { ev: "DSP-3+1", id: "dE1", tab: "10+5", big: "10+5", tier: true, red: true, badge: "BEST", t: "10개 사면 5개 더", s: "팜팜바·모스바 원하는 맛으로 15개 250,000원 · 3개만 사도 1개 더 (3+1, 같은 제품끼리)" },
   { ev: "DSP-5+1", id: "dE2", tab: "5+1", t: "5개 사면 1개 더", s: "같은 5+1 제품끼리는 맛을 섞어도 돼요" },
   { ev: "DSP-AIRX", id: "dE3", tab: "에어릭스 10+2", t: "에어릭스 팟 10개 사면 팟 2개 더 또는 기기 증정", s: "팟 2개 더 받기 / 에어릭스 기기(35,000원) 받기 중 골라요 · 하카 기기 호환" },
   { ev: "", id: "dE4", tab: "배터리", t: "배터리 · 기타", s: "팟형 일회용은 배터리가 따로 필요해요" },
@@ -1084,7 +1203,7 @@ function renderGoods() {
     const gs = dsps.filter(([, xs]) => (xs[0].ev || "") === e.ev).sort((a, b) => !!dInfo(b[0]).img - !!dInfo(a[0]).img || b[1].length - a[1].length);
     if (!gs.length) return `<div id="${e.id}"></div>`;
     const big = gs.length <= 2;
-    return `<section class="dev2 ${e.red ? "red" : ""}" id="${e.id}"><div class="eh">${e.ev ? `<div class="big">${EVN[e.ev][2]}</div>` : ""}<div>${e.badge ? `<span class="badge">${e.badge}</span>` : ""}<div class="et">${esc(e.t)}</div><div class="es">${esc(e.s)}</div></div></div>
+    return `<section class="dev2 ${e.red ? "red" : ""}" id="${e.id}"><div class="eh">${e.ev ? `<div class="big">${e.big || EVN[e.ev][2]}</div>` : ""}<div>${e.badge ? `<span class="badge">${e.badge}</span>` : ""}<div class="et">${esc(e.t)}</div><div class="es">${esc(e.s)}</div></div></div>${e.tier ? tierHtml() : ""}
       <div class="dcards ${big ? "two" : ""}">${gs.map(dCard).join("")}</div></section>`;
   }).join("") + `<div class="dnote">사진을 누르면 맛을 골라 담을 수 있어요</div>`;
 }
@@ -1096,7 +1215,7 @@ function dCard([model, xs]) {
     ${inCart ? `<span class="inc">${inCart}개 담음</span>` : ""}
     <div class="db"><b>${esc(i.name)}</b>${i.d ? `<div class="dm">${esc(i.d)}</div>` : ""}${i.w ? `<div class="dm warn">${esc(i.w)}</div>` : ""}${i.hi ? `<div class="hitag">고농도 · 구매 시 장부 작성</div>` : ""}
     <div class="dp">${won(p)}${many ? "~" : ""} <small>· ${xs.length}가지</small></div>
-    ${dl ? `<div class="deal"><span>${dl.n}개 ${won(dl.pay)}</span><span>${won(dl.save)} 할인</span></div>` : ""}</div></button>`;
+    ${dl && evB(xs[0].ev) === BULK.ev ? `<div class="deal"><span>10개 값에 15개</span><span>개당 약 ${won(bulkUnit(p))}</span></div><div class="deal2">3개만 사도 1개 더 · 4개 ${won(dl.pay)}</div>` : dl ? `<div class="deal"><span>${dl.n}개 ${won(dl.pay)}</span><span>${won(dl.save)} 할인</span></div>` : ""}</div></button>`;
 }
 let curDsp = null; // 지금 열린 일회용 맛 고르기 화면 (에어릭스 혜택 고를 때 다시 그리기용)
 // 일회용 맛 고르기: 여러 맛을 연달아 담고, 이벤트 할인이 얼마나 붙는지 바로 보이게
@@ -1105,6 +1224,7 @@ function dspView(model) {
   const gc = goodsCalc(), ev = x0.ev;
   let save = ""; curDsp = model;
   if (ev === "DSP-AIRX") save = airxBox(gc.cnt[ev] || 0, gc);
+  else if (evB(ev) === BULK.ev) save = bulkBox(gc, evKey(x0), i.name);
   else if (ev) {
     const k = evKey(x0), [buy, free, label] = EVN[ev], n = gc.cnt[k] || 0, r = n % (buy + free), off = gc.saveBy[k] || 0;
     const next = r >= buy ? `지금 ${buy + free - r}개 더 고르면 무료` : `${buy - r}개 더 담으면 ${free}개 무료`;
@@ -1112,7 +1232,7 @@ function dspView(model) {
     save = (off ? `<div class="save"><div><b>${label} 할인 적용 중</b><div class="u">${n}개 중 ${gc.freeBy[k]}개 무료</div></div><span class="price">-${off.toLocaleString()}<span class="won">원</span></span></div>` : "")
       + (r || !n ? `<div class="save" style="background:var(--ink)"><div><b>${next}</b><div class="u">${mix} · 지금 ${n}개</div></div><span class="price">-${won(free * x0.price)}</span></div>` : "");
   }
-  open(`<div style="font-size:13px;color:var(--grey);font-weight:700">일회용${ev ? " · " + EVN[ev][2] + " 이벤트" : ""}</div><div class="sh" style="margin:6px 0 14px">${esc(i.name)}</div>
+  open(`<div style="font-size:13px;color:var(--grey);font-weight:700">일회용${ev ? " · " + evName(ev) + " 이벤트" : ""}</div><div class="sh" style="margin:6px 0 14px">${esc(i.name)}</div>
     ${i.img ? `<div class="dhero"><img src="${dsrc(i.hero || i.img)}" alt=""></div>` : ""}
     ${i.d || i.w ? `<div style="margin-top:10px;font-size:15px;color:var(--ink-soft)">${esc(i.d)}${i.w ? ` <b style="color:var(--red)">· ${esc(i.w)}</b>` : ""}</div>` : ""}
     ${i.hi ? `<div class="hinote"><b>고농도 제품 · 화학물질 장부 작성</b><div class="u">${esc(HI_NOTE)}</div></div>` : ""}
@@ -1155,12 +1275,23 @@ function addGoods(id) {
 }
 // 일회용 이벤트: 같은 이벤트끼리 (사는 개수+무료) 묶음마다 가장 싼 것 무료
 function goodsCalc() {
-  let dev = 0, pod = 0, dsp = 0, lungN = 0, lungFull = 0; const freeBy = {}, cnt = {}, saveBy = {}; const evItems = {};
+  let dev = 0, pod = 0, dsp = 0, lungN = 0, lungFull = 0; const freeBy = {}, cnt = {}, saveBy = {}; const evItems = {}, evObj = {};
   for (const [id, n] of cart) { const x = GMAP.get(id); if (!x) continue;
     if (x.c === "lung") { lungN += n; lungFull += x.price * n; continue; } // 프리미엄 폐호흡 (3병 묶음가는 아래에서)
     if (x.c === "dev") dev += x.price * n; else if (x.c === "pod") pod += x.price * n;
-    else if (x.ev) { (evItems[evKey(x)] ||= []).push(...Array(n).fill(x.price)); } else dsp += x.price * n; }
+    else if (x.ev) { const kk = evKey(x); (evItems[kk] ||= []).push(...Array(n).fill(x.price)); (evObj[kk] ||= []).push(...Array(n).fill({ id, price: x.price })); } else dsp += x.price * n; }
   let giftDev = 0;
+  const bulk = { k: 0, n: 0, pay: 0, list: 0, save: 0, freeById: {} }; // 10+5: 팜팜바·모스바 합쳐 15개마다 비싼 10개 정가 + 싼 5개 0원, 남는 건 아래 3+1
+  { const keys = Object.keys(evItems).filter((k) => evB(k) === BULK.ev), tot = keys.reduce((a, k) => a + evItems[k].length, 0); bulk.n = tot;
+    if (tot >= BULK.n) { const k = Math.floor(tot / BULK.n), take = k * BULK.n, [buy, free] = EVN[BULK.ev], cnts = keys.map((key) => evItems[key].length); let best = null;
+      // 어느 브랜드에서 몇 개를 10+5로 빼야 남는 것으로 3+1이 가장 많이 되는지 (브랜드 2개까지는 전부 따져 봄)
+      if (cnts.length <= 2) { for (let x = Math.max(0, take - (cnts[1] || 0)); x <= Math.min(cnts[0], take); x++) { const t = cnts.length === 2 ? [x, take - x] : [x]; const sc = t.reduce((a, v, i) => a + Math.floor((cnts[i] - v) / (buy + free)), 0); if (!best || sc > best.sc) best = { sc, t }; } }
+      else { let left = take; best = { t: cnts.map((c) => { const v = Math.min(c, left); left -= v; return v; }) }; }
+      const taken = [];
+      keys.forEach((key, i) => { const ps = evItems[key]; ps.sort((a, b) => b - a); ps.splice(0, best.t[i]); const os = evObj[key]; os.sort((a, b) => b.price - a.price); taken.push(...os.splice(0, best.t[i])); });
+      taken.sort((a, b) => a.price - b.price); const nFree = k * BULK.free;
+      taken.forEach((o, i) => { bulk.list += o.price; if (i < nFree) { bulk.save += o.price; bulk.freeById[o.id] = (bulk.freeById[o.id] || 0) + 1; } else bulk.pay += o.price; });
+      bulk.k = k; dsp += bulk.pay; } }
   for (const [ev, prices] of Object.entries(evItems)) {
     const [buy, free] = EVN[evB(ev)]; prices.sort((a, b) => b - a);
     if (ev === "DSP-AIRX" && airxGift === "dev") { giftDev = Math.floor(prices.length / buy); dsp += prices.reduce((a, b) => a + b, 0); freeBy[ev] = 0; cnt[ev] = prices.length; saveBy[ev] = 0; continue; }
@@ -1169,7 +1300,7 @@ function goodsCalc() {
     dsp += prices.reduce((a, b) => a + b, 0) - freeAmt; freeBy[ev] = nFree; cnt[ev] = prices.length; saveBy[ev] = freeAmt;
   }
   const lung = Math.floor(lungN / 3) * ADD.lung3 + (lungFull / Math.max(1, lungN)) * (lungN % 3), lungSave = lungFull - lung; // 3병마다 40,000원
-  return { dev, pod, dsp, lung, lungN, lungSave, total: dev + pod + dsp + lung, freeBy, cnt, saveBy, giftDev };
+  return { dev, pod, dsp, lung, lungN, lungSave, total: dev + pod + dsp + lung, freeBy, cnt, saveBy, giftDev, bulk };
 }
 // 에어릭스 팟 10개마다 혜택 하나: 팟 2개 무료(12개 가져가고 10개 값) 또는 에어릭스 기기(35,000원) 증정
 function airxBox(n, gc) {
@@ -1185,11 +1316,12 @@ function airxBox(n, gc) {
 }
 function goodsHints(gc, liqPart) {
   const out = [];
+  if (gc.bulk.n) out.push(bulkBox(gc, "", ""));
   for (const [ev, n] of Object.entries(gc.cnt)) {
     const [buy, free] = EVN[evB(ev)], label = evLabel(ev); const r = n % (buy + free);
     if (ev === "DSP-AIRX") { out.push(airxBox(n, gc)); continue; }
     if (gc.saveBy[ev]) out.push(`<div class="save"><div><b>${label} 할인</b><div class="u">${n}개 중 ${gc.freeBy[ev]}개 무료 (가장 싼 맛 기준)</div></div><span class="price">-${gc.saveBy[ev].toLocaleString()}<span class="won">원</span></span></div>`);
-    if (r) out.push(`<div class="nudge"><b>${label}: ${r >= buy ? `지금 ${buy + free - r}개 더 고르면 무료` : `${buy - r}개 더 담으면 ${free}개 무료`}</b><div class="u">지금 ${n}개 · 같은 제품끼리 맛 섞어도 돼요</div></div>`);
+    if (r && evB(ev) !== BULK.ev) out.push(`<div class="nudge"><b>${label}: ${r >= buy ? `지금 ${buy + free - r}개 더 고르면 무료` : `${buy - r}개 더 담으면 ${free}개 무료`}</b><div class="u">지금 ${n}개 · 같은 제품끼리 맛 섞어도 돼요</div></div>`);
   }
   const base = liqPart + gc.pod + gc.lung; // 폐호흡 액상도 액상
   if (base > 0) out.push(base >= 100000 ? `<div class="nudge" style="background:var(--red)"><b>🎁 일회용 기기 1개 증정 대상이에요</b><div class="u">액상·팟 ${won(base)} (10만원 이상)</div></div>`
@@ -1411,7 +1543,7 @@ function pkgView(id) {
 // 포스에 찍을 값: 바코드가 등록된 상품은 바코드, 없으면 상품코드를 CODE128로 (포스 인식은 매장에서 확인 필요)
 const posOf = (name) => (window.POS?.[PAD.branch] || {})[name];
 function bundleOf(dev, vl) { // 포스에 있는 묶음 상품 중 정확히 맞는 것만 (확인된 것)
-  if (dev && vl === 5) return "빌런,릭 패키지 30,000원 (5병)";
+  if (dev && vl === 5) return posOf("빌런,릭,디오 패키지 30,000원 (5병)") ? "빌런,릭,디오 패키지 30,000원 (5병)" : "빌런,릭 패키지 30,000원 (5병)";
   if (!dev && vl === 6) return "빌런,릭 49,600원(6병)";
   if (!dev && vl === 12) return "빌런,릭 85,200원(12병)";
   return null;
@@ -1432,7 +1564,7 @@ function staffRes() {
 function staffRedraw() { const st = $("#sheet").scrollTop; staffView(); $("#sheet").scrollTop = st; }
 // 결제 계획: 장바구니 계산(estimate·goodsCalc)과 똑같이 나눠서 포스 묶음 상품을 고름
 const POS_BUNDLE = {
-  pr10: ["입호흡 기기 패키지 75,000원 (10병)", "입호흡 패키지 75,000원 (10병)"], pr5: ["입호흡 패키지 40,000원 (5병)"], vl5: ["빌런,릭 패키지 30,000원 (5병)"],
+  pr10: ["입호흡 기기 패키지 75,000원 (10병)", "입호흡 패키지 75,000원 (10병)"], pr5: ["입호흡 패키지 40,000원 (5병)"], vl5: ["빌런,릭,디오 패키지 30,000원 (5병)", "빌런,릭 패키지 30,000원 (5병)"],
   p11: ["프리미엄 90,000원(11병)"], p5: ["프리미엄 49,500원(5병)"], m10: ["프라임 160,000원(10병)"], m3: ["프라임 50,000원(3병)"], l3: ["폐 프리미엄 40,000원(3병)"],
 };
 const posBundle = (k) => POS_BUNDLE[k].find((n) => posOf(n)) || POS_BUNDLE[k][0];
@@ -1450,10 +1582,15 @@ function payPlan() {
   const prN = c.v + c.p - (pk ? pk[1] : 0), prSets = setsOf(prN, [[11, 90000, "p11"], [5, 49500, "p5"]], 15000), pmSets = setsOf(c.m, [[10, 160000, "m10"], [3, 50000, "m3"]], 20000);
   for (const [q, p, key, k] of [...prSets, ...pmSets]) out.push(card(key, k, `${q}병 ${won(p)}`));
   const lk = Math.floor(gc.lungN / 3); if (lk) out.push(card("l3", lk, `폐호흡 3병 ${won(ADD.lung3)}`));
+  if (false) { const nm = "", p = null;
+    out.push(`<div class="scan bundle"><div class="hd"><b>${esc(nm)}</b><span class="x">× ${gc.bulk.k}</span></div><div class="s">일회용 10+5 묶음 (15개 ${won(BULK.price)})</div>${p ? `<svg class="bc" data-v="${esc(p[1])}" data-f="${p[2]}"></svg>` : `<span class="warn">${esc(PAD.branch)} 포스에 10+5 묶음 상품이 없어요 · 포스에서 250,000원 상품을 직접 골라 주세요</span>`}</div>`); }
   for (const [k, nf] of Object.entries(gc.freeBy).filter(([k, nf]) => nf && DSP_POS[k])) { const [buy, free] = EVN[evB(k)], sets = nf / free, nm = DSP_POS[k], p = posOf(nm);
     out.push(`<div class="scan bundle"><div class="hd"><b>${esc(nm)}</b><span class="x">× ${sets}</span></div><div class="s">일회용 ${buy}+${free} 묶음</div>${p ? `<svg class="bc" data-v="${esc(p[1])}" data-f="${p[2]}"></svg>` : '<span class="warn">포스 상품을 못 찾았어요</span>'}</div>`); }
   const prSvc = (pk ? pk[1] : 0) + prSets.reduce((a, [q, , , k]) => a + q * k, 0), pmSvc = pmSets.reduce((a, [q, , , k]) => a + q * k, 0), lSvc = lk * 3;
   const liqN = c.v + c.p, notes = [];
+  const dspSvc = Object.entries(gc.freeBy).filter(([k, nf]) => nf && DSP_POS[k]).reduce((a, [k, nf]) => { const [b, f] = EVN[evB(k)]; return a + (nf / f) * (b + f); }, 0);
+  if (gc.bulk.k) notes.push(`일회용 10+5: 15개 중 가장 싼 ${gc.bulk.k * BULK.free}개 서비스(0원), 나머지 ${gc.bulk.k * BULK.buy}개 정가`);
+  if (dspSvc) notes.push(`일회용 3+1 묶음 ${dspSvc}개는 서비스(0원)`);
   if (liqN) notes.push(prSvc >= liqN ? `입호흡 액상 ${liqN}병 전부 서비스(0원)` : prSvc ? `입호흡 액상 ${liqN}병 중 ${prSvc}병 서비스(0원), ${liqN - prSvc}병은 1병 15,000원` : "");
   if (c.m) notes.push(pmSvc >= c.m ? `프라임 ${c.m}병 전부 서비스(0원)` : pmSvc ? `프라임 ${c.m}병 중 ${pmSvc}병 서비스(0원)` : "");
   if (gc.lungN) notes.push(lSvc >= gc.lungN ? `폐호흡 ${gc.lungN}병 전부 서비스(0원)` : lSvc ? `폐호흡 ${gc.lungN}병 중 ${lSvc}병 서비스(0원), ${gc.lungN - lSvc}병 정상가` : "");
@@ -1463,7 +1600,7 @@ function staffView() {
   const items = [...cart];
   const vl = items.filter(([id]) => isVL(item(id))).reduce((a, [, n]) => a + n, 0);
   const dev = cart.get(DEVICE.id) || 0;
-  const plan = payPlan();
+  const plan = payPlan(), gcB = goodsCalc().bulk;
   const step = (n, t, sub) => `<div class="stp"><i>${n}</i><div><b>${t}</b>${sub ? `<span>${sub}</span>` : ""}</div></div>`;
   const devIds = items.filter(([id]) => item(id).dev || item(id).c === "dev");
   const blockOf = ([id, n]) => {
@@ -1472,7 +1609,7 @@ function staffView() {
       : `<div class="scan"><div class="hd"><b>${MAIN.name}</b><span class="x">× ${n}</span></div><div class="s">색상을 골라야 바코드가 나와요</div><div class="colors" style="padding:10px 0 0">${DEV_COLORS.map((c) => `<button data-color2="${c}">${c}</button>`).join("")}</div></div>`;
     const svc = " · <b style='color:var(--red)'>서비스(0원)</b>";
     if (x.c === "lung") return scanBlock(x.n, "폐호흡", x.n, n, plan.lungAll ? svc : "", id);
-    if (x.c) return scanBlock(x.n, won(x.price) + (x.ev ? " · " + EVN[x.ev][2] + " 이벤트" : ""), x.n, n, "", id);
+    if (x.c) { const f = gcB.freeById[id] || 0; return scanBlock(x.n, won(x.price) + (x.ev ? " · " + evName(x.ev) + " 이벤트" : ""), x.n, n, f ? ` · <b style='color:var(--red)'>서비스(0원) ${f >= n ? "전부" : f + "개"}</b>` : "", id); }
     return scanBlock(short(x.n), [x.no ? "라벨 " + x.no + "번" : "", x.br, x.loc ? "진열 " + x.loc : ""].filter(Boolean).join(" · "), x.n, n, (x.line === "프라임" ? plan.pmAll : plan.prAll) ? svc : "", id);
   };
   const devBlocks = devIds.map(blockOf).join("");
@@ -1480,10 +1617,10 @@ function staffView() {
   const blocks = devBlocks + restBlocks;
   open(`<div class="sh">직원 확인용 · 포스 스캔</div><div style="color:var(--ink-soft);margin-top:6px;font-size:14.5px">위에서부터 차례로 찍고, 찍은 건 눌러서 체크하세요. (${esc(PAD.branch)} 포스 상품 기준)</div><div class="posw">⚠️ 찍기 전에 포스가 <b>판매 화면</b>인지 확인하세요 · 회원조회·회원등록·영수증 창이 열려 있으면 포스가 멈춰요</div>
   ${incBox()}
-  ${devBlocks ? step(1, "기기 먼저 찍기", "") + devBlocks : ""}
-  ${plan.html || (() => { const gc = goodsCalc(); return Object.entries(gc.freeBy).some(([k, nf]) => nf && DSP_POS[k]) ? "x" : ""; })() ? step(devBlocks ? 2 : 1, "묶음 상품으로 돈 받기", "이 바코드로 결제 금액이 잡혀요") + plan.html : ""}
+  ${devBlocks ? step(1, "기기 먼저 찍기", "") + `<div class="scg">${devBlocks}</div>` : ""}
+  ${plan.html || (() => { const gc = goodsCalc(); return Object.entries(gc.freeBy).some(([k, nf]) => nf && DSP_POS[k]) ? "x" : ""; })() ? step(devBlocks ? 2 : 1, "묶음 상품으로 돈 받기", "이 바코드로 결제 금액이 잡혀요") + `<div class="scg">${plan.html}</div>` : ""}
   ${restBlocks ? step(devBlocks || plan.html ? (devBlocks && plan.html ? 3 : 2) : 1, "낱개로 찍기", plan.note) : ""}
-  <div style="margin-top:6px">${restBlocks || (devBlocks ? "" : '<div style="padding:20px 0;color:var(--grey)">담은 상품이 없어요</div>')}</div>
+  <div class="scg" style="margin-top:6px">${restBlocks || (devBlocks ? "" : '<div style="padding:20px 0;color:var(--grey)">담은 상품이 없어요</div>')}</div>
   ${staffAdd ? `<div class="sadd"><div class="sadd-h"><b>상품 추가</b><button data-sadd="0">닫기</button></div><input class="in" id="sq" placeholder="이름·초성으로 찾기 (액상·팟·코일·일회용·기기)" value="${esc(staffQ)}"><div id="sqRes">${staffRes()}</div></div>` : `<button class="sadd-open" data-sadd="1">＋ 상품 추가 (액상 · 팟 · 코일 · 소모품)</button>`}
   ${(() => { const gc = goodsCalc(), fr = Object.entries(gc.freeBy).filter(([k, n]) => n && !DSP_POS[k]); const base = estimate(countCart()).liq + gc.pod + gc.lung; return (fr.length ? `<div class="scan bundle"><div class="s" style="color:var(--ink)">일회용 이벤트 무료: ${fr.map(([k, n]) => evLabel(k) + " " + n + "개").join(", ")} → 포스에서 가장 싼 것부터 서비스(0원) 처리</div></div>` : "") + (gc.giftDev ? `<div class="scan bundle"><div class="s" style="color:var(--ink)">🎁 에어릭스 팟 10개 혜택 → 에어릭스 기기 ${gc.giftDev}대 증정 (서비스 0원 처리)</div></div>` : "") + (base >= 100000 ? `<div class="scan bundle"><div class="s" style="color:var(--ink)">🎁 액상·팟 ${won(base)} → 일회용 기기 1개 증정</div></div>` : ""); })()}
   ${engrave !== null ? `<div class="scan"><div class="hd"><b>레이저 각인 (0원)</b><span class="x">× 1</span></div><div class="s">문구: ${engrave ? esc(engrave) : "손님께 확인"}</div><span class="warn">포스에 0원 각인 상품 등록 후 바코드 연결</span></div>` : ""}
@@ -1690,6 +1827,36 @@ if ("serviceWorker" in navigator && location.protocol === "https:") {
   setInterval(update, 400); update();
 })();
 
+// ── 가로판 오른쪽 담은 상품 칸 (10/13): 장바구니가 바뀔 때만 다시 그림. 금액 계산은 cartView()와 같은 식 ──
+(() => {
+  let sig = "";
+  function draw() {
+    const box = $("#side"); if (!box || getComputedStyle(box).display === "none") { sig = ""; return; }
+    const items = [...cart], s = JSON.stringify([items, review, devColor]);
+    if (s === sig) return; sig = s;
+    const n = items.reduce((a, [, q]) => a + q, 0);
+    let tot = "";
+    if (items.length) {
+      const c = countCart(), e = estimate(c), gc = goodsCalc();
+      const dspFree = Object.values(gc.saveBy).reduce((x, y) => x + y, 0);
+      const unit = c.dev * DEVICE.price + (c.v + c.p) * 15000 + c.m * 20000 + gc.total + dspFree + gc.lungSave;
+      const pay = e.total + gc.total - (review ? 3000 : 0);
+      tot = `<div class="sd-t">${unit > pay ? `<div class="r"><span>낱개로 샀을 때</span><s>${won(unit)}</s></div><div class="r off"><span>${esc(e.how ? e.how + " 할인" : "할인")}</span><b>-${won(unit - pay)}</b></div>` : ""}
+        <div class="r pay"><span>결제 예상</span><b>${pay.toLocaleString()}<small style="font-size:15px">원</small></b></div>${unit > pay ? `<div class="sv">총 ${won(unit - pay)} 할인</div>` : ""}</div>`;
+    }
+    box.innerHTML = `<div class="sd-h"><b>담은 상품</b><span>${n}</span></div>
+      <div class="sd-l">${items.map(([id, q]) => { const x = item(id); return `<div class="sd-r">${pic(x)}<div><b>${esc(short(x.n))}</b><small>${x.c ? won(x.price) : esc(x.br || "")}${x.dev && devColor ? " · " + esc(devColor) : ""}</small></div><div class="step"><button data-sdm="${id}" aria-label="빼기">−</button><span>${q}</span><button data-sdp="${id}" aria-label="더하기">+</button></div></div>`; }).join("") || '<div class="sd-e">고르신 상품이 여기에 쌓여요<br>할인 금액도 바로 계산돼요</div>'}</div>
+      ${tot}<button class="b1 ink" data-cartback="1" ${items.length ? "" : "disabled"}>혜택 확인 · 직원에게 보여주기 →</button>`;
+  }
+  document.addEventListener("click", (e) => {
+    const el = e.target.closest("[data-sdm],[data-sdp]"); if (!el) return;
+    e.stopPropagation();
+    if (el.dataset.sdm) add(el.dataset.sdm, -1); else add(el.dataset.sdp, 1);
+    draw();
+  }, true);
+  setInterval(draw, 300); addEventListener("resize", draw); draw();
+})();
+
 // ── 포스터 첫 화면 (10/7) ──
 // 실제 포스터 받으면: { img: "pst_파일이름.jpg", go: "liq:s3" } 한 줄씩 (4:5, 1080×1350). go = 구역(dev/liq/dsp) 또는 구역:칸id, "spec" = 하복2 상세
 const POSTERS = [
@@ -1705,7 +1872,7 @@ const INFO = {
     <div style="font-size:15px;color:#6f6861;margin-bottom:16px">팜팜바 또는 모스바 원하는 맛으로 15개</div>
     <div style="padding:18px 20px 16px;border-radius:20px;background:#fff0f6;box-shadow:inset 0 0 0 2px #ff3d9a">
       <div style="display:flex;align-items:baseline;gap:6px;color:#e8262c;line-height:1"><span style="font-size:18px;font-weight:800;color:#6f6861">최대</span><b class="price" style="font-size:64px;letter-spacing:-.01em">33<span style="font-size:40px">%</span></b><span style="font-size:24px;font-weight:900">할인</span></div>
-      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-top:12px;padding-top:12px;border-top:1px dashed #f3a6c8"><span style="font-size:16px;color:#6f6861">15개 한 번에 <b class="price" style="font-size:26px;color:#15120f">250,000<span style="font-size:16px">원</span></b></span><b style="font-size:20px">개당 약 16,700원</b></div>
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-top:12px;padding-top:12px;border-top:1px dashed #f3a6c8"><span style="font-size:16px;color:#6f6861">15개에 10개 값만 <b class="price" style="font-size:26px;color:#15120f">약 250,000<span style="font-size:16px">원</span></b></span><b style="font-size:20px">개당 약 16,700원</b></div>
     </div>
     <div style="display:flex;justify-content:space-between;align-items:center;margin:12px 0 10px;padding:14px 16px;border-radius:14px;background:#f4f2ef;font-size:16px"><span>낱개로 15개 사면 약 <s>375,000원</s></span><b style="color:#e8262c">12만 원 넘게 아껴요</b></div>
     <div style="margin:2px 0 16px;font-size:15px;color:#6f6861;text-align:center">10개 값에 15개, <b style="color:#15120f">2개 값에 3개</b> 가져가는 셈이에요</div>
@@ -1739,6 +1906,7 @@ function renderPosters() {
     pv.querySelector(".pcount").textContent = `${pCur + 1} / ${n}`;
   };
   const go = (k) => { pCur = (k + n) % n; place(); auto(); };
+  pv._go = (d) => go(pCur + d); pv._cur = () => pCur; // 키보드 ←→ 로 포스터 넘기기 (10/12)
   const auto = () => { clearTimeout(pTimer); if (n > 1) pTimer = setTimeout(() => { if (document.body.dataset.mode === "") go(pCur + 1); else auto(); }, P_AUTO); };
   let x0 = null, y0 = 0, dx = 0, t0 = 0, horiz = null;
   pv.addEventListener("pointerdown", (e) => { x0 = e.clientX; y0 = e.clientY; dx = 0; t0 = Date.now(); horiz = null; pMoved = false; clearTimeout(pTimer); });
@@ -1828,7 +1996,9 @@ function evDraw() {
     const xs = Array.isArray(re) ? re.map((n) => L.find((x) => x.n === n)).filter(Boolean) : L.filter((x) => x.line === "프리미엄" && re.test(x.n)).sort((a, b) => flRank(a) - flRank(b) || isOut(a) - isOut(b) || bestRank(a) - bestRank(b));
     return xs.length ? `<div class="evs"><h4>${h}<small>${sub}</small></h4><div class="evg">${xs.map(card).join("")}</div></div>` : "";
   };
-  $("#evp").innerHTML = `<button class="evx" data-evclose="1" aria-label="닫기">✕</button><div class="grab"></div><div class="eb-body">
+  $("#evp").innerHTML = `<button class="evx" data-evclose="1" aria-label="닫기">✕</button><div class="grab"></div>
+    <div class="evside">${EV.poster ? `<img src="${EV.poster}" alt="">` : ""}<div class="tt">${esc(E.t)}${EV.lung ? ` + 폐호흡 ${E.lung}병` : ""}</div><div class="pr">${E.was && !EV.lung ? `<s>${won(E.was)}</s>` : ""}${won(E.price + (EV.lung ? ADD.lung3 : 0))}</div>${E.off ? `<span class="off">${E.off}</span>` : E.sub ? `<div style="font-size:15px;color:#6f6861;margin-top:6px">${E.sub}</div>` : ""}${E.spec ? `<button class="spec" data-mainspec="1">스펙 보기</button>` : ""}</div>
+    <div class="eb-body">
     <div class="evh">${EV.poster ? `<img src="${EV.poster}" alt="">` : ""}<div><div class="tt">${esc(E.t)}${EV.lung ? ` + 폐호흡 ${E.lung}병` : ""}</div><div class="pr">${E.was && !EV.lung ? `<s>${won(E.was)}</s>` : ""}${won(E.price + (EV.lung ? ADD.lung3 : 0))}</div>${E.off ? `<span class="off">${E.off}</span>` : E.sub ? `<div style="font-size:14px;color:#6f6861;margin-top:4px">${E.sub}</div>` : ""}</div>${E.spec ? `<button class="spec" data-mainspec="1">스펙 보기</button>` : ""}</div>
     ${E.color ? `<div class="evs"><h4>① 기기 색상<small>${esc(EV.color)}</small></h4><div class="evcol">${MAIN.colors.map((c) => `<button class="${c === EV.color ? "on" : ""}" data-evcol="${c}"><img src="${MAIN.imgs?.[c] || MAIN.img}" alt="">${c}</button>`).join("")}</div></div>` : ""}
     <div class="evs" id="evLiq"><h4>${E.color ? "② " : ""}액상 ${E.n}병 고르기<small>누를 때마다 1병씩 · 맛 섞어도 돼요</small></h4>
@@ -1898,6 +2068,91 @@ document.addEventListener("input", (e) => { if (e.target.id === "evq" && EV) { E
   p.addEventListener("touchstart", (e) => { const b = p.querySelector(".eb-body"); y0 = (!b || b.scrollTop <= 0) ? e.touches[0].clientY : null; }, { passive: true });
   p.addEventListener("touchmove", (e) => { if (y0 === null) return; const dy = e.touches[0].clientY - y0; if (dy > 0) { p.style.transition = "none"; p.style.transform = `translateY(${dy}px)`; } }, { passive: true });
   p.addEventListener("touchend", (e) => { if (y0 === null) return; const dy = e.changedTouches[0].clientY - y0; p.style.transition = ""; p.style.transform = ""; y0 = null; if (dy > 120) closeEvent(); });
+})();
+// ── 키보드 조작 (10/12 시험): 터치 안 해도 직원이 키보드로 응대 ──
+// / 검색 · ↑↓←→ 화면 위치대로 이동 · Enter 누르기 · Esc 닫기/뒤로 · 첫 화면 포스터에서 ←→ 넘기기
+(() => {
+  const ATTR = /^data-(?!for$|st$|ps$|mode$|v$)/; // 누르면 동작하는 칸은 data-* 속성을 가짐 (구역 표시용 data-for 등은 제외)
+  const layer = () => { for (const s of ["#devUp.on", "#dim.on", "#evp.on", "#srch.on"]) { const el = document.querySelector(s); if (el) return el; } return document.querySelector(".app"); };
+  const shown = (el) => { const r = el.getBoundingClientRect(); if (!r.width || !r.height) return false; if (r.right < 4 || r.left > innerWidth - 4) return false; const cs = getComputedStyle(el); return cs.visibility !== "hidden" && cs.display !== "none" && !el.closest("[style*='display:none'],[style*='display: none']"); };
+  const items = () => {
+    const L = layer(), out = [];
+    L.querySelectorAll("button, a[href], input, select, textarea, .p, .scan, [data-p], [data-qa], [data-qm], [data-t], [data-l], [data-tag], [data-rec], [data-pdev], [data-pf], [data-gm], [data-gadd], [data-gpk], [data-go], [data-pkg], [data-sa], [data-qk], [data-x]").forEach((el) => {
+      if (el.disabled || !shown(el)) return;
+      if (el.matches("#pv .pp") && +el.dataset.pi !== document.getElementById("pv")._cur?.()) return; // 옆 포스터(살짝 보이는 것)는 건너뜀
+      if (!/^(BUTTON|A|INPUT|SELECT|TEXTAREA)$/.test(el.tagName) && ![...el.attributes].some((a) => ATTR.test(a.name)) && !el.matches(".scan")) return;
+      if (L === document.querySelector(".app") && el.closest(".top") && !el.matches("#homeBtn,#findBtn,#cartBtn")) return;
+      out.push(el);
+    });
+    return out;
+  };
+  let cur = null;
+  const mark = (el) => {
+    document.querySelectorAll(".kbf").forEach((x) => x !== el && x.classList.remove("kbf")); // 같은 칸은 빼지 않음 (빼면 깜빡임)
+    cur = el; if (!el) return;
+    if (getComputedStyle(el).position === "static") el.style.position = "relative"; el.classList.add("kbx", "kbf");
+    if (!/^(INPUT|SELECT|TEXTAREA)$/.test(el.tagName)) { if (!el.hasAttribute("tabindex") && el.tagName !== "BUTTON" && el.tagName !== "A") el.setAttribute("tabindex", "-1"); el.focus({ preventScroll: true }); } else el.focus();
+    // 포스터는 자체 넘김(transform)이라 scrollIntoView를 쓰면 #pv가 옆으로 밀려 버림(10/12 버그) → 세로로만 맞춤
+    const pv = document.getElementById("pv");
+    if (pv && pv.contains(el)) { pv.scrollLeft = 0; const r = pv.getBoundingClientRect(); if (r.top < 0 || r.bottom > innerHeight) scrollTo({ top: Math.max(0, scrollY + r.top - 80), behavior: "smooth" }); }
+    else el.scrollIntoView({ block: "center", inline: "nearest", behavior: "smooth" });
+  };
+  const move = (key) => {
+    const els = items(); if (!els.length) return;
+    if (!cur || !els.includes(cur) || !document.contains(cur)) {
+      const top = document.querySelector(".top")?.getBoundingClientRect().bottom || 0;
+      const pool = els.filter((e) => !e.matches("[data-x], #srchClose")); // 새 창이 열리면 닫기(✕)가 아니라 내용 첫 칸부터
+      return mark(pool.find((e) => e.getBoundingClientRect().top >= top) || pool[0] || els[0]);
+    }
+    const r = cur.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+    // 위아래: 가장 가까운 '다음 줄'을 먼저 찾고, 그 줄 안에서 가로로 가장 가까운 칸 / 좌우: 같은 줄에서 가장 가까운 칸
+    const vert = key === "ArrowDown" || key === "ArrowUp", cand = [];
+    for (const el of els) {
+      if (el === cur) continue;
+      const q = el.getBoundingClientRect(), x = q.left + q.width / 2, dx = x - cx;
+      const dy = key === "ArrowDown" ? q.top - (r.bottom - 4) : key === "ArrowUp" ? (r.top + 4) - q.bottom : (q.top + q.height / 2) - cy;
+      if (vert ? dy < 0 : !(key === "ArrowRight" ? dx > 8 : dx < -8) || Math.abs(dy) > Math.max(r.height, q.height) * 0.6) continue;
+      cand.push({ el, dx: Math.abs(dx), dy: Math.abs(dy) });
+    }
+    if (!cand.length) return;
+    let best;
+    if (vert) { const m = Math.min(...cand.map((c) => c.dy)); best = cand.filter((c) => c.dy <= m + 24).sort((a, b) => a.dx - b.dx)[0]; }
+    else best = cand.sort((a, b) => a.dx + a.dy * 3 - (b.dx + b.dy * 3))[0];
+    mark(best.el);
+  };
+  const back = () => {
+    if (document.querySelector("#devUp.on")) return $("#devUp").classList.remove("on");
+    if (document.querySelector("#dim.on")) return closeS();
+    if (document.querySelector("#evp.on")) return closeEvent();
+    if (document.querySelector("#srch.on")) return $("#srch").classList.remove("on");
+    if (document.body.dataset.mode) return $("#homeBtn").click();
+  };
+  addEventListener("keydown", (e) => {
+    if (e.ctrlKey || e.metaKey || e.altKey || e.isComposing) return;
+    const t = e.target, typing = /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName);
+    if (e.key === "Escape") { e.preventDefault(); if (typing) t.blur(); back(); cur = null; return setTimeout(() => move("ArrowDown"), 80); }
+    if (typing) { if (e.key === "ArrowDown" && t.type !== "number") { e.preventDefault(); t.blur(); cur = t; move("ArrowDown"); } return; }
+    if (e.key === "/" ) { e.preventDefault(); return openSearch(); }
+    if (e.key.startsWith("Arrow")) {
+      e.preventDefault();
+      const pv = document.getElementById("pv");
+      if (cur && cur.matches?.("#pv .pp") && (e.key === "ArrowLeft" || e.key === "ArrowRight") && pv?._go) { pv._go(e.key === "ArrowRight" ? 1 : -1); return setTimeout(() => mark(pv.querySelector(`.pp[data-pi="${pv._cur()}"]`)), 30); }
+      return move(e.key);
+    }
+    if (e.key === "Enter" || e.key === " ") {
+      if (!cur || !document.contains(cur)) { e.preventDefault(); return move("ArrowDown"); }
+      e.preventDefault();
+      const was = cur, L0 = layer(), a = [...was.attributes].find((x) => ATTR.test(x.name)), key = a ? `[${a.name}="${CSS.escape(a.value)}"]` : null; cur.click();
+      // 같은 창이 다시 그려졌으면 같은 칸을 다시 찾고, 화면이 바뀌면(창이 열리거나 닫힘) 새 화면 첫 칸으로
+      setTimeout(() => {
+        if (layer() === L0 && document.contains(was) && shown(was)) return mark(was);
+        const again = layer() === L0 && key ? [...L0.querySelectorAll(key)].find(shown) : null;
+        if (again) return mark(again);
+        cur = null; move("ArrowDown");
+      }, 120);
+    }
+  });
+  addEventListener("pointerdown", () => { document.querySelectorAll(".kbf").forEach((x) => x.classList.remove("kbf")); cur = null; }, true); // 손으로 만지면 키보드 표시 끔
 })();
 </script></body>
 </html>
