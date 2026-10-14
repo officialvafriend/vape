@@ -124,7 +124,10 @@
   }
   #s1 .best-dev .spec-hit i{display:none}
   #s1 .spec-tag{right:22%;top:34%}
-  #s1 .best-title{font-size:clamp(32px,5.5vw,45px)}
+  #s1 .best-title{font-size:clamp(32px,5.5vw,45px);line-height:1.32;letter-spacing:.01em}
+  #s1 .best-price{margin-top:30px;gap:10px 16px}
+  #s1 .best-price em{margin-top:6px}
+  #s1 .best-price small{margin-top:4px}
   #s1 .best-price b{font-size:clamp(34px,5.6vw,46px)}
   #s1 .best-sub{font-size:20px}
   .best-price{display:flex;align-items:baseline;flex-wrap:wrap;gap:6px 14px;margin-top:22px}
@@ -159,7 +162,7 @@
   #s1 .evrow .d{display:none}
   #s1 .evrow{grid-template-columns:1fr}
   #s1 .evrows,#s1 .cta{position:relative;z-index:3}
-  #s1 .cta{margin-top:14px}
+  #s1 .cta{margin-top:auto}
   .evrow{display:grid;grid-template-columns:1fr auto;align-items:center;gap:14px;padding:16px 0;border-top:1px solid rgba(255,255,255,.3)}
   .evrow:last-child{border-bottom:1px solid rgba(255,255,255,.3)}
   .evrow .t{font-family:var(--num);font-weight:800;font-size:19px}
@@ -180,7 +183,8 @@
   .row.best{background:rgba(216,31,42,.06);border-left:4px solid var(--red);padding-left:14px;margin-left:-18px}
 
   .combo{margin-top:18px;border:1px solid var(--line);padding:20px}
-  .combo .lab{display:flex;gap:6px}
+  .combo .lab{display:flex;gap:6px;align-items:center}
+  .combo .lab .badge{box-sizing:border-box;height:30px;line-height:1;display:inline-flex;align-items:center;white-space:nowrap} /* 두 배지 같은 높이, 줄바꿈으로 늘어나지 않게 */
   .badge{display:inline-block;font-family:var(--num);font-weight:800;font-size:12px;letter-spacing:.06em;padding:5px 10px;background:var(--red);color:#fff}
   .badge.line{background:none;color:var(--red);border:1.5px solid var(--red)}
   .combo h3{font-family:var(--num);font-weight:800;font-size:23px;margin-top:12px}
@@ -783,6 +787,18 @@
     .evg{grid-template-columns:repeat(5,1fr)}
     .evcol{grid-template-columns:repeat(4,1fr);max-width:620px}
   }
+  /* 첫 화면 = 하복2 색상 장면 사진(GPT, 디자인작업 261014_하복2_색상슬라이드). 사진 왼쪽은 비어 있는 어두운 자리라 글자를 바로 올림.
+     사진 자체가 배경이라 기기 사진(.best-dev img)은 숨기고, 스펙 보기 누르는 자리만 기기 위치에 남김 */
+  #s1{background:#070a10 url(dev_havok2_bg_silver.jpg) right center/cover no-repeat}
+  #s1 .hdr .eb{color:#ff8a92}
+  #s1 .best-dev img{display:none}
+  #s1 .best-dev{left:auto;right:6%;top:-40px;bottom:0;width:34%;height:auto;transform:none}
+  #s1 .best-dev .spec-hit{width:100%;height:100%;background:none}
+  #s1 .spec-tag{right:4%;top:22%}
+  @media (max-width:899px),(orientation:portrait){
+    /* 세로·좁은 화면: 사진을 아래쪽에 깔고 위는 어둡게 이어서 글자 자리 */
+    #s1{background:linear-gradient(180deg,#070a10 0%,#070a10 30%,rgba(7,10,16,0) 55%),#070a10 url(dev_havok2_bg_silver.jpg) 70% bottom/auto 62% no-repeat}
+  }
 </style>
 </head>
 <body data-mode=""><div id="testRibbon" style="position:fixed;left:0;right:0;bottom:0;z-index:99999;background:#d32f2f;color:#fff;text-align:center;font:700 13px sans-serif;padding:4px;pointer-events:none">테스트판 · 손님 상담에는 정식판을 쓰세요</div>
@@ -803,14 +819,9 @@
     <div class="hdr"><div class="n">01</div><div><div class="eb">Best Deal</div><h2>오늘 가장 큰 혜택</h2></div></div>
     <div class="best-grid"><div class="best-left">
       <div class="best-title" id="bestTitle"></div>
-      <div class="best-sub">낱개로 사는 것보다 가장 저렴한 구성이에요.<br>원하는 맛으로 10병을 골라 담으면 돼요.</div>
       <div class="best-price" id="bestPrice"></div>
       </div>
       <div class="best-dev" id="bestDev"></div></div>
-    <div class="evrows">
-      <div class="evrow"><div><div class="t">레이저 각인 무료 이벤트</div><div class="u">기기 구매 또는 액상 10병 이상 구매 시 원하는 문구를 새겨 드려요</div></div><div class="d">0원</div></div>
-      <div class="evrow"><div><div class="t">네이버 리뷰 이벤트</div><div class="u">네이버 리뷰를 남기면 할인쿠폰을 드려요</div></div></div>
-    </div>
     <button class="cta" data-pkg="max10"><span><b>추가 혜택으로 구매하러 가기</b><small>구성과 할인 금액을 한눈에 보여 드려요</small></span><span class="arr">→</span></button>
   </section>
 
@@ -820,7 +831,6 @@
       <div class="row"><div><span class="k">하복2 풀패키지</span><span class="u">기기 + 입호흡 액상 10병 + 폐호흡 프리미엄 3병</span><span class="tag" data-pk-tag="full"></span></div><div class="v"><span class="note" data-pk-note="full"></span><span class="price" data-pk="full"></span></div></div>
       <div class="row"><div><span class="k">프리미엄 기기패키지 10병</span><span class="u">기기 + 프리미엄 액상 10병 · 병당 7,500원</span><span class="tag">단품가보다 24,000원 저렴</span></div><div class="v"><span class="note" data-pk-note="pr10"></span><span class="price" data-pk="pr10"></span></div></div>
       <div class="row"><div><span class="k">프리미엄 기기패키지</span><span class="u">기기 + 프리미엄 액상 5병</span><span class="tag">단품가보다 9,500원 저렴</span></div><div class="v"><span class="note" data-pk-note="pr5"></span><span class="price" data-pk="pr5"></span></div></div>
-      <div class="row"><div><span class="k">베이프렌드 기기패키지</span><span class="u">기기 + 빌런&amp;릭 5병 · 입문자 최적가</span><span class="tag">19,500원 이득</span></div><div class="v"><span class="note" data-pk-note="vl5"></span><span class="price" data-pk="vl5"></span></div></div>
     </div>
     <div id="combos"></div>
   </section>
@@ -894,6 +904,12 @@ L.forEach((x) => { if (LABELNO[x.n]) { x.no = LABELNO[x.n]; x.lc = LABELCOL[x.n]
 // 빌런 9종은 사장님이 준 정사각 이미지로 (10/5) — 메뉴판과 같이 올라가는 파일, 나머지는 공용 img/
 const OWN_IMG = { "VF 빌런 레몬": "vl_sq_lemon.jpg", "VF 빌런 레즈애플": "vl_sq_redsapple.jpg", "VF 빌런 바나나라무네": "vl_sq_banana.jpg", "VF 빌런 보석바": "vl_sq_bosukbar.jpg", "VF 빌런 석류": "vl_sq_pomegranate.jpg", "VF 빌런 자두": "vl_sq_plum.jpg", "VF 빌런 청사과": "vl_sq_greenapple.jpg", "VF 빌런 청포도": "vl_sq_greengrape.jpg", "VF 빌런 파인애플": "vl_sq_pineapple.jpg" };
 const isrc = (x) => OWN_IMG[x.n] || IMG + x.img;
+// 기기 모델 대표 사진(배경 지운 png). 교육 DB 사진보다 먼저 씀. 원본은 (보혜)베이프렌드 제품이미지<모델>원본
+const DEV_IMG = { "하복SE": { 화이트: "dev_havokse_white.png", 블랙: "dev_havokse_black.png" } }; // 색상별이면 {색: 사진} → 하복2처럼 색 고르기
+const devImgColor = (model, x) => { const v = DEV_IMG[model]; return v && typeof v === "object" ? Object.keys(v).find((k) => x && (x.opt === k || x.n.endsWith(k))) || "" : ""; };
+const devImg = (model, x) => { const v = DEV_IMG[model]; return !v ? "" : typeof v === "string" ? v : v[devImgColor(model, x)] || Object.values(v)[0]; };
+// 팟·코일 사진(상품 이름 기준). 없으면 기기 사진으로 대신 보여 줌
+const POD_IMG = { "하복코일 0.6": "dev_havokse_coil06.png", "하복코일 0.25옴": "dev_havokse_coil025.png", "하복공팟": "dev_havokse_pod.png" };
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
 const byName = (n) => L.find((x) => x.n === n);
@@ -1172,19 +1188,18 @@ function devSpecView(model) {
     ["AS 보증", "6개월", "베이프렌드 매장 AS · 모든 기기 동일"],
   ].filter(Boolean);
   open(`<div style="font-size:13px;color:var(--grey);font-weight:700">전자담배 기기</div><div class="sh" style="margin-top:6px">${esc(model)}</div>
-    ${d?.img ? `<div class="dspec-pic"><img src="${EDU + encodeURIComponent(d.img)}" alt=""></div>` : ""}
-    <div class="cv-two"><div><b>가격</b><strong>${won(prices[0])}${prices.length > 1 ? "~" : ""}</strong><span>레이저 각인 무료</span></div><div><b>호흡 방식</b><strong>${esc(xs[0].pos)}</strong><span>${xs.length}가지 색상·옵션</span></div></div>
+    ${typeof DEV_IMG[model] === "object" ? `<div class="cv-hero"><img id="dsImg" src="${devImg(model, xs[0])}" alt=""><i class="cv-sh"></i><span class="cv-cl" id="dsCl">${esc(devImgColor(model, xs[0]))}</span></div>${`<div class="cv-colors">${xs.map((x, i) => `<button data-dsc="${x.id}" data-dsm="${esc(model)}" class="${i ? "" : "on"}"><img src="${devImg(model, x)}" alt=""><span>${esc(devImgColor(model, x) || x.opt || x.n)}</span><small style="font-size:12px;color:var(--grey)">${won(x.price)}</small></button>`).join("")}</div>`}` : DEV_IMG[model] ? `<div class="dspec-pic"><img src="${DEV_IMG[model]}" alt="" style="object-fit:contain"></div>` : d?.img ? `<div class="dspec-pic"><img src="${EDU + encodeURIComponent(d.img)}" alt=""></div>` : ""}
+    <div class="cv-two"><div><b>가격</b><strong>${won(prices[0])}${prices.length > 1 ? "~" : ""}</strong><span>레이저 각인 무료</span></div><div><b>호흡 방식</b>${/입호흡/.test(d?.o) && /(^|[^반])폐호흡/.test(d?.o) ? `<strong>입호흡 + 폐호흡</strong><span>${/코일/.test(d.f) ? "코일" : "팟"}만 바꿔 끼우면 돼요</span>` : `<strong>${esc(xs[0].pos)}</strong><span>${xs.length}가지 색상·옵션</span>`}</div></div>
     ${d?.desc ? `<div class="dspec-desc">${esc(d.desc)}</div>` : ""}
     <div class="cv-grid">${rows.map(([k, v, u]) => `<div><b>${esc(k)}</b><strong>${esc(v)}</strong>${u ? `<span>${esc(u)}</span>` : ""}</div>`).join("")}</div>
     ${!d ? '<div class="dspec-desc" style="color:var(--grey)">상세 스펙 준비 중이에요</div>' : ""}
-    <div class="sub">색상·옵션 골라 담기</div>
-    <div class="opts">${xs.map((x) => `<button data-gadd="${x.id}" data-close="1">${esc(x.opt || x.n)}<small>${won(x.price)}</small></button>`).join("")}</div>
-    ${(() => { const ps = podsFor(model); return ps.length ? `<div class="sub">전용 소모품 <small style="font-family:var(--kr);font-size:13px;color:var(--grey);font-weight:600">이 기기에 맞는 팟·코일</small></div><div class="dpods">${ps.map((p) => `<div class="dpod">${d?.img ? `<img src="${EDU + encodeURIComponent(d.img)}" alt="">` : `<span class="dpod-ph">${EMOJI.pod}</span>`}<div><b>${esc(p.n)}</b><span>${won(p.price)}${cart.get(p.id) ? ` · 담음 ${cart.get(p.id)}` : ""}</span></div><span class="pkb">${podBtns(p, ` data-re-dev="${esc(model)}"`)}</span></div>`).join("")}</div>` : ""; })()}
+    ${typeof DEV_IMG[model] === "object" ? `<div class="btns" style="margin-top:16px"><button class="b1" id="dsAdd" data-gadd="${xs[0].id}" data-close="1">이 색으로 기기 담기</button></div>` : `<div class="sub">색상·옵션 골라 담기</div>` + `<div class="opts">${xs.map((x) => `<button data-gadd="${x.id}" data-close="1">${esc(x.opt || x.n)}<small>${won(x.price)}</small></button>`).join("")}</div>`}
+    ${(() => { const ps = podsFor(model); return ps.length ? `<div class="sub">전용 소모품 <small style="font-family:var(--kr);font-size:13px;color:var(--grey);font-weight:600">이 기기에 맞는 팟·코일</small></div><div class="dpods">${ps.map((p) => `<div class="dpod">${POD_IMG[p.n] ? `<img src="${POD_IMG[p.n]}" alt="">` : d?.img ? `<img src="${EDU + encodeURIComponent(d.img)}" alt="">` : `<span class="dpod-ph">${EMOJI.pod}</span>`}<div><b>${esc(p.n)}</b><span>${won(p.price)}${cart.get(p.id) ? ` · 담음 ${cart.get(p.id)}` : ""}</span></div><span class="pkb">${podBtns(p, ` data-re-dev="${esc(model)}"`)}</span></div>`).join("")}</div>` : ""; })()}
     ${d?.tip ? `<details class="dspec-tip"><summary>직원용 팁</summary><div>${esc(d.tip).replace(/\n/g, "<br>")}</div></details>` : ""}`);
 }
 function gCard([model, xs]) {
   const prices = [...new Set(xs.map((x) => x.price))].sort((a, b) => a - b);
-  const di = model === MAIN.model ? { img: "", own: MAIN.imgs?.["블랙"] || MAIN.img } : xs[0].c === "dev" && devInfo(model);
+  const di = model === MAIN.model ? { img: "", own: MAIN.imgs?.["블랙"] || MAIN.img } : xs[0].c === "dev" && (DEV_IMG[model] ? { own: devImg(model, xs[0]) } : devInfo(model));
   return `<button class="p" data-gm="${esc(model)}"><div class="gpic">${di?.own ? `<img loading="lazy" src="${di.own}" alt="" style="object-fit:contain;background:#fff">` : di?.img ? `<img loading="lazy" src="${EDU + encodeURIComponent(di.img)}" alt="">` : xs[0].c === "dev" ? `<span class="gname">${esc(model)}</span>` : EMOJI[xs[0].c]}</div><div class="bd">${xs.length > 1 ? xs.length + "가지" : ""}</div><b>${esc(model)}</b><div class="pr">${won(prices[0])}${prices.length > 1 ? "~" : ""}</div>${xs[0].ev ? `<span class="ev">${EVN[xs[0].ev][2]}</span>` : ""}</button>`;
 }
 function renderGoods() {
@@ -1195,7 +1210,7 @@ function renderGoods() {
   $("#podFilter").innerHTML = subs.map((s) => `<button class="f ${podSub === s ? "on" : ""}" data-pf="${s}">${s}</button>`).join("");
   const allPods = G.filter((x) => x.c === "pod");
   const devCnt = (k) => allPods.filter((x) => podDevOf(x) === k).length;
-  $("#podDevs").innerHTML = [...POD_DEV.filter((d) => devCnt(d.k)), { k: "기타" }].map((d) => `<button class="pdev ${podDev === d.k ? "on" : ""}" data-pdev="${esc(d.k)}">${(() => { const di = d.k !== "기타" && devInfo(d.k), src = d.img || (di?.img ? EDU + encodeURIComponent(di.img) : ""); return src ? `<img src="${src}" alt=""><b>${esc(d.k)}</b>` : `<span class="ph">${esc(d.k)}</span>`; })()}<small>${devCnt(d.k)}종</small></button>`).join("");
+  $("#podDevs").innerHTML = [...POD_DEV.filter((d) => devCnt(d.k)), { k: "기타" }].map((d) => `<button class="pdev ${podDev === d.k ? "on" : ""}" data-pdev="${esc(d.k)}">${(() => { const di = d.k !== "기타" && devInfo(d.k), src = d.img || devImg(d.k) || (di?.img ? EDU + encodeURIComponent(di.img) : ""); return src ? `<img src="${src}" alt=""><b>${esc(d.k)}</b>` : `<span class="ph">${esc(d.k)}</span>`; })()}<small>${devCnt(d.k)}종</small></button>`).join("");
   const pods = allPods.filter((x) => (podDev ? podDevOf(x) === podDev : true) && (podDev || x.sub === podSub));
   $("#podList").innerHTML = (podDev ? `<div class="pdsel"><b>${esc(podDev)}</b> 에 맞는 팟·코일 · 소모품 <button data-pdev="${esc(podDev)}">다른 기기 고르기</button></div>` : "") + ["입호흡", "폐호흡"].map((p) => { const l = pods.filter((x) => x.pos === p); return l.length ? `<div class="grp"><div class="gh"><b>${p}</b><span>${l.length}종</span></div>${l.map((x) => `<div class="rowg"><b>${esc(x.n)}</b><span class="pr">${won(x.price)}${packOf(x) ? `<small> · 1팩 ${packOf(x)}개</small>` : ""}</span><span class="pkb">${podBtns(x)}</span></div>`).join("")}</div>` : ""; }).join("");
   const dsps = modelGroups(G.filter((x) => x.c === "dsp"));
@@ -1383,8 +1398,7 @@ function render() {
   renderMain();
   $("#combos").innerHTML = PKGS.slice(1).map((p) => `<div class="combo"><div class="lab"><span class="badge">${esc(p.badge)}</span>${p.sub ? `<span class="badge line">${esc(p.sub)}</span>` : ""}</div>
     <h3>${esc(p.name)}</h3><div class="names">${esc(p.desc)}</div>
-    <div class="items">${p.device ? devBox() : ""}${p.items.map(byName).filter(Boolean).map((x) => `<img src="${isrc(x)}" alt="">`).join("")}</div>
-    <div class="act"><button class="b1" data-pkgadd="${p.id}">이 구성 그대로 담기</button><button class="b2" data-pkg="${p.id}">자세히</button></div></div>`).join("");
+    <div class="act"><button class="b2" data-pkg="${p.id}">자세히</button></div></div>`).join("");
   
   $("#stockAt").textContent = STOCK_AT ? ` · 재고 ${STOCK_AT} 기준` : "";
   $("#recTabs").innerHTML = REC.map((x) => `<button class="taste ${rec === x.k ? "on" : ""}" data-rec="${x.k}"><b>${x.k}</b><span>${x.s}</span></button>`).join("");
@@ -1687,6 +1701,7 @@ document.addEventListener("click", (e) => {
   if ((el = q("[data-mode]")) && el.classList.contains("way")) { setMode(el.dataset.mode); return; }
   if (q("#homeBtn")) { $("#devUp").classList.remove("on"); closeS(); $("#srch").classList.remove("on"); setMode(""); return; }
   if ((el = q("[data-mainspec]"))) return mainSpecView();
+  if ((el = q("[data-dsc]"))) { const x = GMAP.get(el.dataset.dsc), m = el.dataset.dsm; $("#dsImg").src = devImg(m, x); $("#dsCl").textContent = devImgColor(m, x); $("#dsAdd").dataset.gadd = x.id; document.querySelectorAll("[data-dsc]").forEach((b) => b.classList.toggle("on", b === el)); return; }
   if ((el = q("[data-cvc]"))) { cvColor = el.dataset.cvc; $("#cvImg").src = MAIN.imgs[cvColor] || MAIN.img; $("#cvCl").textContent = cvColor; document.querySelectorAll("[data-cvc]").forEach((b) => b.classList.toggle("on", b === el)); return; }
   if ((el = q("[data-gpack]"))) { const st = $("#sheet").scrollTop; for (let i = 0; i < MAIN.podPack; i++) addGoods(el.dataset.gpack); toast(`담았어요 · ${GMAP.get(el.dataset.gpack).n} 1팩(${MAIN.podPack}개)`); renderGoods(); mainSpecView(); $("#sheet").scrollTop = st; return; }
   if ((el = q("[data-maindev]"))) { const x = G.find((y) => y.model === MAIN.model && y.opt === cvColor); if (x) addGoods(x.id); toast(`담았어요 · ${MAIN.name} ${cvColor}`); closeS(); return; }
