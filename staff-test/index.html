@@ -91,17 +91,31 @@
   .sv-row input:focus{border-color:var(--blue)} .sv-row.done input{background:var(--blue-soft);border-color:var(--blue-soft);color:var(--blue)}
   .sv-bar{position:sticky;bottom:calc(-20px - env(safe-area-inset-bottom));background:#fff;padding:12px 0 calc(4px + env(safe-area-inset-bottom));margin-top:8px}
   .pill{font-style:normal;font-weight:700;font-size:12px;padding:1px 6px;border-radius:6px}.pill.ok{background:var(--green-soft);color:var(--green)}.pill.no{background:var(--red-soft);color:var(--red)}
-  /* PC·모바일 나누기 (10/14) */
-  .flow>.pc>.card,.flow>.pc>.links{margin-bottom:12px}
-  .more{display:none;width:100%;height:50px;border-radius:14px;background:var(--card);font-weight:700;color:var(--ink2);margin-bottom:12px}
-  .less{display:none;width:100%;height:50px;border-radius:14px;background:#e5e8eb;font-weight:700;color:var(--ink2);margin-bottom:12px}
-  @media (max-width:999px){ body:not(.showall) .pc{display:none} .more{display:block} body.showall .more{display:none} body.showall .less{display:block} }
-  @media (min-width:1000px){
-    .app{max-width:1400px;padding:22px 26px 40px}
-    .flow{column-count:3;column-gap:14px}
-    .flow>*{break-inside:avoid;page-break-inside:avoid}
-    .flow .card,.flow .links,.flow .done1{break-inside:avoid}
-    .hero{display:flex;align-items:center;gap:24px}.hero>div{flex:1}
+  /* 관리자 페이지 틀 (10/14) — 폰: 아래 메뉴 / PC: 왼쪽 메뉴 + 요약 4칸 + 메뉴별 화면 */
+  .side,.phead,.pconly{display:none}
+  .mainv{padding-bottom:84px}
+  .bnav{position:fixed;left:0;right:0;bottom:0;z-index:40;background:var(--card);border-top:1px solid var(--line);display:flex;padding:6px 4px calc(6px + env(safe-area-inset-bottom))}
+  .bnav button{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 0;font-size:11px;font-weight:700;color:var(--sub)}
+  .bnav button i{font-style:normal;font-size:20px;filter:grayscale(1);opacity:.6}.bnav button.on{color:var(--ink)}.bnav button.on i{filter:none;opacity:1}
+  .kpis{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:12px}
+  .kpi{background:var(--card);border-radius:18px;padding:14px 16px;text-align:left}
+  .kpi span{display:block;font-size:13px;color:var(--sub);font-weight:700}.kpi b{display:block;font-size:22px;font-weight:800;margin-top:4px;letter-spacing:-.3px}
+  .kpi em{display:block;font-style:normal;font-size:12px;color:var(--ink2);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.kpi.red b,.kpi.red em{color:var(--red)}
+  @media (min-width:900px){
+    .app{max-width:none;padding:0}
+    .bnav,.mtop{display:none!important}
+    .shell{display:grid;grid-template-columns:236px minmax(0,1fr);min-height:100vh}
+    .side{display:flex;flex-direction:column;gap:4px;position:sticky;top:0;height:100vh;padding:28px 14px 22px;background:var(--card);border-right:1px solid var(--line)}
+    .side .logo{font-size:19px;padding:0 12px 14px}
+    .navb{display:flex;align-items:center;gap:12px;height:48px;padding:0 14px;border-radius:14px;font-size:15px;font-weight:600;color:var(--ink2);width:100%;text-align:left;text-decoration:none}
+    .navb i{font-style:normal;font-size:19px;width:24px;text-align:center}.navb:hover{background:#f2f4f6}.navb.on{background:var(--blue-soft);color:var(--blue)}
+    .sfoot{margin-top:auto;display:flex;flex-direction:column;gap:2px}.sfoot .navb{font-size:14px;height:42px}
+    .mainv{padding:28px 34px 40px;max-width:1240px;width:100%}
+    .phead{display:flex;align-items:baseline;gap:12px;margin-bottom:16px}.phead h1{font-size:26px;letter-spacing:-.5px}.phead span{color:var(--sub);font-size:14px}
+    .pconly{display:block}
+    .kpis{grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:18px}
+    .cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;align-items:start}
+    .cols.one{grid-template-columns:minmax(0,760px)}
   }
   .cash{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 10px}
   .cash label{display:block}.cash span{display:block;font-size:13px;color:var(--sub);font-weight:700;margin-top:10px}.cash .input{margin-top:4px}
@@ -116,7 +130,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.14-2";
+const VER = "10.14-3";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고·메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -169,36 +183,33 @@ async function send(body) {
 }
 const fail = (e) => toast(`못 보냈어요 (${navigator.onLine ? e.message : "인터넷 끊김"}) · 다시 눌러 주세요`);
 
+// ── 화면: 관리자 페이지 틀 (10/14) ── PC = 왼쪽 메뉴 + 위 요약 4칸 + 메뉴별 화면 / 폰 = 아래 메뉴 5개
+const VIEWS = [["home", "🏠", "오늘"], ["work", "🕘", "출퇴근·마감"], ["stock", "📦", "재고"], ["talk", "📌", "소통·요청"], ["as", "🔧", "AS"]];
+let VIEW = ls.get("vf-app-view", "home");
+if (!VIEWS.some((v) => v[0] === VIEW)) VIEW = "home";
 function render() {
   if (!B) return renderPick();
   const s = st(), sd = stockDone(), working = s.ins.filter((x) => !x.out);
   const d = new Date();
   const steps = [s.ins.length > 0, !!s.open, !!sd], done = steps.filter(Boolean).length;
-  const cSteps = [!!s.close].concat(CLOSE_OK.includes(B) ? [!!(CLOSE_SENT && CLOSE_SENT.status === "done")] : []).concat([s.ins.length > 0 && !working.length]), cDone = cSteps.filter(Boolean).length; // 오픈 끝나면 위 안내는 마감 진행으로
+  const cSteps = [!!s.close].concat(CLOSE_OK.includes(B) ? [!!(CLOSE_SENT && CLOSE_SENT.status === "done")] : []).concat([s.ins.length > 0 && !working.length]), cDone = cSteps.filter(Boolean).length;
   const title = done < 3 ? `오픈까지 ${3 - done}단계 남았어요` : cDone === cSteps.length ? "오늘 마감 완료! 수고하셨어요" : `마감까지 ${cSteps.length - cDone}단계 남았어요`;
   const heroP = done < 3 ? `오픈 ${OPEN_AT[B]} · 출근 → 오픈 체크 → 아침 재고보고` : `✅ 오픈 완료 ${s.open ? s.open.t : ""} · 마감 체크 →${CLOSE_OK.includes(B) ? " 마감 보고 →" : ""} 퇴근`;
   const heroW = done < 3 ? (done / 3) * 100 : (cDone / cSteps.length) * 100;
   const stepRow = (n, ok, name, info, btn) => `<div class="step ${ok ? "done" : ""}"><div class="num">${ok ? "✓" : n}</div><div class="tx"><b>${name}</b><span ${info.w ? 'class="w"' : ""}>${info.t}</span></div>${btn}</div>`;
-  $("#app").innerHTML = `
-    <div class="top"><div class="logo">VAFRIEND <b>직원</b></div><div class="store">${esc(ho(B))}</div><div class="date">${d.getMonth() + 1}/${d.getDate()} (${"일월화수목금토"[d.getDay()]})</div></div>
-    <div class="hero"><h1>${title}</h1><p>${heroP}</p><div class="bar"><i style="width:${heroW}%"></i></div></div>
-    <div class="flow">
-    ${done === 3 ? `<div class="card"><div class="crow" style="border-top:0"><div><b>✅ 오픈 완료 · 근무 중 ${esc(working.map((x) => x.name).join(", ") || "없음")}</b><span>출근 ${esc(s.ins.map((x) => x.name + " " + x.t + (x.out ? "~" + x.out : "")).join(" · "))} · 오픈 체크 ${s.open.t} · 재고보고 ${sd.t}</span></div><button class="act gray" data-go="in">＋ 출근</button></div></div>` : `<div class="card"><h2>오픈</h2>
+  const openCard = done === 3
+    ? `<div class="card"><div class="crow" style="border-top:0"><div><b>✅ 오픈 완료 · 근무 중 ${esc(working.map((x) => x.name).join(", ") || "없음")}</b><span>출근 ${esc(s.ins.map((x) => x.name + " " + x.t + (x.out ? "~" + x.out : "")).join(" · "))} · 오픈 체크 ${s.open.t} · 재고보고 ${sd.t}</span></div><button class="act gray" data-go="in">＋ 출근</button></div></div>`
+    : `<div class="card"><h2>오픈</h2>
       ${stepRow(1, steps[0], "출근", { t: s.ins.length ? s.ins.map((x) => `${esc(x.name)} ${x.t}${x.out ? `~${x.out}` : ""}`).join(" · ") : "아직 안 함" }, `<button class="act ${steps[0] ? "gray" : ""}" data-go="in">${steps[0] ? "추가" : "출근"}</button>`)}
       ${stepRow(2, steps[1], "오픈 체크", s.open ? { t: `${s.open.t} 완료${s.open.missed.length ? ` · 못 한 것 ${s.open.missed.length}개` : ""}`, w: s.open.missed.length } : { t: "아직 안 함" }, `<button class="act ${steps[1] ? "gray" : ""}" data-go="open">${steps[1] ? "다시" : "체크"}</button>`)}
       ${stepRow(3, steps[2], "아침 재고보고", sd ? { t: `${sd.t} 완료 · ${esc(sd.by || "")}` } : { t: "아직 안 함" }, `<a class="act ${steps[2] ? "gray" : ""}" href="${SITE}stock/?branch=${encodeURIComponent(B)}&back=${encodeURIComponent(location.pathname)}">${steps[2] ? "다시" : "하기"}</a>`)}
-    </div>`}
-    <div class="card"><h2>마감</h2>
+    </div>`;
+  const closeCard = `<div class="card"><h2>마감</h2>
       ${stepRow("🌙", !!s.close, "마감 체크", s.close ? { t: `${s.close.t} 완료${s.close.missed.length ? ` · 못 한 것 ${s.close.missed.length}개` : ""}`, w: s.close.missed.length } : { t: "아직 안 함" }, `<button class="act ${s.close ? "gray" : ""}" data-go="close">${s.close ? "다시" : "체크"}</button>`)}
       ${CLOSE_OK.includes(B) ? closeRowHtml(stepRow) : ""}
       ${stepRow("👋", s.ins.length > 0 && !working.length, "퇴근", { t: working.length ? `근무 중: ${working.map((x) => esc(x.name)).join(", ")}` : s.ins.length ? "모두 퇴근" : "출근 기록 없음" }, working.length ? `<button class="act gray" data-go="out">퇴근</button>` : "")}
-    </div>
-    ${taskCardHtml()}
-    ${surveyCardHtml()}
-    ${memoCardHtml()}
-    <div class="pc">${creqCardHtml()}</div>
-    <div class="pc">${asCardHtml()}</div>
-    <div class="pc"><div class="card"><h2>요청 보내기</h2>
+    </div>`;
+  const reqCard = `<div class="card"><h2>요청 보내기</h2>
       <div class="reqs">
         <button data-req="parcel"><b>📦 고객 택배</b><span>택배로 보내기</span></button>
         <button data-req="qk"><b>🛵 퀵 요청</b><span>재고 문의 → 결제 → 출발</span></button>
@@ -208,18 +219,42 @@ function render() {
         <button data-req="break"><b>🔧 고장</b><span>기기·매장 물건</span></button>
         <button data-req="demo"><b>🧪 시연 교체</b><span>팟·코일·액상 바꿨어요</span></button>
       </div>
-      <div class="desc" style="margin:10px 0 0">요청은 디스코드 항목별 방(🔁지점요청·🔧비품·고장 등)에 카드로 올라가요.</div>
+      <div class="desc" style="margin:10px 0 14px">요청은 디스코드 항목별 방에 카드로 올라가요.</div>
+    </div>`;
+  // 위 요약 4칸
+  let memoN = 0, creqN = 0; try { memoN = memoList().length; } catch {} try { creqN = creqList().length; } catch {}
+  const asOpen = AS.rows ? AS.rows.filter((x) => asIdx(x.r[AC.st]) < 6) : null, asLateN = asOpen ? asOpen.filter((x) => asLate(x.r)).length : 0;
+  const kpi = (go, label, val, sub, red) => `<button class="kpi ${red ? "red" : ""}" data-view="${go}"><span>${label}</span><b>${val}</b><em>${sub}</em></button>`;
+  const kpis = `<div class="kpis">
+    ${kpi("work", "지금 근무 중", working.length ? working.length + "명" : "없음", esc(working.map((x) => x.name).join(", ") || "출근 전"))}
+    ${kpi("work", done < 3 ? "오픈" : "마감", done < 3 ? `${done}/3` : `${cDone}/${cSteps.length}`, done < 3 ? "출근 → 오픈 체크 → 재고보고" : cDone === cSteps.length ? "완료" : "마감 진행 중")}
+    ${kpi("as", "진행 중 AS", asOpen ? asOpen.length + "건" : asPin() ? "…" : "코드 필요", asLateN ? `7일 넘음 ${asLateN}건` : "", asLateN)}
+    ${kpi("talk", "인수인계·고객요청", memoN + creqN + "건", `인수인계 ${memoN} · 고객요청 ${creqN}`)}
+  </div>`;
+  const body = {
+    home: `<div class="cols"><div>${done < 3 ? openCard : closeCard}${taskCardHtml()}</div><div>${memoCardHtml()}${asPin() ? asCardHtml() : ""}</div></div>`,
+    work: `<div class="cols"><div>${openCard}</div><div>${closeCard}</div></div>`,
+    stock: `<div class="cols one"><div>${surveyCardHtml()}</div></div>`,
+    talk: `<div class="cols"><div>${memoCardHtml()}${creqCardHtml()}</div><div>${reqCard}${myQuicksCard()}</div></div>`,
+    as: `<div class="cols one"><div>${asCardHtml()}</div></div>`,
+  }[VIEW];
+  const nav = VIEWS.map(([k, ic, nm]) => `<button class="navb ${k === VIEW ? "on" : ""}" data-view="${k}"><i>${ic}</i><span>${nm}</span></button>`).join("");
+  $("#app").innerHTML = `
+    <div class="shell">
+      <aside class="side"><div class="logo">VAFRIEND <b>직원</b></div><div class="store" style="margin:0 12px 18px">${esc(ho(B))}</div>${nav}
+        <div class="sfoot"><a class="navb" href="${SITE}menu/?branch=${encodeURIComponent(B)}"><i>🛍</i><span>판매용 메뉴판</span></a><button class="navb" data-go="branch"><i>🔁</i><span>지점 바꾸기</span></button></div></aside>
+      <main class="mainv">
+        <div class="top mtop"><div class="logo">VAFRIEND <b>직원</b></div><div class="store">${esc(ho(B))}</div><div class="date">${d.getMonth() + 1}/${d.getDate()} (${"일월화수목금토"[d.getDay()]})</div></div>
+        <div class="phead"><h1>${VIEWS.find((v) => v[0] === VIEW)[2]}</h1><span>${d.getMonth() + 1}월 ${d.getDate()}일 ${"일월화수목금토"[d.getDay()]}요일</span></div>
+        <div class="hero"><h1>${title}</h1><p>${heroP}</p><div class="bar"><i style="width:${heroW}%"></i></div></div>
+        ${VIEW === "home" ? kpis : `<div class="pconly">${kpis}</div>`}
+        ${body}
+        <div class="foot">테스트판 ${VER} · 기록은 지점 시트와 디스코드에 남아요 · <button data-go="branch">지점 바꾸기</button></div>
+      </main>
     </div>
-    </div>
-    <div class="pc">${myQuicksCard()}</div>
-    <div class="pc"><div class="links">
-      <a href="${SITE}menu/?branch=${encodeURIComponent(B)}">🛍 판매용 메뉴판<span>손님 상담 화면</span></a>
-    </div>
-    </div></div>
-    <button class="less" data-go="showless">▲ PC 메뉴 접기</button>
-    <button class="more" data-go="showall">PC 메뉴도 보기 · 고객요청 · AS · 마감 · 요청</button>
-    <div class="foot">테스트판 ${VER} · 기록은 디스코드 📋보고 방과 시트에도 남아요<br>다른 기기에서 한 기록도 1분 안에 같이 보여요<br><a href="${SITE}stock/?branch=${encodeURIComponent(B)}&test=1&back=${encodeURIComponent(location.pathname)}" style="color:#e5484d">🧪 재고보고 시험하기 (노션·시트 안 바뀜)</a> · <button data-go="branch">지점 바꾸기</button></div>`;
+    <nav class="bnav">${VIEWS.map(([k, ic, nm]) => `<button class="${k === VIEW ? "on" : ""}" data-view="${k}"><i>${ic}</i><span>${nm.split("·")[0]}</span></button>`).join("")}</nav>`;
 }
+
 function renderPick() {
   $("#app").innerHTML = `<div class="pick"><h1>어느 지점인가요?</h1><p>이 기기에 한 번만 고르면 돼요.</p>
     <div class="grid">${BR.map((b, i) => `<button data-b="${b}"><span>${i + 1}호</span>${b}</button>`).join("")}</div></div>`;
@@ -765,6 +800,7 @@ document.addEventListener("click", (e) => {
   if (t.dataset.b) { B = t.dataset.b; ls.set("vf-app-branch", B); return render(); }
   if (t.dataset.x !== undefined) return closeSheet();
   const go = t.dataset.go;
+  if (t.dataset.view) { VIEW = t.dataset.view; ls.set("vf-app-view", VIEW); render(); window.scrollTo(0, 0); return; }
   if (go === "showall") { document.body.classList.add("showall"); return; }
   if (go === "showless") { document.body.classList.remove("showall"); window.scrollTo({ top: 0, behavior: "smooth" }); return; }
   if (go === "aspin") return sheetAsPin();
