@@ -792,7 +792,7 @@
      기기 사진(.best-dev img)은 숨기고, 스펙 보기 누르는 자리만 기기 위치에 남김 */
   @media (orientation:landscape) and (min-width:1000px){
     #s1{background:#070a10;position:relative;isolation:isolate;container-type:inline-size}
-    #s1::before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,rgba(7,10,16,.85) 0%,rgba(7,10,16,.45) 32%,rgba(7,10,16,0) 52%),url(dev_havok2_bg_silver.jpg) right center/auto min(100%,calc((100cqw - 440px) * 1.45)) no-repeat,#070a10;animation:s1bg 1.8s cubic-bezier(.22,1,.36,1) both}
+    #s1::before{content:"";position:absolute;right:0;top:50%;height:min(100%,calc((100cqw - 440px) * 1.45));aspect-ratio:3/2;transform:translateY(-50%);z-index:-1;background:url(dev_havok2_bg_silver.jpg) center/cover no-repeat;-webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 12%,#000 88%,transparent 100%),linear-gradient(to right,transparent 0,#000 22%,#000 100%);-webkit-mask-composite:source-in;mask-image:linear-gradient(to bottom,transparent 0,#000 12%,#000 88%,transparent 100%),linear-gradient(to right,transparent 0,#000 22%,#000 100%);mask-composite:intersect;animation:s1bg 1.8s cubic-bezier(.22,1,.36,1) both}
     #s1 .hdr .eb{color:#ff8a92}
     #s1 .best-dev img{display:none}
     #s1 .best-dev{left:auto;right:6%;top:-40px;bottom:0;width:34%;height:auto;transform:none}
@@ -804,8 +804,10 @@
     #s1 .best-price s,#s1 .best-price b{animation:s1txt 1s .75s cubic-bezier(.22,1,.36,1) both}
     #s1 .best-price em,#s1 .best-price small{animation:s1txt 1s .95s cubic-bezier(.22,1,.36,1) both}
     #s1 .cta{animation:s1up .8s 1.15s cubic-bezier(.22,1,.36,1) both}
+    /* 화면에서 벗어나면 애니메이션을 꺼 두고, 다시 보이면 재생(맨 아래 IntersectionObserver가 s1off 붙였다 뗌) */
+    #s1.s1off::before,#s1.s1off .hdr,#s1.s1off .best-title,#s1.s1off .best-price *,#s1.s1off .cta,#s1.s1off .spec-tag{animation:none}
   }
-  @keyframes s1bg{from{opacity:0;transform:scale(1.07) translateX(50px);filter:blur(12px)}to{opacity:1;transform:none;filter:none}}
+  @keyframes s1bg{from{opacity:0;transform:translateY(-50%) translateX(50px) scale(1.07);filter:blur(12px)}to{opacity:1;transform:translateY(-50%);filter:none}}
   @keyframes s1txt{from{opacity:0;clip-path:inset(0 100% 0 0);transform:translateX(-18px)}to{opacity:1;clip-path:inset(0 0 0 0);transform:none}}
   @keyframes s1up{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
   @keyframes s1fade{from{opacity:0}to{opacity:1}}
@@ -815,7 +817,7 @@
 <body data-mode=""><div id="testRibbon" style="position:fixed;left:0;right:0;bottom:0;z-index:99999;background:#d32f2f;color:#fff;text-align:center;font:700 13px sans-serif;padding:4px;pointer-events:none">테스트판 · 손님 상담에는 정식판을 쓰세요</div>
 <div class="app">
   <div class="top">
-    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">테스트 v10.14-0300</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
+    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">테스트 v10.14-0400</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
     <nav class="tabs" id="tabs" style="display:none"></nav>
     <div class="flow" id="flow"><span data-st="1">① 찾는 것</span><i>›</i><span data-st="2">② 고르기</span><i>›</i><span data-st="3">③ 담은 상품</span><i>›</i><span data-st="4">④ 직원 확인</span></div>
   </div>
