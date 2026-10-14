@@ -86,7 +86,10 @@
   .seg{display:grid;grid-template-columns:repeat(30,1fr);gap:2px;margin-top:8px}
   .seg i{height:8px;border-radius:2px;background:#E5E8EB}
   .seg i.on{background:var(--ink)}
-  .kw .r2{font-size:13px;color:var(--sub);margin-top:6px}
+  .kw .r2{font-size:13px;color:var(--sub);margin-top:6px;display:flex;align-items:center}
+  .kw .r1 em.kwnew{font-style:normal;font-size:11px;font-weight:600;color:var(--navy);background:#E9ECF3;border-radius:6px;padding:2px 6px}
+  .kwdel{margin-left:auto;font-size:12px;color:var(--faint)}
+  .kwadd{display:block;width:100%;margin-top:12px;height:44px;border-radius:12px;background:#F2F4F6;color:var(--navy);font-weight:600;font-size:14px}
 
   .chg{padding:14px 0;border-top:1px solid var(--line)}
   .chg:first-of-type{border-top:0}
@@ -179,7 +182,7 @@
 <div class="dim" id="dim"><div class="sheet" id="sheet"></div></div>
 <div class="toast" id="toast"></div>
 <script>
-const VER = "10.12-1";
+const VER = "10.14-1";
 const APPS_URL = "https://script.google.com/macros/s/AKfycbyLK49pLpgbSpZ6TT47V8rezYHme0lFk_6dn_4NPvkbPINm0szww9TmuPAellcHv9Ry/exec";
 const KIND = ["대표사진", "소개글", "블로그 발행", "리뷰", "트래픽 작업", "가격표, 소식", "키워드", "기타"];
 const LINE = ["#3B4A6B", "#8A97B5", "#C3CBDB"];
@@ -239,13 +242,20 @@ async function post(body) {
   if (!APPS_URL || !key) { toast("열쇠를 먼저 넣어주세요"); return false; }
   try {
     const r = await (await fetch(APPS_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ k: key, ...body }) })).json();
-    if (!r.ok) { toast(r.error === "key" ? "열쇠가 맞지 않아요" : "저장 실패"); return false; }
+    if (!r.ok) { toast({ key: "열쇠가 맞지 않아요", dup: "이미 있는 키워드예요", max: `지점당 ${KW_MAX}개까지예요`, empty: "키워드를 적어주세요" }[r.error] || "저장 실패"); return false; }
     return true;
   } catch { toast("연결 실패, 잠시 후 다시"); return false; }
 }
 const changes = () => (R ? R.changes.map((x) => ({ row: x.row, date: x.v[1], branch: x.v[2], kind: x.v[3], text: x.v[4] })) : []);
 const todos = () => (R ? R.todos.map((x) => ({ row: x.row, week: x.v[0], branch: x.v[1], text: x.v[2], why: x.v[3], status: x.v[4] || "할 일", doneAt: x.v[5] })) : []);
 const analysis = () => (R && R.analysis ? R.analysis.map((x) => ({ wk: x.v[0], per: x.v[1], sec: x.v[2], b: x.v[3], t: x.v[4] })) : []);
+// 지점 키워드: 기본(키워드설정.json) + 앱에서 추가한 것(시트 '키워드추가' 탭). 열쇠 없으면 data.json에 이미 합쳐진 것
+const KW_MAX = 5;
+const kwAddsOf = (b) => (R && R.kwAdds ? R.kwAdds.filter((x) => x.v[1] === b).map((x) => x.v[2]) : null);
+function placeKws(br) {
+  const a = kwAddsOf(br.name);
+  return a ? [...new Set([...(br.base || br.place), ...a])].slice(0, KW_MAX) : br.place;
+}
 const lockMsg = () => ({ setup: "시트 연결 준비 중 (Apps Script 배포 후 열림)", nokey: "열쇠를 넣으면 보여요", badkey: "열쇠가 맞지 않아요", fail: "시트를 불러오지 못했어요" }[remoteErr] || "");
 function weeklyFor(name) {
   if (!R || !R.weekly || !R.weekly.length) return null;
@@ -438,7 +448,9 @@ function effect(br, c) {
   }).join("<br>");
 }
 function renderBranch() {
-  const br = D.branches.find((b) => b.name === VIEW);
+  const br0 = D.branches.find((b) => b.name === VIEW);
+  const br = { ...br0, place: placeKws(br0) };
+  const baseKw = br0.base || br0.place;
   const pNow = best(br.place.map((k) => pRank(br.name, k, LAST))), pPrev = PREV ? best(br.place.map((k) => pRank(br.name, k, PREV))) : null;
   const bk = br.blog[0], bNow = bk ? bCnt(br.name, bk, LAST) : null, bPrev = bk && PREV ? bCnt(br.name, bk, PREV) : null;
   const wNow = best(br.place.map((k) => wRank(k, LAST))), wPrev = PREV ? best(br.place.map((k) => wRank(k, PREV))) : null;
@@ -447,10 +459,15 @@ function renderBranch() {
   const kwHtml = kws.map((k) => {
     const n = bCnt(br.name, k, LAST);
     const vb = br.place.includes(k) ? vsBase(br.name, k) : null;
-    const right = br.place.includes(k) ? `플레이스 ${vb && vb.down ? `<b class="dn">${rk(pRank(br.name, k, LAST))}</b>` : rk(pRank(br.name, k, LAST))}${vb ? ` <small style="color:var(--sub)">(평소 ${vb.base}위)</small>` : ""} · 웹 ${rk(wRank(k, LAST))}` : "";
-    return `<div class="kw"><div class="r1"><b>${esc(k)}</b><span>${right}</span></div>
-      ${n != null ? `<div class="seg">${Array.from({ length: 30 }, (_, i) => `<i class="${i < n ? "on" : ""}"></i>`).join("")}</div><div class="r2">블로그 ${n} / 30${PREV && bCnt(br.name, k, PREV) != null ? ` · 어제 ${bCnt(br.name, k, PREV)}` : ""}</div>` : ""}</div>`;
+    const added = br.place.includes(k) && !baseKw.includes(k);
+    const noData = pRank(br.name, k, LAST) == null && wRank(k, LAST) == null;
+    const right = !br.place.includes(k) ? "" : added && noData ? `<small style="color:var(--sub)">내일 9시부터 순위가 나와요</small>`
+      : `플레이스 ${vb && vb.down ? `<b class="dn">${rk(pRank(br.name, k, LAST))}</b>` : rk(pRank(br.name, k, LAST))}${vb ? ` <small style="color:var(--sub)">(평소 ${vb.base}위)</small>` : ""} · 웹 ${rk(wRank(k, LAST))}`;
+    const del = added && R ? `<button class="kwdel" data-b="${esc(br.name)}" data-k="${esc(k)}" onclick="delKw(this.dataset.b,this.dataset.k)">빼기</button>` : "";
+    return `<div class="kw"><div class="r1"><b>${esc(k)}</b>${added ? `<em class="kwnew">추가</em>` : ""}<span>${right}</span></div>
+      ${n != null ? `<div class="seg">${Array.from({ length: 30 }, (_, i) => `<i class="${i < n ? "on" : ""}"></i>`).join("")}</div><div class="r2">블로그 ${n} / 30${PREV && bCnt(br.name, k, PREV) != null ? ` · 어제 ${bCnt(br.name, k, PREV)}` : ""}${del}</div>` : del ? `<div class="r2">${del}</div>` : ""}</div>`;
   }).join("");
+  const kwBtn = br.place.length < KW_MAX ? `<button class="kwadd" onclick="openKwAdd('${esc(br.name)}')">＋ 키워드 추가</button>` : "";
   const wk = weeklyFor(br.name), m = hide ? "mask" : "";
   // 주간 통계: 지표 4칸 (최근 주 숫자 + 전주 대비 + 최근 6주 막대)
   const num = (v) => { const n = parseFloat(String(v ?? "").replace(/[^\d.\-]/g, "")); return isNaN(n) ? null : n; };
@@ -479,7 +496,7 @@ function renderBranch() {
       <div class="card chartc" style="margin-bottom:0"><div class="ct">플레이스 순위 흐름<small><span class="legend">${br.place.map((k, i) => `<span><i style="background:${LINE[i % 3]}"></i>${esc(k)}</span>`).join("")}</span></small></div>
         <div class="cs">위로 갈수록 좋음 · 점선 = 바꾼 날</div>
         <div class="area">${chart(br.place.map((k, i) => ({ color: LINE[i % 3], val: (d) => { const r = pRank(br.name, k, d); return r == null ? null : n11(r); } })), chs)}</div></div>
-      <div class="card kwc"><div class="ct">키워드</div><div class="list">${kwHtml}</div></div>
+      <div class="card kwc"><div class="ct">키워드<small>${br.place.length} / ${KW_MAX}</small></div><div class="list">${kwHtml}</div>${kwBtn}</div>
     </div>
     <div class="row11">
       <div class="card"><div class="ct">바꾼 것과 그 뒤 순위<small>${chs.length ? `전체 ${chs.length}건` : ""}</small></div><div class="list">${!R ? `<div class="empty">🔒 ${lockMsg()}</div>` : chs.length ? chgList(br, chs) : `<div class="empty">아직 기록이 없어요.</div>`}</div></div>
@@ -553,6 +570,29 @@ async function saveRecord() {
 }
 async function delChange(row) { if (!confirm("이 기록을 지울까요?")) return; if (await post({ type: "delChange", row })) { toast("지웠어요"); await reload(true); } }
 async function cycleTodo(row, st) { const next = st === "할 일" ? "함" : st === "함" ? "안 함" : "할 일"; if (await post({ type: "todoStatus", row, status: next })) await reload(true); }
+
+// ── 키워드 추가 ──
+let kwBr = "";
+function openKwAdd(branch) {
+  if (!R) return toast(key ? lockMsg() : "열쇠를 먼저 넣어주세요");
+  kwBr = branch;
+  const br = D.branches.find((b) => b.name === branch), n = placeKws(br).length;
+  $("#sheet").innerHTML = `<h2>${esc(branch)} 키워드 추가</h2><p class="desc">플레이스, 웹노출, 블로그 순위를 내일 아침 9시부터 같이 재요. 지점당 ${KW_MAX}개까지 (지금 ${n}개).</p>
+    <div class="lbl">키워드</div><input class="input" id="kwIn" autocomplete="off" placeholder="예: 범어동전자담배">
+    <div class="btns"><button class="btn" onclick="closeSheet()">닫기</button><button class="btn primary" id="kwSave" onclick="saveKw()">추가</button></div>`;
+  openSheet();
+  $("#kwIn").focus();
+  $("#kwIn").addEventListener("keydown", (e) => { if (e.key === "Enter") saveKw(); });
+}
+async function saveKw() {
+  const k = $("#kwIn").value.trim();
+  if (!k) return toast("키워드를 적어주세요");
+  const br = D.branches.find((b) => b.name === kwBr);
+  $("#kwSave").disabled = true;
+  if (await post({ type: "kwAdd", branch: kwBr, keyword: k, base: br.base || br.place })) { closeSheet(); toast("추가했어요. 내일 9시부터 순위가 나와요"); await reload(true); }
+  else $("#kwSave").disabled = false;
+}
+async function delKw(branch, k) { if (!confirm(`${k} 키워드를 뺄까요? 쌓인 기록은 남아요.`)) return; if (await post({ type: "kwDel", branch, keyword: k })) { toast("뺐어요"); await reload(true); } }
 
 // ── 열쇠 ──
 function openKey() {
