@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>출근 QR 시험</title>
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+<style>
+  :root{--red:#d81f2a;--ink:#15120f;--grey:#7a746d;--line:#e6e1d8;--bg:#f5f2ec}
+  *{box-sizing:border-box;margin:0}
+  body{font-family:-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;background:var(--bg);color:var(--ink);min-height:100dvh}
+  header{background:var(--ink);color:#fff;padding:14px 16px;display:flex;align-items:center;gap:10px}
+  header b{font-size:17px} header span{font-size:12px;background:var(--red);padding:2px 8px;border-radius:99px}
+  .tabs{display:flex;gap:8px;padding:12px 16px}
+  .tabs button{flex:1;padding:14px;border-radius:12px;border:2px solid var(--line);background:#fff;font-size:16px;font-weight:800}
+  .tabs button.on{border-color:var(--ink);background:var(--ink);color:#fff}
+  main{padding:0 16px 32px;max-width:560px;margin:0 auto}
+  .card{background:#fff;border-radius:18px;padding:20px;text-align:center}
+  .sel{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:14px}
+  .sel select,.sel input{font-size:16px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#fff}
+  #qr{display:grid;place-items:center;margin:8px auto}
+  #qr svg,#qr img{width:min(78vw,360px);height:auto}
+  .code{font-size:40px;font-weight:900;letter-spacing:.15em;margin-top:8px;font-variant-numeric:tabular-nums}
+  .bar{height:8px;background:var(--line);border-radius:99px;overflow:hidden;margin:12px 0 6px}
+  .bar i{display:block;height:100%;background:var(--red);transition:width 1s linear}
+  .small{font-size:13px;color:var(--grey)}
+  video{width:100%;border-radius:14px;background:#000;aspect-ratio:3/4;object-fit:cover}
+  .btn{display:block;width:100%;padding:16px;border:0;border-radius:14px;background:var(--red);color:#fff;font-size:17px;font-weight:900;margin-top:12px}
+  .btn.gray{background:var(--ink)}
+  .res{margin-top:14px;padding:16px;border-radius:14px;font-weight:800;font-size:17px;display:none}
+  .res.ok{display:block;background:#eafaf1;color:#067a46}
+  .res.bad{display:block;background:#fdecec;color:#b3261e}
+  .row{display:flex;gap:8px;margin-top:12px} .row input{flex:1;font-size:22px;letter-spacing:.2em;text-align:center;padding:12px;border:1px solid var(--line);border-radius:12px}
+  .row button{padding:0 18px;border:0;border-radius:12px;background:var(--ink);color:#fff;font-weight:800;font-size:16px}
+  .log{margin-top:16px;text-align:left;font-size:14px}
+  .log div{padding:8px 0;border-top:1px solid var(--line)}
+  .note{margin-top:16px;font-size:12px;color:var(--grey);line-height:1.6;text-align:left}
+</style>
+</head>
+<body>
+<header><b>베이프렌드 출근 QR</b><span>시험</span></header>
+<div class="tabs"><button id="tStore" class="on">매장 화면</button><button id="tStaff">직원 출근</button></div>
+<main>
+  <div class="sel"><select id="branch"></select></div>
+  <section id="store" class="card">
+    <div id="qr"></div>
+    <div class="code" id="code">------</div>
+    <div class="bar"><i id="barI"></i></div>
+    <div class="small" id="left">30초마다 바뀌어요</div>
+  </section>
+
+  <section id="staff" class="card" style="display:none">
+    <div class="sel"><input id="who" placeholder="이름" autocomplete="name"></div>
+    <video id="cam" playsinline muted></video>
+    <button class="btn" id="camBtn">카메라로 출근 QR 찍기</button>
+    <div class="row"><input id="num" inputmode="numeric" maxlength="6" placeholder="6자리 숫자"><button id="numBtn">확인</button></div>
+    <div class="res" id="res"></div>
+    <div class="log" id="log"></div>
+    <div class="note">시험판이라 기록은 이 폰에만 남아요. 실제판은 구글 서버가 받은 시각으로 지점 시트에 적어요.<br>숫자 입력은 QR 아래 6자리 숫자를 보고 넣는 예비 방법이에요(맨 위에서 고른 지점 기준으로 확인).</div>
+  </section>
+</main>
+<script>
+// 시험용: 지점 비밀 열쇠가 이 파일 안에 있음. 실제판은 서버(Apps Script)만 열쇠를 알고, 매장 화면에는 지점 열쇠만 따로 넣는다.
+const BRANCHES = ["1호 동성로","2호 수성","3호 본점","4호 율하","5호 반월당","6호 상인","7호 광장코아","8호 현풍"];
+const SECRET = "vf-qr-test-2026";
+const STEP = 30; // 초
+const $ = (id) => document.getElementById(id);
+const enc = new TextEncoder();
+
+async function codeFor(branch, w) {
+  const key = await crypto.subtle.importKey("raw", enc.encode(SECRET + "|" + branch), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+  const sig = new Uint8Array(await crypto.subtle.sign("HMAC", key, enc.encode(String(w))));
+  const off = sig[sig.length - 1] & 15;
+  const n = ((sig[off] & 127) << 24 | sig[off + 1] << 16 | sig[off + 2] << 8 | sig[off + 3]) % 1000000;
+  return String(n).padStart(6, "0");
+}
+const win = () => Math.floor(Date.now() / 1000 / STEP);
+
+// ── 매장 화면 ──
+BRANCHES.forEach((b) => $("branch").add(new Option(b, b)));
+try { const s = localStorage.getItem("vfqr-branch"); if (s) $("branch").value = s; } catch {}
+$("branch").onchange = () => { try { localStorage.setItem("vfqr-branch", $("branch").value); } catch {} lastW = -1; tick(); };
+let lastW = -1;
+async function tick() {
+  const w = win(), left = STEP - Math.floor(Date.now() / 1000) % STEP;
+  $("barI").style.width = (left / STEP * 100) + "%";
+  $("left").textContent = `${left}초 뒤에 바뀌어요`;
+  if (w === lastW) return; lastW = w;
+  const b = $("branch").value, c = await codeFor(b, w);
+  const q = qrcode(0, "M"); q.addData(JSON.stringify({ t: "vf-in", b, w, c })); q.make();
+  $("qr").innerHTML = q.createSvgTag({ cellSize: 8, margin: 2, scalable: true });
+  $("code").textContent = c.slice(0, 3) + " " + c.slice(3);
+}
+setInterval(tick, 1000); tick();
+
+// ── 직원 출근 ──
+const used = new Set();
+async function check(b, w, c, how) {
+  const now = win();
+  if (w < now - 1 || w > now + 1) return show(false, "지난 QR이에요. 매장 화면의 지금 QR을 다시 찍어 주세요.");
+  if (used.has(b + w + c)) return show(false, "이미 쓴 QR이에요. 새 QR을 찍어 주세요.");
+  if (await codeFor(b, w) !== c) return show(false, "맞지 않는 QR이에요.");
+  used.add(b + w + c);
+  const who = $("who").value.trim() || "이름 없음";
+  try { localStorage.setItem("vfqr-who", who); } catch {}
+  const t = new Date().toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+  show(true, `✅ ${b} 출근 확인 · ${who} · ${t} (${how})`);
+  $("log").insertAdjacentHTML("afterbegin", `<div>${t} · ${b} · ${who} · ${how}</div>`);
+}
+function show(ok, msg) { const r = $("res"); r.className = "res " + (ok ? "ok" : "bad"); r.textContent = msg; if (navigator.vibrate) navigator.vibrate(ok ? 80 : [60, 60, 60]); }
+try { const s = localStorage.getItem("vfqr-who"); if (s) $("who").value = s; } catch {}
+
+let stream = null, scanning = false;
+const cv = document.createElement("canvas"), cx = cv.getContext("2d", { willReadFrequently: true });
+$("camBtn").onclick = async () => {
+  if (scanning) return stopCam();
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio: false });
+  } catch (e) { return show(false, "카메라를 열 수 없어요. 브라우저 설정에서 카메라 권한을 허용하거나, 아래에 6자리 숫자를 넣어 주세요."); }
+  $("cam").srcObject = stream; await $("cam").play(); scanning = true; $("camBtn").textContent = "카메라 끄기"; $("camBtn").classList.add("gray");
+  requestAnimationFrame(scan);
+};
+function stopCam() { scanning = false; if (stream) stream.getTracks().forEach((t) => t.stop()); $("cam").srcObject = null; $("camBtn").textContent = "카메라로 출근 QR 찍기"; $("camBtn").classList.remove("gray"); }
+function scan() {
+  if (!scanning) return;
+  const v = $("cam");
+  if (v.readyState >= 2) {
+    cv.width = v.videoWidth; cv.height = v.videoHeight; cx.drawImage(v, 0, 0);
+    const r = jsQR(cx.getImageData(0, 0, cv.width, cv.height).data, cv.width, cv.height, { inversionAttempts: "dontInvert" });
+    if (r) { try { const d = JSON.parse(r.data); if (d.t === "vf-in") { stopCam(); return check(d.b, d.w, d.c, "QR"); } } catch {} }
+  }
+  requestAnimationFrame(scan);
+}
+$("numBtn").onclick = async () => {
+  const c = $("num").value.replace(/\D/g, ""); if (c.length !== 6) return show(false, "6자리 숫자를 넣어 주세요.");
+  const b = $("branch").value, now = win();
+  for (const w of [now, now - 1]) if (await codeFor(b, w) === c) return check(b, w, c, "숫자");
+  show(false, "숫자가 맞지 않거나 시간이 지났어요.");
+};
+
+$("tStore").onclick = () => { $("store").style.display = ""; $("staff").style.display = "none"; $("tStore").classList.add("on"); $("tStaff").classList.remove("on"); stopCam(); };
+$("tStaff").onclick = () => { $("store").style.display = "none"; $("staff").style.display = ""; $("tStaff").classList.add("on"); $("tStore").classList.remove("on"); };
+</script>
+</body>
+</html>
