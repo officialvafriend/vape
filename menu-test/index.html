@@ -788,17 +788,29 @@
     .evcol{grid-template-columns:repeat(4,1fr);max-width:620px}
   }
   /* 첫 화면 = 하복2 색상 장면 사진(GPT, 디자인작업 261014_하복2_색상슬라이드). 사진 왼쪽은 비어 있는 어두운 자리라 글자를 바로 올림.
-     사진 자체가 배경이라 기기 사진(.best-dev img)은 숨기고, 스펙 보기 누르는 자리만 기기 위치에 남김 */
-  #s1{background:#070a10 url(dev_havok2_bg_silver.jpg) right center/cover no-repeat}
+     사진은 #s1::before에 깔아서 따로 움직임. 기기 사진(.best-dev img)은 숨기고, 스펙 보기 누르는 자리만 기기 위치에 남김 */
+  #s1{background:#070a10;position:relative;isolation:isolate}
+  #s1::before{content:"";position:absolute;inset:0;z-index:-1;background:url(dev_havok2_bg_silver.jpg) right center/cover no-repeat;animation:s1bg 1.8s cubic-bezier(.22,1,.36,1) both}
   #s1 .hdr .eb{color:#ff8a92}
   #s1 .best-dev img{display:none}
   #s1 .best-dev{left:auto;right:6%;top:-40px;bottom:0;width:34%;height:auto;transform:none}
   #s1 .best-dev .spec-hit{width:100%;height:100%;background:none}
-  #s1 .spec-tag{right:4%;top:22%}
+  #s1 .spec-tag{right:4%;top:22%;animation:s1fade .6s 1.6s both}
   @media (max-width:899px),(orientation:portrait){
     /* 세로·좁은 화면: 사진을 아래쪽에 깔고 위는 어둡게 이어서 글자 자리 */
-    #s1{background:linear-gradient(180deg,#070a10 0%,#070a10 30%,rgba(7,10,16,0) 55%),#070a10 url(dev_havok2_bg_silver.jpg) 70% bottom/auto 62% no-repeat}
+    #s1::before{background:linear-gradient(180deg,#070a10 0%,#070a10 30%,rgba(7,10,16,0) 55%),url(dev_havok2_bg_silver.jpg) 70% bottom/auto 62% no-repeat}
   }
+  /* 등장 애니메이션: 화면이 열릴 때마다(구역 전환 시) 다시 재생됨 */
+  #s1 .hdr{animation:s1txt .9s .15s cubic-bezier(.22,1,.36,1) both}
+  #s1 .best-title{animation:s1txt 1.1s .45s cubic-bezier(.22,1,.36,1) both}
+  #s1 .best-price s,#s1 .best-price b{animation:s1txt 1s .75s cubic-bezier(.22,1,.36,1) both}
+  #s1 .best-price em,#s1 .best-price small{animation:s1txt 1s .95s cubic-bezier(.22,1,.36,1) both}
+  #s1 .cta{animation:s1up .8s 1.15s cubic-bezier(.22,1,.36,1) both}
+  @keyframes s1bg{from{opacity:0;transform:scale(1.07) translateX(50px);filter:blur(12px)}to{opacity:1;transform:none;filter:none}}
+  @keyframes s1txt{from{opacity:0;clip-path:inset(0 100% 0 0);transform:translateX(-18px)}to{opacity:1;clip-path:inset(0 0 0 0);transform:none}}
+  @keyframes s1up{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+  @keyframes s1fade{from{opacity:0}to{opacity:1}}
+  @media (prefers-reduced-motion:reduce){#s1::before,#s1 .hdr,#s1 .best-title,#s1 .best-price *,#s1 .cta,#s1 .spec-tag{animation:none}}
 </style>
 </head>
 <body data-mode=""><div id="testRibbon" style="position:fixed;left:0;right:0;bottom:0;z-index:99999;background:#d32f2f;color:#fff;text-align:center;font:700 13px sans-serif;padding:4px;pointer-events:none">테스트판 · 손님 상담에는 정식판을 쓰세요</div>
