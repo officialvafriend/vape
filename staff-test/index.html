@@ -116,7 +116,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.14-1";
+const VER = "10.14-2";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고·메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -451,6 +451,7 @@ function closeRowHtml(stepRow) {
 function sheetClosing() {
   if (!working().length) return needIn(() => sheetClosing());
   openSheet(`<h2>💰 마감 보고</h2><div class="desc">매출·카드·이체·지출은 포스에서 자동으로 가져와요. 돈통만 세 주세요.</div>
+    <div class="desc" style="margin-top:16px"><b>마감 날짜</b> · 지난 날짜를 고르면 시트에만 나중 입력으로 남아요</div><input class="input" id="cDate" type="date" value="${todayKey()}" max="${todayKey()}" style="margin-top:6px">
     <div class="desc" style="margin-top:16px"><b>돈통</b> · 장수·개수만 넣으면 시재는 자동이에요 (없으면 비워 두세요)</div>
     <div class="cash">${CASH.map(([id, label, unit]) => `<label><span>${label}</span><input class="input" id="${id}" inputmode="numeric" placeholder="${unit}"></label>`).join("")}</div>
     <div class="cashsum" id="cSij">${cashSumHtml()}</div>
@@ -477,7 +478,7 @@ function closeConfirm() {
   box.innerHTML = `<h2>꼼꼼히 확인하셨나요?</h2><div class="desc">보내면 팀장님께 바로 보고돼요. 숫자가 맞는지 한 번 더 봐 주세요.</div>
     <div class="cashsum" style="margin-top:14px">${CASH.filter(([id]) => cashN(id)).map(([id, label, unit, w]) => `<div><span>${label} ${id === "cEtc" ? "" : cashN(id) + unit}</span><b>${(cashN(id) * w).toLocaleString()}원</b></div>`).join("") || "<div><span>돈통</span><b>0원</b></div>"}</div>
     <div class="cashsum" style="margin-top:10px">${cashSumHtml()}</div>
-    <div class="cashsum" style="margin-top:10px"><div><span>리뷰 · 각인</span><b>${v("#cRev") || 0} · ${v("#cEng") || 0}</b></div><div><span>히난충 OFF</span><b style="color:${hn ? "var(--green)" : "var(--red)"}">${hn ? "확인" : "안 함"}</b></div><div><span>자판기</span><b style="color:${vm ? "var(--green)" : "var(--red)"}">${vm ? "이상무" : "확인 안 함"}</b></div><div><span>마감 인원</span><b>${esc(working().join(", ") || "-")}</b></div></div>
+    <div class="cashsum" style="margin-top:10px"><div><span>마감 날짜</span><b>${$("#cDate").value}${$("#cDate").value !== todayKey() ? " (나중 입력 · 디스코드 안 보냄)" : ""}</b></div><div><span>리뷰 · 각인</span><b>${v("#cRev") || 0} · ${v("#cEng") || 0}</b></div><div><span>히난충 OFF</span><b style="color:${hn ? "var(--green)" : "var(--red)"}">${hn ? "확인" : "안 함"}</b></div><div><span>자판기</span><b style="color:${vm ? "var(--green)" : "var(--red)"}">${vm ? "이상무" : "확인 안 함"}</b></div><div><span>마감 인원</span><b>${esc(working().join(", ") || "-")}</b></div></div>
     <div class="btns"><button class="btn" id="closeBack">다시 고치기</button><button class="btn primary" id="okClose2">네, 보낼게요</button></div>`;
   sh.appendChild(box); sh.scrollTop = 0;
 }
@@ -488,9 +489,11 @@ async function doClosing() {
   const hn = $('[data-cck="hn"]').classList.contains("on"), vm = $('[data-cck="vm"]').classList.contains("on");
   const okb = $("#okClose2") || $("#okClose"); okb.disabled = true; okb.textContent = "보내는 중…";
   try {
-    await send({ type: "closing", n50: String(cashN("c50")), n10: String(cashN("c10")), coin: String(cashCoin()), cash: Object.fromEntries(CASH.map(([id]) => [id, cashN(id)])), rev: v("#cRev"), eng: v("#cEng"), hn, vm, by: working().join(", ") });
+    const cDay = ($("#cDate") && $("#cDate").value) || todayKey(), late = cDay !== todayKey();
+    if (!late) await send({ type: "closing", n50: String(cashN("c50")), n10: String(cashN("c10")), coin: String(cashCoin()), cash: Object.fromEntries(CASH.map(([id]) => [id, cashN(id)])), rev: v("#cRev"), eng: v("#cEng"), hn, vm, by: working().join(", ") });
     let sheetOk = "";
-    if (asPin()) { try { const r2 = await asApi({ action: "closeAdd", branch: B, by: working().join(", "), cash: Object.fromEntries(CASH.map(([id]) => [id, cashN(id)])), rev: v("#cRev"), eng: v("#cEng"), hn, vm, ua: navigator.userAgent.slice(0, 60) }); sheetOk = " · 지점 시트에 기록됨"; } catch (e2) { sheetOk = " · 시트 기록 실패(" + e2.message + ")"; } }
+    if (asPin()) { try { const r2 = await asApi({ action: "closeAdd", date: cDay, branch: B, by: working().join(", "), cash: Object.fromEntries(CASH.map(([id]) => [id, cashN(id)])), rev: v("#cRev"), eng: v("#cEng"), hn, vm, ua: navigator.userAgent.slice(0, 60) }); sheetOk = " · 지점 시트에 기록됨"; } catch (e2) { sheetOk = " · 시트 기록 실패(" + e2.message + ")"; } }
+    if (late) { closeSheet(); toast(`${cDay.slice(5).replace("-", "/")} 마감 · 시재 ${sijae().toLocaleString()}원${sheetOk || " · 매장 코드가 없어 시트에 못 남겼어요"}`); return; }
     CLOSE_SENT = { date: closeDay(), status: "wait", at: now() }; closeSheet(); render(); toast(`시재 ${sijae().toLocaleString()}원으로 보냈어요${sheetOk}`);
   } catch (e) { okb.disabled = false; okb.textContent = "다시 보내기"; fail(e); }
 }
