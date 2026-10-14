@@ -788,11 +788,11 @@
     .evcol{grid-template-columns:repeat(4,1fr);max-width:620px}
   }
   /* 첫 화면 = 하복2 색상 장면 사진(GPT, 디자인작업 261014_하복2_색상슬라이드). 가로판(울트라)에만 적용, 세로판은 원래 빨간 화면 그대로.
-     사진은 #s1::before에 깔아서 따로 움직임. 사진은 오른쪽에 붙이고, 기기 왼쪽 끝(사진 가로 54% 지점)이 글자 자리 440px 밖에 오도록 높이를 계산해서 폭이 좁아져도 기기가 글자 밑으로 안 들어가게.
+     사진은 #s1::before에 깔아서 따로 움직임. 사진은 칸을 꽉 채우고 오른쪽에 맞춤(사장님 10/14 "원래 이렇게였잖아" → 칸 채우기 방식 유지).
      기기 사진(.best-dev img)은 숨기고, 스펙 보기 누르는 자리만 기기 위치에 남김 */
   @media (orientation:landscape) and (min-width:1000px){
     #s1{background:#070a10;position:relative;isolation:isolate;container-type:inline-size}
-    #s1::before{content:"";position:absolute;right:0;top:50%;height:min(100%,calc((100cqw - 440px) * 1.45));aspect-ratio:3/2;transform:translateY(-50%);z-index:-1;background:url(dev_havok2_bg_silver.jpg) center/cover no-repeat;-webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 12%,#000 88%,transparent 100%),linear-gradient(to right,transparent 0,#000 22%,#000 100%);-webkit-mask-composite:source-in;mask-image:linear-gradient(to bottom,transparent 0,#000 12%,#000 88%,transparent 100%),linear-gradient(to right,transparent 0,#000 22%,#000 100%);mask-composite:intersect;animation:s1bg 1.8s cubic-bezier(.22,1,.36,1) both}
+    #s1::before{content:"";position:absolute;inset:0;z-index:-1;background:url(dev_havok2_bg_silver.jpg) right center/cover no-repeat;animation:s1bg 1.8s cubic-bezier(.22,1,.36,1) both}
     #s1 .hdr .eb{color:#ff8a92}
     #s1 .best-dev img{display:none}
     #s1 .best-dev{left:auto;right:6%;top:-40px;bottom:0;width:34%;height:auto;transform:none}
@@ -807,7 +807,7 @@
     /* 화면에서 벗어나면 애니메이션을 꺼 두고, 다시 보이면 재생(맨 아래 IntersectionObserver가 s1off 붙였다 뗌) */
     #s1.s1off::before,#s1.s1off .hdr,#s1.s1off .best-title,#s1.s1off .best-price *,#s1.s1off .cta,#s1.s1off .spec-tag{animation:none}
   }
-  @keyframes s1bg{from{opacity:0;transform:translateY(-50%) translateX(50px) scale(1.07);filter:blur(12px)}to{opacity:1;transform:translateY(-50%);filter:none}}
+  @keyframes s1bg{from{opacity:0;transform:scale(1.07) translateX(50px);filter:blur(12px)}to{opacity:1;transform:none;filter:none}}
   @keyframes s1txt{from{opacity:0;clip-path:inset(0 100% 0 0);transform:translateX(-18px)}to{opacity:1;clip-path:inset(0 0 0 0);transform:none}}
   @keyframes s1up{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
   @keyframes s1fade{from{opacity:0}to{opacity:1}}
@@ -817,7 +817,7 @@
 <body data-mode=""><div id="testRibbon" style="position:fixed;left:0;right:0;bottom:0;z-index:99999;background:#d32f2f;color:#fff;text-align:center;font:700 13px sans-serif;padding:4px;pointer-events:none">테스트판 · 손님 상담에는 정식판을 쓰세요</div>
 <div class="app">
   <div class="top">
-    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">테스트 v10.14-0400</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
+    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">테스트 v10.14-0500</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
     <nav class="tabs" id="tabs" style="display:none"></nav>
     <div class="flow" id="flow"><span data-st="1">① 찾는 것</span><i>›</i><span data-st="2">② 고르기</span><i>›</i><span data-st="3">③ 담은 상품</span><i>›</i><span data-st="4">④ 직원 확인</span></div>
   </div>
