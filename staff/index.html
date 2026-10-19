@@ -146,7 +146,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.19-1";
+const VER = "10.19-2";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고·메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -511,8 +511,8 @@ function closeRowHtml(stepRow) {
   return stepRow("💰", c?.status === "done", "마감 보고", info, `<button class="act ${c?.status === "done" ? "gray" : ""}" data-go="closing">${c ? "다시" : "보고"}</button>`);
 }
 // 입력 칸: [id, 이름, 필수]
-const SALES = [["pCash", "현금", 1], ["pCard", "카드", 1], ["pTr", "이체", 1], ["pEtc", "기타 (회원포인트 등)", 0]];
-const KPI_IN = [["kBills", "영수객수", 1], ["kPrem", "프리미엄 병수", 0], ["kDes", "그중 지정판매", 0], ["kDisp", "일회용 개수", 0], ["kDev", "입호흡 기기", 0], ["kValm", "그중 발맥프로", 0], ["cRev", "리뷰", 0], ["cEng", "각인", 0]];
+const SALES = [["pCash", "현금", 0], ["pCard", "카드", 0], ["pTr", "이체", 0], ["pEtc", "기타 (회원포인트 등)", 0]]; // 10/19 오후: 포스에서 자동(본사 계정), 직원 입력은 선택
+const KPI_IN = [["kBills", "영수객수", 0], ["kPrem", "프리미엄 병수", 0], ["kDes", "그중 지정판매", 0], ["kDisp", "일회용 개수", 0], ["kDev", "입호흡 기기", 0], ["kValm", "그중 발맥프로", 0], ["cRev", "리뷰", 0], ["cEng", "각인", 0]];
 const MONEY = ["pCash", "pCard", "pTr", "pEtc", "cPrep", "bankBal"];
 const numv = (id) => +(($("#" + id) && $("#" + id).value) || "").replace(/\D/g, "") || 0;
 const has = (id) => !!(($("#" + id) && $("#" + id).value) || "").replace(/\D/g, "");
@@ -521,18 +521,18 @@ function sheetClosing() {
   if (!working().length) return needIn(() => sheetClosing());
   CX = [];
   const prep = todayPrep();
-  openSheet(`<h2>💰 마감 보고</h2><div class="desc">포스 일마감 화면을 보고 숫자를 옮겨 적어 주세요. 합계, 시재, 차액은 자동이에요.</div>
+  openSheet(`<h2>💰 마감 보고</h2><div class="desc"><b>돈통만 세면 돼요.</b> 매출, 객수, 판매 개수, 준비금은 포스에서 자동으로 가져와요. 포스 일마감을 먼저 해 주세요.</div>
     <div class="desc" style="margin-top:16px"><b>마감 날짜</b> · 지난 날짜를 고르면 나중 입력으로 남아요</div><input class="input" id="cDate" type="date" value="${todayKey()}" max="${todayKey()}" style="margin-top:6px">
-    <div class="grp">매출</div><div class="cash">${SALES.map((x) => fld(x, 1)).join("")}</div><div class="cashsum" id="cSales"></div>
+    <div class="grp">매출 <small>비워두면 포스에서 자동</small></div><div class="cash">${SALES.map((x) => fld(x, 1)).join("")}</div><div class="cashsum" id="cSales"></div>
     <div class="grp">현금 지출 <small>돈통에서 나간 돈</small></div><div id="cExp"></div><button class="btn sm" data-go="expadd">＋ 지출 추가</button>
     <div class="grp">돈통</div>
-    <div class="cash"><label style="grid-column:1/-1"><span>오늘 준비금 <em class="req">*</em> <small>${prep != null ? "어제 남긴 돈, 다르면 고쳐 주세요" : "영업 시작할 때 돈통에 있던 돈"}</small></span><input class="input" id="cPrep" inputmode="numeric" placeholder="원" value="${prep != null ? prep.toLocaleString() : ""}"></label></div>
+    <div class="cash"><label style="grid-column:1/-1"><span>오늘 준비금 <small>${prep != null ? "어제 남긴 돈, 다르면 고쳐 주세요" : "비워두면 포스 준비금"}</small></span><input class="input" id="cPrep" inputmode="numeric" placeholder="원" value="${prep != null ? prep.toLocaleString() : ""}"></label></div>
     <div class="desc" style="margin-top:12px">장수, 개수만 넣으면 돼요 (없으면 비워 두세요) <em class="req">*</em></div>
     <div class="cash">${CASH.map(([id, label, unit]) => `<label><span>${label}</span><input class="input" id="${id}" inputmode="numeric" placeholder="${unit}"></label>`).join("")}</div>
     <div class="cashsum" id="cSij"></div>
     <textarea class="input" id="cWhy" rows="2" placeholder="차액이 난 이유 (예: 잔돈 5만원 바꿔 옴, 퀵비 현금 지급)" style="display:none"></textarea>
     <div class="grp">은행</div><div class="cash"><label><span>마지막 잔액</span><input class="input" id="bankBal" inputmode="numeric" placeholder="원"></label><label><span>마지막 입금자</span><input class="input" id="bankName" maxlength="20" placeholder="이름"></label></div>
-    <div class="grp">판매</div><div class="cash">${KPI_IN.map((x) => fld(x, 0)).join("")}</div><div class="kpig" id="cKpi"></div>
+    <div class="grp">판매 <small>비워두면 포스에서 자동</small></div><div class="cash">${KPI_IN.map((x) => fld(x, 0)).join("")}</div><div class="kpig" id="cKpi"></div>
     <div class="grp">확인</div><button class="check" data-cck="hn"><i>✓</i>히난충 OFF 확인</button><button class="check" data-cck="vm"><i>✓</i>자판기 이상무</button>
     <div class="desc" style="margin-top:8px">마감 인원: ${esc(working().join(", "))}</div>
     <div class="sv-bar"><div class="btns" style="margin:0"><button class="btn" data-x>취소</button><button class="btn primary" id="okClose">보고 보내기</button></div></div>`);
@@ -550,13 +550,13 @@ function closeCalc() {
   const drawer = cashTotal(), sij = sijae(), exp = expSum(), ok = has("cPrep") && drawer > 0 && has("pCash");
   const diff = ok ? drawer - (numv("cPrep") + numv("pCash") - exp) : null;
   $("#cSij").innerHTML = `<div><span>돈통 합계</span><b>${drawer.toLocaleString()}원</b></div><div class="hi"><span>시재 (자동)</span><b>${sij.toLocaleString()}원</b></div><div><span>내일 준비금</span><b>${(drawer - sij).toLocaleString()}원</b></div>
-    <div class="diff ${diff == null ? "" : diff ? "bad" : "good"}"><span>현금 차액</span><b>${diff == null ? "준비금, 현금, 돈통을 넣으면 계산돼요" : (diff > 0 ? "+" : "") + diff.toLocaleString() + "원"}</b></div>
+    <div class="diff ${diff == null ? "" : diff ? "bad" : "good"}"><span>현금 차액</span><b>${diff == null ? "보내면 포스 숫자로 계산돼요" : (diff > 0 ? "+" : "") + diff.toLocaleString() + "원"}</b></div>
     <p>준비금 + 현금매출 − 지출 = 돈통이어야 해요 · 만원권 10장은 내일 준비금으로 남겨요</p>`;
   $("#cWhy").style.display = diff ? "" : "none";
   const b = numv("kBills"), pr = (a, c) => (c ? Math.round((a / c) * 1000) / 10 + "%" : "-");
   $("#cKpi").innerHTML = [["객단가", b ? Math.round(sales / b).toLocaleString() + "원" : "-"], ["객당 프리미엄", b ? (Math.round((numv("kPrem") / b) * 10) / 10) + "병" : "-"], ["지정판매율", pr(numv("kDes"), numv("kPrem"))],
     ["일회용판매율", pr(numv("kDisp"), b)], ["발맥프로율", pr(numv("kValm"), numv("kDev"))], ["리뷰율", pr(numv("cRev"), b)]].map(([k, v]) => `<div><span>${k}</span><b>${v}</b></div>`).join("");
-  const left = [...SALES, ...KPI_IN].filter(([id, , r]) => r && !has(id)).length + (has("cPrep") ? 0 : 1) + (drawer ? 0 : 1) + (diff && !($("#cWhy").value || "").trim() ? 1 : 0);
+  const left = [...SALES, ...KPI_IN].filter(([id, , r]) => r && !has(id)).length + (drawer ? 0 : 1) + (diff && !($("#cWhy").value || "").trim() ? 1 : 0);
   const okb = $("#okClose"); if (okb) { okb.disabled = !!left; okb.textContent = left ? `${left}칸 남음` : "보고 보내기"; }
   return { sales, drawer, sij, exp, diff };
 }
@@ -568,11 +568,11 @@ function closeConfirm() {
   [...sh.children].forEach((el) => { if (!el.classList.contains("cconf")) el.style.display = "none"; });
   const box = document.createElement("div"); box.className = "cconf";
   box.innerHTML = `<h2>꼼꼼히 확인하셨나요?</h2><div class="desc">보내면 팀장님께 바로 보고돼요. 포스 화면과 숫자가 같은지 한 번 더 봐 주세요.</div>
-    <div class="cashsum" style="margin-top:14px">${SALES.map(([id, l]) => `<div><span>${l}</span><b>${w(numv(id))}</b></div>`).join("")}<div class="hi"><span>총매출</span><b>${w(k.sales)}</b></div></div>
-    <div class="cashsum" style="margin-top:10px"><div><span>오늘 준비금</span><b>${w(numv("cPrep"))}</b></div><div><span>현금 지출 ${CX.filter((x) => x.a).length}건</span><b>${w(k.exp)}</b></div><div><span>돈통 합계</span><b>${w(k.drawer)}</b></div><div class="hi"><span>시재</span><b>${w(k.sij)}</b></div><div><span>내일 준비금</span><b>${w(k.drawer - k.sij)}</b></div>
-      <div class="diff ${k.diff ? "bad" : "good"}"><span>현금 차액</span><b>${(k.diff > 0 ? "+" : "") + w(k.diff)}</b></div>${k.diff ? `<p>사유: ${esc($("#cWhy").value.trim())}</p>` : ""}</div>
+    <div class="cashsum" style="margin-top:14px">${SALES.map(([id, l]) => `<div><span>${l}</span><b>${has(id) ? w(numv(id)) : "포스 자동"}</b></div>`).join("")}<div class="hi"><span>총매출</span><b>${k.sales ? w(k.sales) : "포스 자동"}</b></div></div>
+    <div class="cashsum" style="margin-top:10px"><div><span>오늘 준비금</span><b>${has("cPrep") ? w(numv("cPrep")) : "포스 자동"}</b></div><div><span>현금 지출 ${CX.filter((x) => x.a).length}건</span><b>${w(k.exp)}</b></div><div><span>돈통 합계</span><b>${w(k.drawer)}</b></div><div class="hi"><span>시재</span><b>${w(k.sij)}</b></div><div><span>내일 준비금</span><b>${w(k.drawer - k.sij)}</b></div>
+      <div class="diff ${k.diff == null ? "" : k.diff ? "bad" : "good"}"><span>현금 차액</span><b>${k.diff == null ? "보내면 포스 숫자로 계산돼요" : (k.diff > 0 ? "+" : "") + w(k.diff)}</b></div>${k.diff ? `<p>사유: ${esc($("#cWhy").value.trim())}</p>` : ""}</div>
     <div class="cashsum" style="margin-top:10px"><div><span>마감 날짜</span><b>${$("#cDate").value}${$("#cDate").value !== todayKey() ? " (나중 입력)" : ""}</b></div><div><span>은행 잔액</span><b>${has("bankBal") ? w(numv("bankBal")) + " · " + esc($("#bankName").value.trim()) : "-"}</b></div>
-      <div><span>영수객수 · 객단가</span><b>${v("kBills")}건 · ${numv("kBills") ? w(Math.round(k.sales / numv("kBills"))) : "-"}</b></div><div><span>프리미엄 · 지정</span><b>${v("kPrem") || 0} · ${v("kDes") || 0}</b></div><div><span>일회용 · 입호흡 · 발맥</span><b>${v("kDisp") || 0} · ${v("kDev") || 0} · ${v("kValm") || 0}</b></div><div><span>리뷰 · 각인</span><b>${v("cRev") || 0} · ${v("cEng") || 0}</b></div>
+      <div><span>영수객수 · 객단가</span><b>${has("kBills") ? `${v("kBills")}건 · ${k.sales ? w(Math.round(k.sales / numv("kBills"))) : "-"}` : "포스 자동"}</b></div><div><span>프리미엄 · 지정</span><b>${v("kPrem") || 0} · ${v("kDes") || 0}</b></div><div><span>일회용 · 입호흡 · 발맥</span><b>${v("kDisp") || 0} · ${v("kDev") || 0} · ${v("kValm") || 0}</b></div><div><span>리뷰 · 각인</span><b>${v("cRev") || 0} · ${v("cEng") || 0}</b></div>
       <div><span>히난충 OFF</span><b style="color:${hn ? "var(--green)" : "var(--red)"}">${hn ? "확인" : "안 함"}</b></div><div><span>자판기</span><b style="color:${vm ? "var(--green)" : "var(--red)"}">${vm ? "이상무" : "확인 안 함"}</b></div><div><span>마감 인원</span><b>${esc(working().join(", ") || "-")}</b></div></div>
     <div class="btns"><button class="btn" id="closeBack">다시 고치기</button><button class="btn primary" id="okClose2">네, 보낼게요</button></div>`;
   sh.appendChild(box); sh.scrollTop = 0;
