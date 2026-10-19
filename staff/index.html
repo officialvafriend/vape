@@ -150,7 +150,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.19-8";
+const VER = "10.19-10";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -175,10 +175,12 @@ const ho = (b) => `${BR.indexOf(b) + 1}호 ${b}`;
 function toast(m) { const t = $("#toast"); t.textContent = m; t.classList.add("on"); clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove("on"), 2600); }
 
 const qs = new URLSearchParams(location.search);
+// 10/19 시험 모드(?test=1): 신호에 test 표시 → 봇이 시험_ 탭에만 기록, 디스코드 알림 없음. 이 기기 기록도 따로
+const TEST = qs.get("test") === "1";
 // ?pick=1 이면 저장된 지점이 있어도 지점 고르기 화면부터 (드라이브 링크용)
 let B = qs.has("pick") ? null : BR.includes(qs.get("branch")) ? qs.get("branch") : ls.get("vf-app-branch", null);
 if (B) ls.set("vf-app-branch", B);
-const dayKey = () => `vf-app-${B}-${todayKey()}`;
+const dayKey = () => `vf-app-${TEST ? "test-" : ""}${B}-${todayKey()}`;
 // 이 기기 기록 + 봇이 올린 오늘 현황(today.json)을 합쳐서 보여줌 — 다른 기기, 브라우저에서 한 것도 보이게 (10/5)
 let SRV = null;
 const st = () => {
@@ -197,10 +199,10 @@ async function loadToday() {
 }
 const saveSt = (s) => ls.set(dayKey(), s);
 // 재고보고는 재고보고 페이지(stock)가 이 기기에 남긴 기록으로 확인
-const stockDone = () => { const x = ls.get(`vf-stock-${B}-last`, null); if (!x?.at) return SRV?.stock || null; const d = new Date(x.at); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}` === todayKey() ? { t: `${pad(d.getHours())}:${pad(d.getMinutes())}`, by: x.by } : SRV?.stock || null; };
+const stockDone = () => { const x = ls.get(`vf-stock-${B}-${TEST ? "testlast" : "last"}`, null); if (TEST) { if (!x?.at) return null; const d0 = new Date(x.at); return `${d0.getFullYear()}-${pad(d0.getMonth() + 1)}-${pad(d0.getDate())}` === todayKey() ? { t: `${pad(d0.getHours())}:${pad(d0.getMinutes())}`, by: x.by } : null; } if (!x?.at) return SRV?.stock || null; const d = new Date(x.at); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}` === todayKey() ? { t: `${pad(d.getHours())}:${pad(d.getMinutes())}`, by: x.by } : SRV?.stock || null; };
 
 async function send(body) {
-  const r = await fetch(HOOK, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ content: JSON.stringify({ ...body, branch: B, ver: VER }), allowed_mentions: { parse: [] } }) });
+  const r = await fetch(HOOK, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ content: JSON.stringify({ ...body, branch: B, ver: VER, ...(TEST ? { test: true } : {}) }), allowed_mentions: { parse: [] } }) });
   if (!r.ok) throw new Error("응답 " + r.status);
 }
 const fail = (e) => toast(`못 보냈어요 (${navigator.onLine ? e.message : "인터넷 끊김"}), 다시 눌러 주세요`);
@@ -216,10 +218,10 @@ function render() {
   if (!B) return renderPick();
   const s = st(), sd = stockDone(), working = s.ins.filter((x) => !x.out);
   const d = new Date();
-  const steps = [s.ins.length > 0, !!s.open], done = steps.filter(Boolean).length, N = steps.length; // 10/19 재고는 포스에서 직접 조정 → 오픈은 출근, 오픈 체크 두 단계
+  const steps = [s.ins.length > 0, !!s.open, !!sd], done = steps.filter(Boolean).length, N = steps.length; // 10/19 밤 사장님: 오픈 = 출근, 오픈 체크, 아침 재고보고(폰으로)
   const cSteps = [!!s.close].concat(CLOSE_OK.includes(B) ? [!!(CLOSE_SENT && CLOSE_SENT.status === "done")] : []).concat([s.ins.length > 0 && !working.length]), cDone = cSteps.filter(Boolean).length;
   const title = done < N ? `오픈까지 ${N - done}단계 남았어요` : cDone === cSteps.length ? "오늘 마감 완료! 수고하셨어요" : `마감까지 ${cSteps.length - cDone}단계 남았어요`;
-  const heroP = done < N ? `오픈 ${OPEN_AT[B]}, 출근 → 오픈 체크` : `✅ 오픈 완료 ${s.open ? s.open.t : ""}, 마감 체크 →${CLOSE_OK.includes(B) ? " 마감 보고 →" : ""} 퇴근`;
+  const heroP = done < N ? `오픈 ${OPEN_AT[B]}, 출근 → 오픈 체크 → 재고보고` : `✅ 오픈 완료 ${s.open ? s.open.t : ""}, 마감 체크 →${CLOSE_OK.includes(B) ? " 마감 보고 →" : ""} 퇴근`;
   const heroW = done < N ? (done / N) * 100 : (cDone / cSteps.length) * 100;
   const stepRow = (n, ok, name, info, btn) => `<div class="step ${ok ? "done" : ""}"><div class="num">${ok ? "✓" : n}</div><div class="tx"><b>${name}</b><span ${info.w ? 'class="w"' : ""}>${info.t}</span></div>${btn}</div>`;
   const openCard = done === N
@@ -228,6 +230,7 @@ function render() {
     : `<div class="card"><h2>오픈</h2>
       ${stepRow(1, steps[0], "출근", { t: s.ins.length ? s.ins.map((x) => `${esc(x.name)} ${x.t}${x.out ? `~${x.out}` : ""}`).join(", ") : "아직 안 함" }, `<button class="act ${steps[0] ? "gray" : ""}" data-go="in">${steps[0] ? "추가" : "출근"}</button>`)}
       ${stepRow(2, steps[1], "오픈 체크", s.open ? { t: `${s.open.t} 완료${lateMin(s.open.t) ? `, ${lateMin(s.open.t)}분 늦음` : ""}${s.open.missed.length ? `, 못 한 것 ${s.open.missed.length}개` : ""}`, w: s.open.missed.length || lateMin(s.open.t) } : { t: lateMin(now()) ? `오픈 ${OPEN_AT[B]}, 벌써 ${lateMin(now())}분 지났어요` : "아직 안 함", w: lateMin(now()) }, `<button class="act ${steps[1] ? "gray" : ""}" data-go="open">${steps[1] ? "다시" : "체크"}</button>`)}
+      ${stepRow(3, steps[2], "아침 재고보고", sd ? { t: `${sd.t} 완료, ${esc(sd.by || "")}` } : { t: "포스 재고가 미리 들어가 있어요" }, `<a class="act ${steps[2] ? "gray" : ""}" href="${SITE}stock/?branch=${encodeURIComponent(B)}${TEST ? "&test=1" : ""}&by=${encodeURIComponent(working.map((x) => x.name).join(", "))}&back=${encodeURIComponent(location.pathname)}">${steps[2] ? "다시" : "하기"}</a>`)}
     </div>`;
   const closeCard = `<div class="card"><h2>마감</h2>
       ${stepRow("🌙", !!s.close, "마감 체크", s.close ? { t: `${s.close.t} 완료${s.close.missed.length ? `, 못 한 것 ${s.close.missed.length}개` : ""}`, w: s.close.missed.length } : { t: "아직 안 함" }, `<button class="act ${s.close ? "gray" : ""}" data-go="close">${s.close ? "다시" : "체크"}</button>`)}
@@ -271,7 +274,7 @@ function render() {
       <main class="mainv">
         <div class="top mtop"><div class="logo">VAFRIEND <b>직원</b></div><div class="store">${esc(ho(B))}</div><div class="date">${d.getMonth() + 1}/${d.getDate()} (${"일월화수목금토"[d.getDay()]})</div></div>
         <div class="phead"><h1>${VIEWS.find((v) => v[0] === VIEW)[2]}</h1><span>${d.getMonth() + 1}월 ${d.getDate()}일 ${"일월화수목금토"[d.getDay()]}요일</span></div>
-        <div class="hero"><h1>${title}</h1><p>${heroP}</p><div class="bar"><i style="width:${heroW}%"></i></div></div>
+        <div class="hero"${TEST ? ' style="background:#7a2e0e"' : ""}>${TEST ? '<p style="color:#ffd7a8;font-weight:800;margin-bottom:6px">🧪 시험 모드: 진짜 기록에 안 섞여요</p>' : ""}<h1>${title}</h1><p>${heroP}</p><div class="bar"><i style="width:${heroW}%"></i></div></div>
         ${ONLY_OPEN_CLOSE ? "" : VIEW === "home" ? kpis : `<div class="pconly">${kpis}</div>`}
         ${body}
         <div class="foot">버전 ${VER}, 기록은 지점 시트에 남아요${ONLY_OPEN_CLOSE ? "" : `, <button data-go="branch">지점 바꾸기</button>`}</div>
@@ -469,7 +472,7 @@ function svNames(cat) {
 function surveyCardHtml() {
   const mine = BOARD?.surveys || [], st = { wait: "승인 기다리는 중", reject: "반려됨, 다시 세 주세요", done: "포스 반영 완료" };
   return `<div class="card"><h2>📦 재고</h2>${mine.map((v) => `<div class="crow"><div><b>${esc(v.cat)} ${v.n}개</b><span>${esc(v.by)}, ${v.d.slice(5).replace("-", "/")} ${v.t}</span><em style="${v.status === "reject" ? "color:var(--red)" : ""}">${st[v.status] || ""}</em></div></div>`).join("")}
-    <div class="links" style="margin:6px 0 14px"><button class="tile" data-go="survey">🗂 재고조사<span>카테고리 골라서 세기</span></button><a class="tile" href="${SITE}stock/?branch=${encodeURIComponent(B)}&by=${encodeURIComponent(working().join(", "))}&back=${encodeURIComponent(location.pathname)}">📦 재고보고<span>팟, 코일, 기기 개수</span></a></div></div>`;
+    <div class="links" style="margin:6px 0 14px"><button class="tile" data-go="survey">🗂 재고조사<span>카테고리 골라서 세기</span></button><a class="tile" href="${SITE}stock/?branch=${encodeURIComponent(B)}${TEST ? "&test=1" : ""}&by=${encodeURIComponent(working().join(", "))}&back=${encodeURIComponent(location.pathname)}">📦 재고보고<span>팟, 코일, 기기 개수</span></a></div></div>`;
 }
 async function sheetSurvey() {
   if (!working().length) return needIn(() => sheetSurvey());
@@ -505,7 +508,7 @@ const CLOSE_OK = BR;
 let CLOSE_SENT = null, CX = [];
 const closeDay = () => { const d = new Date(); if (d.getHours() < 5) d.setDate(d.getDate() - 1); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; };
 // 오늘 준비금 = 오픈 때 확인한 금액 → 없으면 전날 마감의 '내일 준비금'(봇 board.json 또는 이 기기 기록)
-const nextKey = () => `vf-app-${B}-next`;
+const nextKey = () => `vf-app-${TEST ? "test-" : ""}${B}-next`;
 function prevNext() {
   const c = BOARD?.closing, mine = ls.get(nextKey(), null), day = closeDay();
   // 10/19 기준 순서: ① 포스에 입력된 오늘 개점준비금(BOARD.posNext, 전날 마감한 사람이 넣음) ② 직원앱 어제 마감의 내일 준비금 ③ 이 기기 기록
@@ -602,7 +605,7 @@ async function doClosing() {
     await send({ type: "closing", v: 2, date: cDay, nums: { cash: numv("pCash"), card: numv("pCard"), tr: numv("pTr"), etc: numv("pEtc") }, exp, prep: numv("cPrep"), cash, why: ($("#cWhy").value || "").trim().slice(0, 80),
       bank: has("bankBal") ? { bal: numv("bankBal"), name: ($("#bankName").value || "").trim().slice(0, 20) } : null, kpi, rev: v("cRev"), eng: v("cEng"), hn, vm, by });
     let sheetOk = "";
-    if (asPin()) { try { await asApi({ action: "closeAdd", date: cDay, branch: B, by, cash, rev: v("cRev"), eng: v("cEng"), hn, vm, ua: navigator.userAgent.slice(0, 60), sales: { 현금: numv("pCash"), 카드: numv("pCard"), 이체: numv("pTr"), 기타: numv("pEtc") }, exp: k.exp, diff: k.diff, bills: kpi.bills }); sheetOk = ", 지점 시트에도 기록"; } catch (e2) { sheetOk = ", 지점 시트 기록 실패(" + e2.message + ")"; } }
+    if (asPin() && !TEST) { try { await asApi({ action: "closeAdd", date: cDay, branch: B, by, cash, rev: v("cRev"), eng: v("cEng"), hn, vm, ua: navigator.userAgent.slice(0, 60), sales: { 현금: numv("pCash"), 카드: numv("pCard"), 이체: numv("pTr"), 기타: numv("pEtc") }, exp: k.exp, diff: k.diff, bills: kpi.bills }); sheetOk = ", 지점 시트에도 기록"; } catch (e2) { sheetOk = ", 지점 시트 기록 실패(" + e2.message + ")"; } }
     ls.set(nextKey(), { d: cDay, v: k.drawer - k.sij });
     if (cDay === closeDay()) CLOSE_SENT = { date: cDay, status: "done", at: now(), by, warn: k.diff ? [`돈통 차액 ${(k.diff > 0 ? "+" : "") + k.diff.toLocaleString()}원`] : [] };
     closeSheet(); render(); toast(`${cDay === todayKey() ? "" : cDay.slice(5).replace("-", "/") + " "}마감 보고를 보냈어요, 시재 ${k.sij.toLocaleString()}원${sheetOk}`);
