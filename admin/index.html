@@ -117,6 +117,21 @@
 .embar{display:flex;gap:6px;overflow-x:auto;padding:10px 14px;background:var(--card);border-bottom:1px solid var(--line2);flex:none}
 .embar .chip{flex:none;padding:8px 12px;border-radius:10px;background:var(--bg);font-weight:600;font-size:14px;color:var(--ink2)}
 .embar .chip.on{background:var(--blue);color:#fff}
+/* 10/19 홈 정리: 확인할 것 줄 52px, 빨간 점 */
+.item.iss{min-height:52px}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--red);flex:none;margin:0 4px}
+.dot.ok{background:var(--green)}
+.ops tr.tot td{border-top:1px solid var(--line2);background:var(--press)}
+/* 폰: 표 대신 지점마다 카드 (지점 이름 한 줄 + 칸 3열) */
+@media (max-width:899px){
+  .ops{min-width:0;display:block}.ops thead{display:none}.ops tbody{display:block}
+  .ops tr{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px 10px;padding:12px 16px;border-bottom:1px solid var(--line)}
+  .ops td{border:0;padding:0;text-align:left;white-space:normal}.ops td:first-child{grid-column:1/-1;font-size:15px}
+  .ops td:empty{display:none}
+  .ops td:nth-child(n+2)::before{display:block;font-size:11px;color:var(--sub);font-weight:500}
+  .ops td:nth-child(2)::before{content:"오픈"}.ops td:nth-child(3)::before{content:"마감"}.ops td:nth-child(4)::before{content:"총매출"}
+  .ops td:nth-child(5)::before{content:"현금 차액"}.ops td:nth-child(6)::before{content:"객수"}.ops td:nth-child(7)::before{content:"지정판매율"}.ops td:nth-child(8)::before{content:"리뷰"}
+}
 /* 10/19 지점 한눈에: 8지점 × 7칸 표, 안 한 것 회색 / 늦음·차액 빨강 / 정상 초록 */
 .opsw{background:var(--card);border-radius:20px;padding:6px 0;overflow-x:auto;margin-bottom:12px}
 .ops{width:100%;border-collapse:collapse;font-size:14px;min-width:620px}
@@ -133,6 +148,7 @@
 <div class="wrap" id="app"></div>
 <nav class="nav" id="nav" style="display:none"><div>
   <button data-tab="home"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3.2 3 10.4V20a1 1 0 0 0 1 1h5.5v-6h5v6H20a1 1 0 0 0 1-1v-9.6z"/></svg>홈</button>
+  <button data-tab="close"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 6h18v12H3zm9 2.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7z"/></svg>마감</button>
   <button data-tab="survey"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 5h16v3H4zm1 5h14v9a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1zm4 3v2h6v-2z"/></svg>재고조사</button>
   <button data-tab="tasks"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 3h8v2h3a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h3zm2 0v3h4V3zm5.3 7.3-4.3 4.3-2.3-2.3-1.4 1.4 3.7 3.7 5.7-5.7z"/></svg>업무</button>
   <button data-tab="must"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h16v4H4zm0 6h16v10H4zm5 3v2h6v-2z"/></svg>추가 필수</button>
@@ -214,6 +230,7 @@ async function reload(quiet) {
 // ── 그리기 ──
 const ICON = {
   home: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3.2 3 10.4V20a1 1 0 0 0 1 1h5.5v-6h5v6H20a1 1 0 0 0 1-1v-9.6z"/></svg>',
+  close: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 6h18v12H3zm9 2.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7zM5 8v2a2 2 0 0 0 2-2zm12 0a2 2 0 0 0 2 2V8zM5 16h2a2 2 0 0 0-2-2zm14-2a2 2 0 0 0-2 2h2z"/></svg>',
   survey: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 5h16v3H4zm1 5h14v9a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1zm4 3v2h6v-2z"/></svg>',
   tasks: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 3h8v2h3a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h3zm2 0v3h4V3zm5.3 7.3-4.3 4.3-2.3-2.3-1.4 1.4 3.7 3.7 5.7-5.7z"/></svg>',
   must: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h16v4H4zm0 6h16v10H4zm5 3v2h6v-2z"/></svg>',
@@ -234,9 +251,9 @@ function render() {
   document.querySelectorAll("#nav button").forEach((b) => b.classList.toggle("on", b.dataset.tab === tab));
   const [, hh, mm] = D.at.match(/(\d{2}):(\d{2})$/) || [];
   if (EMBED[tab] && $("#app .emb") && $("#app .emb").dataset.k === tab + staffB) return; // 자동 새로고침 때 안에 띄운 앱이 처음으로 돌아가지 않게
-  const body = EMBED[tab] ? embedHtml() : tab === "home" ? (pc ? homePC() : homeHtml()) : tab === "survey" ? surveyHtml() : tab === "tasks" ? tasksHtml() : mustHtml();
+  const body = EMBED[tab] ? embedHtml() : tab === "home" ? (pc ? homePC() : homeHtml()) : tab === "close" ? closingAllHtml() : tab === "survey" ? surveyHtml() : tab === "tasks" ? tasksHtml() : mustHtml();
   if (!pc) { $("#app").innerHTML = `<div class="top"><div class="logo">VAFRIEND <b>관리자</b></div><div class="r"><button class="ic" data-act="reload">${hh ? `${hh}:${mm} 기준 ↻` : "새로고침"}</button><button class="ic" data-act="logout">잠그기</button></div></div>${body}`; markEmb(); return; }
-  const navs = [["home", "홈"], ["survey", "재고조사"], ["tasks", "업무"], ["must", "추가 필수"], ["naver", "네이버"], ["staff", "직원앱"]];
+  const navs = [["home", "홈"], ["close", "마감"], ["survey", "재고조사"], ["tasks", "업무"], ["must", "추가 필수"], ["naver", "네이버"], ["staff", "직원앱"]];
   $("#app").innerHTML = `<div class="shell"><aside class="side"><div class="logo">VAFRIEND <b>관리자</b></div>
       ${navs.map(([k, n]) => `<button class="navb ${tab === k ? "on" : ""}" data-tab="${k}">${ICON[k]}${n}</button>`).join("")}
       <div class="foot"><button class="navb" data-act="reload">↻ ${hh ? `${hh}:${mm} 기준` : "새로고침"}</button><button class="navb" data-act="logout">🔒 잠그기</button></div></aside>
@@ -263,38 +280,35 @@ function opsHtml() {
       ${c ? td(c.지정판매율 != null ? c.지정판매율 + "%" : "-") : NO}
       ${c ? td(c.rev ?? "-") : NO}</tr>`;
   }).join("");
-  return `<div class="sec" style="margin-top:0">지점 한눈에 <small>오늘 · 줄을 누르면 상세</small></div><div class="opsw"><table class="ops"><thead><tr><th>지점</th><th>오픈</th><th>마감 보고</th><th>총매출</th><th>현금 차액</th><th>객수</th><th>지정판매율</th><th>리뷰</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+  const done = D.ops.filter((o) => o.close), sum = done.reduce((a, o) => a + (+o.close.총 || 0), 0), bills = done.reduce((a, o) => a + (+o.close.bills || 0), 0);
+  const total = `<tr class="tot"><td><b>합계</b><small>${done.length}/${D.ops.length}곳 보고</small></td><td></td><td></td><td><b>${won(sum)}</b></td><td></td><td><b>${bills}</b></td><td></td><td></td></tr>`;
+  return `<div class="sec">지점 한눈에 <small>오늘 · 줄을 누르면 상세</small></div><div class="opsw"><table class="ops"><thead><tr><th>지점</th><th>오픈</th><th>마감 보고</th><th>총매출</th><th>현금 차액</th><th>객수</th><th>지정판매율</th><th>리뷰</th></tr></thead><tbody>${rows}${total}</tbody></table></div>`;
 }
-function homePC() {
-  const con = D.branches.filter((x) => x.connected);
-  const reported = D.branches.filter((x) => closingOf(x.b)?.status === "done").length, allN = D.branches.length;
-  const warnN = (D.closings || []).filter((c) => c.date === D.d && warnsOf(c).length).length;
-  const aOut = new Set(con.flatMap((x) => G(x, "프리미엄 A").out.map((o) => o.n))).size;
-  const tDone = D.branches.reduce((a, x) => a + x.tasks.done, 0), tAll = D.branches.reduce((a, x) => a + x.tasks.total, 0), pct = tAll ? Math.round((tDone / tAll) * 100) : 0;
-  const kpis = `<div class="kpis">
-    <div class="kpi"><div class="eyebrow">오늘 마감 보고</div><div class="num">${reported}<small>/ ${allN}곳</small></div><div class="caption">${reported === allN ? "모든 지점이 보고했어요" : "아직 안 온 지점이 있어요"}</div></div>
-    <div class="kpi"><div class="eyebrow">확인 필요</div><div class="num ${warnN ? "t-bad" : "t-good"}">${warnN}<small>곳</small></div><div class="caption">${warnN ? "돈통 차액이나 이체가 안 맞는 보고" : "안 맞는 보고가 없어요"}</div></div>
-    <div class="kpi"><div class="eyebrow">A그룹 품절</div><div class="num ${aOut ? "t-bad" : "t-good"}">${aOut}<small>종</small></div><div class="caption">절대 떨어지면 안 되는 상품</div></div>
-    <div class="kpi"><div class="eyebrow">오늘 할 일</div><div class="num">${pct}<small>%</small></div><div class="caption">${tAll ? `${tAll}개 중 ${tDone}개 완료` : "예정된 일이 없어요"}</div></div></div>`;
-  const order = [...D.branches].sort((a, c) => (c.connected - a.connected) || (((closingOf(c.b)?.warn || []).length) - ((closingOf(a.b)?.warn || []).length)));
-  const rows = order.map((x) => {
-    const n = BR.indexOf(x.b) + 1;
-    if (!x.connected) return `<div class="item" style="opacity:.5"><div class="av">${n}</div><div class="tx"><b>${esc(x.b)}</b><span>포스 연결 전</span></div></div>`;
-    const c = closingOf(x.b), a = G(x, "프리미엄 A").out.length, w = (c?.warn || []).length;
-    const st = !c ? ["미보고", "t-sub"] : c.status !== "done" ? ["만드는 중", "t-sub"] : w ? [`확인 ${w}건`, "t-bad"] : ["이상 없음", "t-good"];
-    return `<button class="item" data-brpc="${x.b}"><div class="av ${!c ? "" : w ? "bad" : c.status === "done" ? "good" : "blue"}">${n}</div>
-      <div class="tx"><b>${esc(x.b)}</b><span>A그룹 품절 ${a} · 할 일 ${x.tasks.done}/${x.tasks.total}${c ? ` · ${esc(c.at)} ${esc(c.by)}` : ""}</span></div>
-      <div class="val"><b class="${st[1]}">${st[0]}</b><span class="t-sub">마감</span></div><span class="chev">›</span></button>`;
-  }).join("");
+// 10/19 홈 정리 (사장님 "홈 화면이 개복잡함"): 홈 = ① 확인할 것(문제만) ② 지점 한눈에 표. 품절은 재고조사, 할 일은 업무, 지난 마감은 마감 메뉴로
+function issues() {
+  const L = [], late = new Date().getHours() >= 22;
+  for (const o of D.ops || []) {
+    const n = BR.indexOf(o.b) + 1, c = closingOf(o.b);
+    if (c) warnsOf(c).forEach((w) => L.push({ b: o.b, t: `${n}호 ${o.b} 마감`, d: w }));
+    else if (late) L.push({ b: o.b, t: `${n}호 ${o.b} 마감`, d: "아직 마감 보고가 없어요" });
+    if (o.late) L.push({ b: o.b, t: `${n}호 ${o.b} 오픈`, d: `${o.late}분 늦게 오픈 체크 (${o.open})` });
+    if (o.prepDiff) L.push({ b: o.b, t: `${n}호 ${o.b} 오픈`, d: `돈통 준비금이 어제보다 ${o.prepDiff > 0 ? "+" : ""}${won(o.prepDiff)}원` });
+  }
+  const con = D.branches.filter((x) => x.connected), aOut = [...new Set(con.flatMap((x) => G(x, "프리미엄 A").out.map((o) => o.n)))];
+  if (aOut.length) L.push({ go: "survey", t: "A그룹 품절", d: `${aOut.length}종 · ${aOut.slice(0, 3).join(", ")}${aOut.length > 3 ? " 외" : ""}` });
   const sw = (D.surveys || []).filter((v) => v.status === "wait");
-  return `<div class="pchead"><h1>오늘 한눈에</h1><div class="caption">${esc(D.d)} · ${esc(D.at.slice(-5))} 기준</div></div>${kpis}${opsHtml()}
-    <div class="cols"><div>
-      <div class="sec" style="margin-top:0">지점별 마감 <small>오늘 · 누르면 오른쪽에 상세</small></div><div class="list">${rows}</div>
-      ${sw.length ? `<button class="card" data-tab="survey" style="display:block;width:100%;text-align:left"><div class="eyebrow">재고조사</div><div class="headline">확인할 재고조사가 <em>${sw.length}건</em></div></button>` : ""}
-      ${closingListHtml()}
-    </div><div class="sheet panel" id="panel"></div></div>`;
+  if (sw.length) L.push({ go: "survey", t: "재고조사", d: `승인 기다리는 ${sw.length}건` });
+  return L;
 }
-function panelDefault() { return heroHtml() + groupCardHtml() + tasksCardHtml() + (D.matrix.length ? `<div class="sec">오늘 할 일 <small>${D.matrix.length}개</small></div><div class="list">${D.matrix.map(taskRow).join("")}</div>` : ""); }
+function issuesHtml() {
+  const L = issues();
+  return `<div class="sec" style="margin-top:0">확인할 것 <small>${L.length ? L.length + "건" : ""}</small></div><div class="list">${L.length ? L.map((x) => `<button class="item iss" ${x.b ? `data-brpc="${esc(x.b)}"` : `data-tab="${x.go}"`}><i class="dot"></i><div class="tx"><b>${esc(x.t)}</b><span>${esc(x.d)}</span></div><span class="chev">›</span></button>`).join("") : '<div class="item"><i class="dot ok"></i><div class="tx"><b>오늘은 확인할 게 없어요</b></div></div>'}</div>`;
+}
+const homeHead = () => `<div class="pchead"><h1>오늘 한눈에</h1><div class="caption">${esc(D.d)} · ${esc(D.at.slice(-5))} 기준</div></div>`;
+function homePC() {
+  return `${homeHead()}<div class="cols"><div>${issuesHtml()}${opsHtml()}</div><div class="sheet panel" id="panel"></div></div>`;
+}
+function panelDefault() { return `<div class="eyebrow">지점 상세</div><h3>왼쪽에서 지점이나<br>확인할 것을 누르세요</h3><div class="caption">그날 마감 보고, 차액, 품절이 여기에 떠요</div>`; }
 // 지점 상세 패널: 오늘 마감 보고(경고 포함) + 품절
 function panelBranch(b, g) {
   const c = closingOf(b), n = c?.nums || {};
@@ -337,23 +351,12 @@ function tasksCardHtml() {
       <div class="headline">${tAll ? (tDone === tAll ? `<em>모두 끝났어요</em>` : `${tAll}개 중 <em>${tDone}개</em> 끝났어요`) : "오늘 예정된 일이 없어요"}</div>
       ${tAll ? `<div class="bar"><i style="width:${pct}%"></i></div>` : `<div class="btns"><button class="btn sec2" data-tab="tasks">업무 나눠 주기</button></div>`}</div>`;
 }
-function homeHtml() {
-  const order = [...D.branches].sort((a, c) => (c.connected - a.connected) || ((c.rate ?? -1) - (a.rate ?? -1)));
-  const sw = (D.surveys || []).filter((v) => v.status === "wait");
-  return `${opsHtml()}${heroHtml()}
-    ${sw.length ? `<button class="card" data-tab="survey" style="display:block;width:100%;text-align:left"><div class="eyebrow">재고조사</div><div class="headline">확인할 재고조사가<br><em>${sw.length}건</em> 있어요</div><div class="caption">${[...new Set(sw.map((v) => v.branch))].join("·")} · 포스와 다른 상품만 모아 보여드려요 ›</div></button>` : ""}
-    <div class="sec">지점별</div>
-    <div class="list">${order.map(branchRow).join("")}</div>
-    ${groupCardHtml()}
-    ${closingListHtml()}
-    ${tasksCardHtml()}
-    ${D.matrix.length ? `<div class="sec">오늘 할 일 <small>${D.matrix.length}개</small></div><div class="list">${D.matrix.map(taskRow).join("")}</div>` : ""}
-    <div class="caption" style="text-align:center;margin-top:18px">그룹은 본점 포스 소분류 기준 · 상품 이름으로 전 지점 공통 적용</div>`;
-}
+function homeHtml() { return `<div style="padding-top:6px">${issuesHtml()}${opsHtml()}</div>`; }
 // ── 마감 보고 (직원앱 시재 + 포스 숫자) ──
 const won = (n) => Math.round(+n || 0).toLocaleString("ko-KR");
-function closingListHtml() {
-  const L = (D.closings || []).slice(0, 8);
+function closingAllHtml() { return `<div class="pchead"><h1>마감 보고</h1><div class="caption">최근 40건 · 누르면 보고문 전체</div></div>${closingListHtml(40) || '<div class="empty">아직 마감 보고가 없어요</div>'}`; }
+function closingListHtml(max = 8) {
+  const L = (D.closings || []).slice(0, max);
   if (!L.length) return "";
   return `<div class="sec">마감 보고 <small>최근</small></div><div class="list">${L.map((c, i) => `<button class="item" data-cl="${i}"><div class="av ${c.status === "done" ? (warnsOf(c).length ? "bad" : "good") : c.status === "error" ? "bad" : "blue"}">${BR.indexOf(c.b) + 1}</div>
     <div class="tx"><b>${esc(c.b)} · ${c.date.slice(5).replace("-", "/")}${warnsOf(c).length ? ` <span class="t-bad">⚠️ ${warnsOf(c).length}</span>` : ""}</b><span>${c.status === "done" ? `총 ${won(c.nums.총)} · 시재 ${won(c.sijae)}` : c.status === "error" ? esc(c.err || "실패") : "만드는 중"} · ${esc(c.by)}</span></div><span class="chev">›</span></button>`).join("")}</div>`;
@@ -426,7 +429,7 @@ const REP_TXT = (t) => !t ? "" : t.rep === "once" ? `${t.date.slice(5).replace("
 const SVST = { wait: ["승인 대기", "blue"], reject: ["반려", "gray"], done: ["반영 완료", "good"] };
 function surveyHtml() {
   const L = D.surveys || [], w = L.filter((v) => v.status === "wait");
-  return `<div class="card"><div class="eyebrow">재고조사</div><div class="headline">${w.length ? `확인할 재고조사가<br><em>${w.length}건</em> 있어요` : "확인할 재고조사가 없어요"}</div>
+  return `${heroHtml()}${groupCardHtml()}<div class="sec">재고조사</div><div class="card"><div class="eyebrow">재고조사</div><div class="headline">${w.length ? `확인할 재고조사가<br><em>${w.length}건</em> 있어요` : "확인할 재고조사가 없어요"}</div>
       <div class="caption">직원앱에서 카테고리별로 센 수량을 포스 수량과 비교해요.<br>포스 수량은 업무봇이 매시간 읽은 값이라 그 사이 판매만큼 차이가 날 수 있어요.</div></div>
     <div class="list">${L.length ? L.map((v) => { const df = v.items.filter((r) => r.diff).length, [stt, k] = SVST[v.status] || ["", ""];
       return `<button class="item" data-sv="${v.id}"><div class="av ${df ? (v.status === "wait" ? "warn" : "") : "good"}">${BR.indexOf(v.branch) + 1}</div>
@@ -446,7 +449,7 @@ function sheetSurvey(id) {
       : `<div class="caption" style="margin-top:16px">${SVST[v.status]?.[0] || ""}${v.why ? " · " + esc(v.why) : ""}${v.doneAt ? " · " + esc(v.doneAt) : ""}</div><div class="btns"><button class="btn gray" data-x>닫기</button></div>`}`);
 }
 function tasksHtml() {
-  return `<div class="card"><div class="eyebrow">업무 분배</div><div class="headline">지점에 할 일을<br>나눠 줄 수 있어요</div><div class="caption">정한 날 그 지점 직원앱 '오늘 할 일'에 떠요.<br>직원이 [완료]를 누르면 여기서 바로 보여요.</div>
+  return `${tasksCardHtml()}${D.matrix.length ? `<div class="sec">오늘 할 일 <small>${D.matrix.length}개</small></div><div class="list">${D.matrix.map(taskRow).join("")}</div>` : ""}<div class="card"><div class="eyebrow">업무 분배</div><div class="headline">지점에 할 일을<br>나눠 줄 수 있어요</div><div class="caption">정한 날 그 지점 직원앱 '오늘 할 일'에 떠요.<br>직원이 [완료]를 누르면 여기서 바로 보여요.</div>
       <div class="btns"><button class="btn" data-act="tnew">＋ 새 업무 만들기</button></div></div>
     <div class="sec">등록된 업무 <small>${D.tasks.length}개</small></div>
     <div class="list">${D.tasks.length ? D.tasks.map((t) => `<button class="item" data-tedit="${t.id}"><div class="av blue">${t.rep === "daily" ? "매일" : t.rep === "weekly" ? "주" : t.rep === "monthly" ? "월" : "1"}</div>
