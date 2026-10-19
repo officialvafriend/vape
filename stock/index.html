@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <meta name="robots" content="noindex">
-<title>아침 재고보고 (시험판)</title>
+<title>아침 재고보고</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <style>
   :root{--bg:#f2f4f6;--card:#fff;--ink:#191f28;--sub:#8b95a1;--line:#e5e8eb;--blue:#3182f6;--green:#03b26c;--red:#f04452;--orange:#ff8a00}
@@ -110,7 +110,7 @@ const ls = { get: (k, d) => { try { return JSON.parse(localStorage.getItem(k)) ?
 const last = ls.get(KEY + "-last", null);
 const prev = (i) => last?.v?.[i] ?? ITEMS[i].v[COLS.indexOf(B)];
 let cur = ls.get(KEY + "-draft", {}); // 작성 중인 값 (새로고침해도 유지)
-let who = ls.get("vf-stock-who", "");
+let who = (qs.get("by") || "").trim().slice(0, 40) || ls.get("vf-stock-who", ""); // 직원앱에서 오면 출근한 사람 이름이 미리 들어감 (10/19)
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
 function toast(m) { const t = $("#toast"); t.textContent = m; t.classList.add("on"); clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove("on"), 2200); }
@@ -134,7 +134,7 @@ function render() {
     <div class="s">실제로 센 개수를 넣어 주세요. 지난 보고와 같으면 [그대로]를 누르면 돼요. 크게 다르면 빨간 테두리가 생겨요.</div></div>
   <div class="grp">팟 · 코일 · 공팟</div>${ITEMS.map((it, i) => (isDevice(it.n) ? "" : rowHtml(it, i))).join("")}
   <div class="grp">기기</div>${ITEMS.map((it, i) => (isDevice(it.n) ? rowHtml(it, i) : "")).join("")}
-  <div class="note">시험판 · 버전 ${VER}<br>지난 보고 숫자는 처음엔 노션(10/1) 값, 한 번 보내면 이 기기에서 보낸 값이에요.</div>`;
+  <div class="note">버전 ${VER}<br>지난 보고 숫자는 처음엔 노션(10/1) 값, 한 번 보내면 이 기기에서 보낸 값이에요.</div>`;
   $("#send").disabled = done < ITEMS.length;
   $("#send").textContent = done < ITEMS.length ? `${ITEMS.length - done}개 남았어요` : "재고보고 보내기";
 }
