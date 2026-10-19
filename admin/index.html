@@ -110,6 +110,13 @@
     .sticky{left:236px;bottom:28px} .sticky .btn{max-width:480px}
     .toast{bottom:40px}
   }
+/* 10/19 네이버, 직원앱을 안에 띄우기: PC는 오른쪽 전체, 폰은 위 막대와 아래 메뉴 사이 전체 */
+.main.embm{padding:0;max-width:none;height:100vh;display:flex;flex-direction:column}
+.emb{flex:1;width:100%;border:0;display:block;min-height:0;height:calc(100vh - 128px)}
+.main.embm .emb{height:auto}
+.embar{display:flex;gap:6px;overflow-x:auto;padding:10px 14px;background:var(--card);border-bottom:1px solid var(--line2);flex:none}
+.embar .chip{flex:none;padding:8px 12px;border-radius:10px;background:var(--bg);font-weight:600;font-size:14px;color:var(--ink2)}
+.embar .chip.on{background:var(--blue);color:#fff}
 /* 10/19 지점 한눈에: 8지점 × 7칸 표, 안 한 것 회색 / 늦음·차액 빨강 / 정상 초록 */
 .opsw{background:var(--card);border-radius:20px;padding:6px 0;overflow-x:auto;margin-bottom:12px}
 .ops{width:100%;border-collapse:collapse;font-size:14px;min-width:620px}
@@ -129,6 +136,8 @@
   <button data-tab="survey"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 5h16v3H4zm1 5h14v9a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1zm4 3v2h6v-2z"/></svg>재고조사</button>
   <button data-tab="tasks"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 3h8v2h3a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h3zm2 0v3h4V3zm5.3 7.3-4.3 4.3-2.3-2.3-1.4 1.4 3.7 3.7 5.7-5.7z"/></svg>업무</button>
   <button data-tab="must"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h16v4H4zm0 6h16v10H4zm5 3v2h6v-2z"/></svg>추가 필수</button>
+  <button data-tab="naver"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h5.2l5.6 8.1V4H20v16h-5.2l-5.6-8.1V20H4z"/></svg>네이버</button>
+  <button data-tab="staff"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zm-8 8c0-3.3 3.6-6 8-6s8 2.7 8 6v1H4z"/></svg>직원앱</button>
 </div></nav>
 <div class="dim" id="dim"><div class="sheet" id="sheet"></div></div>
 <div class="tip" id="tip"></div>
@@ -208,22 +217,34 @@ const ICON = {
   survey: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 5h16v3H4zm1 5h14v9a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1zm4 3v2h6v-2z"/></svg>',
   tasks: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 3h8v2h3a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h3zm2 0v3h4V3zm5.3 7.3-4.3 4.3-2.3-2.3-1.4 1.4 3.7 3.7 5.7-5.7z"/></svg>',
   must: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h16v4H4zm0 6h16v10H4zm5 3v2h6v-2z"/></svg>',
+  naver: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h5.2l5.6 8.1V4H20v16h-5.2l-5.6-8.1V20H4z"/></svg>',
+  staff: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zm-8 8c0-3.3 3.6-6 8-6s8 2.7 8 6v1H4z"/></svg>',
 };
+// 10/19 사장님 "다 따로 들어가기 불편해": 네이버 앱, 직원앱을 관리자 안 메뉴로 (같은 사이트라 안에 띄움, 네이버 열쇠·직원앱 지점은 각 앱이 이 기기에 기억)
+const EMBED = { naver: () => "../naver/", staff: () => `../staff/?branch=${encodeURIComponent(staffB)}` };
+let staffB = ls.get("vf-admin-staffb") || "본점";
+function embedHtml() {
+  const chips = tab === "staff" ? `<div class="embar">${BR.map((b, i) => `<button class="chip ${b === staffB ? "on" : ""}" data-staffb="${b}">${i + 1} ${b}</button>`).join("")}</div>` : "";
+  return `${chips}<iframe class="emb" src="${EMBED[tab]()}" title="${tab === "naver" ? "네이버" : "직원앱"}"></iframe>`;
+}
 function render() {
   if (!D) return;
   const pc = isPC();
   $("#nav").style.display = pc ? "none" : "";
   document.querySelectorAll("#nav button").forEach((b) => b.classList.toggle("on", b.dataset.tab === tab));
   const [, hh, mm] = D.at.match(/(\d{2}):(\d{2})$/) || [];
-  const body = tab === "home" ? (pc ? homePC() : homeHtml()) : tab === "survey" ? surveyHtml() : tab === "tasks" ? tasksHtml() : mustHtml();
-  if (!pc) { $("#app").innerHTML = `<div class="top"><div class="logo">VAFRIEND <b>관리자</b></div><div class="r"><button class="ic" data-act="reload">${hh ? `${hh}:${mm} 기준 ↻` : "새로고침"}</button><button class="ic" data-act="logout">잠그기</button></div></div>${body}`; return; }
-  const navs = [["home", "홈"], ["survey", "재고조사"], ["tasks", "업무"], ["must", "추가 필수"]];
+  if (EMBED[tab] && $("#app .emb") && $("#app .emb").dataset.k === tab + staffB) return; // 자동 새로고침 때 안에 띄운 앱이 처음으로 돌아가지 않게
+  const body = EMBED[tab] ? embedHtml() : tab === "home" ? (pc ? homePC() : homeHtml()) : tab === "survey" ? surveyHtml() : tab === "tasks" ? tasksHtml() : mustHtml();
+  if (!pc) { $("#app").innerHTML = `<div class="top"><div class="logo">VAFRIEND <b>관리자</b></div><div class="r"><button class="ic" data-act="reload">${hh ? `${hh}:${mm} 기준 ↻` : "새로고침"}</button><button class="ic" data-act="logout">잠그기</button></div></div>${body}`; markEmb(); return; }
+  const navs = [["home", "홈"], ["survey", "재고조사"], ["tasks", "업무"], ["must", "추가 필수"], ["naver", "네이버"], ["staff", "직원앱"]];
   $("#app").innerHTML = `<div class="shell"><aside class="side"><div class="logo">VAFRIEND <b>관리자</b></div>
       ${navs.map(([k, n]) => `<button class="navb ${tab === k ? "on" : ""}" data-tab="${k}">${ICON[k]}${n}</button>`).join("")}
       <div class="foot"><button class="navb" data-act="reload">↻ ${hh ? `${hh}:${mm} 기준` : "새로고침"}</button><button class="navb" data-act="logout">🔒 잠그기</button></div></aside>
-    <main class="main">${tab === "home" ? body : `<div class="narrow">${body}</div>`}</main></div>`;
+    <main class="main ${EMBED[tab] ? "embm" : ""}">${tab === "home" || EMBED[tab] ? body : `<div class="narrow">${body}</div>`}</main></div>`;
+  markEmb();
   if (tab === "home") { $("#panel").innerHTML = panelKeep || panelDefault(); bindSparks(); }
 }
+function markEmb() { const f = $("#app .emb"); if (f) f.dataset.k = tab + staffB; }
 // PC 홈: 요약 4칸 + 지점별 마감 목록(왼쪽) + 상세 패널(오른쪽)
 const closingOf = (b) => (D.closings || []).find((c) => c.b === b && c.date === D.d);
 const warnsOf = (c) => c?.warnFull || c?.warn || [];
@@ -497,6 +518,7 @@ document.addEventListener("click", async (e) => {
   if (t.tagName === "TR") return isPC() ? panelBranch(t.dataset.brpc, "프리미엄 A") : sheetBranch(t.dataset.brpc, "프리미엄 A");
   if (t.id === "go") return tryLogin();
   if (t.dataset.x !== undefined) return closeSheet();
+  if (t.dataset.staffb) { staffB = t.dataset.staffb; ls.set("vf-admin-staffb", staffB); return render(); }
   if (t.dataset.tab) { tab = t.dataset.tab; ls.set("vf-admin-tab", tab); closeSheet(); render(); return scrollTo(0, 0); }
   const a = t.dataset.act;
   if (a === "reload") return reload();
