@@ -146,7 +146,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.19-2";
+const VER = "10.19-3";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고·메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -501,7 +501,9 @@ const closeDay = () => { const d = new Date(); if (d.getHours() < 5) d.setDate(d
 const nextKey = () => `vf-app-${B}-next`;
 function prevNext() {
   const c = BOARD?.closing, mine = ls.get(nextKey(), null), day = closeDay();
-  return [c && c.next != null && c.date < day ? { d: c.date, v: c.next } : null, mine && mine.d < day ? mine : null].filter(Boolean).sort((a, b) => b.d.localeCompare(a.d))[0] || null;
+  // 직원앱 마감이 우선(같은 날이면), 없으면 포스 정산의 어제 남긴 돈(BOARD.posNext)
+  const pn = BOARD?.posNext && BOARD.posNext.date < day ? { d: BOARD.posNext.date, v: BOARD.posNext.v, pos: 1 } : null;
+  return [c && c.next != null && c.date < day ? { d: c.date, v: c.next } : null, mine && mine.d < day ? mine : null, pn].filter(Boolean).sort((a, b) => b.d.localeCompare(a.d) || (a.pos ? 1 : 0) - (b.pos ? 1 : 0))[0] || null;
 }
 const todayPrep = () => { const s = st(); return s.prep != null ? s.prep : SRV?.open?.prep != null ? SRV.open.prep : prevNext()?.v ?? null; };
 function closeRowHtml(stepRow) {
@@ -722,7 +724,7 @@ function sheetCheck(kind) {
   const items = CHECK[kind], pn = kind === "open" ? prevNext() : null;
   openSheet(`<h2>${kind === "open" ? "🌅 오픈 체크" : "🌙 마감 체크"}</h2><div class="desc">한 것을 눌러 체크하세요. 못 한 건 그대로 두고 보내면 '못 한 항목'으로 보고돼요.</div>
     ${items.map((x, i) => `<button class="check" data-ck="${i}"><i>✓</i>${esc(x)}</button>`).join("")}
-    ${kind === "open" ? `<div class="grp">돈통 준비금</div><div class="desc">${pn ? `어제 마감 때 남긴 돈은 <b>${pn.v.toLocaleString()}원</b>이에요. 돈통이 이 금액과 맞나요?` : "어제 마감 기록이 없어요. 지금 돈통에 있는 돈을 세어 넣어 주세요."}</div>
+    ${kind === "open" ? `<div class="grp">돈통 준비금</div><div class="desc">${pn ? `어제 마감 때 남긴 돈은 <b>${pn.v.toLocaleString()}원</b>이에요${pn.pos ? " (포스 정산 기준)" : ""}. 돈통이 이 금액과 맞나요?` : "어제 마감 기록이 없어요. 지금 돈통에 있는 돈을 세어 넣어 주세요."}</div>
       ${pn ? `<div class="chips"><button class="chip" data-prep="ok">맞아요</button><button class="chip" data-prep="diff">달라요</button></div>` : ""}
       <input class="input" id="opPrep" inputmode="numeric" placeholder="실제 돈통 금액 (원)" style="${pn ? "display:none" : ""}">` : ""}
     <div class="btns"><button class="btn" data-x>취소</button><button class="btn primary" id="okCk" data-kind="${kind}">보고 보내기</button></div>`);
