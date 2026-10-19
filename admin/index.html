@@ -294,7 +294,8 @@ function kpiHtml() {
   let tiles = "", table = "";
   if (kpiB === "전체") {
     const keys = [...new Set(Object.values(A).flat().map((g) => g.k))].sort(), last = keys.at(-1), prev = keys.at(-2);
-    const cur = kSum(Object.values(A).map((l) => l.find((g) => g.k === last)).filter(Boolean)), pv = kSum(Object.values(A).map((l) => l.find((g) => g.k === prev)).filter(Boolean));
+    const curL = Object.values(A).map((l) => l.find((g) => g.k === last)).filter(Boolean), pvL = Object.values(A).map((l) => l.find((g) => g.k === prev)).filter(Boolean);
+    const cur = { ...kSum(curL), days: Math.max(0, ...curL.map((g) => g.days)) }, pv = { ...kSum(pvL), days: Math.max(0, ...pvL.map((g) => g.days)) }; // 영업일 = 지점 중 가장 많은 날
     tiles = kTiles(cur, pv);
     const rows = BR.map((b) => [b, (A[b] || []).find((g) => g.k === last)]).filter(([, g]) => g);
     const lab = rows[0] ? kLabel(rows[0][1]) : "";
@@ -309,7 +310,8 @@ function kpiHtml() {
 }
 function kTiles(c, p) {
   const r = (a, b) => (a && b ? a / b : null);
-  return `<div class="kpis">${kTile("매출 합계", c.sales, p?.sales, won)}${kTile("하루 평균 매출", r(c.sales, c.days), r(p?.sales, p?.days), (v) => won(Math.round(v)))}${kTile("객단가", r(c.sales, c.bills), r(p?.sales, p?.bills), (v) => won(Math.round(v)))}${kTile("지정판매율", r(c.des, c.prem), r(p?.des, p?.prem), (v) => (Math.round(v * 1000) / 10).toFixed(1) + "%")}</div>`;
+  const salesTile = c.days === p?.days ? kTile("매출 합계", c.sales, p?.sales, won) : `<div class="kpi"><div class="eyebrow">매출 합계</div><div class="num" style="font-size:24px">${won(c.sales)}</div><div class="caption">${c.days}일 기록${p?.days ? ` (지난 기간 ${p.days}일이라 비교는 하루 평균으로)` : ""}</div></div>`;
+  return `<div class="kpis">${salesTile}${kTile("하루 평균 매출", r(c.sales, c.days), r(p?.sales, p?.days), (v) => won(Math.round(v)))}${kTile("객단가", r(c.sales, c.bills), r(p?.sales, p?.bills), (v) => won(Math.round(v)))}${kTile("지정판매율", r(c.des, c.prem), r(p?.des, p?.prem), (v) => (Math.round(v * 1000) / 10).toFixed(1) + "%")}</div>`;
 }
 // 홈: 최근 7일 합산 점수 상위 3, 하위 3
 function kpiRankHtml() {
