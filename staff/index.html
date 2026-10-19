@@ -750,7 +750,7 @@ async function doCheck(kind) {
   if (missed.length && !confirm(`못 한 항목 ${missed.length}개:\n${missed.join("\n")}\n\n이대로 보고할까요?`)) return;
   $("#okCk").disabled = true;
   try {
-    await send({ type: kind, missed, ...(kind === "open" ? { prep, prepDiff } : {}) });
+    await send({ type: kind, missed, by: working().join(", "), ...(kind === "open" ? { prep, prepDiff } : {}) });
     const s = st(); s[kind] = { t: now(), missed }; if (kind === "open") s.prep = prep; saveSt(s);
     closeSheet(); render(); toast(`${kind === "open" ? "오픈" : "마감"} 체크 완료${prepDiff ? ` · 준비금 ${(prepDiff > 0 ? "+" : "") + prepDiff.toLocaleString()}원 차이 보고됨` : ""}`);
   } catch (e) { $("#okCk").disabled = false; fail(e); }
