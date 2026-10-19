@@ -150,7 +150,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.19-11";
+const VER = "10.19-12";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -170,7 +170,8 @@ const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
 const pad = (n) => String(n).padStart(2, "0");
 const now = () => { const d = new Date(); return `${pad(d.getHours())}:${pad(d.getMinutes())}`; };
-const todayKey = () => { const d = new Date(); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; };
+// 10/19 영업일 기준: 새벽 5시 전은 전날 (금, 토 야간 근무자가 자정 넘어 퇴근해도 그날 기록으로). 봇 today()와 같은 기준
+const todayKey = () => { const d = new Date(Date.now() - 5 * 3600e3); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; };
 const ho = (b) => `${BR.indexOf(b) + 1}호 ${b}`;
 function toast(m) { const t = $("#toast"); t.textContent = m; t.classList.add("on"); clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove("on"), 2600); }
 
@@ -239,7 +240,7 @@ function render() {
       <div class="crow" style="border-top:0"><div><b>근무 중 ${working.length}명</b><span style="font-size:15px;color:var(--ink)">${working.length ? working.map((x) => `${esc(x.name)} <small style="color:var(--sub)">${x.t}~</small>`).join("<br>") : "없음"}</span>${s.ins.some((x) => x.out) ? `<span>퇴근 ${s.ins.filter((x) => x.out).length}명: ${esc(s.ins.filter((x) => x.out).map((x) => x.name).join(", "))}</span>` : ""}</div><button class="act gray" data-go="in">＋ 출근</button></div></div>` // 10/19 사장님 "출근자가 몇 명임? 보기 불편": 근무 중인 사람만 한 줄씩, 퇴근한 사람은 따로 한 줄
     : `<div class="card"><h2>오픈</h2>
       ${stepRow(1, steps[0], "출근", { t: s.ins.length ? s.ins.map((x) => `${esc(x.name)} ${x.t}${x.out ? `~${x.out}` : ""}`).join(", ") : "아직 안 함" }, `<button class="act ${steps[0] ? "gray" : ""}" data-go="in">${steps[0] ? "추가" : "출근"}</button>`)}
-      ${stepRow(2, steps[1], "오픈 체크", s.open ? { t: `${s.open.t} 완료${lateMin(s.open.t) ? `, ${lateMin(s.open.t)}분 늦음` : ""}${s.open.missed.length ? `, 못 한 것 ${s.open.missed.length}개` : ""}`, w: s.open.missed.length || lateMin(s.open.t) } : { t: lateMin(now()) ? `오픈 ${OPEN_AT[B]}, 벌써 ${lateMin(now())}분 지났어요` : "아직 안 함", w: lateMin(now()) }, `<button class="act ${steps[1] ? "gray" : ""}" data-go="open">${steps[1] ? "다시" : "체크"}</button>`)}
+      ${stepRow(2, steps[1], "오픈 체크", s.open ? { t: `${s.open.t} 완료${openCheckTxt()}${lateMin(s.open.t) ? `, ${lateMin(s.open.t)}분 늦음` : ""}${s.open.missed.length ? `, 못 한 것 ${s.open.missed.length}개` : ""}`, w: s.open.missed.length || lateMin(s.open.t) } : { t: lateMin(now()) ? `오픈 ${OPEN_AT[B]}, 벌써 ${lateMin(now())}분 지났어요` : "아직 안 함", w: lateMin(now()) }, `<button class="act ${steps[1] ? "gray" : ""}" data-go="open">${steps[1] ? "다시" : "체크"}</button>`)}
       ${stepRow(3, steps[2], "아침 재고보고", sd ? { t: `${sd.t} 완료, ${esc(sd.by || "")}` } : { t: "포스 재고가 미리 들어가 있어요" }, `<a class="act ${steps[2] ? "gray" : ""}" href="${SITE}stock/?branch=${encodeURIComponent(B)}${TEST ? "&test=1" : ""}&by=${encodeURIComponent(working.map((x) => x.name).join(", "))}&back=${encodeURIComponent(location.pathname)}">${steps[2] ? "다시" : "하기"}</a>`)}
     </div>`;
   const closeCard = `<div class="card"><h2>마감</h2>
@@ -526,6 +527,8 @@ function prevNext() {
   return [c && c.next != null && c.date < day ? { d: c.date, v: c.next } : null, mine && mine.d < day ? mine : null].filter(Boolean).sort((a, b) => b.d.localeCompare(a.d))[0] || null;
 }
 const todayPrep = () => { const s = st(); return s.prep != null ? s.prep : SRV?.open?.prep != null ? SRV.open.prep : prevNext()?.v ?? null; };
+// 10/19 오픈 돈통 확인 결과(봇이 board.json 에 차이 금액만 올림)
+function openCheckTxt() { const o = TEST ? BOARD?.openCheckTest : BOARD?.openCheck; if (!o) return ", 돈통 확인 중"; return o.status === "같음" ? ", 돈통 포스와 같아요" : o.status === "차이" ? `, 돈통 ${(o.diff > 0 ? "+" : "") + Number(o.diff).toLocaleString()}원 차이(팀장님께 알림)` : `, 돈통 ${o.status}`; }
 function closeRowHtml(stepRow) {
   const bc = BOARD?.closing && BOARD.closing.date === closeDay() ? BOARD.closing : null;
   const c = CLOSE_SENT && CLOSE_SENT.date === closeDay() && (!bc || CLOSE_SENT.at >= bc.at) ? CLOSE_SENT : bc;
@@ -745,12 +748,11 @@ async function doIn(name) {
   } catch (e) { $("#okIn").disabled = false; fail(e); }
 }
 function sheetCheck(kind) {
-  const items = CHECK[kind], pn = kind === "open" ? prevNext() : null;
+  const items = CHECK[kind], pn = kind === "open" && BOARD?.posNext && BOARD.posNext.date === todayKey() ? BOARD.posNext : null;
   openSheet(`<h2>${kind === "open" ? "🌅 오픈 체크" : "🌙 마감 체크"}</h2><div class="desc">한 것을 눌러 체크하세요. 못 한 건 그대로 두고 보내면 '못 한 항목'으로 보고돼요.</div>
     ${items.map((x, i) => `<button class="check" data-ck="${i}"><i>✓</i>${esc(x)}</button>`).join("")}
-    ${kind === "open" ? `<div class="grp">돈통 준비금</div><div class="desc">${pn ? `${pn.pos ? "포스에 입력된 개점준비금은" : "어제 마감 때 남긴 돈은"} <b>${pn.v.toLocaleString()}원</b>이에요. 돈통이 이 금액과 맞나요?` : "어제 마감 기록이 없어요. 지금 돈통에 있는 돈을 세어 넣어 주세요."}</div>
-      ${pn ? `<div class="chips"><button class="chip" data-prep="ok">맞아요</button><button class="chip" data-prep="diff">달라요</button></div>` : ""}
-      <input class="input" id="opPrep" inputmode="numeric" placeholder="실제 돈통 금액 (원)" style="${pn ? "display:none" : ""}">` : ""}
+    ${kind === "open" ? `<div class="grp">돈통 <em class="req">*</em></div><div class="desc">지금 돈통에 있는 돈을 세어서 넣어 주세요.${pn ? ` 포스 개점준비금은 <b>${pn.v.toLocaleString()}원</b>이고, 어제 포스 마감 뒤 현금매출이 더해져 있어요.` : ""} 봇이 포스와 맞춰봐요.</div>
+      <input class="input" id="opPrep" inputmode="numeric" placeholder="돈통 금액 (원)">` : ""}
     <div class="btns"><button class="btn" data-x>취소</button><button class="btn primary" id="okCk" data-kind="${kind}">보고 보내기</button></div>`);
 }
 async function doCheck(kind) {
@@ -758,17 +760,16 @@ async function doCheck(kind) {
   const missed = items.filter((_, i) => !on[i]);
   let prep = null, prepDiff = null;
   if (kind === "open") {
-    const pn = prevNext(), pick = document.querySelector("[data-prep].on")?.dataset.prep, typed = +($("#opPrep").value || "").replace(/\D/g, "") || 0;
-    if (pn && !pick) return toast("돈통 준비금이 맞는지 골라 주세요");
-    if ((!pn || pick === "diff") && !typed) return toast("실제 돈통 금액을 넣어 주세요");
-    prep = pick === "ok" ? pn.v : typed; prepDiff = pn ? prep - pn.v : null;
+    const typed = +($("#opPrep").value || "").replace(/\D/g, "") || 0;
+    if (!typed) return toast("돈통 금액을 세어서 넣어 주세요");
+    prep = typed; prepDiff = null; // 10/19 비교는 봇이 포스(개점준비금 + 현금매출)로
   }
   if (missed.length && !confirm(`못 한 항목 ${missed.length}개:\n${missed.join("\n")}\n\n이대로 보고할까요?`)) return;
   $("#okCk").disabled = true;
   try {
     await send({ type: kind, missed, by: working().join(", "), ...(kind === "open" ? { prep, prepDiff } : {}) });
     const s = st(); s[kind] = { t: now(), missed }; if (kind === "open") s.prep = prep; saveSt(s);
-    closeSheet(); render(); toast(`${kind === "open" ? "오픈" : "마감"} 체크 완료${prepDiff ? `, 준비금 ${(prepDiff > 0 ? "+" : "") + prepDiff.toLocaleString()}원 차이 보고됨` : ""}`);
+    closeSheet(); render(); toast(`${kind === "open" ? "오픈 체크 완료, 돈통은 봇이 포스와 맞춰보는 중" : "마감 체크 완료"}`);
   } catch (e) { $("#okCk").disabled = false; fail(e); }
 }
 function sheetOut() {
