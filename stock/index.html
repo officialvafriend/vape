@@ -131,8 +131,8 @@ function rowHtml(it, i) {
 function render() {
   const done = ITEMS.filter((_, i) => cur[i] !== undefined && cur[i] !== "").length;
   const d = new Date();
-  $("#app").innerHTML = `<div class="top"><a href="${/^\/vape\/[\w-]+\/$/.test(qs.get("back") || "") ? qs.get("back") : `../staff/?branch=${encodeURIComponent(B)}`}" style="text-decoration:none;font-size:22px;color:var(--ink)">‹</a><b>아침 재고보고</b><span class="chip">${HO[B]}호 ${esc(B)}</span><span class="d">${d.getMonth() + 1}/${d.getDate()} (${"일월화수목금토"[d.getDay()]})</span></div>
-  ${TEST ? `<div class="card" style="background:#fff1f0;border:2px solid #e5484d;color:#b42318;font-weight:700">🧪 시험 모드 — 노션 재고표·시트·지난 보고 숫자는 안 바뀌어요. 디스코드에 [시험]으로만 올라가요.</div>` : ""}
+  $("#app").innerHTML = `<div class="top"><a href="${backUrl()}" style="text-decoration:none;font-size:22px;color:var(--ink)">‹</a><b>아침 재고보고</b><span class="chip">${HO[B]}호 ${esc(B)}</span><span class="d">${d.getMonth() + 1}/${d.getDate()} (${"일월화수목금토"[d.getDay()]})</span></div>
+  ${TEST ? `<div class="card" style="background:#fff1f0;border:2px solid #e5484d;color:#b42318;font-weight:700">🧪 시험 모드: 진짜 기록에 안 섞여요. 지점 시트 시험 탭에만 남아요.</div>` : ""}
   <div class="card"><div class="h">보고하는 사람</div><div class="who"><input id="who" placeholder="이름 (출근한 근무자)" value="${esc(who)}"></div>
     <div class="prog"><div class="bar"><i style="width:${(done / ITEMS.length) * 100}%"></i></div><span>${done} / ${ITEMS.length}</span></div>
     <div class="s">${POSV ? `포스 재고(${esc(POSV.t)} 기준)를 미리 보여드려요. 실제와 같으면 [포스와 같음], 다르면 센 개수를 넣어 주세요.` : "실제로 센 개수를 넣어 주세요. 지난 보고와 같으면 [그대로]를 누르면 돼요. 크게 다르면 빨간 테두리가 생겨요."}</div>${POSV ? `<button class="same" data-allpos style="margin-top:10px;width:100%;height:46px">포스 숫자로 한 번에 채우기 (${ITEMS.filter((_, i) => posOf(i) != null).length}개)</button>` : ""}</div>
@@ -159,7 +159,7 @@ document.addEventListener("input", (e) => { if (e.target.id === "who") { who = e
 // 지점 시트 저장 통로(10/14). 매장 코드는 직원앱에서 넣은 것(같은 사이트라 같이 씀)
 const SHEET_API = "https://script.google.com/macros/s/AKfycbwUuHXfCaIC6kHv6ACAduoXgbH5cAUE1Pcizb0F-dR3v7Qj9bsu6xpMpirLDlLp1BEIVg/exec";
 const pinOf = () => { try { return localStorage.getItem("vf-as-pin") || ""; } catch { return ""; } };
-const backUrl = () => (/^\/vape\/[\w-]+\/$/.test(qs.get("back") || "") ? qs.get("back") : `../staff/?branch=${encodeURIComponent(B)}`);
+const backUrl = () => (/^\/vape\/[\w-]+\/$/.test(qs.get("back") || "") ? qs.get("back") : `../staff/`) + `?branch=${encodeURIComponent(B)}${TEST ? "&test=1" : ""}`; // 10/19 돌아갈 때 지점, 시험 모드 유지
 const HOOK = "https://discord.com/api/webhooks/1555156884753743905/BLK7tRBQACouQrOE_hvOkm2-iD44gnfnxdJvQXxiBAJKXJU3MG4bjnACFsXgDkDWLBrh";
 $("#send").addEventListener("click", async () => {
   if (!who) { $("#who").focus(); return toast("보고하는 사람 이름을 넣어 주세요"); }
@@ -172,7 +172,7 @@ $("#send").addEventListener("click", async () => {
     let sheetMsg = "디스코드 보고 채널에 올라갔어요.";
     if (false && pinOf()) { try { const sr = await fetch(SHEET_API, { method: "POST", body: JSON.stringify({ pin: pinOf(), action: "stockAdd", branch: B, by: who, items: body.items, test: !!TEST }) }); const sj = await sr.json(); sheetMsg = sj.ok ? "지점 시트 '재고보고' 탭과 디스코드에 기록됐어요." : "디스코드엔 올라갔고, 시트 기록은 실패했어요(" + sj.error + ")"; } catch (e) { sheetMsg = "디스코드엔 올라갔고, 시트 기록은 실패했어요(인터넷)"; } }
     else sheetMsg = "디스코드와 지점 시트에 기록돼요."; // 10/19 지점 시트는 운영봇이 기록
-    if (!TEST) ls.set(KEY + "-last", { v, at: Date.now(), by: who }); cur = {}; ls.set(KEY + "-draft", {});
+    ls.set(KEY + (TEST ? "-testlast" : "-last"), { v, at: Date.now(), by: who }); cur = {}; ls.set(KEY + "-draft", {}); // 10/19 시험이면 따로 저장(직원앱 시험 모드가 완료로 봄)
     $("#app").innerHTML = `<div class="card done-view"><div class="big">✅</div><b>${HO[B]}호 ${esc(B)} 재고보고 ${TEST ? "시험 " : ""}완료</b><div class="s">${esc(who)} · ${new Date().toTimeString().slice(0, 5)}<br>${esc(sheetMsg)}</div><a class="send" style="display:grid;place-items:center;text-decoration:none;margin-top:22px" href="${backUrl()}">← 직원앱으로 돌아가기</a><div class="s" style="margin-top:8px">3초 뒤 자동으로 돌아가요</div></div>`;
     setTimeout(() => { location.href = backUrl(); }, 3000);
     $("#foot").style.display = "none";
