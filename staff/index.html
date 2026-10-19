@@ -150,7 +150,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.19-13";
+const VER = "10.19-14";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -529,7 +529,7 @@ function prevNext() {
 }
 const todayPrep = () => { const s = st(); return s.prep != null ? s.prep : SRV?.open?.prep != null ? SRV.open.prep : prevNext()?.v ?? null; };
 // 10/19 오픈 돈통 확인 결과(봇이 board.json 에 차이 금액만 올림)
-function openCheckTxt() { const o = TEST ? BOARD?.openCheckTest : BOARD?.openCheck; if (!o) return ", 돈통 확인 중"; return o.status === "같음" ? ", 돈통 포스와 같아요" : o.status === "차이" ? `, 돈통 ${(o.diff > 0 ? "+" : "") + Number(o.diff).toLocaleString()}원 차이(팀장님께 알림)` : `, 돈통 ${o.status}`; }
+function openCheckTxt() { const o = TEST ? BOARD?.openCheckTest : BOARD?.openCheck; if (!o) return ", 돈통 확인 중"; if (o.status === "같음") return ", 돈통 포스와 같아요"; if (o.status === "차이" && o.diff != null) return `, 돈통 ${(o.diff > 0 ? "+" : "") + Number(o.diff).toLocaleString()}원 차이(팀장님께 알림)`; if (o.status === "확인 중") return ", 돈통 확인 중"; if (o.status === "포스 개점 전" || o.status === "포스 조회 실패") return `, 돈통 ${o.status}`; return ""; } // 10/19 옛 기록(상태 없음)은 아무것도 안 띄움
 function closeRowHtml(stepRow) {
   const bc = BOARD?.closing && BOARD.closing.date === closeDay() ? BOARD.closing : null;
   const c = CLOSE_SENT && CLOSE_SENT.date === closeDay() && (!bc || CLOSE_SENT.at >= bc.at) ? CLOSE_SENT : bc;
