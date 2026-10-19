@@ -143,7 +143,7 @@ function render() {
   $("#send").textContent = done < ITEMS.length ? `${ITEMS.length - done}개 남았어요` : "재고보고 보내기";
 }
 const setv = (i, v) => { if (v === "" || v === null) delete cur[i]; else cur[i] = Math.max(0, Math.round(+v || 0)); ls.set(KEY + "-draft", cur); };
-function refreshRow(i) { const el = document.getElementById("r" + i); const tmp = document.createElement("div"); tmp.innerHTML = rowHtml(ITEMS[i], +i); el.replaceWith(tmp.firstElementChild); const done = Object.keys(cur).length; document.querySelector(".bar i").style.width = (done / ITEMS.length) * 100 + "%"; document.querySelector(".prog span").textContent = `${done} / ${ITEMS.length}`; $("#send").disabled = done < ITEMS.length; $("#send").textContent = done < ITEMS.length ? `${ITEMS.length - done}개 남았어요` : "재고보고 보내기"; }
+function refreshRow(i) { const el = document.getElementById("r" + i); if (!el || !el.parentNode) return render(); /* 10/19 빠르게 연달아 누를 때 오류 방지 */ const tmp = document.createElement("div"); tmp.innerHTML = rowHtml(ITEMS[i], +i); try { el.replaceWith(tmp.firstElementChild); } catch (e) { return render(); } const done = Object.keys(cur).length; document.querySelector(".bar i").style.width = (done / ITEMS.length) * 100 + "%"; document.querySelector(".prog span").textContent = `${done} / ${ITEMS.length}`; $("#send").disabled = done < ITEMS.length; $("#send").textContent = done < ITEMS.length ? `${ITEMS.length - done}개 남았어요` : "재고보고 보내기"; }
 
 document.addEventListener("click", (e) => {
   const t = e.target.closest("button"); if (!t) return;
