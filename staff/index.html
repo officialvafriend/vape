@@ -122,6 +122,10 @@
   .cashsum{margin-top:14px;background:#f2f4f6;border-radius:14px;padding:12px 14px}
   .cashsum div{display:flex;justify-content:space-between;padding:4px 0;font-size:15px}.cashsum div span{color:var(--ink2)}.cashsum .hi b{color:var(--blue);font-size:18px}
   .cashsum p{font-size:12px;color:var(--sub);margin-top:4px}
+  /* 마감 보고 간단히 (10/19 저녁): 5만, 1만 큰 칸 60px 22px / 잔돈 5칸 한 줄 48px */
+  .cash.big .input{height:60px;font-size:22px;font-weight:700}
+  .cash.coins{grid-template-columns:repeat(5,minmax(0,1fr));gap:0 6px}.cash.coins .input{height:48px;padding:0 6px;text-align:center;font-size:15px}.cash.coins span{font-size:12px;text-align:center}
+  .morebtn{display:block;margin:18px auto 4px;font-size:13px;color:var(--sub);text-decoration:underline;background:none}
   /* 마감 보고 (10/19): 묶음 제목 14px 700, 묶음 사이 20px, 차액 22px 800, KPI 2열 카드 */
   .sheet .grp{font-size:14px;font-weight:700;color:var(--ink);margin-top:20px;padding-top:16px;border-top:1px solid var(--line)}
   .sheet .grp small{font-weight:500;color:var(--sub);font-size:12px;margin-left:4px}
@@ -146,7 +150,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.19-4";
+const VER = "10.19-5";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고·메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -522,20 +526,26 @@ function sheetClosing() {
   if (!working().length) return needIn(() => sheetClosing());
   CX = [];
   const prep = todayPrep();
-  openSheet(`<h2>💰 마감 보고</h2><div class="desc"><b>돈통만 세면 돼요.</b> 매출, 객수, 판매 개수, 준비금은 포스에서 자동으로 가져와요. 포스 일마감을 먼저 해 주세요.</div>
-    <div class="desc" style="margin-top:16px"><b>마감 날짜</b> · 지난 날짜를 고르면 나중 입력으로 남아요</div><input class="input" id="cDate" type="date" value="${todayKey()}" max="${todayKey()}" style="margin-top:6px">
-    <div class="grp">매출 <small>비워두면 포스에서 자동</small></div><div class="cash">${SALES.map((x) => fld(x, 1)).join("")}</div><div class="cashsum" id="cSales"></div>
-    <div class="grp">현금 지출 <small>돈통에서 나간 돈</small></div><div id="cExp"></div><button class="btn sm" data-go="expadd">＋ 지출 추가</button>
-    <div class="grp">돈통</div>
-    <div class="cash"><label style="grid-column:1/-1"><span>오늘 준비금 <small>${prep != null ? "어제 남긴 돈, 다르면 고쳐 주세요" : "비워두면 포스 준비금"}</small></span><input class="input" id="cPrep" inputmode="numeric" placeholder="원" value="${prep != null ? prep.toLocaleString() : ""}"></label></div>
-    <div class="desc" style="margin-top:12px">장수, 개수만 넣으면 돼요 (없으면 비워 두세요) <em class="req">*</em></div>
-    <div class="cash">${CASH.map(([id, label, unit]) => `<label><span>${label}</span><input class="input" id="${id}" inputmode="numeric" placeholder="${unit}"></label>`).join("")}</div>
+  // 10/19 저녁 사장님 "개복잡": 기본 화면은 돈통, 리뷰/각인, 확인 2개, 지출 버튼만. 포스 숫자를 고칠 때만 아래 '직접 입력'을 펼침
+  openSheet(`<h2>💰 마감 보고</h2><div class="desc">포스 일마감을 먼저 하고, <b>돈통만 세면 돼요.</b></div>
+    <div class="grp">돈통 <small>장수, 개수</small></div>
+    <div class="cash big">${CASH.slice(0, 2).map(([id, label, unit]) => `<label><span>${label}</span><input class="input" id="${id}" inputmode="numeric" placeholder="${unit}"></label>`).join("")}</div>
+    <div class="cash coins">${CASH.slice(2).map(([id, label, unit]) => `<label><span>${label}</span><input class="input" id="${id}" inputmode="numeric" placeholder="${unit}"></label>`).join("")}</div>
     <div class="cashsum" id="cSij"></div>
-    <textarea class="input" id="cWhy" rows="2" placeholder="차액이 난 이유 (예: 잔돈 5만원 바꿔 옴, 퀵비 현금 지급)" style="display:none"></textarea>
-    <div class="grp">은행</div><div class="cash"><label><span>마지막 잔액</span><input class="input" id="bankBal" inputmode="numeric" placeholder="원"></label><label><span>마지막 입금자</span><input class="input" id="bankName" maxlength="20" placeholder="이름"></label></div>
-    <div class="grp">판매 <small>비워두면 포스에서 자동</small></div><div class="cash">${KPI_IN.map((x) => fld(x, 0)).join("")}</div><div class="kpig" id="cKpi"></div>
+    <textarea class="input" id="cWhy" rows="2" placeholder="차액이 난 이유 (예: 잔돈 5만원 바꿔 옴)" style="display:none"></textarea>
+    <div class="grp">리뷰, 각인</div><div class="cash"><label><span>리뷰</span><input class="input" id="cRev" inputmode="numeric" placeholder="개"></label><label><span>각인</span><input class="input" id="cEng" inputmode="numeric" placeholder="개"></label></div>
     <div class="grp">확인</div><button class="check" data-cck="hn"><i>✓</i>히난충 OFF 확인</button><button class="check" data-cck="vm"><i>✓</i>자판기 이상무</button>
-    <div class="desc" style="margin-top:8px">마감 인원: ${esc(working().join(", "))}</div>
+    <div id="cExp"></div><button class="btn sm" data-go="expadd" id="expBtn">＋ 오늘 현금 지출이 있었어요</button>
+    <div class="desc" style="margin-top:14px">마감 인원: ${esc(working().join(", "))}</div>
+    <button class="morebtn" data-go="cmore">포스 숫자가 틀릴 때만 → 직접 입력</button>
+    <div id="cMore" style="display:none">
+      <div class="desc" style="margin-top:6px">비워 두면 포스 숫자를 써요. 적은 칸만 포스 대신 이 숫자로 저장돼요.</div>
+      <div class="grp">마감 날짜 <small>지난 날짜면 나중 입력</small></div><input class="input" id="cDate" type="date" value="${todayKey()}" max="${todayKey()}">
+      <div class="grp">매출</div><div class="cash">${SALES.map((x) => fld(x, 1)).join("")}</div><div class="cashsum" id="cSales"></div>
+      <div class="grp">오늘 준비금</div><input class="input" id="cPrep" inputmode="numeric" placeholder="${prep != null ? prep.toLocaleString() + " (어제 남긴 돈)" : "원"}">
+      <div class="grp">은행</div><div class="cash"><label><span>마지막 잔액</span><input class="input" id="bankBal" inputmode="numeric" placeholder="원"></label><label><span>마지막 입금자</span><input class="input" id="bankName" maxlength="20" placeholder="이름"></label></div>
+      <div class="grp">판매 개수</div><div class="cash">${KPI_IN.filter(([id]) => id !== "cRev" && id !== "cEng").map((x) => fld(x, 0)).join("")}</div><div class="kpig" id="cKpi"></div>
+    </div>
     <div class="sv-bar"><div class="btns" style="margin:0"><button class="btn" data-x>취소</button><button class="btn primary" id="okClose">보고 보내기</button></div></div>`);
   closeCalc();
 }
@@ -550,9 +560,7 @@ function closeCalc() {
   $("#cSales").innerHTML = `<div class="hi"><span>총매출 (자동)</span><b>${sales.toLocaleString()}원</b></div>`;
   const drawer = cashTotal(), sij = sijae(), exp = expSum(), ok = has("cPrep") && drawer > 0 && has("pCash");
   const diff = ok ? drawer - (numv("cPrep") + numv("pCash") - exp) : null;
-  $("#cSij").innerHTML = `<div><span>돈통 합계</span><b>${drawer.toLocaleString()}원</b></div><div class="hi"><span>시재 (자동)</span><b>${sij.toLocaleString()}원</b></div><div><span>내일 준비금</span><b>${(drawer - sij).toLocaleString()}원</b></div>
-    <div class="diff ${diff == null ? "" : diff ? "bad" : "good"}"><span>현금 차액</span><b>${diff == null ? "보내면 포스 숫자로 계산돼요" : (diff > 0 ? "+" : "") + diff.toLocaleString() + "원"}</b></div>
-    <p>준비금 + 현금매출 − 지출 = 돈통이어야 해요 · 만원권 10장은 내일 준비금으로 남겨요</p>`;
+  $("#cSij").innerHTML = `<div class="hi"><span>시재 (자동)</span><b>${sij.toLocaleString()}원</b></div><div><span>내일 준비금</span><b>${(drawer - sij).toLocaleString()}원</b></div><p>돈통 합계 ${drawer.toLocaleString()}원 · 만원권 10장은 내일 준비금으로 남겨요</p>${diff != null ? `<div class="diff ${diff ? "bad" : "good"}"><span>현금 차액</span><b>${(diff > 0 ? "+" : "") + diff.toLocaleString()}원</b></div>` : ""}`;
   $("#cWhy").style.display = diff ? "" : "none";
   const b = numv("kBills"), pr = (a, c) => (c ? Math.round((a / c) * 1000) / 10 + "%" : "-");
   $("#cKpi").innerHTML = [["객단가", b ? Math.round(sales / b).toLocaleString() + "원" : "-"], ["객당 프리미엄", b ? (Math.round((numv("kPrem") / b) * 10) / 10) + "병" : "-"], ["지정판매율", pr(numv("kDes"), numv("kPrem"))],
@@ -569,7 +577,7 @@ function closeConfirm() {
   [...sh.children].forEach((el) => { if (!el.classList.contains("cconf")) el.style.display = "none"; });
   const box = document.createElement("div"); box.className = "cconf";
   box.innerHTML = `<h2>꼼꼼히 확인하셨나요?</h2><div class="desc">보내면 팀장님께 바로 보고돼요. 포스 화면과 숫자가 같은지 한 번 더 봐 주세요.</div>
-    <div class="cashsum" style="margin-top:14px">${SALES.map(([id, l]) => `<div><span>${l}</span><b>${has(id) ? w(numv(id)) : "포스 자동"}</b></div>`).join("")}<div class="hi"><span>총매출</span><b>${k.sales ? w(k.sales) : "포스 자동"}</b></div></div>
+    ${SALES.some(([id]) => has(id)) ? `<div class="cashsum" style="margin-top:14px">${SALES.filter(([id]) => has(id)).map(([id, l]) => `<div><span>${l} (직접 입력)</span><b>${w(numv(id))}</b></div>`).join("")}</div>` : ""}
     <div class="cashsum" style="margin-top:10px"><div><span>오늘 준비금</span><b>${has("cPrep") ? w(numv("cPrep")) : "포스 자동"}</b></div><div><span>현금 지출 ${CX.filter((x) => x.a).length}건</span><b>${w(k.exp)}</b></div><div><span>돈통 합계</span><b>${w(k.drawer)}</b></div><div class="hi"><span>시재</span><b>${w(k.sij)}</b></div><div><span>내일 준비금</span><b>${w(k.drawer - k.sij)}</b></div>
       <div class="diff ${k.diff == null ? "" : k.diff ? "bad" : "good"}"><span>현금 차액</span><b>${k.diff == null ? "보내면 포스 숫자로 계산돼요" : (k.diff > 0 ? "+" : "") + w(k.diff)}</b></div>${k.diff ? `<p>사유: ${esc($("#cWhy").value.trim())}</p>` : ""}</div>
     <div class="cashsum" style="margin-top:10px"><div><span>마감 날짜</span><b>${$("#cDate").value}${$("#cDate").value !== todayKey() ? " (나중 입력)" : ""}</b></div><div><span>은행 잔액</span><b>${has("bankBal") ? w(numv("bankBal")) + " · " + esc($("#bankName").value.trim()) : "-"}</b></div>
@@ -902,6 +910,8 @@ document.addEventListener("click", (e) => {
   if (t.dataset.go === "survey") return sheetSurvey();
   if (t.dataset.go === "closing") return sheetClosing();
   if (t.dataset.cck) return t.classList.toggle("on");
+  if (go === "cmore") { const m = $("#cMore"), on = m.style.display === "none"; m.style.display = on ? "" : "none"; t.textContent = on ? "직접 입력 접기" : "포스 숫자가 틀릴 때만 → 직접 입력"; return; }
+  if (go === "expadd") { const eb = $("#expBtn"); if (eb) eb.textContent = "＋ 지출 하나 더"; }
   if (go === "expadd") { if (CX.length >= 8) return toast("지출은 8건까지 적을 수 있어요"); CX.push({ n: "", a: 0 }); expDraw(); const el = document.querySelector(`[data-exn="${CX.length - 1}"]`); if (el) el.focus(); return; }
   if (t.dataset.exdel) { CX.splice(+t.dataset.exdel, 1); expDraw(); return closeCalc(); }
   if (t.id === "okClose") return closeConfirm();
