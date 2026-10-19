@@ -150,7 +150,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.19-12";
+const VER = "10.19-13";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -192,12 +192,13 @@ const st = () => {
   return s;
 };
 // 10/19 기기끼리 출근이 늦게 보이던 문제: 깃허브 페이지(배포 1~3분 걸림) 대신 깃허브 API로 바로 읽음. ETag 로 안 바뀌면 304(횟수 제한에 안 셈), 막히면 페이지로
-const GH_ETAG = {}, GH_CACHE = {};
+const GH_ETAG = {}, GH_CACHE = {}; let GH_OFF_UNTIL = 0;
 async function ghJson(file) {
-  try {
+  if (Date.now() > GH_OFF_UNTIL) try {
     const r = await fetch(`https://api.github.com/repos/officialvafriend/vape/contents/staff/${file}`, { headers: { Accept: "application/vnd.github.raw", ...(GH_ETAG[file] ? { "If-None-Match": GH_ETAG[file] } : {}) }, cache: "no-store" });
     if (r.status === 304 && GH_CACHE[file]) return GH_CACHE[file];
     if (r.ok) { GH_ETAG[file] = r.headers.get("ETag"); return (GH_CACHE[file] = await r.json()); }
+    if (r.status === 403 || r.status === 429) GH_OFF_UNTIL = Date.now() + 10 * 60e3; // 10/19 시간당 한도 차면 10분 동안 깃허브 페이지로만
   } catch {}
   return (await fetch(`${file}?${Date.now()}`, { cache: "no-store" })).json();
 }
