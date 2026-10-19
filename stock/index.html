@@ -108,7 +108,11 @@ const KEY = `vf-stock-${B}`;
 const ls = { get: (k, d) => { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } }, set: (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} } };
 // 지난 값: 이 기기에서 마지막으로 보낸 보고가 있으면 그것, 없으면 노션 값
 const last = ls.get(KEY + "-last", null);
-const prev = (i) => last?.v?.[i] ?? ITEMS[i].v[COLS.indexOf(B)];
+// 10/19 포스 숫자: 운영봇이 30분마다 올리는 staff/stockpos.json (본사 계정으로 읽은 지점 현재고). 있으면 '포스 N'이 기준
+let POSV = null;
+const posOf = (i) => (POSV && POSV.items && POSV.items[ITEMS[i].n] != null ? POSV.items[ITEMS[i].n] : null);
+const prev = (i) => posOf(i) ?? last?.v?.[i] ?? ITEMS[i].v[COLS.indexOf(B)];
+fetch("../staff/stockpos.json?" + Date.now(), { cache: "no-store" }).then((r) => r.json()).then((j) => { const x = j.br && j.br[B]; if (x && x.d === new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10)) { POSV = x; render(); } }).catch(() => {});
 let cur = ls.get(KEY + "-draft", {}); // 작성 중인 값 (새로고침해도 유지)
 let who = (qs.get("by") || "").trim().slice(0, 40) || ls.get("vf-stock-who", ""); // 직원앱에서 오면 출근한 사람 이름이 미리 들어감 (10/19)
 const $ = (s) => document.querySelector(s);
@@ -120,9 +124,9 @@ function rowHtml(it, i) {
   const has = v !== undefined && v !== "";
   const diff = has ? v - p : 0;
   const big = has && p > 0 && Math.abs(diff) > Math.max(10, p * 0.5); // 지난번보다 크게 다르면 표시
-  return `<div class="it ${has ? "done" : ""} ${big ? "warn" : ""}" id="r${i}"><div class="nm"><b>${esc(it.n)}</b><span>지난 보고 ${p}${has && diff ? ` · <em class="${diff > 0 ? "up" : "dn"}">${diff > 0 ? "+" : ""}${diff}</em>` : ""}${big ? " · 숫자 다시 확인" : ""}</span></div>
+  return `<div class="it ${has ? "done" : ""} ${big ? "warn" : ""}" id="r${i}"><div class="nm"><b>${esc(it.n)}</b><span>${posOf(i) != null ? "포스 " : "지난 보고 "}${p}${has && diff ? ` · <em class="${diff > 0 ? "up" : "dn"}">${diff > 0 ? "+" : ""}${diff}</em>` : ""}${big ? " · 숫자 다시 확인" : ""}</span></div>
     <div class="ctl"><button data-m="${i}">−</button><input inputmode="numeric" data-i="${i}" value="${has ? v : ""}" placeholder="${p}"><button data-p="${i}">+</button></div>
-    ${has ? "" : `<button class="same" data-same="${i}">그대로</button>`}</div>`;
+    ${has ? "" : `<button class="same" data-same="${i}">${posOf(i) != null ? "포스와 같음" : "그대로"}</button>`}</div>`;
 }
 function render() {
   const done = ITEMS.filter((_, i) => cur[i] !== undefined && cur[i] !== "").length;
@@ -131,7 +135,7 @@ function render() {
   ${TEST ? `<div class="card" style="background:#fff1f0;border:2px solid #e5484d;color:#b42318;font-weight:700">🧪 시험 모드 — 노션 재고표·시트·지난 보고 숫자는 안 바뀌어요. 디스코드에 [시험]으로만 올라가요.</div>` : ""}
   <div class="card"><div class="h">보고하는 사람</div><div class="who"><input id="who" placeholder="이름 (출근한 근무자)" value="${esc(who)}"></div>
     <div class="prog"><div class="bar"><i style="width:${(done / ITEMS.length) * 100}%"></i></div><span>${done} / ${ITEMS.length}</span></div>
-    <div class="s">실제로 센 개수를 넣어 주세요. 지난 보고와 같으면 [그대로]를 누르면 돼요. 크게 다르면 빨간 테두리가 생겨요.</div></div>
+    <div class="s">${POSV ? `포스 재고(${esc(POSV.t)} 기준)를 미리 보여드려요. 실제와 같으면 [포스와 같음], 다르면 센 개수를 넣어 주세요.` : "실제로 센 개수를 넣어 주세요. 지난 보고와 같으면 [그대로]를 누르면 돼요. 크게 다르면 빨간 테두리가 생겨요."}</div>${POSV ? `<button class="same" data-allpos style="margin-top:10px;width:100%;height:46px">포스 숫자로 한 번에 채우기 (${ITEMS.filter((_, i) => posOf(i) != null).length}개)</button>` : ""}</div>
   <div class="grp">팟 · 코일 · 공팟</div>${ITEMS.map((it, i) => (isDevice(it.n) ? "" : rowHtml(it, i))).join("")}
   <div class="grp">기기</div>${ITEMS.map((it, i) => (isDevice(it.n) ? rowHtml(it, i) : "")).join("")}
   <div class="note">버전 ${VER}<br>지난 보고 숫자는 처음엔 노션(10/1) 값, 한 번 보내면 이 기기에서 보낸 값이에요.</div>`;
@@ -146,6 +150,7 @@ document.addEventListener("click", (e) => {
   if (t.dataset.m !== undefined) { const i = t.dataset.m; setv(i, (cur[i] ?? prev(i)) - 1); return refreshRow(i); }
   if (t.dataset.p !== undefined) { const i = t.dataset.p; setv(i, (cur[i] ?? prev(i)) + 1); return refreshRow(i); }
   if (t.dataset.same !== undefined) { const i = t.dataset.same; setv(i, prev(i)); return refreshRow(i); }
+  if (t.dataset.allpos !== undefined) { ITEMS.forEach((_, i) => { if (posOf(i) != null && (cur[i] === undefined || cur[i] === "")) setv(i, posOf(i)); }); return render(); }
 });
 document.addEventListener("change", (e) => { if (e.target.dataset.i !== undefined) { setv(e.target.dataset.i, e.target.value); refreshRow(e.target.dataset.i); } });
 document.addEventListener("input", (e) => { if (e.target.id === "who") { who = e.target.value.trim(); ls.set("vf-stock-who", who); } });
