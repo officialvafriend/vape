@@ -117,11 +117,13 @@
 .embar{display:flex;gap:6px;overflow-x:auto;padding:10px 14px;background:var(--card);border-bottom:1px solid var(--line2);flex:none}
 .embar .chip{flex:none;padding:8px 12px;border-radius:10px;background:var(--bg);font-weight:600;font-size:14px;color:var(--ink2)}
 .embar .chip.on{background:var(--blue);color:#fff}
+.ops td small{display:block;font-size:11px;font-weight:600}
 /* 10/19 KPI: 버튼 36px 14px, 숫자 24px, 표 14px 40px, 홈 상위/하위 두 칸 */
 .kbar{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px}
 .kbar .chip{height:36px;padding:0 12px;border-radius:10px;background:var(--card);font-weight:600;font-size:14px;color:var(--ink2);border:1px solid var(--line2)}
 .kbar .chip.on{background:var(--blue);color:#fff;border-color:var(--blue)}
 .ops.kt td{padding-top:9px;padding-bottom:9px}
+.ops.kt{min-width:0}.ops.kt td.g{color:var(--green);font-weight:800}.ops.kt td.r{color:var(--red);font-weight:800}
 .krank{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .khd{font-size:13px;font-weight:800;padding:12px 16px 4px}
 @media (max-width:899px){.krank{grid-template-columns:1fr}}
@@ -269,12 +271,12 @@ function render() {
   $("#app").innerHTML = `<div class="shell"><aside class="side"><div class="logo">VAFRIEND <b>관리자</b></div>
       ${navs.map(([k, n]) => `<button class="navb ${tab === k ? "on" : ""}" data-tab="${k}">${ICON[k]}${n}</button>`).join("")}
       <div class="foot"><button class="navb" data-act="reload">↻ ${hh ? `${hh}:${mm} 기준` : "새로고침"}</button><button class="navb" data-act="logout">🔒 잠그기</button></div></aside>
-    <main class="main ${EMBED[tab] ? "embm" : ""}">${tab === "home" || EMBED[tab] ? body : `<div class="narrow">${body}</div>`}</main></div>`;
+    <main class="main ${EMBED[tab] ? "embm" : ""}">${tab === "home" || tab === "kpi" || EMBED[tab] ? body : `<div class="narrow">${body}</div>`}</main></div>`;
   markEmb();
   if (tab === "home") { $("#panel").innerHTML = panelKeep || panelDefault(); bindSparks(); }
 }
 // ── KPI (10/19) ── 데이터: 운영봇 kpiData() (노션 근무자별 ~10/13 + 직원앱 마감 보고 10/20~). 비율 식은 부록C
-let kpiB = ls.get("vf-admin-kpib") || "전체", kpiP = ls.get("vf-admin-kpip") || "week";
+let kpiB = ls.get("vf-admin-kpib") || "전체", kpiP = ls.get("vf-admin-kpip") || "week", kpiM = ls.get("vf-admin-kpim") || "staff", kpiS = ls.get("vf-admin-kpis") || "last30";
 const pct = (a, b) => (b ? (Math.round((a / b) * 1000) / 10).toFixed(1) + "%" : "-");
 const man = (n) => (n == null ? "-" : n >= 10000 ? (Math.round(n / 1000) / 10).toFixed(1) + "만" : won(n));
 const kLabel = (g) => (kpiP === "week" ? `${g.from.slice(5).replace("-", "/")}~${g.to.slice(5).replace("-", "/")}` : g.k.replace("-", "년 ") + "월");
@@ -283,12 +285,22 @@ function kTile(label, cur, prev, fmt, rate) {
   const v = cur == null ? null : cur, pv = prev == null ? null : prev, ch = v != null && pv ? (v - pv) / pv : null;
   return `<div class="kpi"><div class="eyebrow">${label}</div><div class="num" style="font-size:24px">${v == null ? "-" : fmt(v)}</div><div class="caption ${ch == null ? "" : ch >= 0 ? "t-good" : "t-bad"}">${ch == null ? "지난 기간 기록 없음" : `지난 기간보다 ${ch >= 0 ? "+" : ""}${(Math.round(ch * 1000) / 10).toFixed(1)}${rate ? "%p" : "%"}`}</div></div>`;
 }
-function kRow(label, g) {
-  return `<tr><td><b>${label}</b></td><td>${g.days}</td><td>${won(g.sales)}</td><td>${g.days ? won(Math.round(g.sales / g.days)) : "-"}</td><td>${g.bills}</td><td>${g.bills ? won(Math.round(g.sales / g.bills)) : "-"}</td><td>${pct(g.des, g.prem)}</td><td>${pct(g.disp, g.bills)}</td><td>${pct(g.valm, g.dev)}</td><td>${pct(g.rev, g.bills)}</td></tr>`;
+// 10/19 사장님 "보기 불편": 금액은 만 원 단위, 비율 칸은 표 안에서 제일 높은 칸 초록, 낮은 칸 빨강(hl)
+const m1 = (n) => (n == null || !isFinite(n) ? "-" : (Math.round(n / 1000) / 10).toLocaleString() + "만");
+const kVals = (g) => ({ des: g.prem ? g.des / g.prem : null, disp: g.bills ? g.disp / g.bills : null, valm: g.dev ? g.valm / g.dev : null, rev: g.bills ? g.rev / g.bills : null, ticket: g.bills ? g.sales / g.bills : null, avg: g.days ? g.sales / g.days : null });
+function kRow(label, g, hl = {}) {
+  const v = kVals(g), c = (k) => (hl[k] && v[k] != null ? (v[k] === hl[k].max ? ' class="g"' : v[k] === hl[k].min ? ' class="r"' : "") : "");
+  return `<tr><td><b>${label}</b></td><td>${g.days}</td><td>${m1(g.sales)}</td><td${c("avg")}>${m1(v.avg)}</td><td>${g.bills.toLocaleString()}</td><td${c("ticket")}>${v.ticket == null ? "-" : (v.ticket / 10000).toFixed(1) + "만"}</td><td${c("des")}>${pct(g.des, g.prem)}</td><td${c("disp")}>${pct(g.disp, g.bills)}</td><td${c("valm")}>${pct(g.valm, g.dev)}</td><td${c("rev")}>${pct(g.rev, g.bills)}</td></tr>`;
 }
-const kHead = (first) => `<thead><tr><th>${first}</th><th>영업일</th><th>매출</th><th>하루 평균</th><th>객수</th><th>객단가</th><th>지정판매율</th><th>일회용판매율</th><th>발맥프로율</th><th>리뷰율</th></tr></thead>`;
+const kHL = (list) => { const o = {}; for (const k of ["avg", "ticket", "des", "disp", "valm", "rev"]) { const xs = list.map((g) => kVals(g)[k]).filter((x) => x != null); if (xs.length > 1) o[k] = { max: Math.max(...xs), min: Math.min(...xs) }; } return o; };
+const kHead = (first) => `<thead><tr><th>${first}</th><th>영업일</th><th>매출(원)</th><th>하루 평균</th><th>객수</th><th>객단가</th><th>지정판매율</th><th>일회용판매율</th><th>발맥프로율</th><th>리뷰율</th></tr></thead>`;
 function kpiHtml() {
   const K = D.kpi; if (!K) return '<div class="empty">KPI 기록을 아직 못 불러왔어요</div>';
+  const modeBar = `<div class="kbar">${[["staff", "직원별"], ["branch", "지점별"]].map(([k, n]) => `<button class="chip ${kpiM === k ? "on" : ""}" data-kpim="${k}">${n}</button>`).join("")}</div>`;
+  if (kpiM === "staff") return modeBar + staffKpiHtml(K);
+  return modeBar + branchKpiHtml(K);
+}
+function branchKpiHtml(K) {
   const A = K.agg[kpiP] || {};
   const bar = `<div class="kbar">${["전체", ...BR].map((b, i) => `<button class="chip ${kpiB === b ? "on" : ""}" data-kpib="${b}">${b === "전체" ? "전체" : i + " " + b}</button>`).join("")}<span style="flex:1"></span>${[["week", "주별"], ["month", "월별"]].map(([k, n]) => `<button class="chip ${kpiP === k ? "on" : ""}" data-kpip="${k}">${n}</button>`).join("")}</div>`;
   let tiles = "", table = "";
@@ -299,11 +311,11 @@ function kpiHtml() {
     tiles = kTiles(cur, pv);
     const rows = BR.map((b) => [b, (A[b] || []).find((g) => g.k === last)]).filter(([, g]) => g);
     const lab = rows[0] ? kLabel(rows[0][1]) : "";
-    table = `<div class="sec">지점 비교 <small>${esc(lab)}</small></div><div class="opsw"><table class="ops kt">${kHead("지점")}<tbody>${rows.map(([b, g]) => kRow(`${BR.indexOf(b) + 1} ${b}`, g)).join("")}${kRow("합계", { ...cur })}</tbody></table></div>`;
+    table = `<div class="sec">지점 비교 <small>${esc(lab)}</small></div><div class="opsw"><table class="ops kt">${kHead("지점")}<tbody>${(() => { const hl = kHL(rows.map(([, g]) => g)); return rows.map(([b, g]) => kRow(`${BR.indexOf(b) + 1} ${b}`, g, hl)).join(""); })()}${kRow("합계", { ...cur })}</tbody></table></div>`;
   } else {
     const L = A[kpiB] || []; if (!L.length) return bar + '<div class="empty">이 지점은 KPI 기록이 없어요</div>';
     tiles = kTiles(L.at(-1), L.at(-2));
-    table = `<div class="sec">${kpiP === "week" ? "주별" : "월별"} 기록 <small>최근 ${Math.min(12, L.length)}개</small></div><div class="opsw"><table class="ops kt">${kHead(kpiP === "week" ? "주" : "월")}<tbody>${L.slice(-12).reverse().map((g) => kRow(kLabel(g), g)).join("")}</tbody></table></div>`;
+    table = `<div class="sec">${kpiP === "week" ? "주별" : "월별"} 기록 <small>최근 ${Math.min(12, L.length)}개</small></div><div class="opsw"><table class="ops kt">${kHead(kpiP === "week" ? "주" : "월")}<tbody>${(() => { const LL = L.slice(-12).reverse(), hl = kHL(LL); return LL.map((g) => kRow(kLabel(g), g, hl)).join(""); })()}</tbody></table></div>`;
   }
   return `<div class="pchead"><h1>KPI</h1><div class="caption">${esc(K.lastDate)}까지 기록, 노션 기록(10/13까지) + 직원앱 마감 보고</div></div>${bar}${tiles}${table}
     <div class="caption" style="margin-top:10px">객단가 = 매출 ÷ 객수, 지정판매율 = 지정 ÷ 프리미엄, 일회용판매율 = 일회용 ÷ 객수, 발맥프로율 = 발맥 ÷ 입호흡, 리뷰율 = 리뷰 ÷ 객수. 5월부터 프리미엄 병수 세는 기준이 바뀐 것으로 보여 그 전후 지정판매율은 비교가 어려워요.</div>`;
@@ -313,13 +325,26 @@ function kTiles(c, p) {
   const salesTile = c.days === p?.days ? kTile("매출 합계", c.sales, p?.sales, won) : `<div class="kpi"><div class="eyebrow">매출 합계</div><div class="num" style="font-size:24px">${won(c.sales)}</div><div class="caption">${c.days}일 기록${p?.days ? ` (지난 기간 ${p.days}일이라 비교는 하루 평균으로)` : ""}</div></div>`;
   return `<div class="kpis">${salesTile}${kTile("하루 평균 매출", r(c.sales, c.days), r(p?.sales, p?.days), (v) => won(Math.round(v)))}${kTile("객단가", r(c.sales, c.bills), r(p?.sales, p?.bills), (v) => won(Math.round(v)))}${kTile("지정판매율", r(c.des, c.prem), r(p?.des, p?.prem), (v) => (Math.round(v * 1000) / 10).toFixed(1) + "%")}</div>`;
 }
-// 홈: 최근 7일 합산 점수 상위 3, 하위 3
+// ── 직원 KPI (10/19) ── 그날 마감 근무자 전원에게 그날 지점 숫자를 나눠 줌. 순위는 근무 지점 평균 대비(매출, 지정판매율, 객단가, 리뷰율) 4가지 순위 합, 근무 5일 미만 제외
+const fP = (v) => (v == null ? "-" : (v * 100).toFixed(1) + "%");
+const fD = (v, unit = "%") => (v == null ? "" : `<small class="${v >= 0 ? "t-good" : "t-bad"}">${v >= 0 ? "+" : ""}${(v * 100).toFixed(1)}${unit}</small>`);
+const SP = { last30: "최근 30일", month: "이번 달", prevMonth: "지난달" };
+function staffKpiHtml(K) {
+  const S = K.staff?.[kpiS]; if (!S) return '<div class="empty">직원 KPI 기록이 없어요</div>';
+  const bar = `<div class="kbar">${Object.entries(SP).map(([k, n]) => `<button class="chip ${kpiS === k ? "on" : ""}" data-kpis="${k}">${n}</button>`).join("")}<span style="flex:1"></span>${["전체", ...BR].map((b, i) => `<button class="chip ${kpiB === b ? "on" : ""}" data-kpib="${b}">${b === "전체" ? "전체" : i + " " + b}</button>`).join("")}</div>`;
+  const rows = S.rows.filter((r) => kpiB === "전체" || r.b === kpiB);
+  const tr = (r) => `<tr><td><b>${r.score != null ? S.rows.filter((x) => x.score != null).indexOf(r) + 1 + ". " : ""}${esc(r.n)}</b><small>${esc(r.b)}</small></td><td>${r.days}<small>혼자 ${r.solo}</small></td><td>${fD(r.vs).replace("<small", "<b").replace("</small>", "</b>") || "-"}</td><td>${r.ticket ? won(Math.round(r.ticket)) : "-"}${fD(r.ticketVs)}</td><td>${fP(r.des)}${fD(r.desVs, "%p")}</td><td>${fP(r.disp)}</td><td>${fP(r.revRate)}${fD(r.revVs, "%p")}</td><td>${r.score ?? "<small>근무 5일 미만</small>"}</td></tr>`;
+  return `<div class="pchead"><h1>직원 KPI</h1><div class="caption">${esc(S.from)} ~ ${esc(S.to)}, 근무 5일 이상만 순위</div></div>${bar}
+    <div class="opsw"><table class="ops kt"><thead><tr><th>직원</th><th>근무일</th><th>하루 매출(지점 대비)</th><th>객단가</th><th>지정판매율</th><th>일회용판매율</th><th>리뷰율</th><th>점수</th></tr></thead><tbody>${rows.map(tr).join("") || '<tr><td colspan="8">기록 없음</td></tr>'}</tbody></table></div>
+    <div class="caption" style="margin-top:10px">포스에 판매자가 안 찍혀서, 그날 마감에 적힌 근무자 전원이 그날 지점 숫자를 같이 받아요(여러 명이 같이 일한 날은 개인 차이가 흐려져요). 작은 글씨 %는 그 직원이 일한 지점 평균과의 차이예요. 점수 = 하루 매출, 지정판매율, 객단가, 리뷰율을 지점 평균 대비로 각각 순위 매겨 더한 값(낮을수록 좋음). 이름이 다르게 적힌 사람은 운영봇 data\\직원이름_별칭.json 에서 합쳐요.</div>`;
+}
+// 홈: 직원 KPI 상위 3, 하위 3 (최근 30일)
 function kpiRankHtml() {
-  const R = D.kpi?.rank; if (!R || !R.rows.length) return "";
-  const line = (x, i) => `<div class="item"><div class="av ${i < 3 ? "good" : "bad"}">${R.rows.indexOf(x) + 1}</div><div class="tx"><b>${BR.indexOf(x.b) + 1} ${esc(x.b)} <small class="t-sub" style="font-weight:600">점수 ${x.score}</small></b><span>지정 ${x.des == null ? "-" : (x.des * 100).toFixed(1) + "%"}, 매출 ${x.growth == null ? "-" : (x.growth >= 0 ? "+" : "") + (x.growth * 100).toFixed(1) + "%"}, 객단가 ${man(x.ticket && Math.round(x.ticket))}, 리뷰 ${x.revRate == null ? "-" : (x.revRate * 100).toFixed(1) + "%"}</span></div></div>`;
-  const top = R.rows.slice(0, 3), bot = R.rows.slice(-3).reverse();
-  return `<div class="sec">KPI 순위 <small>${R.from.slice(5).replace("-", "/")}~${R.to.slice(5).replace("-", "/")}, 4가지 순위 합(낮을수록 좋음)</small></div>
-    <div class="krank"><div class="list"><div class="khd t-good">상위 3</div>${top.map(line).join("")}</div><div class="list"><div class="khd t-bad">하위 3</div>${bot.map(line).join("")}</div></div>`;
+  const S = D.kpi?.staff?.last30; if (!S) return "";
+  const ok = S.rows.filter((r) => r.score != null); if (ok.length < 2) return "";
+  const line = (x) => `<div class="item"><div class="av ${ok.indexOf(x) < 3 ? "good" : "bad"}">${ok.indexOf(x) + 1}</div><div class="tx"><b>${esc(x.n)} <small class="t-sub" style="font-weight:600">${esc(x.b)}, 점수 ${x.score}</small></b><span>매출 ${x.vs == null ? "-" : (x.vs >= 0 ? "+" : "") + (x.vs * 100).toFixed(1) + "%"}, 지정 ${fP(x.des)}, 객단가 ${man(x.ticket && Math.round(x.ticket))}, 리뷰 ${fP(x.revRate)}, 근무 ${x.days}일</span></div></div>`;
+  return `<div class="sec">직원 KPI 순위 <small>${S.from.slice(5).replace("-", "/")}~${S.to.slice(5).replace("-", "/")}, 근무 지점 평균 대비 4가지 순위 합</small></div>
+    <div class="krank"><div class="list"><div class="khd t-good">상위 3</div>${ok.slice(0, 3).map(line).join("")}</div><div class="list"><div class="khd t-bad">하위 3</div>${ok.slice(-3).reverse().map(line).join("")}</div></div>`;
 }
 function markEmb() { const f = $("#app .emb"); if (f) f.dataset.k = tab + staffB; }
 // PC 홈: 요약 4칸 + 지점별 마감 목록(왼쪽) + 상세 패널(오른쪽)
@@ -582,6 +607,8 @@ document.addEventListener("click", async (e) => {
   if (t.id === "go") return tryLogin();
   if (t.dataset.x !== undefined) return closeSheet();
   if (t.dataset.kpib) { kpiB = t.dataset.kpib; ls.set("vf-admin-kpib", kpiB); return render(); }
+  if (t.dataset.kpim) { kpiM = t.dataset.kpim; ls.set("vf-admin-kpim", kpiM); return render(); }
+  if (t.dataset.kpis) { kpiS = t.dataset.kpis; ls.set("vf-admin-kpis", kpiS); return render(); }
   if (t.dataset.kpip) { kpiP = t.dataset.kpip; ls.set("vf-admin-kpip", kpiP); return render(); }
   if (t.dataset.staffb) { staffB = t.dataset.staffb; ls.set("vf-admin-staffb", staffB); return render(); }
   if (t.dataset.tab) { tab = t.dataset.tab; ls.set("vf-admin-tab", tab); closeSheet(); render(); return scrollTo(0, 0); }
