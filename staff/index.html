@@ -150,7 +150,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.19-6";
+const VER = "10.19-7";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고·메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -220,7 +220,8 @@ function render() {
   const heroW = done < N ? (done / N) * 100 : (cDone / cSteps.length) * 100;
   const stepRow = (n, ok, name, info, btn) => `<div class="step ${ok ? "done" : ""}"><div class="num">${ok ? "✓" : n}</div><div class="tx"><b>${name}</b><span ${info.w ? 'class="w"' : ""}>${info.t}</span></div>${btn}</div>`;
   const openCard = done === N
-    ? `<div class="card"><div class="crow" style="border-top:0"><div><b>✅ 오픈 완료 · 근무 중 ${esc(working.map((x) => x.name).join(", ") || "없음")}</b><span>출근 ${esc(s.ins.map((x) => x.name + " " + x.t + (x.out ? "~" + x.out : "")).join(" · "))} · 오픈 체크 ${s.open.t}${lateMin(s.open.t) ? ` (${lateMin(s.open.t)}분 늦음)` : ""}${sd ? ` · 재고보고 ${sd.t}` : ""}</span></div><button class="act gray" data-go="in">＋ 출근</button></div></div>`
+    ? `<div class="card"><h2>오픈 완료 <small style="font-weight:600">${s.open.t}${lateMin(s.open.t) ? ` · <span style="color:var(--amber)">${lateMin(s.open.t)}분 늦음</span>` : ""}</small></h2>
+      <div class="crow" style="border-top:0"><div><b>근무 중 ${working.length}명</b><span style="font-size:15px;color:var(--ink)">${working.length ? working.map((x) => `${esc(x.name)} <small style="color:var(--sub)">${x.t}~</small>`).join("<br>") : "없음"}</span>${s.ins.some((x) => x.out) ? `<span>퇴근 ${s.ins.filter((x) => x.out).length}명: ${esc(s.ins.filter((x) => x.out).map((x) => x.name).join(", "))}</span>` : ""}</div><button class="act gray" data-go="in">＋ 출근</button></div></div>` // 10/19 사장님 "출근자가 몇 명임? 보기 불편": 근무 중인 사람만 한 줄씩, 퇴근한 사람은 따로 한 줄
     : `<div class="card"><h2>오픈</h2>
       ${stepRow(1, steps[0], "출근", { t: s.ins.length ? s.ins.map((x) => `${esc(x.name)} ${x.t}${x.out ? `~${x.out}` : ""}`).join(" · ") : "아직 안 함" }, `<button class="act ${steps[0] ? "gray" : ""}" data-go="in">${steps[0] ? "추가" : "출근"}</button>`)}
       ${stepRow(2, steps[1], "오픈 체크", s.open ? { t: `${s.open.t} 완료${lateMin(s.open.t) ? ` · ${lateMin(s.open.t)}분 늦음` : ""}${s.open.missed.length ? ` · 못 한 것 ${s.open.missed.length}개` : ""}`, w: s.open.missed.length || lateMin(s.open.t) } : { t: lateMin(now()) ? `오픈 ${OPEN_AT[B]} · 벌써 ${lateMin(now())}분 지났어요` : "아직 안 함", w: lateMin(now()) }, `<button class="act ${steps[1] ? "gray" : ""}" data-go="open">${steps[1] ? "다시" : "체크"}</button>`)}
