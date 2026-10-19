@@ -309,9 +309,10 @@ function branchKpiHtml(K) {
     const curL = Object.values(A).map((l) => l.find((g) => g.k === last)).filter(Boolean), pvL = Object.values(A).map((l) => l.find((g) => g.k === prev)).filter(Boolean);
     const cur = { ...kSum(curL), days: Math.max(0, ...curL.map((g) => g.days)) }, pv = { ...kSum(pvL), days: Math.max(0, ...pvL.map((g) => g.days)) }; // 영업일 = 지점 중 가장 많은 날
     tiles = kTiles(cur, pv);
-    const rows = BR.map((b) => [b, (A[b] || []).find((g) => g.k === last)]).filter(([, g]) => g);
-    const lab = rows[0] ? kLabel(rows[0][1]) : "";
-    table = `<div class="sec">지점 비교 <small>${esc(lab)}</small></div><div class="opsw"><table class="ops kt">${kHead("지점")}<tbody>${(() => { const hl = kHL(rows.map(([, g]) => g)); return rows.map(([b, g]) => kRow(`${BR.indexOf(b) + 1} ${b}`, g, hl)).join(""); })()}${kRow("합계", { ...cur })}</tbody></table></div>`;
+    // 10/19 사장님: 기록 없는 지점도 빼지 말고 0으로 (반월당)
+    const rows = BR.map((b) => [b, (A[b] || []).find((g) => g.k === last) || { ...kSum([{}]), none: true }]);
+    const lab = rows.find(([, g]) => !g.none) ? kLabel(rows.find(([, g]) => !g.none)[1]) : "";
+    table = `<div class="sec">지점 비교 <small>${esc(lab)}</small></div><div class="opsw"><table class="ops kt">${kHead("지점")}<tbody>${(() => { const hl = kHL(rows.filter(([, g]) => !g.none).map(([, g]) => g)); return rows.map(([b, g]) => kRow(`${BR.indexOf(b) + 1} ${b}${g.none ? ' <small style="display:inline;color:var(--sub)">기록 없음</small>' : ""}`, g, hl)).join(""); })()}${kRow("합계", { ...cur })}</tbody></table></div>`;
   } else {
     const L = A[kpiB] || []; if (!L.length) return bar + '<div class="empty">이 지점은 KPI 기록이 없어요</div>';
     tiles = kTiles(L.at(-1), L.at(-2));
