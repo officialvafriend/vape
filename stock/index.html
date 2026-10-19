@@ -165,8 +165,8 @@ $("#send").addEventListener("click", async () => {
     const r = await fetch(HOOK, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ content: JSON.stringify(body), allowed_mentions: { parse: [] } }) });
     if (!r.ok) throw new Error("디스코드 응답 " + r.status);
     let sheetMsg = "디스코드 보고 채널에 올라갔어요.";
-    if (pinOf()) { try { const sr = await fetch(SHEET_API, { method: "POST", body: JSON.stringify({ pin: pinOf(), action: "stockAdd", branch: B, by: who, items: body.items, test: !!TEST }) }); const sj = await sr.json(); sheetMsg = sj.ok ? "지점 시트 '재고보고' 탭과 디스코드에 기록됐어요." : "디스코드엔 올라갔고, 시트 기록은 실패했어요(" + sj.error + ")"; } catch (e) { sheetMsg = "디스코드엔 올라갔고, 시트 기록은 실패했어요(인터넷)"; } }
-    else sheetMsg = "디스코드엔 올라갔어요. 직원앱에서 매장 코드를 넣으면 지점 시트에도 기록돼요.";
+    if (false && pinOf()) { try { const sr = await fetch(SHEET_API, { method: "POST", body: JSON.stringify({ pin: pinOf(), action: "stockAdd", branch: B, by: who, items: body.items, test: !!TEST }) }); const sj = await sr.json(); sheetMsg = sj.ok ? "지점 시트 '재고보고' 탭과 디스코드에 기록됐어요." : "디스코드엔 올라갔고, 시트 기록은 실패했어요(" + sj.error + ")"; } catch (e) { sheetMsg = "디스코드엔 올라갔고, 시트 기록은 실패했어요(인터넷)"; } }
+    else sheetMsg = "디스코드와 지점 시트에 기록돼요."; // 10/19 지점 시트는 운영봇이 기록
     if (!TEST) ls.set(KEY + "-last", { v, at: Date.now(), by: who }); cur = {}; ls.set(KEY + "-draft", {});
     $("#app").innerHTML = `<div class="card done-view"><div class="big">✅</div><b>${HO[B]}호 ${esc(B)} 재고보고 ${TEST ? "시험 " : ""}완료</b><div class="s">${esc(who)} · ${new Date().toTimeString().slice(0, 5)}<br>${esc(sheetMsg)}</div><a class="send" style="display:grid;place-items:center;text-decoration:none;margin-top:22px" href="${backUrl()}">← 직원앱으로 돌아가기</a><div class="s" style="margin-top:8px">3초 뒤 자동으로 돌아가요</div></div>`;
     setTimeout(() => { location.href = backUrl(); }, 3000);
