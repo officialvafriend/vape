@@ -146,7 +146,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.19-3";
+const VER = "10.19-4";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고·메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -209,18 +209,17 @@ function render() {
   if (!B) return renderPick();
   const s = st(), sd = stockDone(), working = s.ins.filter((x) => !x.out);
   const d = new Date();
-  const steps = [s.ins.length > 0, !!s.open, !!sd], done = steps.filter(Boolean).length;
+  const steps = [s.ins.length > 0, !!s.open], done = steps.filter(Boolean).length, N = steps.length; // 10/19 재고는 포스에서 직접 조정 → 오픈은 출근, 오픈 체크 두 단계
   const cSteps = [!!s.close].concat(CLOSE_OK.includes(B) ? [!!(CLOSE_SENT && CLOSE_SENT.status === "done")] : []).concat([s.ins.length > 0 && !working.length]), cDone = cSteps.filter(Boolean).length;
-  const title = done < 3 ? `오픈까지 ${3 - done}단계 남았어요` : cDone === cSteps.length ? "오늘 마감 완료! 수고하셨어요" : `마감까지 ${cSteps.length - cDone}단계 남았어요`;
-  const heroP = done < 3 ? `오픈 ${OPEN_AT[B]} · 출근 → 오픈 체크 → 아침 재고보고` : `✅ 오픈 완료 ${s.open ? s.open.t : ""} · 마감 체크 →${CLOSE_OK.includes(B) ? " 마감 보고 →" : ""} 퇴근`;
-  const heroW = done < 3 ? (done / 3) * 100 : (cDone / cSteps.length) * 100;
+  const title = done < N ? `오픈까지 ${N - done}단계 남았어요` : cDone === cSteps.length ? "오늘 마감 완료! 수고하셨어요" : `마감까지 ${cSteps.length - cDone}단계 남았어요`;
+  const heroP = done < N ? `오픈 ${OPEN_AT[B]} · 출근 → 오픈 체크` : `✅ 오픈 완료 ${s.open ? s.open.t : ""} · 마감 체크 →${CLOSE_OK.includes(B) ? " 마감 보고 →" : ""} 퇴근`;
+  const heroW = done < N ? (done / N) * 100 : (cDone / cSteps.length) * 100;
   const stepRow = (n, ok, name, info, btn) => `<div class="step ${ok ? "done" : ""}"><div class="num">${ok ? "✓" : n}</div><div class="tx"><b>${name}</b><span ${info.w ? 'class="w"' : ""}>${info.t}</span></div>${btn}</div>`;
-  const openCard = done === 3
-    ? `<div class="card"><div class="crow" style="border-top:0"><div><b>✅ 오픈 완료 · 근무 중 ${esc(working.map((x) => x.name).join(", ") || "없음")}</b><span>출근 ${esc(s.ins.map((x) => x.name + " " + x.t + (x.out ? "~" + x.out : "")).join(" · "))} · 오픈 체크 ${s.open.t}${lateMin(s.open.t) ? ` (${lateMin(s.open.t)}분 늦음)` : ""} · 재고보고 ${sd.t}</span></div><button class="act gray" data-go="in">＋ 출근</button></div></div>`
+  const openCard = done === N
+    ? `<div class="card"><div class="crow" style="border-top:0"><div><b>✅ 오픈 완료 · 근무 중 ${esc(working.map((x) => x.name).join(", ") || "없음")}</b><span>출근 ${esc(s.ins.map((x) => x.name + " " + x.t + (x.out ? "~" + x.out : "")).join(" · "))} · 오픈 체크 ${s.open.t}${lateMin(s.open.t) ? ` (${lateMin(s.open.t)}분 늦음)` : ""}${sd ? ` · 재고보고 ${sd.t}` : ""}</span></div><button class="act gray" data-go="in">＋ 출근</button></div></div>`
     : `<div class="card"><h2>오픈</h2>
       ${stepRow(1, steps[0], "출근", { t: s.ins.length ? s.ins.map((x) => `${esc(x.name)} ${x.t}${x.out ? `~${x.out}` : ""}`).join(" · ") : "아직 안 함" }, `<button class="act ${steps[0] ? "gray" : ""}" data-go="in">${steps[0] ? "추가" : "출근"}</button>`)}
       ${stepRow(2, steps[1], "오픈 체크", s.open ? { t: `${s.open.t} 완료${lateMin(s.open.t) ? ` · ${lateMin(s.open.t)}분 늦음` : ""}${s.open.missed.length ? ` · 못 한 것 ${s.open.missed.length}개` : ""}`, w: s.open.missed.length || lateMin(s.open.t) } : { t: lateMin(now()) ? `오픈 ${OPEN_AT[B]} · 벌써 ${lateMin(now())}분 지났어요` : "아직 안 함", w: lateMin(now()) }, `<button class="act ${steps[1] ? "gray" : ""}" data-go="open">${steps[1] ? "다시" : "체크"}</button>`)}
-      ${stepRow(3, steps[2], "아침 재고보고", sd ? { t: `${sd.t} 완료 · ${esc(sd.by || "")}` } : { t: "아직 안 함" }, `<a class="act ${steps[2] ? "gray" : ""}" href="${SITE}stock/?branch=${encodeURIComponent(B)}&by=${encodeURIComponent(working.map((x) => x.name).join(", "))}&back=${encodeURIComponent(location.pathname)}">${steps[2] ? "다시" : "하기"}</a>`)}
     </div>`;
   const closeCard = `<div class="card"><h2>마감</h2>
       ${stepRow("🌙", !!s.close, "마감 체크", s.close ? { t: `${s.close.t} 완료${s.close.missed.length ? ` · 못 한 것 ${s.close.missed.length}개` : ""}`, w: s.close.missed.length } : { t: "아직 안 함" }, `<button class="act ${s.close ? "gray" : ""}" data-go="close">${s.close ? "다시" : "체크"}</button>`)}
@@ -245,12 +244,12 @@ function render() {
   const kpi = (go, label, val, sub, red) => `<button class="kpi ${red ? "red" : ""}" data-view="${go}"><span>${label}</span><b>${val}</b><em>${sub}</em></button>`;
   const kpis = `<div class="kpis">
     ${kpi("work", "지금 근무 중", working.length ? working.length + "명" : "없음", esc(working.map((x) => x.name).join(", ") || (s.ins.length ? "모두 퇴근" : "출근 전")))}
-    ${kpi("work", done < 3 ? "오픈" : "마감", done < 3 ? `${done}/3` : `${cDone}/${cSteps.length}`, done < 3 ? "출근 → 오픈 체크 → 재고보고" : cDone === cSteps.length ? "완료" : "마감 진행 중")}
+    ${kpi("work", done < N ? "오픈" : "마감", done < N ? `${done}/${N}` : `${cDone}/${cSteps.length}`, done < N ? "출근 → 오픈 체크" : cDone === cSteps.length ? "완료" : "마감 진행 중")}
     ${kpi("as", "진행 중 AS", asOpen ? asOpen.length + "건" : asPin() ? "…" : "코드 필요", asLateN ? `7일 넘음 ${asLateN}건` : "", asLateN)}
     ${kpi("talk", "인수인계·고객요청", memoN + creqN + "건", `인수인계 ${memoN} · 고객요청 ${creqN}`)}
   </div>`;
   const body = {
-    home: `<div class="cols"><div>${done < 3 ? openCard : closeCard}${taskCardHtml()}</div><div>${memoCardHtml()}${asPin() ? asCardHtml() : ""}</div></div>`,
+    home: `<div class="cols"><div>${done < N ? openCard : closeCard}${taskCardHtml()}</div><div>${memoCardHtml()}${asPin() ? asCardHtml() : ""}</div></div>`,
     work: `<div class="cols"><div>${openCard}</div><div>${closeCard}</div></div>`,
     stock: `<div class="cols one"><div>${surveyCardHtml()}</div></div>`,
     talk: `<div class="cols"><div>${memoCardHtml()}${creqCardHtml()}</div><div>${reqCard}${myQuicksCard()}</div></div>`,
