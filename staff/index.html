@@ -122,6 +122,22 @@
   .cashsum{margin-top:14px;background:#f2f4f6;border-radius:14px;padding:12px 14px}
   .cashsum div{display:flex;justify-content:space-between;padding:4px 0;font-size:15px}.cashsum div span{color:var(--ink2)}.cashsum .hi b{color:var(--blue);font-size:18px}
   .cashsum p{font-size:12px;color:var(--sub);margin-top:4px}
+  /* 마감 보고 (10/19): 묶음 제목 14px 700, 묶음 사이 20px, 차액 22px 800, KPI 2열 카드 */
+  .sheet .grp{font-size:14px;font-weight:700;color:var(--ink);margin-top:20px;padding-top:16px;border-top:1px solid var(--line)}
+  .sheet .grp small{font-weight:500;color:var(--sub);font-size:12px;margin-left:4px}
+  .cash span small{font-weight:500}
+  em.req{color:var(--red);font-style:normal}
+  .cashsum .hi b{font-weight:800}
+  .cashsum .diff{margin-top:6px;padding-top:10px;border-top:1px solid var(--line)}
+  .cashsum .diff b{font-size:22px;font-weight:800}
+  .cashsum .diff.good b{color:var(--green)} .cashsum .diff.bad b{color:var(--red)} .cashsum .diff:not(.good):not(.bad) b{font-size:14px;font-weight:600;color:var(--sub)}
+  .kpig{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:12px}
+  .kpig div{background:#f2f4f6;border-radius:14px;padding:10px 12px}
+  .kpig span{display:block;font-size:13px;color:var(--sub)} .kpig b{font-size:18px;font-weight:800}
+  .exrow{display:grid;grid-template-columns:1fr 120px 40px;gap:8px;align-items:center}
+  .exrow .input{margin-top:8px} .exdel{height:52px;margin-top:8px;border-radius:14px;background:#f2f4f6;color:var(--sub);font-weight:700}
+  .btn.sm{flex:none;height:44px;padding:0 16px;font-size:15px;margin-top:10px}
+  .btn:disabled{opacity:.45}
 </style>
 </head>
 <body>
@@ -130,10 +146,12 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.14-3";
+const VER = "10.19-1";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고·메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
+// 오픈 체크가 오픈 시간보다 늦은 분 (안 늦었으면 0)
+const lateMin = (t) => { const [h, m] = (t || "").split(":").map(Number), [oh, om] = (OPEN_AT[B] || "").split(":").map(Number); const d = h * 60 + m - (oh * 60 + om); return d > 0 && d < 600 ? d : 0; };
 const OPEN_AT = { 동성로: "11:00", 수성: "10:30", 본점: "11:00", 율하: "10:30", 반월당: "10:30", 상인: "10:30", 광장코아: "11:00", 현풍: "11:00" };
 // 운영봇(운영봇_시험.mjs)의 CHECK와 같은 목록이어야 기록이 맞아요
 const CHECK = {
@@ -198,11 +216,11 @@ function render() {
   const heroW = done < 3 ? (done / 3) * 100 : (cDone / cSteps.length) * 100;
   const stepRow = (n, ok, name, info, btn) => `<div class="step ${ok ? "done" : ""}"><div class="num">${ok ? "✓" : n}</div><div class="tx"><b>${name}</b><span ${info.w ? 'class="w"' : ""}>${info.t}</span></div>${btn}</div>`;
   const openCard = done === 3
-    ? `<div class="card"><div class="crow" style="border-top:0"><div><b>✅ 오픈 완료 · 근무 중 ${esc(working.map((x) => x.name).join(", ") || "없음")}</b><span>출근 ${esc(s.ins.map((x) => x.name + " " + x.t + (x.out ? "~" + x.out : "")).join(" · "))} · 오픈 체크 ${s.open.t} · 재고보고 ${sd.t}</span></div><button class="act gray" data-go="in">＋ 출근</button></div></div>`
+    ? `<div class="card"><div class="crow" style="border-top:0"><div><b>✅ 오픈 완료 · 근무 중 ${esc(working.map((x) => x.name).join(", ") || "없음")}</b><span>출근 ${esc(s.ins.map((x) => x.name + " " + x.t + (x.out ? "~" + x.out : "")).join(" · "))} · 오픈 체크 ${s.open.t}${lateMin(s.open.t) ? ` (${lateMin(s.open.t)}분 늦음)` : ""} · 재고보고 ${sd.t}</span></div><button class="act gray" data-go="in">＋ 출근</button></div></div>`
     : `<div class="card"><h2>오픈</h2>
       ${stepRow(1, steps[0], "출근", { t: s.ins.length ? s.ins.map((x) => `${esc(x.name)} ${x.t}${x.out ? `~${x.out}` : ""}`).join(" · ") : "아직 안 함" }, `<button class="act ${steps[0] ? "gray" : ""}" data-go="in">${steps[0] ? "추가" : "출근"}</button>`)}
-      ${stepRow(2, steps[1], "오픈 체크", s.open ? { t: `${s.open.t} 완료${s.open.missed.length ? ` · 못 한 것 ${s.open.missed.length}개` : ""}`, w: s.open.missed.length } : { t: "아직 안 함" }, `<button class="act ${steps[1] ? "gray" : ""}" data-go="open">${steps[1] ? "다시" : "체크"}</button>`)}
-      ${stepRow(3, steps[2], "아침 재고보고", sd ? { t: `${sd.t} 완료 · ${esc(sd.by || "")}` } : { t: "아직 안 함" }, `<a class="act ${steps[2] ? "gray" : ""}" href="${SITE}stock/?branch=${encodeURIComponent(B)}&back=${encodeURIComponent(location.pathname)}">${steps[2] ? "다시" : "하기"}</a>`)}
+      ${stepRow(2, steps[1], "오픈 체크", s.open ? { t: `${s.open.t} 완료${lateMin(s.open.t) ? ` · ${lateMin(s.open.t)}분 늦음` : ""}${s.open.missed.length ? ` · 못 한 것 ${s.open.missed.length}개` : ""}`, w: s.open.missed.length || lateMin(s.open.t) } : { t: lateMin(now()) ? `오픈 ${OPEN_AT[B]} · 벌써 ${lateMin(now())}분 지났어요` : "아직 안 함", w: lateMin(now()) }, `<button class="act ${steps[1] ? "gray" : ""}" data-go="open">${steps[1] ? "다시" : "체크"}</button>`)}
+      ${stepRow(3, steps[2], "아침 재고보고", sd ? { t: `${sd.t} 완료 · ${esc(sd.by || "")}` } : { t: "아직 안 함" }, `<a class="act ${steps[2] ? "gray" : ""}" href="${SITE}stock/?branch=${encodeURIComponent(B)}&by=${encodeURIComponent(working.map((x) => x.name).join(", "))}&back=${encodeURIComponent(location.pathname)}">${steps[2] ? "다시" : "하기"}</a>`)}
     </div>`;
   const closeCard = `<div class="card"><h2>마감</h2>
       ${stepRow("🌙", !!s.close, "마감 체크", s.close ? { t: `${s.close.t} 완료${s.close.missed.length ? ` · 못 한 것 ${s.close.missed.length}개` : ""}`, w: s.close.missed.length } : { t: "아직 안 함" }, `<button class="act ${s.close ? "gray" : ""}" data-go="close">${s.close ? "다시" : "체크"}</button>`)}
@@ -226,7 +244,7 @@ function render() {
   const asOpen = AS.rows ? AS.rows.filter((x) => asIdx(x.r[AC.st]) < 6) : null, asLateN = asOpen ? asOpen.filter((x) => asLate(x.r)).length : 0;
   const kpi = (go, label, val, sub, red) => `<button class="kpi ${red ? "red" : ""}" data-view="${go}"><span>${label}</span><b>${val}</b><em>${sub}</em></button>`;
   const kpis = `<div class="kpis">
-    ${kpi("work", "지금 근무 중", working.length ? working.length + "명" : "없음", esc(working.map((x) => x.name).join(", ") || "출근 전"))}
+    ${kpi("work", "지금 근무 중", working.length ? working.length + "명" : "없음", esc(working.map((x) => x.name).join(", ") || (s.ins.length ? "모두 퇴근" : "출근 전")))}
     ${kpi("work", done < 3 ? "오픈" : "마감", done < 3 ? `${done}/3` : `${cDone}/${cSteps.length}`, done < 3 ? "출근 → 오픈 체크 → 재고보고" : cDone === cSteps.length ? "완료" : "마감 진행 중")}
     ${kpi("as", "진행 중 AS", asOpen ? asOpen.length + "건" : asPin() ? "…" : "코드 필요", asLateN ? `7일 넘음 ${asLateN}건` : "", asLateN)}
     ${kpi("talk", "인수인계·고객요청", memoN + creqN + "건", `인수인계 ${memoN} · 고객요청 ${creqN}`)}
@@ -249,7 +267,7 @@ function render() {
         <div class="hero"><h1>${title}</h1><p>${heroP}</p><div class="bar"><i style="width:${heroW}%"></i></div></div>
         ${VIEW === "home" ? kpis : `<div class="pconly">${kpis}</div>`}
         ${body}
-        <div class="foot">시험판 ${VER} · 기록은 지점 시트와 디스코드에 남아요 · <button data-go="branch">지점 바꾸기</button></div>
+        <div class="foot">버전 ${VER} ·기록은 지점 시트와 디스코드에 남아요 · <button data-go="branch">지점 바꾸기</button></div>
       </main>
     </div>
     <nav class="bnav">${VIEWS.map(([k, ic, nm]) => `<button class="${k === VIEW ? "on" : ""}" data-view="${k}"><i>${ic}</i><span>${nm.split("·")[0]}</span></button>`).join("")}</nav>`;
@@ -444,7 +462,7 @@ function svNames(cat) {
 function surveyCardHtml() {
   const mine = BOARD?.surveys || [], st = { wait: "승인 기다리는 중", reject: "반려됨 · 다시 세 주세요", done: "포스 반영 완료" };
   return `<div class="card"><h2>📦 재고</h2>${mine.map((v) => `<div class="crow"><div><b>${esc(v.cat)} ${v.n}개</b><span>${esc(v.by)} · ${v.d.slice(5).replace("-", "/")} ${v.t}</span><em style="${v.status === "reject" ? "color:var(--red)" : ""}">${st[v.status] || ""}</em></div></div>`).join("")}
-    <div class="links" style="margin:6px 0 14px"><button class="tile" data-go="survey">🗂 재고조사<span>카테고리 골라서 세기</span></button><a class="tile" href="${SITE}stock/?branch=${encodeURIComponent(B)}&back=${encodeURIComponent(location.pathname)}">📦 재고보고<span>팟·코일·기기 개수</span></a></div></div>`;
+    <div class="links" style="margin:6px 0 14px"><button class="tile" data-go="survey">🗂 재고조사<span>카테고리 골라서 세기</span></button><a class="tile" href="${SITE}stock/?branch=${encodeURIComponent(B)}&by=${encodeURIComponent(working().join(", "))}&back=${encodeURIComponent(location.pathname)}">📦 재고보고<span>팟·코일·기기 개수</span></a></div></div>`;
 }
 async function sheetSurvey() {
   if (!working().length) return needIn(() => sheetSurvey());
@@ -470,30 +488,112 @@ async function doSurvey() {
   $("#okSv").disabled = true;
   try {
     for (let i = 0; i < parts.length; i++) { await send({ type: "survey", id, cat: sv.nm, part: i, total: parts.length, items: parts[i], by }); if (i < parts.length - 1) await new Promise((r) => setTimeout(r, 700)); }
-    closeSheet(); toast(`${sv.nm} ${items.length}개 보냈어요 · 관리자가 확인하면 포스에 반영돼요`);
+    closeSheet(); toast(`${sv.nm} ${items.length}개 보냈어요 · 관리자 페이지에서 확인해요`);
   } catch (e) { $("#okSv").disabled = false; fail(e); }
 }
-// ── 마감 보고 (10/6, 본점 먼저) ── 돈통 5만원권·1만원권 장수만 → 시재 자동 계산, 매출·카드·이체·지출은 봇이 포스에서
-// 시재 = 1만원권 − 10장(내일 준비금) + 5만원권. 보고문(매출)은 관리자 페이지에만 — 여기엔 보냈는지 상태만
-const CLOSE_OK = ["본점"];
-let CLOSE_SENT = null;
+// ── 마감 보고 (10/19 전 지점) ── 포스 연동 없이 포스 일마감 화면 숫자를 직원이 옮겨 적음 (노션 마감 DB, 근무자별 DB와 같은 칸)
+// 자동: 총매출, 시재, 내일 준비금, 현금 차액(돈통 − (준비금 + 현금매출 − 지출)), KPI 비율
+// 시재 = 5만원권 + (1만원권 − 10장). 보고문(매출)은 관리자 페이지에만 — 여기엔 보냈는지 상태만
+const CLOSE_OK = BR;
+let CLOSE_SENT = null, CX = [];
 const closeDay = () => { const d = new Date(); if (d.getHours() < 5) d.setDate(d.getDate() - 1); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; };
+// 오늘 준비금 = 오픈 때 확인한 금액 → 없으면 전날 마감의 '내일 준비금'(봇 board.json 또는 이 기기 기록)
+const nextKey = () => `vf-app-${B}-next`;
+function prevNext() {
+  const c = BOARD?.closing, mine = ls.get(nextKey(), null), day = closeDay();
+  return [c && c.next != null && c.date < day ? { d: c.date, v: c.next } : null, mine && mine.d < day ? mine : null].filter(Boolean).sort((a, b) => b.d.localeCompare(a.d))[0] || null;
+}
+const todayPrep = () => { const s = st(); return s.prep != null ? s.prep : SRV?.open?.prep != null ? SRV.open.prep : prevNext()?.v ?? null; };
 function closeRowHtml(stepRow) {
-  const c = BOARD?.closing && BOARD.closing.date === closeDay() ? BOARD.closing : CLOSE_SENT;
-  const info = !c ? { t: "아직 안 함 · 돈통만 세면 돼요" } : c.status === "done" ? ((c.warn || []).length ? { t: `${c.at} 보고됨 · 확인 필요: ` + c.warn.join(" / "), w: 1 } : { t: `${c.at} 보고 완료 · ${c.by} · 현금·이체 이상 없음` }) : c.status === "error" ? { t: `못 만들었어요: ${c.err || ""}`, w: 1 } : { t: "보고문 만드는 중… (1~2분)" };
+  const bc = BOARD?.closing && BOARD.closing.date === closeDay() ? BOARD.closing : null;
+  const c = CLOSE_SENT && CLOSE_SENT.date === closeDay() && (!bc || CLOSE_SENT.at >= bc.at) ? CLOSE_SENT : bc;
+  const info = !c ? { t: "아직 안 함 · 포스 일마감 숫자와 돈통" } : c.status === "done" ? ((c.warn || []).length ? { t: `${c.at} 보고됨 · 확인 필요: ` + c.warn.join(" / "), w: 1 } : { t: `${c.at} 보고 완료 · ${c.by} · 돈통 차액 없음` }) : c.status === "error" ? { t: `못 보냈어요: ${c.err || ""}`, w: 1 } : { t: "보내는 중…" };
   return stepRow("💰", c?.status === "done", "마감 보고", info, `<button class="act ${c?.status === "done" ? "gray" : ""}" data-go="closing">${c ? "다시" : "보고"}</button>`);
 }
+// 입력 칸: [id, 이름, 필수]
+const SALES = [["pCash", "현금", 1], ["pCard", "카드", 1], ["pTr", "이체", 1], ["pEtc", "기타 (회원포인트 등)", 0]];
+const KPI_IN = [["kBills", "영수객수", 1], ["kPrem", "프리미엄 병수", 0], ["kDes", "그중 지정판매", 0], ["kDisp", "일회용 개수", 0], ["kDev", "입호흡 기기", 0], ["kValm", "그중 발맥프로", 0], ["cRev", "리뷰", 0], ["cEng", "각인", 0]];
+const MONEY = ["pCash", "pCard", "pTr", "pEtc", "cPrep", "bankBal"];
+const numv = (id) => +(($("#" + id) && $("#" + id).value) || "").replace(/\D/g, "") || 0;
+const has = (id) => !!(($("#" + id) && $("#" + id).value) || "").replace(/\D/g, "");
+const fld = ([id, label, req], money) => `<label><span>${label}${req ? ' <em class="req">*</em>' : ""}</span><input class="input" id="${id}" inputmode="numeric" placeholder="${money ? "원" : "개"}"></label>`;
 function sheetClosing() {
   if (!working().length) return needIn(() => sheetClosing());
-  openSheet(`<h2>💰 마감 보고</h2><div class="desc">매출·카드·이체·지출은 포스에서 자동으로 가져와요. 돈통만 세 주세요.</div>
-    <div class="desc" style="margin-top:16px"><b>마감 날짜</b> · 지난 날짜를 고르면 시트에만 나중 입력으로 남아요</div><input class="input" id="cDate" type="date" value="${todayKey()}" max="${todayKey()}" style="margin-top:6px">
-    <div class="desc" style="margin-top:16px"><b>돈통</b> · 장수·개수만 넣으면 시재는 자동이에요 (없으면 비워 두세요)</div>
+  CX = [];
+  const prep = todayPrep();
+  openSheet(`<h2>💰 마감 보고</h2><div class="desc">포스 일마감 화면을 보고 숫자를 옮겨 적어 주세요. 합계, 시재, 차액은 자동이에요.</div>
+    <div class="desc" style="margin-top:16px"><b>마감 날짜</b> · 지난 날짜를 고르면 나중 입력으로 남아요</div><input class="input" id="cDate" type="date" value="${todayKey()}" max="${todayKey()}" style="margin-top:6px">
+    <div class="grp">매출</div><div class="cash">${SALES.map((x) => fld(x, 1)).join("")}</div><div class="cashsum" id="cSales"></div>
+    <div class="grp">현금 지출 <small>돈통에서 나간 돈</small></div><div id="cExp"></div><button class="btn sm" data-go="expadd">＋ 지출 추가</button>
+    <div class="grp">돈통</div>
+    <div class="cash"><label style="grid-column:1/-1"><span>오늘 준비금 <em class="req">*</em> <small>${prep != null ? "어제 남긴 돈, 다르면 고쳐 주세요" : "영업 시작할 때 돈통에 있던 돈"}</small></span><input class="input" id="cPrep" inputmode="numeric" placeholder="원" value="${prep != null ? prep.toLocaleString() : ""}"></label></div>
+    <div class="desc" style="margin-top:12px">장수, 개수만 넣으면 돼요 (없으면 비워 두세요) <em class="req">*</em></div>
     <div class="cash">${CASH.map(([id, label, unit]) => `<label><span>${label}</span><input class="input" id="${id}" inputmode="numeric" placeholder="${unit}"></label>`).join("")}</div>
-    <div class="cashsum" id="cSij">${cashSumHtml()}</div>
-    <div class="desc" style="margin-top:16px">리뷰 개수 · 각인 의뢰 (선택)</div><div style="display:flex;gap:8px"><input class="input" id="cRev" inputmode="numeric" placeholder="리뷰"><input class="input" id="cEng" inputmode="numeric" placeholder="각인"></div>
-    <button class="check" data-cck="hn" style="margin-top:12px"><i>✓</i>히난충 OFF 확인</button><button class="check" data-cck="vm"><i>✓</i>자판기 이상무</button>
+    <div class="cashsum" id="cSij"></div>
+    <textarea class="input" id="cWhy" rows="2" placeholder="차액이 난 이유 (예: 잔돈 5만원 바꿔 옴, 퀵비 현금 지급)" style="display:none"></textarea>
+    <div class="grp">은행</div><div class="cash"><label><span>마지막 잔액</span><input class="input" id="bankBal" inputmode="numeric" placeholder="원"></label><label><span>마지막 입금자</span><input class="input" id="bankName" maxlength="20" placeholder="이름"></label></div>
+    <div class="grp">판매</div><div class="cash">${KPI_IN.map((x) => fld(x, 0)).join("")}</div><div class="kpig" id="cKpi"></div>
+    <div class="grp">확인</div><button class="check" data-cck="hn"><i>✓</i>히난충 OFF 확인</button><button class="check" data-cck="vm"><i>✓</i>자판기 이상무</button>
     <div class="desc" style="margin-top:8px">마감 인원: ${esc(working().join(", "))}</div>
-    <div class="btns"><button class="btn" data-x>취소</button><button class="btn primary" id="okClose">보고 보내기</button></div>`);
+    <div class="sv-bar"><div class="btns" style="margin:0"><button class="btn" data-x>취소</button><button class="btn primary" id="okClose">보고 보내기</button></div></div>`);
+  closeCalc();
+}
+function expDraw() {
+  $("#cExp").innerHTML = CX.map((x, i) => `<div class="exrow"><input class="input" data-exn="${i}" maxlength="20" placeholder="어디에 (예: 퀵비)" value="${esc(x.n)}"><input class="input" data-exa="${i}" inputmode="numeric" placeholder="원" value="${x.a ? x.a.toLocaleString() : ""}"><button class="exdel" data-exdel="${i}">✕</button></div>`).join("");
+}
+const expSum = () => CX.reduce((a, x) => a + (+x.a || 0), 0);
+// 계산 한 번에: 화면 숫자 갱신 + 보내기 버튼의 '남은 칸'
+function closeCalc() {
+  if (!$("#cSales")) return;
+  const sales = numv("pCash") + numv("pCard") + numv("pTr") + numv("pEtc");
+  $("#cSales").innerHTML = `<div class="hi"><span>총매출 (자동)</span><b>${sales.toLocaleString()}원</b></div>`;
+  const drawer = cashTotal(), sij = sijae(), exp = expSum(), ok = has("cPrep") && drawer > 0 && has("pCash");
+  const diff = ok ? drawer - (numv("cPrep") + numv("pCash") - exp) : null;
+  $("#cSij").innerHTML = `<div><span>돈통 합계</span><b>${drawer.toLocaleString()}원</b></div><div class="hi"><span>시재 (자동)</span><b>${sij.toLocaleString()}원</b></div><div><span>내일 준비금</span><b>${(drawer - sij).toLocaleString()}원</b></div>
+    <div class="diff ${diff == null ? "" : diff ? "bad" : "good"}"><span>현금 차액</span><b>${diff == null ? "준비금, 현금, 돈통을 넣으면 계산돼요" : (diff > 0 ? "+" : "") + diff.toLocaleString() + "원"}</b></div>
+    <p>준비금 + 현금매출 − 지출 = 돈통이어야 해요 · 만원권 10장은 내일 준비금으로 남겨요</p>`;
+  $("#cWhy").style.display = diff ? "" : "none";
+  const b = numv("kBills"), pr = (a, c) => (c ? Math.round((a / c) * 1000) / 10 + "%" : "-");
+  $("#cKpi").innerHTML = [["객단가", b ? Math.round(sales / b).toLocaleString() + "원" : "-"], ["객당 프리미엄", b ? (Math.round((numv("kPrem") / b) * 10) / 10) + "병" : "-"], ["지정판매율", pr(numv("kDes"), numv("kPrem"))],
+    ["일회용판매율", pr(numv("kDisp"), b)], ["발맥프로율", pr(numv("kValm"), numv("kDev"))], ["리뷰율", pr(numv("cRev"), b)]].map(([k, v]) => `<div><span>${k}</span><b>${v}</b></div>`).join("");
+  const left = [...SALES, ...KPI_IN].filter(([id, , r]) => r && !has(id)).length + (has("cPrep") ? 0 : 1) + (drawer ? 0 : 1) + (diff && !($("#cWhy").value || "").trim() ? 1 : 0);
+  const okb = $("#okClose"); if (okb) { okb.disabled = !!left; okb.textContent = left ? `${left}칸 남음` : "보고 보내기"; }
+  return { sales, drawer, sij, exp, diff };
+}
+function closeConfirm() {
+  const k = closeCalc(); if ($("#okClose").disabled) return;
+  const v = (id) => ($("#" + id).value || "").replace(/\D/g, "");
+  const hn = $('[data-cck="hn"]').classList.contains("on"), vm = $('[data-cck="vm"]').classList.contains("on");
+  const sh = $("#sheet"), w = (n) => (+n || 0).toLocaleString() + "원";
+  [...sh.children].forEach((el) => { if (!el.classList.contains("cconf")) el.style.display = "none"; });
+  const box = document.createElement("div"); box.className = "cconf";
+  box.innerHTML = `<h2>꼼꼼히 확인하셨나요?</h2><div class="desc">보내면 팀장님께 바로 보고돼요. 포스 화면과 숫자가 같은지 한 번 더 봐 주세요.</div>
+    <div class="cashsum" style="margin-top:14px">${SALES.map(([id, l]) => `<div><span>${l}</span><b>${w(numv(id))}</b></div>`).join("")}<div class="hi"><span>총매출</span><b>${w(k.sales)}</b></div></div>
+    <div class="cashsum" style="margin-top:10px"><div><span>오늘 준비금</span><b>${w(numv("cPrep"))}</b></div><div><span>현금 지출 ${CX.filter((x) => x.a).length}건</span><b>${w(k.exp)}</b></div><div><span>돈통 합계</span><b>${w(k.drawer)}</b></div><div class="hi"><span>시재</span><b>${w(k.sij)}</b></div><div><span>내일 준비금</span><b>${w(k.drawer - k.sij)}</b></div>
+      <div class="diff ${k.diff ? "bad" : "good"}"><span>현금 차액</span><b>${(k.diff > 0 ? "+" : "") + w(k.diff)}</b></div>${k.diff ? `<p>사유: ${esc($("#cWhy").value.trim())}</p>` : ""}</div>
+    <div class="cashsum" style="margin-top:10px"><div><span>마감 날짜</span><b>${$("#cDate").value}${$("#cDate").value !== todayKey() ? " (나중 입력)" : ""}</b></div><div><span>은행 잔액</span><b>${has("bankBal") ? w(numv("bankBal")) + " · " + esc($("#bankName").value.trim()) : "-"}</b></div>
+      <div><span>영수객수 · 객단가</span><b>${v("kBills")}건 · ${numv("kBills") ? w(Math.round(k.sales / numv("kBills"))) : "-"}</b></div><div><span>프리미엄 · 지정</span><b>${v("kPrem") || 0} · ${v("kDes") || 0}</b></div><div><span>일회용 · 입호흡 · 발맥</span><b>${v("kDisp") || 0} · ${v("kDev") || 0} · ${v("kValm") || 0}</b></div><div><span>리뷰 · 각인</span><b>${v("cRev") || 0} · ${v("cEng") || 0}</b></div>
+      <div><span>히난충 OFF</span><b style="color:${hn ? "var(--green)" : "var(--red)"}">${hn ? "확인" : "안 함"}</b></div><div><span>자판기</span><b style="color:${vm ? "var(--green)" : "var(--red)"}">${vm ? "이상무" : "확인 안 함"}</b></div><div><span>마감 인원</span><b>${esc(working().join(", ") || "-")}</b></div></div>
+    <div class="btns"><button class="btn" id="closeBack">다시 고치기</button><button class="btn primary" id="okClose2">네, 보낼게요</button></div>`;
+  sh.appendChild(box); sh.scrollTop = 0;
+}
+function closeBack() { const sh = $("#sheet"); const b = sh.querySelector(".cconf"); if (b) b.remove(); [...sh.children].forEach((el) => (el.style.display = "")); $("#cWhy").style.display = closeCalc().diff ? "" : "none"; }
+async function doClosing() {
+  const k = closeCalc(), v = (id) => ($("#" + id).value || "").replace(/\D/g, "");
+  const hn = $('[data-cck="hn"]').classList.contains("on"), vm = $('[data-cck="vm"]').classList.contains("on");
+  const okb = $("#okClose2"); okb.disabled = true; okb.textContent = "보내는 중…";
+  const cDay = ($("#cDate") && $("#cDate").value) || todayKey(), by = working().join(", ");
+  const cash = Object.fromEntries(CASH.map(([id]) => [id, cashN(id)])), exp = CX.filter((x) => x.a).map((x) => [String(x.n || "지출").slice(0, 20), +x.a]).slice(0, 8);
+  const kpi = { bills: numv("kBills"), prem: numv("kPrem"), des: numv("kDes"), disp: numv("kDisp"), dev: numv("kDev"), valm: numv("kValm") };
+  try {
+    await send({ type: "closing", v: 2, date: cDay, nums: { cash: numv("pCash"), card: numv("pCard"), tr: numv("pTr"), etc: numv("pEtc") }, exp, prep: numv("cPrep"), cash, why: ($("#cWhy").value || "").trim().slice(0, 80),
+      bank: has("bankBal") ? { bal: numv("bankBal"), name: ($("#bankName").value || "").trim().slice(0, 20) } : null, kpi, rev: v("cRev"), eng: v("cEng"), hn, vm, by });
+    let sheetOk = "";
+    if (asPin()) { try { await asApi({ action: "closeAdd", date: cDay, branch: B, by, cash, rev: v("cRev"), eng: v("cEng"), hn, vm, ua: navigator.userAgent.slice(0, 60), sales: { 현금: numv("pCash"), 카드: numv("pCard"), 이체: numv("pTr"), 기타: numv("pEtc") }, exp: k.exp, diff: k.diff, bills: kpi.bills }); sheetOk = " · 지점 시트에도 기록"; } catch (e2) { sheetOk = " · 지점 시트 기록 실패(" + e2.message + ")"; } }
+    ls.set(nextKey(), { d: cDay, v: k.drawer - k.sij });
+    if (cDay === closeDay()) CLOSE_SENT = { date: cDay, status: "done", at: now(), by, warn: k.diff ? [`돈통 차액 ${(k.diff > 0 ? "+" : "") + k.diff.toLocaleString()}원`] : [] };
+    closeSheet(); render(); toast(`${cDay === todayKey() ? "" : cDay.slice(5).replace("-", "/") + " "}마감 보고를 보냈어요 · 시재 ${k.sij.toLocaleString()}원${sheetOk}`);
+  } catch (e) { okb.disabled = false; okb.textContent = "다시 보내기"; fail(e); }
 }
 // 돈통 칸: [id, 이름, 단위, 한 장(개) 금액] · 기타는 금액(원) 그대로
 const CASH = [["c50", "5만원", "장", 50000], ["c10", "1만원", "장", 10000], ["c5", "5천원", "장", 5000], ["c1", "1천원", "장", 1000], ["c500", "500원", "개", 500], ["c100", "100원", "개", 100], ["cEtc", "기타", "원", 1]];
@@ -501,37 +601,6 @@ const cashN = (id) => +(($("#" + id) && $("#" + id).value) || "").replace(/\D/g,
 const cashTotal = () => CASH.reduce((a, [id, , , w]) => a + cashN(id) * w, 0);
 // 시재 = 5만원권 합계 + (1만원권 합계 − 만원권 10장), 내일 준비금 = 돈통 전체 − 시재 (기억: vafriend-sijae-definition)
 const sijae = () => cashN("c50") * 50000 + Math.max(0, cashN("c10") - 10) * 10000;
-const cashCoin = () => cashN("c5") * 5000 + cashN("c1") * 1000 + cashN("c500") * 500 + cashN("c100") * 100 + cashN("cEtc");
-const cashSumHtml = () => `<div><span>돈통 합계</span><b>${cashTotal().toLocaleString()}원</b></div><div class="hi"><span>시재 (자동)</span><b>${sijae().toLocaleString()}원</b></div><div><span>내일 준비금</span><b>${(cashTotal() - sijae()).toLocaleString()}원</b></div><p>만원권 10장은 내일 준비금으로 남기고 계산해요</p>`;
-function closeConfirm() {
-  if (!cashTotal()) return toast("돈통 장수를 넣어 주세요");
-  const v = (id) => ($(id).value || "").replace(/\D/g, "");
-  const hn = $('[data-cck="hn"]').classList.contains("on"), vm = $('[data-cck="vm"]').classList.contains("on");
-  const sh = $("#sheet");
-  [...sh.children].forEach((el) => { if (!el.classList.contains("cconf")) el.style.display = "none"; });
-  const box = document.createElement("div"); box.className = "cconf";
-  box.innerHTML = `<h2>꼼꼼히 확인하셨나요?</h2><div class="desc">보내면 팀장님께 바로 보고돼요. 숫자가 맞는지 한 번 더 봐 주세요.</div>
-    <div class="cashsum" style="margin-top:14px">${CASH.filter(([id]) => cashN(id)).map(([id, label, unit, w]) => `<div><span>${label} ${id === "cEtc" ? "" : cashN(id) + unit}</span><b>${(cashN(id) * w).toLocaleString()}원</b></div>`).join("") || "<div><span>돈통</span><b>0원</b></div>"}</div>
-    <div class="cashsum" style="margin-top:10px">${cashSumHtml()}</div>
-    <div class="cashsum" style="margin-top:10px"><div><span>마감 날짜</span><b>${$("#cDate").value}${$("#cDate").value !== todayKey() ? " (나중 입력 · 디스코드 안 보냄)" : ""}</b></div><div><span>리뷰 · 각인</span><b>${v("#cRev") || 0} · ${v("#cEng") || 0}</b></div><div><span>히난충 OFF</span><b style="color:${hn ? "var(--green)" : "var(--red)"}">${hn ? "확인" : "안 함"}</b></div><div><span>자판기</span><b style="color:${vm ? "var(--green)" : "var(--red)"}">${vm ? "이상무" : "확인 안 함"}</b></div><div><span>마감 인원</span><b>${esc(working().join(", ") || "-")}</b></div></div>
-    <div class="btns"><button class="btn" id="closeBack">다시 고치기</button><button class="btn primary" id="okClose2">네, 보낼게요</button></div>`;
-  sh.appendChild(box); sh.scrollTop = 0;
-}
-function closeBack() { const sh = $("#sheet"); const b = sh.querySelector(".cconf"); if (b) b.remove(); [...sh.children].forEach((el) => (el.style.display = "")); }
-async function doClosing() {
-  const v = (id) => ($(id).value || "").replace(/\D/g, "");
-  if (!cashTotal()) return toast("돈통 장수를 넣어 주세요");
-  const hn = $('[data-cck="hn"]').classList.contains("on"), vm = $('[data-cck="vm"]').classList.contains("on");
-  const okb = $("#okClose2") || $("#okClose"); okb.disabled = true; okb.textContent = "보내는 중…";
-  try {
-    const cDay = ($("#cDate") && $("#cDate").value) || todayKey(), late = cDay !== todayKey();
-    if (!late) await send({ type: "closing", n50: String(cashN("c50")), n10: String(cashN("c10")), coin: String(cashCoin()), cash: Object.fromEntries(CASH.map(([id]) => [id, cashN(id)])), rev: v("#cRev"), eng: v("#cEng"), hn, vm, by: working().join(", ") });
-    let sheetOk = "";
-    if (asPin()) { try { const r2 = await asApi({ action: "closeAdd", date: cDay, branch: B, by: working().join(", "), cash: Object.fromEntries(CASH.map(([id]) => [id, cashN(id)])), rev: v("#cRev"), eng: v("#cEng"), hn, vm, ua: navigator.userAgent.slice(0, 60) }); sheetOk = " · 지점 시트에 기록됨"; } catch (e2) { sheetOk = " · 시트 기록 실패(" + e2.message + ")"; } }
-    if (late) { closeSheet(); toast(`${cDay.slice(5).replace("-", "/")} 마감 · 시재 ${sijae().toLocaleString()}원${sheetOk || " · 매장 코드가 없어 시트에 못 남겼어요"}`); return; }
-    CLOSE_SENT = { date: closeDay(), status: "wait", at: now() }; closeSheet(); render(); toast(`시재 ${sijae().toLocaleString()}원으로 보냈어요${sheetOk}`);
-  } catch (e) { okb.disabled = false; okb.textContent = "다시 보내기"; fail(e); }
-}
 function memoCardHtml() {
   const list = memoList();
   const toName = { next: "다음 근무자", keep: "📢 계속 공지", leader: "👔 팀장님께" };
@@ -650,20 +719,30 @@ async function doIn(name) {
   } catch (e) { $("#okIn").disabled = false; fail(e); }
 }
 function sheetCheck(kind) {
-  const items = CHECK[kind];
+  const items = CHECK[kind], pn = kind === "open" ? prevNext() : null;
   openSheet(`<h2>${kind === "open" ? "🌅 오픈 체크" : "🌙 마감 체크"}</h2><div class="desc">한 것을 눌러 체크하세요. 못 한 건 그대로 두고 보내면 '못 한 항목'으로 보고돼요.</div>
     ${items.map((x, i) => `<button class="check" data-ck="${i}"><i>✓</i>${esc(x)}</button>`).join("")}
+    ${kind === "open" ? `<div class="grp">돈통 준비금</div><div class="desc">${pn ? `어제 마감 때 남긴 돈은 <b>${pn.v.toLocaleString()}원</b>이에요. 돈통이 이 금액과 맞나요?` : "어제 마감 기록이 없어요. 지금 돈통에 있는 돈을 세어 넣어 주세요."}</div>
+      ${pn ? `<div class="chips"><button class="chip" data-prep="ok">맞아요</button><button class="chip" data-prep="diff">달라요</button></div>` : ""}
+      <input class="input" id="opPrep" inputmode="numeric" placeholder="실제 돈통 금액 (원)" style="${pn ? "display:none" : ""}">` : ""}
     <div class="btns"><button class="btn" data-x>취소</button><button class="btn primary" id="okCk" data-kind="${kind}">보고 보내기</button></div>`);
 }
 async function doCheck(kind) {
   const items = CHECK[kind], on = [...document.querySelectorAll(".check")].map((el) => el.classList.contains("on"));
   const missed = items.filter((_, i) => !on[i]);
+  let prep = null, prepDiff = null;
+  if (kind === "open") {
+    const pn = prevNext(), pick = document.querySelector("[data-prep].on")?.dataset.prep, typed = +($("#opPrep").value || "").replace(/\D/g, "") || 0;
+    if (pn && !pick) return toast("돈통 준비금이 맞는지 골라 주세요");
+    if ((!pn || pick === "diff") && !typed) return toast("실제 돈통 금액을 넣어 주세요");
+    prep = pick === "ok" ? pn.v : typed; prepDiff = pn ? prep - pn.v : null;
+  }
   if (missed.length && !confirm(`못 한 항목 ${missed.length}개:\n${missed.join("\n")}\n\n이대로 보고할까요?`)) return;
   $("#okCk").disabled = true;
   try {
-    await send({ type: kind, missed });
-    const s = st(); s[kind] = { t: now(), missed }; saveSt(s);
-    closeSheet(); render(); toast(`${kind === "open" ? "오픈" : "마감"} 보고 완료`);
+    await send({ type: kind, missed, ...(kind === "open" ? { prep, prepDiff } : {}) });
+    const s = st(); s[kind] = { t: now(), missed }; if (kind === "open") s.prep = prep; saveSt(s);
+    closeSheet(); render(); toast(`${kind === "open" ? "오픈" : "마감"} 체크 완료${prepDiff ? ` · 준비금 ${(prepDiff > 0 ? "+" : "") + prepDiff.toLocaleString()}원 차이 보고됨` : ""}`);
   } catch (e) { $("#okCk").disabled = false; fail(e); }
 }
 function sheetOut() {
@@ -822,6 +901,8 @@ document.addEventListener("click", (e) => {
   if (t.dataset.go === "survey") return sheetSurvey();
   if (t.dataset.go === "closing") return sheetClosing();
   if (t.dataset.cck) return t.classList.toggle("on");
+  if (go === "expadd") { if (CX.length >= 8) return toast("지출은 8건까지 적을 수 있어요"); CX.push({ n: "", a: 0 }); expDraw(); const el = document.querySelector(`[data-exn="${CX.length - 1}"]`); if (el) el.focus(); return; }
+  if (t.dataset.exdel) { CX.splice(+t.dataset.exdel, 1); expDraw(); return closeCalc(); }
   if (t.id === "okClose") return closeConfirm();
   if (t.id === "closeBack") return closeBack();
   if (t.id === "okClose2") return doClosing();
@@ -843,6 +924,7 @@ document.addEventListener("click", (e) => {
   if (t.dataset.name) { $("#nm").value = t.dataset.name; return doIn(t.dataset.name); }
   if (t.id === "okIn") return doIn($("#nm").value);
   if (t.dataset.ck !== undefined) return t.classList.toggle("on");
+  if (t.dataset.prep) { document.querySelectorAll("[data-prep]").forEach((x) => x.classList.toggle("on", x === t)); $("#opPrep").style.display = t.dataset.prep === "diff" ? "" : "none"; if (t.dataset.prep === "diff") $("#opPrep").focus(); return; }
   if (t.id === "okCk") return doCheck(t.dataset.kind);
   if (t.dataset.out) return doOut(t.dataset.out);
   if (t.dataset.req === "qk") return sheetQuick();
@@ -863,7 +945,14 @@ document.addEventListener("click", (e) => {
 });
 document.addEventListener("input", (e) => {
   if (e.target.id === "rqAddr") onAddr();
-  if (CASH.some(([id]) => id === e.target.id)) { e.target.value = e.target.value.replace(/\D/g, "").slice(0, e.target.id === "cEtc" ? 8 : 4); $("#cSij").innerHTML = cashSumHtml(); }
+  if (CASH.some(([id]) => id === e.target.id)) { e.target.value = e.target.value.replace(/\D/g, "").slice(0, e.target.id === "cEtc" ? 8 : 4); closeCalc(); }
+  // 마감 보고: 금액 칸은 쉼표 넣어 보여주고, 개수 칸은 숫자만
+  if (MONEY.includes(e.target.id)) { const d = e.target.value.replace(/\D/g, "").slice(0, 10); e.target.value = d ? (+d).toLocaleString() : ""; closeCalc(); }
+  if (KPI_IN.some(([id]) => id === e.target.id)) { e.target.value = e.target.value.replace(/\D/g, "").slice(0, 4); closeCalc(); }
+  if (e.target.id === "cWhy") closeCalc();
+  if (e.target.id === "opPrep") { const d = e.target.value.replace(/\D/g, "").slice(0, 9); e.target.value = d ? (+d).toLocaleString() : ""; }
+  if (e.target.dataset.exn !== undefined) CX[+e.target.dataset.exn].n = e.target.value;
+  if (e.target.dataset.exa !== undefined) { const d = e.target.value.replace(/\D/g, "").slice(0, 8); e.target.value = d ? (+d).toLocaleString() : ""; CX[+e.target.dataset.exa].a = +d || 0; closeCalc(); }
   if (e.target.dataset.svi !== undefined) { const i = +e.target.dataset.svi, v = e.target.value.replace(/\D/g, "").slice(0, 4); e.target.value = v; if (v === "") delete sv.cnt[i]; else sv.cnt[i] = v; e.target.closest(".sv-row").classList.toggle("done", v !== ""); $("#svN").textContent = Object.keys(sv.cnt).length; }
   if (e.target.id === "crFind") { const q = e.target.value.trim(); $("#crRes").innerHTML = q ? qkFind(q).map((n) => `<button class="qr" data-cradd="${esc(n)}">${esc(n)}<small>${esc(QPOS()[n]?.[4] || "")}</small>${OUTS.has(n) ? '<small style="color:var(--red);background:var(--red-soft)">품절</small>' : ""} <i>+</i></button>`).join("") || '<div class="desc">못 찾았어요 · 아래 칸에 직접 적어 주세요</div>' : ""; }
   if (e.target.id === "qkFind") { const q = e.target.value.trim(); $("#qkRes").innerHTML = q ? qkFind(q).map((n) => `<button class="qr" data-qadd="${esc(n)}">${esc(n)}<small>${esc(QPOS()[n]?.[4] || "")}</small> <i>+</i></button>`).join("") || '<div class="desc">못 찾았어요</div>' : ""; }
