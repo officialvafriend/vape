@@ -150,7 +150,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.19-10";
+const VER = "10.19-11";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -190,9 +190,19 @@ const st = () => {
   for (const k of ["open", "close"]) if (!s[k] && SRV[k]) s[k] = { t: SRV[k].t, missed: Array(SRV[k].miss || 0).fill("") };
   return s;
 };
+// 10/19 기기끼리 출근이 늦게 보이던 문제: 깃허브 페이지(배포 1~3분 걸림) 대신 깃허브 API로 바로 읽음. ETag 로 안 바뀌면 304(횟수 제한에 안 셈), 막히면 페이지로
+const GH_ETAG = {}, GH_CACHE = {};
+async function ghJson(file) {
+  try {
+    const r = await fetch(`https://api.github.com/repos/officialvafriend/vape/contents/staff/${file}`, { headers: { Accept: "application/vnd.github.raw", ...(GH_ETAG[file] ? { "If-None-Match": GH_ETAG[file] } : {}) }, cache: "no-store" });
+    if (r.status === 304 && GH_CACHE[file]) return GH_CACHE[file];
+    if (r.ok) { GH_ETAG[file] = r.headers.get("ETag"); return (GH_CACHE[file] = await r.json()); }
+  } catch {}
+  return (await fetch(`${file}?${Date.now()}`, { cache: "no-store" })).json();
+}
 async function loadToday() {
   try {
-    const j = await (await fetch(`today.json?${Date.now()}`, { cache: "no-store" })).json();
+    const j = await ghJson("today.json");
     const next = j.d === todayKey() ? j.br?.[B] || null : null;
     if (JSON.stringify(next) !== JSON.stringify(SRV)) { SRV = next; if (!$("#dim").classList.contains("on")) render(); }
   } catch {}
@@ -413,7 +423,7 @@ async function doPay(id) {
 let BOARD = null, OUTS = new Set(), STEPS = {}, MEMO_DONE = new Set(), cr = null;
 async function loadBoard() {
   try {
-    const j = await (await fetch(`board.json?${Date.now()}`, { cache: "no-store" })).json();
+    const j = await ghJson("board.json");
     const next = j.br?.[B] || null;
     if (JSON.stringify(next) !== JSON.stringify(BOARD)) { BOARD = next; if (!$("#dim").classList.contains("on")) render(); }
   } catch {}
