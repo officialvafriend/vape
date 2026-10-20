@@ -205,7 +205,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.20-56";
+const VER = "10.20-57";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -901,6 +901,23 @@ function as2Step(id, to) {
   }
   return doAs2Step(id, to, {});
 }
+// 10/20 사장님 "상세 창에 바로 끝남 처리": 이미 손님께 드렸는데 단계가 남아 있는 건을 한 번에 끝냄
+function sheetAs2Fin(id) {
+  const x = as2Items().find((y) => y.id === id); if (!x) return;
+  const loan = x.loan && !x.loanBack;
+  openSheet(`<h2>✅ 바로 끝남 처리</h2><div class="desc">${esc(as2Title(x))}, 지금 '${AS5S[x.st]}'</div>
+    <input class="input" id="a2FinWhy" maxlength="120" placeholder="왜 끝내나요? (선택, 예: 이미 손님께 드림)" style="margin-top:10px">
+    ${loan ? `<div class="say" style="margin-top:10px">📱 대여 기기가 나가 있어요: ${esc(x.loan)}</div>` : ""}
+    <div class="btns"><button class="btn" data-a2d2="${id}">닫기</button>${loan ? `<button class="btn" data-a2fok="0" data-id="${id}">끝내기만</button><button class="btn primary" data-a2fok="1" data-id="${id}">대여 기기도 받음</button>` : `<button class="btn primary" data-a2fok="0" data-id="${id}">끝남 처리</button>`}</div>`);
+}
+async function doAs2Fin(id, loanBack) {
+  const by = working().join(", "); if (!by) return needIn(() => doAs2Fin(id, loanBack));
+  const note = ($("#a2FinWhy")?.value || "").trim() || "바로 끝남 처리";
+  try {
+    if (loanBack) { await send({ type: "asstep", id, loanBack: 1, by }); const x = as2Items().find((y) => y.id === id); if (x) { x.loanBack = { by, at: `${todayKey()} ${now()}` }; a2Pend(id, { loanBack: x.loanBack }); } }
+    await doAs2Step(id, 5, { note });
+  } catch (e) { fail(e); }
+}
 async function as2LoanBack(id, alsoDone) {
   const by = working().join(", "); if (!by) return needIn(() => as2LoanBack(id, alsoDone));
   try { await send({ type: "asstep", id, loanBack: 1, by }); const x = as2Items().find((y) => y.id === id); if (x) { x.loanBack = { by, at: `${todayKey()} ${now()}` }; a2Pend(id, { loanBack: x.loanBack }); } if (alsoDone) return doAs2Step(id, 5, {}); closeSheet(); render(); toast("대여 기기 반납으로 기록했어요"); } catch (e) { fail(e); }
@@ -932,7 +949,7 @@ function sheetAs2Detail(id) {
     ${row("대여", x.loan ? esc(x.loan) + (x.loanBack ? ` <small style="color:var(--green)">반납 ${sd(x.loanBack.at.slice(0, 10))} ${esc(x.loanBack.by)}</small>` : ` <button class="act gray" data-a2back="${x.id}" style="font-size:12px;padding:4px 10px">돌려받음</button>`) : "")}${row("접수", `${sd(x.d)} ${esc(x.by)}`)}${row("업체", esc([x.vendor, x.track].filter(Boolean).join(", ")))}${row("처리 결과", esc(x.result))}${x.contact ? row("손님 연락", `📩 ${sd(x.contact.at.slice(0, 10))} ${esc(x.contact.by)}`) : ""}
     ${d.m ? `<div style="border-top:1px solid var(--line);padding-top:10px"><div style="color:var(--sub);font-size:14px;margin-bottom:6px">메모</div><div style="background:#fff8e1;border-radius:12px;padding:12px;font-size:15px;line-height:1.55;white-space:pre-wrap">${esc(d.m)}</div></div>` : ""}
     <div class="desc" style="margin-top:10px">진행 기록: ${(x.hist || []).map((h) => `${AS5S[h.st]} ${sd(h.d)} ${esc(h.by)}`).join(" → ")}</div>
-    <div class="btns" style="flex-wrap:wrap">${as2Btn(x).replace(/<button class="ok"/g, '<button class="btn primary"').replace(/<button data-/g, '<button class="btn" data-')}${x.st > 0 && (hq || x.st >= 4) ? `<button class="btn" data-a2go="${x.st - 1}" data-id="${x.id}">한 단계 되돌리기</button>` : ""}</div>
+    <div class="btns" style="flex-wrap:wrap">${as2Btn(x).replace(/<button class="ok"/g, '<button class="btn primary"').replace(/<button data-/g, '<button class="btn" data-')}${x.st > 0 && (hq || x.st >= 4) ? `<button class="btn" data-a2go="${x.st - 1}" data-id="${x.id}">한 단계 되돌리기</button>` : ""}${x.st < 5 ? `<button class="btn" data-a2fin="${x.id}">✅ 바로 끝남 처리</button>` : ""}</div>
     <div class="btns"><button class="btn" data-x>닫기</button></div>`);
 }
 let CE = null;
@@ -1840,6 +1857,8 @@ document.addEventListener("click", (e) => {
   if (t.dataset.a2go) return as2Step(t.dataset.id, +t.dataset.a2go);
   if (t.dataset.a2sms) return as2Sms(t.dataset.a2sms);
   if (t.dataset.a2go5) return doAs2Step(t.dataset.a2go5, 5, {});
+  if (t.dataset.a2fin) return sheetAs2Fin(t.dataset.a2fin);
+  if (t.dataset.a2fok != null) return doAs2Fin(t.dataset.id, t.dataset.a2fok === "1");
   if (t.dataset.a2d2) return sheetAs2Detail(t.dataset.a2d2);
   if (t.dataset.a2by) { A2.by = t.dataset.a2by; if ($("#a2ByIn")) $("#a2ByIn").value = ""; document.querySelectorAll("[data-a2by]").forEach((x) => x.classList.toggle("on", x === t)); return; }
   if (t.dataset.a2ox) { A2[t.dataset.a2ox] = t.dataset.v; document.querySelectorAll(`[data-a2ox="${t.dataset.a2ox}"]`).forEach((x) => x.classList.toggle("on", x === t)); return; }
