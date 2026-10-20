@@ -104,6 +104,12 @@
   .bnav button i{position:relative}.bnav .bd,.navb .bd{display:inline-block;min-width:18px;height:18px;line-height:18px;padding:0 5px;border-radius:9px;background:var(--red);color:#fff;font-size:11px;font-weight:800;font-style:normal;margin-left:4px}
   .todo .crow b{font-size:15px}.todo .crow em{font-style:normal;font-size:12px;font-weight:700}.todo .tbtn{display:flex;gap:6px;flex-shrink:0}
   .wchips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.wchip{background:var(--blue-soft);color:var(--ink);border-radius:999px;padding:6px 12px;font-size:15px;font-weight:700}.wchip small{color:var(--sub);font-weight:600;font-size:12px}.wchip.out{background:#f2f4f6;color:var(--sub)}
+  .seg{display:flex;gap:8px;margin-bottom:10px}.seg button{flex:1;height:48px;border-radius:14px;background:var(--card);font-size:16px;font-weight:800;color:var(--sub);border:1px solid var(--line)}.seg button.on{background:var(--ink);color:#fff;border-color:var(--ink)}.seg em{font-style:normal;font-weight:700;margin-left:4px;opacity:.8}
+  .lrow{display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--line);cursor:pointer}.lrow:first-of-type{border-top:0}.lrow .lt{flex:1;min-width:0}
+  .lrow .l1{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:15px;font-weight:700;line-height:1.4}
+  .lrow .l2{display:block;font-size:13px;color:var(--sub);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.lrow .l2.w{color:var(--red);font-weight:700}
+  .lrow.hot .l1::before{content:"● ";color:var(--red)}
+  .lhead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:6px 0 4px}
   .say{background:var(--blue-soft);color:var(--ink);border-radius:14px;padding:16px;font-size:18px;font-weight:800;line-height:1.5;margin:12px 0}
   .kpis{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:12px}
   .kpi{background:var(--card);border-radius:18px;padding:14px 16px;text-align:left}
@@ -158,7 +164,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.20-9";
+const VER = "10.20-10";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -287,7 +293,7 @@ function render() {
     home: ONLY_OPEN_CLOSE ? `${todoCardHtml()}<div class="cols"><div>${openCard}</div><div>${closeCard}</div></div>` : `<div class="cols"><div>${done < N ? openCard : closeCard}${taskCardHtml()}</div><div>${memoCardHtml()}${asPin() ? asCardHtml() : ""}</div></div>`,
     work: `<div class="cols"><div>${openCard}</div><div>${closeCard}</div></div>`,
     stock: `<div class="cols one"><div>${surveyCardHtml()}</div></div>`,
-    talk: ONLY_OPEN_CLOSE ? `<div class="cols"><div>${memoCardHtml()}</div><div>${creqCardHtml()}</div></div>` : `<div class="cols"><div>${memoCardHtml()}${creqCardHtml()}</div><div>${reqCard}${myQuicksCard()}</div></div>`,
+    talk: ONLY_OPEN_CLOSE ? talkHtml() : `<div class="cols"><div>${memoCardHtml()}${creqCardHtml()}</div><div>${reqCard}${myQuicksCard()}</div></div>`,
     as: `<div class="cols one"><div>${asCardHtml()}</div></div>`,
   }[VIEW];
   const badge = (k) => { const n = k === "talk" ? talkCount() : k === "home" ? todoItems().length : 0; return n ? `<em class="bd">${n}</em>` : ""; };
@@ -373,6 +379,63 @@ async function doMid() {
     closeSheet(); render(); toast("보냈어요, 1분쯤 뒤에 결과가 떠요");
     let n = 0; const iv = setInterval(() => { loadBoard(); if (++n >= 12) clearInterval(iv); }, 10e3);
   } catch (e) { $("#okMid").disabled = false; fail(e); }
+}
+// ── 요청 탭 (10/20 사장님 "보기 불편"): 한 칸, 위 전환 버튼, 거르기 칩, 2줄 목록, 줄 누르면 상세 창
+let TALK = ls.get("vf-app-talk", "creq"), CRF = "all";
+const crHot = (r) => !r.lead && r.step === "wait" && (r.arrived || (r.due && dLeft(r.due) <= 0));
+function crMainBtn(r) {
+  if (r.lead || r.pending) return "";
+  if (r.step === "ready") return `<button class="act" data-crs="done" data-id="${r.id}">전달 완료</button>`;
+  if (r.arrived) return `<button class="act" data-crs="ready" data-id="${r.id}">연락함</button>`;
+  if (r.due && dLeft(r.due) <= 0) return `<button class="act" data-crext="${r.id}">연락함, 연장</button>`;
+  return `<button class="act gray" data-crarr="${r.id}">입고됨</button>`;
+}
+function crRow(r) {
+  const nm = r.full ? r.full.name || "" : r.nm || "", p4 = r.full ? String(r.full.phone || "").replace(/\D/g, "").slice(-4) : r.p4 || "";
+  const meta = [[nm, p4].filter(Boolean).join(" "), `접수 ${sd(r.d)} ${r.by}`, r.lead ? "👔 팀장 처리 중" : r.step === "ready" ? "연락함, 방문 대기" : r.arrived ? "📦 입고됨" : r.due ? `기한 ${sd(r.due)}${dLeft(r.due) < 0 ? ` (${-dLeft(r.due)}일 지남)` : dLeft(r.due) === 0 ? " (오늘)" : ""}` : ""].filter(Boolean).join(", ");
+  return `<div class="lrow ${crHot(r) ? "hot" : ""}" data-crd="${r.id}"><div class="lt"><b class="l1">${esc(crItems(r))}</b><span class="l2 ${crHot(r) ? "w" : ""}">${esc(meta)}</span></div>${crMainBtn(r)}</div>`;
+}
+function mmMainBtn(m) {
+  if (m.lead) return "";
+  if (m.to === "keep") return `<button class="act gray" data-mok="${m.id}" data-keep="1">내리기</button>`;
+  if (!m.ok) return `<button class="act" data-mok="${m.id}">확인</button>`;
+  return `<button class="act" data-mdone="${m.id}">처리 완료</button>`;
+}
+function mmRow(m) {
+  const toName = { next: "다음 근무자", keep: "계속 공지", leader: "팀장님께" }[m.to] || "";
+  const hot = !m.lead && m.due && dLeft(m.due) <= 0;
+  const meta = [`${sd(m.d)} ${m.t} ${m.by} 남김`, toName, m.lead ? "👔 팀장 처리 중" : m.due ? `기한 ${sd(m.due)}${dLeft(m.due) < 0 ? ` (${-dLeft(m.due)}일 지남)` : dLeft(m.due) === 0 ? " (오늘)" : ""}` : "", m.ok && m.okBy ? `확인 ${m.okBy}` : ""].filter(Boolean).join(", ");
+  return `<div class="lrow ${hot ? "hot" : ""}" data-mmd="${m.id}"><div class="lt"><b class="l1">${esc(m.text)}</b><span class="l2 ${hot ? "w" : ""}">${esc(meta)}</span></div>${mmMainBtn(m)}</div>`;
+}
+function talkHtml() {
+  const cl = creqList(), ml = memoList();
+  const seg = `<div class="seg"><button class="${TALK === "creq" ? "on" : ""}" data-talk="creq">🧾 고객요청<em>${cl.length}</em></button><button class="${TALK === "memo" ? "on" : ""}" data-talk="memo">📌 인수인계<em>${ml.length}</em></button></div>`;
+  if (TALK === "memo") {
+    const L = [...ml].sort((a, b) => (a.due || "9") .localeCompare(b.due || "9") || (b.d + b.t).localeCompare(a.d + a.t));
+    return `${seg}<div class="card"><div class="lhead"><h2 style="margin:10px 0">📌 인수인계</h2><button class="act" data-go="memo">＋ 남기기</button></div>${L.map(mmRow).join("") || '<div class="desc" style="padding:4px 0 14px">확인할 인수인계가 없어요</div>'}</div>`;
+  }
+  const cnt = { all: cl.length, todo: cl.filter(crHot).length, wait: cl.filter((r) => r.step === "wait" && !crHot(r)).length, ready: cl.filter((r) => r.step === "ready").length };
+  const F = { all: () => true, todo: crHot, wait: (r) => r.step === "wait" && !crHot(r), ready: (r) => r.step === "ready" }[CRF] || (() => true);
+  const ord = (r) => (crHot(r) ? 0 : r.step === "wait" ? 1 : 2);
+  const L = cl.filter(F).sort((a, b) => ord(a) - ord(b) || (a.due || "9").localeCompare(b.due || "9") || b.d.localeCompare(a.d));
+  const chips = [["all", "전체"], ["todo", "연락할 것"], ["wait", "입고 대기"], ["ready", "연락함"]].map(([k, n]) => `<button class="chip ${CRF === k ? "on" : ""}" data-crf="${k}">${n} ${cnt[k]}</button>`).join("");
+  return `${seg}<div class="card"><div class="lhead"><div class="chips" style="margin:10px 0">${chips}</div><button class="act" data-go="creq">＋ 적기</button></div>${L.map(crRow).join("") || '<div class="desc" style="padding:4px 0 14px">해당하는 고객요청이 없어요</div>'}</div>`;
+}
+function sheetCreqDetail(id) {
+  const r = creqList().find((x) => x.id === id); if (!r) return;
+  const cust = r.full ? `${esc(r.full.name || "")} ${esc(r.full.phone || "")}` : `${esc(r.nm || "")} ${r.p4 ? "끝번호 " + esc(r.p4) : ""}`;
+  const btns = r.lead ? '<div class="desc">👔 팀장님이 처리 중이에요</div>' : `<div class="btns" style="flex-wrap:wrap">${r.step === "wait" && !r.arrived ? `<button class="btn" data-crarr="${id}">📦 입고됨</button>` : ""}${r.step === "wait" && r.arrived ? `<button class="btn primary" data-crs="ready" data-id="${id}">연락함</button>` : ""}${r.step === "ready" ? `<button class="btn primary" data-crs="done" data-id="${id}">전달 완료</button>` : ""}${r.step === "wait" ? `<button class="btn" data-crext="${id}">기한 연장</button>` : ""}<button class="btn" data-crcx="${id}">취소</button></div>`;
+  openSheet(`<h2>🧾 고객요청</h2><div style="font-size:17px;font-weight:800;line-height:1.5;white-space:pre-wrap">${esc(crItems(r))}</div>
+    <div class="desc" style="margin-top:10px">손님: ${cust || "-"}<br>${esc(r.how)}, ${r.pay === "결제완료" ? "결제완료" : "미결제"}, 접수 ${sd(r.d)} ${esc(r.by)}<br>${r.lead ? "👔 팀장 처리 중" : r.step === "ready" ? "연락함, 손님 방문 대기" : r.arrived ? "📦 입고됨, 손님께 연락할 차례" : r.due ? `입고 대기, 연락 기한 ${dueTxt(r.due)}${r.ext ? `, 연장 ${r.ext}번` : ""}` : CST[r.step]}</div>
+    ${r.memo ? `<div class="desc" style="margin-top:10px;white-space:pre-wrap;background:#f2f4f6;border-radius:12px;padding:10px">${esc(r.memo)}</div>` : ""}
+    ${btns}<div class="btns"><button class="btn" data-x>닫기</button></div>`);
+}
+function sheetMemoDetail(id) {
+  const m = memoList().find((x) => x.id === id); if (!m) return;
+  const b = mmMainBtn(m).replace('class="act gray"', 'class="btn"').replace('class="act"', 'class="btn primary"');
+  openSheet(`<h2>📌 인수인계</h2><div style="font-size:17px;font-weight:700;line-height:1.5;white-space:pre-wrap">${esc(m.text)}</div>
+    <div class="desc" style="margin-top:10px">${sd(m.d)} ${m.t} ${esc(m.by)} 남김${m.due ? `, 처리 기한 ${dueTxt(m.due)}` : ""}${m.ok && m.okBy ? `, 확인 ${esc(m.okBy)}` : ""}${m.lead ? ", 👔 팀장 처리 중" : ""}</div>
+    <div class="btns"><button class="btn" data-x>닫기</button>${b}</div>`);
 }
 function renderPick() {
   $("#app").innerHTML = `<div class="pick"><h1>어느 지점인가요?</h1><p>이 기기에 한 번만 고르면 돼요.</p>
@@ -799,7 +862,7 @@ function sheetCreqCancel(id) {
 }
 async function doCreqArr(id) {
   const by = working().join(", "); if (!by) return needIn(() => doCreqArr(id));
-  try { await send({ type: "creqarr", id, by }); const r = (BOARD?.creqs || []).find((x) => x.id === id); if (r) r.arrived = now(); render(); toast("입고됨으로 바꿨어요, 손님께 연락해 주세요"); } catch (e) { fail(e); }
+  try { await send({ type: "creqarr", id, by }); const r = (BOARD?.creqs || []).find((x) => x.id === id); if (r) r.arrived = now(); closeSheet(); render(); toast("입고됨으로 바꿨어요, 손님께 연락해 주세요"); } catch (e) { fail(e); }
 }
 let EXT = null;
 function sheetExt(id) {
@@ -850,7 +913,7 @@ async function doMemo() {
 async function doMemoOk(id, keep, by) {
   by = by || working().join(", ");
   if (!by) return needIn(() => doMemoOk(id, keep));
-  try { await send({ type: keep ? "memodown" : "memook", id, by }); const m = (BOARD?.memos || []).find((x) => x.id === id); if (!keep && m && m.due) { m.ok = true; m.okBy = by; } else MEMO_DONE.add(id); render(); }
+  try { await send({ type: keep ? "memodown" : "memook", id, by }); const m = (BOARD?.memos || []).find((x) => x.id === id); if (!keep && m && m.due) { m.ok = true; m.okBy = by; } else MEMO_DONE.add(id); closeSheet(); render(); }
   catch (e) { fail(e); }
 }
 // 출근하면 넘겨받은 것부터 보여주고 [확인했어요]
@@ -1054,7 +1117,10 @@ async function doAsAdd(t) {
 }
 
 document.addEventListener("click", (e) => {
-  const t = e.target.closest("button,[data-x]"); if (!t) { if (e.target.id === "dim") closeSheet(); return; }
+  const t = e.target.closest("button,[data-x]");
+  if (!t) { const rw = e.target.closest("[data-crd],[data-mmd]"); if (rw) return rw.dataset.crd ? sheetCreqDetail(rw.dataset.crd) : sheetMemoDetail(rw.dataset.mmd); if (e.target.id === "dim") closeSheet(); return; }
+  if (t.dataset.talk) { TALK = t.dataset.talk; ls.set("vf-app-talk", TALK); return render(); }
+  if (t.dataset.crf) { CRF = t.dataset.crf; return render(); }
   if (t.dataset.b) { B = t.dataset.b; ls.set("vf-app-branch", B); return render(); }
   if (t.dataset.x !== undefined) return closeSheet();
   const go = t.dataset.go;
@@ -1109,6 +1175,7 @@ document.addEventListener("click", (e) => {
   if (t.dataset.crdays) { cr.days = +t.dataset.crdays; document.querySelectorAll("[data-crdays]").forEach((x) => x.classList.toggle("on", x === t)); return; }
   if (t.dataset.crarr) return doCreqArr(t.dataset.crarr);
   if (t.dataset.crcx) return sheetCreqCancel(t.dataset.crcx);
+  if (t.dataset.mok && $("#dim").classList.contains("on")) closeSheet();
   if (t.dataset.crext) return sheetExt(t.dataset.crext);
   if (t.dataset.extd) { EXT.days = +t.dataset.extd; document.querySelectorAll("[data-extd]").forEach((x) => x.classList.toggle("on", x === t)); $("#extSay").textContent = `${md(addDay(EXT.days))} 이전에 입고되면 다시 연락드릴게요.`; return; }
   if (t.id === "okExt") return doExt();
