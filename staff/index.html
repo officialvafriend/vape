@@ -164,7 +164,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.20-20";
+const VER = "10.20-21";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -445,7 +445,32 @@ function sheetCreqDetail(id) {
     ${row("접수", `${sd(r.d)} ${esc(r.by)}${r.ext ? `, 연장 ${r.ext}번` : ""}`)}
     ${r.order ? row("주문요청", "📦 요청함") : ""}
     ${memo ? `<div style="border-top:1px solid var(--line);padding-top:10px"><div style="color:var(--sub);font-size:14px;margin-bottom:6px">메모</div><div style="background:#fff8e1;border-radius:12px;padding:12px;font-size:15px;line-height:1.55;color:var(--ink);white-space:pre-wrap">${esc(memo)}</div></div>` : ""}
-    ${btns}<div class="btns"><button class="btn" data-x>닫기</button></div>`);
+    ${btns}<div class="btns"><button class="btn" data-x>닫기</button>${r.lead ? "" : `<button class="btn" data-cred="${id}">✏️ 수정</button>`}</div>`);
+}
+let CE = null;
+function sheetCreqEdit(id) {
+  const r = creqList().find((x) => x.id === id); if (!r) return;
+  CE = { id, pay: r.pay, how: r.how };
+  const memo = DEC[r.id]?.m || r.memo || "", ph = custPhone(r);
+  openSheet(`<h2>✏️ 고객요청 수정</h2>
+    <div class="desc">상품 내용</div><input class="input" id="ceT" value="${esc(r.title || crItems(r))}" maxlength="60">
+    <div class="desc" style="margin-top:10px">손님</div><input class="input" id="ceN" value="${esc(custName(r))}" maxlength="20">
+    <div class="desc" style="margin-top:10px">연락처</div><input class="input" id="ceP" value="${esc(ph)}" inputmode="tel" maxlength="20" placeholder="${ph ? "" : "바꿀 때만 적기 (비우면 그대로)"}">
+    <div class="desc" style="margin-top:10px">결제</div><div class="chips">${["결제완료", "미결제"].map((x) => `<button class="chip ${x === r.pay ? "on" : ""}" data-cepay="${x}">${x}</button>`).join("")}</div>
+    <div class="desc" style="margin-top:10px">받는 방법</div><div class="chips">${["방문수령", "택배", "퀵"].map((x) => `<button class="chip ${x === r.how ? "on" : ""}" data-cehow="${x}">${x}</button>`).join("")}</div>
+    <div class="desc" style="margin-top:10px">메모</div><textarea class="input" id="ceM" rows="4" maxlength="400" placeholder="내용 추가">${esc(memo)}</textarea>
+    <div class="btns"><button class="btn" data-crd2="${id}">취소</button><button class="btn primary" id="okCe">저장</button></div>`);
+}
+async function doCreqEdit() {
+  const by = working().join(", "); if (!by) return needIn(() => doCreqEdit());
+  const v = (k) => ($(k)?.value || "").trim();
+  $("#okCe").disabled = true;
+  try {
+    await send({ type: "creqedit", id: CE.id, title: v("#ceT"), name: v("#ceN"), phone: v("#ceP"), memo: v("#ceM"), pay: CE.pay, how: CE.how, by });
+    const r = (BOARD?.creqs || []).find((x) => x.id === CE.id);
+    if (r) { r.title = v("#ceT") || r.title; r.pay = CE.pay; r.how = CE.how; DEC[r.id] = { ...(DEC[r.id] || {}), n: v("#ceN") || DEC[r.id]?.n, p: v("#ceP") || DEC[r.id]?.p, m: v("#ceM") }; r.memo = v("#ceM"); }
+    toast("수정했어요"); sheetCreqDetail(CE.id); render();
+  } catch (e) { $("#okCe").disabled = false; fail(e); }
 }
 function sheetMemoDetail(id) {
   const m = memoList().find((x) => x.id === id); if (!m) return;
@@ -1220,6 +1245,11 @@ document.addEventListener("click", (e) => {
   if (t.dataset.crdays) { if ($("#crDue")) $("#crDue").value = ""; cr.days = +t.dataset.crdays; document.querySelectorAll("[data-crdays]").forEach((x) => x.classList.toggle("on", x === t)); return; }
   if (t.dataset.crarr) return doCreqArr(t.dataset.crarr);
   if (t.dataset.crcx) return sheetCreqCancel(t.dataset.crcx);
+  if (t.dataset.cred) return sheetCreqEdit(t.dataset.cred);
+  if (t.dataset.crd2) return sheetCreqDetail(t.dataset.crd2);
+  if (t.dataset.cepay) { CE.pay = t.dataset.cepay; document.querySelectorAll("[data-cepay]").forEach((x) => x.classList.toggle("on", x === t)); return; }
+  if (t.dataset.cehow) { CE.how = t.dataset.cehow; document.querySelectorAll("[data-cehow]").forEach((x) => x.classList.toggle("on", x === t)); return; }
+  if (t.id === "okCe") return doCreqEdit();
   if (t.dataset.mok && $("#dim").classList.contains("on")) closeSheet();
   if (t.dataset.crext) return sheetExt(t.dataset.crext);
   if (t.dataset.extd) { if ($("#extDue")) $("#extDue").value = ""; EXT.days = +t.dataset.extd; document.querySelectorAll("[data-extd]").forEach((x) => x.classList.toggle("on", x === t)); $("#extSay").textContent = `${md(addDay(EXT.days))} 이전에 입고되면 다시 연락드릴게요.`; return; }
