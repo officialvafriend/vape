@@ -158,7 +158,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.20-8";
+const VER = "10.20-9";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -559,7 +559,7 @@ function creqCardHtml() {
       <span>${esc(r.how)}, <i class="pill ${r.pay === "결제완료" ? "ok" : "no"}">${r.pay === "결제완료" ? "결제완료" : "미결제"}</i>, 접수 ${sd(r.d)} ${esc(r.by)}</span>
       <span>👤 ${custOf(r)}</span>
       <em>${r.lead ? "👔 팀장 처리 중" : arr ? "📦 입고됨! 챙기고 손님께 연락하세요" : r.pending ? "보내는 중… (1~2분 뒤 반영)" : r.step === "wait" && r.due ? `⏳ 입고 대기, 연락 기한 ${dueTxt(r.due)}${r.ext ? `, 연장 ${r.ext}번` : ""}` : CST[r.step]}</em></div>
-      ${r.pending ? "" : btn}</div>`;
+      ${r.pending ? "" : `<div class="tbtn" style="flex-direction:column">${btn}${r.lead ? "" : `<button class="act gray" data-crcx="${r.id}" style="font-size:12px;padding:6px 10px">취소</button>`}</div>`}</div>`;
   }).join("");
   return `<div class="card"><h2>🧾 고객요청${list.length ? `, 진행 중 ${list.length}건` : ""}</h2>${rows || '<div class="desc" style="padding:4px 0 10px">진행 중인 고객요청이 없어요</div>'}
     <div class="btns" style="margin:6px 0 14px"><button class="btn primary" data-go="creq">＋ 고객요청 적기</button></div></div>`;
@@ -791,6 +791,11 @@ async function doCreqStep(id, k) {
   if (!by) return needIn(() => doCreqStep(id, k));
   try { await send({ type: "creqstep", id, k, by }); STEPS[id] = k; closeSheet(); render(); toast(k === "done" ? "전달 완료로 바꿨어요" : k === "cancel" ? "취소했어요" : "연락함으로 바꿨어요"); }
   catch (e) { fail(e); }
+}
+function sheetCreqCancel(id) {
+  const r = creqList().find((x) => x.id === id); if (!r) return;
+  openSheet(`<h2>이 고객요청을 취소할까요?</h2><div class="desc" style="white-space:pre-wrap">${esc(crItems(r))}</div><div class="desc">접수 ${sd(r.d)} ${esc(r.by)}, 손님 ${custOf(r)}</div><div class="desc" style="margin-top:8px">손님이 취소했거나 이미 처리된 건이면 취소해 주세요. 기록은 시트에 남아요.</div>
+    <div class="btns"><button class="btn" data-x>닫기</button><button class="btn primary" data-crs="cancel" data-id="${id}">취소 처리</button></div>`);
 }
 async function doCreqArr(id) {
   const by = working().join(", "); if (!by) return needIn(() => doCreqArr(id));
@@ -1103,6 +1108,7 @@ document.addEventListener("click", (e) => {
   if (t.dataset.mby) { document.querySelectorAll("[data-mby]").forEach((x) => x.classList.toggle("on", x === t)); return; }
   if (t.dataset.crdays) { cr.days = +t.dataset.crdays; document.querySelectorAll("[data-crdays]").forEach((x) => x.classList.toggle("on", x === t)); return; }
   if (t.dataset.crarr) return doCreqArr(t.dataset.crarr);
+  if (t.dataset.crcx) return sheetCreqCancel(t.dataset.crcx);
   if (t.dataset.crext) return sheetExt(t.dataset.crext);
   if (t.dataset.extd) { EXT.days = +t.dataset.extd; document.querySelectorAll("[data-extd]").forEach((x) => x.classList.toggle("on", x === t)); $("#extSay").textContent = `${md(addDay(EXT.days))} 이전에 입고되면 다시 연락드릴게요.`; return; }
   if (t.id === "okExt") return doExt();
