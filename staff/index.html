@@ -197,7 +197,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.20-51";
+const VER = "10.20-52";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -375,10 +375,23 @@ function renderLeader() {
   const rows = LEADS.map((x, i) => `<div class="crow"><div><b>${x.kind === "creq" ? "🧾" : "📌"} [${esc(ho(x.b))}] ${esc(x.title)}</b><span>${esc(x.sub)}</span><em style="color:var(--amber)">${esc(x.why)}${x.due ? `, 기한 ${sd(x.due)}` : ""}${x.at ? `, 넘어온 날 ${sd(x.at.slice(0, 10))}` : ""}</em></div>
     <div class="tbtn"><button class="act gray" data-lact="back" data-li="${i}">지점으로</button><button class="act" data-lact="done" data-li="${i}">처리 완료</button></div></div>`).join("");
   $("#app").innerHTML = `<div class="shell"><main class="mainv" style="margin:0 auto;max-width:860px">
-    <div class="hero"${TEST ? ' style="background:#7a2e0e"' : ""}>${TEST ? '<p style="color:#ffd7a8;font-weight:800;margin-bottom:6px">🧪 시험 모드</p>' : ""}<h1>👔 팀장 확인 ${LEADS.length}건</h1><p>전 지점에서 넘어온 고객요청, 인수인계</p></div>
+    <div class="hero"${TEST ? ' style="background:#7a2e0e"' : ""}>${TEST ? '<p style="color:#ffd7a8;font-weight:800;margin-bottom:6px">🧪 시험 모드</p>' : ""}<h1>👔 팀장 확인 ${LEADS.length}건</h1><p>전 지점에서 넘어온 고객요청, 인수인계${OLDS.length ? `, 오래된 건 ${OLDS.length}개` : ""}</p></div>
     <div class="card"><h2>내 이름</h2><input class="input" id="ldName" value="${esc(nm)}" placeholder="처리한 사람 이름 (한 번만 넣으면 기억해요)" maxlength="20"></div>
     <div class="card todo"><h2>넘어온 건</h2>${rows || '<div class="desc" style="padding:4px 0 10px">지금 넘어온 건이 없어요</div>'}</div>
+    ${oldHtml()}
     <div class="foot">버전 ${VER}, 손님 이름과 번호는 일부만 보여요. 전체는 그 지점 디스코드 고객요청 방에 있어요.</div></main></div>`;
+}
+// 오래된 건: AS 접수 30일 넘음, 고객요청 14일 넘음 또는 수령 예정일 지남. 지점별로 묶어 보기만(처리는 지점에서)
+function oldHtml() {
+  const L = OLDS.filter((x) => OLDF === "all" || x.kind === OLDF);
+  const n = (k) => OLDS.filter((x) => k === "all" || x.kind === k).length;
+  const chips = [["all", "전체"], ["as", "🔧 AS"], ["creq", "🧾 고객요청"]].map(([k, t]) => `<button class="chip ${OLDF === k ? "on" : ""}" data-oldf="${k}">${t} ${n(k)}</button>`).join("");
+  const byB = BR.map((b) => [b, L.filter((x) => x.b === b)]).filter((g) => g[1].length);
+  const sum = byB.map(([b, xs]) => `${BR.indexOf(b) + 1}호 ${b} ${xs.length}`).join(", ");
+  const grp = byB.map(([b, xs]) => `<div style="display:flex;align-items:center;gap:8px;padding:16px 2px 6px;border-bottom:2px solid var(--dark)"><b style="font-size:16px">${esc(ho(b))}</b><span style="color:var(--sub);font-size:14px">${xs.length}개</span></div>${xs.map((x) => `<div style="display:flex;gap:12px;align-items:center;padding:12px 2px;border-bottom:1px solid var(--line)"><div style="flex:1;min-width:0"><b style="display:block;font-size:15px">${x.kind === "as" ? "🔧" : "🧾"} ${esc(x.title)}</b><span style="display:block;font-size:13px;color:var(--sub);margin-top:3px">${esc(x.sub)}</span></div><b style="flex-shrink:0;font-size:14px;color:${x.days > 60 ? "var(--red)" : "var(--amber)"}">${x.days}일째</b></div>`).join("")}`).join("");
+  return `<div class="card"><h2>🕰 오래된 건 ${OLDS.length}개</h2><div class="desc">AS는 접수 30일 넘은 것, 고객요청은 14일 넘었거나 수령 예정일 지난 것. 지점에 확인해 주세요.</div>
+    <div class="chips" style="margin:10px 0 2px">${chips}</div>${sum ? `<div class="desc" style="margin-top:6px">${sum}</div>` : ""}
+    ${grp || '<div class="desc" style="padding:14px 0">오래된 건이 없어요 👍</div>'}</div>`;
 }
 function sheetLead(act, i) {
   const x = LEADS[i]; if (!x) return;
@@ -1020,13 +1033,13 @@ async function decAll() {
   } catch {}
 }
 const ENG = ["동성로", "본점", "상인"]; // 10/20 사장님: 각인기 1호, 3호, 6호(7호엔 없음) let ENGLOAD = {};
-let BOARD = B ? cacheGet("board") : null, LEADS = [], OUTS = new Set(), STEPS = {}, MEMO_DONE = new Set(), cr = null;
+let BOARD = B ? cacheGet("board") : null, LEADS = [], OLDS = [], OLDF = "all", OUTS = new Set(), STEPS = {}, MEMO_DONE = new Set(), cr = null;
 async function loadBoard() {
   try {
     const j = await ghJson("board.json");
     ENGLOAD = (TEST ? j.engLoadTest : j.engLoad) || {};
-    const next = j.br?.[B] || null, nl = (j.lead || []).filter((x) => !!x.test === TEST);
-    if (JSON.stringify(next) !== JSON.stringify(BOARD) || JSON.stringify(nl) !== JSON.stringify(LEADS)) { BOARD = next; LEADS = nl; cacheSet("board", next); if (!$("#dim").classList.contains("on")) render(); decAll(); }
+    const next = j.br?.[B] || null, nl = (j.lead || []).filter((x) => !!x.test === TEST), no = (j.old || []).filter((x) => !!x.test === TEST);
+    if (JSON.stringify(next) !== JSON.stringify(BOARD) || JSON.stringify(nl) !== JSON.stringify(LEADS) || JSON.stringify(no) !== JSON.stringify(OLDS)) { BOARD = next; LEADS = nl; OLDS = no; cacheSet("board", next); if (!$("#dim").classList.contains("on")) render(); decAll(); }
   } catch {}
 }
 async function loadOuts() { try { const j = await (await fetch(`${SITE}menu/stock.json?${Date.now()}`, { cache: "no-store" })).json(); OUTS = new Set(j[B]?.out || []); } catch {} }
@@ -1695,6 +1708,7 @@ document.addEventListener("click", (e) => {
   if (t.dataset.crcx) return sheetIlCx("c", t.dataset.crcx);
   if (go === "ilnew") return sheetIlNew();
   if (go === "a2new") return sheetAs2New();
+  if (t.dataset.oldf) { OLDF = t.dataset.oldf; return render(); }
   if (t.dataset.a2t) { A2T = t.dataset.a2t; A2SEL.clear(); return render(); }
   if (t.dataset.a2c) { A2SEL.has(t.dataset.a2c) ? A2SEL.delete(t.dataset.a2c) : A2SEL.add(t.dataset.a2c); return render(); }
   if (t.dataset.a2g != null) { const xs = as2Items().filter((x) => (B === "본점" ? x.b : AS5S[x.st]) === t.dataset.a2g && A2TABS().find((y) => y[0] === A2T)[2](x) && a2Next(x) > 0 && (B !== "본점" || A2B === "전체" || x.b === A2B)); const on = xs.every((x) => A2SEL.has(x.id)); xs.forEach((x) => (on ? A2SEL.delete(x.id) : A2SEL.add(x.id))); return render(); }
