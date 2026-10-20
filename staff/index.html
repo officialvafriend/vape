@@ -164,7 +164,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.20-26";
+const VER = "10.20-27";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -904,19 +904,20 @@ function sheetCreq() {
   if (!working().length) return needIn(() => sheetCreq());
   cr = { items: [], how: "방문수령", pay: null, step: "ready", manual: false, days: 7, by: working().length === 1 ? working()[0] : null, order: false };
   loadOuts();
-  openSheet(`<h2>🧾 고객요청 적기</h2><div class="desc">날짜는 자동으로 들어가요.</div>
+  openSheet(`<h2>🧾 고객요청 적기</h2>
     <div class="desc" style="margin-top:6px">담당자 <b style="color:var(--red)">*</b></div><div class="chips">${working().map((n) => `<button class="chip ${cr.by === n ? "on" : ""}" data-crby="${esc(n)}">${esc(n)}</button>`).join("")}</div>
     <input class="input" id="crByIn" placeholder="목록에 없으면 담당자 이름 직접 적기" maxlength="20" style="margin-top:8px">
-    <div class="desc" style="margin-top:10px">접수일 <small>(예전 건 옮겨 적을 때만 바꾸기)</small></div><input type="date" class="input" id="crDate" value="${todayKey()}" max="${todayKey()}" style="margin-top:4px">
     <input class="input" id="crFind" placeholder="상품 찾기 (예: 빌런 자두)"><div id="crRes" class="qres"></div><div id="crItems" class="qitems"></div>
     <input class="input" id="crFree" placeholder="목록에 없으면 직접 적기 (선택)" maxlength="60">
+    <input class="input" id="crName" placeholder="고객 이름" maxlength="20">
+    <input class="input" id="crMemo" placeholder="메모 (선택, 예: 맥스프로팟 4개랑 같이 포장)" maxlength="200">
     <div class="desc" style="margin-top:14px">받는 방법</div><div class="chips">${["방문수령", "택배", "퀵"].map((x) => `<button class="chip ${x === cr.how ? "on" : ""}" data-crh="${x}">${x}</button>`).join("")}</div>
     <div class="desc" style="margin-top:14px">결제 <b style="color:var(--red)">*</b></div><div class="chips"><button class="chip" data-crp="결제완료">💳 결제완료</button><button class="chip" data-crp="미결제">미결제</button></div>
     <div class="desc" style="margin-top:14px">지금 상태 <span id="crNote"></span></div><div class="chips" id="crSt">${crStChips()}</div>
-    <div id="crDueW"><div class="desc" style="margin-top:14px" id="crDueL">손님이 찾아갈 기한</div><div class="chips" style="align-items:center"><button class="chip on" data-crdays="7">7일 (${md(addDay(7))})</button><input type="date" class="input" id="crDue" min="${addDay(1)}" style="width:auto;flex:1;margin:0"></div></div>
     <div class="desc" style="margin-top:14px">재고 주문요청</div><div class="chips"><button class="chip on" data-crord="0">필요 없음</button><button class="chip" data-crord="1">📦 주문요청 필요</button></div>
-    <input class="input" id="crName" placeholder="고객 이름" maxlength="20"><input class="input" id="crPhone" placeholder="고객 연락처 (필수)" inputmode="tel" maxlength="20">
-    <input class="input" id="crMemo" placeholder="메모 (선택, 예: 맥스프로팟 4개랑 같이 포장)" maxlength="200">
+    <div id="crDueW"><div class="desc" style="margin-top:14px" id="crDueL">손님이 찾아갈 기한</div><div class="chips" style="align-items:center"><button class="chip on" data-crdays="7">7일 (${md(addDay(7))})</button><input type="date" class="input" id="crDue" min="${addDay(1)}" style="width:auto;flex:1;margin:0"></div></div>
+    <div class="desc" style="margin-top:10px">접수일 <small>(예전 건 옮겨 적을 때만 바꾸기)</small></div><input type="date" class="input" id="crDate" value="${todayKey()}" max="${todayKey()}" style="margin-top:4px">
+    <input class="input" id="crPhone" placeholder="고객 연락처 (필수)" inputmode="tel" maxlength="20">
     <div class="btns"><button class="btn" data-x>취소</button><button class="btn primary" id="okCr">저장</button></div>`);
 }
 const crStChips = () => [["ready", "지금 챙겨둠"], ["wait", "입고 기다림"]].map(([k, n]) => `<button class="chip ${cr.step === k ? "on" : ""}" data-crst="${k}">${n}</button>`).join("");
