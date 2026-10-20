@@ -164,7 +164,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.20-12";
+const VER = "10.20-14";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -239,7 +239,7 @@ const fail = (e) => toast(`못 보냈어요 (${navigator.onLine ? e.message : "�
 const ONLY_OPEN_CLOSE = true;
 const VIEWS_ALL = [["home", "🏠", "오늘"], ["work", "🕘", "출퇴근, 마감"], ["stock", "📦", "재고"], ["talk", "📌", "소통, 요청"], ["as", "🔧", "AS"]];
 // 10/20 사장님: 오늘(오픈, 마감) + 요청(인수인계, 고객요청) 두 화면만
-const VIEWS = ONLY_OPEN_CLOSE ? [["home", "🏠", "오늘"], ["talk", "📌", "요청"]] : VIEWS_ALL;
+const VIEWS = ONLY_OPEN_CLOSE ? [["home", "🏠", "오늘"], ["talk", "🧾", "고객요청"]] : VIEWS_ALL;
 let VIEW = ls.get("vf-app-view", "home");
 if (!VIEWS.some((v) => v[0] === VIEW)) VIEW = "home";
 function render() {
@@ -290,7 +290,7 @@ function render() {
     ${kpi("talk", "인수인계, 고객요청", memoN + creqN + "건", `인수인계 ${memoN}, 고객요청 ${creqN}`)}
   </div>`;
   const body = {
-    home: ONLY_OPEN_CLOSE ? `${todoCardHtml()}<div class="cols"><div>${openCard}</div><div>${closeCard}</div></div>` : `<div class="cols"><div>${done < N ? openCard : closeCard}${taskCardHtml()}</div><div>${memoCardHtml()}${asPin() ? asCardHtml() : ""}</div></div>`,
+    home: ONLY_OPEN_CLOSE ? `${todoCardHtml()}${memoHomeHtml()}<div class="cols"><div>${openCard}</div><div>${closeCard}</div></div>` : `<div class="cols"><div>${done < N ? openCard : closeCard}${taskCardHtml()}</div><div>${memoCardHtml()}${asPin() ? asCardHtml() : ""}</div></div>`,
     work: `<div class="cols"><div>${openCard}</div><div>${closeCard}</div></div>`,
     stock: `<div class="cols one"><div>${surveyCardHtml()}</div></div>`,
     talk: ONLY_OPEN_CLOSE ? talkHtml() : `<div class="cols"><div>${memoCardHtml()}${creqCardHtml()}</div><div>${reqCard}${myQuicksCard()}</div></div>`,
@@ -394,7 +394,7 @@ const custName = (r) => (DEC[r.id]?.n ?? (r.full ? r.full.name : r.nm)) || "";
 const custPhone = (r) => DEC[r.id]?.p || (r.full ? r.full.phone : "") || "";
 function crRow(r) {
   const nm = custName(r), p4 = custPhone(r) || r.p4 || "";
-  const meta = [[nm, p4].filter(Boolean).join(" "), `접수 ${sd(r.d)} ${r.by}`, r.lead ? "👔 팀장 처리 중" : r.step === "ready" ? "연락함, 방문 대기" : r.arrived ? "📦 입고됨" : r.due ? `기한 ${sd(r.due)}${dLeft(r.due) < 0 ? ` (${-dLeft(r.due)}일 지남)` : dLeft(r.due) === 0 ? " (오늘)" : ""}` : ""].filter(Boolean).join(", ");
+  const meta = [[nm, p4].filter(Boolean).join(" "), `접수 ${sd(r.d)} ${r.by}`, r.order ? "📦 주문요청함" : "", r.lead ? "👔 팀장 처리 중" : r.step === "ready" ? "연락함, 방문 대기" : r.arrived ? "📦 입고됨" : r.due ? `기한 ${sd(r.due)}${dLeft(r.due) < 0 ? ` (${-dLeft(r.due)}일 지남)` : dLeft(r.due) === 0 ? " (오늘)" : ""}` : ""].filter(Boolean).join(", ");
   return `<div class="lrow ${crHot(r) ? "hot" : ""}" data-crd="${r.id}"><div class="lt"><b class="l1" style="-webkit-line-clamp:1">${esc(r.title || crItems(r))}</b><span class="l2 ${crHot(r) ? "w" : ""}">${esc(meta)}</span></div>${crMainBtn(r)}</div>`;
 }
 function mmMainBtn(m) {
@@ -409,10 +409,13 @@ function mmRow(m) {
   const meta = [`${sd(m.d)} ${m.t} ${m.by} 남김`, toName, m.lead ? "👔 팀장 처리 중" : m.due ? `기한 ${sd(m.due)}${dLeft(m.due) < 0 ? ` (${-dLeft(m.due)}일 지남)` : dLeft(m.due) === 0 ? " (오늘)" : ""}` : "", m.ok && m.okBy ? `확인 ${m.okBy}` : ""].filter(Boolean).join(", ");
   return `<div class="lrow ${hot ? "hot" : ""}" data-mmd="${m.id}"><div class="lt"><b class="l1">${esc(m.text)}</b><span class="l2 ${hot ? "w" : ""}">${esc(meta)}</span></div>${mmMainBtn(m)}</div>`;
 }
+function memoHomeHtml() {
+  const ml = memoList(), L = [...ml].sort((a, b) => (a.due || "9").localeCompare(b.due || "9") || (b.d + b.t).localeCompare(a.d + a.t));
+  return `<div class="card"><div class="lhead"><h2 style="margin:10px 0">📌 인수인계${ml.length ? ` ${ml.length}건` : ""}</h2><button class="act gray" data-go="memo">＋ 남기기</button></div>${L.map(mmRow).join("") || '<div class="desc" style="padding:0 0 14px">확인할 인수인계가 없어요</div>'}</div>`;
+}
 function talkHtml() {
-  const cl = creqList(), ml = memoList();
-  const seg = `<div class="seg"><button class="${TALK === "creq" ? "on" : ""}" data-talk="creq">🧾 고객요청<em>${cl.length}</em></button><button class="${TALK === "memo" ? "on" : ""}" data-talk="memo">📌 인수인계<em>${ml.length}</em></button></div>`;
-  if (TALK === "memo") {
+  const cl = creqList(), ml = memoList(), seg = "";
+  if (false) {
     const L = [...ml].sort((a, b) => (a.due || "9") .localeCompare(b.due || "9") || (b.d + b.t).localeCompare(a.d + a.t));
     return `${seg}<div class="card"><div class="lhead"><h2 style="margin:10px 0">📌 인수인계</h2><button class="act" data-go="memo">＋ 남기기</button></div>${L.map(mmRow).join("") || '<div class="desc" style="padding:4px 0 14px">확인할 인수인계가 없어요</div>'}</div>`;
   }
@@ -428,7 +431,7 @@ function sheetCreqDetail(id) {
   const ph = custPhone(r), cust = `${esc(custName(r))} ${ph ? `<a href="tel:${esc(ph.replace(/\D/g, ""))}" style="color:var(--blue);font-weight:800">${esc(ph)}</a>` : r.p4 ? "끝번호 " + esc(r.p4) + (bKey() ? "" : " (열쇠 없는 기기)") : ""}`;
   const btns = r.lead ? '<div class="desc">👔 팀장님이 처리 중이에요</div>' : `<div class="btns" style="flex-wrap:wrap">${r.step === "wait" && !r.arrived ? `<button class="btn" data-crarr="${id}">📦 입고됨</button>` : ""}${r.step === "wait" && r.arrived ? `<button class="btn primary" data-crs="ready" data-id="${id}">연락함</button>` : ""}${r.step === "ready" ? `<button class="btn primary" data-crs="done" data-id="${id}">전달 완료</button>` : ""}${r.step === "wait" ? `<button class="btn" data-crext="${id}">기한 연장</button>` : ""}<button class="btn" data-crcx="${id}">취소</button></div>`;
   openSheet(`<h2>🧾 ${esc(r.title || "고객요청")}</h2><div style="font-size:16px;font-weight:700;line-height:1.5;white-space:pre-wrap">${esc(crItems(r))}</div>
-    <div class="desc" style="margin-top:10px">손님: ${cust || "-"}<br>${esc(r.how)}, ${r.pay === "결제완료" ? "결제완료" : "미결제"}, 접수 ${sd(r.d)} ${esc(r.by)}<br>${r.lead ? "👔 팀장 처리 중" : r.step === "ready" ? "연락함, 손님 방문 대기" : r.arrived ? "📦 입고됨, 손님께 연락할 차례" : r.due ? `입고 대기, 연락 기한 ${dueTxt(r.due)}${r.ext ? `, 연장 ${r.ext}번` : ""}` : CST[r.step]}</div>
+    <div class="desc" style="margin-top:10px">손님: ${cust || "-"}<br>${esc(r.how)}, ${r.pay === "결제완료" ? "결제완료" : "미결제"}, 접수 ${sd(r.d)} ${esc(r.by)}${r.order ? ", 📦 주문요청함" : ""}<br>${r.lead ? "👔 팀장 처리 중" : r.step === "ready" ? "연락함, 손님 방문 대기" : r.arrived ? "📦 입고됨, 손님께 연락할 차례" : r.due ? `입고 대기, 연락 기한 ${dueTxt(r.due)}${r.ext ? `, 연장 ${r.ext}번` : ""}` : CST[r.step]}</div>
     ${(DEC[r.id]?.m || r.memo) ? `<div class="desc" style="margin-top:10px;white-space:pre-wrap;background:#f2f4f6;border-radius:12px;padding:10px">${esc(DEC[r.id]?.m || r.memo)}</div>` : ""}
     ${btns}<div class="btns"><button class="btn" data-x>닫기</button></div>`);
 }
@@ -629,7 +632,7 @@ function todoCardHtml() {
   const L = todoItems(); if (!L.length) return "";
   return `<div class="card todo"><h2>✅ 오늘 할 일 ${L.length}개</h2>${L.map((x) => `<div class="crow"><div><b>${x.ic} ${x.t}</b><span ${x.w ? 'style="color:var(--red)"' : ""}>${x.s}</span></div><div class="tbtn">${x.b}</div></div>`).join("")}</div>`;
 }
-const talkCount = () => { try { return memoList().filter((m) => !m.ok && m.to !== "keep").length + creqList().filter((r) => r.step === "wait" && r.arrived && !r.lead).length; } catch { return 0; } };
+const talkCount = () => { try { return creqList().filter((r) => r.step === "wait" && r.arrived && !r.lead).length; } catch { return 0; } };
 const custOf = (r) => r.full ? `${esc(r.full.name || "")} ${esc(r.full.phone)}` : `${esc(r.nm || "")} , ${esc(r.p4 || "")}`;
 function creqCardHtml() {
   const list = creqList();
@@ -827,7 +830,7 @@ function memoCardHtml() {
 }
 function sheetCreq() {
   if (!working().length) return needIn(() => sheetCreq());
-  cr = { items: [], how: "방문수령", pay: null, step: "ready", manual: false, days: 7, by: working().length === 1 ? working()[0] : null };
+  cr = { items: [], how: "방문수령", pay: null, step: "ready", manual: false, days: 7, by: working().length === 1 ? working()[0] : null, order: false };
   loadOuts();
   openSheet(`<h2>🧾 고객요청 적기</h2><div class="desc">날짜는 자동으로 들어가요.</div>
     <div class="desc" style="margin-top:6px">담당자 <b style="color:var(--red)">*</b></div><div class="chips">${working().map((n) => `<button class="chip ${cr.by === n ? "on" : ""}" data-crby="${esc(n)}">${esc(n)}</button>`).join("")}</div>
@@ -837,6 +840,7 @@ function sheetCreq() {
     <div class="desc" style="margin-top:14px">결제 <b style="color:var(--red)">*</b></div><div class="chips"><button class="chip" data-crp="결제완료">💳 결제완료</button><button class="chip" data-crp="미결제">미결제</button></div>
     <div class="desc" style="margin-top:14px">지금 상태 <span id="crNote"></span></div><div class="chips" id="crSt">${crStChips()}</div>
     <div id="crDueW" style="display:none"><div class="desc" style="margin-top:14px">손님께 연락할 기한</div><div class="chips">${[3, 7, 14].map((n) => `<button class="chip ${n === cr.days ? "on" : ""}" data-crdays="${n}">${n}일 (${md(addDay(n))})</button>`).join("")}</div></div>
+    <div class="desc" style="margin-top:14px">재고 주문요청</div><div class="chips"><button class="chip on" data-crord="0">필요 없음</button><button class="chip" data-crord="1">📦 주문요청 필요</button></div>
     <input class="input" id="crName" placeholder="고객 이름" maxlength="20"><input class="input" id="crPhone" placeholder="고객 연락처 (필수)" inputmode="tel" maxlength="20">
     <input class="input" id="crMemo" placeholder="메모 (선택, 예: 맥스프로팟 4개랑 같이 포장)" maxlength="200">
     <div class="btns"><button class="btn" data-x>취소</button><button class="btn primary" id="okCr">저장</button></div>`);
@@ -858,7 +862,7 @@ async function doCreq() {
   if (!cr.pay) return toast("결제했는지 골라 주세요");
   if (v("#crPhone").replace(/\D/g, "").length < 8) return toast("고객 연락처를 넣어 주세요");
   const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 5), by = working().join(", ");
-  const body = { type: "creq", id, items: cr.items, free: v("#crFree"), how: cr.how, pay: cr.pay, step: cr.step, days: cr.days, name: v("#crName"), phone: v("#crPhone"), memo: v("#crMemo"), by };
+  const body = { type: "creq", id, items: cr.items, free: v("#crFree"), how: cr.how, pay: cr.pay, step: cr.step, days: cr.days, order: cr.order, name: v("#crName"), phone: v("#crPhone"), memo: v("#crMemo"), by };
   $("#okCr").disabled = true;
   try {
     await send(body);
@@ -1189,6 +1193,7 @@ document.addEventListener("click", (e) => {
   if (t.dataset.midby) { document.querySelectorAll("[data-midby]").forEach((x) => x.classList.toggle("on", x === t)); return; }
   if (t.id === "okMid") return doMid();
   if (t.id === "okCr") return doCreq();
+  if (t.dataset.crord) { cr.order = t.dataset.crord === "1"; document.querySelectorAll("[data-crord]").forEach((x) => x.classList.toggle("on", x === t)); return; }
   if (t.dataset.crby) { cr.by = t.dataset.crby; document.querySelectorAll("[data-crby]").forEach((x) => x.classList.toggle("on", x === t)); return; }
   if (t.dataset.mby) { document.querySelectorAll("[data-mby]").forEach((x) => x.classList.toggle("on", x === t)); return; }
   if (t.dataset.crdays) { cr.days = +t.dataset.crdays; document.querySelectorAll("[data-crdays]").forEach((x) => x.classList.toggle("on", x === t)); return; }
