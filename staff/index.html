@@ -205,7 +205,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.20-55";
+const VER = "10.20-56";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -347,13 +347,13 @@ function render() {
     as2: as2Html(),
     note: noteHtml(),
   }[VIEW];
-  const badge = (k) => { const n = k === "talk" ? talkCount() : k === "home" ? todoItems().length : k === "as2" ? as2Items().filter((x) => (B === "본점" && (x.st === 0 || x.st === 1)) || (x.b === B && (x.st === 3 || (x.st === 4 && !x.contact)))).length : 0; return n ? `<em class="bd">${n}</em>` : ""; };
+  const badge = (k) => { const n = k === "talk" ? talkCount() : k === "home" ? todoItems().length : k === "as2" ? as2Items().filter((x) => (B === "본점" && (x.st === 0 || x.st === 1)) || (x.b === B && !a2Lead(x) && (x.st === 3 || (x.st === 4 && !x.contact)))).length : 0; return n ? `<em class="bd">${n}</em>` : ""; };
   // 10/20 사장님 "여기 창이 별거 없네": 맨 위 칸 = 지금 할 일. 다음 단계 버튼을 바로 누르게, 진행 막대 대신 단계 점
   const stockUrl = `${SITE}stock/?branch=${encodeURIComponent(B)}${TEST ? "&test=1" : ""}&by=${encodeURIComponent(working.map((x) => x.name).join(", "))}&back=${encodeURIComponent(location.pathname)}`;
   const OP = [["🙋", "출근", steps[0], `<button class="hbtn" data-go="in">출근</button>`], ["✅", "오픈 체크", steps[1], `<button class="hbtn" data-go="open">체크</button>`], ["📦", "아침 재고보고", steps[2], `<a class="hbtn" href="${stockUrl}">하기</a>`]];
   const CL = [["🌙", "마감 체크", cSteps[0], `<button class="hbtn" data-go="close">체크</button>`]].concat(CLOSE_OK.includes(B) ? [["💰", "마감 보고", cSteps[1], `<button class="hbtn" data-go="closing">보고</button>`]] : []).concat([["👋", "퇴근", cSteps[cSteps.length - 1], working.length ? `<button class="hbtn" data-go="out">퇴근</button>` : ""]]);
   const phase = done < N ? OP : CL, nx = phase.find((x) => !x[2]), tdN = todoItems().length;
-  const TD = todoItems(), AH = as2Items().filter((x) => x.st === 4 && !x.contact && x.b === B && (Date.parse(todayKey()) - Date.parse(x.d)) / 864e5 <= 60);
+  const TD = todoItems(), AH = as2Items().filter((x) => x.st === 4 && !x.contact && x.b === B && !a2Lead(x));
   const heroAs = AH.length ? `<div class="hil"><p class="hk" style="color:#9bd0ff">🔧 AS 지점 도착, 손님께 연락할 것 ${AH.length}개</p>${AH.slice(0, 3).map((x) => `<div class="hrow"><div class="ht"><b>${esc(as2Title(x))}</b><span>${esc(as2Name(x) || "손님")}, 접수 ${x.d.slice(5).replace("-", "/")} ${esc(x.by)}${x.loan && !x.loanBack ? ", 📱 대여 중: " + esc((x.loan === "대여 있음" ? "기기명 없음" : x.loan)) : ""}</span></div><div class="hbs"><button class="ok" data-a2sms="${x.id}">📩 문자</button><button data-a2go="5" data-id="${x.id}">전달 완료</button></div></div>`).join("")}${AH.length > 3 ? `<p style="margin-top:8px"><button data-view="as2" style="color:#9bd0ff;font-weight:800">외 ${AH.length - 3}개는 AS관리에서 →</button></p>` : ""}</div>` : "";
   const heroIl = TD.length ? `<div class="hil"><p class="hk">📅 오늘 일정 ${TD.length}개, 처리해야 마감할 수 있어요</p>${TD.map((it) => `<div class="hrow"><div class="ht"><b>${it.ic} ${esc(it.title)}</b><span>${esc(it.sub)}</span></div><div class="hbs">${ilBtns(it, true)}</div></div>`).join("")}</div>` : "";
   const heroBody = heroIl + heroAs + `<p class="hk">${done < N ? `지금 할 일, 오픈 ${OPEN_AT[B]}` : "지금 할 일, 마감"}</p>
@@ -397,22 +397,22 @@ function oldHtml() {
   const chips = [["all", "전체"], ["as", "🔧 AS"], ["creq", "🧾 고객요청"]].map(([k, t]) => `<button class="chip ${OLDF === k ? "on" : ""}" data-oldf="${k}">${t} ${n(k)}</button>`).join("");
   const byB = BR.map((b) => [b, L.filter((x) => x.b === b)]).filter((g) => g[1].length);
   const sum = byB.map(([b, xs]) => `${BR.indexOf(b) + 1}호 ${b} ${xs.length}`).join(", ");
-  const grp = byB.map(([b, xs]) => `<div style="display:flex;align-items:center;gap:8px;padding:16px 2px 6px;border-bottom:2px solid var(--dark)"><b style="font-size:16px">${esc(ho(b))}</b><span style="color:var(--sub);font-size:14px">${xs.length}개</span></div>${xs.map((x) => `<div style="display:flex;gap:12px;align-items:center;padding:12px 2px;border-bottom:1px solid var(--line)"><div style="flex:1;min-width:0"><b style="display:block;font-size:15px">${x.kind === "as" ? "🔧" : "🧾"} ${esc(x.title)}</b><span style="display:block;font-size:13px;color:var(--sub);margin-top:3px">${esc(x.sub)}</span></div><b style="flex-shrink:0;font-size:14px;color:${x.days > 60 ? "var(--red)" : "var(--amber)"}">${x.days}일째</b></div>`).join("")}`).join("");
+  const grp = byB.map(([b, xs]) => `<div style="display:flex;align-items:center;gap:8px;padding:16px 2px 6px;border-bottom:2px solid var(--dark)"><b style="font-size:16px">${esc(ho(b))}</b><span style="color:var(--sub);font-size:14px">${xs.length}개</span></div>${xs.map((x) => `<div style="display:flex;gap:12px;align-items:center;padding:12px 2px;border-bottom:1px solid var(--line)"><div style="flex:1;min-width:0"><b style="display:block;font-size:15px">${x.kind === "as" ? "🔧" : "🧾"} ${esc(x.title)}</b><span style="display:block;font-size:13px;color:var(--sub);margin-top:3px">${esc(x.sub)}</span></div><div style="flex-shrink:0;text-align:right"><b style="display:block;font-size:14px;color:${x.days > 60 ? "var(--red)" : "var(--amber)"}">${x.days}일째</b><div class="tbtn" style="margin-top:6px">${x.kind === "as" ? `${x.contact ? "" : `<button class="act gray" data-lold="contact" data-oi="${OLDS.indexOf(x)}">손님 연락함</button>`}<button class="act" data-lold="done" data-oi="${OLDS.indexOf(x)}">전달 완료</button>` : `<button class="act gray" data-lold="back" data-oi="${OLDS.indexOf(x)}">지점으로</button><button class="act" data-lold="done" data-oi="${OLDS.indexOf(x)}">처리 완료</button>`}</div></div></div>`).join("")}`).join("");
   return `<div class="card"><h2>🕰 오래된 건 ${OLDS.length}개</h2><div class="desc">AS는 접수 30일 넘은 것, 고객요청은 14일 넘었거나 수령 예정일 지난 것. 지점에 확인해 주세요.</div>
     <div class="chips" style="margin:10px 0 2px">${chips}</div>${sum ? `<div class="desc" style="margin-top:6px">${sum}</div>` : ""}
     ${grp || '<div class="desc" style="padding:14px 0">오래된 건이 없어요 👍</div>'}</div>`;
 }
-function sheetLead(act, i) {
-  const x = LEADS[i]; if (!x) return;
+function sheetLead(act, i, old) {
+  const x = old ? OLDS[i] : LEADS[i]; if (!x) return;
   const nm = ($("#ldName")?.value || "").trim(); if (!nm) { toast("아래 이름 칸에 이름을 먼저 넣어 주세요"); $("#ldName")?.focus(); return; }
   ls.set("vf-leader-name", nm); LACT = { act, x, by: nm };
-  openSheet(`<h2>${act === "done" ? "처리 완료" : "지점으로 다시 넘기기"}</h2><div class="desc">[${esc(ho(x.b))}] ${esc(x.title)}</div>
-    <input class="input" id="ldRes" placeholder="${act === "done" ? "어떻게 처리했는지 한 줄 (선택)" : "지점에 전할 말 (선택), 기한은 3일로 새로 잡혀요"}" maxlength="200">
-    <div class="btns"><button class="btn" data-x>닫기</button><button class="btn primary" id="okLd">${act === "done" ? "처리 완료" : "지점으로"}</button></div>`);
+  openSheet(`<h2>${act === "contact" ? "손님 연락함" : act === "done" ? (x.kind === "as" ? "전달 완료" : "처리 완료") : "지점으로 다시 넘기기"}</h2><div class="desc">[${esc(ho(x.b))}] ${esc(x.title)}</div>
+    <input class="input" id="ldRes" placeholder="${act === "contact" ? "손님 반응 한 줄 (선택)" : act === "done" ? "어떻게 처리했는지 한 줄 (선택)" : "지점에 전할 말 (선택), 기한은 3일로 새로 잡혀요"}" maxlength="200">
+    <div class="btns"><button class="btn" data-x>닫기</button><button class="btn primary" id="okLd">${act === "contact" ? "연락함" : act === "done" ? "완료" : "지점으로"}</button></div>`);
 }
 async function doLead() {
   $("#okLd").disabled = true;
-  try { await send({ type: "leadact", kind: LACT.x.kind, id: LACT.x.id, ib: LACT.x.b, act: LACT.act, by: LACT.by, result: ($("#ldRes").value || "").trim() }); LEADS = LEADS.filter((y) => y !== LACT.x); closeSheet(); render(); toast(LACT.act === "done" ? "처리 완료했어요" : "지점으로 넘겼어요"); }
+  try { await send({ type: "leadact", kind: LACT.x.kind, id: LACT.x.id, ib: LACT.x.b, act: LACT.act, by: LACT.by, result: ($("#ldRes").value || "").trim() }); LEADS = LEADS.filter((y) => y !== LACT.x); if (LACT.act !== "contact") OLDS = OLDS.filter((y) => y !== LACT.x); else LACT.x.contact = true; closeSheet(); render(); toast(LACT.act === "contact" ? "손님 연락함으로 남겼어요" : LACT.act === "done" ? "처리 완료했어요" : "지점으로 넘겼어요"); }
   catch (e) { $("#okLd").disabled = false; fail(e); }
 }
 // ── 중간 체크 (10/20) ── 시간 상관없이, 지금 돈통이 포스(개점준비금 + 지금까지 현금매출 − 지출)와 맞는지 미리 확인
@@ -682,6 +682,8 @@ const A2TABS = () => B === "본점"
   ? [["hq", "🏠 본점이 할 일", (x) => x.st <= 1], ["ven", "🚚 업체에 있음", (x) => x.st === 2], ["br", "🏪 지점이 할 일", (x) => x.st === 3 || x.st === 4], ["loan", "📱 대여 중", (x) => x.loan && !x.loanBack && x.st < 5], ["done", "✅ 끝남", (x) => x.st === 5]]
   : [["me", "🙋 우리가 할 일", (x) => x.st === 0 || x.st === 3 || x.st === 4], ["hq", "🏠 본점에 있음", (x) => x.st === 1 || x.st === 2], ["loan", "📱 대여 중", (x) => x.loan && !x.loanBack && x.st < 5], ["done", "✅ 끝남", (x) => x.st === 5]];
 const a2Days = (d) => Math.round((Date.parse(todayKey()) - Date.parse(d)) / 864e5);
+const a2Arr = (x) => [...(x.hist || [])].reverse().find((h) => h.st === 4)?.d || x.d;
+const a2Lead = (x) => x.st < 5 && (a2Days(x.d) > 30 || (x.st === 4 && a2Days(a2Arr(x)) > 7));
 const a2Old = (x) => x.hist?.[0]?.by === "노션에서 옮김" && a2Days(x.d) > 60;
 // 이 사람이 누를 수 있는 다음 단계(없으면 -1)
 function a2Next(x) {
@@ -692,7 +694,26 @@ function a2Next(x) {
   return -1;
 }
 const A2GO = ["", "본점 받음", "업체 보냄", "AS 완료, 지점 보냄", "지점 도착", "전달 완료"];
+// 10/20 사장님: 지점 직원 AS 화면은 접수랑 도착한 것만, 오래된 건은 팀장님이. 손님이 물어보면 찾기로 단계 확인
+function as2BranchHtml() {
+  const all = as2Items().filter((x) => x.b === B);
+  const arr = all.filter((x) => (x.st === 3 || x.st === 4) && !a2Lead(x)).sort((a, b) => a2Arr(a).localeCompare(a2Arr(b)));
+  const leadN = all.filter(a2Lead).length;
+  const q = A2Q.trim().toLowerCase().replace(/-/g, "");
+  const found = q ? all.filter((x) => [x.dev, x.color, x.sym, as2Name(x), String(DEC["as" + x.id]?.p || "").replace(/\D/g, "")].join(" ").toLowerCase().includes(q)).sort((a, b) => b.d.localeCompare(a.d)).slice(0, 20) : [];
+  const where = (x) => (a2Lead(x) ? "팀장님 확인 중" : ["본점으로 보낼 것", "본점에 있음", "업체에서 수리 중", "우리 지점으로 오는 중", "우리 지점 도착", "전달 완료"][x.st]);
+  const row = (x, btns) => `<div class="a2row" data-a2d="${x.id}"><div class="a2m"><b>${esc(as2Title(x))}</b><span>${esc(as2Name(x) || "손님")}, 접수 ${sd(x.d)}${x.st === 4 && x.contact ? ", 📩 연락함" : ""}</span></div>${x.loan && !x.loanBack ? `<span class="a2loan">📱 ${esc(x.loan === "대여 있음" ? "대여" : x.loan)}</span>` : ""}${btns}</div>`;
+  const arrBtn = (x) => x.st === 3 ? `<button class="a2go" data-a2go="4" data-id="${x.id}">도착 확인</button>` : `<button class="ntbtn" data-a2sms="${x.id}">📩 문자</button><button class="a2go" data-a2go="5" data-id="${x.id}">전달 완료</button>`;
+  return `<div class="card a2card" style="padding-bottom:20px"><div class="lhead"><h2 style="margin:6px 0">🔧 AS</h2><button class="act" data-go="a2new">＋ AS 접수</button></div>
+    <div class="ntday" style="margin-top:8px">🔔 도착했어요, 손님께 연락할 것 ${arr.length || ""}</div>
+    ${arr.map((x) => row(x, arrBtn(x))).join("") || '<div class="a2empty" style="padding:28px 10px">🎉 지금 연락할 AS가 없어요</div>'}
+    <div class="ntday" style="margin-top:22px">🔍 손님 AS 찾기</div>
+    <input class="input" id="a2Q" placeholder="손님 이름, 전화번호 뒷자리, 기기" value="${esc(A2Q)}" style="margin:0 0 6px">
+    ${q ? found.map((x) => row(x, `<span class="a2st" style="display:inline-block">${where(x)}</span>`)).join("") || '<div class="desc" style="padding:10px 2px">찾는 AS가 없어요</div>' : ""}
+    ${leadN ? `<div class="desc" style="margin-top:16px">오래된 AS ${leadN}개는 팀장님이 챙기고 있어요</div>` : ""}</div>`;
+}
 function as2Html() {
+  if (B !== "본점") { as2Dec(); return as2BranchHtml(); }
   as2Dec();
   const hq = B === "본점", all = as2Items().filter((x) => !hq || A2B === "전체" || x.b === A2B), tabs = A2TABS();
   if (!tabs.some((t) => t[0] === A2T)) A2T = tabs[0][0];
@@ -712,7 +733,7 @@ function as2Html() {
   if (hq) groups.sort((a, b) => BR.indexOf(a[0]) - BR.indexOf(b[0]));
   const row = (x) => {
     const nx = a2Next(x), dd = a2Days(x.d), on = A2SEL.has(x.id), loan = x.loan && !x.loanBack;
-    const meta = [esc(as2Name(x) || "손님"), `접수 ${sd(x.d)}`, x.st < 5 ? `<span class="${dd > 60 ? "a2late" : ""}">${dd}일째${a2Old(x) && x.st < 5 ? ", 확인 필요" : ""}</span>` : `끝남 ${sd(x.hist?.at(-1)?.d || x.d)}`, x.st === 4 && x.contact ? `📩 연락함` : ""].filter(Boolean).join(" · ");
+    const meta = [esc(as2Name(x) || "손님"), `접수 ${sd(x.d)}`, x.st < 5 ? `<span class="${dd > 60 ? "a2late" : ""}">${dd}일째${a2Old(x) && x.st < 5 ? ", 확인 필요" : ""}</span>` : `끝남 ${sd(x.hist?.at(-1)?.d || x.d)}`, x.st === 4 && x.contact ? `📩 연락함` : ""].filter(Boolean).join(", ");
     return `<div class="a2row ${on ? "on" : ""}" data-a2d="${x.id}">${nx > 0 && A2T !== "done" ? `<button class="a2ck ${on ? "on" : ""}" data-a2c="${x.id}">${on ? "✓" : ""}</button>` : '<span class="a2ck off"></span>'}
       <div class="a2m"><b>${esc(as2Title(x))}</b><span>${meta}</span></div>
       ${loan ? `<span class="a2loan">📱 ${esc(x.loan === "대여 있음" ? "대여" : x.loan)}</span>` : ""}
@@ -1855,6 +1876,7 @@ document.addEventListener("click", (e) => {
   if (t.id === "okMd") return doMemoDone();
   if (t.dataset.mdue !== undefined) { document.querySelectorAll("[data-mdue]").forEach((x) => x.classList.toggle("on", x === t)); if ($("#mmDue")) $("#mmDue").value = ""; return; }
   if (t.dataset.lact) return sheetLead(t.dataset.lact, +t.dataset.li);
+  if (t.dataset.lold) return sheetLead(t.dataset.lold, +t.dataset.oi, true);
   if (t.id === "okLd") return doLead();
   if (t.id === "okMm") return doMemo();
   if (t.dataset.name) { $("#nm").value = t.dataset.name; return doIn(t.dataset.name); }
