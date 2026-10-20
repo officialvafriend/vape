@@ -173,7 +173,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.20-34";
+const VER = "10.20-35";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -739,10 +739,12 @@ async function decAll() {
     if (ch && !$("#dim").classList.contains("on")) render();
   } catch {}
 }
+const ENG = ["동성로", "본점", "광장코아"]; let ENGLOAD = {};
 let BOARD = B ? cacheGet("board") : null, LEADS = [], OUTS = new Set(), STEPS = {}, MEMO_DONE = new Set(), cr = null;
 async function loadBoard() {
   try {
     const j = await ghJson("board.json");
+    ENGLOAD = (TEST ? j.engLoadTest : j.engLoad) || {};
     const next = j.br?.[B] || null, nl = (j.lead || []).filter((x) => !!x.test === TEST);
     if (JSON.stringify(next) !== JSON.stringify(BOARD) || JSON.stringify(nl) !== JSON.stringify(LEADS)) { BOARD = next; LEADS = nl; cacheSet("board", next); if (!$("#dim").classList.contains("on")) render(); decAll(); }
   } catch {}
@@ -774,7 +776,7 @@ function ilItems() {
     if (r.pending) continue;
     const nm = custName(r), today = r.due && dLeft(r.due) <= 0, arr = r.step === "wait" && r.arrived;
     L.push({ k: "c", cat: r.cat === "각인" ? "e" : "c", id: r.id, raw: r, ic: r.cat === "각인" ? "✨" : "🧾", lead: !!r.lead, due: r.due || null, hot: !r.lead && (today || arr), title: `${nm ? nm + "님, " : ""}${r.title || crItems(r)}`,
-      sub: [r.lead ? "👔 팀장 처리 중" : arr ? "📦 입고됨, 손님께 연락" : r.step === "ready" ? "챙겨둠" : "입고 대기", r.due ? `${r.step === "ready" || arr ? "수령 예정" : "약속일"} ${puTxt(r.due)}` : "", `남김 ${sd(r.d)} ${r.by}`].filter(Boolean).join(", ") });
+      sub: [r.from && r.from !== B ? `📥 ${ho(r.from)}에서 맡김` : "", r.eng && r.eng !== B ? `각인 ${ho(r.eng)}` : "", r.lead ? "👔 팀장 처리 중" : arr ? "📦 입고됨, 손님께 연락" : r.step === "ready" ? "챙겨둠" : "입고 대기", r.due ? `${r.step === "ready" || arr ? "수령 예정" : "약속일"} ${puTxt(r.due)}` : "", `남김 ${sd(r.d)} ${r.by}`].filter(Boolean).join(", ") });
   }
   for (const m of memoList()) {
     if (m.to === "keep" || MDONE.has(m.id)) continue;
@@ -1003,9 +1005,9 @@ function memoCardHtml() {
 }
 function sheetCreq(cat = "") {
   if (!working().length) return needIn(() => sheetCreq(cat));
-  cr = { items: [], how: "방문수령", pay: null, step: "ready", manual: false, days: 7, by: working().length === 1 ? working()[0] : null, order: false, cat };
+  cr = { items: [], how: "방문수령", pay: null, step: "ready", manual: false, days: 7, by: working().length === 1 ? working()[0] : null, order: false, cat, eng: cat === "각인" ? (ENG.includes(B) ? B : [...ENG].sort((a, b) => (ENGLOAD[a] || 0) - (ENGLOAD[b] || 0) || ENG.indexOf(a) - ENG.indexOf(b))[0]) : null };
   loadOuts();
-  openSheet(`<h2>${cr.cat === "각인" ? "✨ 각인 요청" : "🧾 손님 요청"}</h2>
+  openSheet(`<h2>${cr.cat === "각인" ? "✨ 각인 요청" : "🧾 손님 요청"}</h2>${cr.cat === "각인" ? `<div class="desc" style="margin-top:4px">각인할 매장 <small>(${ENG.includes(B) ? "기본은 우리 매장" : "맡은 각인이 가장 적은 매장을 골라 뒀어요"})</small></div><div class="chips">${ENG.map((b) => `<button class="chip ${cr.eng === b ? "on" : ""}" data-creng="${b}">${esc(ho(b))} <small>${ENGLOAD[b] || 0}건</small></button>`).join("")}</div>` : ""}
     <div class="desc" style="margin-top:6px">담당자 <b style="color:var(--red)">*</b></div><div class="chips">${working().map((n) => `<button class="chip ${cr.by === n ? "on" : ""}" data-crby="${esc(n)}">${esc(n)}</button>`).join("")}</div>
     <input class="input" id="crByIn" placeholder="목록에 없으면 담당자 이름 직접 적기" maxlength="20" style="margin-top:8px">
     <input class="input" id="crFind" placeholder="상품 찾기 (예: 빌런 자두)"><div id="crRes" class="qres"></div><div id="crItems" class="qitems"></div>
@@ -1050,7 +1052,7 @@ async function doCreq() {
   if (!cr.pay) return toast("결제했는지 골라 주세요");
   if (v("#crPhone").replace(/\D/g, "").length < 8) return toast("고객 연락처를 넣어 주세요");
   const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 5), by = cr.by; // 10/20 담당자 한 명(칩 또는 직접 적은 이름)
-  const body = { type: "creq", id, items: cr.items, free: v("#crFree"), how: cr.how, pay: cr.pay, step: cr.step, days: cr.days, order: cr.order, cat: cr.cat, d: v("#crDate") || todayKey(), name: v("#crName"), phone: v("#crPhone"), memo: cr.check && !v("#crMemo").startsWith("[확인 필요]") ? ("[확인 필요] " + v("#crMemo")).trim() : v("#crMemo"), by };
+  const body = { type: "creq", id, items: cr.items, free: v("#crFree"), how: cr.how, pay: cr.pay, step: cr.step, days: cr.days, order: cr.order, cat: cr.cat, eng: cr.eng, d: v("#crDate") || todayKey(), name: v("#crName"), phone: v("#crPhone"), memo: cr.check && !v("#crMemo").startsWith("[확인 필요]") ? ("[확인 필요] " + v("#crMemo")).trim() : v("#crMemo"), by };
   $("#okCr").disabled = true;
   try {
     await send(body);
@@ -1382,6 +1384,7 @@ document.addEventListener("click", (e) => {
   if (t.id === "okCr") return doCreq();
   if (t.dataset.crchk) { cr.check = !cr.check; t.classList.toggle("on", cr.check); const d = $("#crDue"); if (cr.check) { cr.days = 3; if (d) d.value = addDay(3); document.querySelectorAll("[data-crdays]").forEach((x) => x.classList.remove("on")); } else { cr.days = 7; if (d) d.value = ""; document.querySelectorAll("[data-crdays]").forEach((x) => x.classList.add("on")); } return; }
   if (t.dataset.crord) { cr.order = t.dataset.crord === "1"; document.querySelectorAll("[data-crord]").forEach((x) => x.classList.toggle("on", x === t)); return; }
+  if (t.dataset.creng) { cr.eng = t.dataset.creng; document.querySelectorAll("[data-creng]").forEach((x) => x.classList.toggle("on", x === t)); return; }
   if (t.dataset.crby) { if ($("#crByIn")) $("#crByIn").value = ""; cr.by = t.dataset.crby; document.querySelectorAll("[data-crby]").forEach((x) => x.classList.toggle("on", x === t)); return; }
   if (t.dataset.mby) { document.querySelectorAll("[data-mby]").forEach((x) => x.classList.toggle("on", x === t)); return; }
   if (t.dataset.crdays) { if ($("#crDue")) $("#crDue").value = ""; cr.days = +t.dataset.crdays; document.querySelectorAll("[data-crdays]").forEach((x) => x.classList.toggle("on", x === t)); return; }
