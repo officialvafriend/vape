@@ -164,7 +164,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.20-19";
+const VER = "10.20-20";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -370,7 +370,7 @@ function sheetMid() {
 }
 async function doMid() {
   const by = document.querySelector("[data-midby].on")?.dataset.midby; if (!by) return toast("센 사람을 골라 주세요");
-  const dr = +($("#midDr").value || "").replace(/D/g, ""), ex = +($("#midExp").value || "").replace(/D/g, "") || 0;
+  const dr = +($("#midDr").value || "").replace(/\D/g, ""), ex = +($("#midExp").value || "").replace(/\D/g, "") || 0;
   if (!dr) return toast("돈통 금액을 넣어 주세요");
   $("#okMid").disabled = true;
   try {
@@ -427,7 +427,7 @@ function talkHtml() {
   return `${seg}<div class="card"><div class="lhead"><div class="chips" style="margin:10px 0">${chips}</div><button class="act" data-go="creq">＋ 적기</button></div>${L.map(crRow).join("") || '<div class="desc" style="padding:4px 0 14px">해당하는 고객요청이 없어요</div>'}</div>`;
 }
 // 10/20 사장님 "메모나 내용이 보기 불편": 맨 위 상태 색 표시, 상품 크게, 이름표 | 내용 줄, 메모는 진한 글씨로 따로
-const fmtPh = (p) => String(p || "").replace(/D/g, "").replace(/^(d{3})(d{3,4})(d{4})$/, "$1-$2-$3");
+const fmtPh = (p) => String(p || "").replace(/\D/g, "").replace(/^(\d{3})(\d{3,4})(\d{4})$/, "$1-$2-$3");
 function sheetCreqDetail(id) {
   const r = creqList().find((x) => x.id === id); if (!r) return;
   const ph = custPhone(r);
@@ -439,7 +439,7 @@ function sheetCreqDetail(id) {
     <div style="font-size:20px;font-weight:800;line-height:1.4;margin:10px 0 12px;white-space:pre-wrap">${esc(r.title || crItems(r))}</div>
     ${r.title && r.title !== crItems(r) ? row("내용", esc(crItems(r))) : ""}
     ${row("손님", esc(custName(r)) || "-")}
-    ${row("연락처", ph ? `<a href="tel:${esc(ph.replace(/D/g, ""))}" style="color:var(--blue);font-weight:800">${esc(fmtPh(ph))}</a> <small style="color:var(--sub)">누르면 전화</small>` : r.p4 ? `끝번호 ${esc(r.p4)}${bKey() ? "" : " (열쇠 없는 기기)"}` : "")}
+    ${row("연락처", ph ? `<a href="tel:${esc(ph.replace(/\D/g, ""))}" style="color:var(--blue);font-weight:800">${esc(fmtPh(ph))}</a> <small style="color:var(--sub)">누르면 전화</small>` : r.p4 ? `끝번호 ${esc(r.p4)}${bKey() ? "" : " (열쇠 없는 기기)"}` : "")}
     ${row("결제", r.pay === "결제완료" ? '<span style="color:var(--green)">결제완료</span>' : '<span style="color:var(--red)">미결제</span>')}
     ${row("받는 방법", esc(r.how))}
     ${row("접수", `${sd(r.d)} ${esc(r.by)}${r.ext ? `, 연장 ${r.ext}번` : ""}`)}
@@ -868,10 +868,10 @@ function crDraw() {
 }
 const addDay = (n) => new Date(Date.parse(todayKey()) + n * 864e5).toISOString().slice(0, 10);
 const crDueSync = () => { const w = $("#crDueW"); if (w) w.style.display = cr.step === "wait" ? "" : "none"; };
-document.addEventListener("input", (e) => { const t = e.target; if (t.dataset?.crq != null && cr?.items[+t.dataset.crq]) { const v = Math.min(999, +String(t.value).replace(/D/g, "") || 0); if (v) cr.items[+t.dataset.crq][1] = v; } });
+document.addEventListener("input", (e) => { const t = e.target; if (t.dataset?.crq != null && cr?.items[+t.dataset.crq]) { const v = Math.min(999, +String(t.value).replace(/\D/g, "") || 0); if (v) cr.items[+t.dataset.crq][1] = v; } });
 document.addEventListener("change", (e) => {
   const t = e.target, n = t.value ? dLeft(t.value) : 0;
-  if (t.dataset?.crq != null && cr?.items[+t.dataset.crq]) { const v = Math.min(999, +String(t.value).replace(/D/g, "") || 0); if (v) cr.items[+t.dataset.crq][1] = v; else cr.items.splice(+t.dataset.crq, 1); return crDraw(); }
+  if (t.dataset?.crq != null && cr?.items[+t.dataset.crq]) { const v = Math.min(999, +String(t.value).replace(/\D/g, "") || 0); if (v) cr.items[+t.dataset.crq][1] = v; else cr.items.splice(+t.dataset.crq, 1); return crDraw(); }
   if (t.id === "crDue" && cr) { if (n > 0) { cr.days = n; document.querySelectorAll("[data-crdays]").forEach((x) => x.classList.remove("on")); } else { cr.days = 7; t.value = ""; document.querySelectorAll("[data-crdays]").forEach((x) => x.classList.add("on")); } }
   if (t.id === "extDue" && EXT) { if (n > 0) { EXT.days = n; document.querySelectorAll("[data-extd]").forEach((x) => x.classList.remove("on")); $("#extSay").textContent = `${md(t.value)} 이전에 입고되면 다시 연락드릴게요.`; } else { t.value = ""; } }
 });
