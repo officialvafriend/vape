@@ -164,7 +164,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.20-10";
+const VER = "10.20-11";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -390,8 +390,10 @@ function crMainBtn(r) {
   if (r.due && dLeft(r.due) <= 0) return `<button class="act" data-crext="${r.id}">연락함, 연장</button>`;
   return `<button class="act gray" data-crarr="${r.id}">입고됨</button>`;
 }
+const custName = (r) => (DEC[r.id]?.n ?? (r.full ? r.full.name : r.nm)) || "";
+const custPhone = (r) => DEC[r.id]?.p || (r.full ? r.full.phone : "") || "";
 function crRow(r) {
-  const nm = r.full ? r.full.name || "" : r.nm || "", p4 = r.full ? String(r.full.phone || "").replace(/\D/g, "").slice(-4) : r.p4 || "";
+  const nm = custName(r), p4 = custPhone(r) || r.p4 || "";
   const meta = [[nm, p4].filter(Boolean).join(" "), `접수 ${sd(r.d)} ${r.by}`, r.lead ? "👔 팀장 처리 중" : r.step === "ready" ? "연락함, 방문 대기" : r.arrived ? "📦 입고됨" : r.due ? `기한 ${sd(r.due)}${dLeft(r.due) < 0 ? ` (${-dLeft(r.due)}일 지남)` : dLeft(r.due) === 0 ? " (오늘)" : ""}` : ""].filter(Boolean).join(", ");
   return `<div class="lrow ${crHot(r) ? "hot" : ""}" data-crd="${r.id}"><div class="lt"><b class="l1">${esc(crItems(r))}</b><span class="l2 ${crHot(r) ? "w" : ""}">${esc(meta)}</span></div>${crMainBtn(r)}</div>`;
 }
@@ -423,11 +425,11 @@ function talkHtml() {
 }
 function sheetCreqDetail(id) {
   const r = creqList().find((x) => x.id === id); if (!r) return;
-  const cust = r.full ? `${esc(r.full.name || "")} ${esc(r.full.phone || "")}` : `${esc(r.nm || "")} ${r.p4 ? "끝번호 " + esc(r.p4) : ""}`;
+  const ph = custPhone(r), cust = `${esc(custName(r))} ${ph ? `<a href="tel:${esc(ph.replace(/\D/g, ""))}" style="color:var(--blue);font-weight:800">${esc(ph)}</a>` : r.p4 ? "끝번호 " + esc(r.p4) + (bKey() ? "" : " (열쇠 없는 기기)") : ""}`;
   const btns = r.lead ? '<div class="desc">👔 팀장님이 처리 중이에요</div>' : `<div class="btns" style="flex-wrap:wrap">${r.step === "wait" && !r.arrived ? `<button class="btn" data-crarr="${id}">📦 입고됨</button>` : ""}${r.step === "wait" && r.arrived ? `<button class="btn primary" data-crs="ready" data-id="${id}">연락함</button>` : ""}${r.step === "ready" ? `<button class="btn primary" data-crs="done" data-id="${id}">전달 완료</button>` : ""}${r.step === "wait" ? `<button class="btn" data-crext="${id}">기한 연장</button>` : ""}<button class="btn" data-crcx="${id}">취소</button></div>`;
   openSheet(`<h2>🧾 고객요청</h2><div style="font-size:17px;font-weight:800;line-height:1.5;white-space:pre-wrap">${esc(crItems(r))}</div>
     <div class="desc" style="margin-top:10px">손님: ${cust || "-"}<br>${esc(r.how)}, ${r.pay === "결제완료" ? "결제완료" : "미결제"}, 접수 ${sd(r.d)} ${esc(r.by)}<br>${r.lead ? "👔 팀장 처리 중" : r.step === "ready" ? "연락함, 손님 방문 대기" : r.arrived ? "📦 입고됨, 손님께 연락할 차례" : r.due ? `입고 대기, 연락 기한 ${dueTxt(r.due)}${r.ext ? `, 연장 ${r.ext}번` : ""}` : CST[r.step]}</div>
-    ${r.memo ? `<div class="desc" style="margin-top:10px;white-space:pre-wrap;background:#f2f4f6;border-radius:12px;padding:10px">${esc(r.memo)}</div>` : ""}
+    ${(DEC[r.id]?.m || r.memo) ? `<div class="desc" style="margin-top:10px;white-space:pre-wrap;background:#f2f4f6;border-radius:12px;padding:10px">${esc(DEC[r.id]?.m || r.memo)}</div>` : ""}
     ${btns}<div class="btns"><button class="btn" data-x>닫기</button></div>`);
 }
 function sheetMemoDetail(id) {
@@ -564,12 +566,29 @@ async function doPay(id) {
 }
 // ── 고객요청, 인수인계 (10/6) ── 노션에서 늘 빠지던 날짜, 담당자, 결제여부를 자동/버튼으로 받고, 입고되면 봇이 알려줌
 // 현황은 봇이 올리는 board.json (공개 주소라 고객 이름 첫 글자, 번호 끝 4자리만). 이 기기에서 적은 건은 전체 번호를 이 기기에만 보관
+// 10/20 손님 이름, 번호는 지점 열쇠로 잠겨 옴. 열쇠 링크(#k=)를 한 번 연 기기에서만 풀림
+(() => { const m = location.hash.match(/k=([\w-]{20,})/); if (m && B) { try { localStorage.setItem("vf-app-key-" + B, m[1]); } catch {} history.replaceState(null, "", location.pathname + location.search); } })();
+const bKey = () => { try { return localStorage.getItem("vf-app-key-" + B) || ""; } catch { return ""; } };
+const DEC = {}; let KEYOBJ = null;
+async function decAll() {
+  const k = bKey(); if (!k || !BOARD?.creqs) return;
+  try {
+    if (!KEYOBJ) { const raw = Uint8Array.from(atob(k.replace(/-/g, "+").replace(/_/g, "/") + "==".slice(0, (4 - (k.length % 4)) % 4)), (c) => c.charCodeAt(0)); KEYOBJ = await crypto.subtle.importKey("raw", raw, "AES-GCM", false, ["decrypt"]); }
+    let ch = false;
+    for (const r of BOARD.creqs) {
+      if (!r.enc || DEC[r.id]) continue;
+      const b = Uint8Array.from(atob(r.enc), (c) => c.charCodeAt(0));
+      try { DEC[r.id] = JSON.parse(new TextDecoder().decode(await crypto.subtle.decrypt({ name: "AES-GCM", iv: b.slice(0, 12) }, KEYOBJ, b.slice(12)))); ch = true; } catch { DEC[r.id] = { bad: 1 }; }
+    }
+    if (ch && !$("#dim").classList.contains("on")) render();
+  } catch {}
+}
 let BOARD = null, LEADS = [], OUTS = new Set(), STEPS = {}, MEMO_DONE = new Set(), cr = null;
 async function loadBoard() {
   try {
     const j = await ghJson("board.json");
     const next = j.br?.[B] || null, nl = (j.lead || []).filter((x) => !!x.test === TEST);
-    if (JSON.stringify(next) !== JSON.stringify(BOARD) || JSON.stringify(nl) !== JSON.stringify(LEADS)) { BOARD = next; LEADS = nl; if (!$("#dim").classList.contains("on")) render(); }
+    if (JSON.stringify(next) !== JSON.stringify(BOARD) || JSON.stringify(nl) !== JSON.stringify(LEADS)) { BOARD = next; LEADS = nl; if (!$("#dim").classList.contains("on")) render(); decAll(); }
   } catch {}
 }
 async function loadOuts() { try { const j = await (await fetch(`${SITE}menu/stock.json?${Date.now()}`, { cache: "no-store" })).json(); OUTS = new Set(j[B]?.out || []); } catch {} }
