@@ -153,7 +153,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.20-3";
+const VER = "10.20-4";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -209,7 +209,7 @@ async function ghJson(file) {
 async function loadToday() {
   try {
     const j = await ghJson("today.json");
-    const next = j.d === todayKey() ? j.br?.[B] || null : null;
+    const src = j.d === todayKey() ? j.br?.[B] || null : null, next = TEST ? src?.test || null : src; // 10/20 시험 모드는 시험 기록만(실제 근무자가 섞여 퇴근 처리된 사고)
     if (JSON.stringify(next) !== JSON.stringify(SRV)) { SRV = next; if (!$("#dim").classList.contains("on")) render(); }
   } catch {}
 }
