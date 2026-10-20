@@ -205,7 +205,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.20-54";
+const VER = "10.20-55";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -765,7 +765,7 @@ const noteTxt = (x) => DEC["nt" + x.id + ":" + x.cmts.length] || null;
 const whenTxt = (d, t) => (d === todayKey() ? "오늘 " : d === addDay(-1) ? "어제 " : sd(d) + " ") + (t || "");
 function noteHtml() {
   noteDec();
-  const hq = B === "본점", me = working().join(", ");
+  const hq = B === "본점", me = ho(B);
   let L = noteItems().filter((x) => (NF === "전체" || x.cat === NF) && (!hq || NB === "전체" || x.b === NB)).sort((a, b) => (b.d + b.t).localeCompare(a.d + a.t));
   const all = noteItems(), cnt = (c) => all.filter((x) => (c === "전체" || x.cat === c) && (!hq || NB === "전체" || x.b === NB)).length;
   const chips = ["전체", ...Object.keys(NCAT)].map((c) => `<button class="chip ${NF === c ? "on" : ""}" data-nf="${c}">${c === "전체" ? "전체" : NCAT[c][0] + " " + c} <small>${cnt(c)}</small></button>`).join("");
@@ -807,7 +807,7 @@ async function doNoteNew() {
   } catch (e) { $("#okNt").disabled = false; fail(e); }
 }
 async function noteLike(id) {
-  const by = working().join(", "); if (!by) return needIn(() => noteLike(id));
+  const by = ho(B);
   const x = noteItems().find((y) => y.id === id); if (!x) return;
   const i = x.likes.indexOf(by); i < 0 ? x.likes.push(by) : x.likes.splice(i, 1); render();
   try { await send({ type: "notereact", id, like: 1, by }); } catch (e) { fail(e); }
