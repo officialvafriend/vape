@@ -173,7 +173,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.20-37";
+const VER = "10.20-38";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -469,9 +469,11 @@ function sheetCreqDetail(id) {
     ${row("결제", r.pay === "결제완료" ? '<span style="color:var(--green)">결제완료</span>' : '<span style="color:var(--red)">미결제</span>')}
     ${row("받는 방법", esc(r.how))}
     ${row("수령 예정", r.due ? puTxt(r.due) : "")}
+    ${r.sms ? row("문자", `📩 ${esc(r.sms.label)} ${sd(r.sms.at.slice(0, 10))} ${r.sms.at.slice(11)} ${esc(r.sms.by)}`) : ""}
     ${row("남긴 날", `${sd(r.d)} ${esc(r.by)}${r.ext ? `, 미룸 ${r.ext}번` : ""}`)}
     ${r.order ? row("주문요청", "📦 요청함") : ""}
     ${memo ? `<div style="border-top:1px solid var(--line);padding-top:10px"><div style="color:var(--sub);font-size:14px;margin-bottom:6px">메모</div><div style="background:#fff8e1;border-radius:12px;padding:12px;font-size:15px;line-height:1.55;color:var(--ink);white-space:pre-wrap">${esc(memo)}</div></div>` : ""}
+    ${r.lead ? "" : `<div style="border-top:1px solid var(--line);padding-top:10px;margin-top:4px"><div style="color:var(--sub);font-size:14px;margin-bottom:6px">📩 손님께 문자 <small>(문자 앱이 열려요, 보내기는 직접)</small></div><div class="chips">${r.cat === "각인" ? `<button class="chip" data-sms="eng" data-id="${id}">✨ 각인 완료</button>` : `<button class="chip" data-sms="arr" data-id="${id}">📦 입고</button>`}<button class="chip" data-sms="late" data-id="${id}">⏰ 수령일 지남</button></div></div>`}
     ${btns}<div class="btns"><button class="btn" data-x>닫기</button>${r.lead ? "" : `<button class="btn" data-cred="${id}">✏️ 수정</button>`}</div>`);
 }
 function sheetIlNew() {
@@ -531,6 +533,37 @@ function sheetIlGate() {
   openSheet(`<h2>📅 오늘 일정 ${TD.length}개가 남았어요</h2><div class="desc">하나씩 완료, 미루기, 취소 중에 골라 처리하면 마감 보고를 보낼 수 있어요.</div>
     ${TD.map((it) => `<div class="lrow"><div class="lt"><b class="l1" style="-webkit-line-clamp:1">${it.ic} ${esc(it.title)}</b><span class="l2 w">${esc(it.sub)}</span></div><div class="ilb">${ilBtns(it)}</div></div>`).join("")}
     <div class="btns"><button class="btn" data-x>닫기</button></div>`);
+}
+// 10/20 [📩 문자]: 폰 문자 앱이 손님 번호, 문구가 채워진 채로 열림(보내기는 직원이). 누른 기록은 일정에 '연락함'으로
+const shopName = () => `베이프렌드 ${B === "본점" ? "본점" : B + "점"}`;
+// 매장 주소 ((보혜)\베이프렌드_지점정보.md)
+const SHOP_ADDR = { 동성로: "대구 중구 동성로1길 62 1층", 수성: "대구 수성구 달구벌대로 2288 1층", 본점: "대구 동구 동부로 156-1 1층", 율하: "대구 동구 안심로22길 40-3 율하광장 108호", 반월당: "대구 중구 달구벌대로 2100 메트로센터 C311호", 상인: "대구 달서구 월배로 202 1층 2호", 광장코아: "대구 달서구 달구벌대로 1700 1층 2호", 현풍: "대구 달성군 유가읍 테크노상업로 98 108호" };
+const addrLine = () => SHOP_ADDR[B] ? `\n매장 위치: ${SHOP_ADDR[B]}` : "";
+const SMS = {
+  arr: (it) => `안녕하세요, ${shopName()}이에요. 주문하신 ${it} 입고됐어요. 편하실 때 방문해 주세요.${addrLine()}`,
+  late: (it) => `안녕하세요, ${shopName()}이에요. 맡겨 두신 ${it} 아직 매장에 보관 중이에요. 방문 가능하신 날 알려 주시면 준비해 둘게요.${addrLine()}`,
+  eng: (it) => `안녕하세요, ${shopName()}이에요. 요청하신 ${it} 각인이 완료됐어요. 편하실 때 방문해 주세요.${addrLine()}`,
+};
+const isPhone = () => /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+let SMSCUR = null;
+async function doSms(k, id) {
+  const r = creqList().find((x) => x.id === id); if (!r) return;
+  const ph = String(custPhone(r) || "").replace(/\D/g, ""); if (ph.length < 9) return toast("손님 번호가 없어요 (매장 전용 주소로 연 기기에서 보여요)");
+  const by = working().join(", "); if (!by) return needIn(() => doSms(k, id));
+  const body = SMS[k](r.title || crItems(r));
+  if (isPhone()) location.href = `sms:${ph}${/iPhone|iPad|iPod/.test(navigator.userAgent) ? "&" : "?"}body=${encodeURIComponent(body)}`;
+  try { await send({ type: "creqsms", id, k, by }); r.sms = { label: { arr: "입고 문자", late: "수령일 지남 문자", eng: "각인 완료 문자" }[k], at: `${todayKey()} ${now()}`, by }; if (k !== "late" && r.step === "wait") { r.step = "ready"; STEPS[id] = "ready"; } render(); } catch (e) { return fail(e); }
+  if (isPhone()) return sheetCreqDetail(id);
+  // PC: 문자 앱이 없으니 복사할 수 있는 문구 창
+  SMSCUR = { ph: fmtPh(ph), body };
+  openSheet(`<h2>📩 손님께 보낼 문구</h2><div class="desc">복사해서 매장 폰 문자나 카톡으로 보내 주세요.</div>
+    <div class="desc" style="margin-top:10px">받는 번호</div><div style="display:flex;gap:8px;align-items:center"><b style="font-size:18px;flex:1">${esc(fmtPh(ph))}</b><button class="act gray" data-smscp="ph">번호 복사</button></div>
+    <div class="desc" style="margin-top:10px">문구</div><textarea class="input" id="smsBody" rows="5">${esc(body)}</textarea>
+    <div class="btns"><button class="btn" data-crd2="${id}">닫기</button><button class="btn primary" data-smscp="body">문구 복사</button></div>`);
+}
+async function smsCopy(w) {
+  const t = w === "ph" ? SMSCUR.ph : ($("#smsBody")?.value || SMSCUR.body);
+  try { await navigator.clipboard.writeText(t); toast(w === "ph" ? "번호를 복사했어요" : "문구를 복사했어요"); } catch { const a = $("#smsBody"); if (a && w !== "ph") { a.select(); document.execCommand("copy"); toast("문구를 복사했어요"); } else toast("복사가 안 돼요, 길게 눌러 복사해 주세요"); }
 }
 let CE = null;
 function sheetCreqEdit(id) {
@@ -776,7 +809,7 @@ function ilItems() {
     if (r.pending) continue;
     const nm = custName(r), today = r.due && dLeft(r.due) <= 0, arr = r.step === "wait" && r.arrived;
     L.push({ k: "c", cat: r.cat === "각인" ? "e" : "c", id: r.id, raw: r, ic: r.cat === "각인" ? "✨" : "🧾", lead: !!r.lead, due: r.due || null, hot: !r.lead && (today || arr), title: `${nm ? nm + "님, " : ""}${r.title || crItems(r)}`,
-      sub: [r.from && r.from !== B ? `📥 ${ho(r.from)}에서 맡김` : "", r.eng && r.eng !== B ? `각인 ${ho(r.eng)}` : "", r.lead ? "👔 팀장 처리 중" : arr ? "📦 입고됨, 손님께 연락" : r.step === "ready" ? "챙겨둠" : "입고 대기", r.due ? `${r.step === "ready" || arr ? "수령 예정" : "약속일"} ${puTxt(r.due)}` : "", `남김 ${sd(r.d)} ${r.by}`].filter(Boolean).join(", ") });
+      sub: [r.sms ? `📩 ${r.sms.label.replace(" 문자", "")} ${sd(r.sms.at.slice(0, 10))}` : "", r.from && r.from !== B ? `📥 ${ho(r.from)}에서 맡김` : "", r.eng && r.eng !== B ? `각인 ${ho(r.eng)}` : "", r.lead ? "👔 팀장 처리 중" : arr ? "📦 입고됨, 손님께 연락" : r.step === "ready" ? "챙겨둠" : "입고 대기", r.due ? `${r.step === "ready" || arr ? "수령 예정" : "약속일"} ${puTxt(r.due)}` : "", `남김 ${sd(r.d)} ${r.by}`].filter(Boolean).join(", ") });
   }
   for (const m of memoList()) {
     if (m.to === "keep" || MDONE.has(m.id)) continue;
@@ -1401,6 +1434,8 @@ document.addEventListener("click", (e) => {
   if (t.id === "okIx") return doIlCx();
   if (t.dataset.cred) return sheetCreqEdit(t.dataset.cred);
   if (t.dataset.crd2) return sheetCreqDetail(t.dataset.crd2);
+  if (t.dataset.sms) return doSms(t.dataset.sms, t.dataset.id);
+  if (t.dataset.smscp) return smsCopy(t.dataset.smscp);
   if (t.dataset.cecat) { CE.cat = t.dataset.cecat; document.querySelectorAll("[data-cecat]").forEach((x) => x.classList.toggle("on", x === t)); return; }
   if (t.dataset.cepay) { CE.pay = t.dataset.cepay; document.querySelectorAll("[data-cepay]").forEach((x) => x.classList.toggle("on", x === t)); return; }
   if (t.dataset.cehow) { CE.how = t.dataset.cehow; document.querySelectorAll("[data-cehow]").forEach((x) => x.classList.toggle("on", x === t)); return; }
