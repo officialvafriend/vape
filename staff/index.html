@@ -164,7 +164,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.20-23";
+const VER = "10.20-24";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -245,7 +245,6 @@ if (!VIEWS.some((v) => v[0] === VIEW)) VIEW = "home";
 function render() {
   if (LEADER) return renderLeader();
   if (!B) return renderPick();
-  if (!bKey() && !LOGIN_LATER && !TEST) return renderLogin(); // 시험 모드는 로그인 없이
   const s = st(), sd = stockDone(), working = s.ins.filter((x) => !x.out);
   const d = new Date();
   const steps = [s.ins.length > 0, !!s.open, !!sd], done = steps.filter(Boolean).length, N = steps.length; // 10/19 밤 사장님: 오픈 = 출근, 오픈 체크, 아침 재고보고(폰으로)
@@ -425,7 +424,7 @@ function talkHtml() {
   const ord = (r) => (crHot(r) ? 0 : r.step === "wait" ? 1 : 2);
   const L = cl.filter(F).sort((a, b) => ord(a) - ord(b) || (a.due || "9").localeCompare(b.due || "9") || b.d.localeCompare(a.d));
   const chips = [["all", "전체"], ["todo", "연락할 것"], ["wait", "입고 대기"], ["ready", "연락함"]].map(([k, n]) => `<button class="chip ${CRF === k ? "on" : ""}" data-crf="${k}">${n} ${cnt[k]}</button>`).join("");
-  const lockBar = !bKey() && cl.some((r) => r.enc) ? `<div class="desc" style="margin:0 4px 8px">🔒 손님 이름, 번호는 매장 로그인 후 보여요 <button class="act gray" data-go="unlock" style="font-size:12px;padding:4px 10px">로그인</button></div>` : "";
+  const lockBar = "";
   return `${seg}${lockBar}<div class="card"><div class="lhead"><div class="chips" style="margin:10px 0">${chips}</div><button class="act" data-go="creq">＋ 적기</button></div>${L.map(crRow).join("") || '<div class="desc" style="padding:4px 0 14px">해당하는 고객요청이 없어요</div>'}</div>`;
 }
 // 10/20 사장님 "메모나 내용이 보기 불편": 맨 위 상태 색 표시, 상품 크게, 이름표 | 내용 줄, 메모는 진한 글씨로 따로
@@ -441,7 +440,7 @@ function sheetCreqDetail(id) {
     <div style="font-size:20px;font-weight:800;line-height:1.4;margin:10px 0 12px;white-space:pre-wrap">${esc(r.title || crItems(r))}</div>
     ${r.title && r.title !== crItems(r) ? row("내용", esc(crItems(r))) : ""}
     ${row("손님", esc(custName(r)) || "-")}
-    ${row("연락처", ph ? `<a href="tel:${esc(ph.replace(/\D/g, ""))}" style="color:var(--blue);font-weight:800">${esc(fmtPh(ph))}</a> <small style="color:var(--sub)">누르면 전화</small>` : r.p4 ? `끝번호 ${esc(r.p4)}${bKey() ? "" : ' <button class="act" data-go="unlock" style="font-size:12px;padding:5px 10px">비밀번호 넣고 보기</button>'}` : "")}
+    ${row("연락처", ph ? `<a href="tel:${esc(ph.replace(/\D/g, ""))}" style="color:var(--blue);font-weight:800">${esc(fmtPh(ph))}</a> <small style="color:var(--sub)">누르면 전화</small>` : r.p4 ? `끝번호 ${esc(r.p4)}${bKey() ? "" : ' <small style="color:var(--sub)">(매장 전용 주소로 연 기기에서 전체 번호)</small>'}` : "")}
     ${row("결제", r.pay === "결제완료" ? '<span style="color:var(--green)">결제완료</span>' : '<span style="color:var(--red)">미결제</span>')}
     ${row("받는 방법", esc(r.how))}
     ${row("접수", `${sd(r.d)} ${esc(r.by)}${r.ext ? `, 연장 ${r.ext}번` : ""}`)}
