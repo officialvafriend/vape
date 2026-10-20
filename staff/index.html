@@ -164,7 +164,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.20-24";
+const VER = "10.20-25";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -382,10 +382,10 @@ async function doMid() {
 }
 // ── 요청 탭 (10/20 사장님 "보기 불편"): 한 칸, 위 전환 버튼, 거르기 칩, 2줄 목록, 줄 누르면 상세 창
 let TALK = ls.get("vf-app-talk", "creq"), CRF = "all";
-const crHot = (r) => !r.lead && r.step === "wait" && (r.arrived || (r.due && dLeft(r.due) <= 0));
+const crHot = (r) => !r.lead && ((r.step === "wait" && (r.arrived || (r.due && dLeft(r.due) <= 0))) || (r.step === "ready" && r.due && dLeft(r.due) < 0));
 function crMainBtn(r) {
   if (r.lead || r.pending) return "";
-  if (r.step === "ready") return `<button class="act" data-crs="done" data-id="${r.id}">전달 완료</button>`;
+  if (r.step === "ready") return r.due && dLeft(r.due) < 0 ? `<button class="act" data-crext="${r.id}">연락함, 연장</button>` : `<button class="act" data-crs="done" data-id="${r.id}">전달 완료</button>`;
   if (r.arrived) return `<button class="act" data-crs="ready" data-id="${r.id}">연락함</button>`;
   if (r.due && dLeft(r.due) <= 0) return `<button class="act" data-crext="${r.id}">연락함, 연장</button>`;
   return `<button class="act gray" data-crarr="${r.id}">입고됨</button>`;
@@ -394,7 +394,7 @@ const custName = (r) => (DEC[r.id]?.n ?? (r.full ? r.full.name : r.nm)) || "";
 const custPhone = (r) => DEC[r.id]?.p || (r.full ? r.full.phone : "") || "";
 function crRow(r) {
   const nm = custName(r), p4 = custPhone(r) || r.p4 || "";
-  const meta = [[nm, p4].filter(Boolean).join(" "), `접수 ${sd(r.d)} ${r.by}`, r.order ? "📦 주문요청함" : "", r.lead ? "👔 팀장 처리 중" : r.step === "ready" ? "연락함, 방문 대기" : r.arrived ? "📦 입고됨" : r.due ? `기한 ${sd(r.due)}${dLeft(r.due) < 0 ? ` (${-dLeft(r.due)}일 지남)` : dLeft(r.due) === 0 ? " (오늘)" : ""}` : ""].filter(Boolean).join(", ");
+  const meta = [[nm, p4].filter(Boolean).join(" "), `접수 ${sd(r.d)} ${r.by}`, r.order ? "📦 주문요청함" : "", r.lead ? "👔 팀장 처리 중" : r.step === "ready" ? `연락함, 방문 대기${r.due ? `, 찾아갈 기한 ${sd(r.due)}${dLeft(r.due) < 0 ? ` (${-dLeft(r.due)}일 지남)` : ""}` : ""}` : r.arrived ? "📦 입고됨" : r.due ? `기한 ${sd(r.due)}${dLeft(r.due) < 0 ? ` (${-dLeft(r.due)}일 지남)` : dLeft(r.due) === 0 ? " (오늘)" : ""}` : ""].filter(Boolean).join(", ");
   return `<div class="lrow ${crHot(r) ? "hot" : ""}" data-crd="${r.id}"><div class="lt"><b class="l1" style="-webkit-line-clamp:1">${esc(r.title || crItems(r))}</b><span class="l2 ${crHot(r) ? "w" : ""}">${esc(meta)}</span></div>${crMainBtn(r)}</div>`;
 }
 function mmMainBtn(m) {
@@ -432,8 +432,8 @@ const fmtPh = (p) => String(p || "").replace(/\D/g, "").replace(/^(\d{3})(\d{3,4
 function sheetCreqDetail(id) {
   const r = creqList().find((x) => x.id === id); if (!r) return;
   const ph = custPhone(r);
-  const btns = r.lead ? '<div class="desc">👔 팀장님이 처리 중이에요</div>' : `<div class="btns" style="flex-wrap:wrap">${r.step === "wait" && !r.arrived ? `<button class="btn" data-crarr="${id}">📦 입고됨</button>` : ""}${r.step === "wait" && r.arrived ? `<button class="btn primary" data-crs="ready" data-id="${id}">연락함</button>` : ""}${r.step === "ready" ? `<button class="btn primary" data-crs="done" data-id="${id}">전달 완료</button>` : ""}${r.step === "wait" ? `<button class="btn" data-crext="${id}">기한 연장</button>` : ""}<button class="btn" data-crcx="${id}">취소</button></div>`;
-  const st = r.lead ? ["👔 팀장 처리 중", "#fff4e5", "#b25e00"] : r.step === "ready" ? ["연락함, 손님 방문 대기", "#e8f3ff", "#1b64da"] : r.arrived ? ["📦 입고됨, 손님께 연락할 차례", "#ffeeee", "#d22030"] : ["⏳ 입고 대기" + (r.due ? `, 기한 ${dueTxt(r.due)}` : ""), "#f2f4f6", "#4e5968"];
+  const btns = r.lead ? '<div class="desc">👔 팀장님이 처리 중이에요</div>' : `<div class="btns" style="flex-wrap:wrap">${r.step === "wait" && !r.arrived ? `<button class="btn" data-crarr="${id}">📦 입고됨</button>` : ""}${r.step === "wait" && r.arrived ? `<button class="btn primary" data-crs="ready" data-id="${id}">연락함</button>` : ""}${r.step === "ready" ? `<button class="btn primary" data-crs="done" data-id="${id}">전달 완료</button>` : ""}<button class="btn" data-crext="${id}">기한 연장</button><button class="btn" data-crcx="${id}">취소</button></div>`;
+  const st = r.lead ? ["👔 팀장 처리 중", "#fff4e5", "#b25e00"] : r.step === "ready" ? ["연락함, 손님 방문 대기" + (r.due ? `, 찾아갈 기한 ${dueTxt(r.due)}` : ""), r.due && dLeft(r.due) < 0 ? "#ffeeee" : "#e8f3ff", r.due && dLeft(r.due) < 0 ? "#d22030" : "#1b64da"] : r.arrived ? ["📦 입고됨, 손님께 연락할 차례", "#ffeeee", "#d22030"] : ["⏳ 입고 대기" + (r.due ? `, 기한 ${dueTxt(r.due)}` : ""), "#f2f4f6", "#4e5968"];
   const row = (k, v) => v ? `<div style="display:flex;gap:12px;padding:9px 0;border-top:1px solid var(--line)"><span style="width:64px;flex-shrink:0;color:var(--sub);font-size:14px">${k}</span><span style="font-size:15px;font-weight:600">${v}</span></div>` : "";
   const memo = DEC[r.id]?.m || r.memo || "";
   openSheet(`<div style="display:inline-block;background:${st[1]};color:${st[2]};font-size:13px;font-weight:800;border-radius:999px;padding:5px 12px">${esc(st[0])}</div>
@@ -688,6 +688,7 @@ function todoItems() {
     if (r.lead || r.pending) continue;
     const nm = r.full ? r.full.name || "손님" : r.nm || "손님";
     if (r.step === "wait" && r.arrived) L.push({ ic: "📞", t: `${esc(nm)}님, ${esc(crItems(r))} 입고됨, 연락하기`, s: `접수 ${sd(r.d)} ${esc(r.by)}`, b: `<button class="act" data-crs="ready" data-id="${r.id}">연락함</button>` });
+    else if (r.step === "ready" && r.due && dLeft(r.due) < 0) L.push({ ic: "📞", w: 1, t: `${esc(nm)}님, ${esc(crItems(r))}, 찾아갈 기한 ${-dLeft(r.due)}일 지남`, s: "손님께 연락하고 전달 완료나 연장", b: `<button class="act gray" data-crs="done" data-id="${r.id}">전달 완료</button><button class="act" data-crext="${r.id}">연락함, 연장</button>` });
     else if (r.step === "wait" && r.due && dLeft(r.due) <= 0) L.push({ ic: "⏰", w: 1, t: `${esc(nm)}님, ${esc(crItems(r))}, ${dLeft(r.due) === 0 ? "오늘이 약속일" : `약속일 ${-dLeft(r.due)}일 지남`}`, s: "입고 확인하고 손님께 연락", b: `<button class="act gray" data-crarr="${r.id}">입고됨</button><button class="act" data-crext="${r.id}">연락함, 연장</button>` });
   }
   for (const m of memoList()) {
@@ -903,12 +904,13 @@ function sheetCreq() {
   openSheet(`<h2>🧾 고객요청 적기</h2><div class="desc">날짜는 자동으로 들어가요.</div>
     <div class="desc" style="margin-top:6px">담당자 <b style="color:var(--red)">*</b></div><div class="chips">${working().map((n) => `<button class="chip ${cr.by === n ? "on" : ""}" data-crby="${esc(n)}">${esc(n)}</button>`).join("")}</div>
     <input class="input" id="crByIn" placeholder="목록에 없으면 담당자 이름 직접 적기" maxlength="20" style="margin-top:8px">
+    <div class="desc" style="margin-top:10px">접수일 <small>(예전 건 옮겨 적을 때만 바꾸기)</small></div><input type="date" class="input" id="crDate" value="${todayKey()}" max="${todayKey()}" style="margin-top:4px">
     <input class="input" id="crFind" placeholder="상품 찾기 (예: 빌런 자두)"><div id="crRes" class="qres"></div><div id="crItems" class="qitems"></div>
     <input class="input" id="crFree" placeholder="목록에 없으면 직접 적기 (선택)" maxlength="60">
     <div class="desc" style="margin-top:14px">받는 방법</div><div class="chips">${["방문수령", "택배", "퀵"].map((x) => `<button class="chip ${x === cr.how ? "on" : ""}" data-crh="${x}">${x}</button>`).join("")}</div>
     <div class="desc" style="margin-top:14px">결제 <b style="color:var(--red)">*</b></div><div class="chips"><button class="chip" data-crp="결제완료">💳 결제완료</button><button class="chip" data-crp="미결제">미결제</button></div>
     <div class="desc" style="margin-top:14px">지금 상태 <span id="crNote"></span></div><div class="chips" id="crSt">${crStChips()}</div>
-    <div id="crDueW" style="display:none"><div class="desc" style="margin-top:14px">손님께 연락할 기한</div><div class="chips" style="align-items:center"><button class="chip on" data-crdays="7">7일 (${md(addDay(7))})</button><input type="date" class="input" id="crDue" min="${addDay(1)}" style="width:auto;flex:1;margin:0"></div></div>
+    <div id="crDueW"><div class="desc" style="margin-top:14px" id="crDueL">손님이 찾아갈 기한</div><div class="chips" style="align-items:center"><button class="chip on" data-crdays="7">7일 (${md(addDay(7))})</button><input type="date" class="input" id="crDue" min="${addDay(1)}" style="width:auto;flex:1;margin:0"></div></div>
     <div class="desc" style="margin-top:14px">재고 주문요청</div><div class="chips"><button class="chip on" data-crord="0">필요 없음</button><button class="chip" data-crord="1">📦 주문요청 필요</button></div>
     <input class="input" id="crName" placeholder="고객 이름" maxlength="20"><input class="input" id="crPhone" placeholder="고객 연락처 (필수)" inputmode="tel" maxlength="20">
     <input class="input" id="crMemo" placeholder="메모 (선택, 예: 맥스프로팟 4개랑 같이 포장)" maxlength="200">
@@ -923,7 +925,7 @@ function crDraw() {
   $("#crNote").textContent = anyOut ? ",  품절 상품이 있어요 → 입고되면 알려드려요" : "";
 }
 const addDay = (n) => new Date(Date.parse(todayKey()) + n * 864e5).toISOString().slice(0, 10);
-const crDueSync = () => { const w = $("#crDueW"); if (w) w.style.display = cr.step === "wait" ? "" : "none"; };
+const crDueSync = () => { const l = $("#crDueL"); if (l) l.textContent = cr.step === "wait" ? "손님께 연락할 기한" : "손님이 찾아갈 기한"; };
 document.addEventListener("keydown", (e) => { if (e.key === "Enter" && e.target?.id === "ulPw") doUnlock(); });
 document.addEventListener("input", (e) => { const t = e.target; if (t.dataset?.crq != null && cr?.items[+t.dataset.crq]) { const v = Math.min(999, +String(t.value).replace(/\D/g, "") || 0); if (v) cr.items[+t.dataset.crq][1] = v; } });
 document.addEventListener("change", (e) => {
@@ -940,7 +942,7 @@ async function doCreq() {
   if (!cr.pay) return toast("결제했는지 골라 주세요");
   if (v("#crPhone").replace(/\D/g, "").length < 8) return toast("고객 연락처를 넣어 주세요");
   const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 5), by = cr.by; // 10/20 담당자 한 명(칩 또는 직접 적은 이름)
-  const body = { type: "creq", id, items: cr.items, free: v("#crFree"), how: cr.how, pay: cr.pay, step: cr.step, days: cr.days, order: cr.order, name: v("#crName"), phone: v("#crPhone"), memo: v("#crMemo"), by };
+  const body = { type: "creq", id, items: cr.items, free: v("#crFree"), how: cr.how, pay: cr.pay, step: cr.step, days: cr.days, order: cr.order, d: v("#crDate") || todayKey(), name: v("#crName"), phone: v("#crPhone"), memo: v("#crMemo"), by };
   $("#okCr").disabled = true;
   try {
     await send(body);
