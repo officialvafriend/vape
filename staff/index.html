@@ -173,7 +173,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.20-39";
+const VER = "10.20-40";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -196,6 +196,11 @@ const now = () => { const d = new Date(); return `${pad(d.getHours())}:${pad(d.g
 // 10/19 영업일 기준: 새벽 5시 전은 전날 (금, 토 야간 근무자가 자정 넘어 퇴근해도 그날 기록으로). 봇 today()와 같은 기준
 const todayKey = () => { const d = new Date(Date.now() - 5 * 3600e3); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; };
 const ho = (b) => `${BR.indexOf(b) + 1}호 ${b}`;
+function undoBar(k, id, label) {
+  let u = document.getElementById("undoBar"); if (!u) { u = document.createElement("div"); u.id = "undoBar"; u.style.cssText = "position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom));z-index:90;background:#191f28;color:#fff;border-radius:14px;padding:10px 12px 10px 16px;display:flex;gap:12px;align-items:center;font-size:14px;font-weight:700;box-shadow:0 6px 20px rgba(0,0,0,.25)"; document.body.appendChild(u); }
+  u.innerHTML = `<span>${label}</span><button data-undo="${k}" data-id="${id}" style="background:#fff;color:#191f28;border-radius:10px;padding:6px 12px;font-weight:800">되돌리기</button>`; u.style.display = "flex";
+  clearTimeout(u._t); u._t = setTimeout(() => (u.style.display = "none"), 10000);
+}
 function toast(m) { const t = $("#toast"); t.textContent = m; t.classList.add("on"); clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove("on"), 2600); }
 
 const qs = new URLSearchParams(location.search);
@@ -436,7 +441,7 @@ function talkHtml() {
   const L = all.filter(F).sort((a, b) => (b.hot - a.hot) || (a.due || "9").localeCompare(b.due || "9"));
   const chips = [["hot", "오늘까지"], ["c", "손님 요청"], ["e", "각인 요청"], ["m", "매장 인수인계"], ["all", "전체"]].map(([k, n]) => `<button class="chip ${ILF === k ? "on" : ""}" data-ilf="${k}">${n} ${cnt[k]}</button>`).join("");
   const row = (x) => `<div class="lrow ${x.hot ? "hot" : ""}" ${x.k === "c" ? `data-crd="${x.id}"` : `data-mmd="${x.id}"`}><div class="lt"><b class="l1" style="-webkit-line-clamp:1"><i class="tag ${x.cat}" style="font-style:normal">${{ c: "손님", e: "각인", m: "매장" }[x.cat]}</i>${esc(x.title)}</b><span class="l2 ${x.hot ? "w" : ""}">${esc(x.sub)}</span></div><div class="ilb">${ilBtns(x)}</div></div>`;
-  return `<div class="card"><div class="lhead"><div class="chips" style="margin:10px 0">${chips}</div><button class="act" data-go="ilnew">＋ 일정 적기</button></div>${L.map(row).join("") || '<div class="desc" style="padding:4px 0 14px">일정이 없어요</div>'}</div>`;
+  return `<div class="card"><div class="lhead"><div class="chips" style="margin:10px 0">${chips}</div><button class="act" data-go="ilnew">＋ 일정 적기</button></div>${L.map(row).join("") || '<div class="desc" style="padding:4px 0 14px">일정이 없어요</div>'}<div style="text-align:center;padding:6px 0 14px"><button class="act gray" data-go="donelist" style="font-size:13px">🗂 완료 기록 (잘못 누른 것 되돌리기)</button></div></div>`;
 }
 function talkHtmlOld() {
   const cl = creqList(), ml = memoList(), seg = "";
@@ -483,10 +488,20 @@ function sheetIlNew() {
     <div class="btns"><button class="btn" data-x>닫기</button></div>`);
 }
 const ilFind = (k, id) => ilItems().find((x) => x.k === k && x.id === id);
+async function doRestore(k, id) {
+  const by = working().join(", "); if (!by) return needIn(() => doRestore(k, id));
+  try { await send({ type: "restore", kind: k, id, by }); if (k === "c") delete STEPS[id]; else { MDONE.delete(id); MEMO_DONE.delete(id); } const u = document.getElementById("undoBar"); if (u) u.style.display = "none"; closeSheet(); toast("되돌렸어요, 1분 안에 목록에 다시 떠요"); setTimeout(loadBoard, 15000); render(); } catch (e) { fail(e); }
+}
+function sheetDoneList() {
+  const L = (BOARD?.doneRecent || []).filter((x) => !!x.test === TEST);
+  openSheet(`<h2>🗂 완료 기록 <small style="font-weight:600;color:var(--sub)">최근 7일</small></h2><div class="desc">잘못 누른 건은 [되돌리기]로 원래 상태로 돌아가요.</div>
+    ${L.map((x) => `<div class="lrow"><div class="lt"><b class="l1" style="-webkit-line-clamp:1"><i class="tag ${x.k === "m" ? "m" : "c"}" style="font-style:normal">${x.st}</i>${esc(x.title)}</b><span class="l2">${sd(x.at.slice(0, 10))} ${x.at.slice(11)} ${esc(x.by || "")}${x.why ? ", " + esc(x.why) : ""}</span></div><div class="ilb"><button data-undo="${x.k}" data-id="${x.id}">되돌리기</button></div></div>`).join("") || '<div class="desc" style="padding:10px 0">최근 완료한 일정이 없어요</div>'}
+    <div class="btns"><button class="btn" data-x>닫기</button></div>`);
+}
 async function ilDone(k, id) {
   const by = working().join(", "); if (!by) return needIn(() => ilDone(k, id));
-  if (k === "c") return doCreqStep(id, "done");
-  try { await send({ type: "memodone", id, by, result: "" }); MDONE.add(id); MEMO_DONE.add(id); closeSheet(); render(); toast("완료했어요"); } catch (e) { fail(e); }
+  if (k === "c") { await doCreqStep(id, "done"); return undoBar("c", id, "완료했어요"); }
+  try { await send({ type: "memodone", id, by, result: "" }); MDONE.add(id); MEMO_DONE.add(id); closeSheet(); render(); undoBar("m", id, "완료했어요"); } catch (e) { fail(e); }
 }
 let IP = null;
 function sheetIlPost(k, id) {
@@ -512,7 +527,7 @@ async function doIlPost(withSms) {
     closeSheet(); render(); toast(it && it.raw.lead ? "미뤘어요, 팀장님께 넘어갔어요" : `${md(date)}로 미뤘어요`);
     if (withSms && it) {
       const r = it.raw, item = r.title || crItems(r);
-      const body = `안녕하세요, ${shopName()}이에요. ${r.cat === "각인" ? `요청하신 ${item} 각인이` : `주문하신 ${item} 준비가`} 늦어지고 있어요. ${md(date)}까지 다시 연락드릴게요. 기다리게 해서 죄송해요.${addrLine()}`;
+      const body = SMS.post(item, date);
       send({ type: "creqsms", id: IP.id, k: "post", by }).catch(() => {});
       r.sms = { label: "미루기 문자", at: `${todayKey()} ${now()}`, by };
       smsOpen(ph, body, IP.id);
@@ -533,7 +548,7 @@ async function doIlCx() {
   try {
     if (IX.k === "c") { await send({ type: "creqstep", id: IX.id, k: "cancel", why, by }); STEPS[IX.id] = "cancel"; }
     else { await send({ type: "memodone", id: IX.id, cancel: 1, result: "취소: " + why, by }); MDONE.add(IX.id); MEMO_DONE.add(IX.id); }
-    closeSheet(); render(); toast("취소했어요");
+    closeSheet(); render(); undoBar(IX.k, IX.id, "취소했어요");
   } catch (e) { $("#okIx").disabled = false; fail(e); }
 }
 // 마감 보고 전에: 오늘(지난) 일정이 남아 있으면 먼저 처리
@@ -546,12 +561,14 @@ function sheetIlGate() {
 // 10/20 [📩 문자]: 폰 문자 앱이 손님 번호, 문구가 채워진 채로 열림(보내기는 직원이). 누른 기록은 일정에 '연락함'으로
 const shopName = () => `베이프렌드 ${B === "본점" ? "본점" : B + "점"}`;
 // 매장 주소 ((보혜)\베이프렌드_지점정보.md)
-const SHOP_ADDR = { 동성로: "대구 중구 동성로1길 62 1층", 수성: "대구 수성구 달구벌대로 2288 1층", 본점: "대구 동구 동부로 156-1 1층", 율하: "대구 동구 안심로22길 40-3 율하광장 108호", 반월당: "대구 중구 달구벌대로 2100 메트로센터 C311호", 상인: "대구 달서구 월배로 202 1층 2호", 광장코아: "대구 달서구 달구벌대로 1700 1층 2호", 현풍: "대구 달성군 유가읍 테크노상업로 98 108호" };
+const SHOP_ADDR = { 동성로: "대구 중구 동성로1길 62, 1층", 수성: "대구 수성구 달구벌대로 2288, 1층", 본점: "대구 동구 동부로 156-1, 1층", 율하: "대구 동구 안심로22길 40-3, 율하광장 108호", 반월당: "대구 중구 달구벌대로 2100, 메트로센터 C311호", 상인: "대구 달서구 월배로 202, 1층 2호", 광장코아: "대구 달서구 달구벌대로 1700, 1층 2호", 현풍: "대구 달성군 유가읍 테크노상업로 98, 108호" };
 const addrLine = () => SHOP_ADDR[B] ? `\n매장 위치: ${SHOP_ADDR[B]}` : "";
+const SMS_TAIL = () => `\n\n늘 찾아주셔서 감사드리며, 오늘도 좋은 하루 보내세요!${SHOP_ADDR[B] ? `\n\n■ 매장 위치: ${SHOP_ADDR[B]}` : ""}`;
 const SMS = {
-  arr: (it) => `안녕하세요, ${shopName()}이에요. 주문하신 ${it} 입고됐어요. 편하실 때 방문해 주세요.${addrLine()}`,
-  late: (it) => `안녕하세요, ${shopName()}이에요. 맡겨 두신 ${it} 아직 매장에 보관 중이에요. 방문 가능하신 날 알려 주시면 준비해 둘게요.${addrLine()}`,
-  eng: (it) => `안녕하세요, ${shopName()}이에요. 요청하신 ${it} 각인이 완료됐어요. 편하실 때 방문해 주세요.${addrLine()}`,
+  arr: (it) => `안녕하세요, ${shopName()}입니다!\n\n고객님께서 기다리시던 [${it}] 입고되어 따로 챙겨 두었습니다.\n\n편하신 날 매장에 들러 주시면 바로 전달해 드리겠습니다.${SMS_TAIL()}`,
+  late: (it) => `안녕하세요, ${shopName()}입니다!\n\n고객님께서 맡겨 주신 [${it}] 매장에서 잘 보관하고 있습니다.\n\n방문 가능하신 날짜를 알려 주시면 그날에 맞춰 준비해 두겠습니다.${SMS_TAIL()}`,
+  eng: (it) => `안녕하세요, ${shopName()}입니다!\n\n고객님께서 요청하신 [${it}] 각인 작업이 완료되었습니다.\n\n정성껏 작업해 두었으니 편하신 날 매장에 들러 확인해 주세요.${SMS_TAIL()}`,
+  post: (it, date) => `안녕하세요, ${shopName()}입니다!\n\n고객님께서 기다리고 계신 [${it}] 준비가 예상보다 조금 늦어지고 있어 연락드렸습니다.\n\n오래 기다리시게 해서 정말 죄송해요.\n꼼꼼히 체크해서 ${md(date)}까지 진행 상황 꼭 다시 연락드리겠습니다. 너른 마음으로 조금만 기다려 주시면 감사하겠습니다.${SMS_TAIL()}`,
 };
 const isPhone = () => /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
 let SMSCUR = null;
@@ -1442,6 +1459,8 @@ document.addEventListener("click", (e) => {
   if (t.dataset.crarr) return doCreqArr(t.dataset.crarr);
   if (t.dataset.crcx) return sheetIlCx("c", t.dataset.crcx);
   if (go === "ilnew") return sheetIlNew();
+  if (go === "donelist") return sheetDoneList();
+  if (t.dataset.undo) return doRestore(t.dataset.undo, t.dataset.id);
   if (t.dataset.ilf) { ILF = t.dataset.ilf; return render(); }
   if (t.dataset.ildone) return ilDone(t.dataset.ildone, t.dataset.id);
   if (t.dataset.ilpost) return sheetIlPost(t.dataset.ilpost, t.dataset.id);
