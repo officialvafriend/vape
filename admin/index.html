@@ -160,6 +160,7 @@
 <div class="wrap" id="app"></div>
 <nav class="nav" id="nav" style="display:none"><div>
   <button data-tab="home"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3.2 3 10.4V20a1 1 0 0 0 1 1h5.5v-6h5v6H20a1 1 0 0 0 1-1v-9.6z"/></svg>홈</button>
+  <button data-tab="note">📝매장 노트</button>
   <button data-tab="kpi"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 19h16v2H4zM5 11h3v6H5zm5.5-4h3v10h-3zM16 4h3v13h-3z"/></svg>KPI</button>
   <button data-tab="close"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 6h18v12H3zm9 2.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7z"/></svg>마감</button>
   <button data-tab="survey"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 5h16v3H4zm1 5h14v9a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1zm4 3v2h6v-2z"/></svg>재고조사</button>
@@ -242,6 +243,7 @@ async function reload(quiet) {
 
 // ── 그리기 ──
 const ICON = {
+  note: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M5 3h11l4 4v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1zm2 6v2h10V9zm0 4v2h10v-2zm0 4v2h6v-2z"/></svg>',
   home: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3.2 3 10.4V20a1 1 0 0 0 1 1h5.5v-6h5v6H20a1 1 0 0 0 1-1v-9.6z"/></svg>',
   kpi: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 19h16v2H4zM5 11h3v6H5zm5.5-4h3v10h-3zM16 4h3v13h-3z"/></svg>',
   close: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 6h18v12H3zm9 2.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7zM5 8v2a2 2 0 0 0 2-2zm12 0a2 2 0 0 0 2 2V8zM5 16h2a2 2 0 0 0-2-2zm14-2a2 2 0 0 0-2 2h2z"/></svg>',
@@ -265,9 +267,9 @@ function render() {
   document.querySelectorAll("#nav button").forEach((b) => b.classList.toggle("on", b.dataset.tab === tab));
   const [, hh, mm] = D.at.match(/(\d{2}):(\d{2})$/) || [];
   if (EMBED[tab] && $("#app .emb") && $("#app .emb").dataset.k === tab + staffB) return; // 자동 새로고침 때 안에 띄운 앱이 처음으로 돌아가지 않게
-  const body = EMBED[tab] ? embedHtml() : tab === "home" ? (pc ? homePC() : homeHtml()) : tab === "kpi" ? kpiHtml() : tab === "close" ? closingAllHtml() : tab === "survey" ? surveyHtml() : tab === "tasks" ? tasksHtml() : mustHtml();
+  const body = EMBED[tab] ? embedHtml() : tab === "home" ? (pc ? homePC() : homeHtml()) : tab === "kpi" ? kpiHtml() : tab === "close" ? closingAllHtml() : tab === "survey" ? surveyHtml() : tab === "tasks" ? tasksHtml() : tab === "note" ? noteHtml() : mustHtml();
   if (!pc) { $("#app").innerHTML = `<div class="top"><div class="logo">VAFRIEND <b>관리자</b></div><div class="r"><button class="ic" data-act="reload">${hh ? `${hh}:${mm} 기준 ↻` : "새로고침"}</button><button class="ic" data-act="logout">잠그기</button></div></div>${body}`; markEmb(); return; }
-  const navs = [["home", "홈"], ["kpi", "KPI"], ["close", "마감"], ["survey", "재고조사"], ["tasks", "업무"], ["must", "추가 필수"], ["naver", "네이버"], ["staff", "직원앱"]];
+  const navs = [["home", "홈"], ["note", "매장 노트"], ["kpi", "KPI"], ["close", "마감"], ["survey", "재고조사"], ["tasks", "업무"], ["must", "추가 필수"], ["naver", "네이버"], ["staff", "직원앱"]];
   $("#app").innerHTML = `<div class="shell"><aside class="side"><div class="logo">VAFRIEND <b>관리자</b></div>
       ${navs.map(([k, n]) => `<button class="navb ${tab === k ? "on" : ""}" data-tab="${k}">${ICON[k]}${n}</button>`).join("")}
       <div class="foot"><button class="navb" data-act="reload">↻ ${hh ? `${hh}:${mm} 기준` : "새로고침"}</button><button class="navb" data-act="logout">🔒 잠그기</button></div></aside>
@@ -341,6 +343,29 @@ function staffKpiHtml(K) {
 }
 // 홈: 직원 KPI 상위 3, 하위 3 (최근 30일)
 // 10/20 각인 매장(1, 3, 6호) 이번 달 건수, 직접 고른 건, 진행 중
+// ── 매장 노트 (10/20) ── 직원들이 남긴 특이건. 👍와 댓글은 운영봇으로(서명), 이름은 이 기기에 기억
+let noteF = "전체", noteB = "전체";
+const NCAT = { 손님: "🙋", 재고: "📦", 매장: "🏪", 건의: "💡" };
+function noteHtml() {
+  const N = (D.notes || []).filter((x) => (noteF === "전체" || x.cat === noteF) && (noteB === "전체" || x.b === noteB)).sort((a, b) => (b.d + b.t).localeCompare(a.d + a.t));
+  const me = ls.get("vf-admin-name") || "";
+  const chip = (k, v, cur, attr) => `<button class="chip ${cur === v ? "on" : ""}" ${attr}="${v}">${k}</button>`;
+  const brs = ["전체", ...BR].map((b, i) => chip(b === "전체" ? "전 지점" : i + 1 + " " + b, b, noteB, "data-noteb")).join("");
+  const cats = ["전체", ...Object.keys(NCAT)].map((c) => chip(c === "전체" ? "전체" : NCAT[c] + " " + c, c, noteF, "data-notef")).join("");
+  const card = (x) => `<div class="item" style="display:block"><div class="caption">${NCAT[x.cat] || ""} ${esc(x.cat)}, ${BR.indexOf(x.b) + 1}호 ${esc(x.b)}, ${esc(x.by)}, ${esc(x.d.slice(5).replace("-", "/"))} ${esc(x.t)}</div>
+    <div style="font-size:16px;line-height:1.6;margin:6px 0;white-space:pre-wrap">${esc(x.text)}</div>
+    ${x.cmts.length ? `<div style="background:var(--bg,#f2f4f6);border-radius:10px;padding:8px 12px;margin:6px 0">${x.cmts.map((c) => `<div style="font-size:14px;padding:2px 0"><b>${c.adm ? "👔 " : ""}${esc(c.by)}</b> ${esc(c.text)}</div>`).join("")}</div>` : ""}
+    <div style="display:flex;gap:8px;align-items:center;margin-top:6px"><button class="chip ${me && x.likes.includes(me) ? "on" : ""}" data-notelike="${esc(x.id)}">👍 ${x.likes.length || ""}</button><button class="chip" data-notecmt="${esc(x.id)}">💬 댓글</button><small class="t-sub">${esc(x.likes.join(", "))}</small></div></div>`;
+  return `<div class="pchead"><h1>매장 노트</h1><div class="caption">직원들이 남긴 특이건, 최근 60일. 👍와 댓글은 직원앱에 바로 보여요</div></div>
+    <div class="chips" style="margin-bottom:6px">${brs}</div><div class="chips" style="margin-bottom:10px">${cats}</div>
+    <div class="list">${N.map(card).join("") || '<div class="item">아직 노트가 없어요</div>'}</div>`;
+}
+function adminName() { let n = ls.get("vf-admin-name") || ""; if (!n) { n = (prompt("댓글, 👍에 보일 이름 (예: 한섭 이사)") || "").trim().slice(0, 20); if (n) ls.set("vf-admin-name", n); } return n; }
+async function noteAct(id, like) {
+  const by = adminName(); if (!by) return;
+  let cmt = ""; if (!like) { cmt = (prompt("댓글") || "").trim().slice(0, 300); if (!cmt) return; }
+  try { await sendOp("noteReact", { id, by, ...(like ? { like: 1 } : { cmt }) }); const x = (D.notes || []).find((y) => y.id === id); if (x) { if (like) { const i = x.likes.indexOf(by); i < 0 ? x.likes.push(by) : x.likes.splice(i, 1); } else x.cmts.push({ by, text: cmt, adm: 1 }); } render(); toast(like ? "👍" : "댓글 남겼어요"); } catch (e) { toast("실패: " + e.message); }
+}
 function engHtml() {
   const E = D.engMonth; if (!E || !E.rows.some((r) => r.n)) return "";
   return `<div class="sec">이번 달 각인 <small>${esc(E.ym.slice(5))}월, 각인 요청을 맡은 매장 기준</small></div><div class="opsw"><table class="ops kt"><thead><tr><th>매장</th><th>맡은 건</th><th>직접 고른 건</th><th>진행 중</th></tr></thead><tbody>${E.rows.map((r) => `<tr><td><b>${esc(r.b)}</b></td><td>${r.n}</td><td>${r.manual}</td><td>${r.open}</td></tr>`).join("")}</tbody></table></div>`;
@@ -616,6 +641,10 @@ document.addEventListener("click", async (e) => {
   if (t.dataset.kpim) { kpiM = t.dataset.kpim; ls.set("vf-admin-kpim", kpiM); return render(); }
   if (t.dataset.kpis) { kpiS = t.dataset.kpis; ls.set("vf-admin-kpis", kpiS); return render(); }
   if (t.dataset.kpip) { kpiP = t.dataset.kpip; ls.set("vf-admin-kpip", kpiP); return render(); }
+  if (t.dataset.notef) { noteF = t.dataset.notef; return render(); }
+  if (t.dataset.noteb) { noteB = t.dataset.noteb; return render(); }
+  if (t.dataset.notelike) return noteAct(t.dataset.notelike, true);
+  if (t.dataset.notecmt) return noteAct(t.dataset.notecmt, false);
   if (t.dataset.staffb) { staffB = t.dataset.staffb; ls.set("vf-admin-staffb", staffB); return render(); }
   if (t.dataset.tab) { tab = t.dataset.tab; ls.set("vf-admin-tab", tab); closeSheet(); render(); return scrollTo(0, 0); }
   const a = t.dataset.act;
