@@ -164,7 +164,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.20-31";
+const VER = "10.20-32";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -398,7 +398,7 @@ const custName = (r) => (DEC[r.id]?.n ?? (r.full ? r.full.name : r.nm)) || "";
 const custPhone = (r) => DEC[r.id]?.p || (r.full ? r.full.phone : "") || "";
 function crRow(r) {
   const nm = custName(r), p4 = custPhone(r) || r.p4 || "";
-  const meta = [[nm, p4].filter(Boolean).join(" "), `남김 ${sd(r.d)} ${r.by}`, r.order ? "📦 주문요청함" : "", r.lead ? "👔 팀장 처리 중" : r.step === "ready" ? `챙겨둠${r.due ? `, 수령 예정 ${puTxt(r.due)}` : ""}` : r.arrived ? `📦 입고됨${r.due ? `, 수령 예정 ${puTxt(r.due)}` : ""}` : r.due ? `입고 대기, 수령 예정 ${puTxt(r.due)}` : "입고 대기"].filter(Boolean).join(", ");
+  const meta = [[nm, p4].filter(Boolean).join(" "), String(DEC[r.id]?.m || r.memo || "").startsWith("[확인 필요]") ? "❓ 확인 필요" : "", `남김 ${sd(r.d)} ${r.by}`, r.order ? "📦 주문요청함" : "", r.lead ? "👔 팀장 처리 중" : r.step === "ready" ? `챙겨둠${r.due ? `, 수령 예정 ${puTxt(r.due)}` : ""}` : r.arrived ? `📦 입고됨${r.due ? `, 수령 예정 ${puTxt(r.due)}` : ""}` : r.due ? `입고 대기, 수령 예정 ${puTxt(r.due)}` : "입고 대기"].filter(Boolean).join(", ");
   return `<div class="lrow ${crHot(r) ? "hot" : ""}" data-crd="${r.id}"><div class="lt"><b class="l1" style="-webkit-line-clamp:1">${esc(r.title || crItems(r))}</b><span class="l2 ${crHot(r) ? "w" : ""}">${esc(meta)}</span></div>${crMainBtn(r)}</div>`;
 }
 function mmMainBtn(m) {
@@ -914,6 +914,7 @@ function sheetCreq() {
     <input class="input" id="crFree" placeholder="목록에 없으면 직접 적기 (선택)" maxlength="60">
     <input class="input" id="crName" placeholder="고객 이름" maxlength="20">
     <input class="input" id="crMemo" placeholder="메모 (선택, 예: 맥스프로팟 4개랑 같이 포장)" maxlength="200">
+    <div class="chips" style="margin-top:8px"><button class="chip" data-crchk="1">❓ 확인 필요 <small style="font-weight:600">(해결됐는지 애매한 예전 건, 3일 뒤 오늘 할 일에 떠요)</small></button></div>
     <div class="desc" style="margin-top:14px">받는 방법</div><div class="chips">${["방문수령", "택배", "퀵"].map((x) => `<button class="chip ${x === cr.how ? "on" : ""}" data-crh="${x}">${x}</button>`).join("")}</div>
     <div class="desc" style="margin-top:14px">결제 <b style="color:var(--red)">*</b></div><div class="chips"><button class="chip" data-crp="결제완료">💳 결제완료</button><button class="chip" data-crp="미결제">미결제</button></div>
     <div class="desc" style="margin-top:14px">지금 상태 <span id="crNote"></span></div><div class="chips" id="crSt">${crStChips()}</div>
@@ -949,7 +950,7 @@ async function doCreq() {
   if (!cr.pay) return toast("결제했는지 골라 주세요");
   if (v("#crPhone").replace(/\D/g, "").length < 8) return toast("고객 연락처를 넣어 주세요");
   const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 5), by = cr.by; // 10/20 담당자 한 명(칩 또는 직접 적은 이름)
-  const body = { type: "creq", id, items: cr.items, free: v("#crFree"), how: cr.how, pay: cr.pay, step: cr.step, days: cr.days, order: cr.order, d: v("#crDate") || todayKey(), name: v("#crName"), phone: v("#crPhone"), memo: v("#crMemo"), by };
+  const body = { type: "creq", id, items: cr.items, free: v("#crFree"), how: cr.how, pay: cr.pay, step: cr.step, days: cr.days, order: cr.order, d: v("#crDate") || todayKey(), name: v("#crName"), phone: v("#crPhone"), memo: cr.check && !v("#crMemo").startsWith("[확인 필요]") ? ("[확인 필요] " + v("#crMemo")).trim() : v("#crMemo"), by };
   $("#okCr").disabled = true;
   try {
     await send(body);
@@ -1280,6 +1281,7 @@ document.addEventListener("click", (e) => {
   if (t.dataset.midby) { document.querySelectorAll("[data-midby]").forEach((x) => x.classList.toggle("on", x === t)); return; }
   if (t.id === "okMid") return doMid();
   if (t.id === "okCr") return doCreq();
+  if (t.dataset.crchk) { cr.check = !cr.check; t.classList.toggle("on", cr.check); const d = $("#crDue"); if (cr.check) { cr.days = 3; if (d) d.value = addDay(3); document.querySelectorAll("[data-crdays]").forEach((x) => x.classList.remove("on")); } else { cr.days = 7; if (d) d.value = ""; document.querySelectorAll("[data-crdays]").forEach((x) => x.classList.add("on")); } return; }
   if (t.dataset.crord) { cr.order = t.dataset.crord === "1"; document.querySelectorAll("[data-crord]").forEach((x) => x.classList.toggle("on", x === t)); return; }
   if (t.dataset.crby) { if ($("#crByIn")) $("#crByIn").value = ""; cr.by = t.dataset.crby; document.querySelectorAll("[data-crby]").forEach((x) => x.classList.toggle("on", x === t)); return; }
   if (t.dataset.mby) { document.querySelectorAll("[data-mby]").forEach((x) => x.classList.toggle("on", x === t)); return; }
