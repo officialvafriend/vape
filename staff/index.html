@@ -154,7 +154,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.20-6";
+const VER = "10.20-7";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -252,6 +252,7 @@ function render() {
       ${stepRow(3, steps[2], "아침 재고보고", sd ? { t: `${sd.t} 완료, ${esc(sd.by || "")}` } : { t: "포스 재고가 미리 들어가 있어요" }, `<a class="act ${steps[2] ? "gray" : ""}" href="${SITE}stock/?branch=${encodeURIComponent(B)}${TEST ? "&test=1" : ""}&by=${encodeURIComponent(working.map((x) => x.name).join(", "))}&back=${encodeURIComponent(location.pathname)}">${steps[2] ? "다시" : "하기"}</a>`)}
     </div>`;
   const closeCard = `<div class="card"><h2>마감</h2>
+      ${stepRow("🔎", false, "중간 체크", midInfo(), `<button class="act gray" data-go="mid">체크</button>`)}
       ${stepRow("🌙", !!s.close, "마감 체크", s.close ? { t: `${s.close.t} 완료${s.close.missed.length ? `, 못 한 것 ${s.close.missed.length}개` : ""}`, w: s.close.missed.length } : { t: "아직 안 함" }, `<button class="act ${s.close ? "gray" : ""}" data-go="close">${s.close ? "다시" : "체크"}</button>`)}
       ${CLOSE_OK.includes(B) ? closeRowHtml(stepRow) : ""}
       ${stepRow("👋", s.ins.length > 0 && !working.length, "퇴근", { t: working.length ? `근무 중: ${working.map((x) => esc(x.name)).join(", ")}` : s.ins.length ? "모두 퇴근" : "출근 기록 없음" }, working.length ? `<button class="act gray" data-go="out">퇴근</button>` : "")}
@@ -327,6 +328,38 @@ async function doLead() {
   $("#okLd").disabled = true;
   try { await send({ type: "leadact", kind: LACT.x.kind, id: LACT.x.id, ib: LACT.x.b, act: LACT.act, by: LACT.by, result: ($("#ldRes").value || "").trim() }); LEADS = LEADS.filter((y) => y !== LACT.x); closeSheet(); render(); toast(LACT.act === "done" ? "처리 완료했어요" : "지점으로 넘겼어요"); }
   catch (e) { $("#okLd").disabled = false; fail(e); }
+}
+// ── 중간 체크 (10/20) ── 시간 상관없이, 지금 돈통이 포스(개점준비금 + 지금까지 현금매출 − 지출)와 맞는지 미리 확인
+const MW = (n) => Number(n || 0).toLocaleString("ko-KR");
+function midInfo() {
+  const x = TEST ? BOARD?.midCheckTest : BOARD?.midCheck;
+  if (!x) return { t: "마감 전에 돈통이 포스와 맞는지 미리 확인" };
+  const head = `${x.t} ${esc(x.by || "")}`, extra = `${x.bills != null ? `, 지금까지 객수 ${x.bills}명` : ""}${x.des != null ? `, 지정 ${x.des}%` : ""}`;
+  if (x.status === "같음") return { t: `${head}, 돈통 포스와 같아요${extra}` };
+  if (x.status === "차이") return { t: `${head}, 돈통이 포스보다 ${MW(Math.abs(x.diff))}원 ${x.diff > 0 ? "많아요" : "모자라요"}${extra}`, w: 1 };
+  if (x.status === "확인 중") return { t: `${head}, 봇이 포스와 맞춰보는 중` };
+  return { t: `${head}, ${esc(x.status)}`, w: 1 };
+}
+function sheetMid() {
+  if (!working().length) return needIn(() => sheetMid());
+  const one = working().length === 1;
+  openSheet(`<h2>🔎 중간 체크</h2><div class="desc">지금 돈통에 있는 돈을 전부 세어서 넣어 주세요. 봇이 포스 개점준비금 + 지금까지 현금매출과 맞춰 봐요.</div>
+    <div class="desc" style="margin-top:10px">센 사람 <b style="color:var(--red)">*</b></div><div class="chips">${working().map((n) => `<button class="chip ${one ? "on" : ""}" data-midby="${esc(n)}">${esc(n)}</button>`).join("")}</div>
+    <input class="input" id="midDr" inputmode="numeric" placeholder="지금 돈통 금액 (원)" style="font-size:20px;font-weight:800">
+    <input class="input" id="midExp" inputmode="numeric" placeholder="오늘 돈통에서 쓴 지출 (있으면, 원)">
+    <div class="btns"><button class="btn" data-x>취소</button><button class="btn primary" id="okMid">확인하기</button></div>`);
+}
+async function doMid() {
+  const by = document.querySelector("[data-midby].on")?.dataset.midby; if (!by) return toast("센 사람을 골라 주세요");
+  const dr = +($("#midDr").value || "").replace(/D/g, ""), ex = +($("#midExp").value || "").replace(/D/g, "") || 0;
+  if (!dr) return toast("돈통 금액을 넣어 주세요");
+  $("#okMid").disabled = true;
+  try {
+    await send({ type: "midcheck", drawer: dr, exp: ex, by });
+    if (BOARD) BOARD[TEST ? "midCheckTest" : "midCheck"] = { t: now(), by, status: "확인 중" };
+    closeSheet(); render(); toast("보냈어요, 1분쯤 뒤에 결과가 떠요");
+    let n = 0; const iv = setInterval(() => { loadBoard(); if (++n >= 12) clearInterval(iv); }, 10e3);
+  } catch (e) { $("#okMid").disabled = false; fail(e); }
 }
 function renderPick() {
   $("#app").innerHTML = `<div class="pick"><h1>어느 지점인가요?</h1><p>이 기기에 한 번만 고르면 돼요.</p>
@@ -1049,6 +1082,9 @@ document.addEventListener("click", (e) => {
   if (t.dataset.crp) { cr.pay = t.dataset.crp; document.querySelectorAll("[data-crp]").forEach((x) => x.classList.toggle("on", x === t)); return; }
   if (t.dataset.crst) { cr.step = t.dataset.crst; cr.manual = true; document.querySelectorAll("[data-crst]").forEach((x) => x.classList.toggle("on", x === t)); crDueSync(); return; }
   if (t.dataset.mto) { document.querySelectorAll("[data-mto]").forEach((x) => x.classList.toggle("on", x === t)); return; }
+  if (go === "mid") return sheetMid();
+  if (t.dataset.midby) { document.querySelectorAll("[data-midby]").forEach((x) => x.classList.toggle("on", x === t)); return; }
+  if (t.id === "okMid") return doMid();
   if (t.id === "okCr") return doCreq();
   if (t.dataset.crby) { cr.by = t.dataset.crby; document.querySelectorAll("[data-crby]").forEach((x) => x.classList.toggle("on", x === t)); return; }
   if (t.dataset.mby) { document.querySelectorAll("[data-mby]").forEach((x) => x.classList.toggle("on", x === t)); return; }
