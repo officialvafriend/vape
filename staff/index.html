@@ -22,6 +22,14 @@
   .hmini{display:flex;align-items:center;gap:12px;width:100%;background:var(--dark);color:#fff;border-radius:16px;padding:12px 18px;margin-bottom:12px;text-align:left}
   .hmini span{font-size:13px;color:#9aa4b2}.hmini b{font-size:16px}.hmini em{font-style:normal;font-size:13px;background:#f04452;border-radius:999px;padding:3px 9px;font-weight:700}.hmini i{margin-left:auto;font-style:normal;font-size:13px;color:#9bd0ff}
   .a2card{padding-bottom:90px}
+  .ntday{font-size:14px;font-weight:800;color:var(--sub);margin:16px 2px 8px}
+  .ntcard{background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px 16px;margin-bottom:10px}
+  .nth{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px;color:var(--sub)}
+  .ntcat{font-size:13px;font-weight:800;border-radius:99px;padding:3px 10px}
+  .ntx{font-size:16px;line-height:1.6;margin:8px 0 4px;white-space:pre-wrap;word-break:break-all}
+  .ntcs{background:#f9fafb;border-radius:12px;padding:8px 12px;margin-top:8px}.ntc{font-size:14px;line-height:1.5;padding:3px 0}.ntc small{color:var(--sub);font-size:12px}
+  .ntb{display:flex;align-items:center;gap:8px;margin-top:10px}
+  .ntbtn{font-size:14px;font-weight:700;background:#f2f4f6;border-radius:99px;padding:7px 14px;color:#4e5968;transition:transform .15s}.ntbtn:active{transform:scale(.92)}.ntbtn.on{background:#e8f3ff;color:#1b64da}
   .a2sel{padding:10px 12px;border-radius:12px;border:1px solid var(--line);font-size:15px;font-weight:700;background:#fff}
   .a2cheer{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:#f2f8ff;border-radius:14px;padding:11px 14px;margin:6px 0 12px;font-size:14px;color:#33415c}.a2cheer b{color:#1b64da}
   .a2bar{flex:1;min-width:80px;max-width:220px;height:8px;background:#dbe7f7;border-radius:99px;overflow:hidden;margin-left:auto}.a2bar i{display:block;height:100%;background:linear-gradient(90deg,#3182f6,#22c55e);border-radius:99px;transition:width .5s}
@@ -197,7 +205,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.20-53";
+const VER = "10.20-54";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -280,7 +288,7 @@ const fail = (e) => toast(`못 보냈어요 (${navigator.onLine ? e.message : "�
 const ONLY_OPEN_CLOSE = true;
 const VIEWS_ALL = [["home", "🏠", "오늘"], ["work", "🕘", "출퇴근, 마감"], ["stock", "📦", "재고"], ["talk", "📌", "소통, 요청"], ["as", "🔧", "AS"]];
 // 10/20 사장님: 오늘(오픈, 마감) + 요청(인수인계, 고객요청) 두 화면만
-const VIEWS = ONLY_OPEN_CLOSE ? [["home", "🏠", "오늘"], ["talk", "📅", "일정"], ["as2", "🔧", "AS관리"]] : VIEWS_ALL;
+const VIEWS = ONLY_OPEN_CLOSE ? [["home", "🏠", "오늘"], ["talk", "📅", "일정"], ["as2", "🔧", "AS관리"], ["note", "📝", "매장 노트"]] : VIEWS_ALL;
 let VIEW = ls.get("vf-app-view", "home");
 if (!VIEWS.some((v) => v[0] === VIEW)) VIEW = "home";
 function render() {
@@ -337,6 +345,7 @@ function render() {
     talk: ONLY_OPEN_CLOSE ? talkHtml() : `<div class="cols"><div>${memoCardHtml()}${creqCardHtml()}</div><div>${reqCard}${myQuicksCard()}</div></div>`,
     as: `<div class="cols one"><div>${asCardHtml()}</div></div>`,
     as2: as2Html(),
+    note: noteHtml(),
   }[VIEW];
   const badge = (k) => { const n = k === "talk" ? talkCount() : k === "home" ? todoItems().length : k === "as2" ? as2Items().filter((x) => (B === "본점" && (x.st === 0 || x.st === 1)) || (x.b === B && (x.st === 3 || (x.st === 4 && !x.contact)))).length : 0; return n ? `<em class="bd">${n}</em>` : ""; };
   // 10/20 사장님 "여기 창이 별거 없네": 맨 위 칸 = 지금 할 일. 다음 단계 버튼을 바로 누르게, 진행 막대 대신 단계 점
@@ -741,6 +750,86 @@ async function doAs2Batch(loanBack) {
     await send({ type: "asstep", ids, to, by, ...extra });
     for (const x of as2Items()) if (ids.includes(x.id)) { x.st = to; if (to < 4) x.contact = null; (x.hist ||= []).push({ st: to, by, d: todayKey() }); a2Pend(x.id, { st: to, contact: x.contact || null }); }
     A2SEL.clear(); closeSheet(); render(); toast(`👍 ${ids.length}개 ${A2GO[to]}`); setTimeout(loadBoard, 15000);
+  } catch (e) { fail(e); }
+}
+// ── 매장 노트 (10/20) ── 사장님 "특이건 기록하는 리뷰 같은 거". 한두 줄, 👍와 댓글. 본점은 전 지점, 지점은 자기 지점
+const NCAT = { 손님: ["🙋", "#e8f3ff", "#1b64da"], 재고: ["📦", "#fff4dc", "#b45309"], 매장: ["🏪", "#e5f8ef", "#03803f"], 건의: ["💡", "#f3ecff", "#6b3fd4"] };
+let NF = "전체", NB = "전체", NW = null, NC = null;
+const noteItems = () => (BOARD?.notes || []).filter((x) => !!x.test === TEST);
+async function noteDec() {
+  let ch = false;
+  for (const x of noteItems()) { const k = "nt" + x.id + ":" + x.cmts.length; if (DEC[k] || !x.enc) continue; const d = await decOne(x.enc); if (d) { DEC[k] = d; ch = true; } }
+  if (ch && VIEW === "note" && !$("#dim").classList.contains("on")) render();
+}
+const noteTxt = (x) => DEC["nt" + x.id + ":" + x.cmts.length] || null;
+const whenTxt = (d, t) => (d === todayKey() ? "오늘 " : d === addDay(-1) ? "어제 " : sd(d) + " ") + (t || "");
+function noteHtml() {
+  noteDec();
+  const hq = B === "본점", me = working().join(", ");
+  let L = noteItems().filter((x) => (NF === "전체" || x.cat === NF) && (!hq || NB === "전체" || x.b === NB)).sort((a, b) => (b.d + b.t).localeCompare(a.d + a.t));
+  const all = noteItems(), cnt = (c) => all.filter((x) => (c === "전체" || x.cat === c) && (!hq || NB === "전체" || x.b === NB)).length;
+  const chips = ["전체", ...Object.keys(NCAT)].map((c) => `<button class="chip ${NF === c ? "on" : ""}" data-nf="${c}">${c === "전체" ? "전체" : NCAT[c][0] + " " + c} <small>${cnt(c)}</small></button>`).join("");
+  const brSel = hq ? `<select class="a2sel" id="ntBr">${["전체", ...BR].map((b, i) => `<option value="${b}" ${NB === b ? "selected" : ""}>${b === "전체" ? "전 지점" : i + "호 " + b}</option>`).join("")}</select>` : "";
+  const mine = all.filter((x) => x.d === todayKey()).length;
+  const card = (x) => {
+    const [ic, bg, fg] = NCAT[x.cat] || NCAT.매장, dt = noteTxt(x), liked = me && x.likes.includes(me);
+    const cm = x.cmts.map((c, i) => `<div class="ntc"><b>${c.adm ? "👔 " : ""}${esc(c.by)}</b> ${esc(dt?.c?.[i] ?? "…")} <small>${whenTxt(c.d, c.t)}</small></div>`).join("");
+    return `<div class="ntcard" style="border-left:4px solid ${fg}"><div class="nth"><span class="ntcat" style="background:${bg};color:${fg}">${ic} ${x.cat}</span><span>${hq ? esc(ho(x.b)) + ", " : ""}${esc(x.by)}, ${whenTxt(x.d, x.t)}</span></div>
+      <div class="ntx">${dt ? esc(dt.x) : '<span style="color:var(--sub)">매장 전용 주소로 연 기기에서 보여요</span>'}</div>
+      ${cm ? `<div class="ntcs">${cm}</div>` : ""}
+      <div class="ntb"><button class="ntbtn ${liked ? "on" : ""}" data-ntlike="${x.id}">👍 ${x.likes.length || ""}</button><button class="ntbtn" data-ntcmt="${x.id}">💬 댓글${x.cmts.length ? " " + x.cmts.length : ""}</button>${x.likes.length ? `<small style="color:var(--sub)">${esc(x.likes.join(", ").slice(0, 40))}</small>` : ""}</div></div>`;
+  };
+  const days = []; for (const x of L) { let g = days.find((y) => y[0] === x.d); if (!g) days.push((g = [x.d, []])); g[1].push(x); }
+  return `<div class="card"><div class="lhead"><h2 style="margin:6px 0">📝 매장 노트</h2><div style="display:flex;gap:8px;align-items:center">${brSel}<button class="act" data-go="ntnew">＋ 쓰기</button></div></div>
+    <div class="a2cheer">${mine ? `✍️ 오늘 노트 <b>${mine}개</b>, 손님 얘기 하나하나가 다음 주문이 돼요` : "손님이 찾은 것, 매장에서 있었던 일, 한 줄이면 충분해요"}</div>
+    <div class="chips" style="margin-bottom:6px">${chips}</div>
+    <div class="a2list">${days.map(([d, xs]) => `<div class="ntday">${d === todayKey() ? "오늘" : d === addDay(-1) ? "어제" : sd(d)}</div>${xs.map(card).join("")}`).join("") || '<div class="a2empty">✍️ 첫 노트를 남겨 보세요</div>'}</div></div>`;
+}
+function sheetNoteNew() {
+  if (!working().length) return needIn(() => sheetNoteNew());
+  NW = { cat: "손님", by: working().length === 1 ? working()[0] : null };
+  openSheet(`<h2>📝 매장 노트 쓰기</h2>
+    <div class="desc" style="margin-top:6px">어떤 얘기예요?</div><div class="chips">${Object.keys(NCAT).map((c) => `<button class="chip ${NW.cat === c ? "on" : ""}" data-ntcat="${c}">${NCAT[c][0]} ${c}</button>`).join("")}</div>
+    <textarea class="input" id="ntText" rows="4" maxlength="500" placeholder="예: 박진주 고객님 말론S 티파니 블루 찾으셨는데 재고 없었음" style="margin-top:10px"></textarea>
+    <div class="desc" style="margin-top:10px">쓴 사람</div><div class="chips">${working().map((n) => `<button class="chip ${NW.by === n ? "on" : ""}" data-ntby="${esc(n)}">${esc(n)}</button>`).join("")}</div>
+    <div class="btns"><button class="btn" data-x>닫기</button><button class="btn primary" id="okNt">올리기</button></div>`);
+  setTimeout(() => $("#ntText")?.focus(), 50);
+}
+async function doNoteNew() {
+  const text = ($("#ntText")?.value || "").trim(); if (!text) return toast("내용을 적어 주세요");
+  if (!NW.by) return toast("쓴 사람을 골라 주세요");
+  $("#okNt").disabled = true;
+  const id = "n" + Date.now().toString(36) + Math.random().toString(36).slice(2, 4);
+  try {
+    await send({ type: "note", id, cat: NW.cat, text, by: NW.by });
+    (BOARD.notes ||= []).push({ id, b: B, by: NW.by, cat: NW.cat, d: todayKey(), t: now(), likes: [], cmts: [], test: TEST, enc: null }); DEC["nt" + id + ":0"] = { x: text, c: [] };
+    closeSheet(); render(); toast("✍️ 올렸어요, 고마워요!"); setTimeout(loadBoard, 15000);
+  } catch (e) { $("#okNt").disabled = false; fail(e); }
+}
+async function noteLike(id) {
+  const by = working().join(", "); if (!by) return needIn(() => noteLike(id));
+  const x = noteItems().find((y) => y.id === id); if (!x) return;
+  const i = x.likes.indexOf(by); i < 0 ? x.likes.push(by) : x.likes.splice(i, 1); render();
+  try { await send({ type: "notereact", id, like: 1, by }); } catch (e) { fail(e); }
+}
+function sheetNoteCmt(id) {
+  if (!working().length) return needIn(() => sheetNoteCmt(id));
+  const x = noteItems().find((y) => y.id === id); if (!x) return;
+  NC = { id, by: working().length === 1 ? working()[0] : null };
+  openSheet(`<h2>💬 댓글</h2><div class="say">${esc(noteTxt(x)?.x || "")}</div>
+    <input class="input" id="ntCmt" maxlength="300" placeholder="예: 다음 분배 때 넣을게요" style="margin-top:10px">
+    <div class="desc" style="margin-top:10px">쓴 사람</div><div class="chips">${working().map((n) => `<button class="chip ${NC.by === n ? "on" : ""}" data-ncby="${esc(n)}">${esc(n)}</button>`).join("")}</div>
+    <div class="btns"><button class="btn" data-x>닫기</button><button class="btn primary" id="okNc">남기기</button></div>`);
+  setTimeout(() => $("#ntCmt")?.focus(), 50);
+}
+async function doNoteCmt() {
+  const c = ($("#ntCmt")?.value || "").trim(); if (!c) return toast("댓글을 적어 주세요");
+  if (!NC.by) return toast("쓴 사람을 골라 주세요");
+  const x = noteItems().find((y) => y.id === NC.id);
+  try {
+    await send({ type: "notereact", id: NC.id, cmt: c, by: NC.by });
+    if (x) { const old = noteTxt(x); x.cmts.push({ by: NC.by, d: todayKey(), t: now(), adm: 0 }); DEC["nt" + x.id + ":" + x.cmts.length] = { x: old?.x || "", c: [...(old?.c || []), c] }; }
+    closeSheet(); render(); toast("💬 남겼어요");
   } catch (e) { fail(e); }
 }
 let A2 = null;
@@ -1352,6 +1441,7 @@ document.addEventListener("input", (e) => {
   if (e.target?.id === "ilQ") { const q = e.target.value.trim().toLowerCase().replace(/-/g, ""); document.querySelectorAll(".lrow[data-q]").forEach((r) => (r.style.display = !q || r.dataset.q.includes(q) ? "" : "none")); return; } const t = e.target; if (t.dataset?.crq != null && cr?.items[+t.dataset.crq]) { const v = Math.min(999, +String(t.value).replace(/\D/g, "") || 0); if (v) cr.items[+t.dataset.crq][1] = v; } });
 document.addEventListener("change", (e) => {
   if (e.target.id === "a2Br") { A2B = e.target.value; A2SEL.clear(); return render(); }
+  if (e.target.id === "ntBr") { NB = e.target.value; return render(); }
   const t = e.target, n = t.value ? dLeft(t.value) : 0;
   if (t.id === "ipDate") { document.querySelectorAll("[data-ipd]").forEach((x) => x.classList.toggle("on", !t.value)); if ($("#ipSay")) $("#ipSay").textContent = `늦어져서 죄송해요. ${md(t.value || addDay(IP.days))}까지 다시 연락드릴게요.`; return; }
   if (t.id === "mmDue") { document.querySelectorAll("[data-mdue]").forEach((x) => x.classList.toggle("on", !t.value)); return; }
@@ -1708,6 +1798,15 @@ document.addEventListener("click", (e) => {
   if (t.dataset.crcx) return sheetIlCx("c", t.dataset.crcx);
   if (go === "ilnew") return sheetIlNew();
   if (go === "a2new") return sheetAs2New();
+  if (go === "ntnew") return sheetNoteNew();
+  if (t.id === "okNt") return doNoteNew();
+  if (t.id === "okNc") return doNoteCmt();
+  if (t.dataset.nf) { NF = t.dataset.nf; return render(); }
+  if (t.dataset.ntlike) return noteLike(t.dataset.ntlike);
+  if (t.dataset.ntcmt) return sheetNoteCmt(t.dataset.ntcmt);
+  if (t.dataset.ntcat) { NW.cat = t.dataset.ntcat; document.querySelectorAll("[data-ntcat]").forEach((x) => x.classList.toggle("on", x === t)); return; }
+  if (t.dataset.ntby) { NW.by = t.dataset.ntby; document.querySelectorAll("[data-ntby]").forEach((x) => x.classList.toggle("on", x === t)); return; }
+  if (t.dataset.ncby) { NC.by = t.dataset.ncby; document.querySelectorAll("[data-ncby]").forEach((x) => x.classList.toggle("on", x === t)); return; }
   if (t.dataset.oldf) { OLDF = t.dataset.oldf; return render(); }
   if (t.dataset.a2t) { A2T = t.dataset.a2t; A2SEL.clear(); return render(); }
   if (t.dataset.a2c) { A2SEL.has(t.dataset.a2c) ? A2SEL.delete(t.dataset.a2c) : A2SEL.add(t.dataset.a2c); return render(); }
