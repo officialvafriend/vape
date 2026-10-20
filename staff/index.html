@@ -173,7 +173,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.20-38";
+const VER = "10.20-39";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -497,17 +497,26 @@ function sheetIlPost(k, id) {
     <div class="desc" style="margin-top:12px">새 날짜</div><div class="chips" style="align-items:center"><button class="chip on" data-ipd="7">7일 뒤 (${md(addDay(7))})</button><input type="date" class="input" id="ipDate" min="${addDay(1)}" style="width:auto;flex:1;margin:0"></div>
     <input class="input" id="ipWhy" placeholder="미루는 이유 (필수, 예: 입고 늦어짐, 손님 연락 안 됨)" maxlength="100">
     ${k === "c" ? `<div class="say" id="ipSay">늦어져서 죄송해요. ${md(addDay(7))}까지 다시 연락드릴게요.</div>` : ""}
-    <div class="btns"><button class="btn" data-x>닫기</button><button class="btn primary" id="okIp">미루기</button></div>`);
+    <div class="btns"><button class="btn" data-x>닫기</button><button class="btn${k === "c" ? "" : " primary"}" id="okIp">미루기</button>${k === "c" ? '<button class="btn primary" id="okIpSms">📩 문자 보내고 미루기</button>' : ""}</div>`);
 }
-async function doIlPost() {
+async function doIlPost(withSms) {
   const why = ($("#ipWhy").value || "").trim(); if (!why) return toast("미루는 이유를 적어 주세요");
-  const by = working().join(", "); if (!by) return needIn(() => doIlPost());
+  const by = working().join(", "); if (!by) return needIn(() => doIlPost(withSms));
+  let ph = "";
+  if (withSms) { const it0 = ilFind(IP.k, IP.id); ph = String(custPhone(it0?.raw || {}) || "").replace(/\D/g, ""); if (ph.length < 9) return toast("손님 번호가 없어요 (매장 전용 주소로 연 기기에서 보여요), 그냥 미루기를 눌러 주세요"); }
   const date = $("#ipDate").value || addDay(IP.days);
   $("#okIp").disabled = true;
   try {
     await send({ type: IP.k === "c" ? "creqext" : "memoext", id: IP.id, date, days: IP.days, why, by });
     const it = ilFind(IP.k, IP.id); if (it) { it.raw.due = date; it.raw.ext = (it.raw.ext || 0) + 1; if (it.raw.ext >= 2) it.raw.lead = true; it.raw.ok = true; }
     closeSheet(); render(); toast(it && it.raw.lead ? "미뤘어요, 팀장님께 넘어갔어요" : `${md(date)}로 미뤘어요`);
+    if (withSms && it) {
+      const r = it.raw, item = r.title || crItems(r);
+      const body = `안녕하세요, ${shopName()}이에요. ${r.cat === "각인" ? `요청하신 ${item} 각인이` : `주문하신 ${item} 준비가`} 늦어지고 있어요. ${md(date)}까지 다시 연락드릴게요. 기다리게 해서 죄송해요.${addrLine()}`;
+      send({ type: "creqsms", id: IP.id, k: "post", by }).catch(() => {});
+      r.sms = { label: "미루기 문자", at: `${todayKey()} ${now()}`, by };
+      smsOpen(ph, body, IP.id);
+    }
   } catch (e) { $("#okIp").disabled = false; fail(e); }
 }
 let IX = null;
@@ -560,6 +569,14 @@ async function doSms(k, id) {
     <div class="desc" style="margin-top:10px">받는 번호</div><div style="display:flex;gap:8px;align-items:center"><b style="font-size:18px;flex:1">${esc(fmtPh(ph))}</b><button class="act gray" data-smscp="ph">번호 복사</button></div>
     <div class="desc" style="margin-top:10px">문구</div><textarea class="input" id="smsBody" rows="5">${esc(body)}</textarea>
     <div class="btns"><button class="btn" data-crd2="${id}">닫기</button><button class="btn primary" data-smscp="body">문구 복사</button></div>`);
+}
+function smsOpen(ph, body, backId) {
+  if (isPhone()) { location.href = `sms:${ph}${/iPhone|iPad|iPod/.test(navigator.userAgent) ? "&" : "?"}body=${encodeURIComponent(body)}`; return; }
+  SMSCUR = { ph: fmtPh(ph), body };
+  openSheet(`<h2>📩 손님께 보낼 문구</h2><div class="desc">복사해서 매장 폰 문자나 카톡으로 보내 주세요.</div>
+    <div class="desc" style="margin-top:10px">받는 번호</div><div style="display:flex;gap:8px;align-items:center"><b style="font-size:18px;flex:1">${esc(fmtPh(ph))}</b><button class="act gray" data-smscp="ph">번호 복사</button></div>
+    <div class="desc" style="margin-top:10px">문구</div><textarea class="input" id="smsBody" rows="5">${esc(body)}</textarea>
+    <div class="btns">${backId ? `<button class="btn" data-crd2="${backId}">닫기</button>` : '<button class="btn" data-x>닫기</button>'}<button class="btn primary" data-smscp="body">문구 복사</button></div>`);
 }
 async function smsCopy(w) {
   const t = w === "ph" ? SMSCUR.ph : ($("#smsBody")?.value || SMSCUR.body);
@@ -1430,7 +1447,8 @@ document.addEventListener("click", (e) => {
   if (t.dataset.ilpost) return sheetIlPost(t.dataset.ilpost, t.dataset.id);
   if (t.dataset.ilcx) return sheetIlCx(t.dataset.ilcx, t.dataset.id);
   if (t.dataset.ipd) { IP.days = +t.dataset.ipd; $("#ipDate").value = ""; t.classList.add("on"); if ($("#ipSay")) $("#ipSay").textContent = `늦어져서 죄송해요. ${md(addDay(IP.days))}까지 다시 연락드릴게요.`; return; }
-  if (t.id === "okIp") return doIlPost();
+  if (t.id === "okIp") return doIlPost(false);
+  if (t.id === "okIpSms") return doIlPost(true);
   if (t.id === "okIx") return doIlCx();
   if (t.dataset.cred) return sheetCreqEdit(t.dataset.cred);
   if (t.dataset.crd2) return sheetCreqDetail(t.dataset.crd2);
