@@ -173,7 +173,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.20-36";
+const VER = "10.20-37";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -1052,7 +1052,8 @@ async function doCreq() {
   if (!cr.pay) return toast("결제했는지 골라 주세요");
   if (v("#crPhone").replace(/\D/g, "").length < 8) return toast("고객 연락처를 넣어 주세요");
   const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 5), by = cr.by; // 10/20 담당자 한 명(칩 또는 직접 적은 이름)
-  const body = { type: "creq", id, items: cr.items, free: v("#crFree"), how: cr.how, pay: cr.pay, step: cr.step, days: cr.days, order: cr.order, cat: cr.cat, eng: cr.eng, d: v("#crDate") || todayKey(), name: v("#crName"), phone: v("#crPhone"), memo: cr.check && !v("#crMemo").startsWith("[확인 필요]") ? ("[확인 필요] " + v("#crMemo")).trim() : v("#crMemo"), by };
+  const body = { type: "creq", id, items: cr.items, free: v("#crFree"), how: cr.how, pay: cr.pay, step: cr.step, days: cr.days, order: cr.order, cat: cr.cat, eng: cr.engManual ? cr.eng : "", // 직접 바꾼 때만 보냄, 아니면 봇이 그 순간 건수로 고름
+    d: v("#crDate") || todayKey(), name: v("#crName"), phone: v("#crPhone"), memo: cr.check && !v("#crMemo").startsWith("[확인 필요]") ? ("[확인 필요] " + v("#crMemo")).trim() : v("#crMemo"), by };
   $("#okCr").disabled = true;
   try {
     await send(body);
@@ -1384,7 +1385,7 @@ document.addEventListener("click", (e) => {
   if (t.id === "okCr") return doCreq();
   if (t.dataset.crchk) { cr.check = !cr.check; t.classList.toggle("on", cr.check); const d = $("#crDue"); if (cr.check) { cr.days = 3; if (d) d.value = addDay(3); document.querySelectorAll("[data-crdays]").forEach((x) => x.classList.remove("on")); } else { cr.days = 7; if (d) d.value = ""; document.querySelectorAll("[data-crdays]").forEach((x) => x.classList.add("on")); } return; }
   if (t.dataset.crord) { cr.order = t.dataset.crord === "1"; document.querySelectorAll("[data-crord]").forEach((x) => x.classList.toggle("on", x === t)); return; }
-  if (t.dataset.creng) { cr.eng = t.dataset.creng; document.querySelectorAll("[data-creng]").forEach((x) => x.classList.toggle("on", x === t)); return; }
+  if (t.dataset.creng) { cr.eng = t.dataset.creng; cr.engManual = true; document.querySelectorAll("[data-creng]").forEach((x) => x.classList.toggle("on", x === t)); return; }
   if (t.dataset.crby) { if ($("#crByIn")) $("#crByIn").value = ""; cr.by = t.dataset.crby; document.querySelectorAll("[data-crby]").forEach((x) => x.classList.toggle("on", x === t)); return; }
   if (t.dataset.mby) { document.querySelectorAll("[data-mby]").forEach((x) => x.classList.toggle("on", x === t)); return; }
   if (t.dataset.crdays) { if ($("#crDue")) $("#crDue").value = ""; cr.days = +t.dataset.crdays; document.querySelectorAll("[data-crdays]").forEach((x) => x.classList.toggle("on", x === t)); return; }
