@@ -164,7 +164,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.20-18";
+const VER = "10.20-19";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -426,13 +426,25 @@ function talkHtml() {
   const chips = [["all", "전체"], ["todo", "연락할 것"], ["wait", "입고 대기"], ["ready", "연락함"]].map(([k, n]) => `<button class="chip ${CRF === k ? "on" : ""}" data-crf="${k}">${n} ${cnt[k]}</button>`).join("");
   return `${seg}<div class="card"><div class="lhead"><div class="chips" style="margin:10px 0">${chips}</div><button class="act" data-go="creq">＋ 적기</button></div>${L.map(crRow).join("") || '<div class="desc" style="padding:4px 0 14px">해당하는 고객요청이 없어요</div>'}</div>`;
 }
+// 10/20 사장님 "메모나 내용이 보기 불편": 맨 위 상태 색 표시, 상품 크게, 이름표 | 내용 줄, 메모는 진한 글씨로 따로
+const fmtPh = (p) => String(p || "").replace(/D/g, "").replace(/^(d{3})(d{3,4})(d{4})$/, "$1-$2-$3");
 function sheetCreqDetail(id) {
   const r = creqList().find((x) => x.id === id); if (!r) return;
-  const ph = custPhone(r), cust = `${esc(custName(r))} ${ph ? `<a href="tel:${esc(ph.replace(/\D/g, ""))}" style="color:var(--blue);font-weight:800">${esc(ph)}</a>` : r.p4 ? "끝번호 " + esc(r.p4) + (bKey() ? "" : " (열쇠 없는 기기)") : ""}`;
+  const ph = custPhone(r);
   const btns = r.lead ? '<div class="desc">👔 팀장님이 처리 중이에요</div>' : `<div class="btns" style="flex-wrap:wrap">${r.step === "wait" && !r.arrived ? `<button class="btn" data-crarr="${id}">📦 입고됨</button>` : ""}${r.step === "wait" && r.arrived ? `<button class="btn primary" data-crs="ready" data-id="${id}">연락함</button>` : ""}${r.step === "ready" ? `<button class="btn primary" data-crs="done" data-id="${id}">전달 완료</button>` : ""}${r.step === "wait" ? `<button class="btn" data-crext="${id}">기한 연장</button>` : ""}<button class="btn" data-crcx="${id}">취소</button></div>`;
-  openSheet(`<h2>🧾 ${esc(r.title || "고객요청")}</h2><div style="font-size:16px;font-weight:700;line-height:1.5;white-space:pre-wrap">${esc(crItems(r))}</div>
-    <div class="desc" style="margin-top:10px">손님: ${cust || "-"}<br>${esc(r.how)}, ${r.pay === "결제완료" ? "결제완료" : "미결제"}, 접수 ${sd(r.d)} ${esc(r.by)}${r.order ? ", 📦 주문요청함" : ""}<br>${r.lead ? "👔 팀장 처리 중" : r.step === "ready" ? "연락함, 손님 방문 대기" : r.arrived ? "📦 입고됨, 손님께 연락할 차례" : r.due ? `입고 대기, 연락 기한 ${dueTxt(r.due)}${r.ext ? `, 연장 ${r.ext}번` : ""}` : CST[r.step]}</div>
-    ${(DEC[r.id]?.m || r.memo) ? `<div class="desc" style="margin-top:10px;white-space:pre-wrap;background:#f2f4f6;border-radius:12px;padding:10px">${esc(DEC[r.id]?.m || r.memo)}</div>` : ""}
+  const st = r.lead ? ["👔 팀장 처리 중", "#fff4e5", "#b25e00"] : r.step === "ready" ? ["연락함, 손님 방문 대기", "#e8f3ff", "#1b64da"] : r.arrived ? ["📦 입고됨, 손님께 연락할 차례", "#ffeeee", "#d22030"] : ["⏳ 입고 대기" + (r.due ? `, 기한 ${dueTxt(r.due)}` : ""), "#f2f4f6", "#4e5968"];
+  const row = (k, v) => v ? `<div style="display:flex;gap:12px;padding:9px 0;border-top:1px solid var(--line)"><span style="width:64px;flex-shrink:0;color:var(--sub);font-size:14px">${k}</span><span style="font-size:15px;font-weight:600">${v}</span></div>` : "";
+  const memo = DEC[r.id]?.m || r.memo || "";
+  openSheet(`<div style="display:inline-block;background:${st[1]};color:${st[2]};font-size:13px;font-weight:800;border-radius:999px;padding:5px 12px">${esc(st[0])}</div>
+    <div style="font-size:20px;font-weight:800;line-height:1.4;margin:10px 0 12px;white-space:pre-wrap">${esc(r.title || crItems(r))}</div>
+    ${r.title && r.title !== crItems(r) ? row("내용", esc(crItems(r))) : ""}
+    ${row("손님", esc(custName(r)) || "-")}
+    ${row("연락처", ph ? `<a href="tel:${esc(ph.replace(/D/g, ""))}" style="color:var(--blue);font-weight:800">${esc(fmtPh(ph))}</a> <small style="color:var(--sub)">누르면 전화</small>` : r.p4 ? `끝번호 ${esc(r.p4)}${bKey() ? "" : " (열쇠 없는 기기)"}` : "")}
+    ${row("결제", r.pay === "결제완료" ? '<span style="color:var(--green)">결제완료</span>' : '<span style="color:var(--red)">미결제</span>')}
+    ${row("받는 방법", esc(r.how))}
+    ${row("접수", `${sd(r.d)} ${esc(r.by)}${r.ext ? `, 연장 ${r.ext}번` : ""}`)}
+    ${r.order ? row("주문요청", "📦 요청함") : ""}
+    ${memo ? `<div style="border-top:1px solid var(--line);padding-top:10px"><div style="color:var(--sub);font-size:14px;margin-bottom:6px">메모</div><div style="background:#fff8e1;border-radius:12px;padding:12px;font-size:15px;line-height:1.55;color:var(--ink);white-space:pre-wrap">${esc(memo)}</div></div>` : ""}
     ${btns}<div class="btns"><button class="btn" data-x>닫기</button></div>`);
 }
 function sheetMemoDetail(id) {
