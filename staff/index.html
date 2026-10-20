@@ -164,7 +164,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.20-30";
+const VER = "10.20-31";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -953,7 +953,7 @@ async function doCreq() {
   $("#okCr").disabled = true;
   try {
     await send(body);
-    ls.set(`vf-app-${B}-creqs`, [...ls.get(`vf-app-${B}-creqs`, []), { ...body, test: TEST, d: todayKey(), t: now(), ts: Date.now() }]);
+    ls.set(`vf-app-${B}-creqs`, [...ls.get(`vf-app-${B}-creqs`, []), { ...body, test: TEST, d: body.d || todayKey(), t: now(), ts: Date.now() }]);
     render();
     if (cr.step === "wait") openSheet(`<h2>손님께 이렇게 말해 주세요</h2><div class="say">${md(addDay(cr.days))} 이전에 입고되면 연락드릴게요.</div><div class="desc">${md(addDay(cr.days))}이 되면 오늘 할 일에 떠요. 그 전에 입고되면 바로 떠요.</div><div class="btns"><button class="btn primary" data-x>확인</button></div>`);
     else { closeSheet(); toast("저장했어요"); }
