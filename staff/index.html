@@ -31,8 +31,10 @@
   .hero .hrow{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid rgba(255,255,255,.08)}.hero .hrow:first-of-type{border-top:0}
   .hero .hrow .ht{flex:1;min-width:0}.hero .hrow b{display:block;font-size:15px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.hero .hrow span{display:block;font-size:12px;color:#b0b8c1;margin-top:2px}
   .hero .hbs{display:flex;gap:6px;flex-shrink:0}.hero .hbs button{height:34px;padding:0 12px;border-radius:10px;font-size:13px;font-weight:800;background:rgba(255,255,255,.14);color:#fff}.hero .hbs button.ok{background:#fff;color:#191f28}
+  .typecs{display:flex;flex-direction:column;gap:10px;margin:14px 0 4px}.typec{display:flex;align-items:center;gap:14px;width:100%;padding:14px 16px;border-radius:16px;border:1px solid var(--line);background:var(--card);text-align:left}.typec:active{background:#f2f4f6}
+  .typec i{font-style:normal;font-size:24px;width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0}.typec b{display:block;font-size:17px;font-weight:800;color:var(--ink)}.typec small{display:block;font-size:13px;color:var(--sub);margin-top:2px}
   .ilb{display:flex;gap:6px;flex-shrink:0}.ilb button{height:34px;padding:0 11px;border-radius:10px;font-size:13px;font-weight:800;background:#f2f4f6;color:var(--ink)}.ilb button.ok{background:var(--blue);color:#fff}
-  .tag{display:inline-block;font-size:11px;font-weight:800;border-radius:6px;padding:1px 6px;margin-right:6px;vertical-align:1px}.tag.c{background:#e8f3ff;color:#1b64da}.tag.m{background:#fff4e5;color:#b25e00}
+  .tag{display:inline-block;font-size:11px;font-weight:800;border-radius:6px;padding:1px 6px;margin-right:6px;vertical-align:1px}.tag.c{background:#e8f3ff;color:#1b64da}.tag.m{background:#fff4e5;color:#b25e00}.tag.e{background:#f3e8ff;color:#7c3aed}
   .hero .bar{height:8px;background:rgba(255,255,255,.15);border-radius:99px;margin-top:16px;overflow:hidden}
   .hero .bar i{display:block;height:100%;background:#64a8ff;border-radius:99px;transition:width .3s}
   .card{background:var(--card);border-radius:20px;padding:6px 18px;margin-bottom:12px}
@@ -171,7 +173,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.20-33";
+const VER = "10.20-34";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -426,13 +428,14 @@ function memoHomeHtml() {
   const ml = memoList(), L = [...ml].sort((a, b) => (a.due || "9").localeCompare(b.due || "9") || (b.d + b.t).localeCompare(a.d + a.t));
   return `<div class="card"><div class="lhead"><h2 style="margin:10px 0">📌 인수인계${ml.length ? ` ${ml.length}건` : ""}</h2><button class="act gray" data-go="memo">＋ 남기기</button></div>${L.map(mmRow).join("") || '<div class="desc" style="padding:0 0 14px">확인할 인수인계가 없어요</div>'}</div>`;
 }
-let ILF = "all";
+let ILF = null; // 10/20 사장님: 전체는 맨 뒤. 처음엔 오늘까지(있으면) 아니면 손님 요청
 function talkHtml() {
-  const all = ilItems(), cnt = { all: all.length, hot: all.filter((x) => x.hot).length, c: all.filter((x) => x.k === "c").length, m: all.filter((x) => x.k === "m").length };
-  const F = { all: () => true, hot: (x) => x.hot, c: (x) => x.k === "c", m: (x) => x.k === "m" }[ILF];
+  const all = ilItems(), cnt = { all: all.length, hot: all.filter((x) => x.hot).length, c: all.filter((x) => x.cat === "c").length, e: all.filter((x) => x.cat === "e").length, m: all.filter((x) => x.cat === "m").length };
+  if (!ILF) ILF = cnt.hot ? "hot" : "c";
+  const F = { all: () => true, hot: (x) => x.hot, c: (x) => x.cat === "c", e: (x) => x.cat === "e", m: (x) => x.cat === "m" }[ILF];
   const L = all.filter(F).sort((a, b) => (b.hot - a.hot) || (a.due || "9").localeCompare(b.due || "9"));
-  const chips = [["all", "전체"], ["hot", "오늘까지"], ["c", "손님 요청"], ["m", "매장 인수인계"]].map(([k, n]) => `<button class="chip ${ILF === k ? "on" : ""}" data-ilf="${k}">${n} ${cnt[k]}</button>`).join("");
-  const row = (x) => `<div class="lrow ${x.hot ? "hot" : ""}" ${x.k === "c" ? `data-crd="${x.id}"` : `data-mmd="${x.id}"`}><div class="lt"><b class="l1" style="-webkit-line-clamp:1"><i class="tag ${x.k}" style="font-style:normal">${x.k === "c" ? "손님" : "매장"}</i>${esc(x.title)}</b><span class="l2 ${x.hot ? "w" : ""}">${esc(x.sub)}</span></div><div class="ilb">${ilBtns(x)}</div></div>`;
+  const chips = [["hot", "오늘까지"], ["c", "손님 요청"], ["e", "각인 요청"], ["m", "매장 인수인계"], ["all", "전체"]].map(([k, n]) => `<button class="chip ${ILF === k ? "on" : ""}" data-ilf="${k}">${n} ${cnt[k]}</button>`).join("");
+  const row = (x) => `<div class="lrow ${x.hot ? "hot" : ""}" ${x.k === "c" ? `data-crd="${x.id}"` : `data-mmd="${x.id}"`}><div class="lt"><b class="l1" style="-webkit-line-clamp:1"><i class="tag ${x.cat}" style="font-style:normal">${{ c: "손님", e: "각인", m: "매장" }[x.cat]}</i>${esc(x.title)}</b><span class="l2 ${x.hot ? "w" : ""}">${esc(x.sub)}</span></div><div class="ilb">${ilBtns(x)}</div></div>`;
   return `<div class="card"><div class="lhead"><div class="chips" style="margin:10px 0">${chips}</div><button class="act" data-go="ilnew">＋ 일정 적기</button></div>${L.map(row).join("") || '<div class="desc" style="padding:4px 0 14px">일정이 없어요</div>'}</div>`;
 }
 function talkHtmlOld() {
@@ -472,8 +475,9 @@ function sheetCreqDetail(id) {
     ${btns}<div class="btns"><button class="btn" data-x>닫기</button>${r.lead ? "" : `<button class="btn" data-cred="${id}">✏️ 수정</button>`}</div>`);
 }
 function sheetIlNew() {
+  const card = (go, cat, ic, t, sub, bg) => `<button class="typec" data-go="${go}"${cat ? ` data-cat="${cat}"` : ""}><i style="background:${bg}">${ic}</i><span><b>${t}</b><small>${sub}</small></span></button>`;
   openSheet(`<h2>📅 일정 적기</h2><div class="desc">어떤 일정인가요?</div>
-    <div class="btns" style="flex-direction:column;gap:10px"><button class="btn primary" data-go="creq" style="height:60px;font-size:17px">🧾 손님 요청 <small style="font-weight:600;opacity:.8">(입고 대기, 보관, 교환, 각인)</small></button><button class="btn" data-go="memo" style="height:60px;font-size:17px">📌 매장 인수인계 <small style="font-weight:600;opacity:.7">(다음 근무자, 팀장님께)</small></button></div>
+    <div class="typecs">${card("creq", "", "🧾", "손님 요청", "입고 대기, 보관, 교환", "#e8f3ff")}${card("creq", "각인", "✨", "각인 요청", "기기 각인, 도안", "#f3e8ff")}${card("memo", "", "📌", "매장 인수인계", "다음 근무자, 팀장님께", "#fff4e5")}</div>
     <div class="btns"><button class="btn" data-x>닫기</button></div>`);
 }
 const ilFind = (k, id) => ilItems().find((x) => x.k === k && x.id === id);
@@ -531,12 +535,13 @@ function sheetIlGate() {
 let CE = null;
 function sheetCreqEdit(id) {
   const r = creqList().find((x) => x.id === id); if (!r) return;
-  CE = { id, pay: r.pay, how: r.how };
+  CE = { id, pay: r.pay, how: r.how, cat: r.cat === "각인" ? "각인" : "손님" };
   const memo = DEC[r.id]?.m || r.memo || "", ph = custPhone(r);
   openSheet(`<h2>✏️ 고객요청 수정</h2>
     <div class="desc">상품 내용</div><input class="input" id="ceT" value="${esc(r.title || crItems(r))}" maxlength="60">
     <div class="desc" style="margin-top:10px">손님</div><input class="input" id="ceN" value="${esc(custName(r))}" maxlength="20">
     <div class="desc" style="margin-top:10px">연락처</div><input class="input" id="ceP" value="${esc(ph)}" inputmode="tel" maxlength="20" placeholder="${ph ? "" : "바꿀 때만 적기 (비우면 그대로)"}">
+    <div class="desc" style="margin-top:10px">종류</div><div class="chips">${[["손님", "🧾 손님 요청"], ["각인", "✨ 각인 요청"]].map(([k, n]) => `<button class="chip ${k === CE.cat ? "on" : ""}" data-cecat="${k}">${n}</button>`).join("")}</div>
     <div class="desc" style="margin-top:10px">결제</div><div class="chips">${["결제완료", "미결제"].map((x) => `<button class="chip ${x === r.pay ? "on" : ""}" data-cepay="${x}">${x}</button>`).join("")}</div>
     <div class="desc" style="margin-top:10px">받는 방법</div><div class="chips">${["방문수령", "택배", "퀵"].map((x) => `<button class="chip ${x === r.how ? "on" : ""}" data-cehow="${x}">${x}</button>`).join("")}</div>
     <div class="desc" style="margin-top:10px">메모</div><textarea class="input" id="ceM" rows="4" maxlength="400" placeholder="내용 추가">${esc(memo)}</textarea>
@@ -547,9 +552,9 @@ async function doCreqEdit() {
   const v = (k) => ($(k)?.value || "").trim();
   $("#okCe").disabled = true;
   try {
-    await send({ type: "creqedit", id: CE.id, title: v("#ceT"), name: v("#ceN"), phone: v("#ceP"), memo: v("#ceM"), pay: CE.pay, how: CE.how, by });
+    await send({ type: "creqedit", id: CE.id, title: v("#ceT"), name: v("#ceN"), phone: v("#ceP"), memo: v("#ceM"), pay: CE.pay, how: CE.how, cat: CE.cat, by });
     const r = (BOARD?.creqs || []).find((x) => x.id === CE.id);
-    if (r) { r.title = v("#ceT") || r.title; r.pay = CE.pay; r.how = CE.how; DEC[r.id] = { ...(DEC[r.id] || {}), n: v("#ceN") || DEC[r.id]?.n, p: v("#ceP") || DEC[r.id]?.p, m: v("#ceM") }; r.memo = v("#ceM"); }
+    if (r) { r.title = v("#ceT") || r.title; r.pay = CE.pay; r.how = CE.how; r.cat = CE.cat === "각인" ? "각인" : null; DEC[r.id] = { ...(DEC[r.id] || {}), n: v("#ceN") || DEC[r.id]?.n, p: v("#ceP") || DEC[r.id]?.p, m: v("#ceM") }; r.memo = v("#ceM"); }
     toast("수정했어요"); sheetCreqDetail(CE.id); render();
   } catch (e) { $("#okCe").disabled = false; fail(e); }
 }
@@ -768,12 +773,12 @@ function ilItems() {
   for (const r of creqList()) {
     if (r.pending) continue;
     const nm = custName(r), today = r.due && dLeft(r.due) <= 0, arr = r.step === "wait" && r.arrived;
-    L.push({ k: "c", id: r.id, raw: r, ic: "🧾", lead: !!r.lead, due: r.due || null, hot: !r.lead && (today || arr), title: `${nm ? nm + "님, " : ""}${r.title || crItems(r)}`,
+    L.push({ k: "c", cat: r.cat === "각인" ? "e" : "c", id: r.id, raw: r, ic: r.cat === "각인" ? "✨" : "🧾", lead: !!r.lead, due: r.due || null, hot: !r.lead && (today || arr), title: `${nm ? nm + "님, " : ""}${r.title || crItems(r)}`,
       sub: [r.lead ? "👔 팀장 처리 중" : arr ? "📦 입고됨, 손님께 연락" : r.step === "ready" ? "챙겨둠" : "입고 대기", r.due ? `${r.step === "ready" || arr ? "수령 예정" : "약속일"} ${puTxt(r.due)}` : "", `남김 ${sd(r.d)} ${r.by}`].filter(Boolean).join(", ") });
   }
   for (const m of memoList()) {
     if (m.to === "keep" || MDONE.has(m.id)) continue;
-    L.push({ k: "m", id: m.id, raw: m, ic: "📌", lead: !!m.lead, due: m.due || null, hot: !m.lead && m.due && dLeft(m.due) <= 0, title: m.text,
+    L.push({ k: "m", cat: "m", id: m.id, raw: m, ic: "📌", lead: !!m.lead, due: m.due || null, hot: !m.lead && m.due && dLeft(m.due) <= 0, title: m.text,
       sub: [m.lead ? "👔 팀장 처리 중" : "", m.due ? `처리 날짜 ${puTxt(m.due)}` : "날짜 없음", `남김 ${sd(m.d)} ${m.by}`].filter(Boolean).join(", ") });
   }
   return L;
@@ -996,11 +1001,11 @@ function memoCardHtml() {
   return `<div class="card"><h2>📌 인수인계${list.length ? `, ${list.length}건` : ""}</h2>${rows || '<div class="desc" style="padding:4px 0 10px">확인할 인수인계가 없어요</div>'}
     <div class="btns" style="margin:6px 0 14px"><button class="btn" data-go="memo">＋ 인수인계 남기기</button></div></div>`;
 }
-function sheetCreq() {
-  if (!working().length) return needIn(() => sheetCreq());
-  cr = { items: [], how: "방문수령", pay: null, step: "ready", manual: false, days: 7, by: working().length === 1 ? working()[0] : null, order: false };
+function sheetCreq(cat = "") {
+  if (!working().length) return needIn(() => sheetCreq(cat));
+  cr = { items: [], how: "방문수령", pay: null, step: "ready", manual: false, days: 7, by: working().length === 1 ? working()[0] : null, order: false, cat };
   loadOuts();
-  openSheet(`<h2>🧾 손님 요청</h2>
+  openSheet(`<h2>${cr.cat === "각인" ? "✨ 각인 요청" : "🧾 손님 요청"}</h2>
     <div class="desc" style="margin-top:6px">담당자 <b style="color:var(--red)">*</b></div><div class="chips">${working().map((n) => `<button class="chip ${cr.by === n ? "on" : ""}" data-crby="${esc(n)}">${esc(n)}</button>`).join("")}</div>
     <input class="input" id="crByIn" placeholder="목록에 없으면 담당자 이름 직접 적기" maxlength="20" style="margin-top:8px">
     <input class="input" id="crFind" placeholder="상품 찾기 (예: 빌런 자두)"><div id="crRes" class="qres"></div><div id="crItems" class="qitems"></div>
@@ -1045,7 +1050,7 @@ async function doCreq() {
   if (!cr.pay) return toast("결제했는지 골라 주세요");
   if (v("#crPhone").replace(/\D/g, "").length < 8) return toast("고객 연락처를 넣어 주세요");
   const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 5), by = cr.by; // 10/20 담당자 한 명(칩 또는 직접 적은 이름)
-  const body = { type: "creq", id, items: cr.items, free: v("#crFree"), how: cr.how, pay: cr.pay, step: cr.step, days: cr.days, order: cr.order, d: v("#crDate") || todayKey(), name: v("#crName"), phone: v("#crPhone"), memo: cr.check && !v("#crMemo").startsWith("[확인 필요]") ? ("[확인 필요] " + v("#crMemo")).trim() : v("#crMemo"), by };
+  const body = { type: "creq", id, items: cr.items, free: v("#crFree"), how: cr.how, pay: cr.pay, step: cr.step, days: cr.days, order: cr.order, cat: cr.cat, d: v("#crDate") || todayKey(), name: v("#crName"), phone: v("#crPhone"), memo: cr.check && !v("#crMemo").startsWith("[확인 필요]") ? ("[확인 필요] " + v("#crMemo")).trim() : v("#crMemo"), by };
   $("#okCr").disabled = true;
   try {
     await send(body);
@@ -1360,7 +1365,7 @@ document.addEventListener("click", (e) => {
   if (t.id === "okClose2") return doClosing();
   if (t.dataset.svc) return sheetSurveyList(t.dataset.svc);
   if (t.id === "okSv") return doSurvey();
-  if (t.dataset.go === "creq") return sheetCreq();
+  if (t.dataset.go === "creq") return sheetCreq(t.dataset.cat || "");
   if (t.dataset.go === "memo") return sheetMemo();
   if (t.dataset.crs) return doCreqStep(t.dataset.id, t.dataset.crs);
   if (t.dataset.mok) return doMemoOk(t.dataset.mok, !!t.dataset.keep);
@@ -1392,6 +1397,7 @@ document.addEventListener("click", (e) => {
   if (t.id === "okIx") return doIlCx();
   if (t.dataset.cred) return sheetCreqEdit(t.dataset.cred);
   if (t.dataset.crd2) return sheetCreqDetail(t.dataset.crd2);
+  if (t.dataset.cecat) { CE.cat = t.dataset.cecat; document.querySelectorAll("[data-cecat]").forEach((x) => x.classList.toggle("on", x === t)); return; }
   if (t.dataset.cepay) { CE.pay = t.dataset.cepay; document.querySelectorAll("[data-cepay]").forEach((x) => x.classList.toggle("on", x === t)); return; }
   if (t.dataset.cehow) { CE.how = t.dataset.cehow; document.querySelectorAll("[data-cehow]").forEach((x) => x.classList.toggle("on", x === t)); return; }
   if (t.id === "okCe") return doCreqEdit();
