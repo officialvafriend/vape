@@ -164,7 +164,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.20-11";
+const VER = "10.20-12";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -395,7 +395,7 @@ const custPhone = (r) => DEC[r.id]?.p || (r.full ? r.full.phone : "") || "";
 function crRow(r) {
   const nm = custName(r), p4 = custPhone(r) || r.p4 || "";
   const meta = [[nm, p4].filter(Boolean).join(" "), `접수 ${sd(r.d)} ${r.by}`, r.lead ? "👔 팀장 처리 중" : r.step === "ready" ? "연락함, 방문 대기" : r.arrived ? "📦 입고됨" : r.due ? `기한 ${sd(r.due)}${dLeft(r.due) < 0 ? ` (${-dLeft(r.due)}일 지남)` : dLeft(r.due) === 0 ? " (오늘)" : ""}` : ""].filter(Boolean).join(", ");
-  return `<div class="lrow ${crHot(r) ? "hot" : ""}" data-crd="${r.id}"><div class="lt"><b class="l1">${esc(crItems(r))}</b><span class="l2 ${crHot(r) ? "w" : ""}">${esc(meta)}</span></div>${crMainBtn(r)}</div>`;
+  return `<div class="lrow ${crHot(r) ? "hot" : ""}" data-crd="${r.id}"><div class="lt"><b class="l1" style="-webkit-line-clamp:1">${esc(r.title || crItems(r))}</b><span class="l2 ${crHot(r) ? "w" : ""}">${esc(meta)}</span></div>${crMainBtn(r)}</div>`;
 }
 function mmMainBtn(m) {
   if (m.lead) return "";
@@ -427,7 +427,7 @@ function sheetCreqDetail(id) {
   const r = creqList().find((x) => x.id === id); if (!r) return;
   const ph = custPhone(r), cust = `${esc(custName(r))} ${ph ? `<a href="tel:${esc(ph.replace(/\D/g, ""))}" style="color:var(--blue);font-weight:800">${esc(ph)}</a>` : r.p4 ? "끝번호 " + esc(r.p4) + (bKey() ? "" : " (열쇠 없는 기기)") : ""}`;
   const btns = r.lead ? '<div class="desc">👔 팀장님이 처리 중이에요</div>' : `<div class="btns" style="flex-wrap:wrap">${r.step === "wait" && !r.arrived ? `<button class="btn" data-crarr="${id}">📦 입고됨</button>` : ""}${r.step === "wait" && r.arrived ? `<button class="btn primary" data-crs="ready" data-id="${id}">연락함</button>` : ""}${r.step === "ready" ? `<button class="btn primary" data-crs="done" data-id="${id}">전달 완료</button>` : ""}${r.step === "wait" ? `<button class="btn" data-crext="${id}">기한 연장</button>` : ""}<button class="btn" data-crcx="${id}">취소</button></div>`;
-  openSheet(`<h2>🧾 고객요청</h2><div style="font-size:17px;font-weight:800;line-height:1.5;white-space:pre-wrap">${esc(crItems(r))}</div>
+  openSheet(`<h2>🧾 ${esc(r.title || "고객요청")}</h2><div style="font-size:16px;font-weight:700;line-height:1.5;white-space:pre-wrap">${esc(crItems(r))}</div>
     <div class="desc" style="margin-top:10px">손님: ${cust || "-"}<br>${esc(r.how)}, ${r.pay === "결제완료" ? "결제완료" : "미결제"}, 접수 ${sd(r.d)} ${esc(r.by)}<br>${r.lead ? "👔 팀장 처리 중" : r.step === "ready" ? "연락함, 손님 방문 대기" : r.arrived ? "📦 입고됨, 손님께 연락할 차례" : r.due ? `입고 대기, 연락 기한 ${dueTxt(r.due)}${r.ext ? `, 연장 ${r.ext}번` : ""}` : CST[r.step]}</div>
     ${(DEC[r.id]?.m || r.memo) ? `<div class="desc" style="margin-top:10px;white-space:pre-wrap;background:#f2f4f6;border-radius:12px;padding:10px">${esc(DEC[r.id]?.m || r.memo)}</div>` : ""}
     ${btns}<div class="btns"><button class="btn" data-x>닫기</button></div>`);
