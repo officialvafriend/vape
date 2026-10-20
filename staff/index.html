@@ -173,7 +173,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.20-44";
+const VER = "10.20-45";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -314,14 +314,14 @@ function render() {
     as: `<div class="cols one"><div>${asCardHtml()}</div></div>`,
     as2: as2Html(),
   }[VIEW];
-  const badge = (k) => { const n = k === "talk" ? talkCount() : k === "home" ? todoItems().length : k === "as2" ? as2Items().filter((x) => B === "본점" ? x.st === 0 || x.st === 1 : x.st === 3 && !x.contact).length : 0; return n ? `<em class="bd">${n}</em>` : ""; };
+  const badge = (k) => { const n = k === "talk" ? talkCount() : k === "home" ? todoItems().length : k === "as2" ? as2Items().filter((x) => (B === "본점" && (x.st === 0 || x.st === 1)) || (x.b === B && (x.st === 3 || (x.st === 4 && !x.contact)))).length : 0; return n ? `<em class="bd">${n}</em>` : ""; };
   // 10/20 사장님 "여기 창이 별거 없네": 맨 위 칸 = 지금 할 일. 다음 단계 버튼을 바로 누르게, 진행 막대 대신 단계 점
   const stockUrl = `${SITE}stock/?branch=${encodeURIComponent(B)}${TEST ? "&test=1" : ""}&by=${encodeURIComponent(working.map((x) => x.name).join(", "))}&back=${encodeURIComponent(location.pathname)}`;
   const OP = [["🙋", "출근", steps[0], `<button class="hbtn" data-go="in">출근</button>`], ["✅", "오픈 체크", steps[1], `<button class="hbtn" data-go="open">체크</button>`], ["📦", "아침 재고보고", steps[2], `<a class="hbtn" href="${stockUrl}">하기</a>`]];
   const CL = [["🌙", "마감 체크", cSteps[0], `<button class="hbtn" data-go="close">체크</button>`]].concat(CLOSE_OK.includes(B) ? [["💰", "마감 보고", cSteps[1], `<button class="hbtn" data-go="closing">보고</button>`]] : []).concat([["👋", "퇴근", cSteps[cSteps.length - 1], working.length ? `<button class="hbtn" data-go="out">퇴근</button>` : ""]]);
   const phase = done < N ? OP : CL, nx = phase.find((x) => !x[2]), tdN = todoItems().length;
-  const TD = todoItems(), AH = as2Items().filter((x) => x.st === 3 && !x.contact && x.b === B);
-  const heroAs = AH.length ? `<div class="hil"><p class="hk" style="color:#9bd0ff">🔧 AS 완료, 손님께 연락할 것 ${AH.length}개</p>${AH.map((x) => `<div class="hrow"><div class="ht"><b>${esc(as2Title(x))}</b><span>${esc(as2Name(x) || "손님")}, 접수 ${sd(x.d)} ${esc(x.by)}${x.loan ? ", 대여 " + esc(x.loan) : ""}</span></div><div class="hbs"><button class="ok" data-a2sms="${x.id}">📩 문자</button><button data-a2go="4" data-id="${x.id}">전달 완료</button></div></div>`).join("")}</div>` : "";
+  const TD = todoItems(), AH = as2Items().filter((x) => x.st === 4 && !x.contact && x.b === B);
+  const heroAs = AH.length ? `<div class="hil"><p class="hk" style="color:#9bd0ff">🔧 AS 지점 도착, 손님께 연락할 것 ${AH.length}개</p>${AH.map((x) => `<div class="hrow"><div class="ht"><b>${esc(as2Title(x))}</b><span>${esc(as2Name(x) || "손님")}, 접수 ${x.d.slice(5).replace("-", "/")} ${esc(x.by)}${x.loan ? ", 대여 " + esc(x.loan) : ""}</span></div><div class="hbs"><button class="ok" data-a2sms="${x.id}">📩 문자</button><button data-a2go="5" data-id="${x.id}">전달 완료</button></div></div>`).join("")}</div>` : "";
   const heroIl = TD.length ? `<div class="hil"><p class="hk">📅 오늘 일정 ${TD.length}개, 처리해야 마감할 수 있어요</p>${TD.map((it) => `<div class="hrow"><div class="ht"><b>${it.ic} ${esc(it.title)}</b><span>${esc(it.sub)}</span></div><div class="hbs">${ilBtns(it, true)}</div></div>`).join("")}</div>` : "";
   const heroBody = heroIl + heroAs + `<p class="hk">${done < N ? `지금 할 일, 오픈 ${OPEN_AT[B]}` : "지금 할 일, 마감"}</p>
     ${nx ? `<div class="hnx"><h1>${nx[0]} ${nx[1]}</h1>${nx[3]}</div>` : `<h1 style="margin-top:6px">오늘 마감 완료! 수고하셨어요</h1>`}
@@ -608,8 +608,8 @@ async function smsCopy(w) {
   try { await navigator.clipboard.writeText(t); toast(w === "ph" ? "번호를 복사했어요" : "문구를 복사했어요"); } catch { const a = $("#smsBody"); if (a && w !== "ph") { a.select(); document.execCommand("copy"); toast("문구를 복사했어요"); } else toast("복사가 안 돼요, 길게 눌러 복사해 주세요"); }
 }
 // ── AS관리 (10/20) ── 전 지점 접수, 본점 관리. 지점은 자기 AS만, 본점은 전부(지점 칩). 시트: 공용 '베이프렌드_AS' AS 목록
-const AS5 = ["AS 접수", "본점 수취 및 발송대기", "AS 발송완료", "AS완료 및 고객연락", "고객 전달 완료"];
-const AS5S = ["AS 접수", "본점 수취, 발송대기", "AS 발송완료", "AS완료, 손님 연락", "전달 완료"];
+const AS5 = ["AS 접수", "본점 수취 및 발송대기", "AS 발송완료", "AS완료 및 지점 발송", "지점 도착", "고객 전달 완료"];
+const AS5S = ["AS 접수", "본점 수취, 발송대기", "업체 보냄", "AS 완료, 지점으로", "지점 도착, 손님 연락", "전달 완료"];
 let A2F = 0, A2B = "전체";
 const as2Items = () => (BOARD?.as || []).filter((x) => !!x.test === TEST);
 const as2Name = (x) => DEC["as" + x.id]?.n || "";
@@ -623,8 +623,9 @@ function as2Btn(x) {
   const hq = B === "본점";
   if (x.st === 0) return hq ? `<button class="ok" data-a2go="1" data-id="${x.id}">본점 받음</button>` : "";
   if (x.st === 1) return hq ? `<button class="ok" data-a2go="2" data-id="${x.id}">업체 보냄</button>` : "";
-  if (x.st === 2) return hq ? `<button class="ok" data-a2go="3" data-id="${x.id}">AS 완료</button>` : "";
-  if (x.st === 3) return `<button data-a2sms="${x.id}">📩 문자</button><button class="ok" data-a2go="4" data-id="${x.id}">전달 완료</button>`;
+  if (x.st === 2) return hq ? `<button class="ok" data-a2go="3" data-id="${x.id}">AS 완료, 지점 보냄</button>` : "";
+  if (x.st === 3) return x.b === B ? `<button class="ok" data-a2go="4" data-id="${x.id}">지점 도착</button>` : "";
+  if (x.st === 4) return `<button data-a2sms="${x.id}">📩 문자</button><button class="ok" data-a2go="5" data-id="${x.id}">전달 완료</button>`;
   return "";
 }
 function as2Html() {
@@ -632,10 +633,10 @@ function as2Html() {
   const hq = B === "본점", all = as2Items(), L0 = hq && A2B !== "전체" ? all.filter((x) => x.b === A2B) : all;
   const cnt = AS5.map((_, i) => L0.filter((x) => x.st === i).length);
   const stage = AS5S.map((n, i) => `<button class="chip ${A2F === i ? "on" : ""}" data-a2f="${i}">${n} ${cnt[i]}</button>`).join("");
-  const brs = hq ? `<div class="chips" style="margin:0 0 8px">${["전체", ...BR].map((b, i) => `<button class="chip ${A2B === b ? "on" : ""}" data-a2b="${b}" style="font-size:13px">${b === "전체" ? "전 지점" : i + "호 " + b} <small>${b === "전체" ? all.filter((x) => x.st < 4).length : all.filter((x) => x.b === b && x.st < 4).length}</small></button>`).join("")}</div>` : "";
+  const brs = hq ? `<div class="chips" style="margin:0 0 8px">${["전체", ...BR].map((b, i) => `<button class="chip ${A2B === b ? "on" : ""}" data-a2b="${b}" style="font-size:13px">${b === "전체" ? "전 지점" : i + "호 " + b} <small>${b === "전체" ? all.filter((x) => x.st < 5).length : all.filter((x) => x.b === b && x.st < 5).length}</small></button>`).join("")}</div>` : "";
   const days = (d) => Math.round((Date.parse(todayKey()) - Date.parse(d)) / 864e5);
   const L = L0.filter((x) => x.st === A2F).sort((a, b) => a.d.localeCompare(b.d));
-  const row = (x) => `<div class="lrow ${x.st < 4 && days(x.d) > 14 ? "hot" : ""}" data-a2d="${x.id}"><div class="lt"><b class="l1" style="-webkit-line-clamp:1">${hq ? `<i class="tag c" style="font-style:normal">${BR.indexOf(x.b) + 1}호</i>` : ""}${esc(as2Title(x))}</b><span class="l2">${esc([as2Name(x), `접수 ${sd(x.d)} ${x.by}`, x.loan ? `대여 ${x.loan}` : "", x.st < 4 ? `${days(x.d)}일째` : "", x.st === 3 && x.contact ? `📩 연락함 ${sd(x.contact.at.slice(0, 10))}` : "", x.st === 0 && !hq ? "본점으로 보내 주세요" : ""].filter(Boolean).join(", "))}</span></div><div class="ilb">${as2Btn(x)}</div></div>`;
+  const row = (x) => `<div class="lrow ${x.st < 5 && days(x.d) > 14 ? "hot" : ""}" data-a2d="${x.id}"><div class="lt"><b class="l1" style="-webkit-line-clamp:1">${hq ? `<i class="tag c" style="font-style:normal">${BR.indexOf(x.b) + 1}호</i>` : ""}${esc(as2Title(x))}</b><span class="l2">${esc([as2Name(x), `접수 ${sd(x.d)} ${x.by}`, x.loan ? `대여 ${x.loan}` : "", x.st < 5 ? `${days(x.d)}일째` : "", x.st === 4 && x.contact ? `📩 연락함 ${sd(x.contact.at.slice(0, 10))}` : "", x.st === 0 && !hq ? "본점으로 보내 주세요" : ""].filter(Boolean).join(", "))}</span></div><div class="ilb">${as2Btn(x)}</div></div>`;
   return `<div class="card"><div class="lhead"><h2 style="margin:10px 0">🔧 AS관리 ${hq ? "<small style='font-weight:600;color:var(--sub)'>전 지점</small>" : ""}</h2><button class="act" data-go="a2new">＋ AS 접수</button></div>${brs}<div class="chips" style="margin-bottom:6px">${stage}</div>${L.map(row).join("") || '<div class="desc" style="padding:10px 0 14px">이 단계 AS가 없어요</div>'}</div>`;
 }
 let A2 = null;
@@ -674,9 +675,9 @@ function as2Step(id, to) {
   const x = as2Items().find((y) => y.id === id); if (!x) return;
   if (to === 2 || to === 3) {
     A2S = { id, to };
-    openSheet(`<h2>${to === 2 ? "업체로 보냄" : "AS 완료"}</h2><div class="desc">${esc(as2Title(x))}</div>
+    openSheet(`<h2>${to === 2 ? "업체로 보냄" : "AS 완료, 지점으로 보냄"}</h2><div class="desc">${esc(as2Title(x))}</div>
       ${to === 2 ? '<input class="input" id="a2Vendor" placeholder="업체 (선택)" maxlength="40"><input class="input" id="a2Track" placeholder="송장번호 (선택)" maxlength="40">' : '<input class="input" id="a2Result" placeholder="처리 결과 (선택, 예: 새 기기로 교환, 배터리 교체)" maxlength="120">'}
-      <div class="btns"><button class="btn" data-a2d2="${id}">닫기</button><button class="btn primary" id="okA2S">${to === 2 ? "업체 보냄" : "AS 완료"}</button></div>`);
+      <div class="btns"><button class="btn" data-a2d2="${id}">닫기</button><button class="btn primary" id="okA2S">${to === 2 ? "업체 보냄" : "AS 완료, 지점 보냄"}</button></div>`);
     return;
   }
   return doAs2Step(id, to, {});
@@ -685,7 +686,7 @@ async function doAs2Step(id, to, extra) {
   const by = working().join(", "); if (!by) return needIn(() => doAs2Step(id, to, extra));
   try {
     await send({ type: "asstep", id, to, by, ...extra });
-    const x = as2Items().find((y) => y.id === id); if (x) { x.st = to; if (to < 3) x.contact = null; }
+    const x = as2Items().find((y) => y.id === id); if (x) { x.st = to; if (to < 4) x.contact = null; }
     closeSheet(); render(); toast(`${AS5S[to]}(으)로 바꿨어요`); setTimeout(loadBoard, 15000);
   } catch (e) { fail(e); }
 }
@@ -708,7 +709,7 @@ function sheetAs2Detail(id) {
     ${row("대여", esc(x.loan))}${row("접수", `${sd(x.d)} ${esc(x.by)}`)}${row("업체", esc([x.vendor, x.track].filter(Boolean).join(", ")))}${row("처리 결과", esc(x.result))}${x.contact ? row("손님 연락", `📩 ${sd(x.contact.at.slice(0, 10))} ${esc(x.contact.by)}`) : ""}
     ${d.m ? `<div style="border-top:1px solid var(--line);padding-top:10px"><div style="color:var(--sub);font-size:14px;margin-bottom:6px">메모</div><div style="background:#fff8e1;border-radius:12px;padding:12px;font-size:15px;line-height:1.55;white-space:pre-wrap">${esc(d.m)}</div></div>` : ""}
     <div class="desc" style="margin-top:10px">진행 기록: ${(x.hist || []).map((h) => `${AS5S[h.st]} ${sd(h.d)} ${esc(h.by)}`).join(" → ")}</div>
-    <div class="btns" style="flex-wrap:wrap">${as2Btn(x).replace(/<button class="ok"/g, '<button class="btn primary"').replace(/<button data-/g, '<button class="btn" data-')}${x.st > 0 && (hq || x.st >= 3) ? `<button class="btn" data-a2go="${x.st - 1}" data-id="${x.id}">한 단계 되돌리기</button>` : ""}</div>
+    <div class="btns" style="flex-wrap:wrap">${as2Btn(x).replace(/<button class="ok"/g, '<button class="btn primary"').replace(/<button data-/g, '<button class="btn" data-')}${x.st > 0 && (hq || x.st >= 4) ? `<button class="btn" data-a2go="${x.st - 1}" data-id="${x.id}">한 단계 되돌리기</button>` : ""}</div>
     <div class="btns"><button class="btn" data-x>닫기</button></div>`);
 }
 let CE = null;
