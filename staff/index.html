@@ -97,6 +97,9 @@
   .bnav{position:fixed;left:0;right:0;bottom:0;z-index:40;background:var(--card);border-top:1px solid var(--line);display:flex;padding:6px 4px calc(6px + env(safe-area-inset-bottom))}
   .bnav button{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 0;font-size:11px;font-weight:700;color:var(--sub)}
   .bnav button i{font-style:normal;font-size:20px;filter:grayscale(1);opacity:.6}.bnav button.on{color:var(--ink)}.bnav button.on i{filter:none;opacity:1}
+  .bnav button i{position:relative}.bnav .bd,.navb .bd{display:inline-block;min-width:18px;height:18px;line-height:18px;padding:0 5px;border-radius:9px;background:var(--red);color:#fff;font-size:11px;font-weight:800;font-style:normal;margin-left:4px}
+  .todo .crow b{font-size:15px}.todo .crow em{font-style:normal;font-size:12px;font-weight:700}.todo .tbtn{display:flex;gap:6px;flex-shrink:0}
+  .say{background:var(--blue-soft);color:var(--ink);border-radius:14px;padding:16px;font-size:18px;font-weight:800;line-height:1.5;margin:12px 0}
   .kpis{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:12px}
   .kpi{background:var(--card);border-radius:18px;padding:14px 16px;text-align:left}
   .kpi span{display:block;font-size:13px;color:var(--sub);font-weight:700}.kpi b{display:block;font-size:22px;font-weight:800;margin-top:4px;letter-spacing:-.3px}
@@ -150,7 +153,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.19-14";
+const VER = "10.20-1";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -178,6 +181,7 @@ function toast(m) { const t = $("#toast"); t.textContent = m; t.classList.add("o
 const qs = new URLSearchParams(location.search);
 // 10/19 시험 모드(?test=1): 신호에 test 표시 → 봇이 시험_ 탭에만 기록, 디스코드 알림 없음. 이 기기 기록도 따로
 const TEST = qs.get("test") === "1";
+const LEADER = qs.get("leader") === "1"; // 10/20 팀장 화면: 전 지점 넘어온 고객요청, 인수인계
 // ?pick=1 이면 저장된 지점이 있어도 지점 고르기 화면부터 (드라이브 링크용)
 let B = qs.has("pick") ? null : BR.includes(qs.get("branch")) ? qs.get("branch") : ls.get("vf-app-branch", null);
 if (B) ls.set("vf-app-branch", B);
@@ -223,10 +227,12 @@ const fail = (e) => toast(`못 보냈어요 (${navigator.onLine ? e.message : "�
 // 10/19 사장님: 본점 먼저 시행, 전 지점 오픈과 마감만 보이게(나머지 메뉴, 버튼 숨김). 다시 열려면 ONLY_OPEN_CLOSE = false
 const ONLY_OPEN_CLOSE = true;
 const VIEWS_ALL = [["home", "🏠", "오늘"], ["work", "🕘", "출퇴근, 마감"], ["stock", "📦", "재고"], ["talk", "📌", "소통, 요청"], ["as", "🔧", "AS"]];
-const VIEWS = ONLY_OPEN_CLOSE ? [["home", "🏠", "오픈, 마감"]] : VIEWS_ALL;
+// 10/20 사장님: 오늘(오픈, 마감) + 요청(인수인계, 고객요청) 두 화면만
+const VIEWS = ONLY_OPEN_CLOSE ? [["home", "🏠", "오늘"], ["talk", "📌", "요청"]] : VIEWS_ALL;
 let VIEW = ls.get("vf-app-view", "home");
 if (!VIEWS.some((v) => v[0] === VIEW)) VIEW = "home";
 function render() {
+  if (LEADER) return renderLeader();
   if (!B) return renderPick();
   const s = st(), sd = stockDone(), working = s.ins.filter((x) => !x.out);
   const d = new Date();
@@ -272,16 +278,17 @@ function render() {
     ${kpi("talk", "인수인계, 고객요청", memoN + creqN + "건", `인수인계 ${memoN}, 고객요청 ${creqN}`)}
   </div>`;
   const body = {
-    home: ONLY_OPEN_CLOSE ? `<div class="cols"><div>${openCard}</div><div>${closeCard}</div></div>` : `<div class="cols"><div>${done < N ? openCard : closeCard}${taskCardHtml()}</div><div>${memoCardHtml()}${asPin() ? asCardHtml() : ""}</div></div>`,
+    home: ONLY_OPEN_CLOSE ? `${todoCardHtml()}<div class="cols"><div>${openCard}</div><div>${closeCard}</div></div>` : `<div class="cols"><div>${done < N ? openCard : closeCard}${taskCardHtml()}</div><div>${memoCardHtml()}${asPin() ? asCardHtml() : ""}</div></div>`,
     work: `<div class="cols"><div>${openCard}</div><div>${closeCard}</div></div>`,
     stock: `<div class="cols one"><div>${surveyCardHtml()}</div></div>`,
-    talk: `<div class="cols"><div>${memoCardHtml()}${creqCardHtml()}</div><div>${reqCard}${myQuicksCard()}</div></div>`,
+    talk: ONLY_OPEN_CLOSE ? `<div class="cols"><div>${memoCardHtml()}</div><div>${creqCardHtml()}</div></div>` : `<div class="cols"><div>${memoCardHtml()}${creqCardHtml()}</div><div>${reqCard}${myQuicksCard()}</div></div>`,
     as: `<div class="cols one"><div>${asCardHtml()}</div></div>`,
   }[VIEW];
-  const nav = VIEWS.map(([k, ic, nm]) => `<button class="navb ${k === VIEW ? "on" : ""}" data-view="${k}"><i>${ic}</i><span>${nm}</span></button>`).join("");
+  const badge = (k) => { const n = k === "talk" ? talkCount() : k === "home" ? todoItems().length : 0; return n ? `<em class="bd">${n}</em>` : ""; };
+  const nav = VIEWS.map(([k, ic, nm]) => `<button class="navb ${k === VIEW ? "on" : ""}" data-view="${k}"><i>${ic}</i><span>${nm}${badge(k)}</span></button>`).join("");
   $("#app").innerHTML = `
     <div class="shell">
-      <aside class="side"><div class="logo">VAFRIEND <b>직원</b></div><div class="store" style="margin:0 12px 18px">${esc(ho(B))}</div>${ONLY_OPEN_CLOSE ? "" : nav}
+      <aside class="side"><div class="logo">VAFRIEND <b>직원</b></div><div class="store" style="margin:0 12px 18px">${esc(ho(B))}</div>${VIEWS.length > 1 ? nav : ""}
         ${ONLY_OPEN_CLOSE ? "" : `<div class="sfoot"><a class="navb" href="${SITE}menu/?branch=${encodeURIComponent(B)}"><i>🛍</i><span>판매용 메뉴판</span></a><button class="navb" data-go="branch"><i>🔁</i><span>지점 바꾸기</span></button></div>`}</aside>
       <main class="mainv">
         <div class="top mtop"><div class="logo">VAFRIEND <b>직원</b></div><div class="store">${esc(ho(B))}</div><div class="date">${d.getMonth() + 1}/${d.getDate()} (${"일월화수목금토"[d.getDay()]})</div></div>
@@ -292,9 +299,35 @@ function render() {
         <div class="foot">버전 ${VER}, 기록은 지점 시트에 남아요${ONLY_OPEN_CLOSE ? "" : `, <button data-go="branch">지점 바꾸기</button>`}</div>
       </main>
     </div>
-    ${ONLY_OPEN_CLOSE ? "" : `<nav class="bnav">`}${ONLY_OPEN_CLOSE ? "" : VIEWS.map(([k, ic, nm]) => `<button class="${k === VIEW ? "on" : ""}" data-view="${k}"><i>${ic}</i><span>${nm.split(",")[0]}</span></button>`).join("")}${ONLY_OPEN_CLOSE ? "" : "</nav>"}`;
+    ${VIEWS.length > 1 ? `<nav class="bnav">${VIEWS.map(([k, ic, nm]) => `<button class="${k === VIEW ? "on" : ""}" data-view="${k}"><i>${ic}</i><span>${nm.split(",")[0]}${badge(k)}</span></button>`).join("")}</nav>` : ""}`;
 }
 
+// ── 팀장 화면 (10/20) ── 직원앱 주소 뒤에 ?leader=1. 전 지점에서 넘어온 고객요청, 인수인계만 모아 봄
+let LACT = null;
+function renderLeader() {
+  const nm = ls.get("vf-leader-name", "");
+  const rows = LEADS.map((x, i) => `<div class="crow"><div><b>${x.kind === "creq" ? "🧾" : "📌"} [${esc(ho(x.b))}] ${esc(x.title)}</b><span>${esc(x.sub)}</span><em style="color:var(--amber)">${esc(x.why)}${x.due ? `, 기한 ${sd(x.due)}` : ""}${x.at ? `, 넘어온 날 ${sd(x.at.slice(0, 10))}` : ""}</em></div>
+    <div class="tbtn"><button class="act gray" data-lact="back" data-li="${i}">지점으로</button><button class="act" data-lact="done" data-li="${i}">처리 완료</button></div></div>`).join("");
+  $("#app").innerHTML = `<div class="shell"><main class="mainv" style="margin:0 auto;max-width:860px">
+    <div class="phead"><h1>👔 팀장 확인</h1><span>${LEADS.length}건</span></div>
+    ${TEST ? '<div class="hero" style="background:#7a2e0e"><p style="color:#ffd7a8;font-weight:800">🧪 시험 모드</p></div>' : ""}
+    <div class="card todo"><h2>넘어온 건</h2>${rows || '<div class="desc" style="padding:4px 0 10px">지금 넘어온 건이 없어요</div>'}</div>
+    <div class="card"><h2>이름</h2><input class="input" id="ldName" value="${esc(nm)}" placeholder="처리한 사람 이름 (한 번만)" maxlength="20"></div>
+    <div class="foot">버전 ${VER}, 손님 이름과 번호는 일부만 보여요. 전체는 그 지점 디스코드 고객요청 방에 있어요.</div></main></div>`;
+}
+function sheetLead(act, i) {
+  const x = LEADS[i]; if (!x) return;
+  const nm = ($("#ldName")?.value || "").trim(); if (!nm) { toast("아래 이름 칸에 이름을 먼저 넣어 주세요"); $("#ldName")?.focus(); return; }
+  ls.set("vf-leader-name", nm); LACT = { act, x, by: nm };
+  openSheet(`<h2>${act === "done" ? "처리 완료" : "지점으로 다시 넘기기"}</h2><div class="desc">[${esc(ho(x.b))}] ${esc(x.title)}</div>
+    <input class="input" id="ldRes" placeholder="${act === "done" ? "어떻게 처리했는지 한 줄 (선택)" : "지점에 전할 말 (선택), 기한은 3일로 새로 잡혀요"}" maxlength="200">
+    <div class="btns"><button class="btn" data-x>닫기</button><button class="btn primary" id="okLd">${act === "done" ? "처리 완료" : "지점으로"}</button></div>`);
+}
+async function doLead() {
+  $("#okLd").disabled = true;
+  try { await send({ type: "leadact", kind: LACT.x.kind, id: LACT.x.id, ib: LACT.x.b, act: LACT.act, by: LACT.by, result: ($("#ldRes").value || "").trim() }); LEADS = LEADS.filter((y) => y !== LACT.x); closeSheet(); render(); toast(LACT.act === "done" ? "처리 완료했어요" : "지점으로 넘겼어요"); }
+  catch (e) { $("#okLd").disabled = false; fail(e); }
+}
 function renderPick() {
   $("#app").innerHTML = `<div class="pick"><h1>어느 지점인가요?</h1><p>이 기기에 한 번만 고르면 돼요.</p>
     <div class="grid">${BR.map((b, i) => `<button data-b="${b}"><span>${i + 1}호</span>${b}</button>`).join("")}</div></div>`;
@@ -422,12 +455,12 @@ async function doPay(id) {
 }
 // ── 고객요청, 인수인계 (10/6) ── 노션에서 늘 빠지던 날짜, 담당자, 결제여부를 자동/버튼으로 받고, 입고되면 봇이 알려줌
 // 현황은 봇이 올리는 board.json (공개 주소라 고객 이름 첫 글자, 번호 끝 4자리만). 이 기기에서 적은 건은 전체 번호를 이 기기에만 보관
-let BOARD = null, OUTS = new Set(), STEPS = {}, MEMO_DONE = new Set(), cr = null;
+let BOARD = null, LEADS = [], OUTS = new Set(), STEPS = {}, MEMO_DONE = new Set(), cr = null;
 async function loadBoard() {
   try {
     const j = await ghJson("board.json");
-    const next = j.br?.[B] || null;
-    if (JSON.stringify(next) !== JSON.stringify(BOARD)) { BOARD = next; if (!$("#dim").classList.contains("on")) render(); }
+    const next = j.br?.[B] || null, nl = (j.lead || []).filter((x) => !!x.test === TEST);
+    if (JSON.stringify(next) !== JSON.stringify(BOARD) || JSON.stringify(nl) !== JSON.stringify(LEADS)) { BOARD = next; LEADS = nl; if (!$("#dim").classList.contains("on")) render(); }
   } catch {}
 }
 async function loadOuts() { try { const j = await (await fetch(`${SITE}menu/stock.json?${Date.now()}`, { cache: "no-store" })).json(); OUTS = new Set(j[B]?.out || []); } catch {} }
@@ -437,25 +470,50 @@ const daysOld = (d) => Math.floor((Date.parse(todayKey()) - Date.parse(d)) / 864
 const CST = { wait: "⏳ 입고 대기", ready: "🧾 챙겨둠, 연락함", done: "✅ 전달 완료", cancel: "취소" };
 const crItems = (r) => [...(r.items || []).map(([n, c]) => `${n} ${c}`), r.free].filter(Boolean).join(", ");
 function creqList() {
-  const srv = BOARD?.creqs || [], loc = myCreqs();
+  const srv = (BOARD?.creqs || []).filter((r) => !!r.test === TEST), loc = myCreqs().filter((l) => !!l.test === TEST);
   const list = srv.map((r) => ({ ...r, full: loc.find((l) => l.id === r.id) }));
   for (const l of loc) if (!srv.some((r) => r.id === l.id) && Date.now() - l.ts < 86400e3) list.push({ ...l, by: l.by, pending: true, full: l });
   for (const r of list) if (STEPS[r.id]) r.step = STEPS[r.id];
   return list.filter((r) => r.step === "wait" || r.step === "ready");
 }
-const memoList = () => (BOARD?.memos || []).filter((m) => !MEMO_DONE.has(m.id));
+const memoList = () => (BOARD?.memos || []).filter((m) => !MEMO_DONE.has(m.id) && !!m.test === TEST);
+// 10/20 기한: 날짜 보기, 남은 날
+const md = (d) => `${+d.slice(5, 7)}월 ${+d.slice(8, 10)}일`, sd = (d) => d.slice(5).replace("-", "/");
+const dLeft = (d) => Math.round((Date.parse(d) - Date.parse(todayKey())) / 864e5);
+const dueTxt = (d) => { const n = dLeft(d); return n > 0 ? `${sd(d)}까지 (${n}일 남음)` : n === 0 ? `오늘(${sd(d)})이 기한` : `${sd(d)} 기한, ${-n}일 지남`; };
+const MDONE = new Set();
+// 오늘 할 일: 입고된 고객요청 연락, 기한 된 고객요청, 기한 된 인수인계 (팀장에게 넘어간 건 빼고)
+function todoItems() {
+  const L = [];
+  for (const r of creqList()) {
+    if (r.lead || r.pending) continue;
+    const nm = r.full ? r.full.name || "손님" : r.nm || "손님";
+    if (r.step === "wait" && r.arrived) L.push({ ic: "📞", t: `${esc(nm)}님, ${esc(crItems(r))} 입고됨, 연락하기`, s: `접수 ${sd(r.d)} ${esc(r.by)}`, b: `<button class="act" data-crs="ready" data-id="${r.id}">연락함</button>` });
+    else if (r.step === "wait" && r.due && dLeft(r.due) <= 0) L.push({ ic: "⏰", w: 1, t: `${esc(nm)}님, ${esc(crItems(r))}, ${dLeft(r.due) === 0 ? "오늘이 약속일" : `약속일 ${-dLeft(r.due)}일 지남`}`, s: "입고 확인하고 손님께 연락", b: `<button class="act gray" data-crarr="${r.id}">입고됨</button><button class="act" data-crext="${r.id}">연락함, 연장</button>` });
+  }
+  for (const m of memoList()) {
+    if (m.lead || m.to === "keep" || !m.due || dLeft(m.due) > 0 || MDONE.has(m.id)) continue;
+    L.push({ ic: "📌", w: dLeft(m.due) < 0, t: esc(m.text), s: `${sd(m.d)} ${esc(m.by)} 남김, ${dueTxt(m.due)}`, b: `<button class="act" data-mdone="${m.id}">처리 완료</button>` });
+  }
+  return L;
+}
+function todoCardHtml() {
+  const L = todoItems(); if (!L.length) return "";
+  return `<div class="card todo"><h2>✅ 오늘 할 일 ${L.length}개</h2>${L.map((x) => `<div class="crow"><div><b>${x.ic} ${x.t}</b><span ${x.w ? 'style="color:var(--red)"' : ""}>${x.s}</span></div><div class="tbtn">${x.b}</div></div>`).join("")}</div>`;
+}
+const talkCount = () => { try { return memoList().filter((m) => !m.ok && m.to !== "keep").length + creqList().filter((r) => r.step === "wait" && r.arrived && !r.lead).length; } catch { return 0; } };
 const custOf = (r) => r.full ? `${esc(r.full.name || "")} ${esc(r.full.phone)}` : `${esc(r.nm || "")} , ${esc(r.p4 || "")}`;
 function creqCardHtml() {
   const list = creqList();
   const rows = list.map((r) => {
-    const late = daysOld(r.d) >= 3, arr = r.step === "wait" && r.arrived;
-    const next = r.step === "wait" ? ["ready", "챙겨둠"] : ["done", "전달 완료"];
+    const arr = r.step === "wait" && r.arrived, late = r.due ? dLeft(r.due) < 0 : daysOld(r.d) >= 3;
+    const btn = r.lead ? "" : r.step === "ready" ? `<button class="act" data-crs="done" data-id="${r.id}">전달 완료</button>` : arr ? `<button class="act" data-crs="ready" data-id="${r.id}">연락함</button>` : `<button class="act gray" data-crarr="${r.id}">입고됨</button>`;
     return `<div class="crow ${late ? "late" : ""} ${arr ? "arr" : ""}"><div>
       <b>${esc(crItems(r))}</b>
-      <span>${esc(r.how)}, <i class="pill ${r.pay === "결제완료" ? "ok" : "no"}">${r.pay === "결제완료" ? "결제완료" : "미결제"}</i>, ${esc(r.by)}, ${r.d.slice(5).replace("-", "/")}${late ? `, ⚠ ${daysOld(r.d)}일째` : ""}</span>
+      <span>${esc(r.how)}, <i class="pill ${r.pay === "결제완료" ? "ok" : "no"}">${r.pay === "결제완료" ? "결제완료" : "미결제"}</i>, 접수 ${sd(r.d)} ${esc(r.by)}</span>
       <span>👤 ${custOf(r)}</span>
-      <em>${arr ? "📦 입고됨! 챙기고 고객에게 연락하세요" : r.pending ? "보내는 중… (1~2분 뒤 반영)" : CST[r.step]}</em></div>
-      ${r.pending ? "" : `<button class="act ${r.step === "wait" && !arr ? "gray" : ""}" data-crs="${next[0]}" data-id="${r.id}">${next[1]}</button>`}</div>`;
+      <em>${r.lead ? "👔 팀장 처리 중" : arr ? "📦 입고됨! 챙기고 손님께 연락하세요" : r.pending ? "보내는 중… (1~2분 뒤 반영)" : r.step === "wait" && r.due ? `⏳ 입고 대기, 연락 기한 ${dueTxt(r.due)}${r.ext ? `, 연장 ${r.ext}번` : ""}` : CST[r.step]}</em></div>
+      ${r.pending ? "" : btn}</div>`;
   }).join("");
   return `<div class="card"><h2>🧾 고객요청${list.length ? `, 진행 중 ${list.length}건` : ""}</h2>${rows || '<div class="desc" style="padding:4px 0 10px">진행 중인 고객요청이 없어요</div>'}
     <div class="btns" style="margin:6px 0 14px"><button class="btn primary" data-go="creq">＋ 고객요청 적기</button></div></div>`;
@@ -634,14 +692,14 @@ const sijae = () => cashN("c50") * 50000 + Math.max(0, cashN("c10") - 10) * 1000
 function memoCardHtml() {
   const list = memoList();
   const toName = { next: "다음 근무자", keep: "📢 계속 공지", leader: "👔 팀장님께" };
-  const rows = list.map((m) => `<div class="crow"><div><b style="white-space:pre-wrap;font-weight:600">${esc(m.text)}</b><span>${esc(m.by)}, ${m.d.slice(5).replace("-", "/")} ${m.t}, ${toName[m.to] || ""}</span></div>
-      <button class="act ${m.to === "keep" ? "gray" : ""}" data-mok="${m.id}" data-keep="${m.to === "keep" ? 1 : ""}">${m.to === "keep" ? "내리기" : "확인"}</button></div>`).join("");
+  const rows = list.map((m) => `<div class="crow"><div><b style="white-space:pre-wrap;font-weight:600">${esc(m.text)}</b><span>${sd(m.d)} ${m.t} ${esc(m.by)} 남김, ${toName[m.to] || ""}</span>${m.due || m.lead || m.ok ? `<em ${m.due && dLeft(m.due) < 0 ? 'style="color:var(--red)"' : ""}>${m.lead ? "👔 팀장 처리 중" : m.due ? `처리 기한 ${dueTxt(m.due)}` : ""}${m.ok && m.okBy ? `, 확인 ${esc(m.okBy)}` : ""}</em>` : ""}</div>
+      ${m.lead ? "" : m.to === "keep" ? `<button class="act gray" data-mok="${m.id}" data-keep="1">내리기</button>` : !m.ok ? `<button class="act" data-mok="${m.id}">확인</button>` : `<button class="act" data-mdone="${m.id}">처리 완료</button>`}</div>`).join("");
   return `<div class="card"><h2>📌 인수인계${list.length ? `, ${list.length}건` : ""}</h2>${rows || '<div class="desc" style="padding:4px 0 10px">확인할 인수인계가 없어요</div>'}
     <div class="btns" style="margin:6px 0 14px"><button class="btn" data-go="memo">＋ 인수인계 남기기</button></div></div>`;
 }
 function sheetCreq() {
   if (!working().length) return needIn(() => sheetCreq());
-  cr = { items: [], how: "방문수령", pay: null, step: "ready", manual: false };
+  cr = { items: [], how: "방문수령", pay: null, step: "ready", manual: false, days: 7 };
   loadOuts();
   openSheet(`<h2>🧾 고객요청 적기</h2><div class="desc">날짜, 담당자(${esc(working().join(", "))})는 자동으로 들어가요.</div>
     <input class="input" id="crFind" placeholder="상품 찾기 (예: 빌런 자두)"><div id="crRes" class="qres"></div><div id="crItems" class="qitems"></div>
@@ -649,6 +707,7 @@ function sheetCreq() {
     <div class="desc" style="margin-top:14px">받는 방법</div><div class="chips">${["방문수령", "택배", "퀵"].map((x) => `<button class="chip ${x === cr.how ? "on" : ""}" data-crh="${x}">${x}</button>`).join("")}</div>
     <div class="desc" style="margin-top:14px">결제 <b style="color:var(--red)">*</b></div><div class="chips"><button class="chip" data-crp="결제완료">💳 결제완료</button><button class="chip" data-crp="미결제">미결제</button></div>
     <div class="desc" style="margin-top:14px">지금 상태 <span id="crNote"></span></div><div class="chips" id="crSt">${crStChips()}</div>
+    <div id="crDueW" style="display:none"><div class="desc" style="margin-top:14px">손님께 연락할 기한</div><div class="chips">${[3, 7, 14].map((n) => `<button class="chip ${n === cr.days ? "on" : ""}" data-crdays="${n}">${n}일 (${md(addDay(n))})</button>`).join("")}</div></div>
     <input class="input" id="crName" placeholder="고객 이름" maxlength="20"><input class="input" id="crPhone" placeholder="고객 연락처 (필수)" inputmode="tel" maxlength="20">
     <input class="input" id="crMemo" placeholder="메모 (선택, 예: 맥스프로팟 4개랑 같이 포장)" maxlength="200">
     <div class="btns"><button class="btn" data-x>취소</button><button class="btn primary" id="okCr">저장</button></div>`);
@@ -658,53 +717,90 @@ function crDraw() {
   $("#crItems").innerHTML = cr.items.map(([n, c], i) => `<div class="qit"><b>${esc(n)}${OUTS.has(n) ? '<small style="color:var(--red);background:var(--red-soft)">품절</small>' : ""}</b><span class="qst"><button data-crm="${i}">−</button><b>${c}</b><button data-crpl="${i}">+</button></span></div>`).join("");
   const anyOut = cr.items.some(([n]) => OUTS.has(n));
   if (!cr.manual) cr.step = anyOut ? "wait" : "ready";
-  $("#crSt").innerHTML = crStChips();
+  $("#crSt").innerHTML = crStChips(); crDueSync();
   $("#crNote").textContent = anyOut ? ",  품절 상품이 있어요 → 입고되면 알려드려요" : "";
 }
+const addDay = (n) => new Date(Date.parse(todayKey()) + n * 864e5).toISOString().slice(0, 10);
+const crDueSync = () => { const w = $("#crDueW"); if (w) w.style.display = cr.step === "wait" ? "" : "none"; };
 async function doCreq() {
   const v = (k) => ($(k)?.value || "").trim();
   if (!cr.items.length && !v("#crFree")) return toast("상품을 찾아 담거나 직접 적어 주세요");
   if (!cr.pay) return toast("결제했는지 골라 주세요");
   if (v("#crPhone").replace(/\D/g, "").length < 8) return toast("고객 연락처를 넣어 주세요");
   const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 5), by = working().join(", ");
-  const body = { type: "creq", id, items: cr.items, free: v("#crFree"), how: cr.how, pay: cr.pay, step: cr.step, name: v("#crName"), phone: v("#crPhone"), memo: v("#crMemo"), by };
+  const body = { type: "creq", id, items: cr.items, free: v("#crFree"), how: cr.how, pay: cr.pay, step: cr.step, days: cr.days, name: v("#crName"), phone: v("#crPhone"), memo: v("#crMemo"), by };
   $("#okCr").disabled = true;
   try {
     await send(body);
-    ls.set(`vf-app-${B}-creqs`, [...myCreqs(), { ...body, d: todayKey(), t: now(), ts: Date.now() }]);
-    closeSheet(); render(); toast(cr.step === "wait" ? "저장했어요, 입고되면 알려드려요" : "저장했어요");
+    ls.set(`vf-app-${B}-creqs`, [...ls.get(`vf-app-${B}-creqs`, []), { ...body, test: TEST, d: todayKey(), t: now(), ts: Date.now() }]);
+    render();
+    if (cr.step === "wait") openSheet(`<h2>손님께 이렇게 말해 주세요</h2><div class="say">${md(addDay(cr.days))} 이전에 입고되면 연락드릴게요.</div><div class="desc">${md(addDay(cr.days))}이 되면 오늘 할 일에 떠요. 그 전에 입고되면 바로 떠요.</div><div class="btns"><button class="btn primary" data-x>확인</button></div>`);
+    else { closeSheet(); toast("저장했어요"); }
   } catch (e) { $("#okCr").disabled = false; fail(e); }
 }
 async function doCreqStep(id, k) {
   const by = working().join(", ");
   if (!by) return needIn(() => doCreqStep(id, k));
-  try { await send({ type: "creqstep", id, k, by }); STEPS[id] = k; render(); toast(k === "done" ? "전달 완료로 바꿨어요" : "챙겨둠, 연락함으로 바꿨어요"); }
+  try { await send({ type: "creqstep", id, k, by }); STEPS[id] = k; closeSheet(); render(); toast(k === "done" ? "전달 완료로 바꿨어요" : k === "cancel" ? "취소했어요" : "연락함으로 바꿨어요"); }
   catch (e) { fail(e); }
+}
+async function doCreqArr(id) {
+  const by = working().join(", "); if (!by) return needIn(() => doCreqArr(id));
+  try { await send({ type: "creqarr", id, by }); const r = (BOARD?.creqs || []).find((x) => x.id === id); if (r) r.arrived = now(); render(); toast("입고됨으로 바꿨어요, 손님께 연락해 주세요"); } catch (e) { fail(e); }
+}
+let EXT = null;
+function sheetExt(id) {
+  const r = creqList().find((x) => x.id === id); if (!r) return;
+  EXT = { id, days: 7 };
+  openSheet(`<h2>손님께 연락하고 기한 다시 정하기</h2><div class="desc">${esc(crItems(r))}, 접수 ${sd(r.d)}${r.ext ? `, 지금까지 연장 ${r.ext}번` : ""}</div>
+    ${r.ext >= 1 ? '<div class="desc" style="color:var(--amber);font-weight:700">이번에 연장하면 팀장님께 넘어가요</div>' : ""}
+    <div class="desc" style="margin-top:14px">새 연락 기한</div><div class="chips">${[3, 7, 14].map((n) => `<button class="chip ${n === 7 ? "on" : ""}" data-extd="${n}">${n}일 (${md(addDay(n))})</button>`).join("")}</div>
+    <div class="say" id="extSay">${md(addDay(7))} 이전에 입고되면 다시 연락드릴게요.</div>
+    <div class="btns"><button class="btn" data-crs="cancel" data-id="${id}">손님이 취소</button><button class="btn primary" id="okExt">연장</button></div>`);
+}
+async function doExt() {
+  const by = working().join(", "); if (!by) return needIn(() => doExt());
+  $("#okExt").disabled = true;
+  try { await send({ type: "creqext", id: EXT.id, days: EXT.days, by }); const r = (BOARD?.creqs || []).find((x) => x.id === EXT.id); if (r) { r.due = addDay(EXT.days); r.ext = (r.ext || 0) + 1; if (r.ext >= 2) r.lead = true; } closeSheet(); render(); toast(r && r.lead ? "연장했어요, 팀장님께 넘어갔어요" : "연장했어요"); }
+  catch (e) { $("#okExt").disabled = false; fail(e); }
+}
+let MD = null;
+function sheetMemoDone(id) {
+  const m = memoList().find((x) => x.id === id); if (!m) return; MD = id;
+  openSheet(`<h2>처리 완료</h2><div class="desc" style="white-space:pre-wrap">${esc(m.text)}</div><input class="input" id="mdRes" placeholder="어떻게 했는지 한 줄 (선택)" maxlength="200"><div class="btns"><button class="btn" data-x>닫기</button><button class="btn primary" id="okMd">처리 완료</button></div>`);
+}
+async function doMemoDone() {
+  const by = working().join(", "); if (!by) return needIn(() => doMemoDone());
+  $("#okMd").disabled = true;
+  try { await send({ type: "memodone", id: MD, by, result: ($("#mdRes").value || "").trim() }); MDONE.add(MD); MEMO_DONE.add(MD); closeSheet(); render(); toast("처리 완료했어요"); }
+  catch (e) { $("#okMd").disabled = false; fail(e); }
 }
 function sheetMemo() {
   if (!working().length) return needIn(() => sheetMemo());
   openSheet(`<h2>📌 인수인계 남기기</h2><div class="desc">🎤 키보드 마이크로 말해서 적어도 돼요. 비밀번호, 전화번호는 앱에서 가려져 보여요.</div>
     <textarea class="input" id="mmText" rows="4" placeholder="예) 율하에서 바닐라 3병 퀵으로 옴, 받으면 확인"></textarea>
+    <div class="desc" style="margin-top:14px">처리 기한</div><div class="chips"><button class="chip" data-mdue="0">오늘</button><button class="chip" data-mdue="3">3일 (${md(addDay(3))})</button><button class="chip" data-mdue="7">7일 (${md(addDay(7))})</button><button class="chip on" data-mdue="">참고만</button></div>
     <div class="desc" style="margin-top:14px">누구에게</div><div class="chips"><button class="chip on" data-mto="next">다음 근무자</button><button class="chip" data-mto="keep">📢 계속 공지 (내릴 때까지)</button><button class="chip" data-mto="leader">👔 팀장님</button></div>
     <div class="btns"><button class="btn" data-x>취소</button><button class="btn primary" id="okMm">남기기</button></div>`);
 }
-async function sendMemo(text, to, by) { await send({ type: "memo", id: Date.now().toString(36), text, to, by }); }
+async function sendMemo(text, to, by, due = "") { await send({ type: "memo", id: Date.now().toString(36), text, to, by, due }); }
 async function doMemo() {
   const text = ($("#mmText").value || "").trim(); if (!text) return toast("내용을 적어 주세요");
   const to = document.querySelector("[data-mto].on")?.dataset.mto || "next";
   $("#okMm").disabled = true;
-  try { await sendMemo(text, to, working().join(", ")); closeSheet(); toast("남겼어요, 다음 근무자가 출근하면 보여요"); }
+  const due = document.querySelector("[data-mdue].on")?.dataset.mdue || "";
+  try { await sendMemo(text, to, working().join(", "), due); closeSheet(); toast(to === "leader" ? "남겼어요, 팀장님께 넘어갔어요" : due ? `남겼어요, ${md(addDay(+due))}에 오늘 할 일에 떠요` : "남겼어요, 다음 근무자가 출근하면 보여요"); }
   catch (e) { $("#okMm").disabled = false; fail(e); }
 }
 async function doMemoOk(id, keep, by) {
   by = by || working().join(", ");
   if (!by) return needIn(() => doMemoOk(id, keep));
-  try { await send({ type: keep ? "memodown" : "memook", id, by }); MEMO_DONE.add(id); render(); }
+  try { await send({ type: keep ? "memodown" : "memook", id, by }); const m = (BOARD?.memos || []).find((x) => x.id === id); if (!keep && m && m.due) { m.ok = true; m.okBy = by; } else MEMO_DONE.add(id); render(); }
   catch (e) { fail(e); }
 }
 // 출근하면 넘겨받은 것부터 보여주고 [확인했어요]
 function sheetHandoff(name) {
-  const ms = memoList().filter((m) => m.to !== "keep"), keep = memoList().filter((m) => m.to === "keep"), cs = creqList();
+  const ms = memoList().filter((m) => m.to !== "keep" && !m.ok && !m.lead), keep = memoList().filter((m) => m.to === "keep"), cs = creqList().filter((r) => !r.lead);
   if (!ms.length && !cs.length && !keep.length) return false;
   openSheet(`<h2>👋 ${esc(name)}님, 넘겨받은 것</h2>
     ${ms.length ? `<div class="desc" style="margin-top:12px"><b>📌 인수인계 ${ms.length}건</b></div>${ms.map((m) => `<div class="crow"><div><b style="white-space:pre-wrap;font-weight:600">${esc(m.text)}</b><span>${esc(m.by)}, ${m.d.slice(5).replace("-", "/")} ${m.t}</span></div></div>`).join("")}` : ""}
@@ -715,7 +811,7 @@ function sheetHandoff(name) {
 }
 async function doHandoff(name) {
   $("#okHo").disabled = true;
-  for (const m of memoList().filter((m) => m.to !== "keep")) { try { await send({ type: "memook", id: m.id, by: name }); MEMO_DONE.add(m.id); } catch (e) { $("#okHo").disabled = false; return fail(e); } }
+  for (const m of memoList().filter((m) => m.to !== "keep" && !m.ok && !m.lead)) { try { await send({ type: "memook", id: m.id, by: name }); MEMO_DONE.add(m.id); } catch (e) { $("#okHo").disabled = false; return fail(e); } }
   closeSheet(); render(); toast("확인했어요, 오늘도 화이팅!"); runAfterIn();
 }
 
@@ -947,9 +1043,19 @@ document.addEventListener("click", (e) => {
   if (t.dataset.crpl) { cr.items[+t.dataset.crpl][1]++; return crDraw(); }
   if (t.dataset.crh) { cr.how = t.dataset.crh; document.querySelectorAll("[data-crh]").forEach((x) => x.classList.toggle("on", x === t)); return; }
   if (t.dataset.crp) { cr.pay = t.dataset.crp; document.querySelectorAll("[data-crp]").forEach((x) => x.classList.toggle("on", x === t)); return; }
-  if (t.dataset.crst) { cr.step = t.dataset.crst; cr.manual = true; document.querySelectorAll("[data-crst]").forEach((x) => x.classList.toggle("on", x === t)); return; }
+  if (t.dataset.crst) { cr.step = t.dataset.crst; cr.manual = true; document.querySelectorAll("[data-crst]").forEach((x) => x.classList.toggle("on", x === t)); crDueSync(); return; }
   if (t.dataset.mto) { document.querySelectorAll("[data-mto]").forEach((x) => x.classList.toggle("on", x === t)); return; }
   if (t.id === "okCr") return doCreq();
+  if (t.dataset.crdays) { cr.days = +t.dataset.crdays; document.querySelectorAll("[data-crdays]").forEach((x) => x.classList.toggle("on", x === t)); return; }
+  if (t.dataset.crarr) return doCreqArr(t.dataset.crarr);
+  if (t.dataset.crext) return sheetExt(t.dataset.crext);
+  if (t.dataset.extd) { EXT.days = +t.dataset.extd; document.querySelectorAll("[data-extd]").forEach((x) => x.classList.toggle("on", x === t)); $("#extSay").textContent = `${md(addDay(EXT.days))} 이전에 입고되면 다시 연락드릴게요.`; return; }
+  if (t.id === "okExt") return doExt();
+  if (t.dataset.mdone) return sheetMemoDone(t.dataset.mdone);
+  if (t.id === "okMd") return doMemoDone();
+  if (t.dataset.mdue !== undefined) { document.querySelectorAll("[data-mdue]").forEach((x) => x.classList.toggle("on", x === t)); return; }
+  if (t.dataset.lact) return sheetLead(t.dataset.lact, +t.dataset.li);
+  if (t.id === "okLd") return doLead();
   if (t.id === "okMm") return doMemo();
   if (t.dataset.name) { $("#nm").value = t.dataset.name; return doIn(t.dataset.name); }
   if (t.id === "okIn") return doIn($("#nm").value);
