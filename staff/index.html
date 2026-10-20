@@ -164,7 +164,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.20-21";
+const VER = "10.20-22";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -424,7 +424,8 @@ function talkHtml() {
   const ord = (r) => (crHot(r) ? 0 : r.step === "wait" ? 1 : 2);
   const L = cl.filter(F).sort((a, b) => ord(a) - ord(b) || (a.due || "9").localeCompare(b.due || "9") || b.d.localeCompare(a.d));
   const chips = [["all", "전체"], ["todo", "연락할 것"], ["wait", "입고 대기"], ["ready", "연락함"]].map(([k, n]) => `<button class="chip ${CRF === k ? "on" : ""}" data-crf="${k}">${n} ${cnt[k]}</button>`).join("");
-  return `${seg}<div class="card"><div class="lhead"><div class="chips" style="margin:10px 0">${chips}</div><button class="act" data-go="creq">＋ 적기</button></div>${L.map(crRow).join("") || '<div class="desc" style="padding:4px 0 14px">해당하는 고객요청이 없어요</div>'}</div>`;
+  const lockBar = !bKey() && cl.some((r) => r.enc) ? `<div class="card" style="display:flex;align-items:center;gap:10px;padding:14px 18px"><div style="flex:1;font-size:14px">🔒 처음 한 번 매장 비밀번호를 넣으면 손님 이름과 번호가 다 보여요</div><button class="act" data-go="unlock">넣기</button></div>` : "";
+  return `${seg}${lockBar}<div class="card"><div class="lhead"><div class="chips" style="margin:10px 0">${chips}</div><button class="act" data-go="creq">＋ 적기</button></div>${L.map(crRow).join("") || '<div class="desc" style="padding:4px 0 14px">해당하는 고객요청이 없어요</div>'}</div>`;
 }
 // 10/20 사장님 "메모나 내용이 보기 불편": 맨 위 상태 색 표시, 상품 크게, 이름표 | 내용 줄, 메모는 진한 글씨로 따로
 const fmtPh = (p) => String(p || "").replace(/\D/g, "").replace(/^(\d{3})(\d{3,4})(\d{4})$/, "$1-$2-$3");
@@ -439,7 +440,7 @@ function sheetCreqDetail(id) {
     <div style="font-size:20px;font-weight:800;line-height:1.4;margin:10px 0 12px;white-space:pre-wrap">${esc(r.title || crItems(r))}</div>
     ${r.title && r.title !== crItems(r) ? row("내용", esc(crItems(r))) : ""}
     ${row("손님", esc(custName(r)) || "-")}
-    ${row("연락처", ph ? `<a href="tel:${esc(ph.replace(/\D/g, ""))}" style="color:var(--blue);font-weight:800">${esc(fmtPh(ph))}</a> <small style="color:var(--sub)">누르면 전화</small>` : r.p4 ? `끝번호 ${esc(r.p4)}${bKey() ? "" : " (열쇠 없는 기기)"}` : "")}
+    ${row("연락처", ph ? `<a href="tel:${esc(ph.replace(/\D/g, ""))}" style="color:var(--blue);font-weight:800">${esc(fmtPh(ph))}</a> <small style="color:var(--sub)">누르면 전화</small>` : r.p4 ? `끝번호 ${esc(r.p4)}${bKey() ? "" : ' <button class="act" data-go="unlock" style="font-size:12px;padding:5px 10px">비밀번호 넣고 보기</button>'}` : "")}
     ${row("결제", r.pay === "결제완료" ? '<span style="color:var(--green)">결제완료</span>' : '<span style="color:var(--red)">미결제</span>')}
     ${row("받는 방법", esc(r.how))}
     ${row("접수", `${sd(r.d)} ${esc(r.by)}${r.ext ? `, 연장 ${r.ext}번` : ""}`)}
@@ -610,6 +611,27 @@ async function doPay(id) {
 (() => { const m = location.hash.match(/k=([\w-]{20,})/); if (m && B) { try { localStorage.setItem("vf-app-key-" + B, m[1]); } catch {} history.replaceState(null, "", location.pathname + location.search); } })();
 const bKey = () => { try { return localStorage.getItem("vf-app-key-" + B) || ""; } catch { return ""; } };
 const DEC = {}; let KEYOBJ = null;
+const b64u8 = (t) => Uint8Array.from(atob(t), (c) => c.charCodeAt(0));
+function sheetUnlock() {
+  openSheet(`<h2>🔒 매장 비밀번호</h2><div class="desc">처음 한 번만 넣으면 이 기기에서 손님 이름과 전화번호가 계속 보여요.</div>
+    <input class="input" id="ulPw" type="password" placeholder="${esc(ho(B))} 비밀번호" style="font-size:18px">
+    <div class="desc" id="ulMsg" style="color:var(--red)"></div>
+    <div class="btns"><button class="btn" data-x>닫기</button><button class="btn primary" id="okUl">확인</button></div>`);
+  setTimeout(() => $("#ulPw")?.focus(), 50);
+}
+async function doUnlock() {
+  const pw = ($("#ulPw").value || "").trim(); if (!pw) return;
+  $("#okUl").disabled = true; $("#okUl").textContent = "확인 중…";
+  try {
+    const K = await (await fetch(`keys.json?${Date.now()}`, { cache: "no-store" })).json(), e = K[B];
+    const base = await crypto.subtle.importKey("raw", new TextEncoder().encode(pw), "PBKDF2", false, ["deriveKey"]);
+    const kek = await crypto.subtle.deriveKey({ name: "PBKDF2", hash: "SHA-256", salt: b64u8(e.salt), iterations: K.iter }, base, { name: "AES-GCM", length: 256 }, false, ["decrypt"]);
+    const key = new TextDecoder().decode(await crypto.subtle.decrypt({ name: "AES-GCM", iv: b64u8(e.iv) }, kek, b64u8(e.ct)));
+    localStorage.setItem("vf-app-key-" + B, key); KEYOBJ = null;
+    for (const k of Object.keys(DEC)) if (DEC[k].bad) delete DEC[k];
+    closeSheet(); toast("확인됐어요, 이제 손님 정보가 보여요"); await decAll(); render();
+  } catch { $("#okUl").disabled = false; $("#okUl").textContent = "확인"; $("#ulMsg").textContent = "비밀번호가 맞지 않아요"; }
+}
 async function decAll() {
   const k = bKey(); if (!k || !BOARD?.creqs) return;
   try {
@@ -1250,6 +1272,8 @@ document.addEventListener("click", (e) => {
   if (t.dataset.cepay) { CE.pay = t.dataset.cepay; document.querySelectorAll("[data-cepay]").forEach((x) => x.classList.toggle("on", x === t)); return; }
   if (t.dataset.cehow) { CE.how = t.dataset.cehow; document.querySelectorAll("[data-cehow]").forEach((x) => x.classList.toggle("on", x === t)); return; }
   if (t.id === "okCe") return doCreqEdit();
+  if (go === "unlock") return sheetUnlock();
+  if (t.id === "okUl") return doUnlock();
   if (t.dataset.mok && $("#dim").classList.contains("on")) closeSheet();
   if (t.dataset.crext) return sheetExt(t.dataset.crext);
   if (t.dataset.extd) { if ($("#extDue")) $("#extDue").value = ""; EXT.days = +t.dataset.extd; document.querySelectorAll("[data-extd]").forEach((x) => x.classList.toggle("on", x === t)); $("#extSay").textContent = `${md(addDay(EXT.days))} 이전에 입고되면 다시 연락드릴게요.`; return; }
