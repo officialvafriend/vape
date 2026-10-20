@@ -164,7 +164,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.20-28";
+const VER = "10.20-29";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -676,7 +676,7 @@ const crItems = (r) => [...(r.items || []).map(([n, c]) => `${n} ${c}`), r.free]
 function creqList() {
   const srv = (BOARD?.creqs || []).filter((r) => !!r.test === TEST), loc = myCreqs().filter((l) => !!l.test === TEST);
   const list = srv.map((r) => ({ ...r, full: loc.find((l) => l.id === r.id) }));
-  for (const l of loc) if (!srv.some((r) => r.id === l.id) && Date.now() - l.ts < 86400e3) list.push({ ...l, by: l.by, pending: true, full: l });
+  for (const l of loc) if (!srv.some((r) => r.id === l.id) && Date.now() - l.ts < 5 * 60e3) list.push({ ...l, by: l.by, pending: true, full: l });
   for (const r of list) if (STEPS[r.id]) r.step = STEPS[r.id];
   return list.filter((r) => r.step === "wait" || r.step === "ready");
 }
