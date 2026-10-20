@@ -164,7 +164,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.20-25";
+const VER = "10.20-26";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -198,7 +198,10 @@ let B = qs.has("pick") ? null : BR.includes(qs.get("branch")) ? qs.get("branch")
 if (B) ls.set("vf-app-branch", B);
 const dayKey = () => `vf-app-${TEST ? "test-" : ""}${B}-${todayKey()}`;
 // 이 기기 기록 + 봇이 올린 오늘 현황(today.json)을 합쳐서 보여줌 — 다른 기기, 브라우저에서 한 것도 보이게 (10/5)
-let SRV = null;
+const CK = (k) => `vf-app-cache-${TEST ? "test-" : ""}${B}-${k}`;
+const cacheGet = (k) => { try { const x = JSON.parse(localStorage.getItem(CK(k)) || "null"); return x && x.d === todayKey() ? x.v : null; } catch { return null; } };
+const cacheSet = (k, v) => { try { localStorage.setItem(CK(k), JSON.stringify({ d: todayKey(), v })); } catch {} };
+let SRV = B ? cacheGet("today") : null;
 const st = () => {
   const s = ls.get(dayKey(), { ins: [], open: null, close: null });
   if (!SRV) return s;
@@ -221,7 +224,7 @@ async function loadToday() {
   try {
     const j = await ghJson("today.json");
     const src = j.d === todayKey() ? j.br?.[B] || null : null, next = TEST ? src?.test || null : src; // 10/20 시험 모드는 시험 기록만(실제 근무자가 섞여 퇴근 처리된 사고)
-    if (JSON.stringify(next) !== JSON.stringify(SRV)) { SRV = next; if (!$("#dim").classList.contains("on")) render(); }
+    if (JSON.stringify(next) !== JSON.stringify(SRV)) { SRV = next; cacheSet("today", next); if (!$("#dim").classList.contains("on")) render(); }
   } catch {}
 }
 const saveSt = (s) => ls.set(dayKey(), s);
@@ -654,12 +657,12 @@ async function decAll() {
     if (ch && !$("#dim").classList.contains("on")) render();
   } catch {}
 }
-let BOARD = null, LEADS = [], OUTS = new Set(), STEPS = {}, MEMO_DONE = new Set(), cr = null;
+let BOARD = B ? cacheGet("board") : null, LEADS = [], OUTS = new Set(), STEPS = {}, MEMO_DONE = new Set(), cr = null;
 async function loadBoard() {
   try {
     const j = await ghJson("board.json");
     const next = j.br?.[B] || null, nl = (j.lead || []).filter((x) => !!x.test === TEST);
-    if (JSON.stringify(next) !== JSON.stringify(BOARD) || JSON.stringify(nl) !== JSON.stringify(LEADS)) { BOARD = next; LEADS = nl; if (!$("#dim").classList.contains("on")) render(); decAll(); }
+    if (JSON.stringify(next) !== JSON.stringify(BOARD) || JSON.stringify(nl) !== JSON.stringify(LEADS)) { BOARD = next; LEADS = nl; cacheSet("board", next); if (!$("#dim").classList.contains("on")) render(); decAll(); }
   } catch {}
 }
 async function loadOuts() { try { const j = await (await fetch(`${SITE}menu/stock.json?${Date.now()}`, { cache: "no-store" })).json(); OUTS = new Set(j[B]?.out || []); } catch {} }
@@ -1343,7 +1346,7 @@ document.addEventListener("visibilitychange", () => { if (!document.hidden) rend
 render();
 loadQuickStatus(); setInterval(loadQuickStatus, 30e3);
 loadToday(); setInterval(loadToday, 30e3);
-loadBoard(); setInterval(loadBoard, 30e3); loadOuts();
+loadBoard(); setInterval(loadBoard, 30e3); loadOuts(); decAll();
 </script>
 </body>
 </html>
