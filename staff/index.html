@@ -164,7 +164,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.20-16";
+const VER = "10.20-17";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -840,7 +840,7 @@ function sheetCreq() {
     <div class="desc" style="margin-top:14px">받는 방법</div><div class="chips">${["방문수령", "택배", "퀵"].map((x) => `<button class="chip ${x === cr.how ? "on" : ""}" data-crh="${x}">${x}</button>`).join("")}</div>
     <div class="desc" style="margin-top:14px">결제 <b style="color:var(--red)">*</b></div><div class="chips"><button class="chip" data-crp="결제완료">💳 결제완료</button><button class="chip" data-crp="미결제">미결제</button></div>
     <div class="desc" style="margin-top:14px">지금 상태 <span id="crNote"></span></div><div class="chips" id="crSt">${crStChips()}</div>
-    <div id="crDueW" style="display:none"><div class="desc" style="margin-top:14px">손님께 연락할 기한</div><div class="chips">${[3, 7, 14].map((n) => `<button class="chip ${n === cr.days ? "on" : ""}" data-crdays="${n}">${n}일 (${md(addDay(n))})</button>`).join("")}</div></div>
+    <div id="crDueW" style="display:none"><div class="desc" style="margin-top:14px">손님께 연락할 기한</div><div class="chips" style="align-items:center"><button class="chip on" data-crdays="7">7일 (${md(addDay(7))})</button><input type="date" class="input" id="crDue" min="${addDay(1)}" style="width:auto;flex:1;margin:0"></div></div>
     <div class="desc" style="margin-top:14px">재고 주문요청</div><div class="chips"><button class="chip on" data-crord="0">필요 없음</button><button class="chip" data-crord="1">📦 주문요청 필요</button></div>
     <input class="input" id="crName" placeholder="고객 이름" maxlength="20"><input class="input" id="crPhone" placeholder="고객 연락처 (필수)" inputmode="tel" maxlength="20">
     <input class="input" id="crMemo" placeholder="메모 (선택, 예: 맥스프로팟 4개랑 같이 포장)" maxlength="200">
@@ -856,6 +856,11 @@ function crDraw() {
 }
 const addDay = (n) => new Date(Date.parse(todayKey()) + n * 864e5).toISOString().slice(0, 10);
 const crDueSync = () => { const w = $("#crDueW"); if (w) w.style.display = cr.step === "wait" ? "" : "none"; };
+document.addEventListener("change", (e) => {
+  const t = e.target, n = t.value ? dLeft(t.value) : 0;
+  if (t.id === "crDue" && cr) { if (n > 0) { cr.days = n; document.querySelectorAll("[data-crdays]").forEach((x) => x.classList.remove("on")); } else { cr.days = 7; t.value = ""; document.querySelectorAll("[data-crdays]").forEach((x) => x.classList.add("on")); } }
+  if (t.id === "extDue" && EXT) { if (n > 0) { EXT.days = n; document.querySelectorAll("[data-extd]").forEach((x) => x.classList.remove("on")); $("#extSay").textContent = `${md(t.value)} 이전에 입고되면 다시 연락드릴게요.`; } else { t.value = ""; } }
+});
 async function doCreq() {
   const v = (k) => ($(k)?.value || "").trim();
   if (!cr.items.length && !v("#crFree")) return toast("상품을 찾아 담거나 직접 적어 주세요");
@@ -895,7 +900,7 @@ function sheetExt(id) {
   EXT = { id, days: 7 };
   openSheet(`<h2>손님께 연락하고 기한 다시 정하기</h2><div class="desc">${esc(crItems(r))}, 접수 ${sd(r.d)}${r.ext ? `, 지금까지 연장 ${r.ext}번` : ""}</div>
     ${r.ext >= 1 ? '<div class="desc" style="color:var(--amber);font-weight:700">이번에 연장하면 팀장님께 넘어가요</div>' : ""}
-    <div class="desc" style="margin-top:14px">새 연락 기한</div><div class="chips">${[3, 7, 14].map((n) => `<button class="chip ${n === 7 ? "on" : ""}" data-extd="${n}">${n}일 (${md(addDay(n))})</button>`).join("")}</div>
+    <div class="desc" style="margin-top:14px">새 연락 기한</div><div class="chips" style="align-items:center"><button class="chip on" data-extd="7">7일 (${md(addDay(7))})</button><input type="date" class="input" id="extDue" min="${addDay(1)}" style="width:auto;flex:1;margin:0"></div>
     <div class="say" id="extSay">${md(addDay(7))} 이전에 입고되면 다시 연락드릴게요.</div>
     <div class="btns"><button class="btn" data-crs="cancel" data-id="${id}">손님이 취소</button><button class="btn primary" id="okExt">연장</button></div>`);
 }
@@ -1198,12 +1203,12 @@ document.addEventListener("click", (e) => {
   if (t.dataset.crord) { cr.order = t.dataset.crord === "1"; document.querySelectorAll("[data-crord]").forEach((x) => x.classList.toggle("on", x === t)); return; }
   if (t.dataset.crby) { if ($("#crByIn")) $("#crByIn").value = ""; cr.by = t.dataset.crby; document.querySelectorAll("[data-crby]").forEach((x) => x.classList.toggle("on", x === t)); return; }
   if (t.dataset.mby) { document.querySelectorAll("[data-mby]").forEach((x) => x.classList.toggle("on", x === t)); return; }
-  if (t.dataset.crdays) { cr.days = +t.dataset.crdays; document.querySelectorAll("[data-crdays]").forEach((x) => x.classList.toggle("on", x === t)); return; }
+  if (t.dataset.crdays) { if ($("#crDue")) $("#crDue").value = ""; cr.days = +t.dataset.crdays; document.querySelectorAll("[data-crdays]").forEach((x) => x.classList.toggle("on", x === t)); return; }
   if (t.dataset.crarr) return doCreqArr(t.dataset.crarr);
   if (t.dataset.crcx) return sheetCreqCancel(t.dataset.crcx);
   if (t.dataset.mok && $("#dim").classList.contains("on")) closeSheet();
   if (t.dataset.crext) return sheetExt(t.dataset.crext);
-  if (t.dataset.extd) { EXT.days = +t.dataset.extd; document.querySelectorAll("[data-extd]").forEach((x) => x.classList.toggle("on", x === t)); $("#extSay").textContent = `${md(addDay(EXT.days))} 이전에 입고되면 다시 연락드릴게요.`; return; }
+  if (t.dataset.extd) { if ($("#extDue")) $("#extDue").value = ""; EXT.days = +t.dataset.extd; document.querySelectorAll("[data-extd]").forEach((x) => x.classList.toggle("on", x === t)); $("#extSay").textContent = `${md(addDay(EXT.days))} 이전에 입고되면 다시 연락드릴게요.`; return; }
   if (t.id === "okExt") return doExt();
   if (t.dataset.mdone) return sheetMemoDone(t.dataset.mdone);
   if (t.id === "okMd") return doMemoDone();
