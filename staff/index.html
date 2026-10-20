@@ -173,7 +173,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.20-40";
+const VER = "10.20-41";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -439,9 +439,10 @@ function talkHtml() {
   if (!ILF) ILF = cnt.hot ? "hot" : "c";
   const F = { all: () => true, hot: (x) => x.hot, c: (x) => x.cat === "c", e: (x) => x.cat === "e", m: (x) => x.cat === "m" }[ILF];
   const L = all.filter(F).sort((a, b) => (b.hot - a.hot) || (a.due || "9").localeCompare(b.due || "9"));
-  const chips = [["hot", "오늘까지"], ["c", "손님 요청"], ["e", "각인 요청"], ["m", "매장 인수인계"], ["all", "전체"]].map(([k, n]) => `<button class="chip ${ILF === k ? "on" : ""}" data-ilf="${k}">${n} ${cnt[k]}</button>`).join("");
-  const row = (x) => `<div class="lrow ${x.hot ? "hot" : ""}" ${x.k === "c" ? `data-crd="${x.id}"` : `data-mmd="${x.id}"`}><div class="lt"><b class="l1" style="-webkit-line-clamp:1"><i class="tag ${x.cat}" style="font-style:normal">${{ c: "손님", e: "각인", m: "매장" }[x.cat]}</i>${esc(x.title)}</b><span class="l2 ${x.hot ? "w" : ""}">${esc(x.sub)}</span></div><div class="ilb">${ilBtns(x)}</div></div>`;
-  return `<div class="card"><div class="lhead"><div class="chips" style="margin:10px 0">${chips}</div><button class="act" data-go="ilnew">＋ 일정 적기</button></div>${L.map(row).join("") || '<div class="desc" style="padding:4px 0 14px">일정이 없어요</div>'}<div style="text-align:center;padding:6px 0 14px"><button class="act gray" data-go="donelist" style="font-size:13px">🗂 완료 기록 (잘못 누른 것 되돌리기)</button></div></div>`;
+  const chips = [["hot", "오늘까지"], ["c", "손님 요청"], ["e", "각인 요청"], ["m", "매장 인수인계"], ["all", "전체(완료 포함)"]].map(([k, n]) => `<button class="chip ${ILF === k ? "on" : ""}" data-ilf="${k}">${n} ${cnt[k]}</button>`).join("");
+  const qOf = (x) => esc(`${x.title} ${x.sub} ${x.k === "c" ? String(custPhone(x.raw) || x.raw.p4 || "").replace(/\D/g, "") : ""}`.toLowerCase());
+  const row = (x) => `<div class="lrow ${x.hot ? "hot" : ""}" data-q="${qOf(x)}" ${x.k === "c" ? `data-crd="${x.id}"` : `data-mmd="${x.id}"`}><div class="lt"><b class="l1" style="-webkit-line-clamp:1"><i class="tag ${x.cat}" style="font-style:normal">${{ c: "손님", e: "각인", m: "매장" }[x.cat]}</i>${esc(x.title)}</b><span class="l2 ${x.hot ? "w" : ""}">${esc(x.sub)}</span></div><div class="ilb">${ilBtns(x)}</div></div>`;
+  return `<div class="card"><div class="lhead"><div class="chips" style="margin:10px 0">${chips}</div><button class="act" data-go="ilnew">＋ 일정 적기</button></div>${ILF === "all" ? '<input class="input" id="ilQ" placeholder="🔍 손님 이름, 번호 뒷자리, 상품으로 찾기" style="margin:0 0 6px">' : ""}${L.map(row).join("") || '<div class="desc" style="padding:4px 0 14px">일정이 없어요</div>'}${ILF === "all" ? doneRowsHtml() : ""}</div>`;
 }
 function talkHtmlOld() {
   const cl = creqList(), ml = memoList(), seg = "";
@@ -491,6 +492,11 @@ const ilFind = (k, id) => ilItems().find((x) => x.k === k && x.id === id);
 async function doRestore(k, id) {
   const by = working().join(", "); if (!by) return needIn(() => doRestore(k, id));
   try { await send({ type: "restore", kind: k, id, by }); if (k === "c") delete STEPS[id]; else { MDONE.delete(id); MEMO_DONE.delete(id); } const u = document.getElementById("undoBar"); if (u) u.style.display = "none"; closeSheet(); toast("되돌렸어요, 1분 안에 목록에 다시 떠요"); setTimeout(loadBoard, 15000); render(); } catch (e) { fail(e); }
+}
+function doneRowsHtml() {
+  const L = (BOARD?.doneRecent || []).filter((x) => !!x.test === TEST);
+  if (!L.length) return "";
+  return `<div class="desc" style="margin:14px 0 2px;font-weight:700">최근 7일 완료, 취소 ${L.length}건 <small style="font-weight:600">(잘못 누른 건 되돌리기)</small></div>` + L.map((x) => `<div class="lrow" style="opacity:.55" data-q="${esc((x.title + " " + (x.why || "")).toLowerCase())}"><div class="lt"><b class="l1" style="-webkit-line-clamp:1"><i class="tag ${x.k === "m" ? "m" : "c"}" style="font-style:normal">${x.st}</i>${esc(x.title)}</b><span class="l2">${sd(x.at.slice(0, 10))} ${x.at.slice(11)} ${esc(x.by || "")}${x.why ? ", " + esc(x.why) : ""}</span></div><div class="ilb"><button data-undo="${x.k}" data-id="${x.id}">되돌리기</button></div></div>`).join("");
 }
 function sheetDoneList() {
   const L = (BOARD?.doneRecent || []).filter((x) => !!x.test === TEST);
@@ -1102,7 +1108,8 @@ function crDraw() {
 const addDay = (n) => new Date(Date.parse(todayKey()) + n * 864e5).toISOString().slice(0, 10);
 const crDueSync = () => {};
 document.addEventListener("keydown", (e) => { if (e.key === "Enter" && e.target?.id === "ulPw") doUnlock(); });
-document.addEventListener("input", (e) => { const t = e.target; if (t.dataset?.crq != null && cr?.items[+t.dataset.crq]) { const v = Math.min(999, +String(t.value).replace(/\D/g, "") || 0); if (v) cr.items[+t.dataset.crq][1] = v; } });
+document.addEventListener("input", (e) => {
+  if (e.target?.id === "ilQ") { const q = e.target.value.trim().toLowerCase().replace(/-/g, ""); document.querySelectorAll(".lrow[data-q]").forEach((r) => (r.style.display = !q || r.dataset.q.includes(q) ? "" : "none")); return; } const t = e.target; if (t.dataset?.crq != null && cr?.items[+t.dataset.crq]) { const v = Math.min(999, +String(t.value).replace(/\D/g, "") || 0); if (v) cr.items[+t.dataset.crq][1] = v; } });
 document.addEventListener("change", (e) => {
   const t = e.target, n = t.value ? dLeft(t.value) : 0;
   if (t.id === "ipDate") { document.querySelectorAll("[data-ipd]").forEach((x) => x.classList.toggle("on", !t.value)); if ($("#ipSay")) $("#ipSay").textContent = `늦어져서 죄송해요. ${md(t.value || addDay(IP.days))}까지 다시 연락드릴게요.`; return; }
