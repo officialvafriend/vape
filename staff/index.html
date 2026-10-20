@@ -164,7 +164,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.20-14";
+const VER = "10.20-15";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -834,6 +834,7 @@ function sheetCreq() {
   loadOuts();
   openSheet(`<h2>🧾 고객요청 적기</h2><div class="desc">날짜는 자동으로 들어가요.</div>
     <div class="desc" style="margin-top:6px">담당자 <b style="color:var(--red)">*</b></div><div class="chips">${working().map((n) => `<button class="chip ${cr.by === n ? "on" : ""}" data-crby="${esc(n)}">${esc(n)}</button>`).join("")}</div>
+    <input class="input" id="crByIn" placeholder="목록에 없으면 담당자 이름 직접 적기" maxlength="20" style="margin-top:8px">
     <input class="input" id="crFind" placeholder="상품 찾기 (예: 빌런 자두)"><div id="crRes" class="qres"></div><div id="crItems" class="qitems"></div>
     <input class="input" id="crFree" placeholder="목록에 없으면 직접 적기 (선택)" maxlength="60">
     <div class="desc" style="margin-top:14px">받는 방법</div><div class="chips">${["방문수령", "택배", "퀵"].map((x) => `<button class="chip ${x === cr.how ? "on" : ""}" data-crh="${x}">${x}</button>`).join("")}</div>
@@ -858,7 +859,8 @@ const crDueSync = () => { const w = $("#crDueW"); if (w) w.style.display = cr.st
 async function doCreq() {
   const v = (k) => ($(k)?.value || "").trim();
   if (!cr.items.length && !v("#crFree")) return toast("상품을 찾아 담거나 직접 적어 주세요");
-  if (!cr.by) return toast("담당자를 골라 주세요");
+  const byIn = v("#crByIn"); if (byIn) cr.by = byIn;
+  if (!cr.by) return toast("담당자를 고르거나 적어 주세요");
   if (!cr.pay) return toast("결제했는지 골라 주세요");
   if (v("#crPhone").replace(/\D/g, "").length < 8) return toast("고객 연락처를 넣어 주세요");
   const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 5), by = working().join(", ");
@@ -1194,7 +1196,7 @@ document.addEventListener("click", (e) => {
   if (t.id === "okMid") return doMid();
   if (t.id === "okCr") return doCreq();
   if (t.dataset.crord) { cr.order = t.dataset.crord === "1"; document.querySelectorAll("[data-crord]").forEach((x) => x.classList.toggle("on", x === t)); return; }
-  if (t.dataset.crby) { cr.by = t.dataset.crby; document.querySelectorAll("[data-crby]").forEach((x) => x.classList.toggle("on", x === t)); return; }
+  if (t.dataset.crby) { if ($("#crByIn")) $("#crByIn").value = ""; cr.by = t.dataset.crby; document.querySelectorAll("[data-crby]").forEach((x) => x.classList.toggle("on", x === t)); return; }
   if (t.dataset.mby) { document.querySelectorAll("[data-mby]").forEach((x) => x.classList.toggle("on", x === t)); return; }
   if (t.dataset.crdays) { cr.days = +t.dataset.crdays; document.querySelectorAll("[data-crdays]").forEach((x) => x.classList.toggle("on", x === t)); return; }
   if (t.dataset.crarr) return doCreqArr(t.dataset.crarr);
