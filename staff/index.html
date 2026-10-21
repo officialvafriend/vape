@@ -22,6 +22,8 @@
   .hmini{display:flex;align-items:center;gap:12px;width:100%;background:var(--dark);color:#fff;border-radius:16px;padding:12px 18px;margin-bottom:12px;text-align:left}
   .hmini span{font-size:13px;color:#9aa4b2}.hmini b{font-size:16px}.hmini em{font-style:normal;font-size:13px;background:#f04452;border-radius:999px;padding:3px 9px;font-weight:700}.hmini i{margin-left:auto;font-style:normal;font-size:13px;color:#9bd0ff}
   .a2card{padding-bottom:90px}
+  .pend{font-style:normal;color:var(--blue);font-weight:800}.pend i{font-style:normal;animation:pdot 1.2s infinite}.pend i:nth-child(2){animation-delay:.2s}.pend i:nth-child(3){animation-delay:.4s}
+  @keyframes pdot{0%,80%,100%{opacity:.15}40%{opacity:1}}
   .midok{text-align:center;padding:10px 0 4px}.midokc{width:96px;height:96px;margin:0 auto;border-radius:50%;background:var(--green);color:#fff;font-size:60px;font-weight:900;line-height:96px;animation:midpop .55s cubic-bezier(.2,1.6,.4,1) both}
   @keyframes midpop{0%{transform:scale(0) rotate(-30deg);opacity:0}100%{transform:scale(1) rotate(0);opacity:1}}
   .ntday{font-size:14px;font-weight:800;color:var(--sub);margin:16px 2px 8px}
@@ -207,7 +209,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.21-4";
+const VER = "10.21-5";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -313,7 +315,7 @@ function render() {
       ${stepRow(3, steps[2], "아침 재고보고", sd ? { t: `${sd.t} 완료, ${esc(sd.by || "")}` } : { t: "포스 재고가 미리 들어가 있어요" }, `<a class="act ${steps[2] ? "gray" : ""}" href="${SITE}stock/?branch=${encodeURIComponent(B)}${TEST ? "&test=1" : ""}&by=${encodeURIComponent(working.map((x) => x.name).join(", "))}&back=${encodeURIComponent(location.pathname)}">${steps[2] ? "다시" : "하기"}</a>`)}
     </div>`;
   const closeCard = `<div class="card"><h2>마감</h2>
-      ${stepRow("🔎", (TEST ? BOARD?.midCheckTest : BOARD?.midCheck)?.status === "같음", "중간 체크", midInfo(), `${(TEST ? BOARD?.midCheckTest : BOARD?.midCheck)?.full ? '<button class="act" data-go="midres" style="margin-right:6px">결과</button>' : ""}<button class="act gray" data-go="mid">체크</button>`)}
+      ${stepRow("🔎", (TEST ? BOARD?.midCheckTest : BOARD?.midCheck)?.status === "같음", "중간 체크", midInfo(), `${MIDPEND ? '<button class="act gray" disabled>처리 중</button>' : `${(TEST ? BOARD?.midCheckTest : BOARD?.midCheck)?.full ? '<button class="act" data-go="midres" style="margin-right:6px">결과</button>' : ""}<button class="act gray" data-go="mid">체크</button>`}`)}
       ${stepRow("🌙", !!s.close, "마감 체크", s.close ? { t: `${s.close.t} 완료${s.close.missed.length ? `, 못 한 것 ${s.close.missed.length}개` : ""}`, w: s.close.missed.length } : { t: "아직 안 함" }, `<button class="act ${s.close ? "gray" : ""}" data-go="close">${s.close ? "다시" : "체크"}</button>`)}
       ${CLOSE_OK.includes(B) ? closeRowHtml(stepRow) : ""}
       ${stepRow("👋", s.ins.length > 0 && !working.length, "퇴근", { t: working.length ? `근무 중: ${working.map((x) => esc(x.name)).join(", ")}` : s.ins.length ? "모두 퇴근" : "출근 기록 없음" }, working.length ? `<button class="act gray" data-go="out">퇴근</button>` : "")}
@@ -419,11 +421,16 @@ async function doLead() {
 }
 // ── 중간 체크 (10/20) ── 시간 상관없이, 지금 돈통이 포스(개점준비금 + 지금까지 현금매출 − 지출)와 맞는지 미리 확인
 const MW = (n) => Number(n || 0).toLocaleString("ko-KR");
-let MIDPEND = null;
+const PEND_K = () => "vf-pend-" + B + (TEST ? "-t" : "");
+let MIDPEND = null, CLOSEPEND = null;
+try { const q = JSON.parse(localStorage.getItem(PEND_K()) || "null"); if (q && Date.now() - q.at < 10 * 60e3) { MIDPEND = q.mid || null; CLOSEPEND = q.close || null; } } catch {}
+const pendSave = () => { try { localStorage.setItem(PEND_K(), JSON.stringify({ mid: MIDPEND, close: CLOSEPEND, at: Date.now() })); } catch {} };
+const PEND_TXT = '<em class="pend">⏳ 처리 중입니다<i>.</i><i>.</i><i>.</i></em>';
 const midFresh = (x) => x && MIDPEND && x.t >= MIDPEND.t && x.status !== "확인 중";
 function midInfo() {
   let x = TEST ? BOARD?.midCheckTest : BOARD?.midCheck;
-  if (MIDPEND && !midFresh(x)) x = { t: MIDPEND.t, by: MIDPEND.by, status: "확인 중" };
+  if (MIDPEND && midFresh(x)) { MIDPEND = null; pendSave(); }
+  if (MIDPEND) return { t: `${PEND_TXT} ${esc(MIDPEND.t)} ${esc(MIDPEND.by || "")}, 봇이 포스와 맞춰보는 중 (1~2분)` };
   if (!x) return { t: "마감 전에 돈통이 포스와 맞는지 미리 확인" };
   const head = `${x.t} ${esc(x.by || "")}`, extra = `${x.bills != null ? `, 지금까지 객수 ${x.bills}명` : ""}${x.des != null ? `, 지정 ${x.des}%` : ""}`;
   if (x.status === "같음") return { t: `✅ ${head}, 다 맞아요${extra}` };
@@ -1348,6 +1355,12 @@ function warnHelp(w) {
   if (/포스 숫자를 못 가져왔어요/.test(w)) return ["잠시 뒤 마감 보고를 다시 보내기", "계속 안 되면 팀장님께 알리기"];
   return ["숫자를 다시 확인하고 마감 보고를 다시 보내기"];
 }
+// 10/21 사장님 "확인할 것 내용이 좀 다름": 이체가 안 맞으면 실제 통장 입금 목록을 같이 보여 줌. 회사 이름이나 100원 단위가 아닌 금액은 판매 아닌 입금일 가능성
+function bankBox(w, bl) {
+  if (!/^이체 /.test(w) || !bl || !bl.length) return "";
+  const odd = (n, a) => /정보통신|나이스|페이|주식회사|\(주\)|은행|카드|이자/.test(n) || a % 100 !== 0;
+  return `<div style="font-size:14px;color:var(--sub);margin:10px 0 4px">봇이 손님 이체로 센 통장 입금 ${bl.length}건</div>${bl.map(([t, n, a]) => `<div style="display:flex;gap:8px;font-size:14px;padding:3px 0;${odd(n, a) ? "color:var(--red);font-weight:800" : ""}"><span style="width:44px">${esc(t)}</span><span style="flex:1">${esc(n)}${odd(n, a) ? " ← 판매 아닌 입금 같아요" : ""}</span><b>${(+a).toLocaleString()}</b></div>`).join("")}`;
+}
 async function sheetMidResult() {
   const x = TEST ? BOARD?.midCheckTest : BOARD?.midCheck; if (!x) return;
   const f = x.full ? await decOne(x.full) : null, W = f?.w || [];
@@ -1355,7 +1368,7 @@ async function sheetMidResult() {
   if (!f && x.warnN) return openSheet(`<h2>⚠️ 안 맞는 게 있어요</h2><div class="desc">이 기기에서는 자세한 내용을 열 수 없어요. 매장 전용 주소로 연 기기에서 확인해 주세요.</div><div class="btns"><button class="btn" data-x>닫기</button></div>`);
   if (!W.length) return openSheet(`<div class="midok"><div class="midokc">✓</div><h2 style="margin-top:14px">중간 체크 다 맞아요!</h2><div class="desc">${esc(x.t)} ${esc(x.by || "")}, 돈통이 포스와 같아요${x.bills != null ? `, 지금까지 객수 ${x.bills}명` : ""}${x.rev != null ? `, 리뷰 ${x.rev}` : ""}${x.eng != null ? `, 각인 ${x.eng}` : ""}</div></div>${box}<div class="btns"><button class="btn primary" data-x>확인</button></div>`);
   openSheet(`<h2>⚠️ 안 맞는 게 있어요</h2><div class="desc">마감 전에 미리 찾은 거라 다행이에요. 아래를 확인해 주세요.</div>
-    ${W.map((w) => `<div style="border:2px solid var(--red);border-radius:14px;padding:12px 14px;margin-top:10px"><div style="font-weight:800;color:var(--red);font-size:16px">${esc(w)}</div><div style="font-size:14px;color:var(--sub);margin:8px 0 4px">이걸 확인해 주세요</div>${warnHelp(w).map((h) => `<div style="font-size:15px;line-height:1.5;padding:2px 0">☐ ${esc(h.replace("마감 보고를 다시", "중간 체크를 다시"))}</div>`).join("")}</div>`).join("")}
+    ${W.map((w) => `<div style="border:2px solid var(--red);border-radius:14px;padding:12px 14px;margin-top:10px"><div style="font-weight:800;color:var(--red);font-size:16px">${esc(w)}</div><div style="font-size:14px;color:var(--sub);margin:8px 0 4px">이걸 확인해 주세요</div>${warnHelp(w).map((h) => `<div style="font-size:15px;line-height:1.5;padding:2px 0">☐ ${esc(h.replace("마감 보고를 다시", "중간 체크를 다시"))}</div>`).join("")}${bankBox(w, f?.bl)}</div>`).join("")}
     <div class="desc" style="margin-top:10px">원인을 못 찾으면 팀장님께 알려 주세요.</div>${box}
     <div class="btns"><button class="btn" data-x>닫기</button><button class="btn primary" data-go="mid">다시 체크</button></div>`);
 }
@@ -1367,7 +1380,7 @@ async function sheetReport() {
   const f = c.full ? await decOne(c.full) : null, W = (f?.w?.length ? f.w : c.warn) || [];
   const fullBox = f ? `<details ${W.length ? "open" : ""} style="margin-top:12px"><summary style="font-weight:800;cursor:pointer">📄 마감 결과 전체 보기</summary><pre style="white-space:pre-wrap;font-family:inherit;font-size:14px;line-height:1.55;background:#f9fafb;border-radius:12px;padding:12px;margin-top:8px">${esc(f.t)}</pre></details>` : "";
   if (W.length) return openSheet(`<h2>⚠️ 안 맞는 게 있어요</h2><div class="desc">다 맞아야 매출보고방 보고문이 나와요. 아래를 확인하고 고친 뒤 마감 보고를 다시 보내 주세요.</div>
-    ${W.map((w) => `<div style="border:2px solid var(--red);border-radius:14px;padding:12px 14px;margin-top:10px"><div style="font-weight:800;color:var(--red);font-size:16px">${esc(w)}</div><div style="font-size:14px;color:var(--sub);margin:8px 0 4px">이걸 확인해 주세요</div>${warnHelp(w).map((h) => `<div style="font-size:15px;line-height:1.5;padding:2px 0">☐ ${esc(h)}</div>`).join("")}</div>`).join("")}
+    ${W.map((w) => `<div style="border:2px solid var(--red);border-radius:14px;padding:12px 14px;margin-top:10px"><div style="font-weight:800;color:var(--red);font-size:16px">${esc(w)}</div><div style="font-size:14px;color:var(--sub);margin:8px 0 4px">이걸 확인해 주세요</div>${warnHelp(w).map((h) => `<div style="font-size:15px;line-height:1.5;padding:2px 0">☐ ${esc(h)}</div>`).join("")}${bankBox(w, f?.bl)}</div>`).join("")}
     <div class="desc" style="margin-top:10px">원인을 못 찾으면 팀장님께 알려 주세요.</div>${fullBox}
     <div class="btns"><button class="btn" data-x>닫기</button><button class="btn primary" data-go="closing">마감 보고 다시 하기</button></div>`);
   const warn = (c.warn || []).length ? `<div class="desc" style="color:var(--red);font-weight:700;margin-top:8px">⚠️ ${esc(c.warn.join(" / "))}<br>마감이 맞는지 확인하고 보내 주세요.</div>` : `<div class="desc" style="color:var(--green);font-weight:700;margin-top:8px">✅ 마감이 맞아요. 복사해서 매출보고방에 올려 주세요.</div>`;
@@ -1378,6 +1391,9 @@ async function sheetReport() {
 async function repCopy() { const t = $("#repBody").value; try { await navigator.clipboard.writeText(t); toast("마감보고를 복사했어요, 매출보고방에 붙여 넣어 주세요"); } catch { $("#repBody").select(); document.execCommand("copy"); toast("마감보고를 복사했어요"); } }
 function closeRowHtml(stepRow) {
   const bc = BOARD?.closing && BOARD.closing.date === closeDay() ? BOARD.closing : null;
+  const bcx = TEST ? BOARD?.closingTest : bc;
+  if (CLOSEPEND && bcx && bcx.date === CLOSEPEND.date && bcx.at >= CLOSEPEND.t && bcx.full) { CLOSEPEND = null; pendSave(); }
+  if (CLOSEPEND) return stepRow("💰", false, "마감 보고", { t: `${PEND_TXT} ${esc(CLOSEPEND.t)} 보냄, 포스와 맞춰보고 보고문 만드는 중 (1~2분)` }, '<button class="act gray" disabled>처리 중</button>');
   const c = CLOSE_SENT && CLOSE_SENT.date === closeDay() && (!bc || CLOSE_SENT.at >= bc.at) ? CLOSE_SENT : bc;
   const info = !c ? { t: "아직 안 함, 포스 일마감 숫자와 돈통" } : c.status === "done" ? ((c.warn || []).length ? { t: `${c.at} 보고됨, 확인 필요: ` + c.warn.join(" / "), w: 1 } : { t: `${c.at} 보고 완료, ${c.by}, 돈통 차액 없음` }) : c.status === "error" ? { t: `못 보냈어요: ${c.err || ""}`, w: 1 } : { t: "보내는 중…" };
   return stepRow("💰", c?.status === "done", "마감 보고", info, `${c?.status === "done" ? '<button class="act" data-go="report" style="margin-right:6px">📋 마감 결과</button>' : ""}<button class="act ${c?.status === "done" ? "gray" : ""}" data-go="closing">${c ? "다시" : "보고"}</button>`);
@@ -1466,8 +1482,8 @@ async function doClosing() {
   try {
     if (MIDMODE) {
       await send({ type: "closing", v: 2, mid: 1, date: todayKey(), nums: { cash: numv("pCash"), card: numv("pCard"), tr: numv("pTr"), etc: numv("pEtc") }, exp, prep: numv("cPrep"), cash, why: ($("#cWhy").value || "").trim().slice(0, 80), kpi, rev: v("cRev"), eng: v("cEng"), ev: v("cEv"), fx: v("cFx"), hn, vm, by });
-      MIDPEND = { t: now(), by }; MIDMODE = false; closeSheet(); render(); toast("보냈어요, 1~2분 뒤에 결과가 떠요");
-      let n = 0; const iv = setInterval(async () => { await loadBoard(); const x = TEST ? BOARD?.midCheckTest : BOARD?.midCheck; if (midFresh(x) && x.full) { clearInterval(iv); MIDPEND = null; render(); sheetMidResult(); return; } if (++n >= 36) { clearInterval(iv); MIDPEND = null; render(); toast("결과가 아직 안 왔어요, 잠시 뒤 새로고침해 주세요"); } }, 10e3);
+      MIDPEND = { t: now(), by }; pendSave(); MIDMODE = false; closeSheet(); render(); toast("보냈어요, 1~2분 뒤에 결과가 떠요");
+      let n = 0; const iv = setInterval(async () => { await loadBoard(); const x = TEST ? BOARD?.midCheckTest : BOARD?.midCheck; if (midFresh(x) && x.full) { clearInterval(iv); MIDPEND = null; pendSave(); render(); sheetMidResult(); return; } if (++n >= 36) { clearInterval(iv); MIDPEND = null; pendSave(); render(); toast("결과가 아직 안 왔어요, 잠시 뒤 새로고침해 주세요"); } }, 10e3);
       return;
     }
     await send({ type: "closing", v: 2, date: cDay, nums: { cash: numv("pCash"), card: numv("pCard"), tr: numv("pTr"), etc: numv("pEtc") }, exp, prep: numv("cPrep"), cash, why: ($("#cWhy").value || "").trim().slice(0, 80),
@@ -1478,7 +1494,7 @@ async function doClosing() {
     if (cDay === closeDay()) CLOSE_SENT = { date: cDay, status: "done", at: now(), by, warn: k.diff ? [`돈통 차액 ${(k.diff > 0 ? "+" : "") + k.diff.toLocaleString()}원`] : [] };
     closeSheet(); render(); toast(`${cDay === todayKey() ? "" : cDay.slice(5).replace("-", "/") + " "}마감 보고를 보냈어요, 1~2분 뒤에 결과가 떠요`);
     // 10/21: 결과가 오면 바로 결과 창(다 맞으면 보고문, 안 맞으면 확인할 것)
-    const sentAt = now(); let rn = 0; const ri = setInterval(async () => { await loadBoard(); const bc = TEST ? BOARD?.closingTest : BOARD?.closing; if (bc && bc.date === cDay && bc.at >= sentAt && bc.full) { clearInterval(ri); if (!$("#dim").classList.contains("on")) sheetReport(); return; } if (++rn >= 36) clearInterval(ri); }, 10e3);
+    const sentAt = now(); CLOSEPEND = { t: sentAt, date: cDay }; pendSave(); render(); let rn = 0; const ri = setInterval(async () => { await loadBoard(); const bc = TEST ? BOARD?.closingTest : BOARD?.closing; if (bc && bc.date === cDay && bc.at >= sentAt && bc.full) { clearInterval(ri); CLOSEPEND = null; pendSave(); render(); if (!$("#dim").classList.contains("on")) sheetReport(); return; } if (++rn >= 36) { clearInterval(ri); CLOSEPEND = null; pendSave(); render(); toast("마감 결과가 아직 안 왔어요, 잠시 뒤 새로고침해 주세요"); } }, 10e3);
   } catch (e) { okb.disabled = false; okb.textContent = "다시 보내기"; fail(e); }
 }
 // 돈통 칸: [id, 이름, 단위, 한 장(개) 금액], 기타는 금액(원) 그대로
