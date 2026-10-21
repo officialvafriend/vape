@@ -209,7 +209,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.21-6";
+const VER = "10.21-7";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -315,7 +315,7 @@ function render() {
       ${stepRow(3, steps[2], "아침 재고보고", sd ? { t: `${sd.t} 완료, ${esc(sd.by || "")}` } : { t: "포스 재고가 미리 들어가 있어요" }, `<a class="act ${steps[2] ? "gray" : ""}" href="${SITE}stock/?branch=${encodeURIComponent(B)}${TEST ? "&test=1" : ""}&by=${encodeURIComponent(working.map((x) => x.name).join(", "))}&back=${encodeURIComponent(location.pathname)}">${steps[2] ? "다시" : "하기"}</a>`)}
     </div>`;
   const closeCard = `<div class="card"><h2>마감</h2>
-      ${stepRow("🔎", (TEST ? BOARD?.midCheckTest : BOARD?.midCheck)?.status === "같음", "중간 체크", midInfo(), `${MIDPEND ? '<button class="act gray" disabled>처리 중</button>' : `${(TEST ? BOARD?.midCheckTest : BOARD?.midCheck)?.full ? '<button class="act" data-go="midres" style="margin-right:6px">결과</button>' : ""}<button class="act gray" data-go="mid">체크</button>`}`)}
+      ${stepRow("🔎", (TEST ? BOARD?.midCheckTest : BOARD?.midCheck)?.status === "같음", "중간 체크", midInfo(), `${MIDPEND ? '<button class="act gray" disabled>확인 중</button>' : `${(TEST ? BOARD?.midCheckTest : BOARD?.midCheck)?.full ? '<button class="act" data-go="midres" style="margin-right:6px">결과</button>' : ""}<button class="act gray" data-go="mid">체크</button>`}`)}
       ${stepRow("🌙", !!s.close, "마감 체크", s.close ? { t: `${s.close.t} 완료${s.close.missed.length ? `, 못 한 것 ${s.close.missed.length}개` : ""}`, w: s.close.missed.length } : { t: "아직 안 함" }, `<button class="act ${s.close ? "gray" : ""}" data-go="close">${s.close ? "다시" : "체크"}</button>`)}
       ${CLOSE_OK.includes(B) ? closeRowHtml(stepRow) : ""}
       ${stepRow("👋", s.ins.length > 0 && !working.length, "퇴근", { t: working.length ? `근무 중: ${working.map((x) => esc(x.name)).join(", ")}` : s.ins.length ? "모두 퇴근" : "출근 기록 없음" }, working.length ? `<button class="act gray" data-go="out">퇴근</button>` : "")}
@@ -425,12 +425,13 @@ const PEND_K = () => "vf-pend-" + B + (TEST ? "-t" : "");
 let MIDPEND = null, CLOSEPEND = null;
 try { const q = JSON.parse(localStorage.getItem(PEND_K()) || "null"); if (q && Date.now() - q.at < 10 * 60e3) { MIDPEND = q.mid || null; CLOSEPEND = q.close || null; } } catch {}
 const pendSave = () => { try { localStorage.setItem(PEND_K(), JSON.stringify({ mid: MIDPEND, close: CLOSEPEND, at: Date.now() })); } catch {} };
+const CHK_TXT = '<em class="pend">⏳ 확인 중입니다<i>.</i><i>.</i><i>.</i></em>';
 const PEND_TXT = '<em class="pend">⏳ 처리 중입니다<i>.</i><i>.</i><i>.</i></em>';
 const midFresh = (x) => x && MIDPEND && x.t >= MIDPEND.t && x.status !== "확인 중";
 function midInfo() {
   let x = TEST ? BOARD?.midCheckTest : BOARD?.midCheck;
   if (MIDPEND && midFresh(x)) { MIDPEND = null; pendSave(); }
-  if (MIDPEND) return { t: `${PEND_TXT} ${esc(MIDPEND.t)} ${esc(MIDPEND.by || "")}, 봇이 포스와 맞춰보는 중 (1~2분)` };
+  if (MIDPEND) return { t: `${CHK_TXT} ${esc(MIDPEND.t)} ${esc(MIDPEND.by || "")}, 봇이 포스와 맞춰보는 중 (1~2분)` };
   if (!x) return { t: "마감 전에 돈통이 포스와 맞는지 미리 확인" };
   const head = `${x.t} ${esc(x.by || "")}`, extra = `${x.bills != null ? `, 지금까지 객수 ${x.bills}명` : ""}${x.des != null ? `, 지정 ${x.des}%` : ""}`;
   if (x.status === "같음") return { t: `✅ ${head}, 다 맞아요${extra}` };
