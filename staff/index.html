@@ -22,6 +22,11 @@
   .hmini{display:flex;align-items:center;gap:12px;width:100%;background:var(--dark);color:#fff;border-radius:16px;padding:12px 18px;margin-bottom:12px;text-align:left}
   .hmini span{font-size:13px;color:#9aa4b2}.hmini b{font-size:16px}.hmini em{font-style:normal;font-size:13px;background:#f04452;border-radius:999px;padding:3px 9px;font-weight:700}.hmini i{margin-left:auto;font-style:normal;font-size:13px;color:#9bd0ff}
   .a2card{padding-bottom:90px}
+  .rtiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+  .rtile{position:relative}.rtb{width:100%;text-align:left;background:#f2f8ff;border:1px solid #d6e8ff;border-radius:16px;padding:14px 14px 12px;display:flex;flex-direction:column;gap:3px;transition:transform .12s}.rtb:active{transform:scale(.96)}
+  .rtb i{font-style:normal;font-size:22px}.rtb b{font-size:16px;color:var(--ink)}.rtb span{font-size:13px;color:var(--sub)}
+  .rteye{position:absolute;top:8px;right:8px;width:30px;height:30px;border-radius:50%;background:#fff;font-size:14px;opacity:.75}
+  .rlinks{display:flex;flex-wrap:wrap;gap:8px}.rlink{display:inline-flex;align-items:center;background:#f2f4f6;border-radius:99px;overflow:hidden}.rlink button{padding:9px 12px;font-size:14px;font-weight:700}.rlink a{padding:9px 12px 9px 4px;color:#1b64da;font-weight:800;text-decoration:none}
   .pend{font-style:normal;color:var(--blue);font-weight:800}.pend i{font-style:normal;animation:pdot 1.2s infinite}.pend i:nth-child(2){animation-delay:.2s}.pend i:nth-child(3){animation-delay:.4s}
   @keyframes pdot{0%,80%,100%{opacity:.15}40%{opacity:1}}
   .midok{text-align:center;padding:10px 0 4px}.midokc{width:96px;height:96px;margin:0 auto;border-radius:50%;background:var(--green);color:#fff;font-size:60px;font-weight:900;line-height:96px;animation:midpop .55s cubic-bezier(.2,1.6,.4,1) both}
@@ -209,7 +214,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.21-11";
+const VER = "10.21-12";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -874,10 +879,10 @@ async function doNoteCmt() {
 // ── 응대 모음 (10/21) ── 사장님 "온라인 고객 응대 멘트 모음집, 보내는 이미지 모아두기, 지점마다 계좌가 다름"
 // {입금계좌}는 지점 계좌(board.acct, 지점 열쇠로 잠김)로 채움. 복사 전에 창에서 고칠 수 있음(기기 이름, 금액 등)
 const RPL = [
-  { c: "주문, 입금", k: "💳", t: "입금 안내", b: "{입금계좌}\n[금액]원 보내 주시면 됩니다." },
-  { c: "주문, 입금", k: "🪪", t: "성인 인증 (신분증 셀카)", b: "비대면 구매는 미성년자 구매가 많아서, 번거로우시겠지만 1회 성인 인증 부탁드립니다!\n\n신분증을 들고 계신 셀카 한 장 보내 주시면 됩니다. 꼭 고객님 얼굴 전체와 신분증이 함께 나오도록 부탁드릴게요 😊\n\n신분증 따로, 얼굴 따로 X (주민번호 뒷자리는 가려 주세요)\n신분증을 들고 있는 얼굴 전체가 나오게 찍어 주세요!\n\n인증 후 보내 주신 사진은 삭제하셔도 됩니다!" },
-  { c: "기기, AS", k: "📹", t: "기기 사용 설명 + 배송 안내", b: "안녕하세요, 고객님! 오늘 구매하신 기기 사용 설명 영상입니다.\n현재 베이프렌드는 배송 이벤트도 진행하고 있어서, 전국 어디든 택배, 대구 안은 퀵도 가능합니다. 다음 주문 때 참고 부탁드려요!\n기기 사용하시면서 불편하신 점, 주문, 재고 확인 등 언제든 편하게 연락 주세요!" },
-  { c: "기기, AS", k: "🛡", t: "택배 기기 AS 보증 안내", b: "기기는 개봉하지 않고, 명함에 AS 보증 날짜를 적어서 보내 드리겠습니다!\n6개월 동안 기기 박스와 명함을 잘 보관해 주세요 :)\nAS는 침수, 누수, 파손을 제외하고 보증서를 지참하시면 가능합니다!" },
+  { c: "주문, 입금", k: "💳", t: "입금 안내", s: "계좌 + 금액", b: "{입금계좌}\n[금액]원 보내 주시면 됩니다." },
+  { c: "주문, 입금", k: "🪪", t: "성인 인증", s: "신분증 셀카 요청", b: "비대면 구매는 미성년자 구매가 많아서, 번거로우시겠지만 1회 성인 인증 부탁드립니다!\n\n신분증을 들고 계신 셀카 한 장 보내 주시면 됩니다. 꼭 고객님 얼굴 전체와 신분증이 함께 나오도록 부탁드릴게요 😊\n\n신분증 따로, 얼굴 따로 X (주민번호 뒷자리는 가려 주세요)\n신분증을 들고 있는 얼굴 전체가 나오게 찍어 주세요!\n\n인증 후 보내 주신 사진은 삭제하셔도 됩니다!" },
+  { c: "기기, AS", k: "📹", t: "사용 설명", s: "배송 이벤트 안내 포함", b: "안녕하세요, 고객님! 오늘 구매하신 기기 사용 설명 영상입니다.\n현재 베이프렌드는 배송 이벤트도 진행하고 있어서, 전국 어디든 택배, 대구 안은 퀵도 가능합니다. 다음 주문 때 참고 부탁드려요!\n기기 사용하시면서 불편하신 점, 주문, 재고 확인 등 언제든 편하게 연락 주세요!" },
+  { c: "기기, AS", k: "🛡", t: "AS 보증", s: "택배 기기, 6개월", b: "기기는 개봉하지 않고, 명함에 AS 보증 날짜를 적어서 보내 드리겠습니다!\n6개월 동안 기기 박스와 명함을 잘 보관해 주세요 :)\nAS는 침수, 누수, 파손을 제외하고 보증서를 지참하시면 가능합니다!" },
 ];
 const RLINK = [
   ["💬 온라인 응대", "https://m.site.naver.com/2gkoR"],
@@ -893,17 +898,35 @@ async function acctText() {
   return `${a.bank} ${a.no}\n${a.holder}으로`;
 }
 const fillRpl = async (b) => (b.includes("{입금계좌}") ? b.replace("{입금계좌}", await acctText()) : b);
+// 10/21 사장님 "전체 보기가 불편": 버튼판. 누르면 바로 복사, [금액] 있는 것만 금액을 물어봄, 👁로 전문 보기
+let RQ = "";
 function replyHtml() {
-  if (BOARD?.acct && !DEC.acct) decOne(BOARD.acct).then((a) => { if (a) { DEC.acct = a; if (VIEW === "reply" && !$("#dim").classList.contains("on")) render(); } });
-  const cats = ["전체", ...new Set(RPL.map((x) => x.c)), "링크"];
-  const chips = cats.map((c) => `<button class="chip ${RF === c ? "on" : ""}" data-rf="${c}">${c}</button>`).join("");
-  const acct = DEC.acct ? `${DEC.acct.bank} ${DEC.acct.no}\n${DEC.acct.holder}으로` : BOARD?.acct ? "(매장 전용 주소로 연 기기에서 계좌가 보여요)" : "(이 지점 계좌가 아직 등록 안 됐어요)";
-  const cards = RF === "링크" ? "" : RPL.map((x, i) => [x, i]).filter(([x]) => RF === "전체" || x.c === RF).map(([x, i]) => `<div class="ntcard"><div class="nth"><span class="ntcat" style="background:#e8f3ff;color:#1b64da">${x.k} ${esc(x.c)}</span><b style="color:var(--ink);font-size:15px">${esc(x.t)}</b><button class="act" data-rpl="${i}" style="margin-left:auto">복사</button></div><div class="ntx" style="font-size:15px">${esc(x.b.replace("{입금계좌}", acct))}</div></div>`).join("");
-  const links = RF === "링크" || RF === "전체" ? `<div class="ntday">🔗 링크</div>${RLINK.map(([n, u], i) => `<div class="a2row" style="cursor:default"><div class="a2m"><b>${n}</b><span style="word-break:break-all">${esc(u)}</span></div><button class="ntbtn" data-rlk="${i}">복사</button><a class="ntbtn" href="${esc(u)}" target="_blank" rel="noopener">열기</a></div>`).join("")}` : "";
-  return `<div class="card"><div class="lhead"><h2 style="margin:6px 0">💬 응대 모음</h2></div>
-    <div class="desc" style="margin-bottom:8px">[복사]를 누르면 고칠 수 있는 창이 떠요. [금액] 같은 칸을 채우고 복사해서 카톡이나 문자에 붙여 넣으세요.</div>
-    <div class="chips" style="margin-bottom:6px">${chips}</div>${cards}${links}
-    <div class="ntday">🖼 이미지</div><div class="desc">각인 도안, 안내 이미지는 사진을 받으면 여기에 모아 둘게요.</div></div>`;
+  if (BOARD?.acct && !DEC.acct) decOne(BOARD.acct).then((a) => { if (a) { DEC.acct = a; } });
+  const q = RQ.trim();
+  const L = RPL.map((x, i) => [x, i]).filter(([x]) => !q || (x.t + x.s + x.b).includes(q));
+  const cats = [...new Set(RPL.map((x) => x.c))];
+  const tiles = (RF === "전체" ? L : L.filter(([x]) => x.c === RF)).map(([x, i]) => `<div class="rtile"><button class="rtb" data-rq="${i}"><i>${x.k}</i><b>${esc(x.t)}</b><span>${esc(x.s || "")}</span></button><button class="rteye" data-rv="${i}" aria-label="내용 보기">👁</button></div>`).join("");
+  const links = RLINK.filter(([n, u]) => !q || n.includes(q)).map(([n, u], i) => `<span class="rlink"><button data-rlk="${RLINK.findIndex((y) => y[1] === u)}">${n}</button><a href="${esc(u)}" target="_blank" rel="noopener" aria-label="열기">↗</a></span>`).join("");
+  return `<div class="card"><div class="lhead"><h2 style="margin:6px 0">💬 응대 모음</h2><input class="input" id="rplQ" placeholder="🔍 찾기" value="${esc(RQ)}" style="max-width:200px;margin:0"></div>
+    <div class="desc" style="margin:2px 0 10px">누르면 바로 복사돼요. 👁는 내용 보기.</div>
+    ${cats.length > 1 ? `<div class="chips" style="margin-bottom:8px">${["전체", ...cats].map((c) => `<button class="chip ${RF === c ? "on" : ""}" data-rf="${c}">${c}</button>`).join("")}</div>` : ""}
+    <div class="rtiles">${tiles || '<div class="desc">찾는 멘트가 없어요</div>'}</div>
+    <div class="ntday" style="margin-top:18px">🔗 링크 <small style="font-weight:600">누르면 주소 복사, ↗는 열기</small></div><div class="rlinks">${links}</div>
+    <div class="ntday" style="margin-top:18px">🖼 이미지</div><div class="desc">각인 도안, 안내 이미지는 사진을 받으면 여기에 작게 모아 둘게요.</div></div>`;
+}
+// 누르면: [금액] 있으면 금액만 묻고, 없으면 바로 복사
+async function rplQuick(i) {
+  const x = RPL[i]; if (!x) return;
+  const t = await fillRpl(x.b);
+  if (!t.includes("[금액]")) return rplCopy(t);
+  RTXT = t;
+  openSheet(`<h2>${x.k} ${esc(x.t)}</h2><div class="desc">금액만 넣으면 계좌와 같이 복사돼요</div><input class="input" id="rplAmt" inputmode="numeric" placeholder="금액 (원)" style="font-size:22px;font-weight:800">
+    <div class="btns"><button class="btn" data-x>닫기</button><button class="btn primary" data-go="rplamt">복사</button></div>`);
+  setTimeout(() => $("#rplAmt")?.focus(), 50);
+}
+function rplAmtCopy() {
+  const n = +($("#rplAmt")?.value || "").replace(/\D/g, ""); if (!n) return toast("금액을 넣어 주세요");
+  closeSheet(); rplCopy(RTXT.replace("[금액]", n.toLocaleString()));
 }
 async function sheetRpl(i) {
   const x = RPL[i]; if (!x) return;
@@ -1586,8 +1609,9 @@ function crDraw() {
 const addDay = (n) => new Date(Date.parse(todayKey()) + n * 864e5).toISOString().slice(0, 10);
 const crDueSync = () => {};
 document.addEventListener("keydown", (e) => { if (e.key === "Enter" && e.target?.id === "ulPw") doUnlock(); });
-let A2QT = 0;
+let A2QT = 0, RQT = 0;
 document.addEventListener("input", (e) => {
+  if (e.target?.id === "rplQ") { RQ = e.target.value; clearTimeout(RQT); RQT = setTimeout(() => { render(); const q = $("#rplQ"); if (q) { q.focus(); q.setSelectionRange(q.value.length, q.value.length); } }, 300); return; }
   if (e.target?.id === "a2Q") { A2Q = e.target.value; clearTimeout(A2QT); A2QT = setTimeout(() => { render(); const q = $("#a2Q"); if (q) { q.focus(); q.setSelectionRange(q.value.length, q.value.length); } }, 400); return; }
   if (e.target?.id === "ilQ") { const q = e.target.value.trim().toLowerCase().replace(/-/g, ""); document.querySelectorAll(".lrow[data-q]").forEach((r) => (r.style.display = !q || r.dataset.q.includes(q) ? "" : "none")); return; } const t = e.target; if (t.dataset?.crq != null && cr?.items[+t.dataset.crq]) { const v = Math.min(999, +String(t.value).replace(/\D/g, "") || 0); if (v) cr.items[+t.dataset.crq][1] = v; } });
 document.addEventListener("change", (e) => {
@@ -1956,6 +1980,9 @@ document.addEventListener("click", (e) => {
   if (go === "ntnew") return sheetNoteNew();
   if (t.dataset.rf) { RF = t.dataset.rf; return render(); }
   if (t.dataset.rpl) return sheetRpl(+t.dataset.rpl);
+  if (t.dataset.rq) return rplQuick(+t.dataset.rq);
+  if (t.dataset.rv) return sheetRpl(+t.dataset.rv);
+  if (go === "rplamt") return rplAmtCopy();
   if (go === "rplcp") return rplCopy($("#rplBody")?.value || RTXT);
   if (t.dataset.rlk) return rplCopy(RLINK[+t.dataset.rlk][1]);
   if (t.id === "okNt") return doNoteNew();
