@@ -209,7 +209,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.21-10";
+const VER = "10.21-11";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -874,10 +874,10 @@ async function doNoteCmt() {
 // ── 응대 모음 (10/21) ── 사장님 "온라인 고객 응대 멘트 모음집, 보내는 이미지 모아두기, 지점마다 계좌가 다름"
 // {입금계좌}는 지점 계좌(board.acct, 지점 열쇠로 잠김)로 채움. 복사 전에 창에서 고칠 수 있음(기기 이름, 금액 등)
 const RPL = [
-  { c: "주문, 입금", k: "💳", t: "입금 안내", b: "{입금계좌}\n원 보내주시면 됩니다" },
-  { c: "주문, 입금", k: "🪪", t: "성인 인증 (신분증 셀카)", b: "고객님 신분증 들고 계신 셀카 한장 보내주시면 되시구요 ! 꼭 고객님 얼굴 전체랑 신분증 들고 계신걸로 부탁드리겠습니다 ㅎ ㅎ\n\n신분증 따로 얼굴 따로 X (뒷번호가리시고)\n신분증 들고있는 얼굴 전체 나오도록 부탁드리겠습니다 !!😆" },
-  { c: "기기, AS", k: "📹", t: "기기 사용 설명 + 배송 안내", b: "안녕하세요 고객님 오늘 구매하신 00기기 사용 설명영상입니다\n현재 저희 베이프렌드는 배송이벤트도 진행하고있기에\n전국어디든 택배~! 대구 내 퀵 가능하다는점 다음 주문때 참고부탁드립니다\n기기 사용하시면서 불편하신점 , 주문 , 재고확인 언제든 편하게 연락주세요!" },
-  { c: "기기, AS", k: "🛡", t: "택배 기기 AS 보증 안내", b: "기기는 개봉하지 않구 명함에 AS 보증날짜 적어서 보내드리겠습니다 !\n6개월동안 기기박스와 명함 모두 잘 보관해주세용 :)\nAS는 침수,누수,파손 제외하고 보증서지참시 가능하십니다 !" },
+  { c: "주문, 입금", k: "💳", t: "입금 안내", b: "{입금계좌}\n[금액]원 보내 주시면 됩니다." },
+  { c: "주문, 입금", k: "🪪", t: "성인 인증 (신분증 셀카)", b: "비대면 구매는 미성년자 구매가 많아서, 번거로우시겠지만 1회 성인 인증 부탁드립니다!\n\n신분증을 들고 계신 셀카 한 장 보내 주시면 됩니다. 꼭 고객님 얼굴 전체와 신분증이 함께 나오도록 부탁드릴게요 😊\n\n신분증 따로, 얼굴 따로 X (주민번호 뒷자리는 가려 주세요)\n신분증을 들고 있는 얼굴 전체가 나오게 찍어 주세요!\n\n인증 후 보내 주신 사진은 삭제하셔도 됩니다!" },
+  { c: "기기, AS", k: "📹", t: "기기 사용 설명 + 배송 안내", b: "안녕하세요, 고객님! 오늘 구매하신 기기 사용 설명 영상입니다.\n현재 베이프렌드는 배송 이벤트도 진행하고 있어서, 전국 어디든 택배, 대구 안은 퀵도 가능합니다. 다음 주문 때 참고 부탁드려요!\n기기 사용하시면서 불편하신 점, 주문, 재고 확인 등 언제든 편하게 연락 주세요!" },
+  { c: "기기, AS", k: "🛡", t: "택배 기기 AS 보증 안내", b: "기기는 개봉하지 않고, 명함에 AS 보증 날짜를 적어서 보내 드리겠습니다!\n6개월 동안 기기 박스와 명함을 잘 보관해 주세요 :)\nAS는 침수, 누수, 파손을 제외하고 보증서를 지참하시면 가능합니다!" },
 ];
 const RLINK = [
   ["💬 온라인 응대", "https://m.site.naver.com/2gkoR"],
@@ -890,25 +890,25 @@ let RF = "전체", RTXT = "";
 async function acctText() {
   if (!BOARD?.acct) return "(이 지점 계좌가 아직 등록 안 됐어요)";
   const a = DEC.acct || (DEC.acct = await decOne(BOARD.acct)); if (!a) return "(매장 전용 주소로 연 기기에서 계좌가 보여요)";
-  return `${a.bank} ${a.no}\n${a.holder} 으로`;
+  return `${a.bank} ${a.no}\n${a.holder}으로`;
 }
 const fillRpl = async (b) => (b.includes("{입금계좌}") ? b.replace("{입금계좌}", await acctText()) : b);
 function replyHtml() {
   if (BOARD?.acct && !DEC.acct) decOne(BOARD.acct).then((a) => { if (a) { DEC.acct = a; if (VIEW === "reply" && !$("#dim").classList.contains("on")) render(); } });
   const cats = ["전체", ...new Set(RPL.map((x) => x.c)), "링크"];
   const chips = cats.map((c) => `<button class="chip ${RF === c ? "on" : ""}" data-rf="${c}">${c}</button>`).join("");
-  const acct = DEC.acct ? `${DEC.acct.bank} ${DEC.acct.no}\n${DEC.acct.holder} 으로` : BOARD?.acct ? "(매장 전용 주소로 연 기기에서 계좌가 보여요)" : "(이 지점 계좌가 아직 등록 안 됐어요)";
+  const acct = DEC.acct ? `${DEC.acct.bank} ${DEC.acct.no}\n${DEC.acct.holder}으로` : BOARD?.acct ? "(매장 전용 주소로 연 기기에서 계좌가 보여요)" : "(이 지점 계좌가 아직 등록 안 됐어요)";
   const cards = RF === "링크" ? "" : RPL.map((x, i) => [x, i]).filter(([x]) => RF === "전체" || x.c === RF).map(([x, i]) => `<div class="ntcard"><div class="nth"><span class="ntcat" style="background:#e8f3ff;color:#1b64da">${x.k} ${esc(x.c)}</span><b style="color:var(--ink);font-size:15px">${esc(x.t)}</b><button class="act" data-rpl="${i}" style="margin-left:auto">복사</button></div><div class="ntx" style="font-size:15px">${esc(x.b.replace("{입금계좌}", acct))}</div></div>`).join("");
   const links = RF === "링크" || RF === "전체" ? `<div class="ntday">🔗 링크</div>${RLINK.map(([n, u], i) => `<div class="a2row" style="cursor:default"><div class="a2m"><b>${n}</b><span style="word-break:break-all">${esc(u)}</span></div><button class="ntbtn" data-rlk="${i}">복사</button><a class="ntbtn" href="${esc(u)}" target="_blank" rel="noopener">열기</a></div>`).join("")}` : "";
   return `<div class="card"><div class="lhead"><h2 style="margin:6px 0">💬 응대 모음</h2></div>
-    <div class="desc" style="margin-bottom:8px">누르면 고칠 수 있는 창이 떠요. 기기 이름이나 금액을 넣고 복사해서 카톡, 문자에 붙여 넣으세요.</div>
+    <div class="desc" style="margin-bottom:8px">[복사]를 누르면 고칠 수 있는 창이 떠요. [금액] 같은 칸을 채우고 복사해서 카톡이나 문자에 붙여 넣으세요.</div>
     <div class="chips" style="margin-bottom:6px">${chips}</div>${cards}${links}
     <div class="ntday">🖼 이미지</div><div class="desc">각인 도안, 안내 이미지는 사진을 받으면 여기에 모아 둘게요.</div></div>`;
 }
 async function sheetRpl(i) {
   const x = RPL[i]; if (!x) return;
   RTXT = await fillRpl(x.b);
-  openSheet(`<h2>${x.k} ${esc(x.t)}</h2><div class="desc">필요하면 고친 뒤 복사하세요 (예: 00기기 → 실제 기기 이름, 금액)</div><textarea class="input" id="rplBody" rows="9" style="font-size:15px;line-height:1.55">${esc(RTXT)}</textarea>
+  openSheet(`<h2>${x.k} ${esc(x.t)}</h2><div class="desc">[금액] 같은 칸을 채운 뒤 복사하세요</div><textarea class="input" id="rplBody" rows="9" style="font-size:15px;line-height:1.55">${esc(RTXT)}</textarea>
     <div class="btns"><button class="btn" data-x>닫기</button><button class="btn primary" data-go="rplcp">복사</button></div>`);
 }
 async function rplCopy(t) { try { await navigator.clipboard.writeText(t); toast("복사했어요, 붙여 넣어 주세요"); } catch { const a = $("#rplBody"); if (a) { a.select(); document.execCommand("copy"); toast("복사했어요"); } else toast("복사가 안 돼요, 길게 눌러 복사해 주세요"); } }
