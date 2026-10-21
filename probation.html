@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>베이프렌드 수습평가서</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=Black+Han+Sans&display=swap">
+<style>
+  /* Layout: single mobile column, red masthead, scored rows with 1-5 segmented buttons, copy-to-KakaoTalk result at the end */
+  :root{
+    --bg:#F6F3EE;
+    --surface:#FFFFFF;
+    --fg:#161514;
+    --muted:#6B655E;
+    --line:#DDD7CE;
+    --accent:#D3231E;
+    --accent-fg:#FFFFFF;
+    --ok:#1F7A4C;
+    --warn:#B3261E;
+    --f-display:'Black Han Sans','Noto Sans KR',sans-serif;
+    --f-body:'Noto Sans KR',system-ui,sans-serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#141312; --surface:#1F1D1B; --fg:#F2EEE8; --muted:#A39C93; --line:#3A3632;
+      --accent:#F0453F; --accent-fg:#141312; --ok:#58C98C; --warn:#FF8A80; color-scheme:dark;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#141312; --surface:#1F1D1B; --fg:#F2EEE8; --muted:#A39C93; --line:#3A3632;
+    --accent:#F0453F; --accent-fg:#141312; --ok:#58C98C; --warn:#FF8A80; color-scheme:dark;
+  }
+  *{box-sizing:border-box}
+  body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:16px;line-height:1.55;
+    padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+    padding-block:0 56px}
+  .wrap{max-width:640px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+  header.mast{margin:0 calc(-1 * max(16px,env(safe-area-inset-left,0px)));
+    padding:28px max(16px,env(safe-area-inset-left,0px)) 24px;background:var(--accent);color:var(--accent-fg)}
+  header.mast .in{max-width:640px;margin:0 auto}
+  .brand{font-weight:900;letter-spacing:.14em;font-size:12px;opacity:.9}
+  h1{font-family:var(--f-display);font-weight:400;font-size:40px;line-height:1.1;margin:6px 0 8px;text-wrap:balance}
+  .lead{font-size:14px;opacity:.95;max-width:34em}
+  section{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px;display:flex;flex-direction:column;gap:14px}
+  h2{font-size:15px;font-weight:900;margin:0;letter-spacing:.02em}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .field{display:flex;flex-direction:column;gap:5px;min-width:0}
+  .field.full{grid-column:1/-1}
+  label,.lab{font-size:13px;font-weight:700;color:var(--muted)}
+  input[type=text],input[type=date],textarea{
+    font:inherit;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:11px 12px;width:100%;min-width:0}
+  textarea{min-height:92px;resize:vertical}
+  input:focus-visible,textarea:focus-visible,button:focus-visible,.seg input:focus-visible+span{outline:3px solid var(--accent);outline-offset:2px}
+
+  .crit{display:flex;flex-direction:column;gap:8px;padding-top:14px;border-top:1px solid var(--line)}
+  .crit:first-of-type{border-top:0;padding-top:0}
+  .crit .t{font-weight:700}
+  .crit .d{font-size:13px;color:var(--muted)}
+  .seg{display:grid;grid-template-columns:repeat(5,1fr) 1.5fr;gap:6px}
+  .seg label.na span{font-size:13px;font-weight:500;color:var(--muted)}
+  .seg label.na input:checked+span{color:var(--accent-fg)}
+  .crit textarea{min-height:60px;font-size:14px}
+  .dates{display:flex;align-items:center;gap:8px}.dates input{flex:1}
+  .seg label{position:relative;display:block}
+  .seg input{position:absolute;opacity:0;inset:0;width:100%;height:100%;margin:0;cursor:pointer}
+  .seg span{display:flex;align-items:center;justify-content:center;height:46px;border:1px solid var(--line);border-radius:8px;
+    font-weight:700;color:var(--fg);background:var(--bg);font-variant-numeric:tabular-nums}
+  .seg input:checked+span{background:var(--accent);border-color:var(--accent);color:var(--accent-fg)}
+  .scale{display:flex;justify-content:space-between;font-size:11px;color:var(--muted)}
+
+  .total{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}
+  .total .num{font-family:var(--f-display);font-size:34px;line-height:1;font-variant-numeric:tabular-nums}
+  .total .num small{font-family:var(--f-body);font-size:14px;color:var(--muted);font-weight:500}
+  .total .avg{color:var(--muted);font-size:14px;font-variant-numeric:tabular-nums}
+
+  .opts{display:grid;gap:8px}
+  .opt{position:relative;display:block}
+  .opt input{position:absolute;opacity:0;inset:0;width:100%;height:100%;margin:0;cursor:pointer}
+  .opt .box{display:flex;flex-direction:column;gap:2px;border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:var(--bg)}
+  .opt .box b{font-size:15px;color:var(--fg)}
+  .opt .box i{font-style:normal;font-size:13px;color:var(--muted);font-weight:400}
+  .opt input:checked+.box{border-color:var(--accent);box-shadow:inset 0 0 0 2px var(--accent)}
+  .opt input:focus-visible+.box{outline:3px solid var(--accent);outline-offset:2px}
+
+  .actions{display:flex;flex-direction:column;gap:10px}
+  button.primary{font:inherit;font-weight:900;font-size:17px;background:var(--accent);color:var(--accent-fg);border:0;border-radius:10px;padding:16px;cursor:pointer}
+  button.ghost{font:inherit;font-weight:700;background:transparent;color:var(--fg);border:1px solid var(--line);border-radius:10px;padding:12px;cursor:pointer}
+  .msg{font-size:14px;font-weight:700;min-height:1.4em}
+  .msg.err{color:var(--warn)} .msg.ok{color:var(--ok)}
+  #result{font-family:var(--f-body);font-size:14px;line-height:1.6;min-height:240px}
+  .hint{font-size:13px;color:var(--muted)}
+  @media (max-width:420px){ .grid{grid-template-columns:1fr} h1{font-size:34px} }
+  @media (prefers-reduced-motion:no-preference){ .seg span,.opt .box{transition:background .12s,border-color .12s} }
+</style>
+
+</head>
+<body>
+<div class="wrap">
+  <header class="mast"><div class="in">
+    <div class="brand">VAPEFRIEND</div>
+    <h1>수습 평가서</h1>
+    <p class="lead">수습기간의 업무 수행과 적응 상태를 관찰 사례에 근거해 평가하고, 강점과 보완점 및 후속 지원 계획을 기록합니다.</p>
+  </div></header>
+
+  <section aria-labelledby="h-basic">
+    <h2 id="h-basic">기본 정보</h2>
+    <div class="grid">
+      <div class="field"><label for="f-name">성명</label><input id="f-name" type="text" autocomplete="off"></div>
+      <div class="field"><label for="f-role">직급·업무</label><input id="f-role" type="text" autocomplete="off" placeholder="예: 사원 / 매장 판매"></div>
+      <div class="field"><label for="f-store">근무 매장</label><input id="f-store" type="text" autocomplete="off"></div>
+      <div class="field"><label for="f-eval">평가자</label><input id="f-eval" type="text" autocomplete="off"></div>
+      <div class="field"><label for="f-date">평가일</label><input id="f-date" type="date"></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="h-score">
+    <h2 id="h-score">항목별 평가</h2>
+    <p class="hint">1 개선 필요 / 2 다소 미흡 / 3 기대 수준 / 4 우수 / 5 매우 우수. 관찰하지 못한 항목은 &lsquo;미평가&rsquo;를 고르고 사유를 메모에 적어 주세요. 총점은 평가한 항목의 평균을 100점으로 환산합니다.</p>
+    <div id="crits"></div>
+    <div class="total" aria-live="polite">
+      <div class="num" id="sum">-<small> 점</small></div>
+      <div class="avg" id="avg">평가 항목 0개</div>
+    </div>
+  </section>
+
+  <section aria-labelledby="h-text">
+    <h2 id="h-text">종합 기록</h2>
+    <div class="field"><label for="f-good">잘한 점</label><textarea id="f-good"></textarea></div>
+    <div class="field"><label for="f-fix">보완할 점</label><textarea id="f-fix"></textarea></div>
+    <div class="field"><label for="f-help">필요한 지원</label><textarea id="f-help"></textarea></div>
+    <div class="field"><label for="f-goal">다음 목표</label><textarea id="f-goal"></textarea></div>
+  </section>
+
+  <section aria-labelledby="h-final">
+    <h2 id="h-final">종합 판단</h2>
+    <div class="opts" id="opts" role="radiogroup" aria-label="종합 판단"></div>
+    <div class="field"><label for="f-opinion">종합 의견</label><textarea id="f-opinion"></textarea></div>
+  </section>
+
+  <section aria-labelledby="h-send">
+    <h2 id="h-send">보내기</h2>
+    <div class="actions">
+      <button class="primary" id="btn-copy" type="button">결과 복사하기</button>
+      <div class="msg" id="msg" role="status"></div>
+    </div>
+    <p class="hint">복사한 뒤 카카오톡 대화창에 붙여넣기 해서 보내 주세요. 서명은 종이 양식에서 따로 받습니다. 직원 서명은 평가 내용 확인을 의미하며, 동의 여부와는 별도로 기록할 수 있습니다.</p>
+    <label class="lab" for="result">보낼 내용 미리보기</label>
+    <textarea id="result" readonly></textarea>
+    <button class="ghost" id="btn-reset" type="button">처음부터 다시 작성</button>
+  </section>
+
+</div>
+
+<script>
+(function(){
+  var CRITS=[
+    {k:'att',t:'근태와 시간 준수',d:'출퇴근, 근무 일정, 기본 복무'},
+    {k:'svc',t:'고객 응대',d:'친절, 경청, 상황별 응대와 불만 전달'},
+    {k:'know',t:'제품·서비스 이해',d:'제품 특징과 사용 안내의 정확성'},
+    {k:'sell',t:'상담과 판매 태도',d:'고객 필요 파악, 적절하고 무리 없는 제안'},
+    {k:'rule',t:'성인 확인·규정 준수',d:'연령 확인, 매장 규정과 절차 준수'},
+    {k:'pay',t:'결제·재고 정확성',d:'결제, 재고 확인, 인수인계 정확성'},
+    {k:'mgmt',t:'매장 관리',d:'정리, 청결, 진열과 업무 공간 관리'},
+    {k:'team',t:'협업과 보고',d:'동료 협조, 업무 공유와 적시 보고'},
+    {k:'resp',t:'책임감과 주도성',d:'맡은 일 마무리, 문제 발견 후 조치'},
+    {k:'learn',t:'학습과 피드백 반영',d:'교육 참여와 개선 사항 적용'}
+  ];
+  var FINALS=['기대 수준 충족','개선 목표 설정 후 재점검','추가 논의 필요'];
+  var $=function(id){return document.getElementById(id)};
+  var crits=$('crits'), opts=$('opts');
+
+  CRITS.forEach(function(c){
+    var div=document.createElement('div'); div.className='crit';
+    var h='<div><div class="t">'+c.t+'</div><div class="d">'+c.d+'</div></div><div class="seg" role="radiogroup" aria-label="'+c.t+' 점수">';
+    for(var i=1;i<=5;i++) h+='<label><input type="radio" name="s-'+c.k+'" value="'+i+'" id="s-'+c.k+'-'+i+'"><span>'+i+'</span></label>';
+    h+='<label class="na"><input type="radio" name="s-'+c.k+'" value="na" id="s-'+c.k+'-na"><span>미평가</span></label></div>';
+    h+='<textarea id="m-'+c.k+'" aria-label="'+c.t+' 사례 / 메모" placeholder="사례 / 메모 (미평가면 사유)"></textarea>';
+    div.innerHTML=h; crits.appendChild(div);
+  });
+  FINALS.forEach(function(f,i){
+    var l=document.createElement('label'); l.className='opt';
+    l.innerHTML='<input type="radio" name="final" value="'+f+'" id="fin-'+i+'"><div class="box"><b>'+f+'</b></div>';
+    opts.appendChild(l);
+  });
+
+  function iso(d){var m=('0'+(d.getMonth()+1)).slice(-2),dd=('0'+d.getDate()).slice(-2);return d.getFullYear()+'-'+m+'-'+dd}
+  $('f-date').value=iso(new Date());
+  function val(id){return ($(id).value||'').trim()}
+  function raw(k){var e=document.querySelector('input[name="s-'+k+'"]:checked');return e?e.value:''}
+  function final(){var e=document.querySelector('input[name="final"]:checked');return e?e.value:''}
+  function totals(){
+    var s=0,n=0; CRITS.forEach(function(c){var v=raw(c.k); if(v&&v!=='na'){s+=parseInt(v,10);n++}});
+    return {sum:s,n:n,pct:n?(s/(n*5)*100):null};
+  }
+  function fmt(p){return p===null?'-':(Math.round(p*10)/10).toFixed(1)}
+  function build(){
+    var t=totals(), L=[];
+    L.push('[수습 평가서]');
+    L.push('성명: '+(val('f-name')||'-')+' / 직급·업무: '+(val('f-role')||'-'));
+    L.push('근무 매장: '+(val('f-store')||'-')+' / 평가자: '+(val('f-eval')||'-'));
+    L.push('평가일: '+(val('f-date')||'-'));
+    L.push('');
+    L.push('■ 항목별 평가 (5점 만점)');
+    CRITS.forEach(function(c){
+      var v=raw(c.k), memo=val('m-'+c.k);
+      L.push('- '+c.t+': '+(v==='na'?'미평가':(v?v+'점':'-'))+(memo?' ('+memo+')':''));
+    });
+    L.push('총점: 항목 점수 합계 '+t.sum+' ÷ (평가 항목 수 '+t.n+' × 5) × 100 = '+fmt(t.pct)+'점');
+    L.push('');
+    L.push('■ 잘한 점'); L.push(val('f-good')||'-');
+    L.push('■ 보완할 점'); L.push(val('f-fix')||'-');
+    L.push('■ 필요한 지원'); L.push(val('f-help')||'-');
+    L.push('■ 다음 목표'); L.push(val('f-goal')||'-');
+    L.push('');
+    L.push('■ 종합 판단: '+(final()||'-'));
+    L.push('종합 의견: '+(val('f-opinion')||'-'));
+    return L.join('\n');
+  }
+  function refresh(){
+    var t=totals();
+    $('sum').innerHTML=fmt(t.pct)+'<small> 점 / 100</small>';
+    $('avg').textContent='평가 항목 '+t.n+'개 · 합계 '+t.sum+'점';
+    $('result').value=build();
+  }
+  function missing(){
+    var m=[];
+    if(!val('f-name')) m.push('성명');
+    if(!val('f-eval')) m.push('평가자');
+    var left=CRITS.filter(function(c){return !raw(c.k)}).length;
+    if(left) m.push('점수 선택 '+left+'개 항목');
+    var noWhy=CRITS.filter(function(c){return raw(c.k)==='na'&&!val('m-'+c.k)}).map(function(c){return c.t+' 미평가 사유'});
+    m=m.concat(noWhy);
+    if(!final()) m.push('종합 판단');
+    return m;
+  }
+  function say(text,cls){var m=$('msg');m.textContent=text;m.className='msg '+(cls||'')}
+
+  $('btn-copy').addEventListener('click',function(){
+    var m=missing();
+    if(m.length){say('아직 입력하지 않은 항목이 있습니다: '+m.join(', '),'err');return}
+    refresh();
+    var text=$('result').value;
+    function fallback(){
+      var r=$('result'); r.focus(); r.select(); r.setSelectionRange(0,text.length);
+      var okc=false; try{okc=document.execCommand('copy')}catch(e){}
+      say(okc?'복사했습니다. 카톡 대화창에 붙여넣기 하세요.':'위 미리보기를 길게 눌러 전체 선택 후 복사해 주세요.',okc?'ok':'err');
+    }
+    if(navigator.clipboard&&navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(function(){say('복사했습니다. 카톡 대화창에 붙여넣기 하세요.','ok')},fallback);
+    } else fallback();
+  });
+  $('btn-reset').addEventListener('click',function(){
+    document.querySelectorAll('input[type=text],input[type=date],textarea').forEach(function(e){ if(e.id!=='result') e.value='' });
+    $('f-date').value=iso(new Date());
+    document.querySelectorAll('input[type=radio]').forEach(function(e){e.checked=false});
+    say(''); refresh(); window.scrollTo({top:0});
+  });
+  document.addEventListener('input',refresh); document.addEventListener('change',refresh);
+  refresh();
+
+})();
+</script>
+</body>
+</html>
