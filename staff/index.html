@@ -215,7 +215,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.21-19";
+const VER = "10.21-21";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -382,8 +382,8 @@ function render() {
         ${VIEW === "home" || VIEW === "work" ? `<div class="hero"${TEST ? ' style="background:#7a2e0e"' : ""}>${TEST ? '<p style="color:#ffd7a8;font-weight:800;margin-bottom:6px">🧪 시험 모드: 진짜 기록에 안 섞여요</p>' : ""}${heroBody}</div>` : `<button class="hmini" data-view="home"${TEST ? ' style="background:#7a2e0e"' : ""}>${TEST ? "🧪 " : ""}<span>지금 할 일</span><b>${nx ? nx[0] + " " + nx[1] : "오늘 마감 완료 🎉"}</b>${TD.length + AH.length ? `<em>할 일 ${TD.length + AH.length}개 더</em>` : ""}<i>오늘 화면 →</i></button>`}
         ${ONLY_OPEN_CLOSE ? "" : VIEW === "home" ? kpis : `<div class="pconly">${kpis}</div>`}
         ${body}
-        ${!bKey() && !ONLY_OPEN_CLOSE ? "" : !bKey() ? `<button class="keybar" data-go="keyin" style="margin-bottom:10px">🔑 이 앱에 매장 열쇠가 없어서 손님 이름, 번호, 계좌가 안 보여요. 눌러서 넣기</button>` : ""}
-        <div class="foot">버전 ${VER}, 기록은 지점 시트에 남아요, <button data-go="keyin">🔑 매장 열쇠 ${bKey() ? "(들어 있음)" : "넣기"}</button>${ONLY_OPEN_CLOSE ? "" : `, <button data-go="branch">지점 바꾸기</button>`}</div>
+        ${!bKey() && !ONLY_OPEN_CLOSE ? "" : !bKey() ? `<button class="keybar" data-go="keyin" style="margin-bottom:10px">🔑 손님 이름, 번호를 보려면 눌러서 매장 코드 4자리를 넣어 주세요</button>` : ""}
+        <div class="foot">버전 ${VER}, 기록은 지점 시트에 남아요, <button data-go="keyin">🔑 매장 코드 ${bKey() ? "(넣음)" : "넣기"}</button>${ONLY_OPEN_CLOSE ? "" : `, <button data-go="branch">지점 바꾸기</button>`}</div>
       </main>
     </div>
     ${VIEWS.length > 1 ? `<nav class="bnav">${VIEWS.map(([k, ic, nm]) => `<button class="${k === VIEW ? "on" : ""}" data-view="${k}"><i>${ic}</i><span>${nm.split(",")[0]}${badge(k)}</span></button>`).join("")}</nav>` : ""}`;
@@ -914,7 +914,7 @@ function replyHtml() {
   const tiles = (RF === "전체" ? L : L.filter(([x]) => x.c === RF)).map(([x, i]) => `<div class="rtile"><button class="rtb" data-rq="${i}"><i>${x.k}</i><b>${esc(x.t)}</b><span>${esc(x.s || "")}</span></button><button class="rteye" data-rv="${i}" aria-label="내용 보기">👁</button></div>`).join("");
   const chip = ([n, u]) => `<span class="rlink"><button data-rlk="${RLINK.findIndex((y) => y[1] === u)}">${n}</button><a href="${esc(u)}" target="_blank" rel="noopener" aria-label="열기">↗</a></span>`;
   const lk = (g) => RLINK.filter(([n, u, gg]) => gg === g && (!q || n.includes(q))).map(chip).join("");
-  return `<div class="card"><h2 style="margin:6px 0 2px">💬 응대 모음</h2>${!bKey() ? `<button class="keybar" data-go="keyin">🔑 이 앱에 매장 열쇠가 없어요. 눌러서 매장 전용 주소를 넣어 주세요</button>` : ""}<div class="desc" style="margin:0 0 8px">누르면 바로 복사돼요. 👁는 내용 보기.</div>
+  return `<div class="card"><h2 style="margin:6px 0 2px">💬 응대 모음</h2>${!bKey() ? `<button class="keybar" data-go="keyin">🔑 손님 이름, 번호를 보려면 눌러서 매장 코드 4자리를 넣어 주세요</button>` : ""}<div class="desc" style="margin:0 0 8px">누르면 바로 복사돼요. 👁는 내용 보기.</div>
     <input class="input" id="rplQ" placeholder="🔍 멘트, 링크 찾기" value="${esc(RQ)}" style="margin:0 0 10px">
     ${cats.length > 1 ? `<div class="chips" style="margin-bottom:8px">${["전체", ...cats].map((c) => `<button class="chip ${RF === c ? "on" : ""}" data-rf="${c}">${c}</button>`).join("")}</div>` : ""}
     <div class="rtiles">${tiles || '<div class="desc">찾는 멘트가 없어요</div>'}</div>
@@ -1226,14 +1226,28 @@ function renderLogin(msg) {
 }
 // 10/21 사장님 "본점에서 웹앱 다운로드 받았는데 계좌가 안 보여": 홈 화면 앱은 브라우저와 저장소가 따로라 열쇠가 없음 → 앱 안에서 주소 붙여넣기
 function sheetKey() {
-  openSheet(`<h2>🔑 매장 열쇠 넣기</h2><div class="desc">카톡으로 받은 <b>${esc(ho(B))} 매장 전용 주소</b>를 그대로 붙여 넣어 주세요. 한 번만 하면 이 앱에서 손님 이름, 번호, 계좌가 계속 보여요.</div>
-    <textarea class="input" id="keyUrl" rows="3" placeholder="https://officialvafriend.github.io/vape/staff/?branch=...#k=..."></textarea><div class="desc" id="keyMsg" style="color:var(--red)"></div>
+  openSheet(`<h2>🔑 매장 코드</h2><div class="desc"><b>${esc(ho(B))}</b> 매장 코드 숫자 4자리를 넣어 주세요. 이 기기에서 처음 한 번만 넣으면 손님 이름, 번호가 계속 보여요.</div>
+    <input class="input" id="keyUrl" inputmode="numeric" autocomplete="off" maxlength="300" placeholder="숫자 4자리" style="font-size:28px;font-weight:800;letter-spacing:8px;text-align:center"><div class="desc" style="font-size:12px">매장 전용 주소를 붙여 넣어도 돼요</div><div class="desc" id="keyMsg" style="color:var(--red)"></div>
     <div class="btns"><button class="btn" data-x>닫기</button><button class="btn primary" id="okKey">넣기</button></div>`);
   setTimeout(() => $("#keyUrl")?.focus(), 50);
 }
 async function doKey() {
-  const v = ($("#keyUrl")?.value || "").trim(), m = v.match(/k=([\w-]{20,})/) || v.match(/^([\w-]{30,})$/);
-  if (!m) { $("#keyMsg").textContent = "주소에 열쇠(#k=…)가 없어요. 매장 전용 주소를 통째로 붙여 넣어 주세요."; return; }
+  const v = ($("#keyUrl")?.value || "").trim();
+  // 숫자 4자리 = 매장 코드: keys.json 의 지점 열쇠(코드로 잠김)를 풀어 저장
+  if (/^\d{4}$/.test(v)) {
+    const ok = $("#okKey"); ok.disabled = true; ok.textContent = "확인 중…";
+    try {
+      const K = await (await fetch(`keys.json?${Date.now()}`, { cache: "no-store" })).json(), e = K[B]; if (!e) throw new Error("no");
+      const base = await crypto.subtle.importKey("raw", new TextEncoder().encode(v), "PBKDF2", false, ["deriveKey"]);
+      const kek = await crypto.subtle.deriveKey({ name: "PBKDF2", hash: "SHA-256", salt: b64u8(e.salt), iterations: K.iter }, base, { name: "AES-GCM", length: 256 }, false, ["decrypt"]);
+      const key = new TextDecoder().decode(await crypto.subtle.decrypt({ name: "AES-GCM", iv: b64u8(e.iv) }, kek, b64u8(e.ct)));
+      try { localStorage.setItem("vf-app-key-" + B, key); } catch {} KEYOBJ = null; DEC.acct = undefined;
+      for (const k of Object.keys(DEC)) if (DEC[k] && DEC[k].bad) delete DEC[k];
+      closeSheet(); toast("🔑 확인됐어요"); render(); await decAll(); render(); return;
+    } catch { ok.disabled = false; ok.textContent = "넣기"; $("#keyMsg").textContent = "매장 코드가 맞지 않아요"; return; }
+  }
+  m = v.match(/k=([\w-]{20,})/) || v.match(/^([\w-]{30,})$/);
+  if (!m) { $("#keyMsg").textContent = "매장 코드 숫자 4자리를 넣어 주세요"; return; }
   const bm = v.match(/branch=([^&#]+)/); if (bm && decodeURIComponent(bm[1]) !== B) { $("#keyMsg").textContent = `다른 지점 주소예요 (${decodeURIComponent(bm[1])}). ${B} 주소를 넣어 주세요.`; return; }
   try { localStorage.setItem("vf-app-key-" + B, m[1]); } catch {} KEYOBJ = null; DEC.acct = undefined;
   for (const k of Object.keys(DEC)) if (DEC[k] && DEC[k].bad) delete DEC[k];
