@@ -209,7 +209,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.21-5";
+const VER = "10.21-6";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -1483,7 +1483,7 @@ async function doClosing() {
     if (MIDMODE) {
       await send({ type: "closing", v: 2, mid: 1, date: todayKey(), nums: { cash: numv("pCash"), card: numv("pCard"), tr: numv("pTr"), etc: numv("pEtc") }, exp, prep: numv("cPrep"), cash, why: ($("#cWhy").value || "").trim().slice(0, 80), kpi, rev: v("cRev"), eng: v("cEng"), ev: v("cEv"), fx: v("cFx"), hn, vm, by });
       MIDPEND = { t: now(), by }; pendSave(); MIDMODE = false; closeSheet(); render(); toast("보냈어요, 1~2분 뒤에 결과가 떠요");
-      let n = 0; const iv = setInterval(async () => { await loadBoard(); const x = TEST ? BOARD?.midCheckTest : BOARD?.midCheck; if (midFresh(x) && x.full) { clearInterval(iv); MIDPEND = null; pendSave(); render(); sheetMidResult(); return; } if (++n >= 36) { clearInterval(iv); MIDPEND = null; pendSave(); render(); toast("결과가 아직 안 왔어요, 잠시 뒤 새로고침해 주세요"); } }, 10e3);
+      const sent = MIDPEND.t; let n = 0; const iv = setInterval(async () => { await loadBoard(); const x = TEST ? BOARD?.midCheckTest : BOARD?.midCheck; if (x && x.t >= sent && x.status !== "확인 중" && x.full) { clearInterval(iv); MIDPEND = null; pendSave(); render(); sheetMidResult(); return; } if (++n >= 36) { clearInterval(iv); MIDPEND = null; pendSave(); render(); toast("결과가 아직 안 왔어요, 잠시 뒤 새로고침해 주세요"); } }, 10e3);
       return;
     }
     await send({ type: "closing", v: 2, date: cDay, nums: { cash: numv("pCash"), card: numv("pCard"), tr: numv("pTr"), etc: numv("pEtc") }, exp, prep: numv("cPrep"), cash, why: ($("#cWhy").value || "").trim().slice(0, 80),
