@@ -215,7 +215,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.21-16";
+const VER = "10.21-17";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -1229,7 +1229,7 @@ function sheetKey() {
   setTimeout(() => $("#keyUrl")?.focus(), 50);
 }
 async function doKey() {
-  const v = ($("#keyUrl")?.value || "").trim(), m = v.match(/k=([w-]{20,})/) || v.match(/^([w-]{30,})$/);
+  const v = ($("#keyUrl")?.value || "").trim(), m = v.match(/k=([\w-]{20,})/) || v.match(/^([\w-]{30,})$/);
   if (!m) { $("#keyMsg").textContent = "주소에 열쇠(#k=…)가 없어요. 매장 전용 주소를 통째로 붙여 넣어 주세요."; return; }
   const bm = v.match(/branch=([^&#]+)/); if (bm && decodeURIComponent(bm[1]) !== B) { $("#keyMsg").textContent = `다른 지점 주소예요 (${decodeURIComponent(bm[1])}). ${B} 주소를 넣어 주세요.`; return; }
   try { localStorage.setItem("vf-app-key-" + B, m[1]); } catch {} KEYOBJ = null; DEC.acct = undefined;
