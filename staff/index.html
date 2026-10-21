@@ -209,7 +209,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.21-7";
+const VER = "10.21-8";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -1527,7 +1527,7 @@ function sheetCreq(cat = "") {
     <div class="desc" style="margin-top:14px">받는 방법</div><div class="chips">${["방문수령", "택배", "퀵"].map((x) => `<button class="chip ${x === cr.how ? "on" : ""}" data-crh="${x}">${x}</button>`).join("")}</div>
     <div class="desc" style="margin-top:14px">결제 <b style="color:var(--red)">*</b></div><div class="chips"><button class="chip" data-crp="결제완료">💳 결제완료</button><button class="chip" data-crp="미결제">미결제</button></div>
     <div class="desc" style="margin-top:14px">지금 상태 <span id="crNote"></span></div><div class="chips" id="crSt">${crStChips()}</div>
-    <div class="desc" style="margin-top:14px">재고 주문요청</div><div class="chips"><button class="chip on" data-crord="0">필요 없음</button><button class="chip" data-crord="1">📦 주문요청 필요</button></div>
+    <div class="desc" style="margin-top:14px">재고 주문요청 <small style="color:var(--red)">결제 완료 건만 (선결제)</small></div><div class="chips"><button class="chip on" data-crord="0">필요 없음</button><button class="chip" data-crord="1">📦 주문요청 필요</button></div>
     <div id="crDueW"><div class="desc" style="margin-top:14px" id="crDueL">손님 수령 예정일</div><div class="chips" style="align-items:center"><button class="chip on" data-crdays="7">7일 뒤 (${md(addDay(7))})</button><input type="date" class="input" id="crDue" min="${addDay(1)}" style="width:auto;flex:1;margin:0"></div></div>
     <div class="desc" style="margin-top:10px">남기는 날짜 <small>(기본 오늘, 예전 건이면 그날로)</small></div><input type="date" class="input" id="crDate" value="${todayKey()}" max="${todayKey()}" style="margin-top:4px">
     <input class="input" id="crPhone" placeholder="고객 연락처 (필수)" inputmode="tel" maxlength="20">
@@ -1564,6 +1564,7 @@ async function doCreq() {
   const byIn = v("#crByIn"); if (byIn) cr.by = byIn;
   if (!cr.by) return toast("담당자를 고르거나 적어 주세요");
   if (!cr.pay) return toast("결제했는지 골라 주세요");
+  if (cr.order && cr.pay !== "결제완료") return toast("주문요청은 결제 완료 건만 가능해요 (선결제)");
   if (v("#crPhone").replace(/\D/g, "").length < 8) return toast("고객 연락처를 넣어 주세요");
   const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 5), by = cr.by; // 10/20 담당자 한 명(칩 또는 직접 적은 이름)
   const body = { type: "creq", id, items: cr.items, free: v("#crFree"), how: cr.how, pay: cr.pay, step: cr.step, days: cr.days, order: cr.order, cat: cr.cat, eng: cr.engManual ? cr.eng : "", // 직접 바꾼 때만 보냄, 아니면 봇이 그 순간 건수로 고름
