@@ -215,7 +215,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.21-17";
+const VER = "10.21-18";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -383,7 +383,7 @@ function render() {
         ${ONLY_OPEN_CLOSE ? "" : VIEW === "home" ? kpis : `<div class="pconly">${kpis}</div>`}
         ${body}
         ${!bKey() && !ONLY_OPEN_CLOSE ? "" : !bKey() ? `<button class="keybar" data-go="keyin" style="margin-bottom:10px">🔑 이 앱에 매장 열쇠가 없어서 손님 이름, 번호, 계좌가 안 보여요. 눌러서 넣기</button>` : ""}
-        <div class="foot">버전 ${VER}, 기록은 지점 시트에 남아요${ONLY_OPEN_CLOSE ? "" : `, <button data-go="branch">지점 바꾸기</button>`}</div>
+        <div class="foot">버전 ${VER}, 기록은 지점 시트에 남아요, <button data-go="keyin">🔑 매장 열쇠 ${bKey() ? "(들어 있음)" : "넣기"}</button>${ONLY_OPEN_CLOSE ? "" : `, <button data-go="branch">지점 바꾸기</button>`}</div>
       </main>
     </div>
     ${VIEWS.length > 1 ? `<nav class="bnav">${VIEWS.map(([k, ic, nm]) => `<button class="${k === VIEW ? "on" : ""}" data-view="${k}"><i>${ic}</i><span>${nm.split(",")[0]}${badge(k)}</span></button>`).join("")}</nav>` : ""}`;
