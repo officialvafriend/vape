@@ -22,6 +22,10 @@
   .hmini{display:flex;align-items:center;gap:12px;width:100%;background:var(--dark);color:#fff;border-radius:16px;padding:12px 18px;margin-bottom:12px;text-align:left}
   .hmini span{font-size:13px;color:#9aa4b2}.hmini b{font-size:16px}.hmini em{font-style:normal;font-size:13px;background:#f04452;border-radius:999px;padding:3px 9px;font-weight:700}.hmini i{margin-left:auto;font-style:normal;font-size:13px;color:#9bd0ff}
   .a2card{padding-bottom:90px}
+  .rqcard{padding:12px 14px!important;margin-bottom:12px}.rqhead{display:flex;align-items:center;margin-bottom:8px}.rqhead b{font-size:15px}.rqmore{margin-left:auto;font-size:13px;font-weight:700;color:#1b64da}
+  .rqrow{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;-webkit-overflow-scrolling:touch}.rqrow+.rqrow{margin-top:6px}
+  .rqk{flex-shrink:0;background:#f2f8ff;border:1px solid #d6e8ff;border-radius:99px;padding:8px 13px;font-size:14px;font-weight:700;color:var(--ink);white-space:nowrap;transition:transform .12s}.rqk:active{transform:scale(.94)}
+  .rql{background:#f2f4f6;border-color:#e5e8eb;font-weight:600;font-size:13px}
   .keybar{display:block;width:100%;text-align:left;background:#fff4dc;color:#8a5a00;font-weight:800;font-size:14px;border-radius:12px;padding:11px 14px;margin:6px 0 10px}
   .rtiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px}@media (max-width:760px){.rtiles{grid-template-columns:1fr 1fr}}
   .rtile{position:relative}.rtb{width:100%;text-align:left;background:#f2f8ff;border:1px solid #d6e8ff;border-radius:14px;padding:11px 34px 11px 12px;display:grid;grid-template-columns:auto 1fr;column-gap:9px;align-items:center;transition:transform .12s;min-height:58px}.rtb:active{transform:scale(.96)}
@@ -215,7 +219,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.21-21";
+const VER = "10.21-22";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -349,7 +353,7 @@ function render() {
     ${kpi("talk", "인수인계, 고객요청", memoN + creqN + "건", `인수인계 ${memoN}, 고객요청 ${creqN}`)}
   </div>`;
   const body = {
-    home: ONLY_OPEN_CLOSE ? `<div class="cols"><div>${openCard}</div><div>${closeCard}</div></div>` : `<div class="cols"><div>${done < N ? openCard : closeCard}${taskCardHtml()}</div><div>${memoCardHtml()}${asPin() ? asCardHtml() : ""}</div></div>`,
+    home: ONLY_OPEN_CLOSE ? `${replyQuickHtml()}<div class="cols"><div>${openCard}</div><div>${closeCard}</div></div>` : `<div class="cols"><div>${done < N ? openCard : closeCard}${taskCardHtml()}</div><div>${memoCardHtml()}${asPin() ? asCardHtml() : ""}</div></div>`,
     work: `<div class="cols"><div>${openCard}</div><div>${closeCard}</div></div>`,
     stock: `<div class="cols one"><div>${surveyCardHtml()}</div></div>`,
     talk: ONLY_OPEN_CLOSE ? talkHtml() : `<div class="cols"><div>${memoCardHtml()}${creqCardHtml()}</div><div>${reqCard}${myQuicksCard()}</div></div>`,
@@ -906,6 +910,11 @@ ${acctNow().holder}으로`;
 const fillRpl = async (b) => (b.includes("{입금계좌}") ? b.replace("{입금계좌}", await acctText()) : b);
 // 10/21 사장님 "전체 보기가 불편": 버튼판. 누르면 바로 복사, [금액] 있는 것만 금액을 물어봄, 👁로 전문 보기
 let RQ = "";
+function replyQuickHtml() {
+  const tiles = RPL.map((x, i) => `<button class="rqk" data-rq="${i}">${x.k} ${esc(x.t)}</button>`).join("");
+  const links = RLINK.filter((x) => x[2] === "베이프렌드").slice(0, 3).map(([n, u]) => `<button class="rqk rql" data-rlk="${RLINK.findIndex((y) => y[1] === u)}">${n}</button>`).join("");
+  return `<div class="card rqcard"><div class="rqhead"><b>💬 바로 복사</b><button class="rqmore" data-view="reply">응대 모음 전체 →</button></div><div class="rqrow">${tiles}</div><div class="rqrow">${links}</div></div>`;
+}
 function replyHtml() {
   if (typeof BOARD?.acct === "string" && !DEC.acct) decOne(BOARD.acct).then((a) => { if (a) { DEC.acct = a; if (VIEW === "reply" && !$("#dim").classList.contains("on")) render(); } });
   const q = RQ.trim();
