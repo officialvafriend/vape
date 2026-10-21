@@ -22,10 +22,10 @@
   .hmini{display:flex;align-items:center;gap:12px;width:100%;background:var(--dark);color:#fff;border-radius:16px;padding:12px 18px;margin-bottom:12px;text-align:left}
   .hmini span{font-size:13px;color:#9aa4b2}.hmini b{font-size:16px}.hmini em{font-style:normal;font-size:13px;background:#f04452;border-radius:999px;padding:3px 9px;font-weight:700}.hmini i{margin-left:auto;font-style:normal;font-size:13px;color:#9bd0ff}
   .a2card{padding-bottom:90px}
-  .rtiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
-  .rtile{position:relative}.rtb{width:100%;text-align:left;background:#f2f8ff;border:1px solid #d6e8ff;border-radius:16px;padding:14px 14px 12px;display:flex;flex-direction:column;gap:3px;transition:transform .12s}.rtb:active{transform:scale(.96)}
-  .rtb i{font-style:normal;font-size:22px}.rtb b{font-size:16px;color:var(--ink)}.rtb span{font-size:13px;color:var(--sub)}
-  .rteye{position:absolute;top:8px;right:8px;width:30px;height:30px;border-radius:50%;background:#fff;font-size:14px;opacity:.75}
+  .rtiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px}@media (max-width:760px){.rtiles{grid-template-columns:1fr 1fr}}
+  .rtile{position:relative}.rtb{width:100%;text-align:left;background:#f2f8ff;border:1px solid #d6e8ff;border-radius:14px;padding:11px 34px 11px 12px;display:grid;grid-template-columns:auto 1fr;column-gap:9px;align-items:center;transition:transform .12s;min-height:58px}.rtb:active{transform:scale(.96)}
+  .rtb i{font-style:normal;font-size:20px;grid-row:span 2}.rtb b{font-size:15px;color:var(--ink);line-height:1.25}.rtb span{font-size:12px;color:var(--sub);line-height:1.3}
+  .rteye{position:absolute;top:50%;transform:translateY(-50%);right:6px;width:26px;height:26px;border-radius:50%;background:#fff;font-size:12px;opacity:.7}
   .rlinks{display:flex;flex-wrap:wrap;gap:8px}.rlink{display:inline-flex;align-items:center;background:#f2f4f6;border-radius:99px;overflow:hidden}.rlink button{padding:9px 12px;font-size:14px;font-weight:700}.rlink a{padding:9px 12px 9px 4px;color:#1b64da;font-weight:800;text-decoration:none}
   .pend{font-style:normal;color:var(--blue);font-weight:800}.pend i{font-style:normal;animation:pdot 1.2s infinite}.pend i:nth-child(2){animation-delay:.2s}.pend i:nth-child(3){animation-delay:.4s}
   @keyframes pdot{0%,80%,100%{opacity:.15}40%{opacity:1}}
@@ -214,7 +214,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.21-12";
+const VER = "10.21-13";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -907,8 +907,8 @@ function replyHtml() {
   const cats = [...new Set(RPL.map((x) => x.c))];
   const tiles = (RF === "전체" ? L : L.filter(([x]) => x.c === RF)).map(([x, i]) => `<div class="rtile"><button class="rtb" data-rq="${i}"><i>${x.k}</i><b>${esc(x.t)}</b><span>${esc(x.s || "")}</span></button><button class="rteye" data-rv="${i}" aria-label="내용 보기">👁</button></div>`).join("");
   const links = RLINK.filter(([n, u]) => !q || n.includes(q)).map(([n, u], i) => `<span class="rlink"><button data-rlk="${RLINK.findIndex((y) => y[1] === u)}">${n}</button><a href="${esc(u)}" target="_blank" rel="noopener" aria-label="열기">↗</a></span>`).join("");
-  return `<div class="card"><div class="lhead"><h2 style="margin:6px 0">💬 응대 모음</h2><input class="input" id="rplQ" placeholder="🔍 찾기" value="${esc(RQ)}" style="max-width:200px;margin:0"></div>
-    <div class="desc" style="margin:2px 0 10px">누르면 바로 복사돼요. 👁는 내용 보기.</div>
+  return `<div class="card"><h2 style="margin:6px 0 2px">💬 응대 모음</h2><div class="desc" style="margin:0 0 8px">누르면 바로 복사돼요. 👁는 내용 보기.</div>
+    <input class="input" id="rplQ" placeholder="🔍 멘트, 링크 찾기" value="${esc(RQ)}" style="margin:0 0 10px">
     ${cats.length > 1 ? `<div class="chips" style="margin-bottom:8px">${["전체", ...cats].map((c) => `<button class="chip ${RF === c ? "on" : ""}" data-rf="${c}">${c}</button>`).join("")}</div>` : ""}
     <div class="rtiles">${tiles || '<div class="desc">찾는 멘트가 없어요</div>'}</div>
     <div class="ntday" style="margin-top:18px">🔗 링크 <small style="font-weight:600">누르면 주소 복사, ↗는 열기</small></div><div class="rlinks">${links}</div>
@@ -917,7 +917,9 @@ function replyHtml() {
 // 누르면: [금액] 있으면 금액만 묻고, 없으면 바로 복사
 async function rplQuick(i) {
   const x = RPL[i]; if (!x) return;
-  const t = await fillRpl(x.b);
+  const acct = DEC.acct ? `${DEC.acct.bank} ${DEC.acct.no}
+${DEC.acct.holder}으로` : BOARD?.acct ? "(매장 전용 주소로 연 기기에서 계좌가 보여요)" : "(이 지점 계좌가 아직 등록 안 됐어요)";
+  const t = x.b.replace("{입금계좌}", acct);
   if (!t.includes("[금액]")) return rplCopy(t);
   RTXT = t;
   openSheet(`<h2>${x.k} ${esc(x.t)}</h2><div class="desc">금액만 넣으면 계좌와 같이 복사돼요</div><input class="input" id="rplAmt" inputmode="numeric" placeholder="금액 (원)" style="font-size:22px;font-weight:800">
@@ -934,7 +936,9 @@ async function sheetRpl(i) {
   openSheet(`<h2>${x.k} ${esc(x.t)}</h2><div class="desc">[금액] 같은 칸을 채운 뒤 복사하세요</div><textarea class="input" id="rplBody" rows="9" style="font-size:15px;line-height:1.55">${esc(RTXT)}</textarea>
     <div class="btns"><button class="btn" data-x>닫기</button><button class="btn primary" data-go="rplcp">복사</button></div>`);
 }
-async function rplCopy(t) { try { await navigator.clipboard.writeText(t); toast("복사했어요, 붙여 넣어 주세요"); } catch { const a = $("#rplBody"); if (a) { a.select(); document.execCommand("copy"); toast("복사했어요"); } else toast("복사가 안 돼요, 길게 눌러 복사해 주세요"); } }
+async function rplCopy(t) { const old = () => { const a = document.createElement("textarea"); a.value = t; a.setAttribute("readonly", ""); a.style.cssText = "position:fixed;top:0;left:0;opacity:0"; document.body.appendChild(a); a.select(); a.setSelectionRange(0, t.length); let ok = false; try { ok = document.execCommand("copy"); } catch {} a.remove(); return ok; };
+  if (old()) return toast("복사했어요, 붙여 넣어 주세요");
+  try { await navigator.clipboard.writeText(t); toast("복사했어요, 붙여 넣어 주세요"); } catch { const a = $("#rplBody"); if (a) { a.select(); document.execCommand("copy"); toast("복사했어요"); } else toast("복사가 안 돼요, 길게 눌러 복사해 주세요"); } }
 let A2 = null;
 function sheetAs2New() {
   if (!working().length) return needIn(() => sheetAs2New());
