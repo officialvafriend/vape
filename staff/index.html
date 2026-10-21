@@ -205,7 +205,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.20-57";
+const VER = "10.21-1";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -1357,7 +1357,7 @@ function sheetClosing() {
     <textarea class="input" id="cWhy" rows="2" placeholder="차액이 난 이유 (예: 잔돈 5만원 바꿔 옴)" style="display:none"></textarea>
     <div class="grp">리뷰, 각인, 이벤트</div><div class="cash"><label><span>리뷰</span><input class="input" id="cRev" inputmode="numeric" placeholder="개"></label><label><span>각인</span><input class="input" id="cEng" inputmode="numeric" placeholder="개"></label><label><span>일회용 이벤트</span><input class="input" id="cEv" inputmode="numeric" placeholder="회"></label><label><span>외국인 방문</span><input class="input" id="cFx" inputmode="numeric" placeholder="명"></label></div>
     <div class="grp">확인</div><button class="check" data-cck="hn"><i>✓</i>히난충 OFF 확인</button><button class="check" data-cck="vm"><i>✓</i>자판기 이상무</button>
-    <div id="cExp"></div><button class="btn sm" data-go="expadd" id="expBtn">＋ 오늘 현금 지출이 있었어요</button>
+    <div id="cExp"></div><button class="btn sm" data-go="expadd" id="expBtn">＋ 오늘 현금 지출이 있었어요 (사유와 금액)</button>
     <div class="desc" style="margin-top:14px">마감 인원: ${esc(working().join(", "))}</div>
     <button class="morebtn" data-go="cmore">포스 숫자가 틀릴 때만 → 직접 입력</button>
     <div id="cMore" style="display:none">
@@ -1372,7 +1372,7 @@ function sheetClosing() {
   closeCalc();
 }
 function expDraw() {
-  $("#cExp").innerHTML = CX.map((x, i) => `<div class="exrow"><input class="input" data-exn="${i}" maxlength="20" placeholder="어디에 (예: 퀵비)" value="${esc(x.n)}"><input class="input" data-exa="${i}" inputmode="numeric" placeholder="원" value="${x.a ? x.a.toLocaleString() : ""}"><button class="exdel" data-exdel="${i}">✕</button></div>`).join("");
+  $("#cExp").innerHTML = CX.map((x, i) => `<div class="exrow"><input class="input" data-exn="${i}" maxlength="20" placeholder="지출 사유 (예: 택배, 퀵비)" value="${esc(x.n)}"><input class="input" data-exa="${i}" inputmode="numeric" placeholder="원" value="${x.a ? x.a.toLocaleString() : ""}"><button class="exdel" data-exdel="${i}">✕</button></div>`).join("");
 }
 const expSum = () => CX.reduce((a, x) => a + (+x.a || 0), 0);
 // 계산 한 번에: 화면 숫자 갱신 + 보내기 버튼의 '남은 칸'
@@ -1412,6 +1412,7 @@ function closeBack() { const sh = $("#sheet"); const b = sh.querySelector(".ccon
 async function doClosing() {
   const k = closeCalc(), v = (id) => ($("#" + id).value || "").replace(/\D/g, "");
   const hn = $('[data-cck="hn"]').classList.contains("on"), vm = $('[data-cck="vm"]').classList.contains("on");
+  if (CX.some((x) => +x.a && !String(x.n || "").trim())) { toast("지출 사유를 적어 주세요 (예: 택배)"); document.querySelector(`[data-exn="${CX.findIndex((x) => +x.a && !String(x.n || "").trim())}"]`)?.focus(); return; }
   const okb = $("#okClose2"); okb.disabled = true; okb.textContent = "보내는 중…";
   const cDay = ($("#cDate") && $("#cDate").value) || todayKey(), by = working().join(", ");
   const cash = Object.fromEntries(CASH.map(([id]) => [id, cashN(id)])), exp = CX.filter((x) => x.a).map((x) => [String(x.n || "지출").slice(0, 20), +x.a]).slice(0, 8);
