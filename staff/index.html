@@ -214,7 +214,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.21-13";
+const VER = "10.21-14";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -884,12 +884,13 @@ const RPL = [
   { c: "기기, AS", k: "📹", t: "사용 설명", s: "배송 이벤트 안내 포함", b: "안녕하세요, 고객님! 오늘 구매하신 기기 사용 설명 영상입니다.\n현재 베이프렌드는 배송 이벤트도 진행하고 있어서, 전국 어디든 택배, 대구 안은 퀵도 가능합니다. 다음 주문 때 참고 부탁드려요!\n기기 사용하시면서 불편하신 점, 주문, 재고 확인 등 언제든 편하게 연락 주세요!" },
   { c: "기기, AS", k: "🛡", t: "AS 보증", s: "택배 기기, 6개월", b: "기기는 개봉하지 않고, 명함에 AS 보증 날짜를 적어서 보내 드리겠습니다!\n6개월 동안 기기 박스와 명함을 잘 보관해 주세요 :)\nAS는 침수, 누수, 파손을 제외하고 보증서를 지참하시면 가능합니다!" },
 ];
+// 10/21 사장님: 베이프렌드 웹사이트는 따로 모아 두기, 이벤트 사이트는 아래로
 const RLINK = [
-  ["💬 온라인 응대", "https://m.site.naver.com/2gkoR"],
-  ["🛒 온라인 주문", "https://xn--2e0by8h8ay63euqa523csfar9az81e.com/"],
-  ["🔧 기기별 코일, 팟 호환표", "https://stellular-genie-87e287.netlify.app/"],
-  ["🧪 베이프렌드 액상 목록", "https://stellular-genie-87e287.netlify.app/liquid.html"],
-  ["💨 일회용 제품 안내", "https://stellular-genie-87e287.netlify.app/disposable.html"],
+  ["💬 온라인 응대", "https://m.site.naver.com/2gkoR", "베이프렌드"],
+  ["🔧 기기별 코일, 팟 호환표", "https://stellular-genie-87e287.netlify.app/", "베이프렌드"],
+  ["🧪 베이프렌드 액상 목록", "https://stellular-genie-87e287.netlify.app/liquid.html", "베이프렌드"],
+  ["💨 일회용 제품 안내", "https://stellular-genie-87e287.netlify.app/disposable.html", "베이프렌드"],
+  ["🎁 이벤트 사이트", "https://xn--2e0by8h8ay63euqa523csfar9az81e.com/", "이벤트"],
 ];
 let RF = "전체", RTXT = "";
 async function acctText() {
@@ -906,12 +907,14 @@ function replyHtml() {
   const L = RPL.map((x, i) => [x, i]).filter(([x]) => !q || (x.t + x.s + x.b).includes(q));
   const cats = [...new Set(RPL.map((x) => x.c))];
   const tiles = (RF === "전체" ? L : L.filter(([x]) => x.c === RF)).map(([x, i]) => `<div class="rtile"><button class="rtb" data-rq="${i}"><i>${x.k}</i><b>${esc(x.t)}</b><span>${esc(x.s || "")}</span></button><button class="rteye" data-rv="${i}" aria-label="내용 보기">👁</button></div>`).join("");
-  const links = RLINK.filter(([n, u]) => !q || n.includes(q)).map(([n, u], i) => `<span class="rlink"><button data-rlk="${RLINK.findIndex((y) => y[1] === u)}">${n}</button><a href="${esc(u)}" target="_blank" rel="noopener" aria-label="열기">↗</a></span>`).join("");
+  const chip = ([n, u]) => `<span class="rlink"><button data-rlk="${RLINK.findIndex((y) => y[1] === u)}">${n}</button><a href="${esc(u)}" target="_blank" rel="noopener" aria-label="열기">↗</a></span>`;
+  const lk = (g) => RLINK.filter(([n, u, gg]) => gg === g && (!q || n.includes(q))).map(chip).join("");
   return `<div class="card"><h2 style="margin:6px 0 2px">💬 응대 모음</h2><div class="desc" style="margin:0 0 8px">누르면 바로 복사돼요. 👁는 내용 보기.</div>
     <input class="input" id="rplQ" placeholder="🔍 멘트, 링크 찾기" value="${esc(RQ)}" style="margin:0 0 10px">
     ${cats.length > 1 ? `<div class="chips" style="margin-bottom:8px">${["전체", ...cats].map((c) => `<button class="chip ${RF === c ? "on" : ""}" data-rf="${c}">${c}</button>`).join("")}</div>` : ""}
     <div class="rtiles">${tiles || '<div class="desc">찾는 멘트가 없어요</div>'}</div>
-    <div class="ntday" style="margin-top:18px">🔗 링크 <small style="font-weight:600">누르면 주소 복사, ↗는 열기</small></div><div class="rlinks">${links}</div>
+    <div class="ntday" style="margin-top:18px">🌐 베이프렌드 웹사이트 <small style="font-weight:600">누르면 주소 복사, ↗는 열기</small></div><div class="rlinks">${lk("베이프렌드")}</div>
+    ${lk("이벤트") ? `<div class="ntday" style="margin-top:14px">🎁 이벤트</div><div class="rlinks">${lk("이벤트")}</div>` : ""}
     <div class="ntday" style="margin-top:18px">🖼 이미지</div><div class="desc">각인 도안, 안내 이미지는 사진을 받으면 여기에 작게 모아 둘게요.</div></div>`;
 }
 // 누르면: [금액] 있으면 금액만 묻고, 없으면 바로 복사
