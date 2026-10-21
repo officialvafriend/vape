@@ -209,7 +209,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.21-8";
+const VER = "10.21-9";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -1690,7 +1690,9 @@ async function doIn(name) {
     render(); if (!sheetHandoff(name)) { closeSheet(); runAfterIn(); } toast(`${name}님 출근 ${now()}`);
   } catch (e) { $("#okIn").disabled = false; fail(e); }
 }
+let CKBY = "";
 function sheetCheck(kind) {
+  CKBY = working().join(", ") || CKBY; // 10/21: 보내는 순간 퇴근 처리돼 이름이 비어도 열 때 근무자로
   const items = CHECK[kind], pn = kind === "open" && BOARD?.posNext && BOARD.posNext.date === todayKey() ? BOARD.posNext : null;
   openSheet(`<h2>${kind === "open" ? "🌅 오픈 체크" : "🌙 마감 체크"}</h2><div class="desc">한 것을 눌러 체크하세요. 못 한 건 그대로 두고 보내면 '못 한 항목'으로 보고돼요.</div>
     ${items.map((x, i) => `<button class="check" data-ck="${i}"><i>✓</i>${esc(x)}</button>`).join("")}
@@ -1710,7 +1712,7 @@ async function doCheck(kind) {
   if (missed.length && !confirm(`못 한 항목 ${missed.length}개:\n${missed.join("\n")}\n\n이대로 보고할까요?`)) return;
   $("#okCk").disabled = true;
   try {
-    await send({ type: kind, missed, by: working().join(", "), ...(kind === "open" ? { prep, prepDiff } : {}) });
+    await send({ type: kind, missed, by: working().join(", ") || CKBY, ...(kind === "open" ? { prep, prepDiff } : {}) });
     const s = st(); s[kind] = { t: now(), missed }; if (kind === "open") s.prep = prep; saveSt(s);
     closeSheet(); render(); toast(`${kind === "open" ? "오픈 체크 완료, 돈통은 봇이 포스와 맞춰보는 중" : "마감 체크 완료"}`);
   } catch (e) { $("#okCk").disabled = false; fail(e); }
