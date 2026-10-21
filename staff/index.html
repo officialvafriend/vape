@@ -219,7 +219,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.21-22";
+const VER = "10.21-23";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -1665,7 +1665,7 @@ function crDraw() {
 }
 const addDay = (n) => new Date(Date.parse(todayKey()) + n * 864e5).toISOString().slice(0, 10);
 const crDueSync = () => {};
-document.addEventListener("keydown", (e) => { if (e.key === "Enter" && e.target?.id === "ulPw") doUnlock(); });
+document.addEventListener("keydown", (e) => { if (e.key === "Enter" && e.target?.id === "ulPw") doUnlock(); if (e.key === "Enter" && e.target?.id === "keyUrl" && !$("#okKey")?.disabled) doKey(); });
 let A2QT = 0, RQT = 0;
 document.addEventListener("input", (e) => {
   if (e.target?.id === "rplQ") { RQ = e.target.value; clearTimeout(RQT); RQT = setTimeout(() => { render(); const q = $("#rplQ"); if (q) { q.focus(); q.setSelectionRange(q.value.length, q.value.length); } }, 300); return; }
