@@ -215,7 +215,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.21-18";
+const VER = "10.21-19";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -880,6 +880,7 @@ async function doNoteCmt() {
 }
 // ── 응대 모음 (10/21) ── 사장님 "온라인 고객 응대 멘트 모음집, 보내는 이미지 모아두기, 지점마다 계좌가 다름"
 // {입금계좌}는 지점 계좌(board.acct, 지점 열쇠로 잠김)로 채움. 복사 전에 창에서 고칠 수 있음(기기 이름, 금액 등)
+const acctNow = () => (BOARD?.acct && typeof BOARD.acct === "object" ? BOARD.acct : DEC.acct || null);
 const RPL = [
   { c: "주문, 입금", k: "💳", t: "입금 안내", s: "계좌 + 금액", b: "{입금계좌}\n[금액]원 보내 주시면 됩니다." },
   { c: "주문, 입금", k: "🪪", t: "성인 인증", s: "신분증 셀카 요청", b: "비대면 구매는 미성년자 구매가 많아서, 번거로우시겠지만 1회 성인 인증 부탁드립니다!\n\n신분증을 들고 계신 셀카 한 장 보내 주시면 됩니다. 꼭 고객님 얼굴 전체와 신분증이 함께 나오도록 부탁드릴게요 😊\n\n신분증 따로, 얼굴 따로 X (주민번호 뒷자리는 가려 주세요)\n신분증을 들고 있는 얼굴 전체가 나오게 찍어 주세요!\n\n인증 후 보내 주신 사진은 삭제하셔도 됩니다!" },
@@ -896,6 +897,8 @@ const RLINK = [
 ];
 let RF = "전체", RTXT = "";
 async function acctText() {
+  if (acctNow()) return `${acctNow().bank} ${acctNow().no}
+${acctNow().holder}으로`;
   if (!BOARD?.acct) return "(이 지점 계좌가 아직 등록 안 됐어요)";
   const a = DEC.acct || (DEC.acct = await decOne(BOARD.acct)); if (!a) return "(매장 전용 주소로 연 기기에서 계좌가 보여요)";
   return `${a.bank} ${a.no}\n${a.holder}으로`;
@@ -904,7 +907,7 @@ const fillRpl = async (b) => (b.includes("{입금계좌}") ? b.replace("{입금�
 // 10/21 사장님 "전체 보기가 불편": 버튼판. 누르면 바로 복사, [금액] 있는 것만 금액을 물어봄, 👁로 전문 보기
 let RQ = "";
 function replyHtml() {
-  if (BOARD?.acct && !DEC.acct) decOne(BOARD.acct).then((a) => { if (a) { DEC.acct = a; if (VIEW === "reply" && !$("#dim").classList.contains("on")) render(); } });
+  if (typeof BOARD?.acct === "string" && !DEC.acct) decOne(BOARD.acct).then((a) => { if (a) { DEC.acct = a; if (VIEW === "reply" && !$("#dim").classList.contains("on")) render(); } });
   const q = RQ.trim();
   const L = RPL.map((x, i) => [x, i]).filter(([x]) => !q || (x.t + x.s + x.b).includes(q));
   const cats = [...new Set(RPL.map((x) => x.c))];
@@ -923,11 +926,11 @@ function replyHtml() {
 async function rplQuick(i) {
   const x = RPL[i]; if (!x) return;
   if (x.b.includes("{입금계좌}")) {
-    if (BOARD?.acct && !DEC.acct) { const a = await decOne(BOARD.acct); if (a) DEC.acct = a; }
-    if (!DEC.acct) return openSheet(`<h2>💳 입금 안내</h2><div class="say">${BOARD?.acct ? (bKey() ? "계좌를 못 풀었어요. 새로고침 후 다시 눌러 주세요." : "이 기기(앱)에는 매장 열쇠가 없어서 계좌가 안 보여요. 아래 [열쇠 넣기]에서 카톡으로 받은 매장 전용 주소를 붙여 넣어 주세요.") : "이 지점 계좌가 아직 등록 안 됐어요. 사장님께 알려 주세요."}</div><div class="btns"><button class="btn" data-x>닫기</button>${BOARD?.acct && !bKey() ? `<button class="btn primary" data-go="keyin">열쇠 넣기</button>` : ""}</div>`);
+    if (typeof BOARD?.acct === "string" && !DEC.acct) { const a = await decOne(BOARD.acct); if (a) DEC.acct = a; }
+    if (!acctNow()) return openSheet(`<h2>💳 입금 안내</h2><div class="say">${BOARD?.acct ? (bKey() ? "계좌를 못 풀었어요. 새로고침 후 다시 눌러 주세요." : "이 기기(앱)에는 매장 열쇠가 없어서 계좌가 안 보여요. 아래 [열쇠 넣기]에서 카톡으로 받은 매장 전용 주소를 붙여 넣어 주세요.") : "이 지점 계좌가 아직 등록 안 됐어요. 사장님께 알려 주세요."}</div><div class="btns"><button class="btn" data-x>닫기</button>${BOARD?.acct && !bKey() ? `<button class="btn primary" data-go="keyin">열쇠 넣기</button>` : ""}</div>`);
   }
-  const acct = DEC.acct ? `${DEC.acct.bank} ${DEC.acct.no}
-${DEC.acct.holder}으로` : BOARD?.acct ? "(매장 전용 주소로 연 기기에서 계좌가 보여요)" : "(이 지점 계좌가 아직 등록 안 됐어요)";
+  const acct = acctNow() ? `${acctNow().bank} ${acctNow().no}
+${acctNow().holder}으로` : BOARD?.acct ? "(매장 전용 주소로 연 기기에서 계좌가 보여요)" : "(이 지점 계좌가 아직 등록 안 됐어요)";
   const t = x.b.replace("{입금계좌}", acct);
   if (!t.includes("[금액]")) return rplCopy(t);
   RTXT = t;
