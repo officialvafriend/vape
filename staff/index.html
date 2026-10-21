@@ -1665,7 +1665,7 @@ function crDraw() {
 }
 const addDay = (n) => new Date(Date.parse(todayKey()) + n * 864e5).toISOString().slice(0, 10);
 const crDueSync = () => {};
-document.addEventListener("keydown", (e) => { if (e.key === "Enter" && e.target?.id === "ulPw") doUnlock(); if (e.key === "Enter" && e.target?.id === "keyUrl" && !$("#okKey")?.disabled) doKey(); });
+document.addEventListener("keydown", (e) => { if (e.key === "Enter" && e.target?.id === "ulPw") doUnlock(); if (e.key === "Enter" && e.target?.id === "keyUrl" && !$("#okKey")?.disabled) doKey(); if (e.key === "Enter" && e.target?.id === "rplAmt") { e.preventDefault(); rplAmtCopy(); } });
 let A2QT = 0, RQT = 0;
 document.addEventListener("input", (e) => {
   if (e.target?.id === "rplQ") { RQ = e.target.value; clearTimeout(RQT); RQT = setTimeout(() => { render(); const q = $("#rplQ"); if (q) { q.focus(); q.setSelectionRange(q.value.length, q.value.length); } }, 300); return; }
