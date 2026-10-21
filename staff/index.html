@@ -205,7 +205,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.21-1";
+const VER = "10.21-3";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -417,8 +417,11 @@ async function doLead() {
 }
 // ── 중간 체크 (10/20) ── 시간 상관없이, 지금 돈통이 포스(개점준비금 + 지금까지 현금매출 − 지출)와 맞는지 미리 확인
 const MW = (n) => Number(n || 0).toLocaleString("ko-KR");
+let MIDPEND = null;
+const midFresh = (x) => x && MIDPEND && x.t >= MIDPEND.t && x.status !== "확인 중";
 function midInfo() {
-  const x = TEST ? BOARD?.midCheckTest : BOARD?.midCheck;
+  let x = TEST ? BOARD?.midCheckTest : BOARD?.midCheck;
+  if (MIDPEND && !midFresh(x)) x = { t: MIDPEND.t, by: MIDPEND.by, status: "확인 중" };
   if (!x) return { t: "마감 전에 돈통이 포스와 맞는지 미리 확인" };
   const head = `${x.t} ${esc(x.by || "")}`, extra = `${x.bills != null ? `, 지금까지 객수 ${x.bills}명` : ""}${x.des != null ? `, 지정 ${x.des}%` : ""}`;
   if (x.status === "같음") return { t: `${head}, 돈통 포스와 같아요${extra}` };
@@ -442,9 +445,13 @@ async function doMid() {
   $("#okMid").disabled = true;
   try {
     await send({ type: "midcheck", drawer: dr, exp: ex, by });
-    if (BOARD) BOARD[TEST ? "midCheckTest" : "midCheck"] = { t: now(), by, status: "확인 중" };
-    closeSheet(); render(); toast("보냈어요, 1분쯤 뒤에 결과가 떠요");
-    let n = 0; const iv = setInterval(() => { loadBoard(); if (++n >= 12) clearInterval(iv); }, 10e3);
+    MIDPEND = { t: now(), by };
+    closeSheet(); render(); toast("보냈어요, 1~2분 뒤에 결과가 떠요");
+    let n = 0; const iv = setInterval(async () => {
+      await loadBoard(); const x = TEST ? BOARD?.midCheckTest : BOARD?.midCheck;
+      if (midFresh(x)) { clearInterval(iv); MIDPEND = null; render(); const r = midInfo(); openSheet(`<h2>🔎 중간 체크 결과</h2><div class="say" style="font-size:18px;font-weight:800;${r.w ? "color:var(--red)" : ""}">${r.t}</div><div class="btns"><button class="btn primary" data-x>확인</button></div>`); return; }
+      if (++n >= 36) { clearInterval(iv); MIDPEND = null; render(); toast("결과가 아직 안 왔어요, 잠시 뒤 새로고침해 주세요"); }
+    }, 10e3);
   } catch (e) { $("#okMid").disabled = false; fail(e); }
 }
 // ── 요청 탭 (10/20 사장님 "보기 불편"): 한 칸, 위 전환 버튼, 거르기 칩, 2줄 목록, 줄 누르면 상세 창
@@ -1320,13 +1327,38 @@ async function decOne(enc) {
   try { if (!KEYOBJ) { const raw = Uint8Array.from(atob(k.replace(/-/g, "+").replace(/_/g, "/") + "==".slice(0, (4 - (k.length % 4)) % 4)), (c) => c.charCodeAt(0)); KEYOBJ = await crypto.subtle.importKey("raw", raw, "AES-GCM", false, ["decrypt"]); }
     const b = Uint8Array.from(atob(enc), (c) => c.charCodeAt(0)); return JSON.parse(new TextDecoder().decode(await crypto.subtle.decrypt({ name: "AES-GCM", iv: b.slice(0, 12) }, KEYOBJ, b.slice(12)))); } catch { return null; }
 }
+// 경고 한 줄 → 확인할 것 목록 (방향에 따라 다르게)
+function warnHelp(w) {
+  const num = (re) => { const m = w.match(re); return m ? +m[1].replace(/,/g, "") * (m[0].includes("-") ? -1 : 1) : 0; };
+  if (/^돈통 차액/.test(w)) {
+    const d = num(/[+-]?([\d,]+)원/);
+    return d < 0 ? ["오늘 돈통에서 쓴 돈(택배, 퀵, 소모품)을 지출에 안 적었는지", "현금 환불이나 교환 차액을 포스에 안 찍었는지", "현금 결제를 포스에 카드나 이체로 잘못 찍었는지", "거스름돈을 더 드렸는지", "돈통을 다시 세기 (5만원, 1만원 장수, 잔돈)", "오늘 준비금 숫자가 맞는지"]
+      : ["현금으로 받은 판매를 포스에 안 찍었는지", "카드나 이체 결제를 포스에 현금으로 잘못 찍었는지", "지출 금액을 실제보다 크게 적었는지", "돈통을 다시 세기 (5만원, 1만원 장수, 잔돈)", "오늘 준비금 숫자가 맞는지"];
+  }
+  if (/^이체 .*≠ 은행/.test(w)) {
+    const m = w.match(/이체 ([\d,]+) ≠ .*?([\d,]+) \(차이/); const pos = m ? +m[1].replace(/,/g, "") : 0, bank = m ? +m[2].replace(/,/g, "") : 0;
+    return pos > bank ? ["포스에는 이체로 찍었는데 본점 통장에 안 들어온 돈이 있는지 (다른 계좌, 직원 계좌로 받음)", "어제 미리 입금받은 손님 건을 오늘 포스에 한 번 더 찍었는지", "카드나 현금 결제를 포스에 이체로 잘못 찍었는지", "손님이 보냈다고 했는데 아직 입금이 안 된 건 아닌지"]
+      : ["통장에 들어왔는데 포스에 이체로 안 찍은 판매가 있는지 (현금으로 찍었거나 아예 안 찍음)", "이체 받은 손님 결제를 포스에 카드로 잘못 찍었는지", "판매가 아닌 입금(환불 되돌려받음, 개인 입금)이 섞였는지"];
+  }
+  if (/^포스 현금 과부족/.test(w)) return ["오늘 현금 지출을 지출 칸에 다 적었는지 (금액이 같으면 문제없음)", "포스 일마감 때 시재 입력을 잘못했는지"];
+  if (/^직원 입력 ≠ 포스/.test(w)) return ["아래 '직접 입력'에 적은 숫자에 오타가 없는지", "포스 일마감 화면 숫자를 다시 보고 맞게 적기"];
+  if (/일마감이 아직/.test(w)) return ["포스에서 일마감을 먼저 하고 마감 보고를 다시 보내기"];
+  if (/포스 숫자를 못 가져왔어요/.test(w)) return ["잠시 뒤 마감 보고를 다시 보내기", "계속 안 되면 팀장님께 알리기"];
+  return ["숫자를 다시 확인하고 마감 보고를 다시 보내기"];
+}
 async function sheetReport() {
   const c = TEST ? BOARD?.closingTest : BOARD?.closing;
   if (!c || !c.rep) { openSheet(`<h2>📋 마감보고</h2><div class="desc">봇이 포스 숫자로 마감보고를 만드는 중이에요. 1분쯤 뒤에 다시 눌러 주세요.</div><div class="btns"><button class="btn" data-x>닫기</button></div>`); loadBoard(); return; }
   const d = await decOne(c.rep);
   if (!d) return openSheet(`<h2>📋 마감보고</h2><div class="desc">이 기기에서는 마감보고를 열 수 없어요. 매장 전용 주소로 한 번 열어 둔 기기에서 열어 주세요.</div><div class="btns"><button class="btn" data-x>닫기</button></div>`);
+  const f = c.full ? await decOne(c.full) : null, W = (f?.w?.length ? f.w : c.warn) || [];
+  const fullBox = f ? `<details ${W.length ? "open" : ""} style="margin-top:12px"><summary style="font-weight:800;cursor:pointer">📄 마감 결과 전체 보기</summary><pre style="white-space:pre-wrap;font-family:inherit;font-size:14px;line-height:1.55;background:#f9fafb;border-radius:12px;padding:12px;margin-top:8px">${esc(f.t)}</pre></details>` : "";
+  if (W.length) return openSheet(`<h2>⚠️ 안 맞는 게 있어요</h2><div class="desc">다 맞아야 매출보고방 보고문이 나와요. 아래를 확인하고 고친 뒤 마감 보고를 다시 보내 주세요.</div>
+    ${W.map((w) => `<div style="border:2px solid var(--red);border-radius:14px;padding:12px 14px;margin-top:10px"><div style="font-weight:800;color:var(--red);font-size:16px">${esc(w)}</div><div style="font-size:14px;color:var(--sub);margin:8px 0 4px">이걸 확인해 주세요</div>${warnHelp(w).map((h) => `<div style="font-size:15px;line-height:1.5;padding:2px 0">☐ ${esc(h)}</div>`).join("")}</div>`).join("")}
+    <div class="desc" style="margin-top:10px">원인을 못 찾으면 팀장님께 알려 주세요.</div>${fullBox}
+    <div class="btns"><button class="btn" data-x>닫기</button><button class="btn primary" data-go="closing">마감 보고 다시 하기</button></div>`);
   const warn = (c.warn || []).length ? `<div class="desc" style="color:var(--red);font-weight:700;margin-top:8px">⚠️ ${esc(c.warn.join(" / "))}<br>마감이 맞는지 확인하고 보내 주세요.</div>` : `<div class="desc" style="color:var(--green);font-weight:700;margin-top:8px">✅ 마감이 맞아요. 복사해서 매출보고방에 올려 주세요.</div>`;
-  openSheet(`<h2>📋 매출보고방에 올릴 마감보고</h2>${warn}<textarea class="input" id="repBody" rows="18" style="font-size:15px;line-height:1.5">${esc(d.t)}</textarea>
+  openSheet(`<h2>✅ 다 맞아요, 보고해 주세요</h2>${fullBox}<div class="desc" style="margin-top:12px">매출보고방에 올릴 마감보고</div><textarea class="input" id="repBody" rows="18" style="font-size:15px;line-height:1.5">${esc(d.t)}</textarea>
     <div class="desc" style="font-weight:800;color:var(--ink)">[정각에 보고 해주세요.]</div>
     <div class="btns"><button class="btn" data-x>닫기</button><button class="btn primary" data-go="repcopy">마감보고 복사</button></div>`);
 }
@@ -1335,7 +1367,7 @@ function closeRowHtml(stepRow) {
   const bc = BOARD?.closing && BOARD.closing.date === closeDay() ? BOARD.closing : null;
   const c = CLOSE_SENT && CLOSE_SENT.date === closeDay() && (!bc || CLOSE_SENT.at >= bc.at) ? CLOSE_SENT : bc;
   const info = !c ? { t: "아직 안 함, 포스 일마감 숫자와 돈통" } : c.status === "done" ? ((c.warn || []).length ? { t: `${c.at} 보고됨, 확인 필요: ` + c.warn.join(" / "), w: 1 } : { t: `${c.at} 보고 완료, ${c.by}, 돈통 차액 없음` }) : c.status === "error" ? { t: `못 보냈어요: ${c.err || ""}`, w: 1 } : { t: "보내는 중…" };
-  return stepRow("💰", c?.status === "done", "마감 보고", info, `${c?.status === "done" ? '<button class="act" data-go="report" style="margin-right:6px">📋 마감보고 복사</button>' : ""}<button class="act ${c?.status === "done" ? "gray" : ""}" data-go="closing">${c ? "다시" : "보고"}</button>`);
+  return stepRow("💰", c?.status === "done", "마감 보고", info, `${c?.status === "done" ? '<button class="act" data-go="report" style="margin-right:6px">📋 마감 결과</button>' : ""}<button class="act ${c?.status === "done" ? "gray" : ""}" data-go="closing">${c ? "다시" : "보고"}</button>`);
 }
 // 입력 칸: [id, 이름, 필수]
 const SALES = [["pCash", "현금", 0], ["pCard", "카드", 0], ["pTr", "이체", 0], ["pEtc", "기타 (회원포인트 등)", 0]]; // 10/19 오후: 포스에서 자동(본사 계정), 직원 입력은 선택
@@ -1424,8 +1456,9 @@ async function doClosing() {
     if (asPin() && !TEST) { try { await asApi({ action: "closeAdd", date: cDay, branch: B, by, cash, rev: v("cRev"), eng: v("cEng"), hn, vm, ua: navigator.userAgent.slice(0, 60), sales: { 현금: numv("pCash"), 카드: numv("pCard"), 이체: numv("pTr"), 기타: numv("pEtc") }, exp: k.exp, diff: k.diff, bills: kpi.bills }); sheetOk = ", 지점 시트에도 기록"; } catch (e2) { sheetOk = ", 지점 시트 기록 실패(" + e2.message + ")"; } }
     ls.set(nextKey(), { d: cDay, v: k.drawer - k.sij });
     if (cDay === closeDay()) CLOSE_SENT = { date: cDay, status: "done", at: now(), by, warn: k.diff ? [`돈통 차액 ${(k.diff > 0 ? "+" : "") + k.diff.toLocaleString()}원`] : [] };
-    closeSheet(); render(); toast(`${cDay === todayKey() ? "" : cDay.slice(5).replace("-", "/") + " "}마감 보고를 보냈어요, 1분쯤 뒤 [📋 마감보고 복사]에서 복사해 주세요`);
-    let rn = 0; const ri = setInterval(() => { loadBoard(); if (++rn >= 10) clearInterval(ri); }, 10e3);
+    closeSheet(); render(); toast(`${cDay === todayKey() ? "" : cDay.slice(5).replace("-", "/") + " "}마감 보고를 보냈어요, 1~2분 뒤에 결과가 떠요`);
+    // 10/21: 결과가 오면 바로 결과 창(다 맞으면 보고문, 안 맞으면 확인할 것)
+    const sentAt = now(); let rn = 0; const ri = setInterval(async () => { await loadBoard(); const bc = TEST ? BOARD?.closingTest : BOARD?.closing; if (bc && bc.date === cDay && bc.at >= sentAt && bc.full) { clearInterval(ri); if (!$("#dim").classList.contains("on")) sheetReport(); return; } if (++rn >= 36) clearInterval(ri); }, 10e3);
   } catch (e) { okb.disabled = false; okb.textContent = "다시 보내기"; fail(e); }
 }
 // 돈통 칸: [id, 이름, 단위, 한 장(개) 금액], 기타는 금액(원) 그대로
