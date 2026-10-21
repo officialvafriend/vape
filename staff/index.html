@@ -22,6 +22,8 @@
   .hmini{display:flex;align-items:center;gap:12px;width:100%;background:var(--dark);color:#fff;border-radius:16px;padding:12px 18px;margin-bottom:12px;text-align:left}
   .hmini span{font-size:13px;color:#9aa4b2}.hmini b{font-size:16px}.hmini em{font-style:normal;font-size:13px;background:#f04452;border-radius:999px;padding:3px 9px;font-weight:700}.hmini i{margin-left:auto;font-style:normal;font-size:13px;color:#9bd0ff}
   .a2card{padding-bottom:90px}
+  .midok{text-align:center;padding:10px 0 4px}.midokc{width:96px;height:96px;margin:0 auto;border-radius:50%;background:var(--green);color:#fff;font-size:60px;font-weight:900;line-height:96px;animation:midpop .55s cubic-bezier(.2,1.6,.4,1) both}
+  @keyframes midpop{0%{transform:scale(0) rotate(-30deg);opacity:0}100%{transform:scale(1) rotate(0);opacity:1}}
   .ntday{font-size:14px;font-weight:800;color:var(--sub);margin:16px 2px 8px}
   .ntcard{background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px 16px;margin-bottom:10px}
   .nth{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px;color:var(--sub)}
@@ -205,7 +207,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.21-3";
+const VER = "10.21-4";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -311,7 +313,7 @@ function render() {
       ${stepRow(3, steps[2], "아침 재고보고", sd ? { t: `${sd.t} 완료, ${esc(sd.by || "")}` } : { t: "포스 재고가 미리 들어가 있어요" }, `<a class="act ${steps[2] ? "gray" : ""}" href="${SITE}stock/?branch=${encodeURIComponent(B)}${TEST ? "&test=1" : ""}&by=${encodeURIComponent(working.map((x) => x.name).join(", "))}&back=${encodeURIComponent(location.pathname)}">${steps[2] ? "다시" : "하기"}</a>`)}
     </div>`;
   const closeCard = `<div class="card"><h2>마감</h2>
-      ${stepRow("🔎", false, "중간 체크", midInfo(), `<button class="act gray" data-go="mid">체크</button>`)}
+      ${stepRow("🔎", (TEST ? BOARD?.midCheckTest : BOARD?.midCheck)?.status === "같음", "중간 체크", midInfo(), `${(TEST ? BOARD?.midCheckTest : BOARD?.midCheck)?.full ? '<button class="act" data-go="midres" style="margin-right:6px">결과</button>' : ""}<button class="act gray" data-go="mid">체크</button>`)}
       ${stepRow("🌙", !!s.close, "마감 체크", s.close ? { t: `${s.close.t} 완료${s.close.missed.length ? `, 못 한 것 ${s.close.missed.length}개` : ""}`, w: s.close.missed.length } : { t: "아직 안 함" }, `<button class="act ${s.close ? "gray" : ""}" data-go="close">${s.close ? "다시" : "체크"}</button>`)}
       ${CLOSE_OK.includes(B) ? closeRowHtml(stepRow) : ""}
       ${stepRow("👋", s.ins.length > 0 && !working.length, "퇴근", { t: working.length ? `근무 중: ${working.map((x) => esc(x.name)).join(", ")}` : s.ins.length ? "모두 퇴근" : "출근 기록 없음" }, working.length ? `<button class="act gray" data-go="out">퇴근</button>` : "")}
@@ -424,8 +426,8 @@ function midInfo() {
   if (MIDPEND && !midFresh(x)) x = { t: MIDPEND.t, by: MIDPEND.by, status: "확인 중" };
   if (!x) return { t: "마감 전에 돈통이 포스와 맞는지 미리 확인" };
   const head = `${x.t} ${esc(x.by || "")}`, extra = `${x.bills != null ? `, 지금까지 객수 ${x.bills}명` : ""}${x.des != null ? `, 지정 ${x.des}%` : ""}`;
-  if (x.status === "같음") return { t: `${head}, 돈통 포스와 같아요${extra}` };
-  if (x.status === "차이") return { t: `${head}, 돈통이 포스보다 ${MW(Math.abs(x.diff))}원 ${x.diff > 0 ? "많아요" : "모자라요"}${extra}`, w: 1 };
+  if (x.status === "같음") return { t: `✅ ${head}, 다 맞아요${extra}` };
+  if (x.status === "차이") return { t: x.warnN ? `${head}, 안 맞는 게 ${x.warnN}개 있어요 (눌러서 확인)` : `${head}, 돈통이 포스보다 ${MW(Math.abs(x.diff))}원 ${x.diff > 0 ? "많아요" : "모자라요"}${extra}`, w: 1 };
   if (x.status === "확인 중") return { t: `${head}, 봇이 포스와 맞춰보는 중` };
   return { t: `${head}, ${esc(x.status)}`, w: 1 };
 }
@@ -1346,6 +1348,17 @@ function warnHelp(w) {
   if (/포스 숫자를 못 가져왔어요/.test(w)) return ["잠시 뒤 마감 보고를 다시 보내기", "계속 안 되면 팀장님께 알리기"];
   return ["숫자를 다시 확인하고 마감 보고를 다시 보내기"];
 }
+async function sheetMidResult() {
+  const x = TEST ? BOARD?.midCheckTest : BOARD?.midCheck; if (!x) return;
+  const f = x.full ? await decOne(x.full) : null, W = f?.w || [];
+  const box = f?.t ? `<details style="margin-top:12px"><summary style="font-weight:800;cursor:pointer">📄 중간 체크 전체 보기</summary><pre style="white-space:pre-wrap;font-family:inherit;font-size:14px;line-height:1.55;background:#f9fafb;border-radius:12px;padding:12px;margin-top:8px">${esc(f.t)}</pre></details>` : "";
+  if (!f && x.warnN) return openSheet(`<h2>⚠️ 안 맞는 게 있어요</h2><div class="desc">이 기기에서는 자세한 내용을 열 수 없어요. 매장 전용 주소로 연 기기에서 확인해 주세요.</div><div class="btns"><button class="btn" data-x>닫기</button></div>`);
+  if (!W.length) return openSheet(`<div class="midok"><div class="midokc">✓</div><h2 style="margin-top:14px">중간 체크 다 맞아요!</h2><div class="desc">${esc(x.t)} ${esc(x.by || "")}, 돈통이 포스와 같아요${x.bills != null ? `, 지금까지 객수 ${x.bills}명` : ""}${x.rev != null ? `, 리뷰 ${x.rev}` : ""}${x.eng != null ? `, 각인 ${x.eng}` : ""}</div></div>${box}<div class="btns"><button class="btn primary" data-x>확인</button></div>`);
+  openSheet(`<h2>⚠️ 안 맞는 게 있어요</h2><div class="desc">마감 전에 미리 찾은 거라 다행이에요. 아래를 확인해 주세요.</div>
+    ${W.map((w) => `<div style="border:2px solid var(--red);border-radius:14px;padding:12px 14px;margin-top:10px"><div style="font-weight:800;color:var(--red);font-size:16px">${esc(w)}</div><div style="font-size:14px;color:var(--sub);margin:8px 0 4px">이걸 확인해 주세요</div>${warnHelp(w).map((h) => `<div style="font-size:15px;line-height:1.5;padding:2px 0">☐ ${esc(h.replace("마감 보고를 다시", "중간 체크를 다시"))}</div>`).join("")}</div>`).join("")}
+    <div class="desc" style="margin-top:10px">원인을 못 찾으면 팀장님께 알려 주세요.</div>${box}
+    <div class="btns"><button class="btn" data-x>닫기</button><button class="btn primary" data-go="mid">다시 체크</button></div>`);
+}
 async function sheetReport() {
   const c = TEST ? BOARD?.closingTest : BOARD?.closing;
   if (!c || !c.rep) { openSheet(`<h2>📋 마감보고</h2><div class="desc">봇이 포스 숫자로 마감보고를 만드는 중이에요. 1분쯤 뒤에 다시 눌러 주세요.</div><div class="btns"><button class="btn" data-x>닫기</button></div>`); loadBoard(); return; }
@@ -1376,12 +1389,13 @@ const MONEY = ["pCash", "pCard", "pTr", "pEtc", "cPrep", "bankBal"];
 const numv = (id) => +(($("#" + id) && $("#" + id).value) || "").replace(/\D/g, "") || 0;
 const has = (id) => !!(($("#" + id) && $("#" + id).value) || "").replace(/\D/g, "");
 const fld = ([id, label, req], money) => `<label><span>${label}${req ? ' <em class="req">*</em>' : ""}</span><input class="input" id="${id}" inputmode="numeric" placeholder="${money ? "원" : "개"}"></label>`;
-function sheetClosing() {
-  if (!working().length) return needIn(() => sheetClosing());
-  CX = [];
+let MIDMODE = false;
+function sheetClosing(mid) {
+  if (!working().length) return needIn(() => sheetClosing(mid));
+  CX = []; MIDMODE = !!mid;
   const prep = todayPrep();
   // 10/19 저녁 사장님 "개복잡": 기본 화면은 돈통, 리뷰/각인, 확인 2개, 지출 버튼만. 포스 숫자를 고칠 때만 아래 '직접 입력'을 펼침
-  openSheet(`<h2>💰 마감 보고</h2><div class="desc">포스 일마감을 먼저 하고, <b>돈통만 세면 돼요.</b></div>
+  openSheet(`${MIDMODE ? '<h2>🔎 중간 체크</h2><div class="desc">마감할 때처럼 <b>돈통을 장수대로 세고</b> 리뷰, 각인, 지출까지 넣어 주세요. 포스와 다 맞으면 ✅가 떠요. 마감 기록은 안 남아요.</div>' : '<h2>💰 마감 보고</h2><div class="desc">포스 일마감을 먼저 하고, <b>돈통만 세면 돼요.</b></div>'}
     <div class="grp">돈통 <small>장수, 개수</small></div>
     <div class="cash big">${CASH.slice(0, 2).map(([id, label, unit]) => `<label><span>${label}</span><input class="input" id="${id}" inputmode="numeric" placeholder="${unit}"></label>`).join("")}</div>
     <div class="cash coins">${CASH.slice(2).map(([id, label, unit]) => `<label><span>${label}</span><input class="input" id="${id}" inputmode="numeric" placeholder="${unit}"></label>`).join("")}</div>
@@ -1420,7 +1434,7 @@ function closeCalc() {
   $("#cKpi").innerHTML = [["객단가", b ? Math.round(sales / b).toLocaleString() + "원" : "-"], ["객당 프리미엄", b ? (Math.round((numv("kPrem") / b) * 10) / 10) + "병" : "-"], ["지정판매율", pr(numv("kDes"), numv("kPrem"))],
     ["일회용판매율", pr(numv("kDisp"), b)], ["발맥프로율", pr(numv("kValm"), numv("kDev"))], ["리뷰율", pr(numv("cRev"), b)]].map(([k, v]) => `<div><span>${k}</span><b>${v}</b></div>`).join("");
   const left = [...SALES, ...KPI_IN].filter(([id, , r]) => r && !has(id)).length + (drawer ? 0 : 1) + (diff && !($("#cWhy").value || "").trim() ? 1 : 0);
-  const okb = $("#okClose"); if (okb) { okb.disabled = !!left; okb.textContent = left ? `${left}칸 남음` : "보고 보내기"; }
+  const okb = $("#okClose"); if (okb) { okb.disabled = !!left; okb.textContent = left ? `${left}칸 남음` : MIDMODE ? "중간 체크 보내기" : "보고 보내기"; }
   return { sales, drawer, sij, exp, diff };
 }
 function closeConfirm() {
@@ -1430,7 +1444,7 @@ function closeConfirm() {
   const sh = $("#sheet"), w = (n) => (+n || 0).toLocaleString() + "원";
   [...sh.children].forEach((el) => { if (!el.classList.contains("cconf")) el.style.display = "none"; });
   const box = document.createElement("div"); box.className = "cconf";
-  box.innerHTML = `<h2>꼼꼼히 확인하셨나요?</h2><div class="desc">보내면 팀장님께 바로 보고돼요. 포스 화면과 숫자가 같은지 한 번 더 봐 주세요.</div>
+  box.innerHTML = `<h2>꼼꼼히 확인하셨나요?</h2><div class="desc">${MIDMODE ? "봇이 지금까지 포스 숫자와 맞춰 볼게요." : "보내면 팀장님께 바로 보고돼요. 포스 화면과 숫자가 같은지 한 번 더 봐 주세요."}</div>
     ${SALES.some(([id]) => has(id)) ? `<div class="cashsum" style="margin-top:14px">${SALES.filter(([id]) => has(id)).map(([id, l]) => `<div><span>${l} (직접 입력)</span><b>${w(numv(id))}</b></div>`).join("")}</div>` : ""}
     <div class="cashsum" style="margin-top:10px"><div><span>오늘 준비금</span><b>${has("cPrep") ? w(numv("cPrep")) : "포스 자동"}</b></div><div><span>현금 지출 ${CX.filter((x) => x.a).length}건</span><b>${w(k.exp)}</b></div><div><span>돈통 합계</span><b>${w(k.drawer)}</b></div><div class="hi"><span>시재</span><b>${w(k.sij)}</b></div><div><span>내일 준비금</span><b>${w(k.drawer - k.sij)}</b></div>
       <div class="diff ${k.diff == null ? "" : k.diff ? "bad" : "good"}"><span>현금 차액</span><b>${k.diff == null ? "보내면 포스 숫자로 계산돼요" : (k.diff > 0 ? "+" : "") + w(k.diff)}</b></div>${k.diff ? `<p>사유: ${esc($("#cWhy").value.trim())}</p>` : ""}</div>
@@ -1450,6 +1464,12 @@ async function doClosing() {
   const cash = Object.fromEntries(CASH.map(([id]) => [id, cashN(id)])), exp = CX.filter((x) => x.a).map((x) => [String(x.n || "지출").slice(0, 20), +x.a]).slice(0, 8);
   const kpi = { bills: numv("kBills"), prem: numv("kPrem"), des: numv("kDes"), disp: numv("kDisp"), dev: numv("kDev"), valm: numv("kValm") };
   try {
+    if (MIDMODE) {
+      await send({ type: "closing", v: 2, mid: 1, date: todayKey(), nums: { cash: numv("pCash"), card: numv("pCard"), tr: numv("pTr"), etc: numv("pEtc") }, exp, prep: numv("cPrep"), cash, why: ($("#cWhy").value || "").trim().slice(0, 80), kpi, rev: v("cRev"), eng: v("cEng"), ev: v("cEv"), fx: v("cFx"), hn, vm, by });
+      MIDPEND = { t: now(), by }; MIDMODE = false; closeSheet(); render(); toast("보냈어요, 1~2분 뒤에 결과가 떠요");
+      let n = 0; const iv = setInterval(async () => { await loadBoard(); const x = TEST ? BOARD?.midCheckTest : BOARD?.midCheck; if (midFresh(x) && x.full) { clearInterval(iv); MIDPEND = null; render(); sheetMidResult(); return; } if (++n >= 36) { clearInterval(iv); MIDPEND = null; render(); toast("결과가 아직 안 왔어요, 잠시 뒤 새로고침해 주세요"); } }, 10e3);
+      return;
+    }
     await send({ type: "closing", v: 2, date: cDay, nums: { cash: numv("pCash"), card: numv("pCard"), tr: numv("pTr"), etc: numv("pEtc") }, exp, prep: numv("cPrep"), cash, why: ($("#cWhy").value || "").trim().slice(0, 80),
       bank: has("bankBal") ? { bal: numv("bankBal"), name: ($("#bankName").value || "").trim().slice(0, 20) } : null, kpi, rev: v("cRev"), eng: v("cEng"), ev: v("cEv"), fx: v("cFx"), hn, vm, by });
     let sheetOk = "";
@@ -1856,7 +1876,8 @@ document.addEventListener("click", (e) => {
   if (t.dataset.crp) { cr.pay = t.dataset.crp; document.querySelectorAll("[data-crp]").forEach((x) => x.classList.toggle("on", x === t)); return; }
   if (t.dataset.crst) { cr.step = t.dataset.crst; cr.manual = true; document.querySelectorAll("[data-crst]").forEach((x) => x.classList.toggle("on", x === t)); crDueSync(); return; }
   if (t.dataset.mto) { document.querySelectorAll("[data-mto]").forEach((x) => x.classList.toggle("on", x === t)); return; }
-  if (go === "mid") return sheetMid();
+  if (go === "mid") { closeSheet(); return sheetClosing(true); }
+  if (go === "midres") return sheetMidResult();
   if (t.dataset.midby) { document.querySelectorAll("[data-midby]").forEach((x) => x.classList.toggle("on", x === t)); return; }
   if (t.id === "okMid") return doMid();
   if (t.id === "okCr") return doCreq();
