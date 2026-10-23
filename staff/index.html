@@ -211,6 +211,7 @@
   .exrow .input{margin-top:8px} .exdel{height:52px;margin-top:8px;border-radius:14px;background:#f2f4f6;color:var(--sub);font-weight:700}
   .btn.sm{flex:none;height:44px;padding:0 16px;font-size:15px;margin-top:10px}
   .btn:disabled{opacity:.45}
+.midhide{display:none!important}
 </style>
 </head>
 <body>
@@ -219,7 +220,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.21-23";
+const VER = "10.21-24";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -1534,14 +1535,14 @@ function sheetClosing(mid) {
   CX = []; MIDMODE = !!mid;
   const prep = todayPrep();
   // 10/19 저녁 사장님 "개복잡": 기본 화면은 돈통, 리뷰/각인, 확인 2개, 지출 버튼만. 포스 숫자를 고칠 때만 아래 '직접 입력'을 펼침
-  openSheet(`${MIDMODE ? '<h2>🔎 중간 체크</h2><div class="desc">마감할 때처럼 <b>돈통을 장수대로 세고</b> 리뷰, 각인, 지출까지 넣어 주세요. 포스와 다 맞으면 ✅가 떠요. 마감 기록은 안 남아요.</div>' : '<h2>💰 마감 보고</h2><div class="desc">포스 일마감을 먼저 하고, <b>돈통만 세면 돼요.</b></div>'}
+  openSheet(`${MIDMODE ? '<h2>🔎 중간 체크</h2><div class="desc">마감할 때처럼 <b>돈통을 장수대로 세고</b> 리뷰, 지출까지 넣어 주세요. 포스와 다 맞으면 ✅가 떠요. 마감 기록은 안 남아요.</div>' : '<h2>💰 마감 보고</h2><div class="desc">포스 일마감을 먼저 하고, <b>돈통만 세면 돼요.</b></div>'}
     <div class="grp">돈통 <small>장수, 개수</small></div>
     <div class="cash big">${CASH.slice(0, 2).map(([id, label, unit]) => `<label><span>${label}</span><input class="input" id="${id}" inputmode="numeric" placeholder="${unit}"></label>`).join("")}</div>
     <div class="cash coins">${CASH.slice(2).map(([id, label, unit]) => `<label><span>${label}</span><input class="input" id="${id}" inputmode="numeric" placeholder="${unit}"></label>`).join("")}</div>
     <div class="cashsum" id="cSij"></div>
     <textarea class="input" id="cWhy" rows="2" placeholder="차액이 난 이유 (예: 잔돈 5만원 바꿔 옴)" style="display:none"></textarea>
-    <div class="grp">리뷰, 각인, 이벤트</div><div class="cash"><label><span>리뷰</span><input class="input" id="cRev" inputmode="numeric" placeholder="개"></label><label><span>각인</span><input class="input" id="cEng" inputmode="numeric" placeholder="개"></label><label><span>일회용 이벤트</span><input class="input" id="cEv" inputmode="numeric" placeholder="회"></label><label><span>외국인 방문</span><input class="input" id="cFx" inputmode="numeric" placeholder="명"></label></div>
-    <div class="grp">확인</div><button class="check" data-cck="hn"><i>✓</i>히난충 OFF 확인</button><button class="check" data-cck="vm"><i>✓</i>자판기 이상무</button>
+    <div class="grp">${MIDMODE ? "리뷰" : "리뷰, 각인, 이벤트"}</div><div class="cash"><label><span>리뷰</span><input class="input" id="cRev" inputmode="numeric" placeholder="개"></label><label${MIDMODE ? ' class="midhide"' : ""}><span>각인</span><input class="input" id="cEng" inputmode="numeric" placeholder="개"></label><label${MIDMODE ? ' class="midhide"' : ""}><span>일회용 이벤트</span><input class="input" id="cEv" inputmode="numeric" placeholder="회"></label><label${MIDMODE ? ' class="midhide"' : ""}><span>외국인 방문</span><input class="input" id="cFx" inputmode="numeric" placeholder="명"></label></div>
+    <div${MIDMODE ? ' class="midhide"' : ""}><div class="grp">확인</div><button class="check" data-cck="hn"><i>✓</i>히난충 OFF 확인</button><button class="check" data-cck="vm"><i>✓</i>자판기 이상무</button></div>
     <div id="cExp"></div><button class="btn sm" data-go="expadd" id="expBtn">＋ 오늘 현금 지출이 있었어요 (사유와 금액)</button>
     <div class="desc" style="margin-top:14px">마감 인원: ${esc(working().join(", "))}</div>
     <button class="morebtn" data-go="cmore">포스 숫자가 틀릴 때만 → 직접 입력</button>
@@ -1588,8 +1589,8 @@ function closeConfirm() {
     <div class="cashsum" style="margin-top:10px"><div><span>오늘 준비금</span><b>${has("cPrep") ? w(numv("cPrep")) : "포스 자동"}</b></div><div><span>현금 지출 ${CX.filter((x) => x.a).length}건</span><b>${w(k.exp)}</b></div><div><span>돈통 합계</span><b>${w(k.drawer)}</b></div><div class="hi"><span>시재</span><b>${w(k.sij)}</b></div><div><span>내일 준비금</span><b>${w(k.drawer - k.sij)}</b></div>
       <div class="diff ${k.diff == null ? "" : k.diff ? "bad" : "good"}"><span>현금 차액</span><b>${k.diff == null ? "보내면 포스 숫자로 계산돼요" : (k.diff > 0 ? "+" : "") + w(k.diff)}</b></div>${k.diff ? `<p>사유: ${esc($("#cWhy").value.trim())}</p>` : ""}</div>
     <div class="cashsum" style="margin-top:10px"><div><span>마감 날짜</span><b>${$("#cDate").value}${$("#cDate").value !== todayKey() ? " (나중 입력)" : ""}</b></div><div><span>은행 잔액</span><b>${has("bankBal") ? w(numv("bankBal")) + ", " + esc($("#bankName").value.trim()) : "-"}</b></div>
-      <div><span>영수객수, 객단가</span><b>${has("kBills") ? `${v("kBills")}건, ${k.sales ? w(Math.round(k.sales / numv("kBills"))) : "-"}` : "포스 자동"}</b></div><div><span>프리미엄, 지정</span><b>${v("kPrem") || 0}, ${v("kDes") || 0}</b></div><div><span>일회용, 입호흡, 발맥</span><b>${v("kDisp") || 0}, ${v("kDev") || 0}, ${v("kValm") || 0}</b></div><div><span>리뷰, 각인</span><b>${v("cRev") || 0}, ${v("cEng") || 0}</b></div>
-      <div><span>히난충 OFF</span><b style="color:${hn ? "var(--green)" : "var(--red)"}">${hn ? "확인" : "안 함"}</b></div><div><span>자판기</span><b style="color:${vm ? "var(--green)" : "var(--red)"}">${vm ? "이상무" : "확인 안 함"}</b></div><div><span>마감 인원</span><b>${esc(working().join(", ") || "-")}</b></div></div>
+      <div><span>영수객수, 객단가</span><b>${has("kBills") ? `${v("kBills")}건, ${k.sales ? w(Math.round(k.sales / numv("kBills"))) : "-"}` : "포스 자동"}</b></div><div><span>프리미엄, 지정</span><b>${v("kPrem") || 0}, ${v("kDes") || 0}</b></div><div><span>일회용, 입호흡, 발맥</span><b>${v("kDisp") || 0}, ${v("kDev") || 0}, ${v("kValm") || 0}</b></div>${MIDMODE ? `<div><span>리뷰</span><b>${v("cRev") || 0}</b></div>` : `<div><span>리뷰, 각인</span><b>${v("cRev") || 0}, ${v("cEng") || 0}</b></div>`}
+      ${MIDMODE ? "" : `<div><span>히난충 OFF</span><b style="color:${hn ? "var(--green)" : "var(--red)"}">${hn ? "확인" : "안 함"}</b></div><div><span>자판기</span><b style="color:${vm ? "var(--green)" : "var(--red)"}">${vm ? "이상무" : "확인 안 함"}</b></div>`}<div><span>마감 인원</span><b>${esc(working().join(", ") || "-")}</b></div></div>
     <div class="btns"><button class="btn" id="closeBack">다시 고치기</button><button class="btn primary" id="okClose2">네, 보낼게요</button></div>`;
   sh.appendChild(box); sh.scrollTop = 0;
 }
