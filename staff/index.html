@@ -220,7 +220,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.21-24";
+const VER = "10.21-25";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -480,7 +480,7 @@ async function doMid() {
 // ── 요청 탭 (10/20 사장님 "보기 불편"): 한 칸, 위 전환 버튼, 거르기 칩, 2줄 목록, 줄 누르면 상세 창
 let TALK = ls.get("vf-app-talk", "creq"), CRF = "all";
 const puTxt = (d) => { const n = dLeft(d); return n > 0 ? `${sd(d)} (${n}일 뒤)` : n === 0 ? `${sd(d)} (오늘)` : `${sd(d)} (${-n}일 지남)`; };
-const crHot = (r) => !r.lead && ((r.step === "wait" && (r.arrived || (r.due && dLeft(r.due) <= 0))) || (r.step === "ready" && r.due && dLeft(r.due) < 0));
+const crHot = (r) => !r.lead && ((r.step === "wait" && ((r.arrived && !(r.ext && r.due && dLeft(r.due) > 0)) || (r.due && dLeft(r.due) <= 0))) || (r.step === "ready" && r.due && dLeft(r.due) < 0));
 function crMainBtn(r) {
   if (r.lead || r.pending) return "";
   if (r.step === "ready") return r.due && dLeft(r.due) < 0 ? `<button class="act" data-crext="${r.id}">연락함, 날짜 미루기</button>` : `<button class="act" data-crs="done" data-id="${r.id}">전달 완료</button>`;
@@ -1335,7 +1335,7 @@ function ilItems() {
   for (const r of creqList()) {
     if (r.pending) continue;
     const nm = custName(r), today = r.due && dLeft(r.due) <= 0, arr = r.step === "wait" && r.arrived;
-    L.push({ k: "c", cat: r.cat === "각인" ? "e" : "c", id: r.id, raw: r, ic: r.cat === "각인" ? "✨" : "🧾", lead: !!r.lead, due: r.due || null, hot: !r.lead && (today || arr), title: `${nm ? nm + "님, " : ""}${r.title || crItems(r)}`,
+    L.push({ k: "c", cat: r.cat === "각인" ? "e" : "c", id: r.id, raw: r, ic: r.cat === "각인" ? "✨" : "🧾", lead: !!r.lead, due: r.due || null, hot: !r.lead && (today || (arr && !(r.ext && r.due && dLeft(r.due) > 0))), title: `${nm ? nm + "님, " : ""}${r.title || crItems(r)}`,
       sub: [r.sms ? `📩 ${r.sms.label.replace(" 문자", "")} ${sd(r.sms.at.slice(0, 10))}` : "", r.from && r.from !== B ? `📥 ${ho(r.from)}에서 맡김` : "", r.eng && r.eng !== B ? `각인 ${ho(r.eng)}` : "", r.lead ? "👔 팀장 처리 중" : arr ? "📦 입고됨, 손님께 연락" : r.step === "ready" ? "챙겨둠" : "입고 대기", r.due ? `${r.step === "ready" || arr ? "수령 예정" : "약속일"} ${puTxt(r.due)}` : "", `남김 ${sd(r.d)} ${r.by}`].filter(Boolean).join(", ") });
   }
   for (const m of memoList()) {
