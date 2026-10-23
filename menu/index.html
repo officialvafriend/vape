@@ -788,7 +788,7 @@
 <body data-mode="">
 <div class="app">
   <div class="top">
-    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">v10.13-0100</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
+    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">v10.23-0100</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
     <nav class="tabs" id="tabs" style="display:none"></nav>
     <div class="flow" id="flow"><span data-st="1">① 찾는 것</span><i>›</i><span data-st="2">② 고르기</span><i>›</i><span data-st="3">③ 담은 상품</span><i>›</i><span data-st="4">④ 직원 확인</span></div>
   </div>
@@ -883,6 +883,7 @@
 <script src="lung.js"></script>
 <script src="devinfo.js"></script>
 <script src="JsBarcode.all.min.js"></script>
+<script src="qrcode.js"></script>
 <script>
 const IMG = "https://officialvafriend.github.io/vape/img/";
 // 안 파는 액상(단종·취급 안 함)은 목록에서 뺌 — 품절(일시적으로 0)과 다름. 사용자 10/5: 디오 딸기망고 없음
@@ -1524,7 +1525,7 @@ function cartView() {
     ${nudge()}${goodsHints(gc, est.liq)}${engr}
     ${!(est.how || "").includes("기기패키지") && (items.some(([id]) => !item(id).c) || (!items.length && mode !== "dsp")) ? `<button class="upsell" data-pkg="max10"><span><b>이 맛들로 기기패키지 만들기</b><small>액상 10병 + ${MAIN.name}가 가장 저렴해요</small></span><span class="arr">→</span></button>` : ""}
     ${mem}
-    <div class="btns stick"><button class="b1 ink" data-staff ${items.length ? "" : "disabled"}>직원에게 보여주기</button></div>`);
+    <div class="btns stick" style="flex-direction:column"><button class="b1 ink" data-staff ${items.length ? "" : "disabled"}>직원에게 보여주기</button><button class="b2" data-qrview ${items.length ? "" : "disabled"} style="width:100%">QR 보기 (포스에서 한 번에 찍기)</button></div>`);
 }
 function pkgView(id) {
   const p = PKGS.find((x) => x.id === id);
@@ -1673,6 +1674,32 @@ async function incSend(seller) {
   } catch (err) { toast(`기록 못 했어요 (${navigator.onLine ? err.message : "인터넷 끊김"}) · 다시 눌러 주세요`); }
 }
 
+
+// ── QR 한 번에 찍기 (10/23): 직원 화면 바코드를 순서대로 · 수량만큼 · Enter로 이어 붙임 ──
+const QR_SEPS = { cr: "\r", crlf: "\r\n", lf: "\n", tab: "\t" };
+let qrSep = "cr"; try { qrSep = localStorage.getItem("vf-qr-sep") || "cr"; } catch {}
+function qrView() {
+  staffView();
+  const codes = [], miss = [];
+  document.querySelectorAll("#sheet .scan").forEach((el) => {
+    const nm = el.querySelector(".hd b")?.textContent || "";
+    const n = +(el.querySelector(".sq b")?.textContent || (el.querySelector(".x")?.textContent || "").replace(/\D/g, "")) || 1;
+    const bc = el.querySelector("svg.bc");
+    if (bc) for (let i = 0; i < n; i++) codes.push(bc.dataset.v);
+    else if (nm && !/각인|장부/.test(nm)) miss.push(nm);
+  });
+  if (!codes.length) return toast("QR로 만들 바코드가 없어요");
+  const sep = QR_SEPS[qrSep] || "\r";
+  const q = qrcode(0, "M"); q.addData(codes.join(sep) + sep, "Byte"); q.make();
+  open(`<div class="sh">QR 한 번에 찍기</div><div style="color:var(--ink-soft);margin-top:6px;font-size:14.5px">포스 판매 화면에서 스캐너로 이 QR을 한 번 찍으세요. (${esc(PAD.branch)} 포스 상품 기준)</div>
+  <div style="background:#fff;border-radius:14px;padding:14px;margin-top:12px;text-align:center"><div style="max-width:360px;margin:0 auto">${q.createSvgTag({ cellSize: 6, margin: 4, scalable: true })}</div>
+  <div style="font-size:16px;font-weight:800;margin-top:8px">총 ${codes.length}번 찍힌 것과 같아요</div></div>
+  ${miss.length ? `<div class="posw">QR에 안 들어간 것: ${miss.map(esc).join(", ")} → 직접 찍어 주세요</div>` : ""}
+  <div class="posw">묶음 상품 금액, 서비스(0원) 처리는 지금처럼 포스에서 직접 해 주세요. 하나만 찍히면 아래 구분 문자를 바꿔 보세요.</div>
+  <div style="margin-top:10px;font-size:14px;color:var(--grey)">구분 문자 <select id="qrSep">${Object.keys(QR_SEPS).map((k) => `<option value="${k}" ${k === qrSep ? "selected" : ""}>${{ cr: "Enter (CR)", crlf: "Enter (CR+LF)", lf: "줄바꿈 (LF)", tab: "Tab" }[k]}</option>`).join("")}</select></div>
+  <div class="btns"><button class="b2" data-staff>바코드로 보기</button><button class="b1" data-reset>완료 · 처음으로</button></div>`);
+  $("#qrSep").onchange = (e) => { qrSep = e.target.value; try { localStorage.setItem("vf-qr-sep", qrSep); } catch {} qrView(); };
+}
 // 지점·패드 번호 (바코드는 지점 포스 기준)
 const PAD = { branch: BRANCH, no: new URLSearchParams(location.search).get("pad") || "1" };
 document.addEventListener("click", (e) => {
@@ -1730,6 +1757,7 @@ document.addEventListener("click", (e) => {
   if (q("[data-mem-x]")) { Object.assign(member, { type: null, name: "", phone: "", agree: false }); return cartView(); }
   if ((el = q("[data-color]"))) { devColor = el.dataset.color; return cartView(); }
   if ((el = q("[data-color2]"))) { devColor = el.dataset.color2; return staffView(); }
+  if (q("[data-qrview]")) { if (member.type === "new" && (member.phone || member.name) && !member.agree) return toast("회원등록은 개인정보 동의가 필요해요"); if ([...cart.keys()].some((id) => isHi(item(id))) && !ledgerText()) { ledgerView(); toast("손님께 패드를 건네 직접 작성해 달라고 해 주세요"); return; } return qrView(); }
   if (q("[data-staff]")) { if (member.type === "new" && (member.phone || member.name) && !member.agree) return toast("회원등록은 개인정보 동의가 필요해요"); if ([...cart.keys()].some((id) => isHi(item(id))) && !ledgerText()) { ledgerView(); toast("손님께 패드를 건네 직접 작성해 달라고 해 주세요"); return; } if (member.type === "new" && (member.phone || member.name) && !member.agree) return toast("회원등록은 개인정보 동의가 필요해요"); return staffView(); }
   if (q("[data-reset]") && !(incSent = null) && (scanDone.clear(), staffAdd = false, staffQ = "", true)) { devUpShown = false; $("#devUp").classList.remove("on"); cart.clear(); airxGift = "pod"; Object.assign(ledger, { name: "", gu: "", etc: "" }); engrave = null; devColor = null; review = false; Object.assign(member, { type: null, name: "", phone: "", agree: false }); render(); closeS(); setMode(""); toast("처음 화면으로 돌아왔어요"); return; }
   if (e.target.id === "dim") closeS();
