@@ -220,7 +220,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.21-32";
+const VER = "10.21-33";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -1494,6 +1494,18 @@ async function decOne(enc) {
     const b = Uint8Array.from(atob(enc), (c) => c.charCodeAt(0)); return JSON.parse(new TextDecoder().decode(await crypto.subtle.decrypt({ name: "AES-GCM", iv: b.slice(0, 12) }, KEYOBJ, b.slice(12)))); } catch { return null; }
 }
 // 경고 한 줄 → 확인할 것 목록 (방향에 따라 다르게)
+// 10/25 사장님 "체크리스트가 전혀 도움이 안 됨": 봇이 짝을 지어 찾은 👉 줄(어떤 손님 건인지, 뭘 하면 되는지)을 맨 위에 크게,
+// 👉 줄이 설명하는 경고는 일반 체크리스트를 숨김(이체 차이는 👉 줄이 있으면, 돈통 차액은 '👉 돈통 차액' 줄이 있으면)
+function warnCards(W, bl, mid) {
+  const act = W.filter((w) => /^👉/.test(w)), rest = W.filter((w) => !/^👉/.test(w)), why = (w) => w.replace(/^👉\s*/, "");
+  const hasTr = act.some((w) => /포스에 이체로 없는|통장에 없는 포스 이체/.test(w)), hasCash = act.some((w) => /^👉 돈통 차액/.test(w));
+  const top = act.length ? `<div style="border:2px solid var(--blue,#3182f6);background:#eef5ff;border-radius:14px;padding:12px 14px;margin-top:10px"><div style="font-weight:800;font-size:16px;margin-bottom:6px">이것만 고치면 돼요</div>${act.map((w) => `<div style="font-size:15px;line-height:1.55;padding:3px 0">• ${esc(why(w))}</div>`).join("")}</div>` : "";
+  return top + rest.map((w) => {
+    const skip = (hasTr && /^(이체 |시재입출금 이체)/.test(w)) || (hasCash && /^돈통 차액/.test(w));
+    const helps = skip ? [] : warnHelp(w);
+    return `<div style="border:2px solid var(--red);border-radius:14px;padding:12px 14px;margin-top:10px"><div style="font-weight:800;color:var(--red);font-size:16px">${esc(w)}</div>${helps.length ? `<div style="font-size:14px;color:var(--sub);margin:8px 0 4px">이걸 확인해 주세요</div>${helps.map((h) => `<div style="font-size:15px;line-height:1.5;padding:2px 0">☐ ${esc(mid ? h.replace("마감 보고를 다시", "중간 체크를 다시") : h)}</div>`).join("")}` : ""}${skip ? "" : bankBox(w, bl)}</div>`;
+  }).join("");
+}
 function warnHelp(w) {
   const num = (re) => { const m = w.match(re); return m ? +m[1].replace(/,/g, "") * (m[0].includes("-") ? -1 : 1) : 0; };
   if (/^돈통 차액/.test(w)) {
@@ -1525,7 +1537,7 @@ async function sheetMidResult() {
   if (!f && x.warnN) return openSheet(`<h2>⚠️ 안 맞는 게 있어요</h2><div class="desc">이 기기에서는 자세한 내용을 열 수 없어요. 매장 전용 주소로 연 기기에서 확인해 주세요.</div><div class="btns"><button class="btn" data-x>닫기</button></div>`);
   if (!W.length) return openSheet(`<div class="midok"><div class="midokc">✓</div><h2 style="margin-top:14px">중간 체크 다 맞아요!</h2><div class="desc">${esc(x.t)} ${esc(x.by || "")}, 돈통이 포스와 같아요${x.bills != null ? `, 지금까지 객수 ${x.bills}명` : ""}${x.rev != null ? `, 리뷰 ${x.rev}` : ""}${x.eng != null ? `, 각인 ${x.eng}` : ""}</div></div>${box}<div class="btns"><button class="btn primary" data-x>확인</button></div>`);
   openSheet(`<h2>⚠️ 안 맞는 게 있어요</h2><div class="desc">마감 전에 미리 찾은 거라 다행이에요. 아래를 확인해 주세요.</div>
-    ${W.map((w) => `<div style="border:2px solid var(--red);border-radius:14px;padding:12px 14px;margin-top:10px"><div style="font-weight:800;color:var(--red);font-size:16px">${esc(w)}</div><div style="font-size:14px;color:var(--sub);margin:8px 0 4px">이걸 확인해 주세요</div>${warnHelp(w).map((h) => `<div style="font-size:15px;line-height:1.5;padding:2px 0">☐ ${esc(h.replace("마감 보고를 다시", "중간 체크를 다시"))}</div>`).join("")}${bankBox(w, f?.bl)}</div>`).join("")}
+    ${warnCards(W, f?.bl, true)}
     <div class="desc" style="margin-top:10px">원인을 못 찾으면 팀장님께 알려 주세요.</div>${box}
     <div class="btns"><button class="btn" data-x>닫기</button><button class="btn primary" data-go="mid">다시 체크</button></div>`);
 }
@@ -1537,7 +1549,7 @@ async function sheetReport() {
   const f = c.full ? await decOne(c.full) : null, W = (f?.w?.length ? f.w : c.warn) || [];
   const fullBox = f ? `<details ${W.length ? "open" : ""} style="margin-top:12px"><summary style="font-weight:800;cursor:pointer">📄 마감 결과 전체 보기</summary><pre style="white-space:pre-wrap;font-family:inherit;font-size:14px;line-height:1.55;background:#f9fafb;border-radius:12px;padding:12px;margin-top:8px">${esc(f.t)}</pre></details>` : "";
   if (W.length) return openSheet(`<h2>⚠️ 안 맞는 게 있어요</h2><div class="desc">다 맞아야 매출보고방 보고문이 나와요. 아래를 확인하고 고친 뒤 마감 보고를 다시 보내 주세요.</div>
-    ${W.map((w) => `<div style="border:2px solid var(--red);border-radius:14px;padding:12px 14px;margin-top:10px"><div style="font-weight:800;color:var(--red);font-size:16px">${esc(w)}</div><div style="font-size:14px;color:var(--sub);margin:8px 0 4px">이걸 확인해 주세요</div>${warnHelp(w).map((h) => `<div style="font-size:15px;line-height:1.5;padding:2px 0">☐ ${esc(h)}</div>`).join("")}${bankBox(w, f?.bl)}</div>`).join("")}
+    ${warnCards(W, f?.bl, false)}
     <div class="desc" style="margin-top:10px">원인을 못 찾으면 팀장님께 알려 주세요.</div>${fullBox}
     <div class="btns"><button class="btn" data-x>닫기</button><button class="btn primary" data-go="closing">마감 보고 다시 하기</button></div>`);
   const warn = (c.warn || []).length ? `<div class="desc" style="color:var(--red);font-weight:700;margin-top:8px">⚠️ ${esc(c.warn.join(" / "))}<br>마감이 맞는지 확인하고 보내 주세요.</div>` : `<div class="desc" style="color:var(--green);font-weight:700;margin-top:8px">✅ 마감이 맞아요. 복사해서 매출보고방에 올려 주세요.</div>`;
