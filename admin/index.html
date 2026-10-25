@@ -568,7 +568,7 @@ function sheetTaskStatus(id) {
   const t = D.matrix.find((y) => y.id === id), def = D.tasks.find((y) => y.id === id);
   openSheet(`<div class="eyebrow">${esc(REP_TXT(def))}${t.time ? ", " + esc(t.time) : ""}</div><h3>${esc(t.title)}</h3>${def.note ? `<div class="caption">${esc(def.note)}</div>` : ""}
     <div class="list">${Object.entries(t.br).map(([b, v]) => `<div class="item"><div class="av ${v ? "good" : ""}">${v ? "✓" : BR.indexOf(b) + 1}</div><div class="tx"><b>${esc(b)}</b><span>${v === null || v === undefined ? "오늘 대상 아님" : v ? `${esc(v.by)}, ${esc(v.t)}에 끝냄` : "아직이에요"}</span></div></div>`).join("")}</div>
-    <div class="btns"><button class="btn gray" data-x>닫기</button><button class="btn sec2" data-tedit="${id}">고치기</button></div>`);
+    <div class="btns"><button class="btn red" data-tdelid="${id}" style="flex:0 0 96px">삭제</button><button class="btn gray" data-x>닫기</button><button class="btn sec2" data-tedit="${id}">고치기</button></div>`); // 10/25 사장님 "업무 지우기도 있으면": 고치기 안에 숨어 있던 삭제를 바로 보이게
 }
 function sparkSvg(h) {
   const pts = h.filter(([, v]) => v != null);
@@ -711,6 +711,7 @@ document.addEventListener("click", async (e) => {
   if (a === "copyrpt") { try { await navigator.clipboard.writeText($("#rpt").textContent); toast("복사했어요, 카톡에 붙여 넣으면 돼요"); } catch { toast("복사하지 못했어요, 길게 눌러 복사해 주세요"); } return; }
   if (t.dataset.svrej) { const why = prompt("반려 이유 (직원앱에 보여요, 비워도 돼요)", "다시 세 주세요"); if (why === null) return; try { await sendOp("surveyReject", { id: t.dataset.svrej, why }); const v = D.surveys.find((x) => x.id === t.dataset.svrej); v.status = "reject"; v.why = why; closeSheet(); render(); toast("반려했어요"); } catch { toast("반려하지 못했어요"); } return; }
   if (t.dataset.tk) return sheetTaskStatus(t.dataset.tk);
+  if (t.dataset.tdelid) { const id = t.dataset.tdelid, def = D.tasks.find((x) => x.id === id); if (!def || !confirm(`'${def.title}' 업무를 지울까요? 직원앱 오늘 할 일에서도 빠져요.`)) return; t.disabled = true; try { await sendOp("taskdel", { id }); D.tasks = D.tasks.filter((x) => x.id !== id); D.matrix = D.matrix.filter((x) => x.id !== id); closeSheet(); render(); toast("지웠어요. 직원앱에는 1~2분 뒤에 빠져요"); } catch (err) { t.disabled = false; toast("못 지웠어요: " + err.message); } return; }
   if (t.dataset.mustgo) { mustB = t.dataset.mustgo; tab = "must"; draft = null; closeSheet(); render(); return scrollTo(0, 0); }
   // 업무
   if (a === "tnew") { editTask = { id: "", title: "", note: "", time: "", br: [], rep: "once", date: D.d, dow: [], dom: 1 }; return sheetTask(); }
