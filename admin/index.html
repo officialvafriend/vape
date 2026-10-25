@@ -489,7 +489,33 @@ function tasksCardHtml() {
       <div class="headline">${tAll ? (tDone === tAll ? `<em>모두 끝났어요</em>` : `${tAll}개 중 <em>${tDone}개</em> 끝났어요`) : "오늘 예정된 일이 없어요"}</div>
       ${tAll ? `<div class="bar"><i style="width:${pct}%"></i></div>` : `<div class="btns"><button class="btn sec2" data-tab="tasks">업무 나눠 주기</button></div>`}</div>`;
 }
-function homeHtml() { return `<div style="padding-top:6px">${issuesHtml()}${kpiRankHtml()}${engHtml()}${opsHtml()}</div>`; }
+// 10/25 봇 상태: 운영봇이 3분마다 올림. 10분 넘게 안 바뀌면 이 PC나 운영봇이 꺼진 것
+let BOT = null, BOT_ERR = false;
+async function loadBot() {
+  try { const r = await fetch("https://api.github.com/repos/officialvafriend/vape/contents/admin/botstatus.json?t=" + Date.now(), { headers: { Accept: "application/vnd.github.raw" }, cache: "no-store" }); if (!r.ok) throw 0; BOT = await r.json(); BOT_ERR = false; }
+  catch { BOT_ERR = true; }
+  if (tab === "home" && !draft && !$("#dim").classList.contains("on")) { const el = $("#botcard"); if (el) el.outerHTML = botHtml(); }
+}
+const agoMin = (iso) => Math.round((Date.now() - Date.parse(iso)) / 60e3);
+const agoTxt = (m) => m < 1 ? "방금" : m < 60 ? m + "분 전" : m < 1440 ? Math.floor(m / 60) + "시간 전" : Math.floor(m / 1440) + "일 전";
+function botHtml() {
+  if (!BOT) return `<div class="card" id="botcard"><div class="eyebrow">봇 상태</div><div class="t-sub">${BOT_ERR ? "불러오지 못했어요" : "불러오는 중"}</div></div>`;
+  const m = agoMin(BOT.at), dead = m > 10;
+  const opsBad = dead || BOT.ops.s === "에러", master = BOT.master || {};
+  const masterTxt = dead ? "확인 안 됨" : !master.ok ? master.err || "꺼져 있음" : master.login ? "본사 로그인 됨" : "로그인 필요 (봇 PC 크롬 창에서)";
+  const masterBad = dead || !master.ok || !master.login;
+  const row = (name, bad, txt, btn) => `<div style="display:flex;align-items:center;gap:10px;padding:12px 0;border-top:1px solid var(--line2)"><b style="width:64px">${name}</b><span class="${bad ? "t-bad" : "t-good"}" style="flex:1;font-weight:700">${bad ? "⚠️" : "✅"} ${esc(txt)}</span>${btn}</div>`;
+  const rb = (bot) => `<button class="btn gray" style="width:auto;height:40px;padding:0 14px;font-size:15px" data-restart="${bot}">다시 켜기</button>`;
+  const hh = new Date(Date.now() + 9 * 3600e3).getUTCHours(), open = hh >= 11 && hh < 22;
+  const bank = BR.map((b) => { const v = BOT.bank?.[b]; const mm = v ? Math.round((Date.now() - Date.parse(v.replace(" ", "T") + ":00+09:00")) / 60e3) : null; const bad = mm == null || (open && mm > 240); return `<span class="chip" style="display:inline-flex;align-items:center;gap:5px;height:34px;padding:0 12px;font-size:14px;${bad ? "background:var(--red-soft);color:var(--red)" : ""}">${BR.indexOf(b) + 1}호 ${b} <small>${mm == null ? "연결 전" : agoTxt(mm)}</small></span>`; }).join("");
+  return `<div class="card" id="botcard"><div class="eyebrow">봇 상태 <span class="t-sub" style="font-weight:500">${agoTxt(m)} 기준${dead ? ", 이 PC나 운영봇이 꺼진 것 같아요 (10분마다 자동으로 다시 켜요)" : ""}</span></div>
+    ${row("운영봇", opsBad, dead ? "소식 없음 " + agoTxt(m) : BOT.ops.s + (BOT.ops.line ? ", " + BOT.ops.line : ""), rb("운영봇"))}
+    ${row("마스터봇", masterBad, masterTxt, rb("마스터봇"))}
+    ${BOT.bsQ ? `<div class="t-bad" style="padding:8px 0;font-weight:700">⚠️ 시트에 못 들어간 기록 ${BOT.bsQ}건 (다시 보내는 중)</div>` : ""}
+    ${BOT.bigWait ? `<div class="t-warn" style="padding:8px 0;font-weight:700">💰 지점 확인 기다리는 큰 입금 ${BOT.bigWait}건</div>` : ""}
+    <div style="padding-top:12px;border-top:1px solid var(--line2)"><div class="eyebrow" style="margin-bottom:6px">지점별 마지막 은행 알림 <span class="t-sub" style="font-weight:500">영업시간에 4시간 넘으면 빨간색</span></div><div style="display:flex;flex-wrap:wrap;gap:6px">${bank}</div></div></div>`;
+}
+function homeHtml() { return `<div style="padding-top:6px">${botHtml()}${issuesHtml()}${kpiRankHtml()}${engHtml()}${opsHtml()}</div>`; }
 // ── 마감 보고 (직원앱 시재 + 포스 숫자) ──
 const won = (n) => Math.round(+n || 0).toLocaleString("ko-KR");
 function closingAllHtml() { return `<div class="pchead"><h1>마감 보고</h1><div class="caption">최근 40건, 누르면 보고문 전체</div></div>${closingListHtml(40) || '<div class="empty">아직 마감 보고가 없어요</div>'}`; }
@@ -658,6 +684,7 @@ document.addEventListener("click", async (e) => {
   const t = e.target.closest("button,tr[data-brpc]"); if (!t) return;
   if (t.tagName === "TR") return isPC() ? panelBranch(t.dataset.brpc, "프리미엄 A") : sheetBranch(t.dataset.brpc, "프리미엄 A");
   if (t.id === "go") return tryLogin();
+  if (t.dataset.restart) { const bot = t.dataset.restart; if (!confirm(bot + "을 다시 켤까요? 1분쯤 걸려요" + (bot === "운영봇" ? ". 그동안 온 신호는 다시 켜진 뒤 처리돼요" : ""))) return; t.disabled = true; t.textContent = "보냈어요"; try { await sendOp("restart", { bot }); toast(bot + " 다시 켜는 중이에요. 3분 안에 상태가 바뀌어요"); setTimeout(loadBot, 90e3); setTimeout(loadBot, 200e3); } catch (err) { toast("못 보냈어요: " + err.message); t.disabled = false; t.textContent = "다시 켜기"; } return; }
   if (t.dataset.x !== undefined) return closeSheet();
   if (t.dataset.kpib) { kpiB = t.dataset.kpib; ls.set("vf-admin-kpib", kpiB); return render(); }
   if (t.dataset.kpim) { kpiM = t.dataset.kpim; ls.set("vf-admin-kpim", kpiM); return render(); }
@@ -713,6 +740,7 @@ document.addEventListener("keydown", (e) => { if (e.key === "Enter" && e.target.
   catch { ls.set("vf-admin-key", null); KEY = null; renderLogin(); }
 })();
 setInterval(() => KEY && reload(true), 3 * 60e3);
+setInterval(() => KEY && loadBot(), 60e3); setTimeout(loadBot, 1500);
 matchMedia("(min-width:900px)").addEventListener("change", () => { panelKeep = ""; if (D) render(); });
 </script>
 </body>
