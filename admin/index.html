@@ -492,7 +492,8 @@ function tasksCardHtml() {
 // 10/25 봇 상태: 운영봇이 3분마다 올림. 10분 넘게 안 바뀌면 이 PC나 운영봇이 꺼진 것
 let BOT = null, BOT_ERR = false;
 async function loadBot() {
-  try { const r = await fetch("https://api.github.com/repos/officialvafriend/vape/contents/admin/botstatus.json?t=" + Date.now(), { headers: { Accept: "application/vnd.github.raw" }, cache: "no-store" }); if (!r.ok) throw 0; BOT = await r.json(); BOT_ERR = false; }
+  // 깃허브 API는 시간당 60번 한도라(관리자 데이터도 씀) 페이지 주소로 읽음
+  try { const r = await fetch("botstatus.json?t=" + Date.now(), { cache: "no-store" }); if (!r.ok) throw 0; BOT = await r.json(); BOT_ERR = false; }
   catch { BOT_ERR = true; }
   if (tab === "home" && !draft && !$("#dim").classList.contains("on")) { const el = $("#botcard"); if (el) el.outerHTML = botHtml(); }
 }
