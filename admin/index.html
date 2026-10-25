@@ -154,21 +154,12 @@
 .ops td b{font-weight:700}
 .ops .g{color:var(--green);font-weight:700}.ops .r{color:var(--red);font-weight:700}.ops .n{color:var(--sub)}
 .ops small{display:block;font-size:11px;color:var(--sub);font-weight:500}
-/* 10/25 사무실 들판: 우사기, 쿠리만쥬가 좌우로 걸어 다니고, 휴식은 제자리 숨쉬기, 에러는 멈춤 */
-.field{position:relative;height:320px;background:url(img/field.png) center top/cover no-repeat,linear-gradient(#bfe3f5 0 32%,#cfe8b8 32%)}
-.walker{position:absolute;left:3%;width:130px;display:flex;flex-direction:column;align-items:center;gap:2px;animation:wk 26s linear infinite}
-.walker img{width:130px;height:112px;object-fit:contain;display:block;animation:fl 26s linear infinite}
-.walker .hop{animation:hp .7s ease-in-out infinite}
+/* 10/25 사무실 들판: 우사기, 쿠리만쥬는 제자리에 서 있음(사장님 "걷는 건 하지마"), 표정만 15초마다 바뀜 */
+.field{position:relative;height:300px;background:url(img/field.png) center top/cover no-repeat,linear-gradient(#bfe3f5 0 32%,#cfe8b8 32%)}
+.walker{position:absolute;width:130px;display:flex;flex-direction:column;align-items:center;gap:2px}
+.walker img{width:130px;height:112px;object-fit:contain;display:block}
 .walker .tag{padding:3px 10px;border-radius:999px;color:#fff;font-size:12px;font-weight:700;white-space:nowrap}
-.walker.rest .hop{animation:br 3s ease-in-out infinite}
-.walker.rest,.walker.rest img,.walker.stop,.walker.stop img,.walker.stop .hop{animation-play-state:paused}
-.walker.stop .hop{animation:none}
-@keyframes wk{0%{left:3%}50%{left:calc(97% - 130px)}100%{left:3%}}
-@keyframes fl{0%,49.9%{transform:scaleX(-1)}50%,100%{transform:scaleX(1)}}
-@keyframes hp{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
-@keyframes br{0%,100%{transform:scale(1)}50%{transform:scale(1.03,.97)}}
-@media(max-width:700px){.field{height:220px}.walker{width:96px}.walker img{width:96px;height:84px}@keyframes wk{0%{left:3%}50%{left:calc(97% - 96px)}100%{left:3%}}}
-@media(prefers-reduced-motion:reduce){.walker,.walker img,.walker .hop{animation:none}}
+@media(max-width:700px){.field{height:220px}.walker{width:96px}.walker img{width:96px;height:84px}}
 </style>
 </head>
 <body>
@@ -572,7 +563,7 @@ function charsHtml() {
     const col = s.s === "에러" ? "var(--red)" : s.s === "휴식" ? "#8b95a1" : "var(--green)";
     const label = name + " " + s.s;
     const mode = s.s === "에러" ? "stop" : s.s === "휴식" ? "rest" : "walk";
-    return `<div class="walker ${mode}" style="animation-delay:-${i * 7}s;bottom:${i ? 4 : 20}%"><div class="hop"><img data-char="${k}" data-st="${s.s}" src="img/${k}_${pick(CHAR_POSE[k][s.s])}.png" alt="${name}" style="animation-delay:-${i * 7}s"></div>
+    return `<div class="walker ${mode}" style="left:${i ? 58 : 18}%;bottom:${i ? 8 : 14}%"><div class="hop"><img data-char="${k}" data-st="${s.s}" src="img/${k}_${pick(CHAR_POSE[k][s.s])}.png" alt="${name}"></div>
       <span class="tag" style="background:${col}">${esc(label)}</span></div>`;
   };
   const line = (k, name) => st ? `<div><b>${name}</b> <span class="t-sub">${esc(st[k].line || st[k].s)}</span></div>` : "";
