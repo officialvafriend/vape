@@ -124,7 +124,10 @@
   }
   #s1 .best-dev .spec-hit i{display:none}
   #s1 .spec-tag{right:22%;top:34%}
-  #s1 .best-title{font-size:clamp(32px,5.5vw,45px)}
+  #s1 .best-title{font-size:clamp(32px,5.5vw,45px);line-height:1.32;letter-spacing:.01em}
+  #s1 .best-price{margin-top:30px;gap:10px 16px}
+  #s1 .best-price em{margin-top:6px}
+  #s1 .best-price small{margin-top:4px}
   #s1 .best-price b{font-size:clamp(34px,5.6vw,46px)}
   #s1 .best-sub{font-size:20px}
   .best-price{display:flex;align-items:baseline;flex-wrap:wrap;gap:6px 14px;margin-top:22px}
@@ -159,7 +162,7 @@
   #s1 .evrow .d{display:none}
   #s1 .evrow{grid-template-columns:1fr}
   #s1 .evrows,#s1 .cta{position:relative;z-index:3}
-  #s1 .cta{margin-top:14px}
+  #s1 .cta{margin-top:auto}
   .evrow{display:grid;grid-template-columns:1fr auto;align-items:center;gap:14px;padding:16px 0;border-top:1px solid rgba(255,255,255,.3)}
   .evrow:last-child{border-bottom:1px solid rgba(255,255,255,.3)}
   .evrow .t{font-family:var(--num);font-weight:800;font-size:19px}
@@ -180,7 +183,8 @@
   .row.best{background:rgba(216,31,42,.06);border-left:4px solid var(--red);padding-left:14px;margin-left:-18px}
 
   .combo{margin-top:18px;border:1px solid var(--line);padding:20px}
-  .combo .lab{display:flex;gap:6px}
+  .combo .lab{display:flex;gap:6px;align-items:center}
+  .combo .lab .badge{box-sizing:border-box;height:30px;line-height:1;display:inline-flex;align-items:center;white-space:nowrap} /* 두 배지 같은 높이, 줄바꿈으로 늘어나지 않게 */
   .badge{display:inline-block;font-family:var(--num);font-weight:800;font-size:12px;letter-spacing:.06em;padding:5px 10px;background:var(--red);color:#fff}
   .badge.line{background:none;color:var(--red);border:1.5px solid var(--red)}
   .combo h3{font-family:var(--num);font-weight:800;font-size:23px;margin-top:12px}
@@ -783,12 +787,37 @@
     .evg{grid-template-columns:repeat(5,1fr)}
     .evcol{grid-template-columns:repeat(4,1fr);max-width:620px}
   }
+  /* 첫 화면 = 하복2 색상 장면 사진(GPT, 디자인작업 261014_하복2_색상슬라이드). 가로판(울트라)에만 적용, 세로판은 원래 빨간 화면 그대로.
+     사진은 #s1::before에 깔아서 따로 움직임. 사진은 칸을 꽉 채우고 오른쪽에 맞춤(사장님 10/14 "원래 이렇게였잖아" → 칸 채우기 방식 유지).
+     기기 사진(.best-dev img)은 숨기고, 스펙 보기 누르는 자리만 기기 위치에 남김 */
+  @media (orientation:landscape) and (min-width:1000px){
+    #s1{background:#070a10;position:relative;isolation:isolate;container-type:inline-size}
+    #s1::before{content:"";position:absolute;inset:0;z-index:-1;background:url(dev_havok2_bg_silver.jpg) right center/cover no-repeat;animation:s1bg 1.8s cubic-bezier(.22,1,.36,1) both}
+    #s1 .hdr .eb{color:#ff8a92}
+    #s1 .best-dev img{display:none}
+    #s1 .best-dev{left:auto;right:6%;top:-40px;bottom:0;width:34%;height:auto;transform:none}
+    #s1 .best-dev .spec-hit{width:100%;height:100%;background:none}
+    #s1 .spec-tag{right:4%;top:22%;animation:s1fade .6s 1.6s both}
+    /* 등장 애니메이션: 화면이 열릴 때마다(구역 전환 시) 다시 재생됨 */
+    #s1 .hdr{animation:s1txt .9s .15s cubic-bezier(.22,1,.36,1) both}
+    #s1 .best-title{animation:s1txt 1.1s .45s cubic-bezier(.22,1,.36,1) both}
+    #s1 .best-price s,#s1 .best-price b{animation:s1txt 1s .75s cubic-bezier(.22,1,.36,1) both}
+    #s1 .best-price em,#s1 .best-price small{animation:s1txt 1s .95s cubic-bezier(.22,1,.36,1) both}
+    #s1 .cta{animation:s1up .8s 1.15s cubic-bezier(.22,1,.36,1) both}
+    /* 화면에서 벗어나면 애니메이션을 꺼 두고, 다시 보이면 재생(맨 아래 IntersectionObserver가 s1off 붙였다 뗌) */
+    #s1.s1off::before,#s1.s1off .hdr,#s1.s1off .best-title,#s1.s1off .best-price *,#s1.s1off .cta,#s1.s1off .spec-tag{animation:none}
+  }
+  @keyframes s1bg{from{opacity:0;transform:scale(1.07) translateX(50px);filter:blur(12px)}to{opacity:1;transform:none;filter:none}}
+  @keyframes s1txt{from{opacity:0;clip-path:inset(0 100% 0 0);transform:translateX(-18px)}to{opacity:1;clip-path:inset(0 0 0 0);transform:none}}
+  @keyframes s1up{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+  @keyframes s1fade{from{opacity:0}to{opacity:1}}
+  @media (prefers-reduced-motion:reduce){#s1::before,#s1 .hdr,#s1 .best-title,#s1 .best-price *,#s1 .cta,#s1 .spec-tag{animation:none}}
 </style>
 </head>
 <body data-mode="">
 <div class="app">
   <div class="top">
-    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">v10.25-0400</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
+    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">v10.25-0500</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
     <nav class="tabs" id="tabs" style="display:none"></nav>
     <div class="flow" id="flow"><span data-st="1">① 찾는 것</span><i>›</i><span data-st="2">② 고르기</span><i>›</i><span data-st="3">③ 담은 상품</span><i>›</i><span data-st="4">④ 직원 확인</span></div>
   </div>
@@ -803,14 +832,9 @@
     <div class="hdr"><div class="n">01</div><div><div class="eb">Best Deal</div><h2>오늘 가장 큰 혜택</h2></div></div>
     <div class="best-grid"><div class="best-left">
       <div class="best-title" id="bestTitle"></div>
-      <div class="best-sub">낱개로 사는 것보다 가장 저렴한 구성이에요.<br>원하는 맛으로 10병을 골라 담으면 돼요.</div>
       <div class="best-price" id="bestPrice"></div>
       </div>
       <div class="best-dev" id="bestDev"></div></div>
-    <div class="evrows">
-      <div class="evrow"><div><div class="t">레이저 각인 무료 이벤트</div><div class="u">기기 구매 또는 액상 10병 이상 구매 시 원하는 문구를 새겨 드려요</div></div><div class="d">0원</div></div>
-      <div class="evrow"><div><div class="t">네이버 리뷰 이벤트</div><div class="u">네이버 리뷰를 남기면 할인쿠폰을 드려요</div></div></div>
-    </div>
     <button class="cta" data-pkg="max10"><span><b>추가 혜택으로 구매하러 가기</b><small>구성과 할인 금액을 한눈에 보여 드려요</small></span><span class="arr">→</span></button>
   </section>
 
@@ -820,7 +844,6 @@
       <div class="row"><div><span class="k">하복2 풀패키지</span><span class="u">기기 + 입호흡 액상 10병 + 폐호흡 프리미엄 3병</span><span class="tag" data-pk-tag="full"></span></div><div class="v"><span class="note" data-pk-note="full"></span><span class="price" data-pk="full"></span></div></div>
       <div class="row"><div><span class="k">프리미엄 기기패키지 10병</span><span class="u">기기 + 프리미엄 액상 10병 · 병당 7,500원</span><span class="tag">단품가보다 24,000원 저렴</span></div><div class="v"><span class="note" data-pk-note="pr10"></span><span class="price" data-pk="pr10"></span></div></div>
       <div class="row"><div><span class="k">프리미엄 기기패키지</span><span class="u">기기 + 프리미엄 액상 5병</span><span class="tag">단품가보다 9,500원 저렴</span></div><div class="v"><span class="note" data-pk-note="pr5"></span><span class="price" data-pk="pr5"></span></div></div>
-      <div class="row"><div><span class="k">베이프렌드 기기패키지</span><span class="u">기기 + 빌런&amp;릭 5병 · 입문자 최적가</span><span class="tag">19,500원 이득</span></div><div class="v"><span class="note" data-pk-note="vl5"></span><span class="price" data-pk="vl5"></span></div></div>
     </div>
     <div id="combos"></div>
   </section>
@@ -893,10 +916,16 @@ const LABELNO = {"VF 빌런 보석바":1,"VF 빌런 청사과":2,"VF 빌런 석�
 const LABELCOL = {"VF 빌런 보석바":"w","VF 빌런 청사과":"w","VF 빌런 석류":"w","VF 빌런 레몬":"w","VF 빌런 청포도":"w","VF 빌런 레즈애플":"w","VF 빌런 파인애플":"w","VF 빌런 자두":"w","VF 빌런 바나나라무네":"w","베이퍼 시가812":"g","베이퍼 쿨멘솔":"o","VF 릭 청포도":"b","VF 릭 석류":"b","VF 릭 청사과":"b","VF 릭 파인애플":"b","VF 릭 소다":"b","VF 릭 자두":"b","VF 릭 적사과":"b","VF 릭 레몬":"b","VF 릭 바나나":"b","디오 레몬":"w","디오 샤인":"w","디오 블루마린":"w","디오 블랙티":"w","디오 알포":"w","디오 블루워터":"w","디오 로젤하트":"w","디오 멜론":"w","딸기 요거트":"y","피치 요거트":"y","환타지아":"w","크림타바코":"g","아쿠아":"w","스피아민트":"o","블루스위트":"w","백도우롱차":"w","땡모반":"w","말라이트":"g","카라망고":"w","콘치즈":"y","알로에포도":"w","스쿨사과":"w","고창수박":"w","메론바":"w","자두사탕":"w","에비앙":"o","알로에라임":"w","초코콕콕":"y","샤인머쓱캣":"w","얼음공주 자몽":"w","얼음공주 밀키소다":"w","느낌 무향":"b","(한) 와 블루레몬":"w","(한) 솔의눈":"w","(한) 레드포카리":"w","(한) 블루스카이":"w","(한) 뱅뱅":"w","(한) 아이스샷":"o","(한) 토바코샷":"g","제이코리아 블랙멘솔":"o","(한) 화이트 멘솔시가":"o","(한) 화이트 파인애플":"w","(한) 화이트 워터멜론":"w","(한) 화이트 화이트멜론":"w","(한) 화이트 블루레몬":"w","(한) 화이트 알로에베라":"w","(한) 화이트 크랜베리애플":"w","(한) 화이트 피치":"w","(한) 화이트 체리":"w","(한) 화이트 소다":"w","(한) 화이트 자몽":"w","(한) 화이트 라임":"w","(한) 마피아퀸":"w","(한) 사무라이퀸":"w","(한) 크루세이더퀸":"w","(한) 아마조네스퀸":"w","제로닉 석류":"gr","제로닉 거봉":"gr","제로닉 샤인머스캣":"gr","제로닉 콜라":"gr","제로닉 민트":"gr","제로닉 노멘솔 포도":"gr","제로닉 노멘솔 자몽":"gr","제로닉 노멘솔알로에":"gr","제로닉 노멘솔 체리":"gr","제로닉 아이스스노우":"gr","방그레 스피아민트":"gr","크래프트 포도":"gr","크래프트 자두":"gr","(한) 크래스프라이트":"gr","크래알포":"gr","크래망고":"gr","메가킥 마르키사":"gr","메가킥 딸기":"gr","메가킥 망고":"gr","메가킥 피치":"gr","메가킥 사과":"gr","메가킥 샤인":"gr","메가킥 소다":"gr","메가킥 수박":"gr","메가킥 자몽":"gr","메가킥 포도":"gr","메가킥 자두":"gr","메가킥 파인애플":"gr","스위든 멘솔마스터":"o","스위든 쿠반시가":"g","스위든 체어맨":"g","스위든 그린티":"b","스위든 아이스그린티":"w","스위든 선인장":"w","마샤 샤인":"w","마샤 블랙":"w","마샤 유자":"w","마샤 딸기":"w","마샤 더블샤인":"w","마르키사":"w","마르키사 라즈":"w","잽알베":"w","프라임 파워멘솔":"o","톡스 로젤하트":"w","슴오크쿠반":"g","파이 토트":"g","갱쥬스 알베":"w","컵콘":"y","더블슬블":"w","크오크":"g","용트림체리":"w","더블라임":"w","라임알로에":"w","모코 하와이":"w","모코 그레이프사워":"w","모코 더블망고":"w","모코 더블샤인":"w","설향 딸기":"w","설향 라임":"w","설향 자두":"w"}; // 라벨지 색 (w흰색 b파랑 o주황 g연회색 gr초록 y노랑) — 액상_라벨_전체목록.xlsx 10/9 // 액상 라벨 번호 (액상_라벨_전체목록.xlsx 10/8, 58번~ 초안) — 메뉴판 이름 기준
 L.forEach((x) => { if (LABELNO[x.n]) { x.no = LABELNO[x.n]; x.lc = LABELCOL[x.n]; } });
 // 빌런 9종은 사장님이 준 정사각 이미지로 (10/5) — 메뉴판과 같이 올라가는 파일, 나머지는 공용 img/
-const OWN_IMG = { "(한) 레드포카리": "ph_000.jpg", "(한) 뱅뱅": "ph_001.jpg", "(한) 아이스샷": "ph_002.jpg", "(한) 토바코샷": "ph_003.jpg", "(한)노멘 애플피치": "ph_004.jpg", "(한) 블루스카이": "ph_005.jpg", "느낌 무향": "ph_006.jpg", "더블슬블": "ph_007.jpg", "딸기 요거트": "ph_008.jpg", "땡모반": "ph_009.jpg", "마르키사": "ph_010.jpg", "마르키사 라즈": "ph_011.jpg", "마샤 샤인": "ph_012.jpg", "만다린": "ph_013.jpg", "메가킥 딸기": "ph_014.jpg", "메가킥 레몬": "ph_015.jpg", "메가킥 마르키사": "ph_016.jpg", "메가킥 망고": "ph_017.jpg", "메가킥 멘솔": "ph_018.jpg", "메가킥 민트": "ph_019.jpg", "메가킥 피치": "ph_020.jpg", "메가킥 사과": "ph_021.jpg", "메가킥 샤인": "ph_022.jpg", "메가킥 소다": "ph_023.jpg", "메가킥 수박": "ph_024.jpg", "메가킥 자두": "ph_025.jpg", "메가킥 자몽": "ph_026.jpg", "메가킥 파인애플": "ph_027.jpg", "메가킥 포도": "ph_028.jpg", "모코 그레이프사워": "ph_029.jpg", "모코 더블망고": "ph_030.jpg", "모코 더블샤인": "ph_031.jpg", "베이퍼 시가812": "ph_032.jpg", "베이퍼 쿨멘솔": "ph_033.jpg", "샤인머쓱캣": "ph_034.jpg", "설향 딸기": "ph_035.jpg", "설향 라임": "ph_036.jpg", "설향 자두": "ph_037.jpg", "스위든 그린티": "ph_038.jpg", "스위든 아이스그린티": "ph_039.jpg", "스위든 체어맨": "ph_040.jpg", "스위든 쿠반시가": "ph_041.jpg", "슴오크쿠반": "ph_042.jpg", "아메리카노": "ph_043.jpg", "알로에라임": "ph_044.jpg", "알로에레몬": "ph_045.jpg", "알로에포도": "ph_046.jpg", "얼음공주 밀키소다": "ph_047.jpg", "얼음공주 자몽": "ph_048.jpg", "에비앙": "ph_049.jpg", "용트림체리": "ph_050.jpg", "잽알베": "ph_051.jpg", "제로닉 거봉": "ph_052.jpg", "제로닉 노멘솔알로에": "ph_053.jpg", "제로닉 노멘솔 자몽": "ph_054.jpg", "제로닉 노멘솔 체리": "ph_055.jpg", "제로닉 노멘솔 포도": "ph_056.jpg", "제로닉 민트": "ph_057.jpg", "제로닉 샤인머스캣": "ph_058.jpg", "제로닉 석류": "ph_059.jpg", "제로닉 시가": "ph_060.jpg", "제로닉 아이스스노우": "ph_061.jpg", "제로닉 콜라": "ph_062.jpg", "제이코리아 블랙멘솔": "ph_063.jpg", "카라망고": "ph_064.jpg", "컵콘": "ph_065.jpg", "콘치즈": "ph_066.jpg", "크오크": "ph_067.jpg", "키위바나나": "ph_068.jpg", "파이 토트": "ph_069.jpg", "포도쥬스": "ph_070.jpg", "피치 요거트": "ph_071.jpg", "VF 릭 바나나": "lk_sq_banana.jpg", "VF 릭 청사과": "lk_sq_greenapple.jpg", "VF 릭 청포도": "lk_sq_greengrape.jpg", "VF 릭 레몬": "lk_sq_lemon.jpg", "VF 릭 파인애플": "lk_sq_pineapple.jpg", "VF 릭 자두": "lk_sq_plum.jpg", "VF 릭 석류": "lk_sq_pomegranate.jpg", "VF 릭 적사과": "lk_sq_redapple.jpg", "VF 릭 소다": "lk_sq_soda.jpg", "환타지아": "lq_fantasia.jpg", "크림타바코": "lq_creamtobacco.jpg", "블루스위트": "lq_bluesweet.jpg", "백도우롱차": "lq_peachoolong.jpg", "말라이트": "lq_marlight.jpg", "고창수박": "lq_watermelon.jpg", "스피아민트": "lq_spearmint.jpg", "영주사과": "lq_apple.jpg", "유자녹차": "lq_yuzutea.jpg", "ㅇㅋㄹㅌ": "lq_yakult.jpg", "상어바": "lq_sharkbar.jpg", "겟토레이 블루베리": "lq_gettoray.jpg", "뉴스프라이트": "lq_newsprite.jpg", "복숭아와망고": "lq_peachmango.jpg", "금실딸기": "lq_strawberry.jpg", "아쿠아": "lq_aqua.jpg", "개꿀포도": "lq_honeygrape.jpg", "알로에포도베라": "lq_aloegrape.jpg", "그릭요거트": "lq_greekyogurt.jpg", "VF 빌런 레몬": "vl_sq_lemon.jpg", "VF 빌런 레즈애플": "vl_sq_redsapple.jpg", "VF 빌런 바나나라무네": "vl_sq_banana.jpg", "VF 빌런 보석바": "vl_sq_bosukbar.jpg", "VF 빌런 석류": "vl_sq_pomegranate.jpg", "VF 빌런 자두": "vl_sq_plum.jpg", "VF 빌런 청사과": "vl_sq_greenapple.jpg", "VF 빌런 청포도": "vl_sq_greengrape.jpg", "VF 빌런 파인애플": "vl_sq_pineapple.jpg" };
+const OWN_IMG = { "나만없어용과(모드)": "ph_072.jpg", "더블슬블(모드)": "ph_073.jpg", "동경포도(모드)": "ph_074.jpg", "디톡알베3MG(모드)": "ph_075.jpg", "디톡알베9MG(모드)": "ph_076.jpg", "라즈베리석류(모드)": "ph_077.jpg", "레드 포카리": "ph_078.jpg", "레드애플(모드)": "ph_079.jpg", "레몬밀리언모드": "ph_080.jpg", "레몬캔디(모드)": "ph_081.jpg", "레즈애플(모드)": "ph_082.jpg", "마르키사(모드)": "ph_083.jpg", "마르키사P(모드)": "ph_084.jpg", "마샤샤인(모드)": "ph_085.jpg", "메즈망고(모드)": "ph_086.jpg", "메즈멜론(모드)": "ph_087.jpg", "미슐랭블루(모드)": "ph_088.jpg", "블루베리석류(모드)": "ph_089.jpg", "빌런 보석바 (모드)": "ph_090.jpg", "소다레몬(모드)": "ph_091.jpg", "슈퍼쿨폴로(모드)": "ph_092.jpg", "알로에소다(모드)": "ph_093.jpg", "잽알베3MG(모드)": "ph_094.jpg", "잽알베9MG(모드)": "ph_095.jpg", "초바쉐(모드)": "ph_096.jpg", "크레이지 딸기(모드)": "ph_097.jpg", "크레이지 소다(모드)": "ph_098.jpg", "크레이지 알로에(모드)": "ph_099.jpg", "크레이지 피치(모드)": "ph_100.jpg", "크오크(모드)": "ph_101.jpg", "포도사과(모드)": "ph_102.jpg", "하와이(모드)": "ph_103.jpg", "(한) 레드포카리": "ph_000.jpg", "(한) 뱅뱅": "ph_001.jpg", "(한) 아이스샷": "ph_002.jpg", "(한) 토바코샷": "ph_003.jpg", "(한)노멘 애플피치": "ph_004.jpg", "(한) 블루스카이": "ph_005.jpg", "느낌 무향": "ph_006.jpg", "더블슬블": "ph_007.jpg", "딸기 요거트": "ph_008.jpg", "땡모반": "ph_009.jpg", "마르키사": "ph_010.jpg", "마르키사 라즈": "ph_011.jpg", "마샤 샤인": "ph_012.jpg", "만다린": "ph_013.jpg", "메가킥 딸기": "ph_014.jpg", "메가킥 레몬": "ph_015.jpg", "메가킥 마르키사": "ph_016.jpg", "메가킥 망고": "ph_017.jpg", "메가킥 멘솔": "ph_018.jpg", "메가킥 민트": "ph_019.jpg", "메가킥 피치": "ph_020.jpg", "메가킥 사과": "ph_021.jpg", "메가킥 샤인": "ph_022.jpg", "메가킥 소다": "ph_023.jpg", "메가킥 수박": "ph_024.jpg", "메가킥 자두": "ph_025.jpg", "메가킥 자몽": "ph_026.jpg", "메가킥 파인애플": "ph_027.jpg", "메가킥 포도": "ph_028.jpg", "모코 그레이프사워": "ph_029.jpg", "모코 더블망고": "ph_030.jpg", "모코 더블샤인": "ph_031.jpg", "베이퍼 시가812": "ph_032.jpg", "베이퍼 쿨멘솔": "ph_033.jpg", "샤인머쓱캣": "ph_034.jpg", "설향 딸기": "ph_035.jpg", "설향 라임": "ph_036.jpg", "설향 자두": "ph_037.jpg", "스위든 그린티": "ph_038.jpg", "스위든 아이스그린티": "ph_039.jpg", "스위든 체어맨": "ph_040.jpg", "스위든 쿠반시가": "ph_041.jpg", "슴오크쿠반": "ph_042.jpg", "아메리카노": "ph_043.jpg", "알로에라임": "ph_044.jpg", "알로에레몬": "ph_045.jpg", "알로에포도": "ph_046.jpg", "얼음공주 밀키소다": "ph_047.jpg", "얼음공주 자몽": "ph_048.jpg", "에비앙": "ph_049.jpg", "용트림체리": "ph_050.jpg", "잽알베": "ph_051.jpg", "제로닉 거봉": "ph_052.jpg", "제로닉 노멘솔알로에": "ph_053.jpg", "제로닉 노멘솔 자몽": "ph_054.jpg", "제로닉 노멘솔 체리": "ph_055.jpg", "제로닉 노멘솔 포도": "ph_056.jpg", "제로닉 민트": "ph_057.jpg", "제로닉 샤인머스캣": "ph_058.jpg", "제로닉 석류": "ph_059.jpg", "제로닉 시가": "ph_060.jpg", "제로닉 아이스스노우": "ph_061.jpg", "제로닉 콜라": "ph_062.jpg", "제이코리아 블랙멘솔": "ph_063.jpg", "카라망고": "ph_064.jpg", "컵콘": "ph_065.jpg", "콘치즈": "ph_066.jpg", "크오크": "ph_067.jpg", "키위바나나": "ph_068.jpg", "파이 토트": "ph_069.jpg", "포도쥬스": "ph_070.jpg", "피치 요거트": "ph_071.jpg", "VF 릭 바나나": "lk_sq_banana.jpg", "VF 릭 청사과": "lk_sq_greenapple.jpg", "VF 릭 청포도": "lk_sq_greengrape.jpg", "VF 릭 레몬": "lk_sq_lemon.jpg", "VF 릭 파인애플": "lk_sq_pineapple.jpg", "VF 릭 자두": "lk_sq_plum.jpg", "VF 릭 석류": "lk_sq_pomegranate.jpg", "VF 릭 적사과": "lk_sq_redapple.jpg", "VF 릭 소다": "lk_sq_soda.jpg", "환타지아": "lq_fantasia.jpg", "크림타바코": "lq_creamtobacco.jpg", "블루스위트": "lq_bluesweet.jpg", "백도우롱차": "lq_peachoolong.jpg", "말라이트": "lq_marlight.jpg", "고창수박": "lq_watermelon.jpg", "스피아민트": "lq_spearmint.jpg", "영주사과": "lq_apple.jpg", "유자녹차": "lq_yuzutea.jpg", "ㅇㅋㄹㅌ": "lq_yakult.jpg", "상어바": "lq_sharkbar.jpg", "겟토레이 블루베리": "lq_gettoray.jpg", "뉴스프라이트": "lq_newsprite.jpg", "복숭아와망고": "lq_peachmango.jpg", "금실딸기": "lq_strawberry.jpg", "아쿠아": "lq_aqua.jpg", "개꿀포도": "lq_honeygrape.jpg", "알로에포도베라": "lq_aloegrape.jpg", "그릭요거트": "lq_greekyogurt.jpg", "VF 빌런 레몬": "vl_sq_lemon.jpg", "VF 빌런 레즈애플": "vl_sq_redsapple.jpg", "VF 빌런 바나나라무네": "vl_sq_banana.jpg", "VF 빌런 보석바": "vl_sq_bosukbar.jpg", "VF 빌런 석류": "vl_sq_pomegranate.jpg", "VF 빌런 자두": "vl_sq_plum.jpg", "VF 빌런 청사과": "vl_sq_greenapple.jpg", "VF 빌런 청포도": "vl_sq_greengrape.jpg", "VF 빌런 파인애플": "vl_sq_pineapple.jpg" };
 // 사진이 아직 없는 상품: 회색 병 그림 + '사진 준비 중'
 const NOIMG = "data:image/svg+xml," + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><rect width="200" height="200" fill="#fff"/><rect x="82" y="30" width="36" height="34" rx="6" fill="#d9d9d9"/><rect x="66" y="62" width="68" height="100" rx="10" fill="#e9e9e9"/><text x="100" y="186" font-size="15" text-anchor="middle" fill="#9a9a9a" font-family="sans-serif">사진 준비 중</text></svg>');
 const isrc = (x) => OWN_IMG[x.n] || (x.img ? IMG + x.img : NOIMG);
+// 기기 모델 대표 사진(배경 지운 png). 교육 DB 사진보다 먼저 씀. 원본은 (보혜)베이프렌드 제품이미지<모델>원본
+const DEV_IMG = {"말론":{"건메탈":"dev_v000.jpg","블랙":"dev_v001.jpg","실버":"dev_v002.jpg","한정판":"dev_v003.jpg"},"말론S":{"건메탈":"dev_v004.jpg","다크그린":"dev_v005.jpg","블랙":"dev_v006.jpg","샌드골드":"dev_v007.jpg","실버":"dev_v008.jpg","한정판":"dev_v009.jpg"},"맥스프로 스티그마 네이비":"dev_v010.jpg","맥스프로 스티그마":{"네이비":"dev_v010.jpg","블루":"dev_v011.jpg"},"발라리안에어":{"브러쉬드실버":"dev_v012.jpg","블랙":"dev_v013.jpg","블루":"dev_v014.jpg","핑크":"dev_v015.jpg","화이트":"dev_v016.jpg"},"발라맥스프로":{"블랙":"dev_v017.jpg","블루":"dev_v018.jpg","실버":"dev_v019.jpg","퍼플":"dev_v020.jpg","핑크":"dev_v021.jpg"},"브이메이트E2":{"블랙":"dev_v022.jpg","화이트":"dev_v023.jpg"},"브이메이트E2 화이트":"dev_v023.jpg","썬더Q2":"dev_v024.jpg","에어릭스 기기":"dev_v025.jpg","제우스폴리2탱크":{"레인보우":"dev_v026.jpg","블랙":"dev_v027.jpg","실버":"dev_v028.jpg"},"제우스폴리2탱크 실버":"dev_v028.jpg","젤로 라무네버터":"dev_v029.jpg","젤로":{"라무네버터":"dev_v029.jpg","라임버터":"dev_v030.jpg","아사이버터":"dev_v031.jpg","피치버터":"dev_v032.jpg"},"젤로맥스":{"SS":"dev_v033.jpg","그레이":"dev_v034.jpg","레이저":"dev_v035.jpg","바이올렛":"dev_v036.jpg","블라썸":"dev_v037.jpg","블랙":"dev_v038.jpg","티파니":"dev_v039.jpg"},"젤로맥스 티파니":"dev_v039.jpg","젤로울트라":{"블랙":"dev_v040.jpg","실버":"dev_v041.jpg"},"젤로크리스탈":{"블랙":"dev_v042.jpg","실버":"dev_v043.jpg"},"조바":{"골드":"dev_v044.jpg","블랙":"dev_v045.jpg","퍼플":"dev_v046.jpg"},"플러키":{"레드":"dev_v047.jpg","블루":"dev_v048.jpg","실버":"dev_v049.jpg","티파니":"dev_v050.jpg"},"후카에어":{"레빗":"dev_v051.jpg","룸빅":"dev_v052.jpg"},"하복SE":{"화이트":"dev_havokse_white.png","블랙":"dev_havokse_black.png"}}; // 색상별이면 {색: 사진} → 하복2처럼 색 고르기
+const devImgColor = (model, x) => { const v = DEV_IMG[model]; return v && typeof v === "object" ? Object.keys(v).find((k) => x && (x.opt === k || x.n.endsWith(k))) || "" : ""; };
+const devImg = (model, x) => { const v = DEV_IMG[model]; return !v ? "" : typeof v === "string" ? v : v[devImgColor(model, x)] || Object.values(v)[0]; };
+// 팟·코일 사진(상품 이름 기준). 없으면 기기 사진으로 대신 보여 줌
+const POD_IMG = { "하복코일 0.6": "dev_havokse_coil06.png", "하복코일 0.25옴": "dev_havokse_coil025.png", "하복공팟": "dev_havokse_pod.png" };
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
 const byName = (n) => L.find((x) => x.n === n);
@@ -1176,19 +1205,18 @@ function devSpecView(model) {
     ["AS 보증", "6개월", "베이프렌드 매장 AS · 모든 기기 동일"],
   ].filter(Boolean);
   open(`<div style="font-size:13px;color:var(--grey);font-weight:700">전자담배 기기</div><div class="sh" style="margin-top:6px">${esc(model)}</div>
-    ${d?.img ? `<div class="dspec-pic"><img src="${EDU + encodeURIComponent(d.img)}" alt=""></div>` : ""}
-    <div class="cv-two"><div><b>가격</b><strong>${won(prices[0])}${prices.length > 1 ? "~" : ""}</strong><span>레이저 각인 무료</span></div><div><b>호흡 방식</b><strong>${esc(xs[0].pos)}</strong><span>${xs.length}가지 색상·옵션</span></div></div>
+    ${typeof DEV_IMG[model] === "object" ? `<div class="cv-hero"><img id="dsImg" src="${devImg(model, xs[0])}" alt=""><i class="cv-sh"></i><span class="cv-cl" id="dsCl">${esc(devImgColor(model, xs[0]))}</span></div>${`<div class="cv-colors">${xs.map((x, i) => `<button data-dsc="${x.id}" data-dsm="${esc(model)}" class="${i ? "" : "on"}"><img src="${devImg(model, x)}" alt=""><span>${esc(devImgColor(model, x) || x.opt || x.n)}</span><small style="font-size:12px;color:var(--grey)">${won(x.price)}</small></button>`).join("")}</div>`}` : DEV_IMG[model] ? `<div class="dspec-pic"><img src="${DEV_IMG[model]}" alt="" style="object-fit:contain"></div>` : d?.img ? `<div class="dspec-pic"><img src="${EDU + encodeURIComponent(d.img)}" alt=""></div>` : ""}
+    <div class="cv-two"><div><b>가격</b><strong>${won(prices[0])}${prices.length > 1 ? "~" : ""}</strong><span>레이저 각인 무료</span></div><div><b>호흡 방식</b>${/입호흡/.test(d?.o) && /(^|[^반])폐호흡/.test(d?.o) ? `<strong>입호흡 + 폐호흡</strong><span>${/코일/.test(d.f) ? "코일" : "팟"}만 바꿔 끼우면 돼요</span>` : `<strong>${esc(xs[0].pos)}</strong><span>${xs.length}가지 색상·옵션</span>`}</div></div>
     ${d?.desc ? `<div class="dspec-desc">${esc(d.desc)}</div>` : ""}
     <div class="cv-grid">${rows.map(([k, v, u]) => `<div><b>${esc(k)}</b><strong>${esc(v)}</strong>${u ? `<span>${esc(u)}</span>` : ""}</div>`).join("")}</div>
     ${!d ? '<div class="dspec-desc" style="color:var(--grey)">상세 스펙 준비 중이에요</div>' : ""}
-    <div class="sub">색상·옵션 골라 담기</div>
-    <div class="opts">${xs.map((x) => `<button data-gadd="${x.id}" data-close="1">${esc(x.opt || x.n)}<small>${won(x.price)}</small></button>`).join("")}</div>
-    ${(() => { const ps = podsFor(model); return ps.length ? `<div class="sub">전용 소모품 <small style="font-family:var(--kr);font-size:13px;color:var(--grey);font-weight:600">이 기기에 맞는 팟·코일</small></div><div class="dpods">${ps.map((p) => `<div class="dpod">${d?.img ? `<img src="${EDU + encodeURIComponent(d.img)}" alt="">` : `<span class="dpod-ph">${EMOJI.pod}</span>`}<div><b>${esc(p.n)}</b><span>${won(p.price)}${cart.get(p.id) ? ` · 담음 ${cart.get(p.id)}` : ""}</span></div><span class="pkb">${podBtns(p, ` data-re-dev="${esc(model)}"`)}</span></div>`).join("")}</div>` : ""; })()}
+    ${typeof DEV_IMG[model] === "object" ? `<div class="btns" style="margin-top:16px"><button class="b1" id="dsAdd" data-gadd="${xs[0].id}" data-close="1">이 색으로 기기 담기</button></div>` : `<div class="sub">색상·옵션 골라 담기</div>` + `<div class="opts">${xs.map((x) => `<button data-gadd="${x.id}" data-close="1">${esc(x.opt || x.n)}<small>${won(x.price)}</small></button>`).join("")}</div>`}
+    ${(() => { const ps = podsFor(model); return ps.length ? `<div class="sub">전용 소모품 <small style="font-family:var(--kr);font-size:13px;color:var(--grey);font-weight:600">이 기기에 맞는 팟·코일</small></div><div class="dpods">${ps.map((p) => `<div class="dpod">${POD_IMG[p.n] ? `<img src="${POD_IMG[p.n]}" alt="">` : d?.img ? `<img src="${EDU + encodeURIComponent(d.img)}" alt="">` : `<span class="dpod-ph">${EMOJI.pod}</span>`}<div><b>${esc(p.n)}</b><span>${won(p.price)}${cart.get(p.id) ? ` · 담음 ${cart.get(p.id)}` : ""}</span></div><span class="pkb">${podBtns(p, ` data-re-dev="${esc(model)}"`)}</span></div>`).join("")}</div>` : ""; })()}
     ${d?.tip ? `<details class="dspec-tip"><summary>직원용 팁</summary><div>${esc(d.tip).replace(/\n/g, "<br>")}</div></details>` : ""}`);
 }
 function gCard([model, xs]) {
   const prices = [...new Set(xs.map((x) => x.price))].sort((a, b) => a - b);
-  const di = model === MAIN.model ? { img: "", own: MAIN.imgs?.["블랙"] || MAIN.img } : xs[0].c === "dev" && devInfo(model);
+  const di = model === MAIN.model ? { img: "", own: MAIN.imgs?.["블랙"] || MAIN.img } : xs[0].c === "dev" && (DEV_IMG[model] ? { own: devImg(model, xs[0]) } : devInfo(model));
   return `<button class="p" data-gm="${esc(model)}"><div class="gpic">${di?.own ? `<img loading="lazy" src="${di.own}" alt="" style="object-fit:contain;background:#fff">` : di?.img ? `<img loading="lazy" src="${EDU + encodeURIComponent(di.img)}" alt="">` : xs[0].c === "dev" ? `<span class="gname">${esc(model)}</span>` : EMOJI[xs[0].c]}</div><div class="bd">${xs.length > 1 ? xs.length + "가지" : ""}</div><b>${esc(model)}</b><div class="pr">${won(prices[0])}${prices.length > 1 ? "~" : ""}</div>${xs[0].ev ? `<span class="ev">${EVN[xs[0].ev][2]}</span>` : ""}</button>`;
 }
 function renderGoods() {
@@ -1199,7 +1227,7 @@ function renderGoods() {
   $("#podFilter").innerHTML = subs.map((s) => `<button class="f ${podSub === s ? "on" : ""}" data-pf="${s}">${s}</button>`).join("");
   const allPods = G.filter((x) => x.c === "pod");
   const devCnt = (k) => allPods.filter((x) => podDevOf(x) === k).length;
-  $("#podDevs").innerHTML = [...POD_DEV.filter((d) => devCnt(d.k)), { k: "기타" }].map((d) => `<button class="pdev ${podDev === d.k ? "on" : ""}" data-pdev="${esc(d.k)}">${(() => { const di = d.k !== "기타" && devInfo(d.k), src = d.img || (di?.img ? EDU + encodeURIComponent(di.img) : ""); return src ? `<img src="${src}" alt=""><b>${esc(d.k)}</b>` : `<span class="ph">${esc(d.k)}</span>`; })()}<small>${devCnt(d.k)}종</small></button>`).join("");
+  $("#podDevs").innerHTML = [...POD_DEV.filter((d) => devCnt(d.k)), { k: "기타" }].map((d) => `<button class="pdev ${podDev === d.k ? "on" : ""}" data-pdev="${esc(d.k)}">${(() => { const di = d.k !== "기타" && devInfo(d.k), src = d.img || devImg(d.k) || (di?.img ? EDU + encodeURIComponent(di.img) : ""); return src ? `<img src="${src}" alt=""><b>${esc(d.k)}</b>` : `<span class="ph">${esc(d.k)}</span>`; })()}<small>${devCnt(d.k)}종</small></button>`).join("");
   const pods = allPods.filter((x) => (podDev ? podDevOf(x) === podDev : true) && (podDev || x.sub === podSub));
   $("#podList").innerHTML = (podDev ? `<div class="pdsel"><b>${esc(podDev)}</b> 에 맞는 팟·코일 · 소모품 <button data-pdev="${esc(podDev)}">다른 기기 고르기</button></div>` : "") + ["입호흡", "폐호흡"].map((p) => { const l = pods.filter((x) => x.pos === p); return l.length ? `<div class="grp"><div class="gh"><b>${p}</b><span>${l.length}종</span></div>${l.map((x) => `<div class="rowg"><b>${esc(x.n)}</b><span class="pr">${won(x.price)}${packOf(x) ? `<small> · 1팩 ${packOf(x)}개</small>` : ""}</span><span class="pkb">${podBtns(x)}</span></div>`).join("")}</div>` : ""; }).join("");
   const dsps = modelGroups(G.filter((x) => x.c === "dsp"));
@@ -1387,8 +1415,7 @@ function render() {
   renderMain();
   $("#combos").innerHTML = PKGS.slice(1).map((p) => `<div class="combo"><div class="lab"><span class="badge">${esc(p.badge)}</span>${p.sub ? `<span class="badge line">${esc(p.sub)}</span>` : ""}</div>
     <h3>${esc(p.name)}</h3><div class="names">${esc(p.desc)}</div>
-    <div class="items">${p.device ? devBox() : ""}${p.items.map(byName).filter(Boolean).map((x) => `<img src="${isrc(x)}" alt="">`).join("")}</div>
-    <div class="act"><button class="b1" data-pkgadd="${p.id}">이 구성 그대로 담기</button><button class="b2" data-pkg="${p.id}">자세히</button></div></div>`).join("");
+    <div class="act"><button class="b2" data-pkg="${p.id}">자세히</button></div></div>`).join("");
   
   $("#stockAt").textContent = STOCK_AT ? ` · 재고 ${STOCK_AT} 기준` : "";
   $("#recTabs").innerHTML = REC.map((x) => `<button class="taste ${rec === x.k ? "on" : ""}" data-rec="${x.k}"><b>${x.k}</b><span>${x.s}</span></button>`).join("");
@@ -1717,6 +1744,7 @@ document.addEventListener("click", (e) => {
   if ((el = q("[data-mode]")) && el.classList.contains("way")) { setMode(el.dataset.mode); return; }
   if (q("#homeBtn")) { $("#devUp").classList.remove("on"); closeS(); $("#srch").classList.remove("on"); setMode(""); return; }
   if ((el = q("[data-mainspec]"))) return mainSpecView();
+  if ((el = q("[data-dsc]"))) { const x = GMAP.get(el.dataset.dsc), m = el.dataset.dsm; $("#dsImg").src = devImg(m, x); $("#dsCl").textContent = devImgColor(m, x); $("#dsAdd").dataset.gadd = x.id; document.querySelectorAll("[data-dsc]").forEach((b) => b.classList.toggle("on", b === el)); return; }
   if ((el = q("[data-cvc]"))) { cvColor = el.dataset.cvc; $("#cvImg").src = MAIN.imgs[cvColor] || MAIN.img; $("#cvCl").textContent = cvColor; document.querySelectorAll("[data-cvc]").forEach((b) => b.classList.toggle("on", b === el)); return; }
   if ((el = q("[data-gpack]"))) { const st = $("#sheet").scrollTop; for (let i = 0; i < MAIN.podPack; i++) addGoods(el.dataset.gpack); toast(`담았어요 · ${GMAP.get(el.dataset.gpack).n} 1팩(${MAIN.podPack}개)`); renderGoods(); mainSpecView(); $("#sheet").scrollTop = st; return; }
   if ((el = q("[data-maindev]"))) { const x = G.find((y) => y.model === MAIN.model && y.opt === cvColor); if (x) addGoods(x.id); toast(`담았어요 · ${MAIN.name} ${cvColor}`); closeS(); return; }
@@ -2038,7 +2066,7 @@ function evDraw() {
     <div id="evsr"></div>
     ${EV_SECT.map(sect).join("")}
     ${E.lung ? (() => { const lg = [...EV.lpick.values()].reduce((a, b) => a + b, 0), xs = LUNG_ITEMS.filter((x) => !isOut(x)).sort((p, q) => lungBest(p) - lungBest(q)), nb = xs.filter((x) => lungBest(x) < 99).length;
-      const lcard = (x) => { const c = EV.lpick.get(x.id) || 0; return `<button class="evc txt ${c ? "on" : ""}" data-evl="${x.id}">${lungBest(x) < 99 ? '<span class="bd">BEST</span>' : ""}${esc(lungName(x.n))}<small>폐호흡</small>${c ? `<span class="cnt">${c}</span><span class="mn" data-evlm="${x.id}">−</span>` : ""}</button>`; };
+      const lcard = (x) => { const c = EV.lpick.get(x.id) || 0, li = OWN_IMG[x.n]; return `<button class="evc ${li ? "" : "txt"} ${c ? "on" : ""}" data-evl="${x.id}">${li ? `<img src="${li}" alt="" loading="lazy">` : ""}${lungBest(x) < 99 ? '<span class="bd">BEST</span>' : ""}${esc(lungName(x.n))}<small>폐호흡</small>${c ? `<span class="cnt">${c}</span><span class="mn" data-evlm="${x.id}">−</span>` : ""}</button>`; };
       return `<div class="evs" id="evLung"><h4>③ 폐호흡도 같이<small>선택 · ${MAIN.name}는 폐호흡도 돼요</small></h4>
         <button class="evlung ${EV.lung ? "on" : ""}" data-evlung="1"><div><b>프리미엄 폐호흡 액상 ${E.lung}병 ${won(ADD.lung3)}</b><span>${EV.lung ? `${lg} / ${E.lung}병 골랐어요 · 다시 누르면 빼기` : "오니 · 홀리 · 빌런 보석바 등 · 누르면 추가"}</span></div><i>${EV.lung ? "✓ 추가됨" : "+ 추가"}</i></button>
         ${EV.lung ? (xs.length ? `<div class="evg" style="margin-top:12px">${xs.slice(0, nb).map(lcard).join("")}</div>${xs.length > nb ? `<h4 style="margin-top:16px;font-size:16px">다른 프리미엄 폐호흡<small>${xs.length - nb}가지</small></h4><div class="evg">${xs.slice(nb).map(lcard).join("")}</div>` : ""}` : '<div class="evnone">이 지점 재고가 있는 프리미엄 폐호흡 액상이 없어요</div>') : ""}</div>`; })() : ""}
@@ -2185,5 +2213,7 @@ document.addEventListener("input", (e) => { if (e.target.id === "evq" && EV) { E
   });
   addEventListener("pointerdown", () => { document.querySelectorAll(".kbf").forEach((x) => x.classList.remove("kbf")); cur = null; }, true); // 손으로 만지면 키보드 표시 끔
 })();
+// 첫 화면(오늘 가장 큰 혜택) 등장 애니메이션 다시 재생: 65% 넘게 화면 밖으로 나가면 멈춤, 다시 들어오면 재생
+{ const s1 = document.getElementById("s1"); if (s1 && "IntersectionObserver" in window) new IntersectionObserver((es) => es.forEach((e) => { if (e.intersectionRatio < 0.35) s1.classList.add("s1off"); else s1.classList.remove("s1off"); }), { threshold: [0, 0.35, 0.6] }).observe(s1); }
 </script></body>
 </html>
