@@ -56,7 +56,7 @@
 <div class="foot" id="foot"><button class="send" id="send">재고보고 보내기</button></div>
 <div class="toast" id="toast"></div>
 <script>
-const VER = "10.01-stock1";
+const VER = "10.25-stock2";
 // 노션 '코일' 표(지점별 칸)에 있던 품목 그대로. 지난 값 = 2026-10-01 노션 값(시험용). 순서: 본점,1호,2호,4호,5호,6호,7호,8호
 const COLS = ["본점", "동성로", "수성", "율하", "반월당", "상인", "광장코아", "현풍"];
 const HO = { 동성로: 1, 수성: 2, 본점: 3, 율하: 4, 반월당: 5, 상인: 6, 광장코아: 7, 현풍: 8 };
@@ -112,6 +112,10 @@ const last = ls.get(KEY + "-last", null);
 let POSV = null;
 const posOf = (i) => (POSV && POSV.items && POSV.items[ITEMS[i].n] != null ? POSV.items[ITEMS[i].n] : null);
 const prev = (i) => posOf(i) ?? last?.v?.[i] ?? ITEMS[i].v[COLS.indexOf(B)];
+// 10/25 묶음 품목(포스에선 한 상품: 맥스프로팟 0.5/0.6, 말론 3색): '포스 합계'만 보여 주고 [그대로] 없음. 직원이 직접 세서 넣어야 포스 조정됨
+const grpOf = (i) => (POSV && POSV.grp || []).find((g) => g.names.includes(ITEMS[i].n)) || null;
+let touch = ls.get(KEY + "-touch", {}); // 직접 넣은 칸(+/-, 입력). [그대로], [포스 숫자로 채우기]는 직접 아님
+const setTouch = (i, on) => { if (on) touch[i] = 1; else delete touch[i]; ls.set(KEY + "-touch", touch); };
 fetch("../staff/stockpos.json?" + Date.now(), { cache: "no-store" }).then((r) => r.json()).then((j) => { const x = j.br && j.br[B]; if (x && x.d === new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10)) { POSV = x; render(); } }).catch(() => {});
 let cur = ls.get(KEY + "-draft", {}); // 작성 중인 값 (새로고침해도 유지)
 let who = (qs.get("by") || "").trim().slice(0, 40) || ls.get("vf-stock-who", ""); // 직원앱에서 오면 출근한 사람 이름이 미리 들어감 (10/19)
@@ -124,6 +128,9 @@ function rowHtml(it, i) {
   const has = v !== undefined && v !== "";
   const diff = has ? v - p : 0;
   const big = has && p > 0 && Math.abs(diff) > Math.max(10, p * 0.5); // 지난번보다 크게 다르면 표시
+  const g = grpOf(i);
+  if (g) return `<div class="it ${has ? "done" : ""}" id="r${i}"><div class="nm"><b>${esc(it.n)}</b><span>포스 합계 ${g.q} (${esc(g.names.join(" + "))}) · <em class="dn">직접 세서 넣어 주세요</em></span></div>
+    <div class="ctl"><button data-m="${i}">−</button><input inputmode="numeric" data-i="${i}" value="${has ? v : ""}" placeholder="세기"><button data-p="${i}">+</button></div></div>`;
   return `<div class="it ${has ? "done" : ""} ${big ? "warn" : ""}" id="r${i}"><div class="nm"><b>${esc(it.n)}</b><span>${posOf(i) != null ? "포스 " : "지난 보고 "}${p}${has && diff ? ` · <em class="${diff > 0 ? "up" : "dn"}">${diff > 0 ? "+" : ""}${diff}</em>` : ""}${big ? " · 숫자 다시 확인" : ""}</span></div>
     <div class="ctl"><button data-m="${i}">−</button><input inputmode="numeric" data-i="${i}" value="${has ? v : ""}" placeholder="${p}"><button data-p="${i}">+</button></div>
     ${has ? "" : `<button class="same" data-same="${i}">${posOf(i) != null ? "포스와 같음" : "그대로"}</button>`}</div>`;
@@ -147,12 +154,12 @@ function refreshRow(i) { const el = document.getElementById("r" + i); if (!el ||
 
 document.addEventListener("click", (e) => {
   const t = e.target.closest("button"); if (!t) return;
-  if (t.dataset.m !== undefined) { const i = t.dataset.m; setv(i, (cur[i] ?? prev(i)) - 1); return refreshRow(i); }
-  if (t.dataset.p !== undefined) { const i = t.dataset.p; setv(i, (cur[i] ?? prev(i)) + 1); return refreshRow(i); }
-  if (t.dataset.same !== undefined) { const i = t.dataset.same; setv(i, prev(i)); return refreshRow(i); }
+  if (t.dataset.m !== undefined) { const i = t.dataset.m; setv(i, (cur[i] ?? (grpOf(i) ? 0 : prev(i))) - 1); setTouch(i, 1); return refreshRow(i); }
+  if (t.dataset.p !== undefined) { const i = t.dataset.p; setv(i, (cur[i] ?? (grpOf(i) ? 0 : prev(i))) + 1); setTouch(i, 1); return refreshRow(i); }
+  if (t.dataset.same !== undefined) { const i = t.dataset.same; setv(i, prev(i)); setTouch(i, 0); return refreshRow(i); }
   if (t.dataset.allpos !== undefined) { ITEMS.forEach((_, i) => { if (posOf(i) != null && (cur[i] === undefined || cur[i] === "")) setv(i, posOf(i)); }); return render(); }
 });
-document.addEventListener("change", (e) => { if (e.target.dataset.i !== undefined) { setv(e.target.dataset.i, e.target.value); refreshRow(e.target.dataset.i); } });
+document.addEventListener("change", (e) => { if (e.target.dataset.i !== undefined) { setv(e.target.dataset.i, e.target.value); setTouch(e.target.dataset.i, e.target.value !== ""); refreshRow(e.target.dataset.i); } });
 document.addEventListener("input", (e) => { if (e.target.id === "who") { who = e.target.value.trim(); ls.set("vf-stock-who", who); } });
 
 // 보내기: 디스코드 웹훅(🔌패드연결) → 운영봇이 받아 지점 보고 채널·시트에 기록
@@ -164,7 +171,7 @@ const HOOK = "https://discord.com/api/webhooks/1555156884753743905/BLK7tRBQACouQ
 $("#send").addEventListener("click", async () => {
   if (!who) { $("#who").focus(); return toast("보고하는 사람 이름을 넣어 주세요"); }
   const v = ITEMS.map((_, i) => cur[i]);
-  const body = { type: "stock", branch: B, by: who, items: ITEMS.map((it, i) => [it.n, v[i], prev(i)]), ver: VER, ...(TEST ? { test: true } : {}) };
+  const body = { type: "stock", branch: B, by: who, items: ITEMS.map((it, i) => [it.n, v[i], prev(i), touch[i] ? 1 : 0]), ver: VER, ...(TEST ? { test: true } : {}) };
   $("#send").disabled = true; $("#send").textContent = "보내는 중…";
   try {
     const r = await fetch(HOOK, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ content: JSON.stringify(body), allowed_mentions: { parse: [] } }) });
@@ -172,7 +179,7 @@ $("#send").addEventListener("click", async () => {
     let sheetMsg = "디스코드 보고 채널에 올라갔어요.";
     if (false && pinOf()) { try { const sr = await fetch(SHEET_API, { method: "POST", body: JSON.stringify({ pin: pinOf(), action: "stockAdd", branch: B, by: who, items: body.items, test: !!TEST }) }); const sj = await sr.json(); sheetMsg = sj.ok ? "지점 시트 '재고보고' 탭과 디스코드에 기록됐어요." : "디스코드엔 올라갔고, 시트 기록은 실패했어요(" + sj.error + ")"; } catch (e) { sheetMsg = "디스코드엔 올라갔고, 시트 기록은 실패했어요(인터넷)"; } }
     else sheetMsg = "디스코드와 지점 시트에 기록돼요."; // 10/19 지점 시트는 운영봇이 기록
-    ls.set(KEY + (TEST ? "-testlast" : "-last"), { v, at: Date.now(), by: who }); cur = {}; ls.set(KEY + "-draft", {}); // 10/19 시험이면 따로 저장(직원앱 시험 모드가 완료로 봄)
+    ls.set(KEY + (TEST ? "-testlast" : "-last"), { v, at: Date.now(), by: who }); cur = {}; ls.set(KEY + "-draft", {}); touch = {}; ls.set(KEY + "-touch", {}); // 10/19 시험이면 따로 저장(직원앱 시험 모드가 완료로 봄)
     $("#app").innerHTML = `<div class="card done-view"><div class="big">✅</div><b>${HO[B]}호 ${esc(B)} 재고보고 ${TEST ? "시험 " : ""}완료</b><div class="s">${esc(who)} · ${new Date().toTimeString().slice(0, 5)}<br>${esc(sheetMsg)}</div><a class="send" style="display:grid;place-items:center;text-decoration:none;margin-top:22px" href="${backUrl()}">← 직원앱으로 돌아가기</a><div class="s" style="margin-top:8px">3초 뒤 자동으로 돌아가요</div></div>`;
     setTimeout(() => { location.href = backUrl(); }, 3000);
     $("#foot").style.display = "none";
