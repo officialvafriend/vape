@@ -160,6 +160,16 @@
 .walker img{width:130px;height:112px;object-fit:contain;display:block}
 .walker .tag{padding:3px 10px;border-radius:999px;color:#fff;font-size:12px;font-weight:700;white-space:nowrap}
 @media(max-width:700px){.field{height:220px}.walker{width:96px}.walker img{width:96px;height:84px}}
+/* 10/25 그룹관리, 추가 필수: PC는 왼쪽 조작, 오른쪽 목록 여러 칸 (사장님 "여백 활용") */
+.gwrap{display:grid;gap:12px}
+.gstat{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}.gstat div{background:var(--bg);border-radius:12px;padding:10px 12px}.gstat b{display:block;font-size:22px;font-weight:800;font-variant-numeric:tabular-nums}.gstat span{font-size:12px;color:var(--sub)}
+.glist{display:grid;gap:8px}.gsec{grid-column:1/-1;font-size:16px;font-weight:800;margin:10px 2px 0}.gsec small{font-size:13px;color:var(--sub);font-weight:600}
+.gitem{display:flex;align-items:flex-start;gap:10px;background:var(--card);border-radius:14px;padding:12px 14px;border:1px solid var(--line)}.gitem.chg{border-color:var(--amber);background:var(--amber-soft)}
+.gtx{flex:1;min-width:0}.gtx b{display:block;font-size:15px;overflow-wrap:anywhere}.gmeta{margin-top:4px;display:flex;flex-wrap:wrap;gap:4px;align-items:center}
+.gpill{display:inline-block;font-size:12px;font-weight:700;padding:2px 8px;border-radius:999px;background:var(--bg);color:var(--sub);white-space:nowrap}
+.gsel{width:128px;height:38px;font-size:14px;padding:0 8px;flex-shrink:0}.gmemo{height:34px;font-size:13px;margin-top:8px}
+.mwrap{display:grid;gap:12px}
+@media(min-width:900px){.gwrap,.mwrap{grid-template-columns:360px minmax(0,1fr);align-items:start;gap:20px}.gside,.mside{position:sticky;top:20px;display:grid;gap:12px}.glist{grid-template-columns:repeat(auto-fill,minmax(320px,1fr))}.mwrap .list{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:0 16px}}
 </style>
 </head>
 <body>
@@ -172,6 +182,7 @@
   <button data-tab="close"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 6h18v12H3zm9 2.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7z"/></svg>마감</button>
   <button data-tab="survey"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 5h16v3H4zm1 5h14v9a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1zm4 3v2h6v-2z"/></svg>재고조사</button>
   <button data-tab="tasks"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 3h8v2h3a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h3zm2 0v3h4V3zm5.3 7.3-4.3 4.3-2.3-2.3-1.4 1.4 3.7 3.7 5.7-5.7z"/></svg>업무</button>
+  <button data-tab="group"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 4h8v7H3zm10 0h8v7h-8zM3 13h8v7H3zm10 0h8v7h-8z"/></svg>그룹관리</button>
   <button data-tab="must"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h16v4H4zm0 6h16v10H4zm5 3v2h6v-2z"/></svg>추가 필수</button>
   <button data-tab="naver"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h5.2l5.6 8.1V4H20v16h-5.2l-5.6-8.1V20H4z"/></svg>네이버</button>
   <button data-tab="staff"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zm-8 8c0-3.3 3.6-6 8-6s8 2.7 8 6v1H4z"/></svg>직원앱</button>
@@ -257,6 +268,7 @@ const ICON = {
   close: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 6h18v12H3zm9 2.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7zM5 8v2a2 2 0 0 0 2-2zm12 0a2 2 0 0 0 2 2V8zM5 16h2a2 2 0 0 0-2-2zm14-2a2 2 0 0 0-2 2h2z"/></svg>',
   survey: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 5h16v3H4zm1 5h14v9a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1zm4 3v2h6v-2z"/></svg>',
   tasks: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 3h8v2h3a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h3zm2 0v3h4V3zm5.3 7.3-4.3 4.3-2.3-2.3-1.4 1.4 3.7 3.7 5.7-5.7z"/></svg>',
+  group: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 4h8v7H3zm10 0h8v7h-8zM3 13h8v7H3zm10 0h8v7h-8z"/></svg>',
   must: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h16v4H4zm0 6h16v10H4zm5 3v2h6v-2z"/></svg>',
   naver: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h5.2l5.6 8.1V4H20v16h-5.2l-5.6-8.1V20H4z"/></svg>',
   staff: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zm-8 8c0-3.3 3.6-6 8-6s8 2.7 8 6v1H4z"/></svg>',
@@ -276,13 +288,13 @@ function render() {
   document.querySelectorAll("#nav button").forEach((b) => b.classList.toggle("on", b.dataset.tab === tab));
   const [, hh, mm] = D.at.match(/(\d{2}):(\d{2})$/) || [];
   if (EMBED[tab] && $("#app .emb") && $("#app .emb").dataset.k === tab + staffB) return; // 자동 새로고침 때 안에 띄운 앱이 처음으로 돌아가지 않게
-  const body = EMBED[tab] ? embedHtml() : tab === "home" ? (pc ? homePC() : homeHtml()) : tab === "kpi" ? kpiHtml() : tab === "close" ? closingAllHtml() : tab === "survey" ? surveyHtml() : tab === "tasks" ? tasksHtml() : tab === "note" ? noteHtml() : tab === "order" ? orderHtml() : tab === "office" ? officeHtml() : mustHtml();
+  const body = EMBED[tab] ? embedHtml() : tab === "home" ? (pc ? homePC() : homeHtml()) : tab === "kpi" ? kpiHtml() : tab === "close" ? closingAllHtml() : tab === "survey" ? surveyHtml() : tab === "tasks" ? tasksHtml() : tab === "note" ? noteHtml() : tab === "order" ? orderHtml() : tab === "office" ? officeHtml() : tab === "group" ? groupHtml() : mustHtml();
   if (!pc) { $("#app").innerHTML = `<div class="top"><div class="logo">VAFRIEND <b>관리자</b></div><div class="r"><button class="ic" data-act="reload">${hh ? `${hh}:${mm} 기준 ↻` : "새로고침"}</button><button class="ic" data-act="logout">잠그기</button></div></div>${body}`; markEmb(); return; }
-  const navs = [["home", "홈"], ["order", "주문요청"], ["note", "매장 노트"], ["kpi", "KPI"], ["close", "마감"], ["survey", "재고조사"], ["tasks", "업무"], ["must", "추가 필수"], ["naver", "네이버"], ["staff", "직원앱"], ["office", "사무실"]];
+  const navs = [["home", "홈"], ["order", "주문요청"], ["note", "매장 노트"], ["kpi", "KPI"], ["close", "마감"], ["survey", "재고조사"], ["tasks", "업무"], ["group", "그룹관리"], ["must", "추가 필수"], ["naver", "네이버"], ["staff", "직원앱"], ["office", "사무실"]];
   $("#app").innerHTML = `<div class="shell"><aside class="side"><div class="logo">VAFRIEND <b>관리자</b></div>
       ${navs.map(([k, n]) => `<button class="navb ${tab === k ? "on" : ""}" data-tab="${k}">${ICON[k]}${n}</button>`).join("")}
       <div class="foot"><button class="navb" data-act="reload">↻ ${hh ? `${hh}:${mm} 기준` : "새로고침"}</button><button class="navb" data-act="logout">🔒 잠그기</button></div></aside>
-    <main class="main ${EMBED[tab] ? "embm" : ""}">${tab === "home" || tab === "kpi" || EMBED[tab] ? body : `<div class="narrow">${body}</div>`}</main></div>`;
+    <main class="main ${EMBED[tab] ? "embm" : ""}">${tab === "home" || tab === "kpi" || tab === "group" || tab === "must" || EMBED[tab] ? body : `<div class="narrow">${body}</div>`}</main></div>`;
   markEmb();
   if (tab === "home") { $("#panel").innerHTML = panelKeep || panelDefault(); bindSparks(); }
 }
@@ -703,7 +715,7 @@ function mustHtml() {
   const list = prods.filter(([n, m]) => (!mustCat || m === mustCat) && words.every((w) => n.replace(/\s/g, "").includes(w)));
   const saved = new Set(D.must[mustB] || []), changed = [...draft.set].filter((n) => !saved.has(n)).length + [...saved].filter((n) => !draft.set.has(n)).length;
   const others = BR.filter((b) => b !== mustB && (D.must[b] || []).length);
-  return `<div class="card"><div class="eyebrow">추가 필수 상품</div><div class="headline">${esc(mustB)}에서 A그룹 말고도<br>떨어지면 안 되는 상품이 있나요?</div><div class="caption">프리미엄 A그룹은 자동으로 챙겨요. 여기서 고른 상품은 지점 상세의 '추가 필수'에 보여요.</div>
+  return `<div class="mwrap"><div class="mside"><div class="card"><div class="eyebrow">추가 필수 상품</div><div class="headline">${esc(mustB)}에서 A그룹 말고도<br>떨어지면 안 되는 상품이 있나요?</div><div class="caption">프리미엄 A그룹은 자동으로 챙겨요. 여기서 고른 상품은 지점 상세의 '추가 필수'에 보여요.</div>
       <div class="caption">지금 <b style="color:var(--ink)">${draft.set.size}개</b> 골랐어요${changed ? `, 저장 안 한 변경 ${changed}개` : ""}</div>
       <div class="chips" style="margin-top:16px">${BR.map((b) => `<button class="chip ${mustB === b ? "on" : ""}" data-mb="${b}">${esc(b)}${(D.must[b] || []).length ? ` ${D.must[b].length}` : ""}</button>`).join("")}</div></div>
     ${!prods.length ? `<div class="card"><div class="caption" style="margin:0">${esc(mustB)}는 아직 포스가 연결되지 않아서 상품 목록이 없어요</div></div>` : `
@@ -712,10 +724,62 @@ function mustHtml() {
       <div class="chips hs" style="margin-top:12px"><button class="chip ${!mustCat ? "on" : ""}" data-mc="">전체</button>${cats.map((c) => `<button class="chip ${c === mustCat ? "on" : ""}" data-mc="${esc(c)}">${esc(c)}</button>`).join("")}</div>
       <div style="display:flex;gap:8px;margin-top:12px"><button class="btn gray" style="height:44px;font-size:14px" data-act="mall">보이는 것 모두 고르기</button><button class="btn gray" style="height:44px;font-size:14px" data-act="mnone">모두 빼기</button></div>
       ${others.length ? `<div style="margin-top:8px"><select class="in" id="mcopy" style="height:44px;font-size:14px"><option value="">다른 지점 목록 그대로 가져오기</option>${others.map((b) => `<option value="${b}">${esc(b)} (${D.must[b].length}개)</option>`).join("")}</select></div>` : ""}
-    </div>
+    </div></div><div>
     <div class="list">${list.slice(0, 400).map(([n, m]) => `<button class="item" data-mn="${esc(n)}"><div class="tx"><b>${esc(n)}</b><span>${esc(m)}</span></div><div class="sw ${draft.set.has(n) ? "on" : ""}"></div></button>`).join("") || '<div class="empty">찾는 상품이 없어요</div>'}
       ${list.length > 400 ? `<div class="empty">${list.length - 400}개 더 있어요, 검색이나 분류로 좁혀 주세요</div>` : ""}</div>
-    ${changed ? `<div class="sticky"><button class="btn" data-act="msave">${changed}개 바꾼 것 저장하기</button></div>` : ""}`}`;
+    ${changed ? `<div class="sticky"><button class="btn" data-act="msave">${changed}개 바꾼 것 저장하기</button></div>` : ""}`}</div></div>`;
+}
+// ── 그룹관리 (10/25) ── 본점 포스 소분류 기준 그룹(D.grp.map: 상품이름 → 그룹)을 보고, 바꿀 그룹을 골라 엑셀로 받음
+// 고른 내용은 이 기기에만 남음(vf-admin-grp). 엑셀을 Claude에게 주면 지점 포스에 이름으로 맞춰 반영
+const GRPS = ["프리미엄 A", "프리미엄 B", "프리미엄 C", "기기 A", "기기 B", "기기 C", "일회용 일반", "일회용 고농도", "일회용 기타"], GOUT = "그룹 빼기";
+let grpQ = "", grpF = "all";
+const grpEd = () => { try { return JSON.parse(ls.get("vf-admin-grp") || "{}"); } catch { return {}; } };
+const grpSave = (o) => ls.set("vf-admin-grp", Object.keys(o).length ? JSON.stringify(o) : null);
+const gTone = (g) => !g ? "" : g === GOUT ? "background:var(--red-soft);color:var(--red)" : g.startsWith("프리미엄") ? "background:var(--blue-soft);color:var(--blue)" : g.startsWith("기기") ? "background:var(--green-soft);color:var(--green)" : "background:var(--amber-soft);color:var(--amber)";
+const gPill = (g) => `<span class="gpill" style="${gTone(g)}">${esc(g || "그룹 없음")}</span>`;
+function groupHtml() {
+  const map = D.grp?.map || {}, ed = grpEd(), all = (D.products["본점"] || []).map(([n]) => n);
+  const names = [...new Set([...Object.keys(map), ...all])];
+  const words = grpQ.replace(/\s+/g, "").toLowerCase();
+  const hit = (n) => !words || n.replace(/\s+/g, "").toLowerCase().includes(words);
+  const nChg = Object.keys(ed).length, nNew = Object.values(ed).filter((x) => x.isNew).length;
+  let list;
+  if (grpF === "chg") list = Object.keys(ed).filter(hit);
+  else if (grpF === "all") list = [...names.filter((n) => (map[n] || (words && hit(n))) && hit(n)), ...Object.keys(ed).filter((n) => ed[n].isNew && hit(n))];
+  else list = names.filter((n) => (map[n] === grpF || ed[n]?.to === grpF) && hit(n));
+  list.sort((a, b) => (GRPS.indexOf(map[a]) + 1 || 99) - (GRPS.indexOf(map[b]) + 1 || 99) || a.localeCompare(b, "ko"));
+  const cnt = (g) => Object.values(map).filter((x) => x === g).length;
+  const row = (n) => { const cur = map[n] || "", e = ed[n], to = e?.to || "";
+    return `<div class="gitem ${e ? "chg" : ""}"><div class="gtx"><b>${esc(n)}</b><div class="gmeta">${gPill(cur)}${e ? ` <span style="color:var(--sub)">→</span> ${gPill(to)}` : ""}${e?.isNew ? ' <span class="gpill" style="background:var(--amber-soft);color:var(--amber)">새 상품</span>' : ""}</div>
+      ${e ? `<input class="in gmemo" data-gmemo="${esc(n)}" value="${esc(e.memo || "")}" placeholder="메모 (선택)">` : ""}</div>
+      <select class="in gsel" data-gn="${esc(n)}" aria-label="${esc(n)} 바꿀 그룹"><option value="">${e ? "바꾸지 않기" : "바꿀 그룹"}</option>${[...GRPS, GOUT].filter((g) => g !== cur).map((g) => `<option ${to === g ? "selected" : ""}>${g}</option>`).join("")}</select></div>`; };
+  return `<div class="gwrap"><div class="gside">
+    <div class="card"><div class="eyebrow">그룹관리</div><div class="headline">상품 그룹 관리</div>
+      <div class="caption">본점 포스 분류 기준${D.grp?.at ? ` (${esc(D.grp.at)})` : ""}. 바꿀 상품만 오른쪽에서 새 그룹을 고르고 엑셀로 받아 주세요.</div>
+      <div class="gstat"><div><b>${nChg}</b><span>바꾼 것</span></div><div><b>${nNew}</b><span>새 상품</span></div><div><b>${Object.keys(map).length}</b><span>그룹 상품</span></div></div>
+      <div style="display:flex;gap:8px;margin-top:14px"><button class="btn" data-act="gexport" ${nChg ? "" : "disabled"}>엑셀 추출하기</button>${nChg ? '<button class="btn gray" style="flex:0 0 96px" data-act="gclear">비우기</button>' : ""}</div></div>
+    <div class="card" style="padding:16px">
+      <div class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input class="in" id="gq" placeholder="상품 찾기 (본점 전체 상품)" value="${esc(grpQ)}"></div>
+      <div class="chips" style="margin-top:12px;flex-wrap:wrap"><button class="chip ${grpF === "all" ? "on" : ""}" data-gf="all">전체</button><button class="chip ${grpF === "chg" ? "on" : ""}" data-gf="chg">바꾼 것 ${nChg || ""}</button>${GRPS.map((g) => `<button class="chip ${grpF === g ? "on" : ""}" data-gf="${g}">${g} ${cnt(g)}</button>`).join("")}</div></div>
+    ${grpF !== "chg" && list.length && list.length <= 300 ? `<div class="card" style="padding:16px"><div class="eyebrow" style="margin-bottom:8px">보이는 ${list.length}개 한꺼번에</div><div style="display:flex;gap:8px"><select class="in" id="gbulk" style="flex:1">${[...GRPS, GOUT].map((g) => `<option>${g}</option>`).join("")}</select><button class="btn gray" style="flex:0 0 96px" data-act="gbulk">로 바꾸기</button></div><div class="caption" style="margin:8px 0 0">검색이나 그룹으로 먼저 좁혀 주세요. 지금 그룹과 같은 상품은 건너뛰어요.</div></div>` : ""}
+    <div class="card" style="padding:16px"><div class="eyebrow" style="margin-bottom:8px">새 상품 넣기</div>
+      <input class="in" id="gnewn" placeholder="상품명 (포스 이름 그대로)"><div style="display:flex;gap:8px;margin-top:8px"><select class="in" id="gnewg" style="flex:1">${GRPS.map((g) => `<option>${g}</option>`).join("")}</select><button class="btn" style="flex:0 0 80px" data-act="gadd">넣기</button></div></div>
+  </div><div class="gmain">
+    <div class="glist">${list.slice(0, 700).map((n, i, a) => { const lab = (x) => map[x] || (ed[x]?.isNew ? "새 상품" : "그룹 없음"), g = grpF === "chg" ? "" : lab(n), pg = i ? lab(a[i - 1]) : null; return (grpF !== "chg" && g !== pg ? `<div class="gsec">${esc(g)} <small>${list.filter((x) => lab(x) === g).length}개</small></div>` : "") + row(n); }).join("") || `<div class="empty">${grpF === "chg" ? "아직 바꾼 상품이 없어요. 상품 오른쪽에서 바꿀 그룹을 고르면 여기에 모여요." : "찾는 상품이 없어요"}</div>`}</div>
+    ${list.length > 700 ? `<div class="empty">${list.length - 700}개 더 있어요, 검색이나 그룹으로 좁혀 주세요</div>` : ""}
+  </div></div>`;
+}
+// 엑셀은 버튼 누를 때만 SheetJS를 불러서 만듦
+async function grpExport() {
+  const ed = grpEd(), map = D.grp?.map || {};
+  if (!window.XLSX) await new Promise((ok, no) => { const s = document.createElement("script"); s.src = "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"; s.onload = ok; s.onerror = () => no(new Error("엑셀 도구를 못 불러왔어요")); document.head.appendChild(s); });
+  const rows = Object.entries(ed).map(([n, e]) => ({ 상품명: n, "지금 그룹": map[n] || (e.isNew ? "새 상품" : "그룹 없음"), "바꿀 그룹": e.to, 메모: e.memo || "", "고른 시각": e.at ? new Date(e.at).toLocaleString("ko-KR") : "" }))
+    .sort((a, b) => GRPS.indexOf(a["바꿀 그룹"]) - GRPS.indexOf(b["바꿀 그룹"]) || a.상품명.localeCompare(b.상품명, "ko"));
+  const ws = XLSX.utils.json_to_sheet(rows); ws["!cols"] = [{ wch: 34 }, { wch: 14 }, { wch: 14 }, { wch: 30 }, { wch: 20 }];
+  const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "그룹 변경");
+  const d = new Date(Date.now() + 9 * 3600e3).toISOString().slice(2, 10).replace(/-/g, "");
+  XLSX.writeFile(wb, `그룹변경_${d}.xlsx`);
+  toast(`${rows.length}개 엑셀로 받았어요`);
 }
 // 필수 상품 저장: 디스코드 메시지 길이(2000자) 때문에 나눠서 보냄
 async function saveMust() {
@@ -747,6 +811,11 @@ document.addEventListener("click", async (e) => {
   const t = e.target.closest("button,tr[data-brpc]"); if (!t) return;
   if (t.tagName === "TR") return isPC() ? panelBranch(t.dataset.brpc, "프리미엄 A") : sheetBranch(t.dataset.brpc, "프리미엄 A");
   if (t.id === "go") return tryLogin();
+  if (t.dataset.gf) { grpF = t.dataset.gf; return render(); }
+  if (t.dataset.act === "gbulk") { const to = $("#gbulk").value, map = D.grp?.map || {}, ed = grpEd(); let k = 0; document.querySelectorAll("[data-gn]").forEach((s) => { const n = s.dataset.gn; if (map[n] === to) return; ed[n] = { ...(ed[n] || {}), to, at: Date.now() }; k++; }); grpSave(ed); render(); return toast(`${k}개를 ${to}(으)로 골랐어요`); }
+  if (t.dataset.act === "gexport") return grpExport().catch((er) => toast(er.message));
+  if (t.dataset.act === "gclear") { if (t.dataset.sure !== "1") { t.dataset.sure = "1"; t.textContent = "정말 비우기"; return; } grpSave({}); render(); return toast("고른 것을 비웠어요"); }
+  if (t.dataset.act === "gadd") { const n = $("#gnewn").value.trim(); if (!n) return $("#gnewn").focus(); const ed = grpEd(); if (D.grp?.map?.[n] || (D.products["본점"] || []).some(([x]) => x === n)) { grpQ = n; grpF = "all"; render(); return toast("이미 있는 상품이에요, 오른쪽에서 그룹을 골라 주세요"); } ed[n] = { to: $("#gnewg").value, isNew: true, at: Date.now() }; grpSave(ed); grpF = "chg"; render(); return toast("새 상품을 넣었어요"); }
   if (t.dataset.issok) { const s = issDone(); s.add(t.dataset.issok); issDoneSave(s); render(); return toast("확인한 걸로 숨겼어요"); }
   if (t.dataset.issundo) { issDoneSave(new Set()); render(); return; }
   if (t.dataset.restart) { const bot = t.dataset.restart; if (!confirm(bot + "을 다시 켤까요? 1분쯤 걸려요" + (bot === "운영봇" ? ". 그동안 온 신호는 다시 켜진 뒤 처리돼요" : ""))) return; t.disabled = true; t.textContent = "보냈어요"; try { await sendOp("restart", { bot }); toast(bot + " 다시 켜는 중이에요. 3분 안에 상태가 바뀌어요"); setTimeout(loadBot, 90e3); setTimeout(loadBot, 200e3); } catch (err) { toast("못 보냈어요: " + err.message); t.disabled = false; t.textContent = "다시 켜기"; } return; }
@@ -794,9 +863,11 @@ document.addEventListener("click", async (e) => {
   if (a === "msave") return saveMust();
 });
 document.addEventListener("change", (e) => {
+  if (e.target.dataset.gn !== undefined) { const n = e.target.dataset.gn, ed = grpEd(); if (!e.target.value) delete ed[n]; else ed[n] = { ...(ed[n] || {}), to: e.target.value, at: Date.now() }; grpSave(ed); const y = scrollY; render(); scrollTo(0, y); return; }
+  if (e.target.dataset.gmemo !== undefined) { const ed = grpEd(), n = e.target.dataset.gmemo; if (ed[n]) { ed[n].memo = e.target.value.trim(); grpSave(ed); } return; }
   if (e.target.id === "mcopy" && e.target.value) { const from = new Set(D.must[e.target.value] || []), names = new Set((D.products[mustB] || []).map(([n]) => n)); let k = 0; for (const n of from) if (names.has(n) && !draft.set.has(n)) { draft.set.add(n); k++; } render(); toast(`${k}개 더했어요. 저장을 눌러야 반영돼요`); }
 });
-let qT; document.addEventListener("input", (e) => { if (e.target.id === "mq") { clearTimeout(qT); qT = setTimeout(() => { mustQ = e.target.value.trim(); const pos = e.target.selectionStart; render(); const el = $("#mq"); el.focus(); el.setSelectionRange(pos, pos); }, 250); } });
+let qT; document.addEventListener("input", (e) => { if (e.target.id === "gq") { clearTimeout(qT); qT = setTimeout(() => { grpQ = e.target.value.trim(); const pos = e.target.selectionStart; render(); const el = $("#gq"); el.focus(); el.setSelectionRange(pos, pos); }, 250); return; } if (e.target.id === "mq") { clearTimeout(qT); qT = setTimeout(() => { mustQ = e.target.value.trim(); const pos = e.target.selectionStart; render(); const el = $("#mq"); el.focus(); el.setSelectionRange(pos, pos); }, 250); } });
 document.addEventListener("keydown", (e) => { if (e.key === "Enter" && e.target.id === "pw") tryLogin(); });
 
 (async () => {
