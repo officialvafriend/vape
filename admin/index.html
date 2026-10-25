@@ -411,7 +411,7 @@ function opsHtml() {
   const rows = D.ops.map((o) => {
     const c = o.close, vs = c && o.avgPrev ? Math.round(((c.총 - o.avgPrev) / o.avgPrev) * 100) : null;
     return `<tr data-brpc="${esc(o.b)}" style="cursor:pointer">${td(`<b>${BR.indexOf(o.b) + 1} ${esc(o.b)}</b>`)}
-      ${o.open ? td(`${o.open}${o.late ? `<small>${o.late}분 늦음</small>` : ""}${o.prepDiff ? `<small>준비금 ${o.prepDiff > 0 ? "+" : ""}${won(o.prepDiff)}</small>` : ""}`, o.late || o.prepDiff ? "r" : "g") : td("안 함", "n")}
+      ${o.open ? td(`${o.open}${o.vsAvg != null && Math.abs(o.vsAvg) >= 5 ? `<small>평소보다 ${Math.abs(o.vsAvg)}분 ${o.vsAvg > 0 ? "늦음" : "빠름"}</small>` : ""}${o.prepDiff ? `<small>준비금 ${o.prepDiff > 0 ? "+" : ""}${won(o.prepDiff)}</small>` : ""}`, o.late || o.prepDiff ? "r" : "") : td("안 함", "n")}
       ${c ? td(`${c.at}${c.warn ? `<small>확인 ${c.warn}건</small>` : ""}`, c.warn ? "r" : "g") : td("안 함", "n")}
       ${c ? td(`${won(c.총)}${vs != null ? `<small>지난달 평균 ${vs > 0 ? "+" : ""}${vs}%</small>` : ""}`) : NO}
       ${c && c.diff != null ? td(c.diff ? (c.diff > 0 ? "+" : "") + won(c.diff) : "0", c.diff ? "r" : "g") : NO}
@@ -430,7 +430,7 @@ function issues() {
     const n = BR.indexOf(o.b) + 1, c = closingOf(o.b);
     if (c) warnsOf(c).forEach((w) => L.push({ b: o.b, t: `${n}호 ${o.b} 마감`, d: w }));
     else if (late) L.push({ b: o.b, t: `${n}호 ${o.b} 마감`, d: "아직 마감 보고가 없어요" });
-    if (o.late) L.push({ b: o.b, t: `${n}호 ${o.b} 오픈`, d: `${o.late}분 늦게 오픈 체크 (${o.open})` });
+    if (o.late) L.push({ b: o.b, t: `${n}호 ${o.b} 오픈`, d: `평소보다 ${o.late}분 늦게 오픈 (${o.open}, 평소 ${o.avgOpen})` });
     if (o.prepDiff) L.push({ b: o.b, t: `${n}호 ${o.b} 오픈`, d: `돈통 준비금이 어제보다 ${o.prepDiff > 0 ? "+" : ""}${won(o.prepDiff)}원` });
   }
   const con = D.branches.filter((x) => x.connected), aOut = [...new Set(con.flatMap((x) => G(x, "프리미엄 A").out.map((o) => o.n)))];
