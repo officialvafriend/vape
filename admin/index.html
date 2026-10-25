@@ -503,6 +503,16 @@ async function loadBot() {
 }
 const agoMin = (iso) => Math.round((Date.now() - Date.parse(iso)) / 60e3);
 const agoTxt = (m) => m < 1 ? "방금" : m < 60 ? m + "분 전" : m < 1440 ? Math.floor(m / 60) + "시간 전" : Math.floor(m / 1440) + "일 전";
+// 10/25 오늘 직원앱 접속(지점이 앱을 열었는지): 첫 접속~마지막, 횟수(같은 기기 30분에 한 번), 폰으로 연 적 있으면 표시
+function visitsHtml() {
+  if (!BOT || !BOT.visits) return "";
+  const chips = BR.map((b) => {
+    const v = BOT.visits[b], on = !!v;
+    const txt = on ? `${v.first}${v.last !== v.first ? "~" + v.last : ""} (${v.n}회${v.phone ? ", 폰" : ""})` : "안 열림";
+    return `<span class="chip" style="display:inline-flex;align-items:center;gap:5px;height:34px;padding:0 12px;font-size:14px;${on ? "background:var(--green-soft);color:var(--green)" : ""}">${BR.indexOf(b) + 1}호 ${b} <small>${txt}</small></span>`;
+  }).join("");
+  return `<div style="padding:12px 0;border-top:1px solid var(--line2)"><div class="eyebrow" style="margin-bottom:6px">오늘 직원앱 접속 <span class="t-sub" style="font-weight:500">같은 기기는 30분에 한 번 셈</span></div><div style="display:flex;flex-wrap:wrap;gap:6px">${chips}</div></div>`;
+}
 function botHtml() {
   if (!BOT) return `<div class="card" id="botcard"><div class="eyebrow">봇 상태</div><div class="t-sub">${BOT_ERR ? "불러오지 못했어요" : "불러오는 중"}</div></div>`;
   const m = agoMin(BOT.at), dead = m > 10;
@@ -518,6 +528,7 @@ function botHtml() {
     ${row("마스터봇", masterBad, masterTxt, rb("마스터봇"))}
     ${BOT.bsQ ? `<div class="t-bad" style="padding:8px 0;font-weight:700">⚠️ 시트에 못 들어간 기록 ${BOT.bsQ}건 (다시 보내는 중)</div>` : ""}
     ${BOT.bigWait ? `<div class="t-warn" style="padding:8px 0;font-weight:700">💰 지점 확인 기다리는 큰 입금 ${BOT.bigWait}건</div>` : ""}
+    ${visitsHtml()}
     <div style="padding-top:12px;border-top:1px solid var(--line2)"><div class="eyebrow" style="margin-bottom:6px">지점별 마지막 은행 알림 <span class="t-sub" style="font-weight:500">영업시간에 4시간 넘으면 빨간색</span></div><div style="display:flex;flex-wrap:wrap;gap:6px">${bank}</div></div></div>`;
 }
 function homeHtml() { return `<div style="padding-top:6px">${botHtml()}${issuesHtml()}${kpiRankHtml()}${engHtml()}${opsHtml()}</div>`; }
