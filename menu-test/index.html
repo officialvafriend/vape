@@ -817,7 +817,7 @@
 <body data-mode=""><div id="testRibbon" style="position:fixed;left:0;right:0;bottom:0;z-index:99999;background:#d32f2f;color:#fff;text-align:center;font:700 13px sans-serif;padding:4px;pointer-events:none">테스트판 · 손님 상담에는 정식판을 쓰세요</div>
 <div class="app">
   <div class="top">
-    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">테스트 v10.25-0100</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
+    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">테스트 v10.25-0200</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
     <nav class="tabs" id="tabs" style="display:none"></nav>
     <div class="flow" id="flow"><span data-st="1">① 찾는 것</span><i>›</i><span data-st="2">② 고르기</span><i>›</i><span data-st="3">③ 담은 상품</span><i>›</i><span data-st="4">④ 직원 확인</span></div>
   </div>
@@ -930,7 +930,8 @@ const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
 const byName = (n) => L.find((x) => x.n === n);
 const isVL = (x) => !x.c && /VF (빌런|릭) /.test(x.n);
-const short = (n) => n.replace(/^VF /, "");
+const MU_SET = new Set((window.LIQ || []).filter((x) => (x.t || []).includes("무니코틴")).map((x) => x.n));
+const short = (n) => MU_SET.has(n) ? "[무] " + n.replace(/^무 +/, "") : n.replace(/^VF /, "");
 // ── 기기패키지 기준 기기 (여기만 바꾸면 패키지 가격·문구가 같이 바뀜) ──
 // model = 포스 상품 모델명, colors = 포스 색상, img = 누끼 사진(없으면 이름 상자)
 const MAIN = { model: "하복2", name: "하복2", price: 89000, colors: ["블랙", "실버", "올리브", "네이비"], img: "dev_havok2_hero.png", // 메인 사진 = 용트림 홍보 이미지(검정) 누끼
