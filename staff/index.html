@@ -79,7 +79,7 @@
   .hero .hbs{display:flex;gap:6px;flex-shrink:0}.hero .hbs button{height:34px;padding:0 12px;border-radius:10px;font-size:13px;font-weight:800;background:rgba(255,255,255,.14);color:#fff}.hero .hbs button.ok{background:#fff;color:#191f28}
   .typecs{display:flex;flex-direction:column;gap:10px;margin:14px 0 4px}.typec{display:flex;align-items:center;gap:14px;width:100%;padding:14px 16px;border-radius:16px;border:1px solid var(--line);background:var(--card);text-align:left}.typec:active{background:#f2f4f6}
   .typec i{font-style:normal;font-size:24px;width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0}.typec b{display:block;font-size:17px;font-weight:800;color:var(--ink)}.typec small{display:block;font-size:13px;color:var(--sub);margin-top:2px}
-  .ilb{display:flex;gap:6px;flex-shrink:0}.ilb button{height:34px;padding:0 11px;border-radius:10px;font-size:13px;font-weight:800;background:#f2f4f6;color:var(--ink)}.ilb button.ok{background:var(--blue);color:#fff}
+  .ilb{display:flex;gap:6px;flex-shrink:0}.ilb button{height:42px;min-width:56px;padding:0 14px;border-radius:12px;font-size:14px;font-weight:800;background:#f2f4f6;color:var(--ink)}.ilb button.ok{background:var(--blue);color:#fff}
   .tag{display:inline-block;font-size:11px;font-weight:800;border-radius:6px;padding:1px 6px;margin-right:6px;vertical-align:1px}.tag.c{background:#e8f3ff;color:#1b64da}.tag.m{background:#fff4e5;color:#b25e00}.tag.e{background:#f3e8ff;color:#7c3aed}
   .hero .bar{height:8px;background:rgba(255,255,255,.15);border-radius:99px;margin-top:16px;overflow:hidden}
   .hero .bar i{display:block;height:100%;background:#64a8ff;border-radius:99px;transition:width .3s}
@@ -220,7 +220,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.21-34";
+const VER = "10.21-35";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -1360,7 +1360,7 @@ function applyPost(r) {
 function creqList() {
   const srv = (BOARD?.creqs || []).filter((r) => !!r.test === TEST), loc = myCreqs().filter((l) => !!l.test === TEST);
   const list = srv.map((r) => applyPost({ ...r, full: loc.find((l) => l.id === r.id) }));
-  for (const l of loc) if (!srv.some((r) => r.id === l.id) && Date.now() - l.ts < 5 * 60e3) list.push({ ...l, by: l.by, pending: true, full: l });
+  for (const l of loc) if (!srv.some((r) => r.id === l.id) && Date.now() - l.ts < 15 * 60e3) list.push({ ...l, by: l.by, pending: true, full: l });
   for (const r of list) if (STEPS[r.id]) r.step = STEPS[r.id];
   return list.filter((r) => r.step === "wait" || r.step === "ready");
 }
@@ -1375,7 +1375,7 @@ const MDONE = new Set();
 function ilItems() {
   const L = [];
   for (const r of creqList()) {
-    if (r.pending) continue;
+    if (r.pending) { L.push({ k: "c", cat: r.cat === "각인" ? "e" : "c", id: r.id, raw: r, ic: "🧾", pend: true, due: r.due || null, title: `${custName(r) ? custName(r) + "님, " : ""}${crItems(r)}`, sub: `⏳ 남겼어요, 1~2분 안에 확정돼요 (다시 적지 않아도 돼요), 남김 ${sd(r.d)} ${r.by}` }); continue; }
     const nm = custName(r), today = r.due && dLeft(r.due) <= 0, arr = r.step === "wait" && r.arrived;
     L.push({ k: "c", cat: r.cat === "각인" ? "e" : "c", id: r.id, raw: r, ic: r.cat === "각인" ? "✨" : "🧾", lead: !!r.lead, due: r.due || null, hot: !r.lead && (today || (arr && !(r.ext && r.due && dLeft(r.due) > 0))), title: `${nm ? nm + "님, " : ""}${r.title || crItems(r)}`,
       sub: [r.sms ? `📩 ${r.sms.label.replace(" 문자", "")} ${sd(r.sms.at.slice(0, 10))}` : "", r.from && r.from !== B ? `📥 ${ho(r.from)}에서 맡김` : "", r.eng && r.eng !== B ? `각인 ${ho(r.eng)}` : "", r.lead ? "👔 팀장 처리 중" : arr ? "📦 입고됨, 손님께 연락" : r.step === "ready" ? "챙겨둠" : "입고 대기", r.due ? `${r.step === "ready" || arr ? "수령 예정" : "약속일"} ${puTxt(r.due)}` : "", `남김 ${sd(r.d)} ${r.by}`].filter(Boolean).join(", ") });
@@ -1387,7 +1387,7 @@ function ilItems() {
   }
   return L;
 }
-const ilBtns = (it, dark) => it.lead ? "" : `<button class="ok" data-ildone="${it.k}" data-id="${it.id}">완료</button><button data-ilpost="${it.k}" data-id="${it.id}">미루기</button><button data-ilcx="${it.k}" data-id="${it.id}">취소</button>`;
+const ilBtns = (it, dark) => it.lead || it.pend ? "" : `<button class="ok" data-ildone="${it.k}" data-id="${it.id}">완료</button><button data-ilpost="${it.k}" data-id="${it.id}">미루기</button><button data-ilcx="${it.k}" data-id="${it.id}">취소</button>`;
 function todoItems() { return ilItems().filter((x) => x.hot); }
 function todoItemsOld() {
   const L = [];
