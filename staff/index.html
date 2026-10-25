@@ -220,7 +220,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.21-27";
+const VER = "10.21-28";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -630,7 +630,9 @@ async function doIlPost(withSms) {
   $("#okIp").disabled = true;
   try {
     await send({ type: IP.k === "c" ? "creqext" : "memoext", id: IP.id, date, days: IP.days, why, by });
-    const it = ilFind(IP.k, IP.id); if (it) { it.raw.due = date; it.raw.ext = (it.raw.ext || 0) + 1; if (it.raw.ext >= 2) it.raw.lead = true; it.raw.ok = true; }
+    const it = ilFind(IP.k, IP.id); const ext1 = ((it && it.raw.ext) || 0) + 1;
+    POSTED[IP.id] = { due: date, ext: ext1, lead: ext1 >= 2, at: Date.now() }; postedSave();
+    if (it) { it.raw.due = date; it.raw.ext = ext1; if (ext1 >= 2) it.raw.lead = true; it.raw.ok = true; }
     closeSheet(); render(); toast(it && it.raw.lead ? "미뤘어요, 팀장님께 넘어갔어요" : `${md(date)}로 미뤘어요`);
     if (withSms && it) {
       const r = it.raw, item = r.title || crItems(r);
@@ -661,7 +663,7 @@ async function doIlCx() {
 // 마감 보고 전에: 오늘(지난) 일정이 남아 있으면 먼저 처리
 function sheetIlGate() {
   const TD = todoItems();
-  openSheet(`<h2>📅 오늘 일정 ${TD.length}개가 남았어요</h2><div class="desc">하나씩 완료, 미루기, 취소 중에 골라 처리하면 마감 보고를 보낼 수 있어요.</div>
+  openSheet(`<h2>📅 오늘 일정 ${TD.length}개가 남았어요</h2><div class="desc">하나씩 완료, 미루기, 취소 중에 골라 주세요. 처리 못 한 건은 다음 근무자에게 넘어가요.</div>
     ${TD.map((it) => `<div class="lrow"><div class="lt"><b class="l1" style="-webkit-line-clamp:1">${it.ic} ${esc(it.title)}</b><span class="l2 w">${esc(it.sub)}</span></div><div class="ilb">${ilBtns(it)}</div></div>`).join("")}
     <div class="btns"><button class="btn" data-x>닫기</button></div>`);
 }
@@ -1338,14 +1340,22 @@ const myCreqs = () => ls.get(`vf-app-${B}-creqs`, []).filter((x) => Date.now() -
 const daysOld = (d) => Math.floor((Date.parse(todayKey()) - Date.parse(d)) / 86400e3);
 const CST = { wait: "⏳ 입고 대기", ready: "🧾 챙겨둠", done: "✅ 전달 완료", cancel: "취소" };
 const crItems = (r) => [...(r.items || []).map(([n, c]) => `${n} ${c}`), r.free].filter(Boolean).join(", ");
+// 10/25 사장님 "미루기 눌러도 바로 안 됨": 미룬 결과(id → 새 날짜, 미룬 횟수)를 이 기기에 기억했다가 서버 현황(ext)이 따라오면 지움. 20분 지나면 서버 것 사용
+const POSTED = (() => { try { return JSON.parse(localStorage.getItem("vf-app-posted") || "{}"); } catch { return {}; } })();
+const postedSave = () => { try { localStorage.setItem("vf-app-posted", JSON.stringify(POSTED)); } catch {} };
+function applyPost(r) {
+  const p = POSTED[r.id]; if (!p) return r;
+  if ((r.ext || 0) >= p.ext || Date.now() - p.at > 20 * 60e3) { delete POSTED[r.id]; postedSave(); return r; }
+  return { ...r, due: p.due, ext: p.ext, lead: p.lead || r.lead, ok: true };
+}
 function creqList() {
   const srv = (BOARD?.creqs || []).filter((r) => !!r.test === TEST), loc = myCreqs().filter((l) => !!l.test === TEST);
-  const list = srv.map((r) => ({ ...r, full: loc.find((l) => l.id === r.id) }));
+  const list = srv.map((r) => applyPost({ ...r, full: loc.find((l) => l.id === r.id) }));
   for (const l of loc) if (!srv.some((r) => r.id === l.id) && Date.now() - l.ts < 5 * 60e3) list.push({ ...l, by: l.by, pending: true, full: l });
   for (const r of list) if (STEPS[r.id]) r.step = STEPS[r.id];
   return list.filter((r) => r.step === "wait" || r.step === "ready");
 }
-const memoList = () => (BOARD?.memos || []).filter((m) => !MEMO_DONE.has(m.id) && !!m.test === TEST);
+const memoList = () => (BOARD?.memos || []).filter((m) => !MEMO_DONE.has(m.id) && !!m.test === TEST).map(applyPost);
 // 10/20 기한: 날짜 보기, 남은 날
 const md = (d) => `${+d.slice(5, 7)}월 ${+d.slice(8, 10)}일`, sd = (d) => d.slice(5).replace("-", "/");
 const dLeft = (d) => Math.round((Date.parse(d) - Date.parse(todayKey())) / 864e5);
@@ -1558,7 +1568,7 @@ function sheetClosing(mid) {
   CX = []; MIDMODE = !!mid;
   const prep = todayPrep();
   // 10/19 저녁 사장님 "개복잡": 기본 화면은 돈통, 리뷰/각인, 확인 2개, 지출 버튼만. 포스 숫자를 고칠 때만 아래 '직접 입력'을 펼침
-  openSheet(`${MIDMODE ? '<h2>🔎 중간 체크</h2><div class="desc">마감할 때처럼 <b>돈통을 장수대로 세고</b> 리뷰, 지출까지 넣어 주세요. 포스와 다 맞으면 ✅가 떠요. 마감 기록은 안 남아요.</div>' : '<h2>💰 마감 보고</h2><div class="desc">포스 일마감을 먼저 하고, <b>돈통만 세면 돼요.</b></div>'}
+  openSheet(`${MIDMODE ? '<h2>🔎 중간 체크</h2><div class="desc">마감할 때처럼 <b>돈통을 장수대로 세고</b> 리뷰, 지출까지 넣어 주세요. 포스와 다 맞으면 ✅가 떠요. 마감 기록은 안 남아요.</div>' : '<h2>💰 마감 보고</h2><div class="desc">포스 일마감을 먼저 하고, <b>돈통만 세면 돼요.</b></div>'}${!MIDMODE && todoItems().length ? `<div class="desc" style="color:var(--amber);font-weight:700;display:flex;align-items:center;gap:8px;margin-top:8px">남은 일정 ${todoItems().length}건은 다음 근무자에게 그대로 넘어가요<button class="act gray" data-go="ilgate" style="margin-left:auto">보기</button></div>` : ""}
     <div class="grp">돈통 <small>장수, 개수</small></div>
     <div class="cash big">${CASH.slice(0, 2).map(([id, label, unit]) => `<label><span>${label}</span><input class="input" id="${id}" inputmode="numeric" placeholder="${unit}"></label>`).join("")}</div>
     <div class="cash coins">${CASH.slice(2).map(([id, label, unit]) => `<label><span>${label}</span><input class="input" id="${id}" inputmode="numeric" placeholder="${unit}"></label>`).join("")}</div>
@@ -2021,7 +2031,8 @@ document.addEventListener("click", (e) => {
   if (t.dataset.honame) return doHandoff(t.dataset.honame);
   if (t.dataset.tdone) return doTaskDone(t.dataset.tdone);
   if (t.dataset.go === "survey") return sheetSurvey();
-  if (t.dataset.go === "closing") return todoItems().length ? sheetIlGate() : sheetClosing();
+  if (t.dataset.go === "closing") return sheetClosing(); // 10/25 남은 일정이 있어도 마감은 보낼 수 있게(보고 화면에 알림만)
+  if (go === "ilgate") return sheetIlGate();
   if (t.dataset.cck) return t.classList.toggle("on");
   if (go === "cmore") { const m = $("#cMore"), on = m.style.display === "none"; m.style.display = on ? "" : "none"; t.textContent = on ? "직접 입력 접기" : "포스 숫자가 틀릴 때만 → 직접 입력"; return; }
   if (go === "expadd") { const eb = $("#expBtn"); if (eb) eb.textContent = "＋ 지출 하나 더"; }
