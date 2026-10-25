@@ -56,7 +56,7 @@
 <div class="foot" id="foot"><button class="send" id="send">재고보고 보내기</button></div>
 <div class="toast" id="toast"></div>
 <script>
-const VER = "10.25-stock2";
+const VER = "10.25-stock3";
 // 노션 '코일' 표(지점별 칸)에 있던 품목 그대로. 지난 값 = 2026-10-01 노션 값(시험용). 순서: 본점,1호,2호,4호,5호,6호,7호,8호
 const COLS = ["본점", "동성로", "수성", "율하", "반월당", "상인", "광장코아", "현풍"];
 const HO = { 동성로: 1, 수성: 2, 본점: 3, 율하: 4, 반월당: 5, 상인: 6, 광장코아: 7, 현풍: 8 };
@@ -129,7 +129,7 @@ function rowHtml(it, i) {
   const diff = has ? v - p : 0;
   const big = has && p > 0 && Math.abs(diff) > Math.max(10, p * 0.5); // 지난번보다 크게 다르면 표시
   const g = grpOf(i);
-  if (g) return `<div class="it ${has ? "done" : ""}" id="r${i}"><div class="nm"><b>${esc(it.n)}</b><span>포스 합계 ${g.q} (${esc(g.names.join(" + "))}) · <em class="dn">직접 세서 넣어 주세요</em></span></div>
+  if (g) return `<div class="it ${has ? "done" : ""}" id="r${i}"><div class="nm"><b>${esc(it.n)}</b><span>포스 합계 ${g.q} · 세서 입력</span></div>
     <div class="ctl"><button data-m="${i}">−</button><input inputmode="numeric" data-i="${i}" value="${has ? v : ""}" placeholder="세기"><button data-p="${i}">+</button></div></div>`;
   return `<div class="it ${has ? "done" : ""} ${big ? "warn" : ""}" id="r${i}"><div class="nm"><b>${esc(it.n)}</b><span>${posOf(i) != null ? "포스 " : "지난 보고 "}${p}${has && diff ? ` · <em class="${diff > 0 ? "up" : "dn"}">${diff > 0 ? "+" : ""}${diff}</em>` : ""}${big ? " · 숫자 다시 확인" : ""}</span></div>
     <div class="ctl"><button data-m="${i}">−</button><input inputmode="numeric" data-i="${i}" value="${has ? v : ""}" placeholder="${p}"><button data-p="${i}">+</button></div>
