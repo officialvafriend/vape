@@ -220,7 +220,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.21-33";
+const VER = "10.21-34";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -316,6 +316,15 @@ async function doBigDep(id, ans) {
   if (ans === "always" && !confirm("이 사람이 보낸 돈은 앞으로도 매출에서 빼요. 맞나요?")) return;
   try { await send({ type: "bigdep", id, ans, by: working().join(", ") }); BD_DONE[id] = ans; toast(ans === "sale" ? "포스에 이체로 찍어 주세요" : "매출 아님으로 보냈어요"); render(); } catch (e) { fail(e); }
 }
+// 10/25 사장님 "지점에서 직원앱에 들어왔는지 확인": 열려 있으면 같은 기기 30분에 한 번 접속 신호(시험 모드는 안 보냄). 관리자 페이지 봇 상태에 보임
+function visitPing() {
+  if (!B || TEST) return;
+  let last = 0; try { last = +localStorage.getItem("vf-app-visit-" + B) || 0; } catch {}
+  if (Date.now() - last < 30 * 60e3) return;
+  try { localStorage.setItem("vf-app-visit-" + B, String(Date.now())); } catch {}
+  send({ type: "visit", dev: matchMedia("(max-width:700px)").matches ? "phone" : "pc" }).catch(() => {});
+}
+setTimeout(visitPing, 3000); setInterval(visitPing, 60e3);
 const fail = (e) => toast(`못 보냈어요 (${navigator.onLine ? e.message : "인터넷 끊김"}), 다시 눌러 주세요`);
 
 // ── 화면: 관리자 페이지 틀 (10/14) ── PC = 왼쪽 메뉴 + 위 요약 4칸 + 메뉴별 화면 / 폰 = 아래 메뉴 5개
