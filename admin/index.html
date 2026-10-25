@@ -163,12 +163,13 @@
 /* 10/25 그룹관리, 추가 필수: PC는 왼쪽 조작, 오른쪽 목록 여러 칸 (사장님 "여백 활용") */
 .gwrap{display:grid;gap:12px}
 .gstat{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}.gstat div{background:var(--bg);border-radius:12px;padding:10px 12px}.gstat b{display:block;font-size:22px;font-weight:800;font-variant-numeric:tabular-nums}.gstat span{font-size:12px;color:var(--sub)}
-.glist{display:grid;gap:8px}.gsec{grid-column:1/-1;font-size:16px;font-weight:800;margin:10px 2px 0}.gsec small{font-size:13px;color:var(--sub);font-weight:600}
+.glist{display:grid;gap:8px;align-items:start}.gsec{grid-column:1/-1;font-size:16px;font-weight:800;margin:10px 2px 0}.gsec small{font-size:13px;color:var(--sub);font-weight:600}
 .gitem{display:flex;align-items:flex-start;gap:10px;background:var(--card);border-radius:14px;padding:12px 14px;border:1px solid var(--line)}.gitem.chg{border-color:var(--amber);background:var(--amber-soft)}
 .gtx{flex:1;min-width:0}.gtx b{display:block;font-size:15px;overflow-wrap:anywhere}.gmeta{margin-top:4px;display:flex;flex-wrap:wrap;gap:4px;align-items:center}
 .gpill{display:inline-block;font-size:12px;font-weight:700;padding:2px 8px;border-radius:999px;background:var(--bg);color:var(--sub);white-space:nowrap}
 .gsel{width:128px;height:38px;font-size:14px;padding:0 8px;flex-shrink:0}.gmemo{height:34px;font-size:13px;margin-top:8px}
 .mwrap{display:grid;gap:12px}
+.gbr{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px}.gtag{height:28px;padding:0 9px;border-radius:999px;font-size:12px;font-weight:700;background:var(--card);color:var(--sub);border:1px solid var(--line)}.gtag.on{background:var(--blue);color:#fff;border-color:var(--blue)}.gtag.all{background:none;border-style:dashed}
 .gside,.mside,.gmain{min-width:0}.gside .chips,.mside .chips{flex-wrap:wrap;overflow:visible;margin-left:0;margin-right:0;padding:0}.mside .card{min-width:0}
 @media(min-width:900px){.gwrap,.mwrap{grid-template-columns:360px minmax(0,1fr);align-items:start;gap:20px}.gside,.mside{position:sticky;top:20px;display:grid;gap:12px}.glist{grid-template-columns:repeat(auto-fill,minmax(320px,1fr))}.mwrap .list{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:0 16px}}
 </style>
@@ -737,6 +738,7 @@ let grpQ = "", grpF = "all";
 const grpEd = () => { try { return JSON.parse(ls.get("vf-admin-grp") || "{}"); } catch { return {}; } };
 const grpSave = (o) => ls.set("vf-admin-grp", Object.keys(o).length ? JSON.stringify(o) : null);
 const gTone = (g) => !g ? "" : g === GOUT ? "background:var(--red-soft);color:var(--red)" : g.startsWith("프리미엄") ? "background:var(--blue-soft);color:var(--blue)" : g.startsWith("기기") ? "background:var(--green-soft);color:var(--green)" : "background:var(--amber-soft);color:var(--amber)";
+const gBr = (e) => Array.isArray(e?.br) ? e.br : BR; // 적용 지점, 기본 전 지점
 const gPill = (g) => `<span class="gpill" style="${gTone(g)}">${esc(g || "그룹 없음")}</span>`;
 function groupHtml() {
   const map = D.grp?.map || {}, ed = grpEd(), all = (D.products["본점"] || []).map(([n]) => n);
@@ -752,6 +754,7 @@ function groupHtml() {
   const cnt = (g) => Object.values(map).filter((x) => x === g).length;
   const row = (n) => { const cur = map[n] || "", e = ed[n], to = e?.to || "";
     return `<div class="gitem ${e ? "chg" : ""}"><div class="gtx"><b>${esc(n)}</b><div class="gmeta">${gPill(cur)}${e ? ` <span style="color:var(--sub)">→</span> ${gPill(to)}` : ""}${e?.isNew ? ' <span class="gpill" style="background:var(--amber-soft);color:var(--amber)">새 상품</span>' : ""}</div>
+      ${e ? `<div class="gbr">${BR.map((b, i) => `<button class="gtag ${gBr(e).includes(b) ? "on" : ""}" data-gbr="${esc(n)}" data-b="${b}">${i + 1} ${b}</button>`).join("")}<button class="gtag all" data-gbrall="${esc(n)}">${gBr(e).length === BR.length ? "모두 빼기" : "전 지점"}</button></div>` : ""}
       ${e ? `<input class="in gmemo" data-gmemo="${esc(n)}" value="${esc(e.memo || "")}" placeholder="메모 (선택)">` : ""}</div>
       <select class="in gsel" data-gn="${esc(n)}" aria-label="${esc(n)} 바꿀 그룹"><option value="">${e ? "바꾸지 않기" : "바꿀 그룹"}</option>${[...GRPS, GOUT].filter((g) => g !== cur).map((g) => `<option ${to === g ? "selected" : ""}>${g}</option>`).join("")}</select></div>`; };
   return `<div class="gwrap"><div class="gside">
@@ -774,9 +777,9 @@ function groupHtml() {
 async function grpExport() {
   const ed = grpEd(), map = D.grp?.map || {};
   if (!window.XLSX) await new Promise((ok, no) => { const s = document.createElement("script"); s.src = "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"; s.onload = ok; s.onerror = () => no(new Error("엑셀 도구를 못 불러왔어요")); document.head.appendChild(s); });
-  const rows = Object.entries(ed).map(([n, e]) => ({ 상품명: n, "지금 그룹": map[n] || (e.isNew ? "새 상품" : "그룹 없음"), "바꿀 그룹": e.to, 메모: e.memo || "", "고른 시각": e.at ? new Date(e.at).toLocaleString("ko-KR") : "" }))
+  const rows = Object.entries(ed).map(([n, e]) => ({ 상품명: n, "지금 그룹": map[n] || (e.isNew ? "새 상품" : "그룹 없음"), "바꿀 그룹": e.to, "적용 지점": gBr(e).length === BR.length ? "전 지점" : gBr(e).length ? gBr(e).join(", ") : "(지점 없음)", 메모: e.memo || "", "고른 시각": e.at ? new Date(e.at).toLocaleString("ko-KR") : "" }))
     .sort((a, b) => GRPS.indexOf(a["바꿀 그룹"]) - GRPS.indexOf(b["바꿀 그룹"]) || a.상품명.localeCompare(b.상품명, "ko"));
-  const ws = XLSX.utils.json_to_sheet(rows); ws["!cols"] = [{ wch: 34 }, { wch: 14 }, { wch: 14 }, { wch: 30 }, { wch: 20 }];
+  const ws = XLSX.utils.json_to_sheet(rows); ws["!cols"] = [{ wch: 34 }, { wch: 14 }, { wch: 14 }, { wch: 28 }, { wch: 30 }, { wch: 20 }];
   const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "그룹 변경");
   const d = new Date(Date.now() + 9 * 3600e3).toISOString().slice(2, 10).replace(/-/g, "");
   XLSX.writeFile(wb, `그룹변경_${d}.xlsx`);
@@ -813,6 +816,7 @@ document.addEventListener("click", async (e) => {
   if (t.tagName === "TR") return isPC() ? panelBranch(t.dataset.brpc, "프리미엄 A") : sheetBranch(t.dataset.brpc, "프리미엄 A");
   if (t.id === "go") return tryLogin();
   if (t.dataset.gf) { grpF = t.dataset.gf; return render(); }
+  if (t.dataset.gbr !== undefined || t.dataset.gbrall !== undefined) { const n = t.dataset.gbr ?? t.dataset.gbrall, ed = grpEd(); if (!ed[n]) return; const cur = gBr(ed[n]); ed[n].br = t.dataset.gbrall !== undefined ? (cur.length === BR.length ? [] : [...BR]) : (cur.includes(t.dataset.b) ? cur.filter((x) => x !== t.dataset.b) : BR.filter((x) => cur.includes(x) || x === t.dataset.b)); grpSave(ed); const y = scrollY; render(); scrollTo(0, y); return; }
   if (t.dataset.act === "gbulk") { const to = $("#gbulk").value, map = D.grp?.map || {}, ed = grpEd(); let k = 0; document.querySelectorAll("[data-gn]").forEach((s) => { const n = s.dataset.gn; if (map[n] === to) return; ed[n] = { ...(ed[n] || {}), to, at: Date.now() }; k++; }); grpSave(ed); render(); return toast(`${k}개를 ${to}(으)로 골랐어요`); }
   if (t.dataset.act === "gexport") return grpExport().catch((er) => toast(er.message));
   if (t.dataset.act === "gclear") { if (t.dataset.sure !== "1") { t.dataset.sure = "1"; t.textContent = "정말 비우기"; return; } grpSave({}); render(); return toast("고른 것을 비웠어요"); }
