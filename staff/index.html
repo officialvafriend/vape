@@ -220,7 +220,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.21-31";
+const VER = "10.21-32";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -402,10 +402,10 @@ function render() {
   const nav = VIEWS.map(([k, ic, nm]) => `<button class="navb ${k === VIEW ? "on" : ""}" data-view="${k}"><i>${ic}</i><span>${nm}${badge(k)}</span></button>`).join("");
   $("#app").innerHTML = `
     <div class="shell">
-      <aside class="side"><div class="logo">VAFRIEND <b>직원</b></div><div class="store" style="margin:0 12px 18px">${esc(ho(B))}</div>${VIEWS.length > 1 ? nav : ""}
+      <aside class="side"><div class="logo">VAFRIEND <b>직원</b></div><button class="store" data-go="branchask" style="margin:0 12px 18px;cursor:pointer;border:0" title="지점 바꾸기">${esc(ho(B))} ▾</button>${VIEWS.length > 1 ? nav : ""}
         ${ONLY_OPEN_CLOSE ? "" : `<div class="sfoot"><a class="navb" href="${SITE}menu/?branch=${encodeURIComponent(B)}"><i>🛍</i><span>판매용 메뉴판</span></a><button class="navb" data-go="branch"><i>🔁</i><span>지점 바꾸기</span></button></div>`}</aside>
       <main class="mainv">
-        <div class="top mtop"><div class="logo">VAFRIEND <b>직원</b></div><div class="store">${esc(ho(B))}</div><div class="date">${d.getMonth() + 1}/${d.getDate()} (${"일월화수목금토"[d.getDay()]})</div></div>
+        <div class="top mtop"><div class="logo">VAFRIEND <b>직원</b></div><button class="store" data-go="branchask" style="cursor:pointer;border:0" title="지점 바꾸기">${esc(ho(B))} ▾</button><div class="date">${d.getMonth() + 1}/${d.getDate()} (${"일월화수목금토"[d.getDay()]})</div></div>
         <div class="phead"><h1>${VIEWS.find((v) => v[0] === VIEW)[2]}</h1><span>${d.getMonth() + 1}월 ${d.getDate()}일 ${"일월화수목금토"[d.getDay()]}요일</span></div>
         ${VIEW === "home" || VIEW === "work" ? `<div class="hero"${TEST ? ' style="background:#7a2e0e"' : ""}>${TEST ? '<p style="color:#ffd7a8;font-weight:800;margin-bottom:6px">🧪 시험 모드: 진짜 기록에 안 섞여요</p>' : ""}${heroBody}</div>` : `<button class="hmini" data-view="home"${TEST ? ' style="background:#7a2e0e"' : ""}>${TEST ? "🧪 " : ""}<span>지금 할 일</span><b>${nx ? nx[0] + " " + nx[1] : "오늘 마감 완료 🎉"}</b>${TD.length + AH.length ? `<em>할 일 ${TD.length + AH.length}개 더</em>` : ""}<i>오늘 화면 →</i></button>`}
         ${ONLY_OPEN_CLOSE ? "" : VIEW === "home" ? kpis : `<div class="pconly">${kpis}</div>`}
@@ -2028,6 +2028,7 @@ document.addEventListener("click", (e) => {
   if (go === "open" || go === "close") return sheetCheck(go);
   if (go === "out") return sheetOut();
   if (go === "branch") { B = null; return render(); }
+  if (go === "branchask") { if (confirm(`지금 ${ho(B)}이에요. 다른 지점으로 바꿀까요?`)) { B = null; return render(); } return; }
   if (t.dataset.honame) return doHandoff(t.dataset.honame);
   if (t.dataset.tdone) return doTaskDone(t.dataset.tdone);
   if (t.dataset.go === "survey") return sheetSurvey();
