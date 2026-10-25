@@ -254,6 +254,7 @@ const ICON = {
   must: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h16v4H4zm0 6h16v10H4zm5 3v2h6v-2z"/></svg>',
   naver: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h5.2l5.6 8.1V4H20v16h-5.2l-5.6-8.1V20H4z"/></svg>',
   staff: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zm-8 8c0-3.3 3.6-6 8-6s8 2.7 8 6v1H4z"/></svg>',
+  office: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 21V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v4h2a2 2 0 0 1 2 2v10h-6v-4h-4v4zm4-14v2h2V7zm4 0v2h2V7zm-4 4v2h2v-2zm4 0v2h2v-2zm5 2v2h2v-2z"/></svg>',
 };
 // 10/19 사장님 "다 따로 들어가기 불편해": 네이버 앱, 직원앱을 관리자 안 메뉴로 (같은 사이트라 안에 띄움, 네이버 열쇠, 직원앱 지점은 각 앱이 이 기기에 기억)
 const EMBED = { naver: () => "../naver/", staff: () => `../staff/?branch=${encodeURIComponent(staffB)}` };
@@ -269,9 +270,9 @@ function render() {
   document.querySelectorAll("#nav button").forEach((b) => b.classList.toggle("on", b.dataset.tab === tab));
   const [, hh, mm] = D.at.match(/(\d{2}):(\d{2})$/) || [];
   if (EMBED[tab] && $("#app .emb") && $("#app .emb").dataset.k === tab + staffB) return; // 자동 새로고침 때 안에 띄운 앱이 처음으로 돌아가지 않게
-  const body = EMBED[tab] ? embedHtml() : tab === "home" ? (pc ? homePC() : homeHtml()) : tab === "kpi" ? kpiHtml() : tab === "close" ? closingAllHtml() : tab === "survey" ? surveyHtml() : tab === "tasks" ? tasksHtml() : tab === "note" ? noteHtml() : tab === "order" ? orderHtml() : mustHtml();
+  const body = EMBED[tab] ? embedHtml() : tab === "home" ? (pc ? homePC() : homeHtml()) : tab === "kpi" ? kpiHtml() : tab === "close" ? closingAllHtml() : tab === "survey" ? surveyHtml() : tab === "tasks" ? tasksHtml() : tab === "note" ? noteHtml() : tab === "order" ? orderHtml() : tab === "office" ? officeHtml() : mustHtml();
   if (!pc) { $("#app").innerHTML = `<div class="top"><div class="logo">VAFRIEND <b>관리자</b></div><div class="r"><button class="ic" data-act="reload">${hh ? `${hh}:${mm} 기준 ↻` : "새로고침"}</button><button class="ic" data-act="logout">잠그기</button></div></div>${body}`; markEmb(); return; }
-  const navs = [["home", "홈"], ["order", "주문요청"], ["note", "매장 노트"], ["kpi", "KPI"], ["close", "마감"], ["survey", "재고조사"], ["tasks", "업무"], ["must", "추가 필수"], ["naver", "네이버"], ["staff", "직원앱"]];
+  const navs = [["home", "홈"], ["order", "주문요청"], ["note", "매장 노트"], ["kpi", "KPI"], ["close", "마감"], ["survey", "재고조사"], ["tasks", "업무"], ["must", "추가 필수"], ["naver", "네이버"], ["staff", "직원앱"], ["office", "사무실"]];
   $("#app").innerHTML = `<div class="shell"><aside class="side"><div class="logo">VAFRIEND <b>관리자</b></div>
       ${navs.map(([k, n]) => `<button class="navb ${tab === k ? "on" : ""}" data-tab="${k}">${ICON[k]}${n}</button>`).join("")}
       <div class="foot"><button class="navb" data-act="reload">↻ ${hh ? `${hh}:${mm} 기준` : "새로고침"}</button><button class="navb" data-act="logout">🔒 잠그기</button></div></aside>
@@ -448,7 +449,7 @@ function issuesHtml() {
 }
 const homeHead = () => `<div class="pchead"><h1>오늘 한눈에</h1><div class="caption">${esc(D.d)}, ${esc(D.at.slice(-5))} 기준</div></div>`;
 function homePC() {
-  return `${homeHead()}<div class="cols home"><div>${botHtml()}${issuesHtml()}${kpiRankHtml()}${engHtml()}${opsHtml()}</div><div class="sheet panel" id="panel"></div></div>`;
+  return `${homeHead()}<div class="cols home"><div>${botMiniHtml()}${issuesHtml()}${kpiRankHtml()}${engHtml()}${opsHtml()}</div><div class="sheet panel" id="panel"></div></div>`;
 }
 function panelDefault() { return `<div class="eyebrow">지점 상세</div><h3>왼쪽에서 지점이나<br>확인할 것을 누르세요</h3><div class="caption">그날 마감 보고, 차액, 품절이 여기에 떠요</div>`; }
 // 지점 상세 패널: 오늘 마감 보고(경고 포함) + 품절
@@ -499,7 +500,7 @@ async function loadBot() {
   // 깃허브 API는 시간당 60번 한도라(관리자 데이터도 씀) 페이지 주소로 읽음
   try { const r = await fetch("botstatus.json?t=" + Date.now(), { cache: "no-store" }); if (!r.ok) throw 0; BOT = await r.json(); BOT_ERR = false; }
   catch { BOT_ERR = true; }
-  if (tab === "home" && !draft && !$("#dim").classList.contains("on")) { const el = $("#botcard"); if (el) el.outerHTML = botHtml(); }
+  if (!draft && !$("#dim").classList.contains("on")) { const el = $("#botcard"); if (el) el.outerHTML = botHtml(); const mi = $("#botmini"); if (mi) mi.outerHTML = botMiniHtml(); }
 }
 const agoMin = (iso) => Math.round((Date.now() - Date.parse(iso)) / 60e3);
 const agoTxt = (m) => m < 1 ? "방금" : m < 60 ? m + "분 전" : m < 1440 ? Math.floor(m / 60) + "시간 전" : Math.floor(m / 1440) + "일 전";
@@ -531,7 +532,16 @@ function botHtml() {
     ${visitsHtml()}
     <div style="padding-top:12px;border-top:1px solid var(--line2)"><div class="eyebrow" style="margin-bottom:6px">지점별 마지막 은행 알림 <span class="t-sub" style="font-weight:500">영업시간에 4시간 넘으면 빨간색</span></div><div style="display:flex;flex-wrap:wrap;gap:6px">${bank}</div></div></div>`;
 }
-function homeHtml() { return `<div style="padding-top:6px">${botHtml()}${issuesHtml()}${kpiRankHtml()}${engHtml()}${opsHtml()}</div>`; }
+// 10/25 사장님: 봇 상태 자세히는 '사무실' 메뉴로, 홈에는 신호등처럼 작게(누르면 사무실)
+function officeHtml() { return `<div class="pchead"><h1>사무실</h1><div class="caption">봇 상태, 지점 직원앱 접속, 은행 알림</div></div>${botHtml()}`; }
+function botMiniHtml() {
+  if (!BOT) return `<button id="botmini" data-tab="office" style="display:inline-flex;gap:10px;align-items:center;font-size:13px;color:var(--sub);background:none;padding:2px 0 10px">봇 상태 불러오는 중</button>`;
+  const dead = agoMin(BOT.at) > 10, m = BOT.master || {};
+  const ops = !dead && BOT.ops.s !== "에러", mas = !dead && m.ok && m.login;
+  const dot = (ok) => `<span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${ok ? "var(--green)" : "var(--red)"}"></span>`;
+  return `<button id="botmini" data-tab="office" title="사무실에서 자세히" style="display:inline-flex;gap:14px;align-items:center;font-size:13px;font-weight:600;color:var(--sub);background:none;padding:2px 0 10px">${dot(ops)} 운영봇 ${dot(mas)} 마스터봇${BOT.bsQ ? ` <span class="t-bad">시트 밀림 ${BOT.bsQ}</span>` : ""}</button>`;
+}
+function homeHtml() { return `<div style="padding-top:6px">${botMiniHtml()}${issuesHtml()}${kpiRankHtml()}${engHtml()}${opsHtml()}</div>`; }
 // ── 마감 보고 (직원앱 시재 + 포스 숫자) ──
 const won = (n) => Math.round(+n || 0).toLocaleString("ko-KR");
 function closingAllHtml() { return `<div class="pchead"><h1>마감 보고</h1><div class="caption">최근 40건, 누르면 보고문 전체</div></div>${closingListHtml(40) || '<div class="empty">아직 마감 보고가 없어요</div>'}`; }
