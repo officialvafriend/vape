@@ -438,9 +438,13 @@ function issues() {
   if (sw.length) L.push({ go: "survey", t: "재고조사", d: `승인 기다리는 ${sw.length}건` });
   return L;
 }
+// 10/25 사장님 "확인한 건 옆에 체크 버튼으로 지우게": 이 기기에 날짜별로 기억(다른 기기엔 그대로 보임), [숨긴 것 되돌리기]로 다시 보기
+const issKey = (x) => `${x.t}|${x.d}`;
+const issDone = () => { try { return new Set(JSON.parse(localStorage.getItem("vf-admin-issok-" + D.d) || "[]")); } catch { return new Set(); } };
+const issDoneSave = (s) => { try { localStorage.setItem("vf-admin-issok-" + D.d, JSON.stringify([...s])); } catch {} };
 function issuesHtml() {
-  const L = issues();
-  return `<div class="sec" style="margin-top:0">확인할 것 <small>${L.length ? L.length + "건" : ""}</small></div><div class="list">${L.length ? L.map((x) => `<button class="item iss" ${x.b ? `data-brpc="${esc(x.b)}"` : `data-tab="${x.go}"`}><i class="dot"></i><div class="tx"><b>${esc(x.t)}</b><span>${esc(x.d)}</span></div><span class="chev">›</span></button>`).join("") : '<div class="item"><i class="dot ok"></i><div class="tx"><b>오늘은 확인할 게 없어요</b></div></div>'}</div>`;
+  const all = issues(), done = issDone(), L = all.filter((x) => !done.has(issKey(x))), hid = all.length - L.length;
+  return `<div class="sec" style="margin-top:0">확인할 것 <small>${L.length ? L.length + "건" : ""}</small>${hid ? `<button class="issundo" data-issundo="1" style="margin-left:auto;font-size:13px;color:var(--sub);background:none">숨긴 것 ${hid}건 되돌리기</button>` : ""}</div><div class="list">${L.length ? L.map((x) => `<div style="display:flex;align-items:center"><button class="item iss" style="flex:1;min-width:0" ${x.b ? `data-brpc="${esc(x.b)}"` : `data-tab="${x.go}"`}><i class="dot"></i><div class="tx"><b>${esc(x.t)}</b><span>${esc(x.d)}</span></div><span class="chev">›</span></button><button class="issok" data-issok="${esc(issKey(x))}" title="확인했어요" style="flex:0 0 auto;margin:0 12px 0 4px;height:28px;padding:0 10px;border-radius:8px;background:var(--line2);color:var(--sub);font-size:13px;font-weight:600">확인</button></div>`).join("") : '<div class="item"><i class="dot ok"></i><div class="tx"><b>오늘은 확인할 게 없어요</b></div></div>'}</div>`;
 }
 const homeHead = () => `<div class="pchead"><h1>오늘 한눈에</h1><div class="caption">${esc(D.d)}, ${esc(D.at.slice(-5))} 기준</div></div>`;
 function homePC() {
@@ -685,6 +689,8 @@ document.addEventListener("click", async (e) => {
   const t = e.target.closest("button,tr[data-brpc]"); if (!t) return;
   if (t.tagName === "TR") return isPC() ? panelBranch(t.dataset.brpc, "프리미엄 A") : sheetBranch(t.dataset.brpc, "프리미엄 A");
   if (t.id === "go") return tryLogin();
+  if (t.dataset.issok) { const s = issDone(); s.add(t.dataset.issok); issDoneSave(s); render(); return toast("확인한 걸로 숨겼어요"); }
+  if (t.dataset.issundo) { issDoneSave(new Set()); render(); return; }
   if (t.dataset.restart) { const bot = t.dataset.restart; if (!confirm(bot + "을 다시 켤까요? 1분쯤 걸려요" + (bot === "운영봇" ? ". 그동안 온 신호는 다시 켜진 뒤 처리돼요" : ""))) return; t.disabled = true; t.textContent = "보냈어요"; try { await sendOp("restart", { bot }); toast(bot + " 다시 켜는 중이에요. 3분 안에 상태가 바뀌어요"); setTimeout(loadBot, 90e3); setTimeout(loadBot, 200e3); } catch (err) { toast("못 보냈어요: " + err.message); t.disabled = false; t.textContent = "다시 켜기"; } return; }
   if (t.dataset.x !== undefined) return closeSheet();
   if (t.dataset.kpib) { kpiB = t.dataset.kpib; ls.set("vf-admin-kpib", kpiB); return render(); }
