@@ -220,7 +220,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.21-25";
+const VER = "10.21-27";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -285,7 +285,7 @@ async function loadToday() {
   try {
     const j = await ghJson("today.json");
     const src = j.d === todayKey() ? j.br?.[B] || null : null, next = TEST ? src?.test || null : src; // 10/20 시험 모드는 시험 기록만(실제 근무자가 섞여 퇴근 처리된 사고)
-    if (JSON.stringify(next) !== JSON.stringify(SRV)) { SRV = next; cacheSet("today", next); if (!$("#dim").classList.contains("on")) render(); }
+    if (JSON.stringify(next) !== JSON.stringify(SRV)) { SRV = next; cacheSet("today", next); bgRender(); }
   } catch {}
 }
 const saveSt = (s) => ls.set(dayKey(), s);
@@ -326,6 +326,9 @@ const VIEWS_ALL = [["home", "🏠", "오늘"], ["work", "🕘", "출퇴근, 마�
 const VIEWS = ONLY_OPEN_CLOSE ? [["home", "🏠", "오늘"], ["talk", "📅", "일정"], ["as2", "🔧", "AS관리"], ["note", "📝", "매장 노트"], ["reply", "💬", "응대 모음"]] : VIEWS_ALL;
 let VIEW = ls.get("vf-app-view", "home");
 if (!VIEWS.some((v) => v[0] === VIEW)) VIEW = "home";
+// 10/23 30초마다 화면을 다시 그리면 누르던 버튼이 바뀌어 안 눌림 → 손 댄 지 1.2초 안이면 조금 뒤에 그림
+let TOUCH = 0; document.addEventListener("pointerdown", () => { TOUCH = Date.now(); }, true);
+function bgRender() { const w = 1200 - (Date.now() - TOUCH); if (w > 0) return void setTimeout(bgRender, w); if (!$("#dim").classList.contains("on")) render(); }
 function render() {
   if (LEADER) return renderLeader();
   if (!B) return renderPick();
@@ -500,7 +503,7 @@ async function doMid() {
 // ── 요청 탭 (10/20 사장님 "보기 불편"): 한 칸, 위 전환 버튼, 거르기 칩, 2줄 목록, 줄 누르면 상세 창
 let TALK = ls.get("vf-app-talk", "creq"), CRF = "all";
 const puTxt = (d) => { const n = dLeft(d); return n > 0 ? `${sd(d)} (${n}일 뒤)` : n === 0 ? `${sd(d)} (오늘)` : `${sd(d)} (${-n}일 지남)`; };
-const crHot = (r) => !r.lead && ((r.step === "wait" && (r.arrived || (r.due && dLeft(r.due) <= 0))) || (r.step === "ready" && r.due && dLeft(r.due) < 0));
+const crHot = (r) => !r.lead && ((r.step === "wait" && ((r.arrived && !(r.ext && r.due && dLeft(r.due) > 0)) || (r.due && dLeft(r.due) <= 0))) || (r.step === "ready" && r.due && dLeft(r.due) < 0));
 function crMainBtn(r) {
   if (r.lead || r.pending) return "";
   if (r.step === "ready") return r.due && dLeft(r.due) < 0 ? `<button class="act" data-crext="${r.id}">연락함, 날짜 미루기</button>` : `<button class="act" data-crs="done" data-id="${r.id}">전달 완료</button>`;
@@ -1190,7 +1193,7 @@ function myQuicksCard() {
     return `<div class="qrow"><div><b>→ ${esc(ho(x.to))}</b><span>${x.items.map(([n, c]) => esc(n) + " " + c).join(", ")}</span><em>${QNAME[st]}${QST[x.id]?.t ? ", " + QST[x.id].t : ""}</em></div>${st === "ok" ? `<button class="act" data-qpay="${x.id}">결제 완료</button>` : ""}</div>`; }).join("")}
     <div class="desc" style="margin:8px 0 0">상태는 1~2분 늦게 바뀔 수 있어요</div></div>`;
 }
-async function loadQuickStatus() { try { QST = await (await fetch("quick.json", { cache: "no-store" })).json(); if (!$("#dim").classList.contains("on")) render(); } catch (e) {} }
+async function loadQuickStatus() { try { const j = await (await fetch("quick.json", { cache: "no-store" })).json(); if (JSON.stringify(j) === JSON.stringify(QST)) return; QST = j; bgRender(); } catch (e) {} }
 function sheetQuick() {
   qk = { items: [], to: null, addr: "" };
   openSheet(`<h2>🛵 퀵 재고 문의</h2><div class="desc">상품을 찾아 담고, 보낼 지점을 고르면 그 지점에 [가능][불가] 카드가 가요.</div>
@@ -1326,7 +1329,7 @@ async function loadBoard() {
     const j = await ghJson("board.json");
     ENGLOAD = (TEST ? j.engLoadTest : j.engLoad) || {};
     const next = j.br?.[B] || null, nl = (j.lead || []).filter((x) => !!x.test === TEST), no = (j.old || []).filter((x) => !!x.test === TEST);
-    if (JSON.stringify(next) !== JSON.stringify(BOARD) || JSON.stringify(nl) !== JSON.stringify(LEADS) || JSON.stringify(no) !== JSON.stringify(OLDS)) { BOARD = next; LEADS = nl; OLDS = no; cacheSet("board", next); if (!$("#dim").classList.contains("on")) render(); decAll(); }
+    if (JSON.stringify(next) !== JSON.stringify(BOARD) || JSON.stringify(nl) !== JSON.stringify(LEADS) || JSON.stringify(no) !== JSON.stringify(OLDS)) { BOARD = next; LEADS = nl; OLDS = no; cacheSet("board", next); bgRender(); decAll(); }
   } catch {}
 }
 async function loadOuts() { try { const j = await (await fetch(`${SITE}menu/stock.json?${Date.now()}`, { cache: "no-store" })).json(); OUTS = new Set(j[B]?.out || []); } catch {} }
@@ -1355,7 +1358,7 @@ function ilItems() {
   for (const r of creqList()) {
     if (r.pending) continue;
     const nm = custName(r), today = r.due && dLeft(r.due) <= 0, arr = r.step === "wait" && r.arrived;
-    L.push({ k: "c", cat: r.cat === "각인" ? "e" : "c", id: r.id, raw: r, ic: r.cat === "각인" ? "✨" : "🧾", lead: !!r.lead, due: r.due || null, hot: !r.lead && (today || arr), title: `${nm ? nm + "님, " : ""}${r.title || crItems(r)}`,
+    L.push({ k: "c", cat: r.cat === "각인" ? "e" : "c", id: r.id, raw: r, ic: r.cat === "각인" ? "✨" : "🧾", lead: !!r.lead, due: r.due || null, hot: !r.lead && (today || (arr && !(r.ext && r.due && dLeft(r.due) > 0))), title: `${nm ? nm + "님, " : ""}${r.title || crItems(r)}`,
       sub: [r.sms ? `📩 ${r.sms.label.replace(" 문자", "")} ${sd(r.sms.at.slice(0, 10))}` : "", r.from && r.from !== B ? `📥 ${ho(r.from)}에서 맡김` : "", r.eng && r.eng !== B ? `각인 ${ho(r.eng)}` : "", r.lead ? "👔 팀장 처리 중" : arr ? "📦 입고됨, 손님께 연락" : r.step === "ready" ? "챙겨둠" : "입고 대기", r.due ? `${r.step === "ready" || arr ? "수령 예정" : "약속일"} ${puTxt(r.due)}` : "", `남김 ${sd(r.d)} ${r.by}`].filter(Boolean).join(", ") });
   }
   for (const m of memoList()) {
@@ -1893,7 +1896,7 @@ async function asLoad(force) {
   AS.at = Date.now();
   try { if (!AS.who) AS.who = await asApi({ action: "asWho" }); const j = await asApi({ action: "asList" }); AS.rows = j.rows; AS.err = ""; }
   catch (e) { AS.err = e.message; if (/매장 코드/.test(e.message)) { try { localStorage.removeItem("vf-as-pin"); } catch {} AS.who = null; } }
-  if (!$("#dim").classList.contains("on")) render();
+  bgRender();
 }
 const asIdx = (s) => Math.max(0, AS_ST.indexOf(s));
 const asLate = (r) => r[AC.st] !== AS_ST[6] && +r[AC.days] > 7;
