@@ -372,7 +372,7 @@ function noteHtml() {
   const N = (D.notes || []).filter((x) => (noteF === "전체" || x.cat === noteF) && (noteB === "전체" || x.b === noteB)).sort((a, b) => (b.d + b.t).localeCompare(a.d + a.t));
   const me = ls.get("vf-admin-name") || "";
   const chip = (k, v, cur, attr) => `<button class="chip ${cur === v ? "on" : ""}" ${attr}="${v}">${k}</button>`;
-  const brs = ["전체", ...BR].map((b, i) => chip(b === "전체" ? "전 지점" : i + 1 + " " + b, b, noteB, "data-noteb")).join("");
+  const brs = ["전체", ...BR].map((b, i) => chip(b === "전체" ? "전 지점" : i + "호 " + b, b, noteB, "data-noteb")).join("");
   const cats = ["전체", ...Object.keys(NCAT)].map((c) => chip(c === "전체" ? "전체" : NCAT[c] + " " + c, c, noteF, "data-notef")).join("");
   const card = (x) => `<div class="item" style="display:block"><div class="caption">${NCAT[x.cat] || ""} ${esc(x.cat)}, ${BR.indexOf(x.b) + 1}호 ${esc(x.b)}, ${esc(x.by)}, ${esc(x.d.slice(5).replace("-", "/"))} ${esc(x.t)}</div>
     <div style="font-size:16px;line-height:1.6;margin:6px 0;white-space:pre-wrap">${esc(x.text)}</div>
