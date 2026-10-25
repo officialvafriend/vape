@@ -220,7 +220,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.21-30";
+const VER = "10.21-31";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -1501,9 +1501,9 @@ function warnHelp(w) {
     return d < 0 ? ["오늘 돈통에서 쓴 돈(택배, 퀵, 소모품)을 지출에 안 적었는지", "현금 환불이나 교환 차액을 포스에 안 찍었는지", "현금 결제를 포스에 카드나 이체로 잘못 찍었는지", "거스름돈을 더 드렸는지", "돈통을 다시 세기 (5만원, 1만원 장수, 잔돈)", "오늘 준비금 숫자가 맞는지"]
       : ["현금으로 받은 판매를 포스에 안 찍었는지", "카드나 이체 결제를 포스에 현금으로 잘못 찍었는지", "지출 금액을 실제보다 크게 적었는지", "돈통을 다시 세기 (5만원, 1만원 장수, 잔돈)", "오늘 준비금 숫자가 맞는지"];
   }
-  if (/^이체 .*≠ 은행/.test(w)) {
-    const m = w.match(/이체 ([\d,]+) ≠ .*?([\d,]+) \(차이/); const pos = m ? +m[1].replace(/,/g, "") : 0, bank = m ? +m[2].replace(/,/g, "") : 0;
-    return pos > bank ? ["포스에는 이체로 찍었는데 본점 통장에 안 들어온 돈이 있는지 (다른 계좌, 직원 계좌로 받음)", "어제 미리 입금받은 손님 건을 오늘 포스에 한 번 더 찍었는지", "카드나 현금 결제를 포스에 이체로 잘못 찍었는지", "손님이 보냈다고 했는데 아직 입금이 안 된 건 아닌지"]
+  if (/^이체 .*≠ 은행/.test(w) || /^시재입출금 이체/.test(w)) {
+    const m = w.match(/이체 ([\d,]+) ≠ .*?([\d,]+) \(차이/) || w.match(/이체 [?\d]+건 ([\d,]+)원 \/ 은행 이체 \d+건 ([\d,]+)원/); const pos = m ? +m[1].replace(/,/g, "") : 0, bank = m ? +m[2].replace(/,/g, "") : 0;
+    return pos > bank ? ["포스에는 이체로 찍었는데 우리 지점 통장에 안 들어온 돈이 있는지 (다른 계좌, 직원 계좌로 받음)", "어제 미리 입금받은 손님 건을 오늘 포스에 한 번 더 찍었는지", "카드나 현금 결제를 포스에 이체로 잘못 찍었는지", "손님이 보냈다고 했는데 아직 입금이 안 된 건 아닌지"]
       : ["통장에 들어왔는데 포스에 이체로 안 찍은 판매가 있는지 (현금으로 찍었거나 아예 안 찍음)", "이체 받은 손님 결제를 포스에 카드로 잘못 찍었는지", "판매가 아닌 입금(환불 되돌려받음, 개인 입금)이 섞였는지"];
   }
   if (/^포스 현금 과부족/.test(w)) return ["오늘 현금 지출을 지출 칸에 다 적었는지 (금액이 같으면 문제없음)", "포스 일마감 때 시재 입력을 잘못했는지"];
@@ -1514,7 +1514,7 @@ function warnHelp(w) {
 }
 // 10/21 사장님 "확인할 것 내용이 좀 다름": 이체가 안 맞으면 실제 통장 입금 목록을 같이 보여 줌. 회사 이름이나 100원 단위가 아닌 금액은 판매 아닌 입금일 가능성
 function bankBox(w, bl) {
-  if (!/^이체 /.test(w) || !bl || !bl.length) return "";
+  if (!/^(이체 |시재입출금 이체)/.test(w) || !bl || !bl.length) return "";
   const odd = (n, a) => /정보통신|나이스|페이|주식회사|\(주\)|은행|카드|이자/.test(n) || a % 100 !== 0;
   return `<div style="font-size:14px;color:var(--sub);margin:10px 0 4px">봇이 손님 이체로 센 통장 입금 ${bl.length}건</div>${bl.map(([t, n, a]) => `<div style="display:flex;gap:8px;font-size:14px;padding:3px 0;${odd(n, a) ? "color:var(--red);font-weight:800" : ""}"><span style="width:44px">${esc(t)}</span><span style="flex:1">${esc(n)}${odd(n, a) ? " ← 판매 아닌 입금 같아요" : ""}</span><b>${(+a).toLocaleString()}</b></div>`).join("")}`;
 }
