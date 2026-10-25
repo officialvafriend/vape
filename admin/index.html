@@ -154,6 +154,21 @@
 .ops td b{font-weight:700}
 .ops .g{color:var(--green);font-weight:700}.ops .r{color:var(--red);font-weight:700}.ops .n{color:var(--sub)}
 .ops small{display:block;font-size:11px;color:var(--sub);font-weight:500}
+/* 10/25 사무실 들판: 우사기, 쿠리만쥬가 좌우로 걸어 다니고, 휴식은 제자리 숨쉬기, 에러는 멈춤 */
+.field{position:relative;height:320px;background:url(img/field.png) center top/cover no-repeat,linear-gradient(#bfe3f5 0 32%,#cfe8b8 32%)}
+.walker{position:absolute;left:3%;width:130px;display:flex;flex-direction:column;align-items:center;gap:2px;animation:wk 26s linear infinite}
+.walker img{width:130px;height:112px;object-fit:contain;display:block;animation:fl 26s linear infinite}
+.walker .hop{animation:hp .7s ease-in-out infinite}
+.walker .tag{padding:3px 10px;border-radius:999px;color:#fff;font-size:12px;font-weight:700;white-space:nowrap}
+.walker.rest .hop{animation:br 3s ease-in-out infinite}
+.walker.rest,.walker.rest img,.walker.stop,.walker.stop img,.walker.stop .hop{animation-play-state:paused}
+.walker.stop .hop{animation:none}
+@keyframes wk{0%{left:3%}50%{left:calc(97% - 130px)}100%{left:3%}}
+@keyframes fl{0%,49.9%{transform:scaleX(-1)}50%,100%{transform:scaleX(1)}}
+@keyframes hp{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@keyframes br{0%,100%{transform:scale(1)}50%{transform:scale(1.03,.97)}}
+@media(max-width:700px){.field{height:220px}.walker{width:96px}.walker img{width:96px;height:84px}@keyframes wk{0%{left:3%}50%{left:calc(97% - 96px)}100%{left:3%}}}
+@media(prefers-reduced-motion:reduce){.walker,.walker img,.walker .hop{animation:none}}
 </style>
 </head>
 <body>
@@ -500,7 +515,7 @@ async function loadBot() {
   // 깃허브 API는 시간당 60번 한도라(관리자 데이터도 씀) 페이지 주소로 읽음
   try { const r = await fetch("botstatus.json?t=" + Date.now(), { cache: "no-store" }); if (!r.ok) throw 0; BOT = await r.json(); BOT_ERR = false; }
   catch { BOT_ERR = true; }
-  if (!draft && !$("#dim").classList.contains("on")) { const el = $("#botcard"); if (el) el.outerHTML = botHtml(); const mi = $("#botmini"); if (mi) mi.outerHTML = botMiniHtml(); }
+  if (!draft && !$("#dim").classList.contains("on")) { const el = $("#botcard"); if (el) el.outerHTML = botHtml(); const ch = $("#botchars"); if (ch && ch.dataset.k !== charKey()) ch.outerHTML = charsHtml(); else if (ch) { const nl = document.createElement("div"); nl.innerHTML = charsHtml(); ch.querySelector("#botlines").innerHTML = nl.querySelector("#botlines").innerHTML; } /* 상태가 바뀔 때만 다시 그림(걷던 자리가 튀지 않게) */ const mi = $("#botmini"); if (mi) mi.outerHTML = botMiniHtml(); }
 }
 const agoMin = (iso) => Math.round((Date.now() - Date.parse(iso)) / 60e3);
 const agoTxt = (m) => m < 1 ? "방금" : m < 60 ? m + "분 전" : m < 1440 ? Math.floor(m / 60) + "시간 전" : Math.floor(m / 1440) + "일 전";
@@ -533,7 +548,38 @@ function botHtml() {
     <div style="padding-top:12px;border-top:1px solid var(--line2)"><div class="eyebrow" style="margin-bottom:6px">지점별 마지막 은행 알림 <span class="t-sub" style="font-weight:500">영업시간에 4시간 넘으면 빨간색</span></div><div style="display:flex;flex-wrap:wrap;gap:6px">${bank}</div></div></div>`;
 }
 // 10/25 사장님: 봇 상태 자세히는 '사무실' 메뉴로, 홈에는 신호등처럼 작게(누르면 사무실)
-function officeHtml() { return `<div class="pchead"><h1>사무실</h1><div class="caption">봇 상태, 지점 직원앱 접속, 은행 알림</div></div>${botHtml()}`; }
+function officeHtml() { return `<div class="pchead"><h1>사무실</h1><div class="caption">봇 상태, 지점 직원앱 접속, 은행 알림</div></div>${charsHtml()}${botHtml()}`; }
+// 10/25 사장님 "바탕화면 위젯이 자꾸 사라져서 슬퍼": 우사기(운영봇), 쿠리만쥬(마스터봇)를 사무실에. 바탕화면 위젯과 같은 표정 묶음, 15초마다 그 안에서 바뀜
+const CHAR_POSE = {
+  usagi: { 업무중: ["work", "check", "base", "talk", "ship"], 휴식: ["rest", "snack", "peek"], 에러: ["error", "hurry"] },
+  kuri: { 확인중: ["work", "check", "base", "talk", "curious"], 휴식: ["rest", "snack"], 에러: ["error", "hurry"] },
+};
+CHAR_POSE.usagi.휴식 = ["rest", "peek"]; // 우사기는 간식 그림이 없음
+function charState() {
+  if (!BOT) return null;
+  const dead = agoMin(BOT.at) > 10, m = BOT.master || {}, hh = new Date(Date.now() + 9 * 3600e3).getUTCHours();
+  const ops = dead ? { s: "에러", line: "소식 없음 " + agoTxt(agoMin(BOT.at)) } : { s: CHAR_POSE.usagi[BOT.ops.s] ? BOT.ops.s : "업무중", line: BOT.ops.line || "" };
+  const mas = dead ? { s: "에러", line: "확인 안 됨" } : !m.ok ? { s: "에러", line: m.err || "꺼져 있음" } : !m.login ? { s: "에러", line: "본사 로그인이 풀렸어요" } : hh < 9 ? { s: "휴식", line: "밤이라 쉬는 중이에요" } : { s: "확인중", line: "본사 계정으로 포스 읽을 준비 됐어요" };
+  return { usagi: ops, kuri: mas };
+}
+const charKey = () => { const s = charState(); return s ? s.usagi.s + "/" + s.kuri.s : ""; };
+const pick = (a) => a[Math.floor(Math.random() * a.length)];
+// 10/25 사장님 "들판에서 움직이는 모습으로, 에러 나면 멈추고 에러 표정". 들판 그림은 img/field.png(없으면 하늘+풀색)
+function charsHtml() {
+  const st = charState();
+  const one = (k, name, i) => {
+    const s = st ? st[k] : { s: "휴식", line: "불러오는 중" };
+    const col = s.s === "에러" ? "var(--red)" : s.s === "휴식" ? "#8b95a1" : "var(--green)";
+    const label = name + " " + s.s;
+    const mode = s.s === "에러" ? "stop" : s.s === "휴식" ? "rest" : "walk";
+    return `<div class="walker ${mode}" style="animation-delay:-${i * 7}s;bottom:${i ? 4 : 20}%"><div class="hop"><img data-char="${k}" data-st="${s.s}" src="img/${k}_${pick(CHAR_POSE[k][s.s])}.png" alt="${name}" style="animation-delay:-${i * 7}s"></div>
+      <span class="tag" style="background:${col}">${esc(label)}</span></div>`;
+  };
+  const line = (k, name) => st ? `<div><b>${name}</b> <span class="t-sub">${esc(st[k].line || st[k].s)}</span></div>` : "";
+  return `<div class="card" id="botchars" data-k="${esc(charKey())}" style="padding:0;overflow:hidden"><div class="field">${one("usagi", "VF운영봇", 0)}${one("kuri", "VF마스터봇", 1)}</div>
+    <div id="botlines" style="padding:12px 16px;display:grid;gap:4px;font-size:14px;word-break:keep-all">${line("usagi", "VF운영봇")}${line("kuri", "VF마스터봇")}</div></div>`;
+}
+setInterval(() => document.querySelectorAll("img[data-char]").forEach((im) => { const g = CHAR_POSE[im.dataset.char][im.dataset.st]; if (g) im.src = `img/${im.dataset.char}_${pick(g)}.png`; }), 15e3);
 function botMiniHtml() {
   if (!BOT) return `<button id="botmini" data-tab="office" style="display:inline-flex;gap:10px;align-items:center;font-size:13px;color:var(--sub);background:none;padding:2px 0 10px">봇 상태 불러오는 중</button>`;
   const dead = agoMin(BOT.at) > 10, m = BOT.master || {};
