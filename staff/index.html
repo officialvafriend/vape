@@ -220,7 +220,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.21-35";
+const VER = "10.25-10";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -332,7 +332,9 @@ const fail = (e) => toast(`못 보냈어요 (${navigator.onLine ? e.message : "�
 const ONLY_OPEN_CLOSE = true;
 const VIEWS_ALL = [["home", "🏠", "오늘"], ["work", "🕘", "출퇴근, 마감"], ["stock", "📦", "재고"], ["talk", "📌", "소통, 요청"], ["as", "🔧", "AS"]];
 // 10/20 사장님: 오늘(오픈, 마감) + 요청(인수인계, 고객요청) 두 화면만
-const VIEWS = ONLY_OPEN_CLOSE ? [["home", "🏠", "오늘"], ["talk", "📅", "일정"], ["as2", "🔧", "AS관리"], ["note", "📝", "매장 노트"], ["reply", "💬", "응대 모음"]] : VIEWS_ALL;
+// 10/23 재고조사 → 포스 바로 조정: 포스 조정이 연결된 지점만 메뉴 보임 (운영봇 ADJ_BRANCHES와 같게)
+const ADJ_BR = []; // 10/25 재고 조정은 아침 재고보고로 하기로 해서 재고조사 메뉴는 숨김(다시 열려면 지점 넣기)
+const VIEWS = ONLY_OPEN_CLOSE ? [["home", "🏠", "오늘"], ["talk", "📅", "일정"], ...(ADJ_BR.includes(B) ? [["stock", "📦", "재고조사"]] : []), ["as2", "🔧", "AS관리"], ["note", "📝", "매장 노트"], ["reply", "💬", "응대 모음"]] : VIEWS_ALL;
 let VIEW = ls.get("vf-app-view", "home");
 if (!VIEWS.some((v) => v[0] === VIEW)) VIEW = "home";
 // 10/23 30초마다 화면을 다시 그리면 누르던 버튼이 바뀌어 안 눌림 → 손 댄 지 1.2초 안이면 조금 뒤에 그림
@@ -477,7 +479,7 @@ function midInfo() {
   let x = TEST ? BOARD?.midCheckTest : BOARD?.midCheck;
   if (MIDPEND && midFresh(x)) { MIDPEND = null; pendSave(); }
   if (MIDPEND) return { t: `${CHK_TXT} ${esc(MIDPEND.t)} ${esc(MIDPEND.by || "")}, 봇이 포스와 맞춰보는 중 (1~2분)` };
-  if (!x) return { t: "마감 전에 돈통이 포스와 맞는지 미리 확인" };
+  if (!x) return { t: "포스 일마감 전에 돈통, 이체가 맞는지 확인" };
   const head = `${x.t} ${esc(x.by || "")}`, extra = `${x.bills != null ? `, 지금까지 객수 ${x.bills}명` : ""}${x.des != null ? `, 지정 ${x.des}%` : ""}`;
   if (x.status === "같음") return { t: `✅ ${head}, 다 맞아요${extra}` };
   if (x.status === "차이") return { t: x.warnN ? `${head}, 안 맞는 게 ${x.warnN}개 있어요 (눌러서 확인)` : `${head}, 돈통이 포스보다 ${MW(Math.abs(x.diff))}원 ${x.diff > 0 ? "많아요" : "모자라요"}${extra}`, w: 1 };
@@ -1448,8 +1450,9 @@ function svNames(cat) {
   return Object.keys(P).filter((n) => P[n][4] !== "단종" && (cat.startsWith("@") ? P[n][4] === cat.slice(1) : GROUPS?.[n] === cat)).sort((a, c) => a.localeCompare(c, "ko"));
 }
 function surveyCardHtml() {
-  const mine = BOARD?.surveys || [], st = { wait: "승인 기다리는 중", reject: "반려됨, 다시 세 주세요", done: "포스 반영 완료" };
-  return `<div class="card"><h2>📦 재고</h2>${mine.map((v) => `<div class="crow"><div><b>${esc(v.cat)} ${v.n}개</b><span>${esc(v.by)}, ${v.d.slice(5).replace("-", "/")} ${v.t}</span><em style="${v.status === "reject" ? "color:var(--red)" : ""}">${st[v.status] || ""}</em></div></div>`).join("")}
+  const mine = (BOARD?.surveys || []).filter((v) => !v.test === !TEST);
+  const st = (v) => v.status === "adj" ? "포스에 반영하는 중" : v.status === "fail" ? "포스 반영 실패: " + (v.adjErr || "") : v.status === "test" ? `시험: ${v.adjN ?? 0}개 조정 저장 후 지움(재고 그대로)` : v.status === "done" ? (v.adjSt === "nochange" ? "포스와 같아요, 조정 없음" : v.adjN != null ? `포스 반영 완료, ${v.adjN}개 조정` : "포스 반영 완료") : v.status === "reject" ? "반려됨, 다시 세 주세요" : v.status === "wait" ? (ADJ_BR.includes(B) ? "포스에 반영하는 중" : "승인 기다리는 중") : "";
+  return `<div class="card"><h2>📦 재고</h2>${ADJ_BR.includes(B) ? `<div class="desc" style="margin-bottom:8px">센 수량을 보내면 그 순간 포스 재고와 비교해서 차이만큼 포스에 바로 조정돼요. 다 센 뒤 바로 보내 주세요.</div>` : ""}${mine.map((v) => `<div class="crow"><div><b>${esc(v.cat)} ${v.n}개</b><span>${esc(v.by)}, ${v.d.slice(5).replace("-", "/")} ${v.t}${v.miss ? `, 포스에 없는 이름 ${v.miss}개` : ""}</span><em style="${v.status === "reject" || v.status === "fail" ? "color:var(--red)" : ""}">${esc(st(v))}</em></div></div>`).join("")}
     <div class="links" style="margin:6px 0 14px"><button class="tile" data-go="survey">🗂 재고조사<span>카테고리 골라서 세기</span></button><a class="tile" href="${SITE}stock/?branch=${encodeURIComponent(B)}${TEST ? "&test=1" : ""}&by=${encodeURIComponent(working().join(", "))}&back=${encodeURIComponent(location.pathname)}">📦 재고보고<span>팟, 코일, 기기 개수</span></a></div></div>`;
 }
 async function sheetSurvey() {
@@ -1476,7 +1479,7 @@ async function doSurvey() {
   $("#okSv").disabled = true;
   try {
     for (let i = 0; i < parts.length; i++) { await send({ type: "survey", id, cat: sv.nm, part: i, total: parts.length, items: parts[i], by }); if (i < parts.length - 1) await new Promise((r) => setTimeout(r, 700)); }
-    closeSheet(); toast(`${sv.nm} ${items.length}개 보냈어요, 관리자 페이지에서 확인해요`);
+    closeSheet(); toast(ADJ_BR.includes(B) ? `${sv.nm} ${items.length}개 보냈어요, 1~2분 안에 포스에 반영돼요` : `${sv.nm} ${items.length}개 보냈어요, 관리자 페이지에서 확인해요`);
   } catch (e) { $("#okSv").disabled = false; fail(e); }
 }
 // ── 마감 보고 (10/19 전 지점) ── 포스 연동 없이 포스 일마감 화면 숫자를 직원이 옮겨 적음 (노션 마감 DB, 근무자별 DB와 같은 칸)
@@ -2053,7 +2056,9 @@ document.addEventListener("click", (e) => {
   if (t.dataset.honame) return doHandoff(t.dataset.honame);
   if (t.dataset.tdone) return doTaskDone(t.dataset.tdone);
   if (t.dataset.go === "survey") return sheetSurvey();
-  if (t.dataset.go === "closing") return sheetClosing(); // 10/25 남은 일정이 있어도 마감은 보낼 수 있게(보고 화면에 알림만)
+  // 10/25 사장님 "포스 마감하기 전에 해야 틀린 걸 알지": 마감 보고 전에 1시간 안에 '다 맞음' 중간 체크가 없으면 먼저 하라고 안내(건너뛰기 가능)
+  if (t.dataset.go === "closing") { const x = TEST ? BOARD?.midCheckTest : BOARD?.midCheck, hm2m = (h) => { const [a, b] = String(h || "0:0").split(":"); return +a * 60 + +b; }, n = new Date(), nm = n.getHours() * 60 + n.getMinutes(); if (!(x && x.status === "같음" && nm - hm2m(x.t) <= 60 && nm >= hm2m(x.t))) return openSheet(`<h2>🔎 포스 일마감 전에 먼저 확인</h2><div class="desc">일마감을 하면 고칠 수 없어요. <b>중간 체크</b>로 돈통, 이체가 포스와 맞는지 먼저 보고, 다 맞으면 포스 일마감 후 마감 보고를 보내 주세요.</div><div class="btns"><button class="btn primary" data-go="mid">중간 체크 하기</button><button class="btn" data-go="closing2">이미 맞춰 봤어요</button></div>`); return sheetClosing(); }
+  if (t.dataset.go === "closing2") { closeSheet(); return sheetClosing(); } // 10/25 남은 일정이 있어도 마감은 보낼 수 있게(보고 화면에 알림만)
   if (go === "ilgate") return sheetIlGate();
   if (t.dataset.cck) return t.classList.toggle("on");
   if (go === "cmore") { const m = $("#cMore"), on = m.style.display === "none"; m.style.display = on ? "" : "none"; t.textContent = on ? "직접 입력 접기" : "포스 숫자가 틀릴 때만 → 직접 입력"; return; }
