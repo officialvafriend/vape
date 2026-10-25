@@ -220,7 +220,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.21-26";
+const VER = "10.21-25";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -285,7 +285,7 @@ async function loadToday() {
   try {
     const j = await ghJson("today.json");
     const src = j.d === todayKey() ? j.br?.[B] || null : null, next = TEST ? src?.test || null : src; // 10/20 시험 모드는 시험 기록만(실제 근무자가 섞여 퇴근 처리된 사고)
-    if (JSON.stringify(next) !== JSON.stringify(SRV)) { SRV = next; cacheSet("today", next); bgRender(); }
+    if (JSON.stringify(next) !== JSON.stringify(SRV)) { SRV = next; cacheSet("today", next); if (!$("#dim").classList.contains("on")) render(); }
   } catch {}
 }
 const saveSt = (s) => ls.set(dayKey(), s);
@@ -295,6 +295,26 @@ const stockDone = () => { const x = ls.get(`vf-stock-${B}-${TEST ? "testlast" : 
 async function send(body) {
   const r = await fetch(HOOK, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ content: JSON.stringify({ ...body, branch: B, ver: VER, ...(TEST ? { test: true } : {}) }), allowed_mentions: { parse: [] } }) });
   if (!r.ok) throw new Error("응답 " + r.status);
+}
+// 10/25 확인할 입금: 은행엔 들어왔는데 포스 이체에 없는 30만 원 이상 입금. 판매면 포스에 이체로 찍고, 아니면 매출 아님으로 답
+const BD_DONE = {}; // 이 기기에서 방금 답한 것 (봇 반영 전까지)
+const BD_ST = { sale: "판매 맞음, 포스에 이체로 찍기", once: "매출 아님 (이번만)", always: "매출 아님 (이 사람은 항상)" };
+function bigDepCardHtml() {
+  const L = (BOARD?.bigDeps || []).filter((x) => !x.test === !TEST);
+  if (!L.length) return "";
+  const won = (n) => (+n || 0).toLocaleString() + "원";
+  const wait = L.filter((x) => x.st === "wait" && !BD_DONE[x.id]);
+  return `<div class="card" style="${wait.length ? "border:2px solid var(--red)" : ""}"><h2>💰 확인할 입금 ${wait.length ? `<small style="color:var(--red);font-weight:800">${wait.length}건</small>` : ""}</h2>
+    <div class="desc" style="margin-bottom:8px">통장엔 들어왔는데 포스에 이체로 안 찍힌 큰 입금이에요. 판매면 포스에 이체로 찍어 주세요.</div>
+    ${L.map((x) => { const done = BD_DONE[x.id] || (x.st !== "wait" ? x.st : ""); return `<div style="border-top:1px solid #eee;padding:12px 0">
+      <div style="font-size:17px;font-weight:800">${esc(x.d.slice(5).replace("-", "/"))} ${esc(x.t)} ${won(x.amt)} <span style="font-weight:600">${esc(x.nm || "")}</span></div>
+      ${done ? `<div style="margin-top:6px;color:var(--green);font-weight:700">✓ ${BD_ST[done] || ""}${x.by && !BD_DONE[x.id] ? `, ${esc(x.by)} ${esc(x.at || "")}` : ""}</div>`
+        : `<div class="btns" style="margin-top:8px;flex-wrap:wrap"><button class="btn primary" data-bdid="${x.id}" data-bdans="sale">✅ 판매 맞아요</button><button class="btn" data-bdid="${x.id}" data-bdans="once">매출 아님 (이번만)</button><button class="btn" data-bdid="${x.id}" data-bdans="always">매출 아님 (이 사람은 항상)</button></div>`}
+    </div>`; }).join("")}</div>`;
+}
+async function doBigDep(id, ans) {
+  if (ans === "always" && !confirm("이 사람이 보낸 돈은 앞으로도 매출에서 빼요. 맞나요?")) return;
+  try { await send({ type: "bigdep", id, ans, by: working().join(", ") }); BD_DONE[id] = ans; toast(ans === "sale" ? "포스에 이체로 찍어 주세요" : "매출 아님으로 보냈어요"); render(); } catch (e) { fail(e); }
 }
 const fail = (e) => toast(`못 보냈어요 (${navigator.onLine ? e.message : "인터넷 끊김"}), 다시 눌러 주세요`);
 
@@ -306,9 +326,6 @@ const VIEWS_ALL = [["home", "🏠", "오늘"], ["work", "🕘", "출퇴근, 마�
 const VIEWS = ONLY_OPEN_CLOSE ? [["home", "🏠", "오늘"], ["talk", "📅", "일정"], ["as2", "🔧", "AS관리"], ["note", "📝", "매장 노트"], ["reply", "💬", "응대 모음"]] : VIEWS_ALL;
 let VIEW = ls.get("vf-app-view", "home");
 if (!VIEWS.some((v) => v[0] === VIEW)) VIEW = "home";
-// 10/23 30초마다 화면을 다시 그리면 누르던 버튼이 바뀌어 안 눌림 → 손 댄 지 1.2초 안이면 조금 뒤에 그림
-let TOUCH = 0; document.addEventListener("pointerdown", () => { TOUCH = Date.now(); }, true);
-function bgRender() { const w = 1200 - (Date.now() - TOUCH); if (w > 0) return void setTimeout(bgRender, w); if (!$("#dim").classList.contains("on")) render(); }
 function render() {
   if (LEADER) return renderLeader();
   if (!B) return renderPick();
@@ -357,7 +374,7 @@ function render() {
     ${kpi("talk", "인수인계, 고객요청", memoN + creqN + "건", `인수인계 ${memoN}, 고객요청 ${creqN}`)}
   </div>`;
   const body = {
-    home: ONLY_OPEN_CLOSE ? `${replyQuickHtml()}<div class="cols"><div>${openCard}</div><div>${closeCard}</div></div>` : `<div class="cols"><div>${done < N ? openCard : closeCard}${taskCardHtml()}</div><div>${memoCardHtml()}${asPin() ? asCardHtml() : ""}</div></div>`,
+    home: ONLY_OPEN_CLOSE ? `${bigDepCardHtml()}${replyQuickHtml()}<div class="cols"><div>${openCard}</div><div>${closeCard}</div></div>` : `${bigDepCardHtml()}<div class="cols"><div>${done < N ? openCard : closeCard}${taskCardHtml()}</div><div>${memoCardHtml()}${asPin() ? asCardHtml() : ""}</div></div>`,
     work: `<div class="cols"><div>${openCard}</div><div>${closeCard}</div></div>`,
     stock: `<div class="cols one"><div>${surveyCardHtml()}</div></div>`,
     talk: ONLY_OPEN_CLOSE ? talkHtml() : `<div class="cols"><div>${memoCardHtml()}${creqCardHtml()}</div><div>${reqCard}${myQuicksCard()}</div></div>`,
@@ -483,7 +500,7 @@ async function doMid() {
 // ── 요청 탭 (10/20 사장님 "보기 불편"): 한 칸, 위 전환 버튼, 거르기 칩, 2줄 목록, 줄 누르면 상세 창
 let TALK = ls.get("vf-app-talk", "creq"), CRF = "all";
 const puTxt = (d) => { const n = dLeft(d); return n > 0 ? `${sd(d)} (${n}일 뒤)` : n === 0 ? `${sd(d)} (오늘)` : `${sd(d)} (${-n}일 지남)`; };
-const crHot = (r) => !r.lead && ((r.step === "wait" && ((r.arrived && !(r.ext && r.due && dLeft(r.due) > 0)) || (r.due && dLeft(r.due) <= 0))) || (r.step === "ready" && r.due && dLeft(r.due) < 0));
+const crHot = (r) => !r.lead && ((r.step === "wait" && (r.arrived || (r.due && dLeft(r.due) <= 0))) || (r.step === "ready" && r.due && dLeft(r.due) < 0));
 function crMainBtn(r) {
   if (r.lead || r.pending) return "";
   if (r.step === "ready") return r.due && dLeft(r.due) < 0 ? `<button class="act" data-crext="${r.id}">연락함, 날짜 미루기</button>` : `<button class="act" data-crs="done" data-id="${r.id}">전달 완료</button>`;
@@ -1173,7 +1190,7 @@ function myQuicksCard() {
     return `<div class="qrow"><div><b>→ ${esc(ho(x.to))}</b><span>${x.items.map(([n, c]) => esc(n) + " " + c).join(", ")}</span><em>${QNAME[st]}${QST[x.id]?.t ? ", " + QST[x.id].t : ""}</em></div>${st === "ok" ? `<button class="act" data-qpay="${x.id}">결제 완료</button>` : ""}</div>`; }).join("")}
     <div class="desc" style="margin:8px 0 0">상태는 1~2분 늦게 바뀔 수 있어요</div></div>`;
 }
-async function loadQuickStatus() { try { const j = await (await fetch("quick.json", { cache: "no-store" })).json(); if (JSON.stringify(j) === JSON.stringify(QST)) return; QST = j; bgRender(); } catch (e) {} }
+async function loadQuickStatus() { try { QST = await (await fetch("quick.json", { cache: "no-store" })).json(); if (!$("#dim").classList.contains("on")) render(); } catch (e) {} }
 function sheetQuick() {
   qk = { items: [], to: null, addr: "" };
   openSheet(`<h2>🛵 퀵 재고 문의</h2><div class="desc">상품을 찾아 담고, 보낼 지점을 고르면 그 지점에 [가능][불가] 카드가 가요.</div>
@@ -1309,7 +1326,7 @@ async function loadBoard() {
     const j = await ghJson("board.json");
     ENGLOAD = (TEST ? j.engLoadTest : j.engLoad) || {};
     const next = j.br?.[B] || null, nl = (j.lead || []).filter((x) => !!x.test === TEST), no = (j.old || []).filter((x) => !!x.test === TEST);
-    if (JSON.stringify(next) !== JSON.stringify(BOARD) || JSON.stringify(nl) !== JSON.stringify(LEADS) || JSON.stringify(no) !== JSON.stringify(OLDS)) { BOARD = next; LEADS = nl; OLDS = no; cacheSet("board", next); bgRender(); decAll(); }
+    if (JSON.stringify(next) !== JSON.stringify(BOARD) || JSON.stringify(nl) !== JSON.stringify(LEADS) || JSON.stringify(no) !== JSON.stringify(OLDS)) { BOARD = next; LEADS = nl; OLDS = no; cacheSet("board", next); if (!$("#dim").classList.contains("on")) render(); decAll(); }
   } catch {}
 }
 async function loadOuts() { try { const j = await (await fetch(`${SITE}menu/stock.json?${Date.now()}`, { cache: "no-store" })).json(); OUTS = new Set(j[B]?.out || []); } catch {} }
@@ -1338,7 +1355,7 @@ function ilItems() {
   for (const r of creqList()) {
     if (r.pending) continue;
     const nm = custName(r), today = r.due && dLeft(r.due) <= 0, arr = r.step === "wait" && r.arrived;
-    L.push({ k: "c", cat: r.cat === "각인" ? "e" : "c", id: r.id, raw: r, ic: r.cat === "각인" ? "✨" : "🧾", lead: !!r.lead, due: r.due || null, hot: !r.lead && (today || (arr && !(r.ext && r.due && dLeft(r.due) > 0))), title: `${nm ? nm + "님, " : ""}${r.title || crItems(r)}`,
+    L.push({ k: "c", cat: r.cat === "각인" ? "e" : "c", id: r.id, raw: r, ic: r.cat === "각인" ? "✨" : "🧾", lead: !!r.lead, due: r.due || null, hot: !r.lead && (today || arr), title: `${nm ? nm + "님, " : ""}${r.title || crItems(r)}`,
       sub: [r.sms ? `📩 ${r.sms.label.replace(" 문자", "")} ${sd(r.sms.at.slice(0, 10))}` : "", r.from && r.from !== B ? `📥 ${ho(r.from)}에서 맡김` : "", r.eng && r.eng !== B ? `각인 ${ho(r.eng)}` : "", r.lead ? "👔 팀장 처리 중" : arr ? "📦 입고됨, 손님께 연락" : r.step === "ready" ? "챙겨둠" : "입고 대기", r.due ? `${r.step === "ready" || arr ? "수령 예정" : "약속일"} ${puTxt(r.due)}` : "", `남김 ${sd(r.d)} ${r.by}`].filter(Boolean).join(", ") });
   }
   for (const m of memoList()) {
@@ -1876,7 +1893,7 @@ async function asLoad(force) {
   AS.at = Date.now();
   try { if (!AS.who) AS.who = await asApi({ action: "asWho" }); const j = await asApi({ action: "asList" }); AS.rows = j.rows; AS.err = ""; }
   catch (e) { AS.err = e.message; if (/매장 코드/.test(e.message)) { try { localStorage.removeItem("vf-as-pin"); } catch {} AS.who = null; } }
-  bgRender();
+  if (!$("#dim").classList.contains("on")) render();
 }
 const asIdx = (s) => Math.max(0, AS_ST.indexOf(s));
 const asLate = (r) => r[AC.st] !== AS_ST[6] && +r[AC.days] > 7;
@@ -2025,6 +2042,7 @@ document.addEventListener("click", (e) => {
   if (t.dataset.mto) { document.querySelectorAll("[data-mto]").forEach((x) => x.classList.toggle("on", x === t)); return; }
   if (go === "mid") { closeSheet(); return sheetClosing(true); }
   if (go === "midres") return sheetMidResult();
+  if (t.dataset.bdid) return doBigDep(t.dataset.bdid, t.dataset.bdans);
   if (t.dataset.midby) { document.querySelectorAll("[data-midby]").forEach((x) => x.classList.toggle("on", x === t)); return; }
   if (t.id === "okMid") return doMid();
   if (t.id === "okCr") return doCreq();
