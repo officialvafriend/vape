@@ -236,7 +236,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.26-36";
+const VER = "10.26-37";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -1631,6 +1631,15 @@ document.addEventListener("input", (e) => { if (e.target.id === "pkQ") pkSearch(
 const INSTA = { 본점: "official_vafrriend", 동성로: "vafriend_dongseongro", 수성: "vafriend_soosung", 율하: "vafriend_yulha", 광장코아: "vafriend_gk", 현풍: "vafriend_hyunpoong", 반월당: "official.vafriend", 상인: "official.vafriend" }; // 상인, 반월당은 지점 계정 미확인이라 공식 계정
 const quickSms = (name) => `${name ? name + " " : ""}고객님께 퀵 출발했습니다!\n오늘도 좋은 하루 되시구 주문 항상 감사합니다!\n\n베이프렌드 인스타그램 팔로우 하시구 여러 정보 받아보세요!\ninstagram.com/${INSTA[B] || "official.vafriend"}`;
 // 10/26 사장님 "손이 제일 안 가게": 버튼 하나로 빠진 상품만 담은 전 지점 문의를 만듦. 퀵 마감 뒤면 전달로
+// 10/26 사장님 "다른 지점도 없으면 주문요청": 전부 없음으로 끝난 건 → 고객요청 창을 상품, 손님 정보 채워서 열기 (입고 기다림, 주문요청 필요)
+async function creqFromSend(id) {
+  const r = snList().find((x) => x.id === id); if (!r) return;
+  const c = r.enc ? await decOne(r.enc) : null, prods = (r.prods || []).map(([n, q]) => [n, q]);
+  sheetCreq(""); if (!cr || !$("#crItems")) return;
+  cr.items = prods; cr.manual = true; cr.step = "wait"; cr.order = true;
+  $("#crName").value = c?.name || ""; $("#crPhone").value = c?.phone || ""; $("#crMemo").value = `${r.items} (다른 지점에도 없어서 주문)${r.memo ? ", " + r.memo : ""}`.slice(0, 200); if (!prods.length) $("#crFree").value = r.items;
+  crDraw(); document.querySelectorAll("[data-crord]").forEach((x) => x.classList.toggle("on", x.dataset.crord === "1"));
+}
 async function doReask(t) {
   const id = t.dataset.reask, r = snList().find((x) => x.id === id); if (!r || !r.missProds?.length) return;
   const by = working().join(", "); if (!by) return needIn(() => sheetSnStep(id));
@@ -1725,6 +1734,7 @@ async function sheetSnStep(id) {
   }
   openSheet(`<h2>${SKIND[r.kind]} ${r.from === B ? `→ ${esc(toTxt(r))}` : `← ${esc(ho(r.from))} 요청`}</h2><div class="desc" style="font-size:16px;font-weight:700;color:var(--ink)">${esc(r.items)}</div>${r.miss?.length && !(r.from === B && r.missProds?.length && !r.reask) ? `<div class="desc" style="color:var(--red)">없어서 뺀 상품: ${esc(r.miss.join(", "))}</div>` : ""}${r.memo ? `<div class="desc">메모: ${esc(r.memo)}</div>` : ""}
     <div class="desc" style="font-size:13px">${esc(hist)}</div>${mine ? "" : `<div class="desc">지금: ${STXT[r.st] || r.st}</div>`}${body}
+    ${r.from === B && r.st === "no" ? `<div class="desc" style="margin-top:10px">다른 지점에도 없어요. 본점에 주문을 올리고 입고되면 손님께 연락해요</div><div class="btns" style="margin-top:6px"><button class="btn primary" data-sncreq="${id}">🧾 고객요청으로 올리기</button></div>` : ""}
     ${r.from === B && r.missProds?.length && !r.reask && !SN.done[r.id + "reask"] ? `<div class="desc" style="margin-top:10px;color:var(--red)">없어서 빠진 상품: ${esc(r.missProds.map(([n, q]) => `${n} ${q}개`).join(", "))}</div><div class="btns" style="margin-top:6px"><button class="btn primary" data-reask="${id}">📣 빠진 상품 ${r.missProds.length}개, 다른 지점에 다시 물어보기</button></div>` : r.reask ? '<div class="desc" style="margin-top:8px">빠진 상품은 다른 지점에 다시 물어봤어요</div>' : ""}
     <div class="btns" style="margin-top:6px"><button class="btn" data-x>닫기</button>${r.from === B && !["done", "cancel"].includes(r.st) && !(mine && body.includes('data-snk="cancel"')) ? `<button class="btn" data-snk="cancel" data-id="${id}">이 건 취소</button>` : ""}</div>`);
 }
@@ -2445,6 +2455,7 @@ document.addEventListener("click", (e) => {
   if (t.dataset.snk) return doSnStep(t);
   if (t.dataset.sntell) return sheetSnTell(t.dataset.sntell);
   if (t.dataset.reask) return doReask(t);
+  if (t.dataset.sncreq) return creqFromSend(t.dataset.sncreq);
   if (t.id === "okSnTell") return doSnTell(t);
   if (t.dataset.pkadd !== undefined) { const h = PK.res[+t.dataset.pkadd]; if (h) pkAdd(h[0], h[1]); return; }
   if (t.dataset.pkfree) { const q = ($("#pkQ")?.value || "").trim(); if (q) pkAdd(q, null); return; }
