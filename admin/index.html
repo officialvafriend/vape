@@ -188,6 +188,8 @@
   <button data-g="goods" data-tab="order">상품</button>
   <button data-g="note" data-tab="note">노트</button>
   <button data-g="office" data-tab="office">사무실</button>
+  <button data-g="staff" data-tab="staff">직원앱</button>
+  <button data-g="naver" data-tab="naver">네이버</button>
 </div></nav>
 <div class="dim" id="dim"><div class="sheet" id="sheet"></div></div>
 <div class="tip" id="tip"></div>
@@ -278,7 +280,7 @@ const ICON = {
 };
 // 10/19 사장님 "다 따로 들어가기 불편해": 네이버 앱, 직원앱을 관리자 안 메뉴로 (같은 사이트라 안에 띄움, 네이버 열쇠, 직원앱 지점은 각 앱이 이 기기에 기억)
 // 10/26 사장님 "홈이 가득가득, 업무 안에 블로그도": 메뉴 12개 → 7개 묶음, 묶음 안은 위쪽 작은 탭
-const GROUPS = [["home", "홈", ["home"]], ["tasks", "업무", ["tasks"]], ["close", "마감", ["close"]], ["kpi", "KPI", ["kpi"]], ["goods", "상품", ["order", "survey", "group", "must"]], ["note", "매장 노트", ["note"]], ["office", "사무실", ["office"]]];
+const GROUPS = [["home", "홈", ["home"]], ["tasks", "업무", ["tasks"]], ["close", "마감", ["close"]], ["kpi", "KPI", ["kpi"]], ["goods", "상품", ["order", "survey", "group", "must"]], ["note", "매장 노트", ["note"]], ["office", "사무실", ["office"]], ["staff", "직원앱", ["staff"]], ["naver", "네이버", ["naver"]]];
 const SUBNM = { tasks: "오늘 할 일", blog: "블로그 발행", order: "주문요청", survey: "재고조사", group: "그룹관리", must: "추가 필수", office: "봇 상태", staff: "직원앱", naver: "네이버" };
 const grpOf = (t) => GROUPS.find((g) => g[2].includes(t === "blog" ? "tasks" : t)) || GROUPS[0];
 const grpTab = (g) => { const last = ls.get("vf-admin-sub-" + g[0]); return g[2].includes(last) ? last : g[2][0]; };
@@ -291,11 +293,10 @@ function embedHtml() {
 }
 function render() {
   if (!D) return;
-  if (tab === "staff" || tab === "naver") tab = "office"; // 10/26 사장님: 사무실에서 직원앱, 네이버 뺌
   const pc = isPC();
   $("#nav").style.display = pc ? "none" : "";
   ls.set("vf-admin-sub-" + grpOf(tab)[0], tab);
-  document.querySelectorAll("#nav button").forEach((b) => { const g = GROUPS.find((x) => x[0] === b.dataset.g); if (g) { b.dataset.tab = grpTab(g); b.classList.toggle("on", grpOf(tab) === g); if (!b.dataset.ic) { b.dataset.ic = 1; b.innerHTML = (g[0] === "goods" ? ICON.survey : g[0] === "office" ? ICON.office : ICON[g[0]]) + (g[0] === "note" ? "노트" : g[1]); } } });
+  document.querySelectorAll("#nav button").forEach((b) => { const g = GROUPS.find((x) => x[0] === b.dataset.g); if (g) { b.dataset.tab = grpTab(g); b.classList.toggle("on", grpOf(tab) === g); if (!b.dataset.ic) { b.dataset.ic = 1; b.innerHTML = (g[0] === "goods" ? ICON.survey : ICON[g[0]]) + (g[0] === "note" ? "노트" : g[1]); } } });
   const [, hh, mm] = D.at.match(/(\d{2}):(\d{2})$/) || [];
   if (EMBED[tab] && $("#app .emb") && $("#app .emb").dataset.k === tab + staffB) return; // 자동 새로고침 때 안에 띄운 앱이 처음으로 돌아가지 않게
   const body0 = EMBED[tab] ? embedHtml() : tab === "home" ? (pc ? homePC() : homeHtml()) : tab === "kpi" ? kpiHtml() : tab === "close" ? closingAllHtml() : tab === "survey" ? surveyHtml() : tab === "tasks" ? tasksHtml() : tab === "note" ? noteHtml() : tab === "order" ? orderHtml() : tab === "office" ? officeHtml() : tab === "group" ? groupHtml() : tab === "blog" ? (blogAdmHtml() || '<div class="empty">올라온 블로그 지시문이 없어요</div>') : mustHtml();
