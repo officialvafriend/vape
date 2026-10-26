@@ -438,19 +438,19 @@ function opsHtml() {
   if (!D.ops) return "";
   const td = (v, cls = "") => `<td class="${cls}">${v}</td>`, NO = td("-", "n");
   const rows = D.ops.map((o) => {
-    const c = o.close, vs = c && o.avgPrev ? Math.round(((c.총 - o.avgPrev) / o.avgPrev) * 100) : null;
+    const c = o.close, L = !c && o.live ? o.live : null, vs = c && o.avgPrev ? Math.round(((c.총 - o.avgPrev) / o.avgPrev) * 100) : null;
     return `<tr data-brpc="${esc(o.b)}" style="cursor:pointer">${td(`<b>${BR.indexOf(o.b) + 1} ${esc(o.b)}</b>`)}
       ${o.open ? td(`${o.open}${o.vsAvg != null && Math.abs(o.vsAvg) >= 5 ? `<small>평소보다 ${Math.abs(o.vsAvg)}분 ${o.vsAvg > 0 ? "늦음" : "빠름"}</small>` : ""}${o.prepDiff ? `<small>준비금 ${o.prepDiff > 0 ? "+" : ""}${won(o.prepDiff)}</small>` : ""}`, o.late || o.prepDiff ? "r" : "") : td("안 함", "n")}
       ${c ? td(`${c.at}${c.warn ? `<small>확인 ${c.warn}건</small>` : ""}`, c.warn ? "r" : "g") : td("안 함", "n")}
-      ${c ? td(`${won(c.총)}${vs != null ? `<small>지난달 평균 ${vs > 0 ? "+" : ""}${vs}%</small>` : ""}`) : NO}
+      ${c ? td(`${won(c.총)}${vs != null ? `<small>지난달 평균 ${vs > 0 ? "+" : ""}${vs}%</small>` : ""}`) : L ? td(`${won(L.sales)}<small>${esc(L.at)} 기준${o.avgPrev ? `, 지난달 하루 ${won(Math.round(o.avgPrev / 10000))}만` : ""}</small>`) : NO}
       ${c && c.diff != null ? td(c.diff ? (c.diff > 0 ? "+" : "") + won(c.diff) : "0", c.diff ? "r" : "g") : NO}
-      ${c ? td(`${c.bills}<small>객단가 ${won(c.객단가)}</small>`) : NO}
-      ${c ? td(c.지정판매율 != null ? c.지정판매율 + "%" : "-") : NO}
+      ${c ? td(`${c.bills}<small>객단가 ${won(c.객단가)}</small>`) : L ? td(`${L.bills}${L.bills ? `<small>객단가 ${won(Math.round(L.sales / L.bills))}</small>` : ""}`) : NO}
+      ${c ? td(c.지정판매율 != null ? c.지정판매율 + "%" : "-") : L ? td(L.prem ? Math.round((L.des / L.prem) * 100) + "%" : "-") : NO}
       ${c ? td(c.rev ?? "-") : NO}</tr>`;
   }).join("");
-  const done = D.ops.filter((o) => o.close), sum = done.reduce((a, o) => a + (+o.close.총 || 0), 0), bills = done.reduce((a, o) => a + (+o.close.bills || 0), 0);
+  const done = D.ops.filter((o) => o.close), num = (o) => o.close ? [+o.close.총 || 0, +o.close.bills || 0] : o.live ? [o.live.sales, o.live.bills] : [0, 0], sum = D.ops.reduce((a, o) => a + num(o)[0], 0), bills = D.ops.reduce((a, o) => a + num(o)[1], 0);
   const total = `<tr class="tot"><td><b>합계</b><small>${done.length}/${D.ops.length}곳 보고</small></td><td></td><td></td><td><b>${won(sum)}</b></td><td></td><td><b>${bills}</b></td><td></td><td></td></tr>`;
-  return `<div class="sec">지점 한눈에 <small>오늘, 줄을 누르면 상세</small></div><div class="opsw"><table class="ops"><thead><tr><th>지점</th><th>오픈</th><th>마감 보고</th><th>총매출</th><th>현금 차액</th><th>객수</th><th>지정판매율</th><th>리뷰</th></tr></thead><tbody>${rows}${total}</tbody></table></div>`;
+  return `<div class="sec">지점 한눈에 <small>오늘, 마감 전은 포스 지금까지 숫자(30분마다), 줄을 누르면 상세</small></div><div class="opsw"><table class="ops"><thead><tr><th>지점</th><th>오픈</th><th>마감 보고</th><th>총매출</th><th>현금 차액</th><th>객수</th><th>지정판매율</th><th>리뷰</th></tr></thead><tbody>${rows}${total}</tbody></table></div>`;
 }
 // 10/19 홈 정리 (사장님 "홈 화면이 개복잡함"): 홈 = ① 확인할 것(문제만) ② 지점 한눈에 표. 품절은 재고조사, 할 일은 업무, 지난 마감은 마감 메뉴로
 function issues() {
