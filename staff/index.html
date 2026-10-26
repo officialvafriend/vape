@@ -224,7 +224,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.26-14";
+const VER = "10.26-15";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -1497,7 +1497,7 @@ const pcPills = () => pcList().filter((r) => r.to === B && r.st === "req").map((
   + pcList().filter((r) => r.to === B && r.st === "packed").map((r) => hp(`data-pcwb="${r.id}"`, "📦", "택배", `출고되면 송장번호, ${esc(r.items)}, ${esc(r.nm || "손님")}님`, `출고되면 송장번호 넣기, ${esc(r.nm || "손님")}님 ${esc(r.items)}`, "송장")).join("")
   + pcList().filter((r) => r.from === B && r.st === "shipped").map((r) => hp(`data-pctell="${r.id}"`, "📦", "택배", `송장 나옴, ${esc(r.items)}, ${esc(r.nm || "손님")}님께 문자`, `송장 나옴, ${esc(r.nm || "손님")}님께 보내기`, "문자")).join("");
 function parcelHtml() {
-  const L = pcList(), st = { req: "포장 기다림", packed: "포장 끝, 출고 뒤 송장 기다림", shipped: "송장 나옴, 손님께 전달 전", done: "손님께 전달 끝", cancel: "취소" };
+  const L = pcList(), st = { req: "포장 기다림", packed: "포장 완료, 출고 뒤 송장 기다림", shipped: "송장 나옴, 손님께 전달 전", done: "완료, 손님께 송장 보냄", cancel: "취소" };
   const day = BR.map((b) => { const x = pcState(b); return `<div style="display:flex;justify-content:space-between;padding:7px 0;border-top:1px solid #eee;font-size:14px"><b>${esc(ho(b))}</b><span style="color:${x.ok ? "var(--green)" : "var(--sub)"};font-weight:700">${esc(x.t)}</span></div>`; }).join("");
   const row = (r) => `<div class="crow"><div><b>${r.from === B && r.to === B ? "" : r.from === B ? `→ ${esc(ho(r.to))} ` : `← ${esc(ho(r.from))} 요청 `}${esc(r.nm || "손님")}님, ${esc(r.items)}</b><span>${st[r.st]}${r.wb ? `, ${esc(r.carrier)} ${esc(r.wb)}` : ""}${r.late ? ", 내일 나감" : ""}, ${esc(r.d.slice(5).replace("-", "/"))} ${esc(r.t)} ${esc(r.by)}</span></div>
     <div class="tbtn">${r.to === B && r.st === "req" ? `<button class="act" data-pcpack="${r.id}">포장</button>` : ""}${r.to === B && r.st === "packed" ? `<button class="act" data-pcwb="${r.id}">송장 넣기</button>` : ""}${r.from === B && r.st === "shipped" ? `<button class="act" data-pctell="${r.id}">손님께 보내기</button>` : ""}${r.st === "req" ? `<button class="act gray" data-pccx="${r.id}">취소</button>` : ""}</div></div>`;
@@ -1535,7 +1535,7 @@ async function sheetPcPack(id) {
     ${c ? `<div class="say" style="user-select:all">${esc(c.name)} ${esc(c.phone)}<br>${esc(c.addr)}</div>` : '<div class="desc" style="color:var(--red)">손님 정보를 보려면 매장 코드를 넣어 주세요</div>'}
     <div class="desc" style="margin-top:10px">포장하고 ${esc(cfg.carrier || "택배사")} 접수까지 해 주세요. 송장번호는 출고되면 그때 넣어요</div>
 
-    <div class="btns"><button class="btn" data-x>닫기</button><button class="btn primary" id="okPcPack" data-id="${id}">포장 끝</button></div>`);
+    <div class="btns"><button class="btn" data-x>닫기</button><button class="btn primary" id="okPcPack" data-id="${id}">포장 완료</button></div>`);
 }
 // 10/26 사장님 "제품 사진 찍기 버튼 누르면 바로 카메라": 화면 안에서 카메라를 켜고 [찍기] 한 번. 카메라를 못 쓰는 기기는 사진 고르기로
 let PCSTREAM = null;
@@ -1559,7 +1559,7 @@ async function doPcPack(t) {
   const wb = "", carrier = "", photo = PC.photo; if (!photo) return toast("포장 사진을 찍어 주세요");
   const by = working().join(", "); if (!by) return needIn(() => sheetPcPack(t.dataset.id));
   t.disabled = true;
-  try { await sendWithPhoto({ type: "parcelpack", id: t.dataset.id, wb, carrier, by }, photo); PC.done[t.dataset.id] = 1; closeSheet(); render(); toast("포장 끝으로 보냈어요. 출고되면 송장번호를 넣어 주세요"); } catch (e) { t.disabled = false; fail(e); }
+  try { await sendWithPhoto({ type: "parcelpack", id: t.dataset.id, wb, carrier, by }, photo); PC.done[t.dataset.id] = 1; closeSheet(); render(); toast("포장 완료로 보냈어요. 출고되면 송장번호를 넣어 주세요"); } catch (e) { t.disabled = false; fail(e); }
 }
 function sheetPcWb(id) {
   const r = pcList().find((x) => x.id === id); if (!r) return;
@@ -1579,7 +1579,7 @@ async function doPcSend(t, type, ok) {
 // ── 보내기: 퀵, 오픈퀵, 전달 (10/26 새 흐름) ── 운영봇 db.sends. 단계마다 그 차례 지점만 노란 줄과 버튼
 const SN = { to: null, kind: null, done: {} };
 const SNEXT = { quick: { ask: ["to", "재고 보고 가능, 불가"], ok: ["from", "결제하고 손님 정보"], paid: ["to", "포장 사진 찍고 출발"] }, openquick: { paid: ["to", "바로 포장, 사진"], packed: ["to", "오픈하고 출발"], nostock: ["from", "재고 없음, 손님 안내"] }, jeon: { ask: ["to", "빼서 보내기"], sent: ["from", "받으면 받음"] } };
-const SKIND = { quick: "🛵 퀵", openquick: "🌅 오픈퀵", jeon: "🔁 전달" }, STXT = { ask: "답 기다림", ok: "가능, 결제 기다림", no: "불가", paid: "결제 끝, 포장 기다림", packed: "포장해 둠, 내일 오픈하고 출발", nostock: "재고 없음", sent: "보냄, 받기 기다림", done: "끝", cancel: "취소" };
+const SKIND = { quick: "🛵 퀵", openquick: "🌅 오픈퀵", jeon: "🔁 전달" }, STXT = { ask: "답 기다림", ok: "가능, 결제 기다림", no: "불가", paid: "결제 완료, 포장 기다림", packed: "포장해 둠, 내일 오픈하고 출발", nostock: "재고 없음", sent: "보냄, 받기 기다림", done: "완료", cancel: "취소" };
 const SACT = { "quick|ask": "답하기", "quick|ok": "결제", "quick|paid": "출발", "openquick|paid": "포장", "openquick|packed": "출발", "openquick|nostock": "확인", "jeon|ask": "보내기", "jeon|sent": "받음" };
 const snList = () => (BOARD?.sends || []).filter((r) => !r.test === !TEST && !SN.done[r.id + r.st]);
 const snMine = (r) => { const w = SNEXT[r.kind]?.[r.st]; return w && (w[0] === "to" ? r.to : r.from) === B ? w[1] : null; };
@@ -1588,7 +1588,7 @@ const SHEAD = { ok: "가능", sent: "보냄", nostock: "재고 없음" }; // 우
 const snPills = () => snList().filter((r) => snMine(r) && !(r.kind === "openquick" && r.st === "packed" && !st().open)).map((r) => hp(`data-snopen="${r.id}"`, SKIND[r.kind].split(" ")[0], SKIND[r.kind].split(" ")[1], `${r.from === B ? esc(ho(r.to)) + " " + (SHEAD[r.st] || STXT[r.st] || r.st) : esc(ho(r.from)) + " 요청"}, ${esc(r.items)}${r.nm ? `, ${esc(r.nm)}님` : ""}${r.st === "packed" ? " (포장해 둠)" : ""}`, `${SKIND[r.kind].split(" ")[1]} ${r.from === B ? "→ " + esc(ho(r.to)) : esc(ho(r.from)) + " 요청"}: ${esc(r.items)}`, SACT[r.kind + "|" + r.st] || "보기")).join("");
 // 10/26 사장님 "내가 보낸 요청을 볼 수 있어야": 오늘 화면에 우리 지점이 보낸 퀵, 오픈퀵, 전달, 택배 중 안 끝난 것
 function sentCardHtml() {
-  const PST = { req: "포장 기다림", packed: "포장 끝, 송장 기다림", shipped: "송장 나옴, 손님께 보내기" };
+  const PST = { req: "포장 기다림", packed: "포장 완료, 송장 기다림", shipped: "송장 나옴, 손님께 보내기" };
   const a = snList().filter((r) => r.from === B && !["done", "cancel", "no"].includes(r.st)).map((r) => `<button class="crow" data-snopen="${r.id}" style="width:100%;text-align:left"><div><b>${SKIND[r.kind]} → ${esc(ho(r.to))}: ${esc(r.items)}</b><span style="${snMine(r) ? "color:var(--red);font-weight:700" : ""}">${snMine(r) ? "우리 차례: " : ""}${STXT[r.st] || r.st}</span></div></button>`);
   const p = pcList().filter((r) => r.from === B && r.to !== B && !["done", "cancel"].includes(r.st)).map((r) => `<button class="crow" data-view="parcel" style="width:100%;text-align:left"><div><b>📦 택배 → ${esc(ho(r.to))}: ${esc(r.items)}</b><span style="${r.st === "shipped" ? "color:var(--red);font-weight:700" : ""}">${PST[r.st] || r.st}</span></div></button>`);
   const L = [...a, ...p]; if (!L.length) return "";
@@ -1596,7 +1596,7 @@ function sentCardHtml() {
 }
 function sendsHtml() {
   const L = snList();
-  const row = (r) => `<div class="crow"><div><b>${SKIND[r.kind]} ${r.from === B ? `→ ${esc(ho(r.to))}` : `← ${esc(ho(r.from))} 요청`}: ${esc(r.items)}</b><span>${STXT[r.st] || r.st}${r.nm ? `, 손님 ${esc(r.nm)}` : ""}, ${esc(r.d.slice(5).replace("-", "/"))} ${esc(r.t)} ${esc(r.by)}</span></div><div class="tbtn">${snMine(r) ? `<button class="act" data-snopen="${r.id}">${SACT[r.kind + "|" + r.st] || "보기"}</button>` : `<button class="act gray" data-snopen="${r.id}">보기</button>`}</div></div>`;
+  const row = (r) => `<div class="crow"><div><b>${SKIND[r.kind]} ${r.from === B ? `→ ${esc(ho(r.to))}` : `← ${esc(ho(r.from))} 요청`}: ${esc(r.items)}</b><span>${r.st === "done" ? (r.kind === "jeon" ? "받음 완료" : "출발 완료") : STXT[r.st] || r.st}${r.nm ? `, 손님 ${esc(r.nm)}` : ""}, ${esc(r.d.slice(5).replace("-", "/"))} ${esc(r.t)} ${esc(r.by)}</span></div><div class="tbtn">${snMine(r) ? `<button class="act" data-snopen="${r.id}">${SACT[r.kind + "|" + r.st] || "보기"}</button>` : `<button class="act gray" data-snopen="${r.id}">보기</button>`}</div></div>`;
   return `<div class="cols one"><div><div class="card"><h2>🛵 퀵, 오픈퀵, 전달 <small style="color:var(--red)">테스트 중</small></h2>
     <div class="btns" style="margin:4px 0 12px"><button class="btn primary" data-snew="quick">＋ 퀵</button><button class="btn" data-snew="jeon">＋ 전달</button></div>
     ${L.length ? L.map(row).join("") : '<div class="desc" style="padding:4px 0 12px">진행 중인 건이 없어요</div>'}</div></div></div>`;
