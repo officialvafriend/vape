@@ -81,6 +81,7 @@
   .typec i{font-style:normal;font-size:24px;width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0}.typec b{display:block;font-size:17px;font-weight:800;color:var(--ink)}.typec small{display:block;font-size:13px;color:var(--sub);margin-top:2px}
   .ilb{display:flex;gap:6px;flex-shrink:0}.ilb button{height:42px;min-width:56px;padding:0 14px;border-radius:12px;font-size:14px;font-weight:800;background:#f2f4f6;color:var(--ink)}.ilb button.ok{background:var(--blue);color:#fff}
   .tag{display:inline-block;font-size:11px;font-weight:800;border-radius:6px;padding:1px 6px;margin-right:6px;vertical-align:1px}.tag.c{background:#e8f3ff;color:#1b64da}.tag.m{background:#fff4e5;color:#b25e00}.tag.e{background:#f3e8ff;color:#7c3aed}
+  .hpill{display:flex;align-items:center;gap:8px;width:100%;text-align:left;background:#ffe9a8;color:#7a5200;border-radius:14px;padding:9px 12px;font-size:13px;font-weight:700;margin-bottom:12px}.hpill b{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.hpill em{font-style:normal;background:#fff;border-radius:10px;padding:4px 10px;flex-shrink:0}
   .hero .bar{height:8px;background:rgba(255,255,255,.15);border-radius:99px;margin-top:16px;overflow:hidden}
   .hero .bar i{display:block;height:100%;background:#64a8ff;border-radius:99px;transition:width .3s}
   .card{background:var(--card);border-radius:20px;padding:6px 18px;margin-bottom:12px}
@@ -220,7 +221,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.25-10";
+const VER = "10.26-1";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -334,7 +335,7 @@ const VIEWS_ALL = [["home", "🏠", "오늘"], ["work", "🕘", "출퇴근, 마�
 // 10/20 사장님: 오늘(오픈, 마감) + 요청(인수인계, 고객요청) 두 화면만
 // 10/23 재고조사 → 포스 바로 조정: 포스 조정이 연결된 지점만 메뉴 보임 (운영봇 ADJ_BRANCHES와 같게)
 const ADJ_BR = []; // 10/25 재고 조정은 아침 재고보고로 하기로 해서 재고조사 메뉴는 숨김(다시 열려면 지점 넣기)
-const VIEWS = ONLY_OPEN_CLOSE ? [["home", "🏠", "오늘"], ["talk", "📅", "일정"], ...(ADJ_BR.includes(B) ? [["stock", "📦", "재고조사"]] : []), ["as2", "🔧", "AS관리"], ["note", "📝", "매장 노트"], ["reply", "💬", "응대 모음"]] : VIEWS_ALL;
+const VIEWS = ONLY_OPEN_CLOSE ? [["home", "🏠", "오늘"], ["talk", "📅", "일정"], ["blog", "📝", "블로그"], ...(ADJ_BR.includes(B) ? [["stock", "📦", "재고조사"]] : []), ["as2", "🔧", "AS관리"], ["note", "📝", "매장 노트"], ["reply", "💬", "응대 모음"]] : VIEWS_ALL;
 let VIEW = ls.get("vf-app-view", "home");
 if (!VIEWS.some((v) => v[0] === VIEW)) VIEW = "home";
 // 10/23 30초마다 화면을 다시 그리면 누르던 버튼이 바뀌어 안 눌림 → 손 댄 지 1.2초 안이면 조금 뒤에 그림
@@ -396,8 +397,9 @@ function render() {
     as2: as2Html(),
     note: noteHtml(),
     reply: replyHtml(),
+    blog: blogHtml(),
   }[VIEW];
-  const badge = (k) => { const n = k === "talk" ? talkCount() : k === "home" ? todoItems().length : k === "as2" ? as2Items().filter((x) => (B === "본점" && (x.st === 0 || x.st === 1)) || (x.b === B && !a2Lead(x) && (x.st === 3 || (x.st === 4 && !x.contact)))).length : 0; return n ? `<em class="bd">${n}</em>` : ""; };
+  const badge = (k) => { const n = k === "talk" ? talkCount() : k === "home" ? todoItems().length : k === "blog" ? blogDue().length : k === "as2" ? as2Items().filter((x) => (B === "본점" && (x.st === 0 || x.st === 1)) || (x.b === B && !a2Lead(x) && (x.st === 3 || (x.st === 4 && !x.contact)))).length : 0; return n ? `<em class="bd">${n}</em>` : ""; };
   // 10/20 사장님 "여기 창이 별거 없네": 맨 위 칸 = 지금 할 일. 다음 단계 버튼을 바로 누르게, 진행 막대 대신 단계 점
   const stockUrl = `${SITE}stock/?branch=${encodeURIComponent(B)}${TEST ? "&test=1" : ""}&by=${encodeURIComponent(working.map((x) => x.name).join(", "))}&back=${encodeURIComponent(location.pathname)}`;
   const OP = [["🙋", "출근", steps[0], `<button class="hbtn" data-go="in">출근</button>`], ["✅", "오픈 체크", steps[1], `<button class="hbtn" data-go="open">체크</button>`], ["📦", "아침 재고보고", steps[2], `<a class="hbtn" href="${stockUrl}">하기</a>`]];
@@ -406,7 +408,9 @@ function render() {
   const TD = todoItems(), AH = as2Items().filter((x) => x.st === 4 && !x.contact && x.b === B && !a2Lead(x));
   const heroAs = AH.length ? `<div class="hil"><p class="hk" style="color:#9bd0ff">🔧 AS 지점 도착, 손님께 연락할 것 ${AH.length}개</p>${AH.slice(0, 3).map((x) => `<div class="hrow"><div class="ht"><b>${esc(as2Title(x))}</b><span>${esc(as2Name(x) || "손님")}, 접수 ${x.d.slice(5).replace("-", "/")} ${esc(x.by)}${x.loan && !x.loanBack ? ", 📱 대여 중: " + esc((x.loan === "대여 있음" ? "기기명 없음" : x.loan)) : ""}</span></div><div class="hbs"><button class="ok" data-a2sms="${x.id}">📩 문자</button><button data-a2go="5" data-id="${x.id}">전달 완료</button></div></div>`).join("")}${AH.length > 3 ? `<p style="margin-top:8px"><button data-view="as2" style="color:#9bd0ff;font-weight:800">외 ${AH.length - 3}개는 AS관리에서 →</button></p>` : ""}</div>` : "";
   const heroIl = TD.length ? `<div class="hil"><p class="hk">📅 오늘 일정 ${TD.length}개, 처리 못 하면 다음 근무자에게 넘어가요</p>${TD.map((it) => `<div class="hrow"><div class="ht"><b>${it.ic} ${esc(it.title)}</b><span>${esc(it.sub)}</span></div><div class="hbs">${ilBtns(it, true)}</div></div>`).join("")}</div>` : "";
-  const heroBody = heroIl + heroAs + `<p class="hk">${done < N ? `지금 할 일, 오픈 ${OPEN_AT[B]}` : "지금 할 일, 마감"}</p>
+  const heroPill = blogDue().map((x) => `<button class="hpill" data-view="blog">📝 <b>블로그 발행: ${esc(x.kw)}${x.date < todayKey() ? ` (${sd(x.date)}분)` : ""}</b><em>하기</em></button>`).join("")
+    + (BOARD?.tasks || []).filter((t) => !t.done && !TASK_DONE[t.id]).map((t) => `<button class="hpill" data-tdone="${t.id}">🔔 <b>할 일: ${esc(t.title)}${t.time ? ` (${esc(t.time)})` : ""}</b><em>완료</em></button>`).join("");
+  const heroBody = heroPill + heroIl + heroAs + `<p class="hk">${done < N ? `지금 할 일, 오픈 ${OPEN_AT[B]}` : "지금 할 일, 마감"}</p>
     ${nx ? `<div class="hnx"><h1>${nx[0]} ${nx[1]}</h1>${nx[3]}</div>` : `<h1 style="margin-top:6px">오늘 마감 완료! 수고하셨어요</h1>`}
     <div class="hdots">${phase.map((x) => `<span class="${x[2] ? "on" : ""}">${x[2] ? "●" : "○"} ${x[1]}</span>`).join("")}</div>
     <p>근무 중 ${working.length}명</p>`;
@@ -1428,6 +1432,30 @@ function creqCardHtml() {
   return `<div class="card"><h2>🧾 고객요청${list.length ? `, 진행 중 ${list.length}건` : ""}</h2>${rows || '<div class="desc" style="padding:4px 0 10px">진행 중인 고객요청이 없어요</div>'}
     <div class="btns" style="margin:6px 0 14px"><button class="btn primary" data-go="creq">＋ 고객요청 적기</button></div></div>`;
 }
+// ── 블로그 발행 (10/26 사장님) ── 지시문은 사이트 blog/ 폴더(list.json + html), 봇이 지점별로 board.blogs에 실어 줌
+// 지시문대로 지점 블로그에 올리고 글 주소를 넣으면 [발행 완료] → 디코 보고방, 지점 시트 '블로그 발행', 관리자 화면
+const BLOG_DONE = {}; // 이 기기에서 방금 보낸 것 (봇 반영 전까지)
+const blogList = () => (BOARD?.blogs || []).filter((x) => !x.test === !TEST).map((x) => ({ ...x, done: x.done || BLOG_DONE[x.date] || null }));
+const blogDue = () => blogList().filter((x) => !x.done && x.date <= todayKey());
+function blogHtml() {
+  const L = blogList().sort((a, c) => c.date.localeCompare(a.date)), td = todayKey();
+  const row = (x) => `<div class="crow"><div><b>${x.done ? "✅" : x.date <= td ? "📝" : "🗓"} ${sd(x.date)} ${esc(x.kw)}</b><span>${esc(x.topic)}${x.done ? `, ${esc(x.done.by)} ${esc(x.done.t)} 발행` : x.date > td ? ", 발행일 전" : x.date < td ? ", 아직 안 올림" : ""}</span></div>
+    <div class="tbtn"><a class="act gray" href="${SITE}blog/${encodeURIComponent(x.file)}" target="_blank" rel="noopener">지시문</a>${x.done ? (x.done.link ? `<a class="act gray" href="${esc(x.done.link)}" target="_blank" rel="noopener">글 보기</a>` : "") : x.date <= td ? `<button class="act" data-blogdone="${x.date}">발행 완료</button>` : ""}</div></div>`;
+  return `<div class="cols one"><div><div class="card"><h2>📝 블로그 발행</h2><div class="desc" style="margin-bottom:6px">지시문대로 우리 지점 블로그에 올리고, 올린 글 주소를 넣어 주세요.</div>${L.map(row).join("") || '<div class="desc" style="padding:4px 0 12px">지금 올릴 지시문이 없어요</div>'}</div></div></div>`;
+}
+function sheetBlogDone(date) {
+  const x = blogList().find((y) => y.date === date); if (!x) return;
+  openSheet(`<h2>📝 ${sd(date)} 블로그 발행 완료</h2><div class="desc">${esc(x.kw)}, ${esc(x.topic)}</div>
+    <input class="input" id="blogLink" inputmode="url" placeholder="올린 글 주소 (블로그 앱에서 공유, 링크 복사)">
+    <div class="btns"><button class="btn" data-x>닫기</button><button class="btn primary" id="okBlog" data-date="${date}">발행 완료</button></div>`);
+}
+async function doBlogDone(t) {
+  const date = t.dataset.date, link = ($("#blogLink").value.match(/https?:\/\/\S+/) || [""])[0];
+  if (!/^https?:\/\/([a-z.]*blog\.naver\.com|naver\.me)\//.test(link)) return toast("네이버 블로그 글 주소를 붙여 넣어 주세요");
+  const by = working().join(", "); if (!by) return needIn(() => sheetBlogDone(date));
+  t.disabled = true;
+  try { await send({ type: "blogdone", date, link, by }); BLOG_DONE[date] = { by, t: now(), link }; closeSheet(); render(); toast("발행 완료로 보냈어요"); } catch (e) { t.disabled = false; fail(e); }
+}
 // 관리자가 나눠 준 '오늘 할 일' (10/6) — 관리자 페이지에서 등록, 완료하면 관리자 페이지에 체크
 let TASK_DONE = {};
 function taskCardHtml() {
@@ -2055,6 +2083,8 @@ document.addEventListener("click", (e) => {
   if (go === "branchask") { if (confirm(`지금 ${ho(B)}이에요. 다른 지점으로 바꿀까요?`)) { B = null; return render(); } return; }
   if (t.dataset.honame) return doHandoff(t.dataset.honame);
   if (t.dataset.tdone) return doTaskDone(t.dataset.tdone);
+  if (t.dataset.blogdone) return sheetBlogDone(t.dataset.blogdone);
+  if (t.id === "okBlog") return doBlogDone(t);
   if (t.dataset.go === "survey") return sheetSurvey();
   // 10/25 사장님 "포스 마감하기 전에 해야 틀린 걸 알지": 마감 보고 전에 1시간 안에 '다 맞음' 중간 체크가 없으면 먼저 하라고 안내(건너뛰기 가능)
   if (t.dataset.go === "closing") { const x = TEST ? BOARD?.midCheckTest : BOARD?.midCheck, hm2m = (h) => { const [a, b] = String(h || "0:0").split(":"); return +a * 60 + +b; }, n = new Date(), nm = n.getHours() * 60 + n.getMinutes(); if (!(x && x.status === "같음" && nm - hm2m(x.t) <= 60 && nm >= hm2m(x.t))) return openSheet(`<h2>🔎 포스 일마감 전에 먼저 확인</h2><div class="desc">일마감을 하면 고칠 수 없어요. <b>중간 체크</b>로 돈통, 이체가 포스와 맞는지 먼저 보고, 다 맞으면 포스 일마감 후 마감 보고를 보내 주세요.</div><div class="btns"><button class="btn primary" data-go="mid">중간 체크 하기</button><button class="btn" data-go="closing2">이미 맞춰 봤어요</button></div>`); return sheetClosing(); }
