@@ -280,8 +280,8 @@ const ICON = {
 };
 // 10/19 사장님 "다 따로 들어가기 불편해": 네이버 앱, 직원앱을 관리자 안 메뉴로 (같은 사이트라 안에 띄움, 네이버 열쇠, 직원앱 지점은 각 앱이 이 기기에 기억)
 // 10/26 사장님 "홈이 가득가득, 업무 안에 블로그도": 메뉴 12개 → 7개 묶음, 묶음 안은 위쪽 작은 탭
-const GROUPS = [["home", "홈", ["home"]], ["tasks", "업무", ["tasks", "survey"]], ["close", "마감", ["close"]], ["kpi", "KPI", ["kpi"]], ["goods", "상품", ["order", "group", "must"]], ["note", "매장 노트", ["note"]], ["office", "사무실", ["office"]], ["staff", "직원앱", ["staff"]], ["naver", "네이버", ["naver"]]];
-const SUBNM = { tasks: "업무", blog: "블로그 발행", order: "주문요청", survey: "재고조사", group: "그룹관리", must: "추가 필수", office: "봇 상태", staff: "직원앱", naver: "네이버" };
+const GROUPS = [["home", "홈", ["home"]], ["tasks", "업무", ["tasks", "survey"]], ["close", "마감", ["close"]], ["kpi", "KPI", ["kpi"]], ["goods", "상품", ["bunbae", "order", "group", "must"]], ["note", "매장 노트", ["note"]], ["office", "사무실", ["office"]], ["staff", "직원앱", ["staff"]], ["naver", "네이버", ["naver"]]];
+const SUBNM = { bunbae: "분배 넣기", tasks: "업무", blog: "블로그 발행", order: "주문요청", survey: "재고조사", group: "그룹관리", must: "추가 필수", office: "봇 상태", staff: "직원앱", naver: "네이버" };
 const grpOf = (t) => GROUPS.find((g) => g[2].includes(t === "blog" ? "tasks" : t)) || GROUPS[0];
 const grpTab = (g) => { const last = ls.get("vf-admin-sub-" + g[0]); return g[2].includes(last) ? last : g[2][0]; };
 const subnavHtml = () => { const g = grpOf(tab); return g[2].length > 1 ? `<div class="subnav">${g[2].map((k) => `<button class="${k === tab ? "on" : ""}" data-tab="${k}">${SUBNM[k]}</button>`).join("")}</div>` : ""; };
@@ -299,7 +299,7 @@ function render() {
   document.querySelectorAll("#nav button").forEach((b) => { const g = GROUPS.find((x) => x[0] === b.dataset.g); if (g) { b.dataset.tab = grpTab(g); b.classList.toggle("on", grpOf(tab) === g); if (!b.dataset.ic) { b.dataset.ic = 1; b.innerHTML = (g[0] === "goods" ? ICON.survey : ICON[g[0]]) + (g[0] === "note" ? "노트" : g[1]); } } });
   const [, hh, mm] = D.at.match(/(\d{2}):(\d{2})$/) || [];
   if (EMBED[tab] && $("#app .emb") && $("#app .emb").dataset.k === tab + staffB) return; // 자동 새로고침 때 안에 띄운 앱이 처음으로 돌아가지 않게
-  const body0 = EMBED[tab] ? embedHtml() : tab === "home" ? (pc ? homePC() : homeHtml()) : tab === "kpi" ? kpiHtml() : tab === "close" ? closingAllHtml() : tab === "survey" ? surveyHtml() : tab === "tasks" ? tasksHtml() : tab === "note" ? noteHtml() : tab === "order" ? orderHtml() : tab === "office" ? officeHtml() : tab === "group" ? groupHtml() : tab === "blog" ? (blogAdmHtml() || '<div class="empty">올라온 블로그 지시문이 없어요</div>') : mustHtml();
+  const body0 = EMBED[tab] ? embedHtml() : tab === "home" ? (pc ? homePC() : homeHtml()) : tab === "kpi" ? kpiHtml() : tab === "close" ? closingAllHtml() : tab === "survey" ? surveyHtml() : tab === "tasks" ? tasksHtml() : tab === "note" ? noteHtml() : tab === "order" ? orderHtml() : tab === "office" ? officeHtml() : tab === "group" ? groupHtml() : tab === "bunbae" ? bunbaeHtml() : tab === "blog" ? (blogAdmHtml() || '<div class="empty">올라온 블로그 지시문이 없어요</div>') : mustHtml();
   const body = subnavHtml() + body0;
   if (!pc) { $("#app").innerHTML = `<div class="top"><div class="logo">VAFRIEND <b>관리자</b></div><div class="r"><button class="ic" data-act="reload">${hh ? `${hh}:${mm} 기준 ↻` : "새로고침"}</button><button class="ic" data-act="logout">잠그기</button></div></div>${body}`; markEmb(); return; }
   const ICG = { goods: ICON.order };
@@ -458,6 +458,78 @@ function blogAdmHtml() {
       <div class="bar"><i style="width:${Math.round((ok.length / xs.length) * 100)}%"></i></div>
       ${no.length ? `<div class="caption" style="margin-top:10px">아직: ${no.map((x) => `${BR.indexOf(x.b) + 1} ${esc(x.b)}`).join(", ")}</div>` : ""}
       ${ok.length ? `<div class="caption" style="margin-top:6px">올림: ${ok.map((x) => `<a href="${esc(x.done.link)}" target="_blank" rel="noopener" style="color:var(--blue);font-weight:700">${BR.indexOf(x.b) + 1} ${esc(x.b)}</a>`).join(", ")}</div>` : ""}</div>`; }).join("");
+}
+// ── 분배 넣기 (10/26) ── 이사님 분배표(엑셀)를 붙여넣거나 파일로 → 지점별 미리보기 → [지점에 보내기] = 직원웹 분배 카드
+// 표 모양: 첫 줄 '상품명 | 중구점'(지점 하나) 또는 '상품명 | 동성로 | 수성 …'(여러 지점). 여러 표를 이어 붙여도 됨(상품명 줄이 나올 때마다 새 표)
+let BBP = null, BBTEST = false, BBSHORT = true;
+const BB_ALIAS = [["동성로", /동성로|중구/], ["수성", /수성/], ["율하", /율하/], ["반월당", /반월당/], ["상인", /상인/], ["광장코아", /광장코아|광코/], ["현풍", /현풍/]];
+const bbBranch = (h) => (BB_ALIAS.find(([, re]) => re.test(String(h || ""))) || [])[0] || null;
+const bbKey = (n) => String(n || "").replace(/\*+$/, "").replace(/\s+/g, "").toLowerCase();
+function bbParse(text) {
+  const out = {}; let cols = null;
+  for (const line of String(text || "").split(/\r?\n/)) {
+    if (!line.trim()) continue;
+    const c = line.includes("\t") ? line.split("\t") : line.split(",");
+    if (/상품명|품명/.test(c[0])) { cols = c.map((h, i) => (i ? bbBranch(h) : null)); continue; }
+    if (!cols) continue;
+    const n = String(c[0] || "").trim(); if (!n) continue;
+    cols.forEach((b, i) => { const q = Math.floor(+String(c[i] || "").replace(/[^0-9.-]/g, "")); if (b && q > 0) ((out[b] ||= {})[n] = (out[b][n] || 0) + q); });
+  }
+  return out;
+}
+const bbShorts = () => (D.bunbae || []).flatMap((c) => c.items.map((y, i) => ({ c, y, i })).filter(({ y }) => y.got != null && y.got < y.q && !y.shortOk));
+function bunbaeHtml() {
+  const prods = (b) => new Set((D.products?.[b] || []).map(([n]) => bbKey(n)));
+  let prev = "";
+  if (BBP) {
+    const sh = bbShorts(), bs = Object.keys(BBP);
+    prev = `<div class="card" style="margin-top:12px"><div class="eyebrow">미리보기</div>${bs.length ? bs.map((b) => { const P = prods(b), L = Object.entries(BBP[b]), bad = L.filter(([n]) => !P.has(bbKey(n))), shB = BBSHORT ? sh.filter((x) => x.c.b === b) : [];
+      return `<details style="margin-top:10px"><summary style="cursor:pointer;font-size:16px;font-weight:700">${BR.indexOf(b) + 1} ${esc(b)} ${L.length}종 ${L.reduce((a, [, q]) => a + q, 0)}개${shB.length ? ` <span class="t-sub">+ 못 보낸 것 ${shB.length}</span>` : ""}${bad.length ? ` <span class="t-bad">포스에 없는 이름 ${bad.length}</span>` : ""}</summary>
+        <div class="caption" style="margin-top:6px;line-height:1.8">${L.map(([n, q]) => `<span style="${P.has(bbKey(n)) ? "" : "color:var(--red);font-weight:700"}">${esc(n)} ${q}</span>`).join(", ")}${shB.length ? `<br>못 보낸 것: ${shB.map((x) => `${esc(x.y.n)} ${x.y.q - x.y.got}`).join(", ")}` : ""}</div></details>`; }).join("") : '<div class="caption">지점 이름이 있는 첫 줄(상품명 | 중구점 …)을 못 찾았어요</div>'}
+      ${bs.length ? `<label style="display:flex;gap:8px;align-items:center;margin-top:14px;font-size:15px"><input type="checkbox" id="bbShort" ${BBSHORT ? "checked" : ""}> 지난번 못 보낸 것도 같이 보내기</label>
+      <label style="display:flex;gap:8px;align-items:center;margin-top:6px;font-size:15px"><input type="checkbox" id="bbTest" ${BBTEST ? "checked" : ""}> 시험으로 보내기 (직원웹 시험 모드에서만 보임)</label>
+      <div class="btns"><button class="btn gray" data-act="bbprint">A4 인쇄 (지점별 한 장)</button><button class="btn" data-act="bbsend">지점에 보내기</button></div>` : ""}</div>`;
+  }
+  // 진행 중
+  const cards = (D.bunbae || []).filter((c) => !c.arrived || c.arrived.d >= D.d).slice().reverse();
+  const st = (c) => { const no = c.items.filter((y) => y.got != null && y.got < y.q).length; return c.arrived ? `<span class="t-good">도착 ${esc(c.arrived.t)}, ${esc(c.arrived.by)}</span>` : c.packed ? `챙김 끝 ${esc(c.packed.t)}${no ? `, <span class="t-bad">못 보냄 ${no}</span>` : ""}, 도착 전` : `챙김 전 (${c.items.filter((y) => y.got != null).length}/${c.items.length})`; };
+  const list = cards.length ? `<div class="sec">진행 중인 분배</div><div class="list">${cards.map((c) => `<div class="item"><div class="tx"><b>${BR.indexOf(c.b) + 1} ${esc(c.b)} ${+c.d.slice(5, 7)}/${+c.d.slice(8)} ${c.items.length}종</b><span>${st(c)}</span></div><button class="btn gray" style="flex:0 0 60px;height:36px" data-bbprint="${c.id}|${c.b}">인쇄</button>${c.packed ? "" : `<button class="btn gray" style="flex:0 0 60px;height:36px;margin-left:6px" data-bbdel="${c.id}|${c.b}">지우기</button>`}</div>`).join("")}</div>` : "";
+  const sh = bbShorts();
+  const short = sh.length ? `<div class="sec">못 보낸 것 <small>${sh.length}건, 다음 분배 때 같이 보낼 수 있어요</small></div><div class="list">${sh.map((x) => `<div class="item"><div class="tx"><b>${esc(x.y.n)} ${x.y.q - x.y.got}개</b><span>${BR.indexOf(x.c.b) + 1} ${esc(x.c.b)}, ${+x.c.d.slice(5, 7)}/${+x.c.d.slice(8)} 분배</span></div><button class="btn gray" style="flex:0 0 70px;height:36px" data-bbok="${x.c.id}|${x.c.b}|${x.i}">해결</button></div>`).join("")}</div>` : "";
+  return `<div class="pchead"><h1>분배 넣기</h1><div class="caption">이사님 분배표를 엑셀에서 복사해 붙여넣거나 파일을 올리면 지점별 분배 카드가 생겨요</div></div>
+    <div class="card"><textarea class="in" id="bbText" rows="7" style="width:100%;height:auto;padding:12px;font-size:14px" placeholder="엑셀에서 표를 드래그해서 복사(Ctrl+C)한 뒤 여기에 붙여넣기(Ctrl+V)&#10;첫 줄: 상품명 | 중구점 (또는 상품명 | 동성로 | 수성 …)"></textarea>
+      <div class="btns"><label class="btn gray" style="display:flex;align-items:center;justify-content:center;cursor:pointer">엑셀 파일 올리기<input type="file" id="bbFile" accept=".xlsx,.xls,.csv" style="display:none"></label><button class="btn" data-act="bbprev">미리보기</button></div></div>
+    ${prev}${list}${short}`;
+}
+async function bbFileRead(file) {
+  if (!window.XLSX) await new Promise((ok, no) => { const sc = document.createElement("script"); sc.src = "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"; sc.onload = ok; sc.onerror = no; document.head.appendChild(sc); });
+  const wb = XLSX.read(await file.arrayBuffer());
+  return wb.SheetNames.map((n) => XLSX.utils.sheet_to_csv(wb.Sheets[n], { FS: "\t", blankrows: false })).join("\n");
+}
+// 10/26 사장님 "본점은 종이로 지점별 분배표를 보고 챙김": 지점마다 A4 한 장(상품, 수량, 챙김/없음 칸)
+function bbPrint(blocks) {
+  const d = D.d, md = `${+d.slice(5, 7)}/${+d.slice(8)}`;
+  const page = ([b, L]) => `<section><h1>${BR.indexOf(b) + 1}호 ${esc(b)} 분배 <small>${md}, ${L.length}종 ${L.reduce((a, [, q]) => a + q, 0)}개</small></h1><table><thead><tr><th>상품명</th><th>수량</th><th>챙김</th><th>없음/모자람</th></tr></thead><tbody>${L.map(([n, q]) => `<tr><td>${esc(n)}</td><td class="q">${q}</td><td></td><td></td></tr>`).join("")}</tbody></table><p class="f">챙긴 사람: ______________ 　 받은 사람: ______________</p></section>`;
+  const w = window.open("", "_blank"); if (!w) return toast("팝업이 막혔어요. 팝업을 허용해 주세요");
+  w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>분배표 ${md}</title><style>@page{size:A4;margin:12mm}body{font-family:"Malgun Gothic",sans-serif;color:#111}section{page-break-after:always}section:last-child{page-break-after:auto}h1{font-size:20px;margin:0 0 8px}h1 small{font-size:13px;font-weight:400;color:#555;margin-left:8px}table{width:100%;border-collapse:collapse;font-size:13px}th,td{border:1px solid #999;padding:4px 6px}th{background:#eee}td.q{text-align:center;font-weight:700;width:46px}th:nth-child(3),th:nth-child(4){width:70px}.f{margin-top:14px;font-size:13px}</style></head><body>${blocks.map(page).join("")}<script>onload=()=>print()<\/script></body></html>`);
+  w.document.close();
+}
+async function bbSend() {
+  if (!BBP) return;
+  const id = Date.now().toString(36), sh = BBSHORT ? bbShorts() : [];
+  const bs = Object.keys(BBP); let n = 0;
+  if (!confirm(`${bs.map((b) => b).join(", ")} 지점에 분배 카드를 보낼까요?`)) return;
+  try {
+    for (const b of bs) {
+      const items = [...Object.entries(BBP[b]), ...sh.filter((x) => x.c.b === b).map((x) => [x.y.n, x.y.q - x.y.got])];
+      let cur = [];
+      const flush = async () => { if (!cur.length) return; await sendOp("bbAdd", { id, b, items: cur, test: BBTEST }); n += cur.length; cur = []; await new Promise((r) => setTimeout(r, 800)); };
+      for (const it of items) { if (JSON.stringify([...cur, it]).length > 1100) await flush(); cur.push(it); }
+      await flush();
+    }
+    if (!BBTEST) for (const x of sh) { await sendOp("bbShortOk", { id: x.c.id, b: x.c.b, i: x.i }); x.y.shortOk = true; await new Promise((r) => setTimeout(r, 600)); }
+    BBP = null; render(); toast(`보냈어요. 직원웹에는 1~2분 뒤에 떠요 (${n}줄)`);
+  } catch (e) { toast("못 보냈어요: " + e.message); }
 }
 // 지점 한눈에 (10/19): 오픈 / 마감 보고 / 총매출(지난달 하루 평균 대비) / 현금 차액 / 객수 / 지정판매율 / 리뷰
 function opsHtml() {
@@ -857,6 +929,7 @@ async function saveTask() {
   try { await sendOp("task", t); const i = D.tasks.findIndex((x) => x.id === t.id); i >= 0 ? (D.tasks[i] = { ...t }) : D.tasks.push({ ...t }); editTask = null; closeSheet(); render(); toast("저장했어요. 직원앱에는 1~2분 뒤에 떠요"); setTimeout(() => reload(true), 90e3); }
   catch (e) { toast("저장하지 못했어요. 다시 눌러 주세요"); }
 }
+document.addEventListener("change", async (e) => { if (e.target.id === "bbFile" && e.target.files[0]) { try { const txt = await bbFileRead(e.target.files[0]); BBP = bbParse(txt); BBSHORT = true; render(); } catch (er) { toast("파일을 못 읽었어요"); } } });
 document.addEventListener("click", async (e) => {
   if (e.target.id === "dim") return closeSheet();
   const t = e.target.closest("button,tr[data-brpc]"); if (!t) return;
@@ -868,6 +941,12 @@ document.addEventListener("click", async (e) => {
   if (t.dataset.act === "gexport") return grpExport().catch((er) => toast(er.message));
   if (t.dataset.act === "gclear") { if (t.dataset.sure !== "1") { t.dataset.sure = "1"; t.textContent = "정말 비우기"; return; } grpSave({}); render(); return toast("고른 것을 비웠어요"); }
   if (t.dataset.act === "gadd") { const n = $("#gnewn").value.trim(); if (!n) return $("#gnewn").focus(); const ed = grpEd(); if (D.grp?.map?.[n] || (D.products["본점"] || []).some(([x]) => x === n)) { grpQ = n; grpF = "all"; render(); return toast("이미 있는 상품이에요, 오른쪽에서 그룹을 골라 주세요"); } ed[n] = { to: $("#gnewg").value, isNew: true, at: Date.now() }; grpSave(ed); grpF = "chg"; render(); return toast("새 상품을 넣었어요"); }
+  if (t.dataset.act === "bbprev") { BBP = bbParse($("#bbText").value); BBSHORT = true; render(); if ($("#bbText")) $("#bbText").value = ""; return; }
+  if (t.dataset.act === "bbprint" && BBP) { BBSHORT = !!$("#bbShort")?.checked; const sh = BBSHORT ? bbShorts() : []; return bbPrint(Object.keys(BBP).map((b) => [b, [...Object.entries(BBP[b]), ...sh.filter((x) => x.c.b === b).map((x) => [x.y.n, x.y.q - x.y.got])]])); }
+  if (t.dataset.bbprint) { const [id, b] = t.dataset.bbprint.split("|"); const c = (D.bunbae || []).find((x) => x.id === id && x.b === b); if (c) bbPrint([[b, c.items.map((y) => [y.n, y.q])]]); return; }
+  if (t.dataset.act === "bbsend") { BBSHORT = !!$("#bbShort")?.checked; BBTEST = !!$("#bbTest")?.checked; return bbSend(); }
+  if (t.dataset.bbdel) { const [id, b] = t.dataset.bbdel.split("|"); if (!confirm(b + " 분배 카드를 지울까요?")) return; try { await sendOp("bbDel", { id, b }); D.bunbae = (D.bunbae || []).filter((c) => !(c.id === id && c.b === b)); render(); toast("지웠어요"); } catch (e) { toast("못 지웠어요"); } return; }
+  if (t.dataset.bbok) { const [id, b, i] = t.dataset.bbok.split("|"); try { await sendOp("bbShortOk", { id, b, i: +i }); const c = (D.bunbae || []).find((x) => x.id === id && x.b === b); if (c) c.items[+i].shortOk = true; render(); toast("해결로 뺐어요"); } catch { toast("못 보냈어요"); } return; }
   if (t.dataset.issok) { const s = issDone(); s.add(t.dataset.issok); issDoneSave(s); render(); return toast("확인 완료"); }
   if (t.dataset.issundo) { issDoneSave(new Set()); render(); return; }
   if (t.dataset.restart) { const bot = t.dataset.restart; if (!confirm(bot + "을 다시 켤까요? 1분쯤 걸려요" + (bot === "운영봇" ? ". 그동안 온 신호는 다시 켜진 뒤 처리돼요" : ""))) return; t.disabled = true; t.textContent = "보냈어요"; try { await sendOp("restart", { bot }); toast(bot + " 다시 켜는 중이에요. 3분 안에 상태가 바뀌어요"); setTimeout(loadBot, 90e3); setTimeout(loadBot, 200e3); } catch (err) { toast("못 보냈어요: " + err.message); t.disabled = false; t.textContent = "다시 켜기"; } return; }
