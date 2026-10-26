@@ -438,13 +438,24 @@ function markEmb() { const f = $("#app .emb"); if (f) f.dataset.k = tab + staffB
 const closingOf = (b) => (D.closings || []).find((c) => c.b === b && c.date === D.d);
 const warnsOf = (c) => c?.warnFull || c?.warn || [];
 // 10/26 블로그 발행: 지시문 날짜별로 8지점 발행 여부, 누르면 글 열기
+function blogTodayHtml(xs) {
+  // 오늘 할 일 카드 안 블로그 줄: 몇 곳 올렸는지, 안 올린 지점, 올린 지점(눌러서 글)
+  if (!xs.length) return "";
+  const ok = xs.filter((x) => x.done), no = xs.filter((x) => !x.done), nm = (x) => `${BR.indexOf(x.b) + 1} ${esc(x.b)}`;
+  return `<div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--line2)"><b style="font-size:15px">📝 블로그 발행 ${ok.length}/${xs.length}곳</b>${no.length ? `<div class="caption" style="margin-top:6px">아직: ${no.map(nm).join(", ")}</div>` : ""}${ok.length ? `<div class="caption" style="margin-top:4px">올림: ${ok.map((x) => `<a href="${esc(x.done.link)}" target="_blank" rel="noopener" style="color:var(--blue);font-weight:700">${nm(x)}</a>`).join(", ")}</div>` : ""}</div>`;
+}
 function blogAdmHtml() {
+  // 10/26 사장님 "굳이 표로?": 날짜마다 카드 한 장 = 몇 곳 올렸는지 + 막대 + 안 올린 지점 이름만, 올린 지점은 눌러서 글 보기
   const L = D.blogs || []; if (!L.length) return "";
-  const ds = [...new Set(L.map((x) => x.date))].sort(), dates = [...ds.filter((d) => d <= D.d).reverse(), ...ds.filter((d) => d > D.d)].slice(0, 2); // 오늘(지난 것 중 최근) 먼저, 그다음 앞으로 올 것
-  return dates.map((d) => { const xs = L.filter((x) => x.date === d), n = xs.filter((x) => x.done).length;
-    return `<div class="sec">블로그 발행 <small>${+d.slice(5, 7)}/${+d.slice(8)} 지시문, ${n}/${xs.length}곳 올림</small></div><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px;margin-bottom:14px">${xs.map((x) => x.done
-      ? `<a href="${esc(x.done.link)}" target="_blank" rel="noopener" style="text-decoration:none;background:#e5f8ef;color:#03803f;border-radius:10px;padding:8px 10px;font-size:13px;font-weight:700">✅ ${BR.indexOf(x.b) + 1} ${esc(x.b)}<small style="display:block;font-weight:600;color:#4e5968">${esc(x.done.by)} ${esc(x.done.t)}, 글 보기</small></a>`
-      : `<div style="background:#f2f4f6;color:#8b95a1;border-radius:10px;padding:8px 10px;font-size:13px;font-weight:700">${BR.indexOf(x.b) + 1} ${esc(x.b)}<small style="display:block;font-weight:600">아직, ${esc(x.kw)}</small></div>`).join("")}</div>`; }).join("");
+  const ds = [...new Set(L.map((x) => x.date))].sort(), dates = ds.filter((d) => d > D.d).slice(0, 1); // 오늘 것은 오늘 할 일 카드 안에, 여기는 다음 지시문만
+  const md = (d) => `${+d.slice(5, 7)}/${+d.slice(8)}(${"일월화수목금토"[new Date(d + "T00:00:00Z").getUTCDay()]})`;
+  return dates.map((d) => { const xs = L.filter((x) => x.date === d), ok = xs.filter((x) => x.done), no = xs.filter((x) => !x.done), fut = d > D.d;
+    if (fut) return `<div class="card" style="margin-top:12px"><div class="eyebrow">다음 블로그 발행</div><div class="headline" style="font-size:18px">${md(d)}, ${xs.length}곳 지시문 올라가 있어요</div></div>`;
+    return `<div class="card" style="margin-top:12px"><div class="eyebrow">블로그 발행 ${md(d)}</div>
+      <div class="headline">${ok.length === xs.length ? "<em>모두 올렸어요</em>" : `${xs.length}곳 중 <em>${ok.length}곳</em> 올렸어요`}</div>
+      <div class="bar"><i style="width:${Math.round((ok.length / xs.length) * 100)}%"></i></div>
+      ${no.length ? `<div class="caption" style="margin-top:10px">아직: ${no.map((x) => `${BR.indexOf(x.b) + 1} ${esc(x.b)}`).join(", ")}</div>` : ""}
+      ${ok.length ? `<div class="caption" style="margin-top:6px">올림: ${ok.map((x) => `<a href="${esc(x.done.link)}" target="_blank" rel="noopener" style="color:var(--blue);font-weight:700">${BR.indexOf(x.b) + 1} ${esc(x.b)}</a>`).join(", ")}</div>` : ""}</div>`; }).join("");
 }
 // 지점 한눈에 (10/19): 오픈 / 마감 보고 / 총매출(지난달 하루 평균 대비) / 현금 차액 / 객수 / 지정판매율 / 리뷰
 function opsHtml() {
@@ -542,7 +553,7 @@ function tasksCardHtml() {
   const tDone = D.branches.reduce((a, x) => a + x.tasks.done, 0) + bl.filter((x) => x.done).length, tAll = D.branches.reduce((a, x) => a + x.tasks.total, 0) + bl.length, pct = tAll ? Math.round((tDone / tAll) * 100) : 0;
   return `<div class="card" style="margin-top:12px"><div class="eyebrow">오늘 할 일</div>
       <div class="headline">${tAll ? (tDone === tAll ? `<em>모두 끝났어요</em>` : `${tAll}개 중 <em>${tDone}개</em> 끝났어요`) : "오늘 예정된 일이 없어요"}</div>
-      ${tAll ? `<div class="bar"><i style="width:${pct}%"></i></div>` : `<div class="btns"><button class="btn sec2" data-tab="tasks">업무 나눠 주기</button></div>`}</div>`;
+      ${tAll ? `<div class="bar"><i style="width:${pct}%"></i></div>` : `<div class="btns"><button class="btn sec2" data-tab="tasks">업무 나눠 주기</button></div>`}${blogTodayHtml(bl)}</div>`;
 }
 // 10/25 봇 상태: 운영봇이 3분마다 올림. 10분 넘게 안 바뀌면 이 PC나 운영봇이 꺼진 것
 let BOT = null, BOT_ERR = false;
