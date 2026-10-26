@@ -280,8 +280,8 @@ const ICON = {
 };
 // 10/19 사장님 "다 따로 들어가기 불편해": 네이버 앱, 직원앱을 관리자 안 메뉴로 (같은 사이트라 안에 띄움, 네이버 열쇠, 직원앱 지점은 각 앱이 이 기기에 기억)
 // 10/26 사장님 "홈이 가득가득, 업무 안에 블로그도": 메뉴 12개 → 7개 묶음, 묶음 안은 위쪽 작은 탭
-const GROUPS = [["home", "홈", ["home"]], ["tasks", "업무", ["tasks"]], ["close", "마감", ["close"]], ["kpi", "KPI", ["kpi"]], ["goods", "상품", ["order", "survey", "group", "must"]], ["note", "매장 노트", ["note"]], ["office", "사무실", ["office"]], ["staff", "직원앱", ["staff"]], ["naver", "네이버", ["naver"]]];
-const SUBNM = { tasks: "오늘 할 일", blog: "블로그 발행", order: "주문요청", survey: "재고조사", group: "그룹관리", must: "추가 필수", office: "봇 상태", staff: "직원앱", naver: "네이버" };
+const GROUPS = [["home", "홈", ["home"]], ["tasks", "업무", ["tasks", "survey"]], ["close", "마감", ["close"]], ["kpi", "KPI", ["kpi"]], ["goods", "상품", ["order", "group", "must"]], ["note", "매장 노트", ["note"]], ["office", "사무실", ["office"]], ["staff", "직원앱", ["staff"]], ["naver", "네이버", ["naver"]]];
+const SUBNM = { tasks: "업무", blog: "블로그 발행", order: "주문요청", survey: "재고조사", group: "그룹관리", must: "추가 필수", office: "봇 상태", staff: "직원앱", naver: "네이버" };
 const grpOf = (t) => GROUPS.find((g) => g[2].includes(t === "blog" ? "tasks" : t)) || GROUPS[0];
 const grpTab = (g) => { const last = ls.get("vf-admin-sub-" + g[0]); return g[2].includes(last) ? last : g[2][0]; };
 const subnavHtml = () => { const g = grpOf(tab); return g[2].length > 1 ? `<div class="subnav">${g[2].map((k) => `<button class="${k === tab ? "on" : ""}" data-tab="${k}">${SUBNM[k]}</button>`).join("")}</div>` : ""; };
