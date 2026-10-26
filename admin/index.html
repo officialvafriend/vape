@@ -622,6 +622,18 @@ function groupCardHtml() {
     const n = con.reduce((a, x) => a + G(x, g).out.length, 0), t = con.reduce((a, x) => a + G(x, g).total, 0);
     return `<div class="item"><div class="av blue">${esc(GNAME[g][0])}</div><div class="tx"><b>${esc(GNAME[g])}</b><span>${con.map((x) => `${x.b} ${G(x, g).out.length}`).join(", ")}</span></div><div class="val"><b>${n}개</b><span class="t-sub">${t ? Math.round((n / t) * 100) : 0}% 품절</span></div></div>`; }).join("")}</div>`;
 }
+// 10/26 공지: 지점 직원웹에 띄우기(새 공지는 팝업, 지점이 [확인했어요] 누르면 여기 표시)
+let NTBR = new Set(BR);
+function noticeAdmHtml() {
+  const L = (D.notices || []).slice().reverse();
+  const row = (n) => { const ok = n.br.filter((b) => n.ok?.[b]); return `<div class="item" style="align-items:flex-start"><div class="tx"><b>${n.off ? '<span class="t-sub">(내림)</span> ' : ""}${esc(n.title)}</b><span>${+n.d.slice(5, 7)}/${+n.d.slice(8)} ${esc(n.t)}, 확인 ${ok.length}/${n.br.length}곳${n.br.length - ok.length ? `, 아직: ${n.br.filter((b) => !n.ok?.[b]).map((b) => BR.indexOf(b) + 1 + " " + b).join(", ")}` : ""}</span></div>${n.off ? "" : `<button class="btn gray" style="flex:0 0 64px;height:36px" data-ntoff="${n.id}">내리기</button>`}</div>`; };
+  return `<div class="card" style="margin-top:12px"><div class="eyebrow">📢 직원웹 공지</div>
+    <input class="in" id="ntTitle" maxlength="60" placeholder="제목 (예: 블로그 단톡방 정리 안내)" style="margin-top:6px">
+    <textarea class="in" id="ntBody" rows="6" maxlength="1200" placeholder="내용" style="width:100%;height:auto;padding:12px;margin-top:8px"></textarea>
+    <div class="chips" style="margin-top:8px"><button class="chip ${NTBR.size === 8 ? "on" : ""}" data-ntall>전체</button>${BR.map((b) => `<button class="chip ${NTBR.has(b) ? "on" : ""}" data-ntb="${b}">${esc(b)}</button>`).join("")}</div>
+    <div class="btns"><button class="btn" data-act="ntsend">공지 올리기</button></div></div>
+    ${L.length ? `<div class="sec">올린 공지</div><div class="list">${L.map(row).join("")}</div>` : ""}`;
+}
 function tasksCardHtml() {
   const bl = (D.blogs || []).filter((x) => x.date === D.d); // 10/26 오늘 블로그 발행 지시도 오늘 할 일에 셈
   const tDone = D.branches.reduce((a, x) => a + x.tasks.done, 0) + bl.filter((x) => x.done).length, tAll = D.branches.reduce((a, x) => a + x.tasks.total, 0) + bl.length, pct = tAll ? Math.round((tDone / tAll) * 100) : 0;
@@ -809,7 +821,7 @@ function sheetSurvey(id) {
       : `<div class="caption" style="margin-top:16px">${SVST[v.status]?.[0] || ""}${v.why ? ", " + esc(v.why) : ""}${v.doneAt ? ", " + esc(v.doneAt) : ""}</div><div class="btns"><button class="btn gray" data-x>닫기</button></div>`}`);
 }
 function tasksHtml() {
-  return `${tasksCardHtml()}${blogAdmHtml()}${D.matrix.length ? `<div class="sec">오늘 할 일 <small>${D.matrix.length}개</small></div><div class="list">${D.matrix.map(taskRow).join("")}</div>` : ""}<div class="card"><div class="eyebrow">업무 분배</div><div class="headline">지점에 할 일을<br>나눠 줄 수 있어요</div><div class="caption">정한 날 그 지점 직원앱 '오늘 할 일'에 떠요.<br>직원이 [완료]를 누르면 여기서 바로 보여요.</div>
+  return `${noticeAdmHtml()}${tasksCardHtml()}${blogAdmHtml()}${D.matrix.length ? `<div class="sec">오늘 할 일 <small>${D.matrix.length}개</small></div><div class="list">${D.matrix.map(taskRow).join("")}</div>` : ""}<div class="card"><div class="eyebrow">업무 분배</div><div class="headline">지점에 할 일을<br>나눠 줄 수 있어요</div><div class="caption">정한 날 그 지점 직원앱 '오늘 할 일'에 떠요.<br>직원이 [완료]를 누르면 여기서 바로 보여요.</div>
       <div class="btns"><button class="btn" data-act="tnew">＋ 새 업무 만들기</button></div></div>
     <div class="sec">등록된 업무 <small>${D.tasks.length}개</small></div>
     <div class="list">${D.tasks.length ? D.tasks.map((t) => `<button class="item" data-tedit="${t.id}"><div class="av blue">${t.rep === "daily" ? "매일" : t.rep === "weekly" ? "주" : t.rep === "monthly" ? "월" : "1"}</div>
@@ -947,6 +959,10 @@ document.addEventListener("click", async (e) => {
   if (t.dataset.act === "bbsend") { BBSHORT = !!$("#bbShort")?.checked; BBTEST = !!$("#bbTest")?.checked; return bbSend(); }
   if (t.dataset.bbdel) { const [id, b] = t.dataset.bbdel.split("|"); if (!confirm(b + " 분배 카드를 지울까요?")) return; try { await sendOp("bbDel", { id, b }); D.bunbae = (D.bunbae || []).filter((c) => !(c.id === id && c.b === b)); render(); toast("지웠어요"); } catch (e) { toast("못 지웠어요"); } return; }
   if (t.dataset.bbok) { const [id, b, i] = t.dataset.bbok.split("|"); try { await sendOp("bbShortOk", { id, b, i: +i }); const c = (D.bunbae || []).find((x) => x.id === id && x.b === b); if (c) c.items[+i].shortOk = true; render(); toast("해결로 뺐어요"); } catch { toast("못 보냈어요"); } return; }
+  if (t.dataset.ntall !== undefined) { NTBR = NTBR.size === 8 ? new Set() : new Set(BR); document.querySelectorAll("[data-ntb]").forEach((x) => x.classList.toggle("on", NTBR.has(x.dataset.ntb))); t.classList.toggle("on", NTBR.size === 8); return; }
+  if (t.dataset.ntb) { NTBR.has(t.dataset.ntb) ? NTBR.delete(t.dataset.ntb) : NTBR.add(t.dataset.ntb); t.classList.toggle("on", NTBR.has(t.dataset.ntb)); document.querySelector("[data-ntall]")?.classList.toggle("on", NTBR.size === 8); return; }
+  if (t.dataset.act === "ntsend") { const title = $("#ntTitle").value.trim(), body = $("#ntBody").value.trim(); if (!title) return toast("제목을 넣어 주세요"); if (!NTBR.size) return toast("지점을 골라 주세요"); if (!confirm(`${NTBR.size === 8 ? "전 지점" : [...NTBR].join(", ")}에 공지를 띄울까요?`)) return; const n = { id: Date.now().toString(36), title, body, br: BR.filter((b) => NTBR.has(b)) }; try { await sendOp("notice", n); (D.notices ||= []).push({ ...n, d: D.d, t: new Date().toTimeString().slice(0, 5), off: false, ok: {} }); render(); toast("올렸어요. 직원웹에는 1~2분 뒤에 떠요"); } catch (e) { toast("못 올렸어요: " + e.message); } return; }
+  if (t.dataset.ntoff) { if (!confirm("이 공지를 내릴까요? 직원웹에서 사라져요")) return; try { await sendOp("noticeOff", { id: t.dataset.ntoff }); const n = (D.notices || []).find((x) => x.id === t.dataset.ntoff); if (n) n.off = true; render(); toast("내렸어요"); } catch { toast("못 보냈어요"); } return; }
   if (t.dataset.issok) { const s = issDone(); s.add(t.dataset.issok); issDoneSave(s); render(); return toast("확인 완료"); }
   if (t.dataset.issundo) { issDoneSave(new Set()); render(); return; }
   if (t.dataset.restart) { const bot = t.dataset.restart; if (!confirm(bot + "을 다시 켤까요? 1분쯤 걸려요" + (bot === "운영봇" ? ". 그동안 온 신호는 다시 켜진 뒤 처리돼요" : ""))) return; t.disabled = true; t.textContent = "보냈어요"; try { await sendOp("restart", { bot }); toast(bot + " 다시 켜는 중이에요. 3분 안에 상태가 바뀌어요"); setTimeout(loadBot, 90e3); setTimeout(loadBot, 200e3); } catch (err) { toast("못 보냈어요: " + err.message); t.disabled = false; t.textContent = "다시 켜기"; } return; }
