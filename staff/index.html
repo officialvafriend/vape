@@ -236,7 +236,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.26-32";
+const VER = "10.26-33";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -1714,7 +1714,7 @@ async function sheetSnStep(id) {
   }
   openSheet(`<h2>${SKIND[r.kind]} ${r.from === B ? `→ ${esc(toTxt(r))}` : `← ${esc(ho(r.from))} 요청`}</h2><div class="desc" style="font-size:16px;font-weight:700;color:var(--ink)">${esc(r.items)}</div>${r.miss?.length ? `<div class="desc" style="color:var(--red)">없어서 뺀 상품: ${esc(r.miss.join(", "))}</div>` : ""}${r.memo ? `<div class="desc">메모: ${esc(r.memo)}</div>` : ""}
     <div class="desc" style="font-size:13px">${esc(hist)}</div>${mine ? "" : `<div class="desc">지금: ${STXT[r.st] || r.st}</div>`}${body}
-    <div class="btns" style="margin-top:6px"><button class="btn" data-x>닫기</button>${!["done", "cancel"].includes(r.st) && !(mine && body.includes('data-snk="cancel"')) ? `<button class="btn" data-snk="cancel" data-id="${id}">이 건 취소</button>` : ""}</div>`);
+    <div class="btns" style="margin-top:6px"><button class="btn" data-x>닫기</button>${r.from === B && !["done", "cancel"].includes(r.st) && !(mine && body.includes('data-snk="cancel"')) ? `<button class="btn" data-snk="cancel" data-id="${id}">이 건 취소</button>` : ""}</div>`);
 }
 async function doSnStep(t) {
   const id = t.dataset.id, r = snList().find((x) => x.id === id); let k = t.dataset.snk; if (!r) return closeSheet();
