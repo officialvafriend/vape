@@ -278,9 +278,9 @@ const ICON = {
 };
 // 10/19 사장님 "다 따로 들어가기 불편해": 네이버 앱, 직원앱을 관리자 안 메뉴로 (같은 사이트라 안에 띄움, 네이버 열쇠, 직원앱 지점은 각 앱이 이 기기에 기억)
 // 10/26 사장님 "홈이 가득가득, 업무 안에 블로그도": 메뉴 12개 → 7개 묶음, 묶음 안은 위쪽 작은 탭
-const GROUPS = [["home", "홈", ["home"]], ["tasks", "업무", ["tasks", "blog"]], ["close", "마감", ["close"]], ["kpi", "KPI", ["kpi"]], ["goods", "상품", ["order", "survey", "group", "must"]], ["note", "매장 노트", ["note"]], ["office", "사무실", ["office", "staff", "naver"]]];
+const GROUPS = [["home", "홈", ["home"]], ["tasks", "업무", ["tasks"]], ["close", "마감", ["close"]], ["kpi", "KPI", ["kpi"]], ["goods", "상품", ["order", "survey", "group", "must"]], ["note", "매장 노트", ["note"]], ["office", "사무실", ["office", "staff", "naver"]]];
 const SUBNM = { tasks: "오늘 할 일", blog: "블로그 발행", order: "주문요청", survey: "재고조사", group: "그룹관리", must: "추가 필수", office: "봇 상태", staff: "직원앱", naver: "네이버" };
-const grpOf = (t) => GROUPS.find((g) => g[2].includes(t)) || GROUPS[0];
+const grpOf = (t) => GROUPS.find((g) => g[2].includes(t === "blog" ? "tasks" : t)) || GROUPS[0];
 const grpTab = (g) => { const last = ls.get("vf-admin-sub-" + g[0]); return g[2].includes(last) ? last : g[2][0]; };
 const subnavHtml = () => { const g = grpOf(tab); return g[2].length > 1 ? `<div class="subnav">${g[2].map((k) => `<button class="${k === tab ? "on" : ""}" data-tab="${k}">${SUBNM[k]}</button>`).join("")}</div>` : ""; };
 const EMBED = { naver: () => "../naver/", staff: () => `../staff/?branch=${encodeURIComponent(staffB)}` };
@@ -440,7 +440,7 @@ const warnsOf = (c) => c?.warnFull || c?.warn || [];
 // 10/26 블로그 발행: 지시문 날짜별로 8지점 발행 여부, 누르면 글 열기
 function blogAdmHtml() {
   const L = D.blogs || []; if (!L.length) return "";
-  const dates = [...new Set(L.map((x) => x.date))].sort().reverse().slice(0, 2);
+  const ds = [...new Set(L.map((x) => x.date))].sort(), dates = [...ds.filter((d) => d <= D.d).reverse(), ...ds.filter((d) => d > D.d)].slice(0, 2); // 오늘(지난 것 중 최근) 먼저, 그다음 앞으로 올 것
   return dates.map((d) => { const xs = L.filter((x) => x.date === d), n = xs.filter((x) => x.done).length;
     return `<div class="sec">블로그 발행 <small>${+d.slice(5, 7)}/${+d.slice(8)} 지시문, ${n}/${xs.length}곳 올림</small></div><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px;margin-bottom:14px">${xs.map((x) => x.done
       ? `<a href="${esc(x.done.link)}" target="_blank" rel="noopener" style="text-decoration:none;background:#e5f8ef;color:#03803f;border-radius:10px;padding:8px 10px;font-size:13px;font-weight:700">✅ ${BR.indexOf(x.b) + 1} ${esc(x.b)}<small style="display:block;font-weight:600;color:#4e5968">${esc(x.done.by)} ${esc(x.done.t)}, 글 보기</small></a>`
@@ -538,7 +538,8 @@ function groupCardHtml() {
     return `<div class="item"><div class="av blue">${esc(GNAME[g][0])}</div><div class="tx"><b>${esc(GNAME[g])}</b><span>${con.map((x) => `${x.b} ${G(x, g).out.length}`).join(", ")}</span></div><div class="val"><b>${n}개</b><span class="t-sub">${t ? Math.round((n / t) * 100) : 0}% 품절</span></div></div>`; }).join("")}</div>`;
 }
 function tasksCardHtml() {
-  const tDone = D.branches.reduce((a, x) => a + x.tasks.done, 0), tAll = D.branches.reduce((a, x) => a + x.tasks.total, 0), pct = tAll ? Math.round((tDone / tAll) * 100) : 0;
+  const bl = (D.blogs || []).filter((x) => x.date === D.d); // 10/26 오늘 블로그 발행 지시도 오늘 할 일에 셈
+  const tDone = D.branches.reduce((a, x) => a + x.tasks.done, 0) + bl.filter((x) => x.done).length, tAll = D.branches.reduce((a, x) => a + x.tasks.total, 0) + bl.length, pct = tAll ? Math.round((tDone / tAll) * 100) : 0;
   return `<div class="card" style="margin-top:12px"><div class="eyebrow">오늘 할 일</div>
       <div class="headline">${tAll ? (tDone === tAll ? `<em>모두 끝났어요</em>` : `${tAll}개 중 <em>${tDone}개</em> 끝났어요`) : "오늘 예정된 일이 없어요"}</div>
       ${tAll ? `<div class="bar"><i style="width:${pct}%"></i></div>` : `<div class="btns"><button class="btn sec2" data-tab="tasks">업무 나눠 주기</button></div>`}</div>`;
@@ -723,7 +724,7 @@ function sheetSurvey(id) {
       : `<div class="caption" style="margin-top:16px">${SVST[v.status]?.[0] || ""}${v.why ? ", " + esc(v.why) : ""}${v.doneAt ? ", " + esc(v.doneAt) : ""}</div><div class="btns"><button class="btn gray" data-x>닫기</button></div>`}`);
 }
 function tasksHtml() {
-  return `${tasksCardHtml()}${D.matrix.length ? `<div class="sec">오늘 할 일 <small>${D.matrix.length}개</small></div><div class="list">${D.matrix.map(taskRow).join("")}</div>` : ""}<div class="card"><div class="eyebrow">업무 분배</div><div class="headline">지점에 할 일을<br>나눠 줄 수 있어요</div><div class="caption">정한 날 그 지점 직원앱 '오늘 할 일'에 떠요.<br>직원이 [완료]를 누르면 여기서 바로 보여요.</div>
+  return `${tasksCardHtml()}${blogAdmHtml()}${D.matrix.length ? `<div class="sec">오늘 할 일 <small>${D.matrix.length}개</small></div><div class="list">${D.matrix.map(taskRow).join("")}</div>` : ""}<div class="card"><div class="eyebrow">업무 분배</div><div class="headline">지점에 할 일을<br>나눠 줄 수 있어요</div><div class="caption">정한 날 그 지점 직원앱 '오늘 할 일'에 떠요.<br>직원이 [완료]를 누르면 여기서 바로 보여요.</div>
       <div class="btns"><button class="btn" data-act="tnew">＋ 새 업무 만들기</button></div></div>
     <div class="sec">등록된 업무 <small>${D.tasks.length}개</small></div>
     <div class="list">${D.tasks.length ? D.tasks.map((t) => `<button class="item" data-tedit="${t.id}"><div class="av blue">${t.rep === "daily" ? "매일" : t.rep === "weekly" ? "주" : t.rep === "monthly" ? "월" : "1"}</div>
