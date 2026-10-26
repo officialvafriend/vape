@@ -236,7 +236,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.26-29";
+const VER = "10.26-30";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -1665,7 +1665,7 @@ function sentCardHtml() {
 }
 function sendsHtml() {
   const L = snList();
-  const row = (r) => `<div class="crow"><div><b>${SKIND[r.kind]} ${r.from === B ? `→ ${esc(toTxt(r))}` : `← ${esc(ho(r.from))} 요청`}: ${esc(r.items)}</b><span>${r.st === "done" ? (r.kind === "jeon" ? "받음 완료" : "출발 완료") : STXT[r.st] || r.st}${r.nm ? `, 손님 ${esc(r.nm)}` : ""}, ${esc(r.d.slice(5).replace("-", "/"))} ${esc(r.t)} ${esc(r.by)}</span></div><div class="tbtn">${snMine(r) ? `<button class="act" data-snopen="${r.id}">${SACT[r.kind + "|" + r.st] || "보기"}</button>` : `<button class="act gray" data-snopen="${r.id}">보기</button>`}</div></div>`;
+  const row = (r) => `<div class="crow"><div><b>${SKIND[r.kind]} ${r.from === B ? `→ ${esc(toTxt(r))}` : `← ${esc(ho(r.from))} 요청`}: ${esc(r.items)}</b><span>${r.st === "done" ? (r.kind === "jeon" ? "받음 완료" : "출발 완료") : STXT[r.st] || r.st}${r.nm ? `, 손님 ${esc(r.nm)}` : ""}, ${esc(r.d.slice(5).replace("-", "/"))} ${esc(r.t)} ${esc(r.by)}</span></div><div class="tbtn">${snMine(r) ? `<button class="act" data-snopen="${r.id}">${r.st === "poll" && r.from === B ? "고르기" : SACT[r.kind + "|" + r.st] || "보기"}</button>` : `<button class="act gray" data-snopen="${r.id}">보기</button>`}</div></div>`;
   return `<div class="cols one"><div><div class="card"><h2>🛵 퀵, 오픈퀵, 전달 <small style="color:var(--red)">테스트 중</small></h2>
     <div class="btns" style="margin:4px 0 12px"><button class="btn primary" data-snew="quick">＋ 퀵</button><button class="btn" data-snew="jeon">＋ 전달</button></div>
     ${L.length ? L.map(row).join("") : '<div class="desc" style="padding:4px 0 12px">진행 중인 건이 없어요</div>'}</div></div></div>`;
