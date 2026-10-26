@@ -221,7 +221,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.26-1";
+const VER = "10.26-2";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -1438,7 +1438,8 @@ const BLOG_DONE = {}; // 이 기기에서 방금 보낸 것 (봇 반영 전까�
 const blogList = () => (BOARD?.blogs || []).filter((x) => !x.test === !TEST).map((x) => ({ ...x, done: x.done || BLOG_DONE[x.date] || null }));
 const blogDue = () => blogList().filter((x) => !x.done && x.date <= todayKey());
 function blogHtml() {
-  const L = blogList().sort((a, c) => c.date.localeCompare(a.date)), td = todayKey();
+  const td = todayKey(), grp = (x) => (x.done ? 2 : x.date <= td ? 0 : 1); // 10/26 사장님: 지금 올릴 것(오늘, 밀린 것) 먼저, 다음 발행 예정, 끝난 건 아래
+  const L = blogList().sort((a, c) => grp(a) - grp(c) || (grp(a) === 2 ? c.date.localeCompare(a.date) : a.date.localeCompare(c.date)));
   const row = (x) => `<div class="crow"><div><b>${x.done ? "✅" : x.date <= td ? "📝" : "🗓"} ${sd(x.date)} ${esc(x.kw)}</b><span>${esc(x.topic)}${x.done ? `, ${esc(x.done.by)} ${esc(x.done.t)} 발행` : x.date > td ? ", 발행일 전" : x.date < td ? ", 아직 안 올림" : ""}</span></div>
     <div class="tbtn"><a class="act gray" href="${SITE}blog/${encodeURIComponent(x.file)}" target="_blank" rel="noopener">지시문</a>${x.done ? (x.done.link ? `<a class="act gray" href="${esc(x.done.link)}" target="_blank" rel="noopener">글 보기</a>` : "") : x.date <= td ? `<button class="act" data-blogdone="${x.date}">발행 완료</button>` : ""}</div></div>`;
   return `<div class="cols one"><div><div class="card"><h2>📝 블로그 발행</h2><div class="desc" style="margin-bottom:6px">지시문대로 우리 지점 블로그에 올리고, 올린 글 주소를 넣어 주세요.</div>${L.map(row).join("") || '<div class="desc" style="padding:4px 0 12px">지금 올릴 지시문이 없어요</div>'}</div></div></div>`;
