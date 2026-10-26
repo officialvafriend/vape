@@ -221,7 +221,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.26-2";
+const VER = "10.26-3";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -408,7 +408,7 @@ function render() {
   const TD = todoItems(), AH = as2Items().filter((x) => x.st === 4 && !x.contact && x.b === B && !a2Lead(x));
   const heroAs = AH.length ? `<div class="hil"><p class="hk" style="color:#9bd0ff">🔧 AS 지점 도착, 손님께 연락할 것 ${AH.length}개</p>${AH.slice(0, 3).map((x) => `<div class="hrow"><div class="ht"><b>${esc(as2Title(x))}</b><span>${esc(as2Name(x) || "손님")}, 접수 ${x.d.slice(5).replace("-", "/")} ${esc(x.by)}${x.loan && !x.loanBack ? ", 📱 대여 중: " + esc((x.loan === "대여 있음" ? "기기명 없음" : x.loan)) : ""}</span></div><div class="hbs"><button class="ok" data-a2sms="${x.id}">📩 문자</button><button data-a2go="5" data-id="${x.id}">전달 완료</button></div></div>`).join("")}${AH.length > 3 ? `<p style="margin-top:8px"><button data-view="as2" style="color:#9bd0ff;font-weight:800">외 ${AH.length - 3}개는 AS관리에서 →</button></p>` : ""}</div>` : "";
   const heroIl = TD.length ? `<div class="hil"><p class="hk">📅 오늘 일정 ${TD.length}개, 처리 못 하면 다음 근무자에게 넘어가요</p>${TD.map((it) => `<div class="hrow"><div class="ht"><b>${it.ic} ${esc(it.title)}</b><span>${esc(it.sub)}</span></div><div class="hbs">${ilBtns(it, true)}</div></div>`).join("")}</div>` : "";
-  const heroPill = blogDue().map((x) => `<button class="hpill" data-view="blog">📝 <b>블로그 발행: ${esc(x.kw)}${x.date < todayKey() ? ` (${sd(x.date)}분)` : ""}</b><em>하기</em></button>`).join("")
+  const heroPill = bbPills() + blogDue().map((x) => `<button class="hpill" data-view="blog">📝 <b>블로그 발행: ${esc(x.kw)}${x.date < todayKey() ? ` (${sd(x.date)}분)` : ""}</b><em>하기</em></button>`).join("")
     + (BOARD?.tasks || []).filter((t) => !t.done && !TASK_DONE[t.id]).map((t) => `<button class="hpill" data-tdone="${t.id}">🔔 <b>할 일: ${esc(t.title)}${t.time ? ` (${esc(t.time)})` : ""}</b><em>완료</em></button>`).join("");
   const heroBody = heroPill + heroIl + heroAs + `<p class="hk">${done < N ? `지금 할 일, 오픈 ${OPEN_AT[B]}` : "지금 할 일, 마감"}</p>
     ${nx ? `<div class="hnx"><h1>${nx[0]} ${nx[1]}</h1>${nx[3]}</div>` : `<h1 style="margin-top:6px">오늘 마감 완료! 수고하셨어요</h1>`}
@@ -1432,6 +1432,38 @@ function creqCardHtml() {
   return `<div class="card"><h2>🧾 고객요청${list.length ? `, 진행 중 ${list.length}건` : ""}</h2>${rows || '<div class="desc" style="padding:4px 0 10px">진행 중인 고객요청이 없어요</div>'}
     <div class="btns" style="margin:6px 0 14px"><button class="btn primary" data-go="creq">＋ 고객요청 적기</button></div></div>`;
 }
+// ── 분배 (10/26 사장님) ── 관리자앱 '분배 넣기'로 생긴 카드. 본점: 줄마다 챙긴 수량(없으면 0) → [챙김 끝]. 지점: 받으면 [도착]
+const BB_DONE = {}; // 이 기기에서 방금 보낸 것
+const bbPackList = () => (BOARD?.bbPack || []).filter((c) => !c.test === !TEST && !BB_DONE[c.id + "|" + c.b]);
+const bbInList = () => (BOARD?.bbIn || []).filter((c) => !c.test === !TEST && !BB_DONE[c.id + "|" + c.b]);
+const bbPills = () => bbPackList().map((c) => `<button class="hpill" data-bbpack="${c.id}|${c.b}">📦 <b>${esc(ho(c.b))} 분배 챙기기 ${c.items.length}종</b><em>챙기기</em></button>`).join("")
+  + bbInList().map((c) => `<button class="hpill" data-bbin="${c.id}">📦 <b>본점 분배 오는 중 ${c.items.filter((y) => y[2]).length}종</b><em>도착</em></button>`).join("");
+function sheetBbPack(key) {
+  const c = bbPackList().find((x) => x.id + "|" + x.b === key); if (!c) return;
+  openSheet(`<h2>📦 ${esc(ho(c.b))} 분배 챙기기</h2><div class="desc">챙긴 수량을 확인하고, 본점에도 없으면 [없음]을 눌러 주세요. 모자라면 숫자만 고쳐요.</div>
+    <div style="max-height:55vh;overflow:auto;margin-top:8px">${c.items.map(([n, q], i) => `<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-top:1px solid #eee"><b style="flex:1;font-size:15px">${esc(n)}</b><input class="input" id="bbq${i}" data-q="${q}" type="number" inputmode="numeric" min="0" value="${q}" style="width:72px;margin:0;text-align:center"><button class="act gray" data-bbnone="${i}">없음</button></div>`).join("")}</div>
+    <div class="btns"><button class="btn" data-x>닫기</button><button class="btn primary" id="okBbPack" data-k="${key}">챙김 끝</button></div>`);
+}
+async function doBbPack(t) {
+  const c = bbPackList().find((x) => x.id + "|" + x.b === t.dataset.k); if (!c) return closeSheet();
+  const by = working().join(", "); if (!by) return needIn(() => sheetBbPack(t.dataset.k));
+  const res = c.items.map((y, i) => [i, Math.max(0, Math.floor(+$("#bbq" + i).value) || 0)]), none = res.filter(([i, g]) => g < c.items[i][1]).length;
+  if (!confirm(none ? `못 보내는 게 ${none}개 있어요. 챙김 끝으로 보낼까요?` : "다 챙겼어요. 보낼까요?")) return;
+  t.disabled = true;
+  try { await send({ type: "bbpack", id: c.id, to: c.b, res, done: 1, by }); BB_DONE[t.dataset.k] = 1; closeSheet(); render(); toast("챙김 끝으로 보냈어요"); } catch (e) { t.disabled = false; fail(e); }
+}
+function sheetBbIn(id) {
+  const c = bbInList().find((x) => x.id === id); if (!c) return;
+  openSheet(`<h2>📦 본점 분배 도착</h2><div class="desc">받은 물건이 맞는지 보고 [도착]을 눌러 주세요. 수량은 내일 아침 재고보고 때 맞춰져요.</div>
+    <div style="max-height:55vh;overflow:auto;margin-top:8px">${c.items.map(([n, q, g]) => `<div style="display:flex;gap:8px;padding:7px 0;border-top:1px solid #eee;${g ? "" : "color:var(--sub)"}"><b style="flex:1;font-size:15px">${esc(n)}</b><span style="font-weight:700">${g ? g + "개" : "없음 (본점에도 없음)"}</span></div>`).join("")}</div>
+    <div class="btns"><button class="btn" data-x>닫기</button><button class="btn primary" id="okBbIn" data-id="${id}">도착</button></div>`);
+}
+async function doBbIn(t) {
+  const c = bbInList().find((x) => x.id === t.dataset.id); if (!c) return closeSheet();
+  const by = working().join(", "); if (!by) return needIn(() => sheetBbIn(t.dataset.id));
+  t.disabled = true;
+  try { await send({ type: "bbarrive", id: c.id, by }); BB_DONE[c.id + "|" + c.b] = 1; closeSheet(); render(); toast("도착으로 보냈어요"); } catch (e) { t.disabled = false; fail(e); }
+}
 // ── 블로그 발행 (10/26 사장님) ── 지시문은 사이트 blog/ 폴더(list.json + html), 봇이 지점별로 board.blogs에 실어 줌
 // 지시문대로 지점 블로그에 올리고 글 주소를 넣으면 [발행 완료] → 디코 보고방, 지점 시트 '블로그 발행', 관리자 화면
 const BLOG_DONE = {}; // 이 기기에서 방금 보낸 것 (봇 반영 전까지)
@@ -2085,6 +2117,11 @@ document.addEventListener("click", (e) => {
   if (t.dataset.honame) return doHandoff(t.dataset.honame);
   if (t.dataset.tdone) return doTaskDone(t.dataset.tdone);
   if (t.dataset.blogdone) return sheetBlogDone(t.dataset.blogdone);
+  if (t.dataset.bbpack) return sheetBbPack(t.dataset.bbpack);
+  if (t.dataset.bbin) return sheetBbIn(t.dataset.bbin);
+  if (t.dataset.bbnone !== undefined) { const el = $("#bbq" + t.dataset.bbnone); if (el) el.value = el.value === "0" ? el.dataset.q : "0"; t.classList.toggle("on", el && el.value === "0"); return; }
+  if (t.id === "okBbPack") return doBbPack(t);
+  if (t.id === "okBbIn") return doBbIn(t);
   if (t.id === "okBlog") return doBlogDone(t);
   if (t.dataset.go === "survey") return sheetSurvey();
   // 10/25 사장님 "포스 마감하기 전에 해야 틀린 걸 알지": 마감 보고 전에 1시간 안에 '다 맞음' 중간 체크가 없으면 먼저 하라고 안내(건너뛰기 가능)
