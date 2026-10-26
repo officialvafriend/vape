@@ -222,7 +222,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.26-10";
+const VER = "10.26-11";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -1469,9 +1469,9 @@ const pcList = () => (BOARD?.parcels || []).filter((r) => !r.test === !TEST && !
 const pcDay = () => (TEST ? BOARD?.pdayTest : BOARD?.pday) || {};
 const pcState = (b) => { const x = pcDay()[b] || {}; const hm2 = (h) => { const [a, c] = String(h || "").split(":"); return +a * 60 + +c; }, n = new Date(), nm = n.getHours() * 60 + n.getMinutes();
   if (x.none) return { ok: false, t: "택배 안 함" };
-  if (x.gone || (b === B && PC.gone)) return { ok: false, t: `오늘 나감 ${x.gone?.t || PC.gone}` };
+  if (x.gone || (b === B && PC.gone)) return { ok: false, t: `오늘 출고됨 ${x.gone?.t || PC.gone}` };
   if (x.cut && nm > hm2(x.cut)) return { ok: false, t: `마감 시간 지남 (${x.cut})` };
-  return { ok: true, t: `${x.carrier || "택배사 미정"}${x.cut ? `, ${x.cut}까지` : ""}` }; };
+  return { ok: true, t: `출고 전${x.carrier ? `, ${x.carrier}` : ""}${x.cut ? `, ${x.cut}까지` : ""}` }; };
 const pcPills = () => pcList().filter((r) => r.to === B && r.st === "req").map((r) => `<button class="hpill" data-pcpack="${r.id}">📦 <b>택배 포장, ${esc(r.nm || "손님")}님 ${esc(r.items)}${r.from !== B ? ` (${esc(ho(r.from))} 요청)` : ""}</b><em>포장</em></button>`).join("")
   + pcList().filter((r) => r.from === B && r.st === "packed").map((r) => `<button class="hpill" data-pctell="${r.id}">📦 <b>송장 나옴, ${esc(r.nm || "손님")}님께 보내기</b><em>문자</em></button>`).join("");
 function parcelHtml() {
@@ -1482,7 +1482,7 @@ function parcelHtml() {
   return `<div class="cols"><div><div class="card"><h2>📦 택배 <small style="color:var(--red)">테스트 중</small></h2>
       <div class="btns" style="margin:4px 0 12px"><button class="btn primary" data-go="pcnew">＋ 택배 요청</button></div>
       ${L.length ? L.map(row).join("") : '<div class="desc" style="padding:4px 0 12px">진행 중인 택배가 없어요</div>'}</div></div>
-    <div><div class="card"><h2>오늘 지점별 택배</h2>${day}<div class="btns" style="margin:12px 0 14px"><button class="btn" data-go="pdaygo">우리 지점 오늘 택배 나감</button></div></div></div></div>`;
+    <div><div class="card"><h2>오늘 지점별 택배</h2>${day}<div class="btns" style="margin:12px 0 14px"><button class="btn" data-go="pdaygo">우리 지점 오늘 택배 출고됐어요</button></div></div></div></div>`;
 }
 function sheetPcNew() {
   PC.to = null;
@@ -2318,7 +2318,7 @@ document.addEventListener("click", (e) => {
   if (t.dataset.pctell) return sheetPcTell(t.dataset.pctell);
   if (t.id === "okPcTell") return doPcSend(t, "parceltold", "손님께 보낸 걸로 했어요");
   if (t.dataset.pccx) { if (!confirm("이 택배 요청을 취소할까요?")) return; return doPcSend({ dataset: { id: t.dataset.pccx } }, "parcelcancel", "취소했어요"); }
-  if (t.dataset.go === "pdaygo") { if (!confirm("오늘 택배가 나갔나요? 누르면 오늘 우리 지점 택배는 마감으로 보여요")) return; const by = working().join(", "); if (!by) return needIn(() => {}); send({ type: "pdaygo", by }).then(() => { PC.gone = now(); render(); toast("오늘 택배 마감으로 했어요"); }).catch(fail); return; }
+  if (t.dataset.go === "pdaygo") { if (!confirm("오늘 택배 기사님이 가져가셨나요? 누르면 다른 지점 화면에 우리 지점이 '오늘 출고됨'으로 보여요")) return; const by = working().join(", "); if (!by) return needIn(() => {}); send({ type: "pdaygo", by }).then(() => { PC.gone = now(); render(); toast("오늘 출고됨으로 했어요"); }).catch(fail); return; }
   if (t.dataset.bbin) return sheetBbIn(t.dataset.bbin);
   if (t.dataset.bbnone !== undefined) { const el = $("#bbq" + t.dataset.bbnone); if (el) el.value = el.value === "0" ? el.dataset.q : "0"; t.classList.toggle("on", el && el.value === "0"); return; }
   if (t.id === "okBbPack") return doBbPack(t);
