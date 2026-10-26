@@ -222,7 +222,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.26-7";
+const VER = "10.26-8";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -349,7 +349,7 @@ const VIEWS_ALL = [["home", "🏠", "오늘"], ["work", "🕘", "출퇴근, 마�
 // 10/20 사장님: 오늘(오픈, 마감) + 요청(인수인계, 고객요청) 두 화면만
 // 10/23 재고조사 → 포스 바로 조정: 포스 조정이 연결된 지점만 메뉴 보임 (운영봇 ADJ_BRANCHES와 같게)
 const ADJ_BR = []; // 10/25 재고 조정은 아침 재고보고로 하기로 해서 재고조사 메뉴는 숨김(다시 열려면 지점 넣기)
-const VIEWS = ONLY_OPEN_CLOSE ? [["home", "🏠", "오늘"], ["talk", "📅", "일정"], ["blog", "📝", "블로그"], ...(TEST ? [["parcel", "📦", "택배(테스트)"]] : []), ...(ADJ_BR.includes(B) ? [["stock", "📦", "재고조사"]] : []), ["as2", "🔧", "AS관리"], ["note", "📝", "매장 노트"], ["reply", "💬", "응대 모음"]] : VIEWS_ALL;
+const VIEWS = ONLY_OPEN_CLOSE ? [["home", "🏠", "오늘"], ["talk", "📅", "일정"], ["blog", "📝", "블로그"], ["parcel", "📦", "택배(테스트)"], ...(ADJ_BR.includes(B) ? [["stock", "📦", "재고조사"]] : []), ["as2", "🔧", "AS관리"], ["note", "📝", "매장 노트"], ["reply", "💬", "응대 모음"]] : VIEWS_ALL;
 let VIEW = ls.get("vf-app-view", "home");
 if (!VIEWS.some((v) => v[0] === VIEW)) VIEW = "home";
 // 10/23 30초마다 화면을 다시 그리면 누르던 버튼이 바뀌어 안 눌림 → 손 댄 지 1.2초 안이면 조금 뒤에 그림
@@ -427,7 +427,7 @@ function render() {
     + (BOARD?.tasks || []).filter((t) => !t.done && !TASK_DONE[t.id]).map((t) => `<button class="hpill" data-tdone="${t.id}">🔔 <b>할 일: ${esc(t.title)}${t.time ? ` (${esc(t.time)})` : ""}</b><em>완료</em></button>`).join("");
   // 10/26 사장님 "오후 내내 '지금 할 일, 마감'이 웃김": 오픈 끝 ~ 마감 1시간 전은 '영업 중' 카드(요청 버튼). 우선 시험 모드에서만
   const cAt = closeAtOf(B, d), nowM = d.getHours() * 60 + d.getMinutes(), cAtM = (([h, m]) => +h * 60 + +m)(cAt.split(":"));
-  const biz = TEST && done === N && !cSteps[0] && d.getHours() >= 5 && nowM < cAtM - 60;
+  const biz = done === N && !cSteps[0] && d.getHours() >= 5 && nowM < cAtM - 60;
   const bizBody = heroPill + heroIl + heroAs + `<p class="hk">영업 중, 마감 ${cAt === "24:00" ? "자정" : cAt}</p>
     <div style="margin-top:10px;font-size:12px;font-weight:800;color:#ffd7a8">🧪 테스트 중인 버튼이에요. 아직 정식 기능 아니에요</div>
     <div class="hreq" style="margin-top:6px"><button data-req="qk"><i>🛵</i>퀵<small>테스트</small></button><button data-go="pcnew"><i>📦</i>택배<small>테스트</small></button><button data-req="branch"><i>🔁</i>다른 지점<small>테스트</small></button><button data-go="creq"><i>🧾</i>고객요청<small>테스트</small></button></div>
@@ -1464,7 +1464,7 @@ const pcState = (b) => { const x = pcDay()[b] || {}; const hm2 = (h) => { const 
   if (x.gone || (b === B && PC.gone)) return { ok: false, t: `오늘 나감 ${x.gone?.t || PC.gone}` };
   if (x.cut && nm > hm2(x.cut)) return { ok: false, t: `마감 시간 지남 (${x.cut})` };
   return { ok: true, t: `${x.carrier || "택배사 미정"}${x.cut ? `, ${x.cut}까지` : ""}` }; };
-const pcPills = () => !TEST ? "" : pcList().filter((r) => r.to === B && r.st === "req").map((r) => `<button class="hpill" data-pcpack="${r.id}">📦 <b>택배 포장, ${esc(r.nm || "손님")}님 ${esc(r.items)}${r.from !== B ? ` (${esc(ho(r.from))} 요청)` : ""}</b><em>포장</em></button>`).join("")
+const pcPills = () => pcList().filter((r) => r.to === B && r.st === "req").map((r) => `<button class="hpill" data-pcpack="${r.id}">📦 <b>택배 포장, ${esc(r.nm || "손님")}님 ${esc(r.items)}${r.from !== B ? ` (${esc(ho(r.from))} 요청)` : ""}</b><em>포장</em></button>`).join("")
   + pcList().filter((r) => r.from === B && r.st === "packed").map((r) => `<button class="hpill" data-pctell="${r.id}">📦 <b>송장 나옴, ${esc(r.nm || "손님")}님께 보내기</b><em>문자</em></button>`).join("");
 function parcelHtml() {
   const L = pcList(), st = { req: "포장 기다림", packed: "송장 접수됨, 손님께 전달 전", done: "손님께 전달 끝", cancel: "취소" };
