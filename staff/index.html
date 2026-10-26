@@ -82,7 +82,7 @@
   .ilb{display:flex;gap:6px;flex-shrink:0}.ilb button{height:42px;min-width:56px;padding:0 14px;border-radius:12px;font-size:14px;font-weight:800;background:#f2f4f6;color:var(--ink)}.ilb button.ok{background:var(--blue);color:#fff}
   .tag{display:inline-block;font-size:11px;font-weight:800;border-radius:6px;padding:1px 6px;margin-right:6px;vertical-align:1px}.tag.c{background:#e8f3ff;color:#1b64da}.tag.m{background:#fff4e5;color:#b25e00}.tag.e{background:#f3e8ff;color:#7c3aed}
   .hpill{display:flex;align-items:center;gap:8px;width:100%;text-align:left;background:#ffe9a8;color:#7a5200;border-radius:14px;padding:9px 12px;font-size:13px;font-weight:700;margin-bottom:12px}.hpill b{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.hpill em{font-style:normal;background:#fff;border-radius:10px;padding:4px 10px;flex-shrink:0}
-  .hero .hreq{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:12px}.hero .hreq button{background:rgba(255,255,255,.12);color:#fff;border-radius:14px;padding:14px 6px;font-size:15px;font-weight:800}.hero .hreq button i{display:block;font-style:normal;font-size:22px;margin-bottom:4px}@media (max-width:520px){.hero .hreq{grid-template-columns:1fr 1fr}}
+  .hero .hreq{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:12px}.hero .hreq button{background:rgba(255,255,255,.12);color:#fff;border-radius:14px;padding:14px 6px;font-size:15px;font-weight:800}.hero .hreq button i{display:block;font-style:normal;font-size:22px;margin-bottom:4px}.hero .hreq button small{display:block;font-size:11px;font-weight:700;color:#ffd7a8;margin-top:2px}@media (max-width:520px){.hero .hreq{grid-template-columns:1fr 1fr}}
   .hero .bar{height:8px;background:rgba(255,255,255,.15);border-radius:99px;margin-top:16px;overflow:hidden}
   .hero .bar i{display:block;height:100%;background:#64a8ff;border-radius:99px;transition:width .3s}
   .card{background:var(--card);border-radius:20px;padding:6px 18px;margin-bottom:12px}
@@ -222,7 +222,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.26-6";
+const VER = "10.26-7";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -429,7 +429,8 @@ function render() {
   const cAt = closeAtOf(B, d), nowM = d.getHours() * 60 + d.getMinutes(), cAtM = (([h, m]) => +h * 60 + +m)(cAt.split(":"));
   const biz = TEST && done === N && !cSteps[0] && d.getHours() >= 5 && nowM < cAtM - 60;
   const bizBody = heroPill + heroIl + heroAs + `<p class="hk">영업 중, 마감 ${cAt === "24:00" ? "자정" : cAt}</p>
-    <div class="hreq"><button data-req="qk"><i>🛵</i>퀵</button><button data-go="pcnew"><i>📦</i>택배</button><button data-req="branch"><i>🔁</i>다른 지점</button><button data-go="creq"><i>🧾</i>고객요청</button></div>
+    <div style="margin-top:10px;font-size:12px;font-weight:800;color:#ffd7a8">🧪 테스트 중인 버튼이에요. 아직 정식 기능 아니에요</div>
+    <div class="hreq" style="margin-top:6px"><button data-req="qk"><i>🛵</i>퀵<small>테스트</small></button><button data-go="pcnew"><i>📦</i>택배<small>테스트</small></button><button data-req="branch"><i>🔁</i>다른 지점<small>테스트</small></button><button data-go="creq"><i>🧾</i>고객요청<small>테스트</small></button></div>
     <p>근무 중 ${working.length}명${working.length ? `, ${working.map((x) => esc(x.name)).join(", ")}` : ""}</p>`;
   const heroBody = biz ? bizBody : heroPill + heroIl + heroAs + `<p class="hk">${done < N ? `지금 할 일, 오픈 ${OPEN_AT[B]}` : "지금 할 일, 마감"}</p>
     ${nx ? `<div class="hnx"><h1>${nx[0]} ${nx[1]}</h1>${nx[3]}</div>` : `<h1 style="margin-top:6px">오늘 마감 완료! 수고하셨어요</h1>`}
