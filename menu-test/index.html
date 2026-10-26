@@ -605,6 +605,16 @@
   .askbox{margin-top:16px;padding:16px;border-radius:16px;background:#fff4e5}
   .askbox > b{font-size:17px;color:#8a4b00}
   .askhint{margin-top:6px;font-size:14px;color:var(--ink-soft)}
+  .askchip{position:fixed;left:16px;bottom:130px;z-index:55;display:none;background:#fff4e5;color:#8a4b00;border:2px solid #f0c48a;border-radius:999px;padding:12px 18px;font-weight:800;font-size:15px;box-shadow:0 6px 18px rgba(21,18,15,.12)}
+  .askchip.on{display:block}
+  .askchip b{color:#1b5e20}
+  .asklist{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+  .askitem{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;border-radius:14px;background:#fff4e5}
+  .askitem > div{display:flex;flex-direction:column;gap:4px;font-size:15px;color:var(--ink-soft)}
+  .askitem > div > b{font-size:17px;color:var(--ink)}
+  .askitem .ok{color:#1b5e20}
+  .askitem small{font-size:13px;color:var(--grey)}
+  .askitem .b2{flex:0 0 auto;padding:10px 14px}
   .askans{margin-top:10px;padding:10px 12px;border-radius:12px;background:#fff;font-size:15px;color:var(--ink-soft)}
   .askans b{color:#1b5e20;font-size:16px}
   .askrow{display:flex;align-items:center;gap:10px;margin-top:12px;flex-wrap:wrap}
@@ -819,7 +829,7 @@
 <body data-mode=""><div id="testRibbon" style="position:fixed;left:0;right:0;bottom:0;z-index:99999;background:#d32f2f;color:#fff;text-align:center;font:700 13px sans-serif;padding:4px;pointer-events:none">테스트판 · 손님 상담에는 정식판을 쓰세요</div>
 <div class="app">
   <div class="top">
-    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">테스트 v10.26-0100</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
+    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">테스트 v10.26-0200</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
     <nav class="tabs" id="tabs" style="display:none"></nav>
     <div class="flow" id="flow"><span data-st="1">① 찾는 것</span><i>›</i><span data-st="2">② 고르기</span><i>›</i><span data-st="3">③ 담은 상품</span><i>›</i><span data-st="4">④ 직원 확인</span></div>
   </div>
@@ -1477,18 +1487,49 @@ const asked = new Map(); // 상품 → 요청 보낸 시각 (연타 막기, 답 
 try { for (const [n, t] of Object.entries(JSON.parse(localStorage.getItem("vf-asked") || "{}"))) if (Date.now() - t < 12 * 3600e3) asked.set(n, t); } catch (e) {}
 const askedSave = () => { try { localStorage.setItem("vf-asked", JSON.stringify(Object.fromEntries(asked))); } catch (e) {} };
 let ASKANS = {}; // 상품명 → {yes:[지점], no:[지점]} (운영봇이 올린 stockask.json, 이 지점이 요청한 것만)
-async function loadAskAns() {
-  if (![...asked.values()].some((t) => Date.now() - t < 2 * 3600e3)) return; // 최근 2시간 안에 요청한 게 있을 때만 읽음
+// 10/26 깃허브 페이지(stockask.json)는 캐시 때문에 최대 10분 늦게 보여서, 깃허브 API로 바로 읽음(ETag 조건 요청 = 바뀐 게 없으면 한도 안 씀). API가 안 되면 페이지 파일로
+const ASK_API = "https://api.github.com/repos/officialvafriend/vape/contents/menu/stockask.json?ref=main";
+let askEtag = "", askRows = null;
+async function askFetch() {
   try {
-    const rows = await (await fetch("stockask.json", { cache: "no-store" })).json();
+    const r = await fetch(ASK_API, { cache: "no-store", headers: { Accept: "application/vnd.github.raw+json", ...(askEtag ? { "If-None-Match": askEtag } : {}) } });
+    if (r.status === 304) return askRows;
+    if (r.ok) { askEtag = r.headers.get("ETag") || ""; askRows = await r.json(); return askRows; }
+  } catch (e) {}
+  try { return await (await fetch(`stockask.json?t=${Math.floor(Date.now() / 20e3)}`, { cache: "no-store" })).json(); } catch (e) { return askRows; }
+}
+const askList = () => [...asked.entries()].filter(([, t]) => Date.now() - t < 2 * 3600e3).sort((a, b) => b[1] - a[1]); // 최근 2시간 요청
+// 화면 어디서든 보이는 작은 표시(10/26 사장님 "다른 상품 보다가도 확인 이어서 할 수 있어?"): 누르면 요청 목록
+function askChip() {
+  let c = document.getElementById("askChip");
+  if (!c) { c = document.createElement("button"); c.id = "askChip"; c.className = "askchip"; c.onclick = askSheet; document.body.appendChild(c); }
+  const l = askList(); if (!l.length) return c.classList.remove("on");
+  const yes = l.filter(([n]) => ASKANS[n]?.yes.length).length;
+  c.innerHTML = `📦 재고 확인 ${l.length}건${yes ? ` <b>· 가능 ${yes}건</b>` : " · 답 기다리는 중"}`; c.classList.add("on");
+}
+function askSheet() {
+  const l = askList();
+  open(`<h3>다른 지점 재고 확인</h3><div class="asklist">${l.map(([n, t]) => {
+    const an = ASKANS[n], x = L.find((y) => y.n === n);
+    const st = an?.yes.length ? `<b class="ok">✅ 가능: ${an.yes.map(esc).join(", ")}</b>` : an?.no.length ? `<span>❌ 불가: ${an.no.map(esc).join(", ")}</span>` : `<span>⏳ 답 기다리는 중</span>`;
+    return `<div class="askitem"><div><b>${esc(short(n))}</b><small>${new Date(t).toTimeString().slice(0, 5)} 요청</small>${st}${an?.yes.length && an.no.length ? `<small>❌ 불가: ${an.no.map(esc).join(", ")}</small>` : ""}</div>${x ? `<button class="b2" data-det="${x.id}">상품 보기</button>` : ""}</div>`;
+  }).join("") || "<p>최근 2시간 안에 보낸 요청이 없어요</p>"}</div><div class="btns"><button class="b2" data-x>닫기</button></div>`);
+}
+async function loadAskAns() {
+  askChip();
+  if (!askList().length) return; // 최근 2시간 안에 요청한 게 있을 때만 읽음
+  try {
+    const rows = await askFetch(); if (!Array.isArray(rows)) return;
     const before = JSON.stringify(ASKANS), next = {};
     for (const r of rows) if (r.from === PAD.branch && asked.has(r.item) && r.at >= asked.get(r.item) - 120e3) next[r.item] = { yes: r.yes || [], no: r.no || [] };
     ASKANS = next; if (JSON.stringify(next) === before) return;
+    askChip();
     for (const [n, v] of Object.entries(next)) if (v.yes.length) toast(`${short(n)} · ${v.yes.join(", ")}에 있대요`);
     const el = document.querySelector("[data-ask]"); if (el) { const box = el.closest(".askbox"); if (box) box.outerHTML = askBox(item(el.dataset.ask)); } // 열려 있는 상품 화면 갱신
+    if (document.querySelector(".asklist")) askSheet(); // 목록 창이 열려 있으면 다시 그림
   } catch (e) {}
 }
-setInterval(loadAskAns, 30e3); loadAskAns();
+setInterval(loadAskAns, 15e3); loadAskAns();
 async function askSend(id) {
   const x = item(id), btn = document.querySelector(`[data-ask="${id}"]`);
   if (Date.now() - (asked.get(x.n) || 0) < 10 * 60e3) return toast(`이미 요청했어요 · ${short(x.n)} · 답이 오면 이 화면에 가능한 지점이 떠요`);
@@ -1497,7 +1538,7 @@ async function askSend(id) {
   try {
     const r = await fetch(HOOK, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ content: JSON.stringify({ type: "stockask", branch: PAD.branch, pad: PAD.no, item: x.n, qty: askQty }), allowed_mentions: { parse: [] }, flags: 4096 }) });
     if (!r.ok) throw new Error("응답 " + r.status);
-    asked.set(x.n, Date.now()); askedSave(); delete ASKANS[x.n]; if (btn) btn.textContent = "✓ 요청 보냄";
+    asked.set(x.n, Date.now()); askedSave(); delete ASKANS[x.n]; askChip(); if (btn) btn.textContent = "✓ 요청 보냄";
     ev("k", x.n, String(askQty)); toast(`요청했어요 · ${short(x.n)} ${askQty}개 · 답이 오면 이 화면에 가능한 지점이 떠요`); askQty = 1;
     const box = btn?.closest(".askbox"); if (box) box.outerHTML = askBox(x);
   } catch (e) { if (btn) { btn.disabled = false; btn.textContent = "다른 지점 재고 확인 요청"; } toast(`요청 못 했어요 (${navigator.onLine ? e.message : "인터넷 끊김"}) · 다시 눌러 주세요`); }
@@ -1780,6 +1821,7 @@ document.addEventListener("click", (e) => {
   if (q("#findBtn")) return openSearch();
   if (q("#srchClose")) { $("#srch").classList.remove("on"); return; }
   if ((el = q("[data-qk]"))) { $("#q").value = el.dataset.qk; drawSearch(); return; }
+  if ((el = q("[data-det]"))) return detail(el.dataset.det);
   if (q("[data-x]")) return closeS();
   if ((el = q("[data-pkgadd]"))) { const p = PKGS.find((x) => x.id === el.dataset.pkgadd); if (p.device) add(DEVICE.id); p.items.map(byName).filter(Boolean).forEach((x) => add(x.id)); closeS(); if (p.pick) { (setMode("liq"), setTimeout(() => document.getElementById("s4").scrollIntoView({ behavior: "smooth" }), 50)); toast(`기기를 담았어요. 액상 ${p.pick}병을 골라 주세요`); } else toast("구성을 담았어요"); return; }
   if ((el = q("[data-goto]"))) { document.getElementById(el.dataset.goto).scrollIntoView({ behavior: "smooth" }); return; }
