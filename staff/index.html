@@ -236,7 +236,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.26-30";
+const VER = "10.26-31";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -1699,10 +1699,11 @@ async function sheetSnStep(id) {
   let body = "";
   if (mine) {
     const key = r.kind + "|" + r.st;
+    const whyHtml = r.pos?.[B] > 0 ? `<div class="desc" style="margin-top:10px">포스 기준 ${esc(String(r.pos[B]))}개 있어요. 없으면 이유를 적어 주세요</div><div class="chips" style="margin-top:6px">${["실재고 없음", "마지막 1개", "손님 예약분"].map((x) => `<button class="chip" data-why="${x}">${x}</button>`).join("")}</div><input class="input" id="snWhy" placeholder="없는 이유" maxlength="80">` : ""; // 10/26 사장님: 포스엔 있는데 거절하면 사유 입력
     if (key === "quick|poll" || key === "jeon|poll") body = r.from === B
       ? `<div class="desc">있다고 답한 지점 중에서 고르세요${(r.pollTo || []).filter((b) => !(r.ans || {})[b]).length ? ` (아직 답 안 한 곳 ${(r.pollTo || []).filter((b) => !(r.ans || {})[b]).length})` : ""}</div><div class="chips">${snHaves(r).map((b) => `<button class="chip" data-snpick="${b}" data-id="${id}">${esc(ho(b))}${r.pos?.[b] != null ? ` <small>포스 ${esc(String(r.pos[b]))}</small>` : ""}</button>`).join("")}</div>`
-      : `<div class="desc">우리 매장에 있나요?${r.pos?.[B] != null ? ` 포스 기준 ${esc(String(r.pos[B]))}개, 직접 확인해 주세요` : ""}</div><div class="btns">${btn("have", "있음")}${btn("none", "없음", "")}</div>`;
-    if (key === "quick|ask" || key === "jeon|ask") body = `<div class="btns">${btn(r.kind === "quick" ? "ok" : "sent", r.kind === "quick" ? "가능 (재고 있음)" : "보냄")}${btn("no", "없음", "")}</div>`;
+      : `<div class="desc">우리 매장에 있나요? 직접 확인해 주세요</div>${whyHtml}<div class="btns">${btn("have", "있음")}${btn("none", "없음", "")}</div>`;
+    if (key === "quick|ask" || key === "jeon|ask") body = `${whyHtml}<div class="btns">${btn(r.kind === "quick" ? "ok" : "sent", r.kind === "quick" ? "가능 (재고 있음)" : "보냄")}${btn("no", "없음", "")}</div>`;
     if (key === "quick|ok") body = `<div class="desc">포스에서 결제하고 손님 정보를 넣어 주세요</div><input class="input" id="snName" placeholder="손님 이름" maxlength="20"><input class="input" id="snPhone" placeholder="손님 연락처" inputmode="tel" maxlength="20"><input class="input" id="snAddr" placeholder="받을 주소" maxlength="120"><div class="btns">${btn("paid", "결제함")}${btn("cancel", "취소", "")}</div>`;
     if (key === "quick|paid" || key === "openquick|packed") body = `${cust}${key === "quick|paid" ? cam : '<div class="desc">어제 포장해 둔 걸 퀵으로 보내 주세요</div>'}<input class="input" id="snFee" placeholder="퀵비 (예: 8000)" inputmode="numeric" maxlength="10"><div class="btns">${btn("done", "출발")}</div>`;
     if (key === "openquick|paid") body = `${cust}<div class="desc">지금 바로 포장하고 사진을 찍어 주세요. 내일 오픈하고 보내요</div>${cam}<div class="btns">${btn("packed", "포장해 둠")}${btn("nostock", "재고 없음", "")}</div>`;
@@ -1720,6 +1721,7 @@ async function doSnStep(t) {
   if (k === "paid") { if (!v("#snAddr")) return toast("받을 주소를 넣어 주세요"); Object.assign(extra, { name: v("#snName"), phone: v("#snPhone"), addr: v("#snAddr") }); }
   if (k === "done" && $("#snFee")) extra.fee = v("#snFee");
   if (k === "pick") extra.to = t.dataset.to;
+  if ((k === "none" || k === "no") && $("#snWhy")) { if (!v("#snWhy")) return toast("없는 이유를 적어 주세요"); extra.why = v("#snWhy"); }
   const needPhoto = (r.kind === "quick" && k === "done") || (r.kind === "openquick" && k === "packed");
   if (needPhoto && !PC.photo) return toast("제품 사진을 찍어 주세요");
   const by = working().join(", "); if (!by) return needIn(() => sheetSnStep(id));
@@ -2421,6 +2423,7 @@ document.addEventListener("click", (e) => {
   if (t.dataset.snto) { SN.to = t.dataset.snto; document.querySelectorAll("[data-snto]").forEach((x) => x.classList.toggle("on", x === t)); return; }
   if (t.id === "okSnNew") return doSnNew(t);
   if (t.dataset.snopen) return sheetSnStep(t.dataset.snopen);
+  if (t.dataset.why) { const i = $("#snWhy"); if (i) i.value = t.dataset.why; document.querySelectorAll("[data-why]").forEach((x) => x.classList.toggle("on", x === t)); return; }
   if (t.dataset.snpick) { t.dataset.snk = "pick"; t.dataset.to = t.dataset.snpick; return doSnStep(t); }
   if (t.dataset.snk) return doSnStep(t);
   if (t.dataset.sntell) return sheetSnTell(t.dataset.sntell);
