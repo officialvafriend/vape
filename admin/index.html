@@ -120,6 +120,10 @@
 .ops td small{display:block;font-size:11px;font-weight:600}
 /* 10/19 KPI: 버튼 36px 14px, 숫자 24px, 표 14px 40px, 홈 상위/하위 두 칸 */
 .kbar{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px}
+.subnav{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 16px}.subnav button{height:38px;padding:0 14px;border-radius:12px;background:var(--card);font-weight:700;font-size:15px;color:var(--ink2);border:1px solid var(--line2)}.subnav button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.hstat{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:10px;margin:0 0 18px}.hstat div{background:var(--card);border-radius:18px;padding:16px 18px}.hstat span{display:block;font-size:13px;font-weight:700;color:var(--sub);white-space:nowrap}.hstat b{display:block;font-size:24px;font-weight:800;letter-spacing:-.6px;margin-top:6px;white-space:nowrap}
+@media (max-width:700px){.hstat{grid-template-columns:1fr 1fr}.hstat b{font-size:22px}}
+.botwarn{display:block;width:100%;text-align:left;background:#fdecee;color:#d22030;font-weight:700;font-size:14px;border-radius:12px;padding:10px 14px;margin:0 0 14px}
 .kbar .chip{height:36px;padding:0 12px;border-radius:10px;background:var(--card);font-weight:600;font-size:14px;color:var(--ink2);border:1px solid var(--line2)}
 .kbar .chip.on{background:var(--blue);color:#fff;border-color:var(--blue)}
 .ops.kt td{padding-top:9px;padding-bottom:9px}
@@ -177,17 +181,13 @@
 <body>
 <div class="wrap" id="app"></div>
 <nav class="nav" id="nav" style="display:none"><div>
-  <button data-tab="home"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3.2 3 10.4V20a1 1 0 0 0 1 1h5.5v-6h5v6H20a1 1 0 0 0 1-1v-9.6z"/></svg>홈</button>
-  <button data-tab="order">🛒주문요청</button>
-  <button data-tab="note">📝매장 노트</button>
-  <button data-tab="kpi"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 19h16v2H4zM5 11h3v6H5zm5.5-4h3v10h-3zM16 4h3v13h-3z"/></svg>KPI</button>
-  <button data-tab="close"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 6h18v12H3zm9 2.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7z"/></svg>마감</button>
-  <button data-tab="survey"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 5h16v3H4zm1 5h14v9a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1zm4 3v2h6v-2z"/></svg>재고조사</button>
-  <button data-tab="tasks"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 3h8v2h3a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h3zm2 0v3h4V3zm5.3 7.3-4.3 4.3-2.3-2.3-1.4 1.4 3.7 3.7 5.7-5.7z"/></svg>업무</button>
-  <button data-tab="group"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 4h8v7H3zm10 0h8v7h-8zM3 13h8v7H3zm10 0h8v7h-8z"/></svg>그룹관리</button>
-  <button data-tab="must"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h16v4H4zm0 6h16v10H4zm5 3v2h6v-2z"/></svg>추가 필수</button>
-  <button data-tab="naver"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h5.2l5.6 8.1V4H20v16h-5.2l-5.6-8.1V20H4z"/></svg>네이버</button>
-  <button data-tab="staff"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zm-8 8c0-3.3 3.6-6 8-6s8 2.7 8 6v1H4z"/></svg>직원앱</button>
+  <button data-g="home" data-tab="home">홈</button>
+  <button data-g="tasks" data-tab="tasks">업무</button>
+  <button data-g="close" data-tab="close">마감</button>
+  <button data-g="kpi" data-tab="kpi">KPI</button>
+  <button data-g="goods" data-tab="order">상품</button>
+  <button data-g="note" data-tab="note">노트</button>
+  <button data-g="office" data-tab="office">사무실</button>
 </div></nav>
 <div class="dim" id="dim"><div class="sheet" id="sheet"></div></div>
 <div class="tip" id="tip"></div>
@@ -277,6 +277,12 @@ const ICON = {
   office: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 21V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v4h2a2 2 0 0 1 2 2v10h-6v-4h-4v4zm4-14v2h2V7zm4 0v2h2V7zm-4 4v2h2v-2zm4 0v2h2v-2zm5 2v2h2v-2z"/></svg>',
 };
 // 10/19 사장님 "다 따로 들어가기 불편해": 네이버 앱, 직원앱을 관리자 안 메뉴로 (같은 사이트라 안에 띄움, 네이버 열쇠, 직원앱 지점은 각 앱이 이 기기에 기억)
+// 10/26 사장님 "홈이 가득가득, 업무 안에 블로그도": 메뉴 12개 → 7개 묶음, 묶음 안은 위쪽 작은 탭
+const GROUPS = [["home", "홈", ["home"]], ["tasks", "업무", ["tasks", "blog"]], ["close", "마감", ["close"]], ["kpi", "KPI", ["kpi"]], ["goods", "상품", ["order", "survey", "group", "must"]], ["note", "매장 노트", ["note"]], ["office", "사무실", ["office", "staff", "naver"]]];
+const SUBNM = { tasks: "오늘 할 일", blog: "블로그 발행", order: "주문요청", survey: "재고조사", group: "그룹관리", must: "추가 필수", office: "봇 상태", staff: "직원앱", naver: "네이버" };
+const grpOf = (t) => GROUPS.find((g) => g[2].includes(t)) || GROUPS[0];
+const grpTab = (g) => { const last = ls.get("vf-admin-sub-" + g[0]); return g[2].includes(last) ? last : g[2][0]; };
+const subnavHtml = () => { const g = grpOf(tab); return g[2].length > 1 ? `<div class="subnav">${g[2].map((k) => `<button class="${k === tab ? "on" : ""}" data-tab="${k}">${SUBNM[k]}</button>`).join("")}</div>` : ""; };
 const EMBED = { naver: () => "../naver/", staff: () => `../staff/?branch=${encodeURIComponent(staffB)}` };
 let staffB = ls.get("vf-admin-staffb") || "본점";
 function embedHtml() {
@@ -287,14 +293,16 @@ function render() {
   if (!D) return;
   const pc = isPC();
   $("#nav").style.display = pc ? "none" : "";
-  document.querySelectorAll("#nav button").forEach((b) => b.classList.toggle("on", b.dataset.tab === tab));
+  ls.set("vf-admin-sub-" + grpOf(tab)[0], tab);
+  document.querySelectorAll("#nav button").forEach((b) => { const g = GROUPS.find((x) => x[0] === b.dataset.g); if (g) { b.dataset.tab = grpTab(g); b.classList.toggle("on", grpOf(tab) === g); if (!b.dataset.ic) { b.dataset.ic = 1; b.innerHTML = (g[0] === "goods" ? ICON.survey : g[0] === "office" ? ICON.office : ICON[g[0]]) + (g[0] === "note" ? "노트" : g[1]); } } });
   const [, hh, mm] = D.at.match(/(\d{2}):(\d{2})$/) || [];
   if (EMBED[tab] && $("#app .emb") && $("#app .emb").dataset.k === tab + staffB) return; // 자동 새로고침 때 안에 띄운 앱이 처음으로 돌아가지 않게
-  const body = EMBED[tab] ? embedHtml() : tab === "home" ? (pc ? homePC() : homeHtml()) : tab === "kpi" ? kpiHtml() : tab === "close" ? closingAllHtml() : tab === "survey" ? surveyHtml() : tab === "tasks" ? tasksHtml() : tab === "note" ? noteHtml() : tab === "order" ? orderHtml() : tab === "office" ? officeHtml() : tab === "group" ? groupHtml() : mustHtml();
+  const body0 = EMBED[tab] ? embedHtml() : tab === "home" ? (pc ? homePC() : homeHtml()) : tab === "kpi" ? kpiHtml() : tab === "close" ? closingAllHtml() : tab === "survey" ? surveyHtml() : tab === "tasks" ? tasksHtml() : tab === "note" ? noteHtml() : tab === "order" ? orderHtml() : tab === "office" ? officeHtml() : tab === "group" ? groupHtml() : tab === "blog" ? (blogAdmHtml() || '<div class="empty">올라온 블로그 지시문이 없어요</div>') : mustHtml();
+  const body = subnavHtml() + body0;
   if (!pc) { $("#app").innerHTML = `<div class="top"><div class="logo">VAFRIEND <b>관리자</b></div><div class="r"><button class="ic" data-act="reload">${hh ? `${hh}:${mm} 기준 ↻` : "새로고침"}</button><button class="ic" data-act="logout">잠그기</button></div></div>${body}`; markEmb(); return; }
-  const navs = [["home", "홈"], ["order", "주문요청"], ["note", "매장 노트"], ["kpi", "KPI"], ["close", "마감"], ["survey", "재고조사"], ["tasks", "업무"], ["group", "그룹관리"], ["must", "추가 필수"], ["naver", "네이버"], ["staff", "직원앱"], ["office", "사무실"]];
+  const ICG = { goods: ICON.order };
   $("#app").innerHTML = `<div class="shell"><aside class="side"><div class="logo">VAFRIEND <b>관리자</b></div>
-      ${navs.map(([k, n]) => `<button class="navb ${tab === k ? "on" : ""}" data-tab="${k}">${ICON[k]}${n}</button>`).join("")}
+      ${GROUPS.map((g) => `<button class="navb ${grpOf(tab) === g ? "on" : ""}" data-tab="${grpTab(g)}">${ICG[g[0]] || ICON[g[0]]}${g[1]}${g[0] === "office" && botBad() ? ' <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--red);margin-left:4px"></span>' : ""}</button>`).join("")}
       <div class="foot"><button class="navb" data-act="reload">↻ ${hh ? `${hh}:${mm} 기준` : "새로고침"}</button><button class="navb" data-act="logout">🔒 잠그기</button></div></aside>
     <main class="main ${EMBED[tab] ? "embm" : ""}">${tab === "home" || tab === "kpi" || tab === "group" || tab === "must" || EMBED[tab] ? body : `<div class="narrow">${body}</div>`}</main></div>`;
   markEmb();
@@ -321,6 +329,10 @@ const kHL = (list) => { const o = {}; for (const k of ["avg", "ticket", "des", "
 const kHead = (first) => `<thead><tr><th>${first}</th><th>영업일</th><th>매출(원)</th><th>하루 평균</th><th>객수</th><th>객단가</th><th>지정판매율</th><th>일회용판매율</th><th>발맥프로율</th><th>리뷰율</th></tr></thead>`;
 function kpiHtml() {
   const K = D.kpi; if (!K) return '<div class="empty">KPI 기록을 아직 못 불러왔어요</div>';
+  if (kpiM === "staff") return kpiRankHtml() + kpiHtml0(K);
+  return kpiHtml0(K);
+}
+function kpiHtml0(K) {
   const modeBar = `<div class="kbar">${[["staff", "직원별"], ["branch", "지점별"]].map(([k, n]) => `<button class="chip ${kpiM === k ? "on" : ""}" data-kpim="${k}">${n}</button>`).join("")}</div>`;
   if (kpiM === "staff") return modeBar + staffKpiHtml(K);
   return modeBar + branchKpiHtml(K);
@@ -368,7 +380,8 @@ function staffKpiHtml(K) {
 // 10/20 각인 매장(1, 3, 6호) 이번 달 건수, 직접 고른 건, 진행 중
 // ── 주문요청 (10/21) ── 전 지점 고객 주문요청 중 결제 완료 건만(선결제). 상품 확인 → 주문함. 나중에 이사님 재고주문 프로그램과 합칠 예정
 let orderF = "열린 것";
-function orderHtml() {
+function orderHtml() { return engHtml() + orderHtml0(); }
+function orderHtml0() {
   const L0 = (D.orders || []).slice().sort((a, b) => (b.d + b.t).localeCompare(a.d + a.t));
   const open = (o) => o.ost !== "주문함" && !["done", "cancel"].includes(o.step);
   const F = { "열린 것": open, 요청: (o) => o.ost === "요청" && open(o), 확인: (o) => o.ost === "확인" && open(o), 주문함: (o) => o.ost === "주문함", 전체: () => true };
@@ -477,8 +490,15 @@ function issuesHtml() {
   return `<div class="sec" style="margin-top:0">확인할 것 <small>${L.length ? L.length + "건" : ""}</small>${hid ? `<button class="issundo" data-issundo="1" style="margin-left:auto;font-size:13px;color:var(--sub);background:none">숨긴 것 ${hid}건 되돌리기</button>` : ""}</div><div class="list">${L.length ? L.map((x) => `<div style="display:flex;align-items:center"><button class="item iss" style="flex:1;min-width:0" ${x.b ? `data-brpc="${esc(x.b)}"` : `data-tab="${x.go}"`}><i class="dot"></i><div class="tx"><b>${esc(x.t)}</b><span>${esc(x.d)}</span></div><span class="chev">›</span></button><button class="issok" data-issok="${esc(issKey(x))}" title="확인했어요" style="flex:0 0 auto;margin:0 12px 0 4px;height:28px;padding:0 10px;border-radius:8px;background:var(--line2);color:var(--sub);font-size:13px;font-weight:600">확인</button></div>`).join("") : '<div class="item"><i class="dot ok"></i><div class="tx"><b>오늘은 확인할 게 없어요</b></div></div>'}</div>`;
 }
 const homeHead = () => `<div class="pchead"><h1>오늘 한눈에</h1><div class="caption">${esc(D.d)}, ${esc(D.at.slice(-5))} 기준</div></div>`;
+function botBad() { if (!BOT) return false; const m = BOT.master || {}; return agoMin(BOT.at) > 10 || BOT.ops.s === "에러" || !(m.ok && m.login) || (BOT.adj && !(BOT.adj.ok && Object.values(BOT.adj.br || {}).every((v) => v.login))); }
+const botWarn = () => (botBad() ? '<button class="botwarn" data-tab="office">● 봇에 문제가 있어요, 눌러서 사무실에서 확인</button>' : "");
+function statHtml() {
+  const ops = D.ops || [], v = (o) => (o.close ? { s: +o.close.총 || 0, n: +o.close.bills || 0, r: +o.close.rev || 0 } : { s: o.live?.sales || 0, n: o.live?.bills || 0, r: o.revLive?.rev || 0 });
+  const t = ops.reduce((a, o) => { const x = v(o); a.s += x.s; a.n += x.n; a.r += x.r; return a; }, { s: 0, n: 0, r: 0 }), done = ops.filter((o) => o.close).length;
+  return `<div class="hstat"><div><span>총매출</span><b>${m1(t.s)}</b></div><div><span>객수</span><b>${t.n}</b></div><div><span>리뷰</span><b>${t.r}</b></div><div><span>마감 보고</span><b>${done}/${ops.length}곳</b></div></div>`;
+}
 function homePC() {
-  return `${homeHead()}<div class="cols home"><div>${botMiniHtml()}${issuesHtml()}${kpiRankHtml()}${engHtml()}${opsHtml()}${blogAdmHtml()}</div><div class="sheet panel" id="panel"></div></div>`;
+  return `${homeHead()}<div class="cols home"><div>${botWarn()}${statHtml()}${issuesHtml()}${opsHtml()}</div><div class="sheet panel" id="panel"></div></div>`;
 }
 function panelDefault() { return `<div class="eyebrow">지점 상세</div><h3>왼쪽에서 지점이나<br>확인할 것을 누르세요</h3><div class="caption">그날 마감 보고, 차액, 품절이 여기에 떠요</div>`; }
 // 지점 상세 패널: 오늘 마감 보고(경고 포함) + 품절
@@ -605,7 +625,7 @@ function botMiniHtml() {
   const dot = (ok) => `<span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${ok ? "var(--green)" : "var(--red)"}"></span>`;
   return `<button id="botmini" data-tab="office" title="사무실에서 자세히" style="display:inline-flex;gap:14px;align-items:center;font-size:13px;font-weight:600;color:var(--sub);background:none;padding:2px 0 10px">${dot(ops)} 운영봇 ${dot(mas)} 마스터봇${BOT.adj ? ` ${dot(!dead && BOT.adj.ok && Object.values(BOT.adj.br || {}).every((v) => v.login))} 조정봇` : ""}${BOT.bsQ ? ` <span class="t-bad">시트 밀림 ${BOT.bsQ}</span>` : ""}</button>`;
 }
-function homeHtml() { return `<div style="padding-top:6px">${botMiniHtml()}${issuesHtml()}${kpiRankHtml()}${engHtml()}${opsHtml()}${blogAdmHtml()}</div>`; }
+function homeHtml() { return `<div style="padding-top:6px">${botWarn()}${statHtml()}${issuesHtml()}${opsHtml()}</div>`; }
 // ── 마감 보고 (직원앱 시재 + 포스 숫자) ──
 const won = (n) => Math.round(+n || 0).toLocaleString("ko-KR");
 function closingAllHtml() { return `<div class="pchead"><h1>마감 보고</h1><div class="caption">최근 40건, 누르면 보고문 전체</div></div>${closingListHtml(40) || '<div class="empty">아직 마감 보고가 없어요</div>'}`; }
