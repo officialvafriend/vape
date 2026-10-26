@@ -866,7 +866,7 @@ document.addEventListener("click", async (e) => {
   if (t.dataset.act === "gexport") return grpExport().catch((er) => toast(er.message));
   if (t.dataset.act === "gclear") { if (t.dataset.sure !== "1") { t.dataset.sure = "1"; t.textContent = "정말 비우기"; return; } grpSave({}); render(); return toast("고른 것을 비웠어요"); }
   if (t.dataset.act === "gadd") { const n = $("#gnewn").value.trim(); if (!n) return $("#gnewn").focus(); const ed = grpEd(); if (D.grp?.map?.[n] || (D.products["본점"] || []).some(([x]) => x === n)) { grpQ = n; grpF = "all"; render(); return toast("이미 있는 상품이에요, 오른쪽에서 그룹을 골라 주세요"); } ed[n] = { to: $("#gnewg").value, isNew: true, at: Date.now() }; grpSave(ed); grpF = "chg"; render(); return toast("새 상품을 넣었어요"); }
-  if (t.dataset.issok) { const s = issDone(); s.add(t.dataset.issok); issDoneSave(s); render(); return toast("확인한 걸로 숨겼어요"); }
+  if (t.dataset.issok) { const s = issDone(); s.add(t.dataset.issok); issDoneSave(s); render(); return toast("확인 완료"); }
   if (t.dataset.issundo) { issDoneSave(new Set()); render(); return; }
   if (t.dataset.restart) { const bot = t.dataset.restart; if (!confirm(bot + "을 다시 켤까요? 1분쯤 걸려요" + (bot === "운영봇" ? ". 그동안 온 신호는 다시 켜진 뒤 처리돼요" : ""))) return; t.disabled = true; t.textContent = "보냈어요"; try { await sendOp("restart", { bot }); toast(bot + " 다시 켜는 중이에요. 3분 안에 상태가 바뀌어요"); setTimeout(loadBot, 90e3); setTimeout(loadBot, 200e3); } catch (err) { toast("못 보냈어요: " + err.message); t.disabled = false; t.textContent = "다시 켜기"; } return; }
   if (t.dataset.x !== undefined) return closeSheet();
