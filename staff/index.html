@@ -224,7 +224,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.26-15";
+const VER = "10.26-16";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -1501,6 +1501,11 @@ function parcelHtml() {
   const day = BR.map((b) => { const x = pcState(b); return `<div style="display:flex;justify-content:space-between;padding:7px 0;border-top:1px solid #eee;font-size:14px"><b>${esc(ho(b))}</b><span style="color:${x.ok ? "var(--green)" : "var(--sub)"};font-weight:700">${esc(x.t)}</span></div>`; }).join("");
   const row = (r) => `<div class="crow"><div><b>${r.from === B && r.to === B ? "" : r.from === B ? `→ ${esc(ho(r.to))} ` : `← ${esc(ho(r.from))} 요청 `}${esc(r.nm || "손님")}님, ${esc(r.items)}</b><span>${st[r.st]}${r.wb ? `, ${esc(r.carrier)} ${esc(r.wb)}` : ""}${r.late ? ", 내일 나감" : ""}, ${esc(r.d.slice(5).replace("-", "/"))} ${esc(r.t)} ${esc(r.by)}</span></div>
     <div class="tbtn">${r.to === B && r.st === "req" ? `<button class="act" data-pcpack="${r.id}">포장</button>` : ""}${r.to === B && r.st === "packed" ? `<button class="act" data-pcwb="${r.id}">송장 넣기</button>` : ""}${r.from === B && r.st === "shipped" ? `<button class="act" data-pctell="${r.id}">손님께 보내기</button>` : ""}${r.st === "req" ? `<button class="act gray" data-pccx="${r.id}">취소</button>` : ""}</div></div>`;
+  // 10/26 사장님 "지점별 택배 표가 쓸데없이 크다": 우리 지점 상태 한 줄만. 다른 지점 상태는 택배 요청 창에서 지점 고를 때 보임
+  const me = pcState(B), mine = `<div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--sub);margin:2px 0 10px"><span>우리 지점 <b style="color:${me.ok ? "var(--green)" : "var(--sub)"}">${esc(me.t)}</b></span>${me.ok ? `<button class="chip" data-go="pdaygo" style="margin-left:auto">오늘 출고됐어요</button>` : ""}</div>`;
+  if (UI2) return `<div class="cols one"><div><div class="card"><h2>📦 택배 <small style="color:var(--red)">테스트 중</small></h2>${mine}
+      <div class="btns" style="margin:0 0 12px"><button class="btn primary" data-go="pcnew">＋ 택배 요청</button></div>
+      ${L.length ? L.map(row).join("") : '<div class="desc" style="padding:4px 0 12px">진행 중인 택배가 없어요</div>'}</div></div></div>`;
   return `<div class="cols"><div><div class="card"><h2>📦 택배 <small style="color:var(--red)">테스트 중</small></h2>
       <div class="btns" style="margin:4px 0 12px"><button class="btn primary" data-go="pcnew">＋ 택배 요청</button></div>
       ${L.length ? L.map(row).join("") : '<div class="desc" style="padding:4px 0 12px">진행 중인 택배가 없어요</div>'}</div></div>
