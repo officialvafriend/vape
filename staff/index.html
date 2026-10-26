@@ -228,7 +228,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.26-25";
+const VER = "10.26-26";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -1611,7 +1611,7 @@ async function doNoticeOk(t) {
 setInterval(() => { if (!B || $("#dim").classList.contains("on")) return; const n = ntList().find((x) => !NT_SEEN(x.id) && !x.ok); if (n) noticeSheet(n.id); }, 4000);
 // ── 상품 고르기 (10/26 사장님 "결제되고 포장 완료하면 재고조정") ── 포스 상품을 목록(staff/products.json, 본점 포스 이름)에서 골라야 봇이 두 지점 포스를 맞출 수 있음
 let PRODS = null, PK = { list: [], res: [] };
-async function loadProds() { if (PRODS) return PRODS; try { const j = (await ghJson("products.json")) || (await (await fetch(`${SITE}staff/products.json`, { cache: "no-store" })).json()); PRODS = j.list || []; } catch { PRODS = []; } return PRODS; }
+async function loadProds() { if (PRODS) return PRODS; let j = null; try { j = await ghJson("products.json"); } catch {} if (!j?.list) try { j = await (await fetch(`${SITE}staff/products.json`, { cache: "no-store" })).json(); } catch {} PRODS = j?.list || []; return PRODS; }
 const pkNorm = (x) => String(x).toLowerCase().replace(/\s+/g, "");
 const pkHtml = () => `<input class="input" id="pkQ" placeholder="🔍 상품 이름으로 찾기 (예: 메가킥 망고)" autocomplete="off"><div id="pkR"></div><div id="pkL">${pkListHtml()}</div>`;
 const pkListHtml = () => PK.list.length ? PK.list.map(([n, q, c], i) => `<div class="pkrow"><b>${esc(n)}${c ? "" : ' <small style="color:var(--red)">(목록 밖)</small>'}</b><span><button data-pkdec="${i}">−</button><em>${q}</em><button data-pkinc="${i}">＋</button><button data-pkdel="${i}">✕</button></span></div>`).join("") : '<div class="desc" style="margin:8px 0 0">고른 상품이 여기 쌓여요. 수량은 ＋ −</div>';
