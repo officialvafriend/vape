@@ -82,6 +82,8 @@
   .ilb{display:flex;gap:6px;flex-shrink:0}.ilb button{height:42px;min-width:56px;padding:0 14px;border-radius:12px;font-size:14px;font-weight:800;background:#f2f4f6;color:var(--ink)}.ilb button.ok{background:var(--blue);color:#fff}
   .tag{display:inline-block;font-size:11px;font-weight:800;border-radius:6px;padding:1px 6px;margin-right:6px;vertical-align:1px}.tag.c{background:#e8f3ff;color:#1b64da}.tag.m{background:#fff4e5;color:#b25e00}.tag.e{background:#f3e8ff;color:#7c3aed}
   .hpill{display:flex;align-items:center;gap:8px;width:100%;text-align:left;background:#ffe9a8;color:#7a5200;border-radius:14px;padding:9px 12px;font-size:13px;font-weight:700;margin-bottom:12px}.hpill b{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.hpill em{font-style:normal;background:#fff;border-radius:10px;padding:4px 10px;flex-shrink:0}.hpill i{font-style:normal;font-size:11px;font-weight:800;background:rgba(122,82,0,.14);border-radius:6px;padding:2px 6px;flex-shrink:0}
+    body.ui2 .hpill{background:#fff;color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.08)}body.ui2 .hpill i{background:#eef1f5;color:var(--sub)}body.ui2 .hpill em{background:var(--blue);color:#fff}body.ui2 .fpill{background:#fff;color:var(--ink)}body.ui2 .fpill b{background:var(--blue)}
+  .cheer{position:fixed;left:50%;top:40%;transform:translate(-50%,-50%) scale(.9);z-index:60;background:var(--dark);color:#fff;border-radius:20px;padding:22px 28px;font-size:18px;font-weight:800;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.35);opacity:0;transition:all .25s;pointer-events:none;max-width:min(360px,90vw)}.cheer.on{opacity:1;transform:translate(-50%,-50%) scale(1)}.cheer i{display:block;font-style:normal;font-size:36px;margin-bottom:8px}.cheer small{display:block;font-size:14px;font-weight:600;color:#cfd8e3;margin-top:6px}
   .fpill{position:fixed;right:16px;bottom:20px;z-index:35;display:none;align-items:center;gap:6px;background:#ffe9a8;color:#7a5200;border-radius:99px;padding:10px 14px;font-size:14px;font-weight:800;box-shadow:0 8px 24px rgba(0,0,0,.22)}.fpill.on{display:flex}.fpill b{background:#7a5200;color:#fff;border-radius:99px;padding:1px 7px;font-size:12px}@media (max-width:899px){.fpill{bottom:calc(76px + env(safe-area-inset-bottom))}}
   .rqone{align-items:center}.rqone .rqlb{flex-shrink:0;font-size:15px;padding:0 2px}.rqone .rqk{padding:7px 12px;font-size:13px}.rqone .rqmore2{background:#fff;border-style:dashed;color:#1b64da}.rqcard.one{padding:8px 10px!important}
   .hero .hreq{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:12px}.hero .hreq button{background:rgba(255,255,255,.12);color:#fff;border-radius:14px;padding:14px 6px;font-size:15px;font-weight:800}.hero .hreq button i{display:block;font-style:normal;font-size:22px;margin-bottom:4px}.hero .hreq button small{display:block;font-size:11px;font-weight:700;color:#ffd7a8;margin-top:2px}@media (max-width:520px){.hero .hreq{grid-template-columns:1fr 1fr}}
@@ -224,7 +226,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.26-16";
+const VER = "10.26-18";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -254,12 +256,15 @@ function undoBar(k, id, label) {
   u.innerHTML = `<span>${label}</span><button data-undo="${k}" data-id="${id}" style="background:#fff;color:#191f28;border-radius:10px;padding:6px 12px;font-weight:800">되돌리기</button>`; u.style.display = "flex";
   clearTimeout(u._t); u._t = setTimeout(() => (u.style.display = "none"), 10000);
 }
+// 10/26 사장님: 완료하면 "N번째로 완료했어요! 수고하셨습니다 :)" 같은 메시지. x = {n: 지점 수, k: 이미 완료한 지점 수}
+function cheer(x, what) { const n = x?.n > 1 ? x.k + 1 : 0; const el = document.createElement("div"); el.className = "cheer"; el.innerHTML = `<i>${n === 1 ? "🥇" : n === 2 ? "🥈" : n === 3 ? "🥉" : "🎉"}</i>${n ? `${n}번째로 완료했어요!` : `${what} 완료!`}<small>수고하셨습니다 :)</small>`; document.body.appendChild(el); requestAnimationFrame(() => el.classList.add("on")); setTimeout(() => { el.classList.remove("on"); setTimeout(() => el.remove(), 300); }, 2600); }
+const cntTxt = (x) => (x?.n > 1 ? `${x.n}지점 중 ${x.k} 완료` : ""); // 10/26 사장님: 다른 지점은 다 했는데 우리만 안 한 걸 알게
 function toast(m) { const t = $("#toast"); t.textContent = m; t.classList.add("on"); clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove("on"), 2600); }
 
 const qs = new URLSearchParams(location.search);
 // 10/19 시험 모드(?test=1): 신호에 test 표시 → 봇이 시험_ 탭에만 기록, 디스코드 알림 없음. 이 기기 기록도 따로
 const TEST = qs.get("test") === "1";
-const UI2 = TEST; // 10/26 새 화면(노란 줄 순서, 플로팅 뱃지, 바로 복사 한 줄)은 시험 모드 먼저. 정식에 켜려면 true
+const UI2 = TEST; if (UI2) document.body.classList.add("ui2"); // 10/26 새 화면(노란 줄 순서, 플로팅 뱃지, 바로 복사 한 줄)은 시험 모드 먼저. 정식에 켜려면 true
 const LEADER = qs.get("leader") === "1"; // 10/20 팀장 화면: 전 지점 넘어온 고객요청, 인수인계
 // ?pick=1 이면 저장된 지점이 있어도 지점 고르기 화면부터 (드라이브 링크용)
 let B = qs.has("pick") ? null : BR.includes(qs.get("branch")) ? qs.get("branch") : ls.get("vf-app-branch", null);
@@ -435,8 +440,8 @@ function render() {
   const TD = todoItems(), AH = as2Items().filter((x) => x.st === 4 && !x.contact && x.b === B && !a2Lead(x));
   const heroAs = AH.length ? `<div class="hil"><p class="hk" style="color:#9bd0ff">🔧 AS 지점 도착, 손님께 연락할 것 ${AH.length}개</p>${AH.slice(0, 3).map((x) => `<div class="hrow"><div class="ht"><b>${esc(as2Title(x))}</b><span>${esc(as2Name(x) || "손님")}, 접수 ${x.d.slice(5).replace("-", "/")} ${esc(x.by)}${x.loan && !x.loanBack ? ", 📱 대여 중: " + esc((x.loan === "대여 있음" ? "기기명 없음" : x.loan)) : ""}</span></div><div class="hbs"><button class="ok" data-a2sms="${x.id}">📩 문자</button><button data-a2go="5" data-id="${x.id}">전달 완료</button></div></div>`).join("")}${AH.length > 3 ? `<p style="margin-top:8px"><button data-view="as2" style="color:#9bd0ff;font-weight:800">외 ${AH.length - 3}개는 AS관리에서 →</button></p>` : ""}</div>` : "";
   const heroIl = TD.length ? `<div class="hil"><p class="hk">📅 오늘 일정 ${TD.length}개, 처리 못 하면 다음 근무자에게 넘어가요</p>${TD.map((it) => `<div class="hrow"><div class="ht"><b>${it.ic} ${esc(it.title)}</b><span>${esc(it.sub)}</span></div><div class="hbs">${ilBtns(it, true)}</div></div>`).join("")}</div>` : "";
-  const heroPill = bbPills() + snPills() + pcPills() + blogDue().map((x) => hp(`data-view="blog"`, "📝", "블로그", `${esc(x.kw)}${x.date < todayKey() ? ` (${sd(x.date)}분)` : ""}`, `블로그 발행: ${esc(x.kw)}${x.date < todayKey() ? ` (${sd(x.date)}분)` : ""}`, "하기")).join("")
-    + (BOARD?.tasks || []).filter((t) => !t.done && !TASK_DONE[t.id]).map((t) => hp(`data-tdone="${t.id}"`, "🔔", "할 일", `${esc(t.title)}${t.time ? ` (${esc(t.time)})` : ""}`, `할 일: ${esc(t.title)}${t.time ? ` (${esc(t.time)})` : ""}`, "완료")).join("");
+  const heroPill = bbPills() + snPills() + pcPills() + blogDue().map((x) => hp(`data-view="blog"`, "📝", "블로그", `${esc(x.kw)}${x.date < todayKey() ? ` (${sd(x.date)}분)` : ""}${blogCnt(x) ? `, ${blogCnt(x)}` : ""}`, `블로그 발행: ${esc(x.kw)}${x.date < todayKey() ? ` (${sd(x.date)}분)` : ""}`, "하기")).join("")
+    + (BOARD?.tasks || []).filter((t) => !t.done && !TASK_DONE[t.id]).map((t) => hp(`data-tdone="${t.id}"`, "🔔", "할 일", `${esc(t.title)}${t.time ? ` (${esc(t.time)})` : ""}${cntTxt(t) ? `, ${cntTxt(t)}` : ""}`, `할 일: ${esc(t.title)}${t.time ? ` (${esc(t.time)})` : ""}`, "완료")).join("");
   // 10/26 사장님 "오후 내내 '지금 할 일, 마감'이 웃김": 오픈 끝 ~ 마감 1시간 전은 '영업 중' 카드(요청 버튼). 우선 시험 모드에서만
   const cAt = closeAtOf(B, d), nowM = d.getHours() * 60 + d.getMinutes(), cAtM = (([h, m]) => +h * 60 + +m)(cAt.split(":"));
   const biz = done === N && !cSteps[0] && d.getHours() >= 5 && nowM < cAtM - 60;
@@ -1694,10 +1699,11 @@ async function doBbIn(t) {
 const BLOG_DONE = {}; // 이 기기에서 방금 보낸 것 (봇 반영 전까지)
 const blogList = () => (BOARD?.blogs || []).filter((x) => !x.test === !TEST).map((x) => ({ ...x, done: x.done || BLOG_DONE[x.date] || null }));
 const blogDue = () => blogList().filter((x) => !x.done && x.date <= todayKey());
+const blogCnt = cntTxt;
 function blogHtml() {
   const td = todayKey(), grp = (x) => (x.done ? 2 : x.date <= td ? 0 : 1); // 10/26 사장님: 지금 올릴 것(오늘, 밀린 것) 먼저, 다음 발행 예정, 끝난 건 아래
   const L = blogList().sort((a, c) => grp(a) - grp(c) || (grp(a) === 2 ? c.date.localeCompare(a.date) : a.date.localeCompare(c.date)));
-  const row = (x) => `<div class="crow"><div><b>${x.done ? "✅" : x.date <= td ? "📝" : "🗓"} ${sd(x.date)} ${esc(x.kw)}</b><span>${esc(x.topic)}${x.done ? `, ${esc(x.done.by)} ${esc(x.done.t)} 발행` : x.date > td ? ", 발행일 전" : x.date < td ? ", 아직 안 올림" : ""}</span></div>
+  const row = (x) => `<div class="crow"><div><b>${x.done ? "✅" : x.date <= td ? "📝" : "🗓"} ${sd(x.date)} ${esc(x.kw)}</b><span>${esc(x.topic)}${x.done ? `, ${esc(x.done.by)} ${esc(x.done.t)} 발행` : x.date > td ? ", 발행일 전" : x.date < td ? ", 아직 안 올림" : ""}${blogCnt(x) ? `, <b style="color:${x.done || x.date > td ? "var(--sub)" : "var(--red)"}">${blogCnt(x)}</b>` : ""}</span></div>
     <div class="tbtn"><a class="act gray" href="${SITE}blog/${encodeURIComponent(x.file)}" target="_blank" rel="noopener">지시문</a>${x.done ? (x.done.link ? `<a class="act gray" href="${esc(x.done.link)}" target="_blank" rel="noopener">글 보기</a>` : "") : x.date <= td ? `<button class="act" data-blogdone="${x.date}">발행 완료</button>` : ""}</div></div>`;
   return `<div class="cols one"><div><div class="card"><h2>📝 블로그 발행</h2><div class="desc" style="margin-bottom:6px">지시문대로 우리 지점 블로그에 올리고, 올린 글 주소를 넣어 주세요.</div>${L.map(row).join("") || '<div class="desc" style="padding:4px 0 12px">지금 올릴 지시문이 없어요</div>'}</div></div></div>`;
 }
@@ -1712,7 +1718,7 @@ async function doBlogDone(t) {
   if (!/^https?:\/\/([a-z.]*blog\.naver\.com|naver\.me)\//.test(link)) return toast("네이버 블로그 글 주소를 붙여 넣어 주세요");
   const by = working().join(", "); if (!by) return needIn(() => sheetBlogDone(date));
   t.disabled = true;
-  try { await send({ type: "blogdone", date, link, by }); BLOG_DONE[date] = { by, t: now(), link }; closeSheet(); render(); toast("발행 완료로 보냈어요"); } catch (e) { t.disabled = false; fail(e); }
+  try { await send({ type: "blogdone", date, link, by }); BLOG_DONE[date] = { by, t: now(), link }; closeSheet(); render(); cheer(blogList().find((y) => y.date === date), "블로그 발행"); } catch (e) { t.disabled = false; fail(e); }
 }
 // 관리자가 나눠 준 '오늘 할 일' (10/6) — 관리자 페이지에서 등록, 완료하면 관리자 페이지에 체크
 let TASK_DONE = {};
@@ -1720,11 +1726,12 @@ function taskCardHtml() {
   const list = (BOARD?.tasks || []).map((t) => ({ ...t, done: t.done || TASK_DONE[t.id] || null }));
   if (!list.length) return "";
   const left = list.filter((t) => !t.done).length;
-  return `<div class="card"><h2>✅ 오늘 할 일, ${left ? `남은 것 ${left}개` : "모두 완료"}</h2>${list.map((t) => `<div class="crow"><div><b style="${t.done ? "color:var(--sub);text-decoration:line-through" : ""}">${esc(t.title)}</b><span>${t.time ? esc(t.time) + ", " : ""}${esc(t.note || "")}${t.done ? `, ✓ ${esc(t.done.by)} ${esc(t.done.t)}` : ""}</span></div>${t.done ? "" : `<button class="act" data-tdone="${t.id}">완료</button>`}</div>`).join("")}</div>`;
+  return `<div class="card"><h2>✅ 오늘 할 일, ${left ? `남은 것 ${left}개` : "모두 완료"}</h2>${list.map((t) => `<div class="crow"><div><b style="${t.done ? "color:var(--sub);text-decoration:line-through" : ""}">${esc(t.title)}</b><span>${t.time ? esc(t.time) + ", " : ""}${esc(t.note || "")}${t.done ? `, ✓ ${esc(t.done.by)} ${esc(t.done.t)}` : ""}${cntTxt(t) ? `, <b style="color:${t.done ? "var(--sub)" : "var(--red)"}">${cntTxt(t)}</b>` : ""}</span></div>${t.done ? "" : `<button class="act" data-tdone="${t.id}">완료</button>`}</div>`).join("")}</div>`;
 }
 async function doTaskDone(id) {
   const by = working().join(", "); if (!by) return needIn(() => doTaskDone(id));
-  try { await send({ type: "taskdone", id, date: todayKey(), by }); TASK_DONE[id] = { by, t: now() }; render(); toast("완료했어요"); } catch (e) { fail(e); }
+  const tk = (BOARD?.tasks || []).find((t) => t.id === id);
+  try { await send({ type: "taskdone", id, date: todayKey(), by }); TASK_DONE[id] = { by, t: now() }; render(); cheer(tk, "할 일"); } catch (e) { fail(e); }
 }
 // ── 재고조사 (10/6): 카테고리 골라서 센 수량만 넣고 전송 → 관리자 페이지에서 포스와 비교, 승인 ──
 // 포스 수량은 일부러 안 보여줌(공개 주소 + 미리 채우면 대충 넘기기 쉬움). 빈칸 = 안 센 상품(보내지 않음)
