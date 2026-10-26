@@ -222,7 +222,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.26-11";
+const VER = "10.26-12";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -287,8 +287,9 @@ async function ghJson(file) {
   return (await fetch(`${file}?${Date.now()}`, { cache: "no-store" })).json();
 }
 // 10/26 사장님 "시험 화면이 정식이랑 너무 다름": 시험 모드는 오늘 실제 진행(출근, 오픈, 재고보고) 위에 시험으로 한 것만 얹어서 보여 줌. 마감은 시험한 것만
+const REAL_NAMES = new Set();
 function testMix(real, tst) {
-  if (!real) return tst || null; tst = tst || {};
+  if (!real) return tst || null; tst = tst || {}; (real.ins || []).forEach((x) => REAL_NAMES.add(x.name));
   const ins = [...(real.ins || []), ...(tst.ins || []).filter((x) => !(real.ins || []).some((y) => y.name === x.name))];
   return { ...real, test: undefined, ins, open: tst.open || real.open || null, close: tst.close || null };
 }
@@ -299,7 +300,7 @@ async function loadToday() {
     if (JSON.stringify(next) !== JSON.stringify(SRV)) { SRV = next; cacheSet("today", next); bgRender(); }
   } catch {}
 }
-const saveSt = (s) => ls.set(dayKey(), s);
+const saveSt = (s) => ls.set(dayKey(), TEST ? { ...s, ins: s.ins.filter((x) => !REAL_NAMES.has(x.name)) } : s); // 시험 기록엔 시험 출근만
 // 재고보고는 재고보고 페이지(stock)가 이 기기에 남긴 기록으로 확인
 const stockDone = () => { const tx = TEST ? ls.get(`vf-stock-${B}-testlast`, null) : null, tday = tx?.at && (() => { const d1 = new Date(tx.at); return `${d1.getFullYear()}-${pad(d1.getMonth() + 1)}-${pad(d1.getDate())}` === todayKey(); })();
   const x = TEST && tday ? tx : ls.get(`vf-stock-${B}-last`, null); if (TEST && tday) { const d0 = new Date(x.at); return `${d0.getFullYear()}-${pad(d0.getMonth() + 1)}-${pad(d0.getDate())}` === todayKey() ? { t: `${pad(d0.getHours())}:${pad(d0.getMinutes())}`, by: x.by } : null; } if (!x?.at) return SRV?.stock || null; const d = new Date(x.at); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}` === todayKey() ? { t: `${pad(d.getHours())}:${pad(d.getMinutes())}`, by: x.by } : SRV?.stock || null; };
@@ -1380,7 +1381,8 @@ async function loadBoard() {
   } catch {}
 }
 async function loadOuts() { try { const j = await (await fetch(`${SITE}menu/stock.json?${Date.now()}`, { cache: "no-store" })).json(); OUTS = new Set(j[B]?.out || []); } catch {} }
-const working = () => st().ins.filter((x) => !x.out).map((x) => x.name);
+// 10/26 시험 모드는 화면엔 실제 근무자가 보여도, 보내는 이름은 시험 출근한 사람만(없으면 '시험') — 진짜 근무자 이름이 시험 기록에 찍혀 헷갈리던 것
+const working = () => TEST ? (() => { const t = ls.get(dayKey(), { ins: [] }).ins.filter((x) => !x.out).map((x) => x.name); return t.length ? t : ["시험"]; })() : st().ins.filter((x) => !x.out).map((x) => x.name);
 const myCreqs = () => ls.get(`vf-app-${B}-creqs`, []).filter((x) => Date.now() - x.ts < 30 * 86400e3);
 const daysOld = (d) => Math.floor((Date.parse(todayKey()) - Date.parse(d)) / 86400e3);
 const CST = { wait: "⏳ 입고 대기", ready: "🧾 챙겨둠", done: "✅ 전달 완료", cancel: "취소" };
