@@ -446,7 +446,7 @@ function opsHtml() {
       ${c && c.diff != null ? td(c.diff ? (c.diff > 0 ? "+" : "") + won(c.diff) : "0", c.diff ? "r" : "g") : NO}
       ${c ? td(`${c.bills}<small>객단가 ${won(c.객단가)}</small>`) : L ? td(`${L.bills}${L.bills ? `<small>객단가 ${won(Math.round(L.sales / L.bills))}</small>` : ""}`) : NO}
       ${c ? td(c.지정판매율 != null ? c.지정판매율 + "%" : "-") : L ? td(L.prem ? Math.round((L.des / L.prem) * 100) + "%" : "-") : NO}
-      ${c ? td(c.rev ?? "-") : NO}</tr>`;
+      ${c ? td(c.rev ?? "-") : o.revLive && o.revLive.rev != null ? td(`${o.revLive.rev}${o.revLive.vrev ? `<small>영상 ${o.revLive.vrev}</small>` : ""}`) : NO}</tr>`;
   }).join("");
   const done = D.ops.filter((o) => o.close), num = (o) => o.close ? [+o.close.총 || 0, +o.close.bills || 0] : o.live ? [o.live.sales, o.live.bills] : [0, 0], sum = D.ops.reduce((a, o) => a + num(o)[0], 0), bills = D.ops.reduce((a, o) => a + num(o)[1], 0);
   const total = `<tr class="tot"><td><b>합계</b><small>${done.length}/${D.ops.length}곳 보고</small></td><td></td><td></td><td><b>${won(sum)}</b></td><td></td><td><b>${bills}</b></td><td></td><td></td></tr>`;
