@@ -222,7 +222,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.26-8";
+const VER = "10.26-9";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -268,7 +268,8 @@ const cacheGet = (k) => { try { const x = JSON.parse(localStorage.getItem(CK(k))
 const cacheSet = (k, v) => { try { localStorage.setItem(CK(k), JSON.stringify({ d: todayKey(), v })); } catch {} };
 let SRV = B ? cacheGet("today") : null;
 const st = () => {
-  const s = ls.get(dayKey(), { ins: [], open: null, close: null });
+  let s = ls.get(dayKey(), { ins: [], open: null, close: null });
+  if (TEST) s = testMix(ls.get(`vf-app-${B}-${todayKey()}`, { ins: [], open: null, close: null }), s); // 이 기기의 실제 기록 위에 시험 기록
   if (!SRV) return s;
   for (const a of SRV.ins || []) { const m = s.ins.find((x) => x.name === a.name); if (!m) s.ins.push({ name: a.name, t: a.t, out: a.out || undefined }); else if (a.out && !m.out && !(m.re && m.re > a.out)) m.out = a.out; } // 다시 출근(re)이 서버 퇴근 기록보다 뒤면 근무 중
   for (const k of ["open", "close"]) if (!s[k] && SRV[k]) s[k] = { t: SRV[k].t, missed: Array(SRV[k].miss || 0).fill("") };
@@ -285,16 +286,23 @@ async function ghJson(file) {
   } catch {}
   return (await fetch(`${file}?${Date.now()}`, { cache: "no-store" })).json();
 }
+// 10/26 사장님 "시험 화면이 정식이랑 너무 다름": 시험 모드는 오늘 실제 진행(출근, 오픈, 재고보고) 위에 시험으로 한 것만 얹어서 보여 줌. 마감은 시험한 것만
+function testMix(real, tst) {
+  if (!real) return tst || null; tst = tst || {};
+  const ins = [...(real.ins || []), ...(tst.ins || []).filter((x) => !(real.ins || []).some((y) => y.name === x.name))];
+  return { ...real, test: undefined, ins, open: tst.open || real.open || null, close: tst.close || null };
+}
 async function loadToday() {
   try {
     const j = await ghJson("today.json");
-    const src = j.d === todayKey() ? j.br?.[B] || null : null, next = TEST ? src?.test || null : src; // 10/20 시험 모드는 시험 기록만(실제 근무자가 섞여 퇴근 처리된 사고)
+    const src = j.d === todayKey() ? j.br?.[B] || null : null, tst = src?.test, next = TEST ? testMix(src, tst) : src; // 10/26 사장님 "정식이랑 너무 다름": 시험 모드도 시험 기록이 없으면 오늘 실제 진행(출근, 오픈)을 보여 줌 // 10/20 시험 모드는 시험 기록만(실제 근무자가 섞여 퇴근 처리된 사고)
     if (JSON.stringify(next) !== JSON.stringify(SRV)) { SRV = next; cacheSet("today", next); bgRender(); }
   } catch {}
 }
 const saveSt = (s) => ls.set(dayKey(), s);
 // 재고보고는 재고보고 페이지(stock)가 이 기기에 남긴 기록으로 확인
-const stockDone = () => { const x = ls.get(`vf-stock-${B}-${TEST ? "testlast" : "last"}`, null); if (TEST) { if (!x?.at) return null; const d0 = new Date(x.at); return `${d0.getFullYear()}-${pad(d0.getMonth() + 1)}-${pad(d0.getDate())}` === todayKey() ? { t: `${pad(d0.getHours())}:${pad(d0.getMinutes())}`, by: x.by } : null; } if (!x?.at) return SRV?.stock || null; const d = new Date(x.at); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}` === todayKey() ? { t: `${pad(d.getHours())}:${pad(d.getMinutes())}`, by: x.by } : SRV?.stock || null; };
+const stockDone = () => { const tx = TEST ? ls.get(`vf-stock-${B}-testlast`, null) : null, tday = tx?.at && (() => { const d1 = new Date(tx.at); return `${d1.getFullYear()}-${pad(d1.getMonth() + 1)}-${pad(d1.getDate())}` === todayKey(); })();
+  const x = TEST && tday ? tx : ls.get(`vf-stock-${B}-last`, null); if (TEST && tday) { const d0 = new Date(x.at); return `${d0.getFullYear()}-${pad(d0.getMonth() + 1)}-${pad(d0.getDate())}` === todayKey() ? { t: `${pad(d0.getHours())}:${pad(d0.getMinutes())}`, by: x.by } : null; } if (!x?.at) return SRV?.stock || null; const d = new Date(x.at); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}` === todayKey() ? { t: `${pad(d.getHours())}:${pad(d.getMinutes())}`, by: x.by } : SRV?.stock || null; };
 
 // 10/26 사진과 같이 보내기 (택배 포장 사진): 폰 사진을 1280px JPEG로 줄여서 같은 웹훅에 파일로
 async function shrinkPhoto(file) {
@@ -430,7 +438,7 @@ function render() {
   const biz = done === N && !cSteps[0] && d.getHours() >= 5 && nowM < cAtM - 60;
   const bizBody = heroPill + heroIl + heroAs + `<p class="hk">영업 중, 마감 ${cAt === "24:00" ? "자정" : cAt}</p>
     <div style="margin-top:10px;font-size:12px;font-weight:800;color:#ffd7a8">🧪 테스트 중인 버튼이에요. 아직 정식 기능 아니에요</div>
-    <div class="hreq" style="margin-top:6px"><button data-req="qk"><i>🛵</i>퀵<small>테스트</small></button><button data-go="pcnew"><i>📦</i>택배<small>테스트</small></button><button data-req="branch"><i>🔁</i>다른 지점<small>테스트</small></button><button data-go="creq"><i>🧾</i>고객요청<small>테스트</small></button></div>
+    <div class="hreq" style="margin-top:6px"><button data-req="qk"><i>🛵</i>퀵<small>테스트</small></button><button data-go="pcnew"><i>📦</i>택배<small>테스트</small></button><button data-req="branch"><i>🔁</i>전달<small>테스트</small></button><button data-go="creq"><i>🧾</i>고객요청<small>테스트</small></button></div>
     <p>근무 중 ${working.length}명${working.length ? `, ${working.map((x) => esc(x.name)).join(", ")}` : ""}</p>`;
   const heroBody = biz ? bizBody : heroPill + heroIl + heroAs + `<p class="hk">${done < N ? `지금 할 일, 오픈 ${OPEN_AT[B]}` : "지금 할 일, 마감"}</p>
     ${nx ? `<div class="hnx"><h1>${nx[0]} ${nx[1]}</h1>${nx[3]}</div>` : `<h1 style="margin-top:6px">오늘 마감 완료! 수고하셨어요</h1>`}
