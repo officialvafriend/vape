@@ -226,7 +226,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.26-18";
+const VER = "10.26-19";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -420,7 +420,7 @@ function render() {
     ${kpi("talk", "인수인계, 고객요청", memoN + creqN + "건", `인수인계 ${memoN}, 고객요청 ${creqN}`)}
   </div>`;
   const body = {
-    home: ONLY_OPEN_CLOSE ? `${bigDepCardHtml()}${sentCardHtml()}${replyQuickHtml()}<div class="cols"><div>${openCard}</div><div>${closeCard}</div></div>` : `${bigDepCardHtml()}<div class="cols"><div>${done < N ? openCard : closeCard}${taskCardHtml()}</div><div>${memoCardHtml()}${asPin() ? asCardHtml() : ""}</div></div>`,
+    home: ONLY_OPEN_CLOSE ? `${noticeCardHtml()}${bigDepCardHtml()}${sentCardHtml()}${replyQuickHtml()}<div class="cols"><div>${openCard}</div><div>${closeCard}</div></div>` : `${bigDepCardHtml()}<div class="cols"><div>${done < N ? openCard : closeCard}${taskCardHtml()}</div><div>${memoCardHtml()}${asPin() ? asCardHtml() : ""}</div></div>`,
     work: `<div class="cols"><div>${openCard}</div><div>${closeCard}</div></div>`,
     stock: `<div class="cols one"><div>${surveyCardHtml()}</div></div>`,
     talk: ONLY_OPEN_CLOSE ? talkHtml() : `<div class="cols"><div>${memoCardHtml()}${creqCardHtml()}</div><div>${reqCard}${myQuicksCard()}</div></div>`,
@@ -1586,6 +1586,26 @@ async function doPcSend(t, type, ok) {
   const by = working().join(", "); if (!by) return needIn(() => {});
   try { await send({ type, id: t.dataset.id, by }); PC.done[t.dataset.id] = 1; closeSheet(); render(); toast(ok); } catch (e) { fail(e); }
 }
+// ── 공지 (10/26) ── 관리자앱 업무에서 올린 공지. 이 기기에서 안 본 새 공지는 팝업, [확인했어요] = 지점 확인(관리자앱에 표시)
+const NT_SEEN = (id) => !!ls.get("vf-notice-ok-" + B + "-" + id, null);
+const ntList = () => BOARD?.notices || [];
+function noticeCardHtml() {
+  const L = ntList(); if (!L.length) return "";
+  return `<div class="card"><h2>📢 공지</h2>${L.map((n) => `<button class="crow" data-ntopen="${n.id}" style="width:100%;text-align:left"><div><b>${NT_SEEN(n.id) || n.ok ? "" : "🔴 "}${esc(n.title)}</b><span>${+n.d.slice(5, 7)}/${+n.d.slice(8)}${n.ok ? `, 확인 ${esc(n.ok.by)} ${esc(n.ok.t)}` : ", 아직 확인 전"}</span></div></button>`).join("")}<div style="height:10px"></div></div>`;
+}
+function noticeSheet(id) {
+  const n = ntList().find((x) => x.id === id); if (!n) return;
+  openSheet(`<h2>📢 ${esc(n.title)}</h2><div class="desc" style="white-space:pre-wrap;font-size:16px;color:var(--ink);line-height:1.6">${esc(n.body)}</div>
+    <div class="btns"><button class="btn" data-x>닫기</button>${n.ok && NT_SEEN(id) ? "" : `<button class="btn primary" id="okNotice" data-id="${id}">확인했어요</button>`}</div>`);
+}
+async function doNoticeOk(t) {
+  const id = t.dataset.id; ls.set("vf-notice-ok-" + B + "-" + id, 1);
+  const by = working().join(", ");
+  try { if (!TEST) await send({ type: "noticeok", id, by }); } catch {}
+  closeSheet(); render(); toast("확인했어요");
+}
+// 새 공지 팝업: 화면에 다른 창이 없을 때 한 번
+setInterval(() => { if (!B || $("#dim").classList.contains("on")) return; const n = ntList().find((x) => !NT_SEEN(x.id) && !x.ok); if (n) noticeSheet(n.id); }, 4000);
 // ── 보내기: 퀵, 오픈퀵, 전달 (10/26 새 흐름) ── 운영봇 db.sends. 단계마다 그 차례 지점만 노란 줄과 버튼
 const SN = { to: null, kind: null, done: {} };
 const SNEXT = { quick: { ask: ["to", "재고 보고 가능, 불가"], ok: ["from", "결제하고 손님 정보"], paid: ["to", "포장 사진 찍고 출발"] }, openquick: { paid: ["to", "바로 포장, 사진"], packed: ["to", "오픈하고 출발"], nostock: ["from", "재고 없음, 손님 안내"] }, jeon: { ask: ["to", "빼서 보내기"], sent: ["from", "받으면 받음"] } };
@@ -2352,6 +2372,8 @@ document.addEventListener("click", (e) => {
   if (t.dataset.bbpack) return sheetBbPack(t.dataset.bbpack);
   if (t.dataset.go === "pcnew") return sheetPcNew();
   if (t.dataset.snew) return sheetSnNew(t.dataset.snew);
+  if (t.dataset.ntopen) return noticeSheet(t.dataset.ntopen);
+  if (t.id === "okNotice") return doNoticeOk(t);
   if (t.dataset.snto) { SN.to = t.dataset.snto; document.querySelectorAll("[data-snto]").forEach((x) => x.classList.toggle("on", x === t)); return; }
   if (t.id === "okSnNew") return doSnNew(t);
   if (t.dataset.snopen) return sheetSnStep(t.dataset.snopen);
