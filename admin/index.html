@@ -424,6 +424,15 @@ function markEmb() { const f = $("#app .emb"); if (f) f.dataset.k = tab + staffB
 // PC 홈: 요약 4칸 + 지점별 마감 목록(왼쪽) + 상세 패널(오른쪽)
 const closingOf = (b) => (D.closings || []).find((c) => c.b === b && c.date === D.d);
 const warnsOf = (c) => c?.warnFull || c?.warn || [];
+// 10/26 블로그 발행: 지시문 날짜별로 8지점 발행 여부, 누르면 글 열기
+function blogAdmHtml() {
+  const L = D.blogs || []; if (!L.length) return "";
+  const dates = [...new Set(L.map((x) => x.date))].sort().reverse().slice(0, 2);
+  return dates.map((d) => { const xs = L.filter((x) => x.date === d), n = xs.filter((x) => x.done).length;
+    return `<div class="sec">블로그 발행 <small>${+d.slice(5, 7)}/${+d.slice(8)} 지시문, ${n}/${xs.length}곳 올림</small></div><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px;margin-bottom:14px">${xs.map((x) => x.done
+      ? `<a href="${esc(x.done.link)}" target="_blank" rel="noopener" style="text-decoration:none;background:#e5f8ef;color:#03803f;border-radius:10px;padding:8px 10px;font-size:13px;font-weight:700">✅ ${BR.indexOf(x.b) + 1} ${esc(x.b)}<small style="display:block;font-weight:600;color:#4e5968">${esc(x.done.by)} ${esc(x.done.t)}, 글 보기</small></a>`
+      : `<div style="background:#f2f4f6;color:#8b95a1;border-radius:10px;padding:8px 10px;font-size:13px;font-weight:700">${BR.indexOf(x.b) + 1} ${esc(x.b)}<small style="display:block;font-weight:600">아직, ${esc(x.kw)}</small></div>`).join("")}</div>`; }).join("");
+}
 // 지점 한눈에 (10/19): 오픈 / 마감 보고 / 총매출(지난달 하루 평균 대비) / 현금 차액 / 객수 / 지정판매율 / 리뷰
 function opsHtml() {
   if (!D.ops) return "";
@@ -469,7 +478,7 @@ function issuesHtml() {
 }
 const homeHead = () => `<div class="pchead"><h1>오늘 한눈에</h1><div class="caption">${esc(D.d)}, ${esc(D.at.slice(-5))} 기준</div></div>`;
 function homePC() {
-  return `${homeHead()}<div class="cols home"><div>${botMiniHtml()}${issuesHtml()}${kpiRankHtml()}${engHtml()}${opsHtml()}</div><div class="sheet panel" id="panel"></div></div>`;
+  return `${homeHead()}<div class="cols home"><div>${botMiniHtml()}${issuesHtml()}${kpiRankHtml()}${engHtml()}${opsHtml()}${blogAdmHtml()}</div><div class="sheet panel" id="panel"></div></div>`;
 }
 function panelDefault() { return `<div class="eyebrow">지점 상세</div><h3>왼쪽에서 지점이나<br>확인할 것을 누르세요</h3><div class="caption">그날 마감 보고, 차액, 품절이 여기에 떠요</div>`; }
 // 지점 상세 패널: 오늘 마감 보고(경고 포함) + 품절
@@ -596,7 +605,7 @@ function botMiniHtml() {
   const dot = (ok) => `<span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${ok ? "var(--green)" : "var(--red)"}"></span>`;
   return `<button id="botmini" data-tab="office" title="사무실에서 자세히" style="display:inline-flex;gap:14px;align-items:center;font-size:13px;font-weight:600;color:var(--sub);background:none;padding:2px 0 10px">${dot(ops)} 운영봇 ${dot(mas)} 마스터봇${BOT.adj ? ` ${dot(!dead && BOT.adj.ok && Object.values(BOT.adj.br || {}).every((v) => v.login))} 조정봇` : ""}${BOT.bsQ ? ` <span class="t-bad">시트 밀림 ${BOT.bsQ}</span>` : ""}</button>`;
 }
-function homeHtml() { return `<div style="padding-top:6px">${botMiniHtml()}${issuesHtml()}${kpiRankHtml()}${engHtml()}${opsHtml()}</div>`; }
+function homeHtml() { return `<div style="padding-top:6px">${botMiniHtml()}${issuesHtml()}${kpiRankHtml()}${engHtml()}${opsHtml()}${blogAdmHtml()}</div>`; }
 // ── 마감 보고 (직원앱 시재 + 포스 숫자) ──
 const won = (n) => Math.round(+n || 0).toLocaleString("ko-KR");
 function closingAllHtml() { return `<div class="pchead"><h1>마감 보고</h1><div class="caption">최근 40건, 누르면 보고문 전체</div></div>${closingListHtml(40) || '<div class="empty">아직 마감 보고가 없어요</div>'}`; }
