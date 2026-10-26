@@ -81,7 +81,9 @@
   .typec i{font-style:normal;font-size:24px;width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0}.typec b{display:block;font-size:17px;font-weight:800;color:var(--ink)}.typec small{display:block;font-size:13px;color:var(--sub);margin-top:2px}
   .ilb{display:flex;gap:6px;flex-shrink:0}.ilb button{height:42px;min-width:56px;padding:0 14px;border-radius:12px;font-size:14px;font-weight:800;background:#f2f4f6;color:var(--ink)}.ilb button.ok{background:var(--blue);color:#fff}
   .tag{display:inline-block;font-size:11px;font-weight:800;border-radius:6px;padding:1px 6px;margin-right:6px;vertical-align:1px}.tag.c{background:#e8f3ff;color:#1b64da}.tag.m{background:#fff4e5;color:#b25e00}.tag.e{background:#f3e8ff;color:#7c3aed}
-  .hpill{display:flex;align-items:center;gap:8px;width:100%;text-align:left;background:#ffe9a8;color:#7a5200;border-radius:14px;padding:9px 12px;font-size:13px;font-weight:700;margin-bottom:12px}.hpill b{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.hpill em{font-style:normal;background:#fff;border-radius:10px;padding:4px 10px;flex-shrink:0}
+  .hpill{display:flex;align-items:center;gap:8px;width:100%;text-align:left;background:#ffe9a8;color:#7a5200;border-radius:14px;padding:9px 12px;font-size:13px;font-weight:700;margin-bottom:12px}.hpill b{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.hpill em{font-style:normal;background:#fff;border-radius:10px;padding:4px 10px;flex-shrink:0}.hpill i{font-style:normal;font-size:11px;font-weight:800;background:rgba(122,82,0,.14);border-radius:6px;padding:2px 6px;flex-shrink:0}
+  .fpill{position:fixed;right:16px;bottom:20px;z-index:35;display:none;align-items:center;gap:6px;background:#ffe9a8;color:#7a5200;border-radius:99px;padding:10px 14px;font-size:14px;font-weight:800;box-shadow:0 8px 24px rgba(0,0,0,.22)}.fpill.on{display:flex}.fpill b{background:#7a5200;color:#fff;border-radius:99px;padding:1px 7px;font-size:12px}@media (max-width:899px){.fpill{bottom:calc(76px + env(safe-area-inset-bottom))}}
+  .rqone{align-items:center}.rqone .rqlb{flex-shrink:0;font-size:15px;padding:0 2px}.rqone .rqk{padding:7px 12px;font-size:13px}.rqone .rqmore2{background:#fff;border-style:dashed;color:#1b64da}.rqcard.one{padding:8px 10px!important}
   .hero .hreq{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:12px}.hero .hreq button{background:rgba(255,255,255,.12);color:#fff;border-radius:14px;padding:14px 6px;font-size:15px;font-weight:800}.hero .hreq button i{display:block;font-style:normal;font-size:22px;margin-bottom:4px}.hero .hreq button small{display:block;font-size:11px;font-weight:700;color:#ffd7a8;margin-top:2px}@media (max-width:520px){.hero .hreq{grid-template-columns:1fr 1fr}}
   .hero .bar{height:8px;background:rgba(255,255,255,.15);border-radius:99px;margin-top:16px;overflow:hidden}
   .hero .bar i{display:block;height:100%;background:#64a8ff;border-radius:99px;transition:width .3s}
@@ -222,7 +224,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.26-13";
+const VER = "10.26-14";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -257,6 +259,7 @@ function toast(m) { const t = $("#toast"); t.textContent = m; t.classList.add("o
 const qs = new URLSearchParams(location.search);
 // 10/19 시험 모드(?test=1): 신호에 test 표시 → 봇이 시험_ 탭에만 기록, 디스코드 알림 없음. 이 기기 기록도 따로
 const TEST = qs.get("test") === "1";
+const UI2 = TEST; // 10/26 새 화면(노란 줄 순서, 플로팅 뱃지, 바로 복사 한 줄)은 시험 모드 먼저. 정식에 켜려면 true
 const LEADER = qs.get("leader") === "1"; // 10/20 팀장 화면: 전 지점 넘어온 고객요청, 인수인계
 // ?pick=1 이면 저장된 지점이 있어도 지점 고르기 화면부터 (드라이브 링크용)
 let B = qs.has("pick") ? null : BR.includes(qs.get("branch")) ? qs.get("branch") : ls.get("vf-app-branch", null);
@@ -432,8 +435,8 @@ function render() {
   const TD = todoItems(), AH = as2Items().filter((x) => x.st === 4 && !x.contact && x.b === B && !a2Lead(x));
   const heroAs = AH.length ? `<div class="hil"><p class="hk" style="color:#9bd0ff">🔧 AS 지점 도착, 손님께 연락할 것 ${AH.length}개</p>${AH.slice(0, 3).map((x) => `<div class="hrow"><div class="ht"><b>${esc(as2Title(x))}</b><span>${esc(as2Name(x) || "손님")}, 접수 ${x.d.slice(5).replace("-", "/")} ${esc(x.by)}${x.loan && !x.loanBack ? ", 📱 대여 중: " + esc((x.loan === "대여 있음" ? "기기명 없음" : x.loan)) : ""}</span></div><div class="hbs"><button class="ok" data-a2sms="${x.id}">📩 문자</button><button data-a2go="5" data-id="${x.id}">전달 완료</button></div></div>`).join("")}${AH.length > 3 ? `<p style="margin-top:8px"><button data-view="as2" style="color:#9bd0ff;font-weight:800">외 ${AH.length - 3}개는 AS관리에서 →</button></p>` : ""}</div>` : "";
   const heroIl = TD.length ? `<div class="hil"><p class="hk">📅 오늘 일정 ${TD.length}개, 처리 못 하면 다음 근무자에게 넘어가요</p>${TD.map((it) => `<div class="hrow"><div class="ht"><b>${it.ic} ${esc(it.title)}</b><span>${esc(it.sub)}</span></div><div class="hbs">${ilBtns(it, true)}</div></div>`).join("")}</div>` : "";
-  const heroPill = bbPills() + snPills() + pcPills() + blogDue().map((x) => `<button class="hpill" data-view="blog">📝 <b>블로그 발행: ${esc(x.kw)}${x.date < todayKey() ? ` (${sd(x.date)}분)` : ""}</b><em>하기</em></button>`).join("")
-    + (BOARD?.tasks || []).filter((t) => !t.done && !TASK_DONE[t.id]).map((t) => `<button class="hpill" data-tdone="${t.id}">🔔 <b>할 일: ${esc(t.title)}${t.time ? ` (${esc(t.time)})` : ""}</b><em>완료</em></button>`).join("");
+  const heroPill = bbPills() + snPills() + pcPills() + blogDue().map((x) => hp(`data-view="blog"`, "📝", "블로그", `${esc(x.kw)}${x.date < todayKey() ? ` (${sd(x.date)}분)` : ""}`, `블로그 발행: ${esc(x.kw)}${x.date < todayKey() ? ` (${sd(x.date)}분)` : ""}`, "하기")).join("")
+    + (BOARD?.tasks || []).filter((t) => !t.done && !TASK_DONE[t.id]).map((t) => hp(`data-tdone="${t.id}"`, "🔔", "할 일", `${esc(t.title)}${t.time ? ` (${esc(t.time)})` : ""}`, `할 일: ${esc(t.title)}${t.time ? ` (${esc(t.time)})` : ""}`, "완료")).join("");
   // 10/26 사장님 "오후 내내 '지금 할 일, 마감'이 웃김": 오픈 끝 ~ 마감 1시간 전은 '영업 중' 카드(요청 버튼). 우선 시험 모드에서만
   const cAt = closeAtOf(B, d), nowM = d.getHours() * 60 + d.getMinutes(), cAtM = (([h, m]) => +h * 60 + +m)(cAt.split(":"));
   const biz = done === N && !cSteps[0] && d.getHours() >= 5 && nowM < cAtM - 60;
@@ -461,6 +464,19 @@ function render() {
       </main>
     </div>
     ${VIEWS.length > 1 ? `<nav class="bnav">${VIEWS.map(([k, ic, nm]) => `<button class="${k === VIEW ? "on" : ""}" data-view="${k}"><i>${ic}</i><span>${nm.split(",")[0]}${badge(k)}</span></button>`).join("")}</nav>` : ""}`;
+  fpillSetup(heroPill);
+}
+// 10/26 사장님: 따라다니는 현황판 대신 '위에 할 일 있어요' 표시만. 노란 줄 n개, 첫 줄 아이콘. 할 일 없으면 안 보임
+let FPO = null;
+function fpillSetup(html) {
+  $("#fpill")?.remove(); FPO?.disconnect(); FPO = null;
+  const n = (html.match(/class="hpill"/g) || []).length; if (!UI2 || !n) return;
+  const ic = (html.match(/<button class="hpill"[^>]*>(\S+)/) || [])[1] || "🔔";
+  const el = document.createElement("button"); el.id = "fpill"; el.className = "fpill"; el.innerHTML = `${ic} 할 일 <b>${n}</b>`;
+  el.addEventListener("click", () => { if (VIEW !== "home" && VIEW !== "work") { VIEW = "home"; ls.set("vf-app-view", VIEW); render(); } window.scrollTo({ top: 0, behavior: "smooth" }); });
+  document.body.appendChild(el);
+  const target = $(".hpill") || $(".hmini"); // 노란 줄 첫 줄이 안 보이면 뱃지 if (!target || !("IntersectionObserver" in window)) return el.classList.add("on");
+  FPO = new IntersectionObserver(([e]) => el.classList.toggle("on", !e.isIntersecting), { threshold: 0.05 }); FPO.observe(target);
 }
 
 // ── 팀장 화면 (10/20) ── 직원앱 주소 뒤에 ?leader=1. 전 지점에서 넘어온 고객요청, 인수인계만 모아 봄
@@ -985,6 +1001,7 @@ let RQ = "";
 function replyQuickHtml() {
   const tiles = RPL.map((x, i) => `<button class="rqk" data-rq="${i}">${x.k} ${esc(x.t)}</button>`).join("");
   const links = RLINK.filter((x) => x[2] === "베이프렌드").slice(0, 3).map(([n, u]) => `<button class="rqk rql" data-rlk="${RLINK.findIndex((y) => y[1] === u)}">${n}</button>`).join("");
+  if (UI2) return `<div class="card rqcard one"><div class="rqrow rqone"><span class="rqlb" title="누르면 바로 복사">💬</span>${tiles}${links}<button class="rqk rqmore2" data-view="reply">전체 →</button></div></div>`;
   return `<div class="card rqcard"><div class="rqhead"><b>💬 바로 복사</b><button class="rqmore" data-view="reply">응대 모음 전체 →</button></div><div class="rqrow">${tiles}</div><div class="rqrow">${links}</div></div>`;
 }
 function replyHtml() {
@@ -1474,9 +1491,11 @@ const pcState = (b) => { const x = pcDay()[b] || {}; const hm2 = (h) => { const 
   if (x.gone || (b === B && PC.gone)) return { ok: false, t: `오늘 출고됨 ${x.gone?.t || PC.gone}` };
   if (x.cut && nm > hm2(x.cut)) return { ok: false, t: `마감 시간 지남 (${x.cut})` };
   return { ok: true, t: `출고 전${x.carrier ? `, ${x.carrier}` : ""}${x.cut ? `, ${x.cut}까지` : ""}` }; };
-const pcPills = () => pcList().filter((r) => r.to === B && r.st === "req").map((r) => `<button class="hpill" data-pcpack="${r.id}">📦 <b>택배 포장, ${esc(r.nm || "손님")}님 ${esc(r.items)}${r.from !== B ? ` (${esc(ho(r.from))} 요청)` : ""}</b><em>포장</em></button>`).join("")
-  + pcList().filter((r) => r.to === B && r.st === "packed").map((r) => `<button class="hpill" data-pcwb="${r.id}">📦 <b>출고되면 송장번호 넣기, ${esc(r.nm || "손님")}님 ${esc(r.items)}</b><em>송장</em></button>`).join("")
-  + pcList().filter((r) => r.from === B && r.st === "shipped").map((r) => `<button class="hpill" data-pctell="${r.id}">📦 <b>송장 나옴, ${esc(r.nm || "손님")}님께 보내기</b><em>문자</em></button>`).join("");
+// 10/26 사장님: 노란 줄은 "누가 요청, 뭘, 손님" 순서로 바로 읽히게. 종류(택배, 퀵 등)는 작은 표시로
+const hp = (attr, ic, tag, txt, old, act) => UI2 ? `<button class="hpill" ${attr}>${ic} <i>${tag}</i> <b>${txt}</b><em>${act}</em></button>` : `<button class="hpill" ${attr}>${ic} <b>${old}</b><em>${act}</em></button>`;
+const pcPills = () => pcList().filter((r) => r.to === B && r.st === "req").map((r) => hp(`data-pcpack="${r.id}"`, "📦", "택배", `${r.from !== B ? esc(ho(r.from)) + " 요청, " : ""}${esc(r.items)}, ${esc(r.nm || "손님")}님`, `택배 포장, ${esc(r.nm || "손님")}님 ${esc(r.items)}${r.from !== B ? ` (${esc(ho(r.from))} 요청)` : ""}`, "포장")).join("")
+  + pcList().filter((r) => r.to === B && r.st === "packed").map((r) => hp(`data-pcwb="${r.id}"`, "📦", "택배", `출고되면 송장번호, ${esc(r.items)}, ${esc(r.nm || "손님")}님`, `출고되면 송장번호 넣기, ${esc(r.nm || "손님")}님 ${esc(r.items)}`, "송장")).join("")
+  + pcList().filter((r) => r.from === B && r.st === "shipped").map((r) => hp(`data-pctell="${r.id}"`, "📦", "택배", `송장 나옴, ${esc(r.items)}, ${esc(r.nm || "손님")}님께 문자`, `송장 나옴, ${esc(r.nm || "손님")}님께 보내기`, "문자")).join("");
 function parcelHtml() {
   const L = pcList(), st = { req: "포장 기다림", packed: "포장 끝, 출고 뒤 송장 기다림", shipped: "송장 나옴, 손님께 전달 전", done: "손님께 전달 끝", cancel: "취소" };
   const day = BR.map((b) => { const x = pcState(b); return `<div style="display:flex;justify-content:space-between;padding:7px 0;border-top:1px solid #eee;font-size:14px"><b>${esc(ho(b))}</b><span style="color:${x.ok ? "var(--green)" : "var(--sub)"};font-weight:700">${esc(x.t)}</span></div>`; }).join("");
@@ -1565,7 +1584,8 @@ const SACT = { "quick|ask": "답하기", "quick|ok": "결제", "quick|paid": "�
 const snList = () => (BOARD?.sends || []).filter((r) => !r.test === !TEST && !SN.done[r.id + r.st]);
 const snMine = (r) => { const w = SNEXT[r.kind]?.[r.st]; return w && (w[0] === "to" ? r.to : r.from) === B ? w[1] : null; };
 const quickClosed = () => { const d = new Date(), w = d.getDay(), m = d.getHours() * 60 + d.getMinutes(); return m >= (w === 0 || w === 6 ? 18 : 19) * 60 || d.getHours() < 5; }; // 퀵 마감 평일 19시, 주말 18시
-const snPills = () => snList().filter((r) => snMine(r) && !(r.kind === "openquick" && r.st === "packed" && !st().open)).map((r) => `<button class="hpill" data-snopen="${r.id}">${SKIND[r.kind].split(" ")[0]} <b>${SKIND[r.kind].split(" ")[1]} ${r.from === B ? "→ " + esc(ho(r.to)) : esc(ho(r.from)) + " 요청"}: ${esc(r.items)}</b><em>${SACT[r.kind + "|" + r.st] || "보기"}</em></button>`).join("");
+const SHEAD = { ok: "가능", sent: "보냄", nostock: "재고 없음" }; // 우리가 보낸 건에서 상대 지점이 한 답
+const snPills = () => snList().filter((r) => snMine(r) && !(r.kind === "openquick" && r.st === "packed" && !st().open)).map((r) => hp(`data-snopen="${r.id}"`, SKIND[r.kind].split(" ")[0], SKIND[r.kind].split(" ")[1], `${r.from === B ? esc(ho(r.to)) + " " + (SHEAD[r.st] || STXT[r.st] || r.st) : esc(ho(r.from)) + " 요청"}, ${esc(r.items)}${r.nm ? `, ${esc(r.nm)}님` : ""}${r.st === "packed" ? " (포장해 둠)" : ""}`, `${SKIND[r.kind].split(" ")[1]} ${r.from === B ? "→ " + esc(ho(r.to)) : esc(ho(r.from)) + " 요청"}: ${esc(r.items)}`, SACT[r.kind + "|" + r.st] || "보기")).join("");
 // 10/26 사장님 "내가 보낸 요청을 볼 수 있어야": 오늘 화면에 우리 지점이 보낸 퀵, 오픈퀵, 전달, 택배 중 안 끝난 것
 function sentCardHtml() {
   const PST = { req: "포장 기다림", packed: "포장 끝, 송장 기다림", shipped: "송장 나옴, 손님께 보내기" };
@@ -1636,8 +1656,8 @@ async function doSnStep(t) {
 const BB_DONE = {}; // 이 기기에서 방금 보낸 것
 const bbPackList = () => (BOARD?.bbPack || []).filter((c) => !c.test === !TEST && !BB_DONE[c.id + "|" + c.b]);
 const bbInList = () => (BOARD?.bbIn || []).filter((c) => !c.test === !TEST && !BB_DONE[c.id + "|" + c.b]);
-const bbPills = () => bbPackList().map((c) => `<button class="hpill" data-bbpack="${c.id}|${c.b}">📦 <b>${esc(ho(c.b))} 분배 챙기기 ${c.items.length}종</b><em>챙기기</em></button>`).join("")
-  + bbInList().map((c) => `<button class="hpill" data-bbin="${c.id}">📦 <b>본점 분배 오는 중 ${c.items.filter((y) => y[2]).length}종</b><em>도착</em></button>`).join("");
+const bbPills = () => bbPackList().map((c) => hp(`data-bbpack="${c.id}|${c.b}"`, "📦", "분배", `${esc(ho(c.b))} 챙기기 ${c.items.length}종`, `${esc(ho(c.b))} 분배 챙기기 ${c.items.length}종`, "챙기기")).join("")
+  + bbInList().map((c) => hp(`data-bbin="${c.id}"`, "📦", "분배", `본점에서 오는 중 ${c.items.filter((y) => y[2]).length}종`, `본점 분배 오는 중 ${c.items.filter((y) => y[2]).length}종`, "도착")).join("");
 function sheetBbPack(key) {
   const c = bbPackList().find((x) => x.id + "|" + x.b === key); if (!c) return;
   openSheet(`<h2>📦 ${esc(ho(c.b))} 분배 챙기기</h2><div class="desc">챙긴 수량을 확인하고, 본점에도 없으면 [없음]을 눌러 주세요. 모자라면 숫자만 고쳐요.</div>
