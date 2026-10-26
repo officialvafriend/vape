@@ -226,7 +226,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.26-22";
+const VER = "10.26-23";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -440,8 +440,8 @@ function render() {
   const TD = todoItems(), AH = as2Items().filter((x) => x.st === 4 && !x.contact && x.b === B && !a2Lead(x));
   const heroAs = AH.length ? `<div class="hil"><p class="hk" style="color:#9bd0ff">🔧 AS 지점 도착, 손님께 연락할 것 ${AH.length}개</p>${AH.slice(0, 3).map((x) => `<div class="hrow"><div class="ht"><b>${esc(as2Title(x))}</b><span>${esc(as2Name(x) || "손님")}, 접수 ${x.d.slice(5).replace("-", "/")} ${esc(x.by)}${x.loan && !x.loanBack ? ", 📱 대여 중: " + esc((x.loan === "대여 있음" ? "기기명 없음" : x.loan)) : ""}</span></div><div class="hbs"><button class="ok" data-a2sms="${x.id}">📩 문자</button><button data-a2go="5" data-id="${x.id}">전달 완료</button></div></div>`).join("")}${AH.length > 3 ? `<p style="margin-top:8px"><button data-view="as2" style="color:#9bd0ff;font-weight:800">외 ${AH.length - 3}개는 AS관리에서 →</button></p>` : ""}</div>` : "";
   const heroIl = TD.length ? `<div class="hil"><p class="hk">📅 오늘 일정 ${TD.length}개, 처리 못 하면 다음 근무자에게 넘어가요</p>${TD.map((it) => `<div class="hrow"><div class="ht"><b>${it.ic} ${esc(it.title)}</b><span>${esc(it.sub)}</span></div><div class="hbs">${ilBtns(it, true)}</div></div>`).join("")}</div>` : "";
-  const heroPill = bbPills() + snPills() + pcPills() + blogDue().map((x) => hp(`data-view="blog"`, "📝", "블로그", `${esc(x.kw)}${x.date < todayKey() ? ` (${sd(x.date)}분)` : ""}${blogCnt(x) ? `, ${blogCnt(x)}` : ""}`, `블로그 발행: ${esc(x.kw)}${x.date < todayKey() ? ` (${sd(x.date)}분)` : ""}`, "하기")).join("")
-    + (BOARD?.tasks || []).filter((t) => !t.done && !TASK_DONE[t.id]).map((t) => hp(`data-tdone="${t.id}"`, "🔔", "할 일", `${esc(t.title)}${t.time ? ` (${esc(t.time)})` : ""}${cntTxt(t) ? `, ${cntTxt(t)}` : ""}`, `할 일: ${esc(t.title)}${t.time ? ` (${esc(t.time)})` : ""}`, "완료")).join("");
+  const heroPill = bbPills() + snPills() + pcPills() + blogDue().map((x) => hp(`data-view="blog"`, "📝", "블로그", `${esc(x.kw)}${x.date < todayKey() ? ` (${sd(x.date)}분)` : ""}${blogCnt(x) ? `, ${blogCnt(x)}` : ""}`, `블로그 발행: ${esc(x.kw)}${x.date < todayKey() ? ` (${sd(x.date)}분)` : ""}${blogCnt(x) ? ` <span style="color:#c2344d">${blogCnt(x)}</span>` : ""}`, "하기")).join("")
+    + (BOARD?.tasks || []).filter((t) => !t.done && !TASK_DONE[t.id]).map((t) => hp(`data-tdone="${t.id}"`, "🔔", "할 일", `${esc(t.title)}${t.time ? ` (${esc(t.time)})` : ""}${cntTxt(t) ? `, ${cntTxt(t)}` : ""}`, `할 일: ${esc(t.title)}${t.time ? ` (${esc(t.time)})` : ""}${cntTxt(t) ? ` <span style="color:#c2344d">${cntTxt(t)}</span>` : ""}`, "완료")).join("");
   // 10/26 사장님 "오후 내내 '지금 할 일, 마감'이 웃김": 오픈 끝 ~ 마감 1시간 전은 '영업 중' 카드(요청 버튼). 우선 시험 모드에서만
   const cAt = closeAtOf(B, d), nowM = d.getHours() * 60 + d.getMinutes(), cAtM = (([h, m]) => +h * 60 + +m)(cAt.split(":"));
   const biz = done === N && !cSteps[0] && d.getHours() >= 5 && nowM < cAtM - 60;
