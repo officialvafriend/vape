@@ -221,7 +221,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.26-3";
+const VER = "10.26-4";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -293,6 +293,17 @@ const saveSt = (s) => ls.set(dayKey(), s);
 // 재고보고는 재고보고 페이지(stock)가 이 기기에 남긴 기록으로 확인
 const stockDone = () => { const x = ls.get(`vf-stock-${B}-${TEST ? "testlast" : "last"}`, null); if (TEST) { if (!x?.at) return null; const d0 = new Date(x.at); return `${d0.getFullYear()}-${pad(d0.getMonth() + 1)}-${pad(d0.getDate())}` === todayKey() ? { t: `${pad(d0.getHours())}:${pad(d0.getMinutes())}`, by: x.by } : null; } if (!x?.at) return SRV?.stock || null; const d = new Date(x.at); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}` === todayKey() ? { t: `${pad(d.getHours())}:${pad(d.getMinutes())}`, by: x.by } : SRV?.stock || null; };
 
+// 10/26 사진과 같이 보내기 (택배 포장 사진): 폰 사진을 1280px JPEG로 줄여서 같은 웹훅에 파일로
+async function shrinkPhoto(file) {
+  const img = await new Promise((ok, no) => { const i = new Image(); i.onload = () => ok(i); i.onerror = no; i.src = URL.createObjectURL(file); });
+  const k = Math.min(1, 1280 / Math.max(img.width, img.height)), c = document.createElement("canvas"); c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+  c.getContext("2d").drawImage(img, 0, 0, c.width, c.height); return await new Promise((ok) => c.toBlob(ok, "image/jpeg", 0.8));
+}
+async function sendWithPhoto(body, file) {
+  const fd = new FormData(); fd.append("payload_json", JSON.stringify({ content: JSON.stringify({ ...body, branch: B, ver: VER, ...(TEST ? { test: true } : {}) }), allowed_mentions: { parse: [] } }));
+  fd.append("files[0]", await shrinkPhoto(file), "pack.jpg");
+  const r = await fetch(HOOK, { method: "POST", body: fd }); if (!r.ok) throw new Error("응답 " + r.status);
+}
 async function send(body) {
   const r = await fetch(HOOK, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ content: JSON.stringify({ ...body, branch: B, ver: VER, ...(TEST ? { test: true } : {}) }), allowed_mentions: { parse: [] } }) });
   if (!r.ok) throw new Error("응답 " + r.status);
@@ -335,7 +346,7 @@ const VIEWS_ALL = [["home", "🏠", "오늘"], ["work", "🕘", "출퇴근, 마�
 // 10/20 사장님: 오늘(오픈, 마감) + 요청(인수인계, 고객요청) 두 화면만
 // 10/23 재고조사 → 포스 바로 조정: 포스 조정이 연결된 지점만 메뉴 보임 (운영봇 ADJ_BRANCHES와 같게)
 const ADJ_BR = []; // 10/25 재고 조정은 아침 재고보고로 하기로 해서 재고조사 메뉴는 숨김(다시 열려면 지점 넣기)
-const VIEWS = ONLY_OPEN_CLOSE ? [["home", "🏠", "오늘"], ["talk", "📅", "일정"], ["blog", "📝", "블로그"], ...(ADJ_BR.includes(B) ? [["stock", "📦", "재고조사"]] : []), ["as2", "🔧", "AS관리"], ["note", "📝", "매장 노트"], ["reply", "💬", "응대 모음"]] : VIEWS_ALL;
+const VIEWS = ONLY_OPEN_CLOSE ? [["home", "🏠", "오늘"], ["talk", "📅", "일정"], ["blog", "📝", "블로그"], ...(TEST ? [["parcel", "📦", "택배(테스트)"]] : []), ...(ADJ_BR.includes(B) ? [["stock", "📦", "재고조사"]] : []), ["as2", "🔧", "AS관리"], ["note", "📝", "매장 노트"], ["reply", "💬", "응대 모음"]] : VIEWS_ALL;
 let VIEW = ls.get("vf-app-view", "home");
 if (!VIEWS.some((v) => v[0] === VIEW)) VIEW = "home";
 // 10/23 30초마다 화면을 다시 그리면 누르던 버튼이 바뀌어 안 눌림 → 손 댄 지 1.2초 안이면 조금 뒤에 그림
@@ -398,6 +409,7 @@ function render() {
     note: noteHtml(),
     reply: replyHtml(),
     blog: blogHtml(),
+    parcel: parcelHtml(),
   }[VIEW];
   const badge = (k) => { const n = k === "talk" ? talkCount() : k === "home" ? todoItems().length : k === "blog" ? blogDue().length : k === "as2" ? as2Items().filter((x) => (B === "본점" && (x.st === 0 || x.st === 1)) || (x.b === B && !a2Lead(x) && (x.st === 3 || (x.st === 4 && !x.contact)))).length : 0; return n ? `<em class="bd">${n}</em>` : ""; };
   // 10/20 사장님 "여기 창이 별거 없네": 맨 위 칸 = 지금 할 일. 다음 단계 버튼을 바로 누르게, 진행 막대 대신 단계 점
@@ -408,7 +420,7 @@ function render() {
   const TD = todoItems(), AH = as2Items().filter((x) => x.st === 4 && !x.contact && x.b === B && !a2Lead(x));
   const heroAs = AH.length ? `<div class="hil"><p class="hk" style="color:#9bd0ff">🔧 AS 지점 도착, 손님께 연락할 것 ${AH.length}개</p>${AH.slice(0, 3).map((x) => `<div class="hrow"><div class="ht"><b>${esc(as2Title(x))}</b><span>${esc(as2Name(x) || "손님")}, 접수 ${x.d.slice(5).replace("-", "/")} ${esc(x.by)}${x.loan && !x.loanBack ? ", 📱 대여 중: " + esc((x.loan === "대여 있음" ? "기기명 없음" : x.loan)) : ""}</span></div><div class="hbs"><button class="ok" data-a2sms="${x.id}">📩 문자</button><button data-a2go="5" data-id="${x.id}">전달 완료</button></div></div>`).join("")}${AH.length > 3 ? `<p style="margin-top:8px"><button data-view="as2" style="color:#9bd0ff;font-weight:800">외 ${AH.length - 3}개는 AS관리에서 →</button></p>` : ""}</div>` : "";
   const heroIl = TD.length ? `<div class="hil"><p class="hk">📅 오늘 일정 ${TD.length}개, 처리 못 하면 다음 근무자에게 넘어가요</p>${TD.map((it) => `<div class="hrow"><div class="ht"><b>${it.ic} ${esc(it.title)}</b><span>${esc(it.sub)}</span></div><div class="hbs">${ilBtns(it, true)}</div></div>`).join("")}</div>` : "";
-  const heroPill = bbPills() + blogDue().map((x) => `<button class="hpill" data-view="blog">📝 <b>블로그 발행: ${esc(x.kw)}${x.date < todayKey() ? ` (${sd(x.date)}분)` : ""}</b><em>하기</em></button>`).join("")
+  const heroPill = bbPills() + pcPills() + blogDue().map((x) => `<button class="hpill" data-view="blog">📝 <b>블로그 발행: ${esc(x.kw)}${x.date < todayKey() ? ` (${sd(x.date)}분)` : ""}</b><em>하기</em></button>`).join("")
     + (BOARD?.tasks || []).filter((t) => !t.done && !TASK_DONE[t.id]).map((t) => `<button class="hpill" data-tdone="${t.id}">🔔 <b>할 일: ${esc(t.title)}${t.time ? ` (${esc(t.time)})` : ""}</b><em>완료</em></button>`).join("");
   const heroBody = heroPill + heroIl + heroAs + `<p class="hk">${done < N ? `지금 할 일, 오픈 ${OPEN_AT[B]}` : "지금 할 일, 마감"}</p>
     ${nx ? `<div class="hnx"><h1>${nx[0]} ${nx[1]}</h1>${nx[3]}</div>` : `<h1 style="margin-top:6px">오늘 마감 완료! 수고하셨어요</h1>`}
@@ -1432,6 +1444,74 @@ function creqCardHtml() {
   return `<div class="card"><h2>🧾 고객요청${list.length ? `, 진행 중 ${list.length}건` : ""}</h2>${rows || '<div class="desc" style="padding:4px 0 10px">진행 중인 고객요청이 없어요</div>'}
     <div class="btns" style="margin:6px 0 14px"><button class="btn primary" data-go="creq">＋ 고객요청 적기</button></div></div>`;
 }
+// ── 택배 (10/26, 시험 중: 메뉴는 시험 모드에서만) ── 받은 지점이 요청 → 보내는 지점 포장, 자기 택배사로 송장 접수, 송장번호 넣기 → 받은 지점이 손님께 전달
+// 지점마다 오늘 택배 상태(택배사, 마감 시각, [오늘 택배 나감])가 보여서 어느 지점이 오늘 보낼 수 있는지 알 수 있음
+const PC = { to: null, gone: null, done: {} };
+const pcList = () => (BOARD?.parcels || []).filter((r) => !r.test === !TEST && !PC.done[r.id]);
+const pcDay = () => (TEST ? BOARD?.pdayTest : BOARD?.pday) || {};
+const pcState = (b) => { const x = pcDay()[b] || {}; const hm2 = (h) => { const [a, c] = String(h || "").split(":"); return +a * 60 + +c; }, n = new Date(), nm = n.getHours() * 60 + n.getMinutes();
+  if (x.none) return { ok: false, t: "택배 안 함" };
+  if (x.gone || (b === B && PC.gone)) return { ok: false, t: `오늘 나감 ${x.gone?.t || PC.gone}` };
+  if (x.cut && nm > hm2(x.cut)) return { ok: false, t: `마감 시간 지남 (${x.cut})` };
+  return { ok: true, t: `${x.carrier || "택배사 미정"}${x.cut ? `, ${x.cut}까지` : ""}` }; };
+const pcPills = () => !TEST ? "" : pcList().filter((r) => r.to === B && r.st === "req").map((r) => `<button class="hpill" data-pcpack="${r.id}">📦 <b>택배 포장, ${esc(r.nm || "손님")}님 ${esc(r.items)}${r.from !== B ? ` (${esc(ho(r.from))} 요청)` : ""}</b><em>포장</em></button>`).join("")
+  + pcList().filter((r) => r.from === B && r.st === "packed").map((r) => `<button class="hpill" data-pctell="${r.id}">📦 <b>송장 나옴, ${esc(r.nm || "손님")}님께 보내기</b><em>문자</em></button>`).join("");
+function parcelHtml() {
+  const L = pcList(), st = { req: "포장 기다림", packed: "송장 접수됨, 손님께 전달 전", done: "손님께 전달 끝", cancel: "취소" };
+  const day = BR.map((b) => { const x = pcState(b); return `<div style="display:flex;justify-content:space-between;padding:7px 0;border-top:1px solid #eee;font-size:14px"><b>${esc(ho(b))}</b><span style="color:${x.ok ? "var(--green)" : "var(--sub)"};font-weight:700">${esc(x.t)}</span></div>`; }).join("");
+  const row = (r) => `<div class="crow"><div><b>${r.from === B && r.to === B ? "" : r.from === B ? `→ ${esc(ho(r.to))} ` : `← ${esc(ho(r.from))} 요청 `}${esc(r.nm || "손님")}님, ${esc(r.items)}</b><span>${st[r.st]}${r.wb ? `, ${esc(r.carrier)} ${esc(r.wb)}` : ""}${r.late ? ", 내일 나감" : ""}, ${esc(r.d.slice(5).replace("-", "/"))} ${esc(r.t)} ${esc(r.by)}</span></div>
+    <div class="tbtn">${r.to === B && r.st === "req" ? `<button class="act" data-pcpack="${r.id}">포장, 송장</button>` : ""}${r.from === B && r.st === "packed" ? `<button class="act" data-pctell="${r.id}">손님께 보내기</button>` : ""}${r.st === "req" ? `<button class="act gray" data-pccx="${r.id}">취소</button>` : ""}</div></div>`;
+  return `<div class="cols"><div><div class="card"><h2>📦 택배 <small style="color:var(--red)">테스트 중</small></h2>
+      <div class="btns" style="margin:4px 0 12px"><button class="btn primary" data-go="pcnew">＋ 택배 요청</button></div>
+      ${L.length ? L.map(row).join("") : '<div class="desc" style="padding:4px 0 12px">진행 중인 택배가 없어요</div>'}</div></div>
+    <div><div class="card"><h2>오늘 지점별 택배</h2>${day}<div class="btns" style="margin:12px 0 14px"><button class="btn" data-go="pdaygo">우리 지점 오늘 택배 나감</button></div></div></div></div>`;
+}
+function sheetPcNew() {
+  PC.to = null;
+  const chips = (order) => (order || BR.map((b) => [b, null])).map(([b, km], i) => { const x = pcState(b); return `<button class="chip ${PC.to === b ? "on" : ""}" data-pcto="${b}" style="${x.ok ? "" : "opacity:.6"}">${order && i === 0 ? "⭐ " : ""}${esc(ho(b))} <small>${esc(x.t)}${km != null ? `, 약 ${km < 1 ? 1 : Math.round(km)}km` : ""}</small></button>`; }).join("");
+  window._pcChips = chips;
+  openSheet(`<h2>📦 택배 요청</h2><div class="desc">손님 결제는 우리 지점 포스에서 먼저 해 주세요.</div>
+    <input class="input" id="pcItems" placeholder="품목, 수량 (예: 메가킥 망고 3병)" maxlength="120">
+    <input class="input" id="pcName" placeholder="손님 이름" maxlength="20"><input class="input" id="pcPhone" placeholder="손님 연락처" inputmode="tel" maxlength="20">
+    <input class="input" id="pcAddr" placeholder="받을 주소" maxlength="120">
+    <div class="desc" style="margin-top:12px">보낼 지점 (주소를 넣으면 가까운 순)</div><div class="chips" id="pcTo">${chips(null)}</div>
+    <div class="btns"><button class="btn" data-x>취소</button><button class="btn primary" id="okPcNew">요청 보내기</button></div>`);
+}
+async function doPcNew(t) {
+  const v = (id) => ($(id)?.value || "").trim();
+  if (!v("#pcItems")) return toast("품목을 넣어 주세요"); if (!v("#pcAddr")) return toast("주소를 넣어 주세요"); if (!PC.to) return toast("보낼 지점을 골라 주세요");
+  const x = pcState(PC.to); if ((pcDay()[PC.to] || {}).none) return toast("그 지점은 택배를 안 해요");
+  const by = working().join(", "); if (!by) return needIn(() => {});
+  if (!x.ok && !confirm(`${ho(PC.to)}은 ${x.t}이라 내일 나가요. 그래도 보낼까요?`)) return;
+  t.disabled = true;
+  try { await send({ type: "parcelnew", id: Date.now().toString(36) + Math.random().toString(36).slice(2, 5), to: PC.to, items: v("#pcItems"), name: v("#pcName"), phone: v("#pcPhone"), addr: v("#pcAddr"), late: !x.ok, by }); closeSheet(); render(); toast(`${ho(PC.to)}에 택배 요청을 보냈어요`); } catch (e) { t.disabled = false; fail(e); }
+}
+async function sheetPcPack(id) {
+  const r = pcList().find((x) => x.id === id); if (!r) return;
+  const c = await decOne(r.enc), cfg = pcDay()[B] || {};
+  openSheet(`<h2>📦 택배 포장, 송장</h2><div class="desc">${esc(r.items)}${r.from !== B ? `, ${esc(ho(r.from))} 요청` : ""}</div>
+    ${c ? `<div class="say" style="user-select:all">${esc(c.name)} ${esc(c.phone)}<br>${esc(c.addr)}</div>` : '<div class="desc" style="color:var(--red)">손님 정보를 보려면 매장 코드를 넣어 주세요</div>'}
+    <div class="desc" style="margin-top:10px">우리 택배사(${esc(cfg.carrier || "택배사")})로 송장을 접수하고 송장번호를 넣어 주세요</div>
+    <input class="input" id="pcCarrier" placeholder="택배사" value="${esc(cfg.carrier || "")}" maxlength="20"><input class="input" id="pcWb" placeholder="송장번호" inputmode="numeric" maxlength="30">
+    <label class="btn" style="display:flex;align-items:center;justify-content:center;margin-top:10px;cursor:pointer">📷 포장 사진 찍기 <span id="pcPhotoOk" style="margin-left:6px;color:var(--green)"></span><input type="file" id="pcPhoto" accept="image/*" capture="environment" style="display:none"></label>
+    <div class="btns"><button class="btn" data-x>닫기</button><button class="btn primary" id="okPcPack" data-id="${id}">접수함</button></div>`);
+}
+async function doPcPack(t) {
+  const wb = ($("#pcWb")?.value || "").trim(), carrier = ($("#pcCarrier")?.value || "").trim(), photo = $("#pcPhoto")?.files?.[0]; if (!wb) return toast("송장번호를 넣어 주세요"); if (!photo) return toast("포장 사진을 찍어 주세요");
+  const by = working().join(", "); if (!by) return needIn(() => sheetPcPack(t.dataset.id));
+  t.disabled = true;
+  try { await sendWithPhoto({ type: "parcelpack", id: t.dataset.id, wb, carrier, by }, photo); PC.done[t.dataset.id] = 1; closeSheet(); render(); toast("접수로 보냈어요. 받은 지점에 송장번호가 떠요"); } catch (e) { t.disabled = false; fail(e); }
+}
+async function sheetPcTell(id) {
+  const r = pcList().find((x) => x.id === id); if (!r) return;
+  const c = await decOne(r.enc), msg = `안녕하세요, 베이프렌드입니다. 주문하신 상품 택배로 보내드렸어요.\n${r.carrier} 송장번호 ${r.wb}${SMS_TAIL()}`;
+  openSheet(`<h2>📦 송장번호 손님께 보내기</h2><div class="desc">${c ? esc(c.name) + " " + esc(c.phone) : esc(r.nm || "손님")}님, ${esc(r.items)}</div><div class="say" style="white-space:pre-wrap;user-select:all">${esc(msg)}</div>
+    <div class="btns"><button class="btn" data-x>닫기</button>${c?.phone ? `<a class="btn" href="sms:${esc(c.phone.replace(/[^0-9]/g, ""))}?body=${encodeURIComponent(msg)}">문자 열기</a>` : ""}<button class="btn primary" id="okPcTell" data-id="${id}">보냈어요</button></div>`);
+}
+async function doPcSend(t, type, ok) {
+  const by = working().join(", "); if (!by) return needIn(() => {});
+  try { await send({ type, id: t.dataset.id, by }); PC.done[t.dataset.id] = 1; closeSheet(); render(); toast(ok); } catch (e) { fail(e); }
+}
 // ── 분배 (10/26 사장님) ── 관리자앱 '분배 넣기'로 생긴 카드. 본점: 줄마다 챙긴 수량(없으면 0) → [챙김 끝]. 지점: 받으면 [도착]
 const BB_DONE = {}; // 이 기기에서 방금 보낸 것
 const bbPackList = () => (BOARD?.bbPack || []).filter((c) => !c.test === !TEST && !BB_DONE[c.id + "|" + c.b]);
@@ -2118,6 +2198,15 @@ document.addEventListener("click", (e) => {
   if (t.dataset.tdone) return doTaskDone(t.dataset.tdone);
   if (t.dataset.blogdone) return sheetBlogDone(t.dataset.blogdone);
   if (t.dataset.bbpack) return sheetBbPack(t.dataset.bbpack);
+  if (t.dataset.go === "pcnew") return sheetPcNew();
+  if (t.dataset.pcto) { PC.to = t.dataset.pcto; document.querySelectorAll("[data-pcto]").forEach((x) => x.classList.toggle("on", x === t)); return; }
+  if (t.id === "okPcNew") return doPcNew(t);
+  if (t.dataset.pcpack) return sheetPcPack(t.dataset.pcpack);
+  if (t.id === "okPcPack") return doPcPack(t);
+  if (t.dataset.pctell) return sheetPcTell(t.dataset.pctell);
+  if (t.id === "okPcTell") return doPcSend(t, "parceltold", "손님께 보낸 걸로 했어요");
+  if (t.dataset.pccx) { if (!confirm("이 택배 요청을 취소할까요?")) return; return doPcSend({ dataset: { id: t.dataset.pccx } }, "parcelcancel", "취소했어요"); }
+  if (t.dataset.go === "pdaygo") { if (!confirm("오늘 택배가 나갔나요? 누르면 오늘 우리 지점 택배는 마감으로 보여요")) return; const by = working().join(", "); if (!by) return needIn(() => {}); send({ type: "pdaygo", by }).then(() => { PC.gone = now(); render(); toast("오늘 택배 마감으로 했어요"); }).catch(fail); return; }
   if (t.dataset.bbin) return sheetBbIn(t.dataset.bbin);
   if (t.dataset.bbnone !== undefined) { const el = $("#bbq" + t.dataset.bbnone); if (el) el.value = el.value === "0" ? el.dataset.q : "0"; t.classList.toggle("on", el && el.value === "0"); return; }
   if (t.id === "okBbPack") return doBbPack(t);
@@ -2271,6 +2360,8 @@ document.addEventListener("input", (e) => {
   if (e.target.dataset.svi !== undefined) { const i = +e.target.dataset.svi, v = e.target.value.replace(/\D/g, "").slice(0, 4); e.target.value = v; if (v === "") delete sv.cnt[i]; else sv.cnt[i] = v; e.target.closest(".sv-row").classList.toggle("done", v !== ""); $("#svN").textContent = Object.keys(sv.cnt).length; }
   if (e.target.id === "crFind") { const q = e.target.value.trim(); $("#crRes").innerHTML = q ? qkFind(q).map((n) => `<button class="qr" data-cradd="${esc(n)}">${esc(n)}<small>${esc(QPOS()[n]?.[4] || "")}</small>${OUTS.has(n) ? '<small style="color:var(--red);background:var(--red-soft)">품절</small>' : ""} <i>+</i></button>`).join("") || '<div class="desc">못 찾았어요, 아래 칸에 직접 적어 주세요</div>' : ""; }
   if (e.target.id === "qkFind") { const q = e.target.value.trim(); $("#qkRes").innerHTML = q ? qkFind(q).map((n) => `<button class="qr" data-qadd="${esc(n)}">${esc(n)}<small>${esc(QPOS()[n]?.[4] || "")}</small> <i>+</i></button>`).join("") || '<div class="desc">못 찾았어요</div>' : ""; }
+  if (e.target.id === "pcPhoto") { const ok = $("#pcPhotoOk"); if (ok) ok.textContent = e.target.files?.[0] ? "✓ 찍음" : ""; return; }
+  if (e.target.id === "pcAddr") { const o = nearOrder(e.target.value); if (o) { const f = o.find(([b]) => pcState(b).ok); if (f && !PC.to) PC.to = f[0]; } $("#pcTo").innerHTML = window._pcChips(o); return; }
   if (e.target.id === "qkAddr") { const o = nearOrder(e.target.value); if (o) qk.to = (o.find(([b]) => b !== B && !NO_QUICK.includes(b)) || [])[0] || qk.to; $("#qkTo").innerHTML = qkToChips(o); $("#qkNote").textContent = o ? ",  가까운 순" : ""; }
 });
 document.addEventListener("keydown", (e) => { if (e.key === "Enter" && e.target.id === "nm") doIn(e.target.value); });
