@@ -564,6 +564,8 @@ function issues() {
   if (aOut.length) L.push({ go: "survey", t: "A그룹 품절", d: `${aOut.length}종, ${aOut.slice(0, 3).join(", ")}${aOut.length > 3 ? " 외" : ""}` });
   const sw = (D.surveys || []).filter((v) => v.status === "wait");
   if (sw.length) L.push({ go: "survey", t: "재고조사", d: `승인 기다리는 ${sw.length}건` });
+  // 10/26 사장님 "포스엔 있는데 없음이라 한 건은 관리자에게": 운영봇 refuse(최근 3일)
+  for (const x of D.refuse || []) L.push({ b: x.b, t: `${BR.indexOf(x.b) + 1}호 ${x.b} ${x.kind} 거절`, d: `포스엔 ${x.items} ${x.pos}개 있는데 없음${x.why ? ` (${x.why})` : ""}, ${BR.indexOf(x.from) + 1}호 ${x.from} 문의 ${x.d.slice(5).replace("-", "/")} ${x.t} ${x.by}` });
   return L;
 }
 // 10/25 사장님 "확인한 건 옆에 체크 버튼으로 지우게": 이 기기에 날짜별로 기억(다른 기기엔 그대로 보임), [숨긴 것 되돌리기]로 다시 보기
