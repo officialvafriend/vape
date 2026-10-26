@@ -236,7 +236,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.26-35";
+const VER = "10.26-36";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -1723,7 +1723,7 @@ async function sheetSnStep(id) {
     if (key === "openquick|nostock") body = `<div class="desc">${esc(ho(r.to))}에 재고가 없어요. 다른 매장에 다시 요청하거나 손님께 안내해 주세요</div><div class="btns">${btn("cancel", "손님 안내함, 끝")}</div>`;
     if (key === "jeon|sent") body = `<div class="btns">${btn("done", "받음")}</div>`;
   }
-  openSheet(`<h2>${SKIND[r.kind]} ${r.from === B ? `→ ${esc(toTxt(r))}` : `← ${esc(ho(r.from))} 요청`}</h2><div class="desc" style="font-size:16px;font-weight:700;color:var(--ink)">${esc(r.items)}</div>${r.miss?.length ? `<div class="desc" style="color:var(--red)">없어서 뺀 상품: ${esc(r.miss.join(", "))}</div>` : ""}${r.memo ? `<div class="desc">메모: ${esc(r.memo)}</div>` : ""}
+  openSheet(`<h2>${SKIND[r.kind]} ${r.from === B ? `→ ${esc(toTxt(r))}` : `← ${esc(ho(r.from))} 요청`}</h2><div class="desc" style="font-size:16px;font-weight:700;color:var(--ink)">${esc(r.items)}</div>${r.miss?.length && !(r.from === B && r.missProds?.length && !r.reask) ? `<div class="desc" style="color:var(--red)">없어서 뺀 상품: ${esc(r.miss.join(", "))}</div>` : ""}${r.memo ? `<div class="desc">메모: ${esc(r.memo)}</div>` : ""}
     <div class="desc" style="font-size:13px">${esc(hist)}</div>${mine ? "" : `<div class="desc">지금: ${STXT[r.st] || r.st}</div>`}${body}
     ${r.from === B && r.missProds?.length && !r.reask && !SN.done[r.id + "reask"] ? `<div class="desc" style="margin-top:10px;color:var(--red)">없어서 빠진 상품: ${esc(r.missProds.map(([n, q]) => `${n} ${q}개`).join(", "))}</div><div class="btns" style="margin-top:6px"><button class="btn primary" data-reask="${id}">📣 빠진 상품 ${r.missProds.length}개, 다른 지점에 다시 물어보기</button></div>` : r.reask ? '<div class="desc" style="margin-top:8px">빠진 상품은 다른 지점에 다시 물어봤어요</div>' : ""}
     <div class="btns" style="margin-top:6px"><button class="btn" data-x>닫기</button>${r.from === B && !["done", "cancel"].includes(r.st) && !(mine && body.includes('data-snk="cancel"')) ? `<button class="btn" data-snk="cancel" data-id="${id}">이 건 취소</button>` : ""}</div>`);
