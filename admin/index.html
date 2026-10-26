@@ -442,7 +442,7 @@ function opsHtml() {
     return `<tr data-brpc="${esc(o.b)}" style="cursor:pointer">${td(`<b>${BR.indexOf(o.b) + 1} ${esc(o.b)}</b>`)}
       ${o.open ? td(`${o.open}${o.vsAvg != null && Math.abs(o.vsAvg) >= 5 ? `<small>평소보다 ${Math.abs(o.vsAvg)}분 ${o.vsAvg > 0 ? "늦음" : "빠름"}</small>` : ""}${o.prepDiff ? `<small>준비금 ${o.prepDiff > 0 ? "+" : ""}${won(o.prepDiff)}</small>` : ""}`, o.late || o.prepDiff ? "r" : "") : td("안 함", "n")}
       ${c ? td(`${c.at}${c.warn ? `<small>확인 ${c.warn}건</small>` : ""}`, c.warn ? "r" : "g") : td("안 함", "n")}
-      ${c ? td(`${won(c.총)}${vs != null ? `<small>지난달 평균 ${vs > 0 ? "+" : ""}${vs}%</small>` : ""}`) : L ? td(`${won(L.sales)}<small>${esc(L.at)} 기준${o.avgPrev ? `, 지난달 하루 ${won(Math.round(o.avgPrev / 10000))}만` : ""}</small>`) : NO}
+      ${c ? td(`${won(c.총)}${vs != null ? `<small>지난달 평균 ${vs > 0 ? "+" : ""}${vs}%</small>` : ""}`) : L ? td(won(L.sales)) : NO}
       ${c && c.diff != null ? td(c.diff ? (c.diff > 0 ? "+" : "") + won(c.diff) : "0", c.diff ? "r" : "g") : NO}
       ${c ? td(`${c.bills}<small>객단가 ${won(c.객단가)}</small>`) : L ? td(`${L.bills}${L.bills ? `<small>객단가 ${won(Math.round(L.sales / L.bills))}</small>` : ""}`) : NO}
       ${c ? td(c.지정판매율 != null ? c.지정판매율 + "%" : "-") : L ? td(L.prem ? Math.round((L.des / L.prem) * 100) + "%" : "-") : NO}
