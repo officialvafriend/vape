@@ -829,7 +829,7 @@
 <body data-mode=""><div id="testRibbon" style="position:fixed;left:0;right:0;bottom:0;z-index:99999;background:#d32f2f;color:#fff;text-align:center;font:700 13px sans-serif;padding:4px;pointer-events:none">테스트판 · 손님 상담에는 정식판을 쓰세요</div>
 <div class="app">
   <div class="top">
-    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">테스트 v10.27-0100</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
+    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">테스트 v10.27-0200</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
     <nav class="tabs" id="tabs" style="display:none"></nav>
     <div class="flow" id="flow"><span data-st="1">① 찾는 것</span><i>›</i><span data-st="2">② 고르기</span><i>›</i><span data-st="3">③ 담은 상품</span><i>›</i><span data-st="4">④ 직원 확인</span></div>
   </div>
@@ -1642,11 +1642,11 @@ function bundleOf(dev, vl) { // 포스에 있는 묶음 상품 중 정확히 맞
 }
 // 직원 화면에서 바로 고치기 (10/5 동성로 요청): 수량 −/+ · 상품 추가 · 찍음 체크는 다시 그려도 유지
 const scanDone = new Set(); let staffAdd = false, staffQ = "";
-function scanBlock(title, sub, posName, n, note = "", id = "") {
+function scanBlock(title, sub, posName, n, note = "", id = "", free = 0) { // free = 서비스(0원) 수량(숫자 또는 "all"): 묶음 상품에 포함된 것이라 QR에는 안 넣음 (10/27 사장님)
   const p = posName && posOf(posName);
   const code = p ? `<svg class="bc" data-v="${esc(p[1])}" data-f="${p[2]}"></svg>${p[3] ? "" : '<span class="warn">바코드 미등록 · 상품코드(' + esc(p[0]) + ')로 만든 바코드라 포스 인식 확인 필요</span>'}`
     : '<span class="warn">포스 상품을 못 찾았어요 · 포스에서 직접 검색해 주세요</span>';
-  return `<div class="scan ${id && scanDone.has(id) ? "done" : ""}" ${id ? `data-sid="${id}"` : ""}><div class="hd"><b>${esc(title)}</b>${id ? `<span class="sq"><button data-sm="${id}" aria-label="빼기">−</button><b>${n}</b><button data-sp="${id}" aria-label="더하기">+</button></span>` : `<span class="x">× ${n}</span>`}</div><div class="s">${esc(sub)}${note}</div>${code}</div>`;
+  return `<div class="scan ${id && scanDone.has(id) ? "done" : ""}" ${id ? `data-sid="${id}"` : ""} data-free="${free}"><div class="hd"><b>${esc(title)}</b>${id ? `<span class="sq"><button data-sm="${id}" aria-label="빼기">−</button><b>${n}</b><button data-sp="${id}" aria-label="더하기">+</button></span>` : `<span class="x">× ${n}</span>`}</div><div class="s">${esc(sub)}${note}</div>${code}</div>`;
 }
 function staffRes() {
   if (!staffQ.trim()) return '<div class="sq-hint">찾을 상품 이름을 넣어 주세요</div>';
@@ -1700,9 +1700,10 @@ function staffView() {
     if (x.dev) return devColor ? scanBlock(`${MAIN.name} · ${devColor}`, "기기", `${MAIN.model} ${devColor}`, n, "", id)
       : `<div class="scan"><div class="hd"><b>${MAIN.name}</b><span class="x">× ${n}</span></div><div class="s">색상을 골라야 바코드가 나와요</div><div class="colors" style="padding:10px 0 0">${DEV_COLORS.map((c) => `<button data-color2="${c}">${c}</button>`).join("")}</div></div>`;
     const svc = " · <b style='color:var(--red)'>서비스(0원)</b>";
-    if (x.c === "lung") return scanBlock(x.n, "폐호흡", x.n, n, plan.lungAll ? svc : "", id);
-    if (x.c) { const f = gcB.freeById[id] || 0; return scanBlock(x.n, won(x.price) + (x.ev ? " · " + evName(x.ev) + " 이벤트" : ""), x.n, n, f ? ` · <b style='color:var(--red)'>서비스(0원) ${f >= n ? "전부" : f + "개"}</b>` : "", id); }
-    return scanBlock(short(x.n), [x.no ? "라벨 " + x.no + "번" : "", x.br, x.loc ? "진열 " + x.loc : ""].filter(Boolean).join(" · "), x.n, n, (x.line === "프라임" ? plan.pmAll : plan.prAll) ? svc : "", id);
+    if (x.c === "lung") return scanBlock(x.n, "폐호흡", x.n, n, plan.lungAll ? svc : "", id, plan.lungAll ? "all" : 0);
+    if (x.c) { const f = gcB.freeById[id] || 0; return scanBlock(x.n, won(x.price) + (x.ev ? " · " + evName(x.ev) + " 이벤트" : ""), x.n, n, f ? ` · <b style='color:var(--red)'>서비스(0원) ${f >= n ? "전부" : f + "개"}</b>` : "", id, f >= n ? "all" : f); }
+    const liqSvc = x.line === "프라임" ? plan.pmAll : plan.prAll;
+    return scanBlock(short(x.n), [x.no ? "라벨 " + x.no + "번" : "", x.br, x.loc ? "진열 " + x.loc : ""].filter(Boolean).join(" · "), x.n, n, liqSvc ? svc : "", id, liqSvc ? "all" : 0);
   };
   const devBlocks = devIds.map(blockOf).join("");
   const restBlocks = items.filter(([id]) => !devIds.some(([d]) => d === id)).map(blockOf).join("");
@@ -1771,13 +1772,15 @@ const QR_SEPS = { cr: "\r", crlf: "\r\n", lf: "\n", tab: "\t" };
 let qrSep = "cr"; try { qrSep = localStorage.getItem("vf-qr-sep") || "cr"; } catch {}
 function qrView() {
   staffView();
-  const codes = [], miss = [];
+  const codes = [], miss = [], svcOut = []; let svcN = 0;
   document.querySelectorAll("#sheet .scan").forEach((el) => {
     const nm = el.querySelector(".hd b")?.textContent || "";
     const n = +(el.querySelector(".sq b")?.textContent || (el.querySelector(".x")?.textContent || "").replace(/\D/g, "")) || 1;
+    const free = el.dataset.free === "all" ? n : Math.min(n, +el.dataset.free || 0); // 묶음 상품(기기패키지, 5병·11병 묶음)에 포함된 서비스(0원) 수량은 QR에서 뺌 (10/27 사장님: 기기패키지면 액상 바코드가 들어가면 안 됨)
     const bc = el.querySelector("svg.bc");
-    if (bc) for (let i = 0; i < n; i++) codes.push(bc.dataset.v);
-    else if (nm && !/각인|장부/.test(nm)) miss.push(nm);
+    if (free) { svcN += free; svcOut.push(`${nm}${free > 1 ? " ×" + free : ""}`); }
+    if (bc) for (let i = 0; i < n - free; i++) codes.push(bc.dataset.v);
+    else if (nm && !/각인|장부/.test(nm) && n - free > 0) miss.push(nm);
   });
   if (!codes.length) return toast("QR로 만들 바코드가 없어요");
   const sep = QR_SEPS[qrSep] || "\r";
@@ -1785,6 +1788,7 @@ function qrView() {
   open(`<div class="sh">QR 한 번에 찍기</div><div style="color:var(--ink-soft);margin-top:6px;font-size:14.5px">포스 판매 화면에서 스캐너로 이 QR을 한 번 찍으세요. (${esc(PAD.branch)} 포스 상품 기준)</div>
   <div style="background:#fff;border-radius:14px;padding:14px;margin-top:12px;text-align:center"><div style="max-width:360px;margin:0 auto">${q.createSvgTag({ cellSize: 6, margin: 4, scalable: true })}</div>
   <div style="font-size:16px;font-weight:800;margin-top:8px">총 ${codes.length}번 찍힌 것과 같아요</div></div>
+  ${svcOut.length ? `<div class="posw" style="background:#eef7ee;color:#1b5e20">묶음 상품에 포함된 ${svcN}개는 QR에 안 넣었어요 (서비스 0원): ${svcOut.map(esc).join(", ")}</div>` : ""}
   ${miss.length ? `<div class="posw">QR에 안 들어간 것: ${miss.map(esc).join(", ")} → 직접 찍어 주세요</div>` : ""}
   <div class="posw">묶음 상품 금액, 서비스(0원) 처리는 지금처럼 포스에서 직접 해 주세요. 하나만 찍히면 아래 구분 문자를 바꿔 보세요.</div>
   <div style="margin-top:10px;font-size:14px;color:var(--grey)">구분 문자 <select id="qrSep">${Object.keys(QR_SEPS).map((k) => `<option value="${k}" ${k === qrSep ? "selected" : ""}>${{ cr: "Enter (CR)", crlf: "Enter (CR+LF)", lf: "줄바꿈 (LF)", tab: "Tab" }[k]}</option>`).join("")}</select></div>
