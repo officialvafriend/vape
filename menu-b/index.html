@@ -101,7 +101,12 @@ body[data-v=home] #vHome,body[data-v=dev] #vDev,body[data-v=liq] #vLiq,body[data
 .go3 button{height:160px;border-radius:var(--r);background:var(--card);text-align:left;padding:20px;display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden}
 .go3 b{font-size:30px;font-weight:800;letter-spacing:-.02em;position:relative}
 .go3 small{font-size:13px;color:var(--grey);position:relative}
-.go3 .tag{position:absolute;right:12px;bottom:14px;font-size:11px;color:#b5b5bb;border:1px dashed #cfcfd5;border-radius:8px;padding:2px 6px}
+/* 첫 화면 3갈래 카드: 포스터 그림을 배경으로 크게, 아래 어둡게 덮고 흰 글자 (10/27 사장님 "보기 이쁘게") */
+.go3 button{height:210px;padding:18px 20px;justify-content:flex-end;gap:4px;background:#222}
+.go3 img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scale(1.9);transition:transform .5s}
+.go3 button::after{content:"";position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,0) 35%,rgba(0,0,0,.62))}
+.go3 b,.go3 small{z-index:1;color:#fff}.go3 small{color:rgba(255,255,255,.85);font-size:14px;font-weight:600}.go3 b{font-size:34px}
+.go3 button:active img{transform:scale(1.8)}
 
 /* 기기: 큰 카드 + 썸네일 줄 + 패키지 3칸 */
 .hero{padding:24px}
@@ -183,6 +188,21 @@ body.open .sheet{transform:translate(-50%,0)}
 .warn{display:block;font-size:12.5px;color:var(--red);font-weight:700}
 .toast{position:fixed;left:50%;bottom:110px;transform:translate(-50%,20px);background:var(--ink);color:#fff;padding:12px 20px;border-radius:14px;font-size:15px;opacity:0;pointer-events:none;transition:.3s}
 .toast.on{opacity:1;transform:translate(-50%,0)}
+.nudge{display:block;background:var(--bg);border-radius:16px;padding:14px 16px;margin:10px 0}.nudge b{display:block;font-size:16px}.nudge span{font-size:13px;color:var(--grey)}.nudge.gift{background:var(--red);color:#fff}.nudge.gift span{color:rgba(255,255,255,.85)}
+.bar2{height:6px;border-radius:3px;background:var(--line);margin-top:8px;overflow:hidden}.bar2 i{display:block;height:100%;background:var(--red)}
+.upsell{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:var(--ink);color:var(--card);border-radius:16px;padding:16px 18px;margin:10px 0}.upsell span{flex:1}.upsell b{display:block;font-size:17px}.upsell small{font-size:13px;opacity:.8}.upsell i{font-style:normal;font-size:22px}
+.engr{display:flex;align-items:center;gap:12px;background:var(--bg);border-radius:16px;padding:14px 16px;margin:10px 0;box-shadow:inset 0 0 0 2px var(--red)}.engr div{flex:1}.engr b{display:block;font-size:16px}.engr span{font-size:13px;color:var(--grey)}.engr button{background:var(--red);color:#fff;border-radius:12px;padding:10px 14px;font-weight:800;font-size:14px}.engr.on button{background:var(--card);color:var(--ink)}.engr input{width:100%;height:46px;margin-top:8px;border:1px solid var(--line);border-radius:10px;padding:0 12px;font-size:16px;background:var(--card);color:var(--ink)}
+.askb{background:var(--red);color:#fff;border-radius:12px;padding:10px 12px;font-size:13px;font-weight:800;flex:none}
+.sres .sr.sold{opacity:1}.sr.sold .im,.sr.sold .n,.sr.sold .price{opacity:.5}
+.it.sold{opacity:1;cursor:pointer}.it.sold .im,.it.sold .nm,.it.sold .fl{opacity:.45}.badge.so{background:#8d887f}
+.pkb{background:var(--ink);color:var(--card);border-radius:12px;padding:10px 14px;font-size:14px;font-weight:800;flex:none}.pkb.ln1{background:var(--bg);color:var(--ink)}
+.asks{position:fixed;left:50%;bottom:0;width:100%;max-width:800px;max-height:70%;background:var(--bg);border-radius:28px 28px 0 0;transform:translate(-50%,105%);transition:transform .45s cubic-bezier(.22,1,.36,1);display:flex;flex-direction:column;z-index:25;box-shadow:0 -10px 40px rgba(0,0,0,.18)}
+body.askon .asks{transform:translate(-50%,0)}
+.askh{background:var(--card);border-radius:18px;padding:16px 18px}.askh small{display:block;font-size:13px;color:var(--red);font-weight:700}.askh b{font-size:22px}
+.askst{margin-top:8px;font-size:15px}.askst .ok,.askit .ok{color:#1b8a4b}
+.askrow{display:flex;justify-content:space-between;align-items:center;background:var(--card);border-radius:16px;padding:12px 16px;margin:10px 0;font-size:16px;font-weight:700}
+.askit{background:var(--card);border-radius:14px;padding:12px 16px;margin-bottom:8px;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}.askit small{color:var(--grey)}.askit span{font-size:14px;color:var(--grey)}
+.askchip{position:fixed;left:24px;bottom:100px;z-index:12;background:var(--ink);color:var(--card);border-radius:999px;padding:12px 18px;font-size:14px;font-weight:700;display:none;box-shadow:0 6px 20px rgba(0,0,0,.2)}.askchip.on{display:block}.askchip b{color:#7ee2a8}
 .combo{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:4px 0 14px}.combo button{background:var(--card);border-radius:16px;padding:14px;text-align:left;box-shadow:inset 0 0 0 1.5px var(--line)}.combo b{display:block;font-size:16px}.combo span{font-size:13px;color:var(--grey)}
 .evtip{font-size:13.5px;color:var(--grey);margin:-4px 0 10px}
 .evq{width:100%;height:52px;border:1px solid var(--line);border-radius:14px;padding:0 16px;font-size:17px;background:var(--card);color:var(--ink)}
@@ -263,9 +283,9 @@ body[data-theme=dark] .scan svg{background:#fff;border-radius:8px}
     <div class="view" id="vHome">
       <div class="poster" id="poster"><div class="pv" id="pv"></div><div class="dots" id="dots"></div></div>
       <div class="go3">
-        <button onclick="go('dev')"><span class="tag">배경 이미지 자리</span><small>하복2, 젤로, 발라리안</small><b>기기</b></button>
-        <button onclick="go('liq')"><span class="tag">배경 이미지 자리</span><small>맛으로 찾기</small><b>액상</b></button>
-        <button onclick="go('dsp')"><span class="tag">배경 이미지 자리</span><small>10개 사면 5개 더</small><b>일회용</b></button>
+        <button onclick="go('dev')"><img src="pst_c_H2.jpg" alt="" style="object-position:50% 45%"><small>하복2, 발라맥스프로</small><b>기기</b></button>
+        <button onclick="go('liq')"><img src="pst_c_B1.jpg" alt="" style="object-position:50% 50%"><small>빌런, 릭, 디오</small><b>액상</b></button>
+        <button onclick="go('dsp')"><img src="pst_c_D1.jpg" alt="" style="object-position:45% 55%"><small>10개 사면 5개 더</small><b>일회용</b></button>
       </div>
     </div>
 
@@ -282,6 +302,7 @@ body[data-theme=dark] .scan svg{background:#fff;border-radius:8px}
       </div>
       <div class="thumbs" id="thumbs"></div>
       <div class="pk" id="pk"></div>
+      <div id="pods"></div>
       <button class="cta" id="devAdd">담기</button>
     </div>
 
@@ -298,7 +319,7 @@ body[data-theme=dark] .scan svg{background:#fff;border-radius:8px}
       <div class="card evbar"><b>10개 사면 5개 더</b><span>팜팜바, 모스바 섞어서 15개</span></div>
       <div class="grid" id="dspGrid"></div>
     </div>
-    <p class="note" id="note"></p>
+    
   </div>
 
   <div class="cart">
@@ -315,6 +336,8 @@ body[data-theme=dark] .scan svg{background:#fff;border-radius:8px}
 <div class="evs" id="ev"><div class="evh"><div><small id="evEye"></small><b id="evTi"></b></div><button id="evX" aria-label="닫기">✕</button></div>
   <div class="evb" id="evB"></div>
   <div class="evf"><div class="evbar"><i id="evBar"></i></div><button class="cta" id="evGo" style="margin:0"></button></div></div>
+<div class="asks" id="ask"><div class="evh"><div><small style="color:var(--grey)">다른 지점 재고</small><b>재고 확인</b></div><button id="askX" aria-label="닫기">✕</button></div><div class="evb" id="askB"></div></div>
+<button class="askchip" id="askChip"></button>
 <div class="toast" id="toast"></div>
 <!-- 지금 판과 같은 데이터: 액상(data.js), 지점별 포스 바코드(pos.js), 지점별 기기 재고와 판매가(goods.js) -->
 <script src="data.js"></script><script src="pos.js"></script><script src="goods.js"></script><script src="JsBarcode.all.min.js"></script><script src="qrcode.js"></script>
@@ -380,7 +403,7 @@ const DEV_IMG = { 하복2: { 실버: "dev_havok2_silver.png", 블랙: "dev_havok
   발라맥스프로: { 블랙: "dev_v017.jpg", 블루: "dev_v018.jpg", 실버: "dev_v019.jpg", 퍼플: "dev_v020.jpg", 핑크: "dev_v021.jpg" },
   "맥스프로 스티그마": { 네이비: "dev_v010.jpg", 블루: "dev_v011.jpg" }, 조바: { 골드: "dev_v044.jpg", 블랙: "dev_v045.jpg", 퍼플: "dev_v046.jpg" } };
 const DEV_SUB = { 하복2: "입호흡, 폐호흡 겸용", 발라맥스프로: "입호흡", "맥스프로 스티그마": "입호흡", 조바: "입호흡" };
-const HEX = { 실버: "#c9c9cc", 블랙: "#222", 네이비: "#26324d", 올리브: "#6b6a4a", 블루: "#2f6fd0", 핑크: "#f2a7c3", 퍼플: "#7a4fb5", 골드: "#c9a55a", 화이트: "#f4f4f4" };
+const HEX = { 실버: "#c9c9cc", 블랙: "#222222", 네이비: "#26324d", 올리브: "#6b6a4a", 블루: "#2f6fd0", 핑크: "#f2a7c3", 퍼플: "#7a4fb5", 골드: "#c9a55a", 화이트: "#f4f4f4" };
 const A_LIQ = [...["자두", "청포도", "레즈애플", "청사과", "레몬", "파인애플", "보석바", "바나나라무네", "석류"].map((f) => "VF 빌런 " + f),
   ...["자두", "청포도", "적사과", "청사과", "레몬", "파인애플", "바나나", "석류", "소다"].map((f) => "VF 릭 " + f), "베이퍼 시가812", "베이퍼 쿨멘솔"];
 const LIQ_IMG = { "VF 빌런 레몬": "vl_sq_lemon.jpg", "VF 빌런 레즈애플": "vl_sq_redsapple.jpg", "VF 빌런 바나나라무네": "vl_sq_banana.jpg", "VF 빌런 보석바": "vl_sq_bosukbar.jpg", "VF 빌런 석류": "vl_sq_pomegranate.jpg", "VF 빌런 자두": "vl_sq_plum.jpg", "VF 빌런 청사과": "vl_sq_greenapple.jpg", "VF 빌런 청포도": "vl_sq_greengrape.jpg", "VF 빌런 파인애플": "vl_sq_pineapple.jpg",
@@ -423,13 +446,54 @@ function drawCart() {
   const off = unitAll - t.total;
   $('lines').innerHTML = cart.size ? [...cart].map(([key, x]) => `<div class="ln"><img src="${x.img}" alt=""><span class="n">${esc(x.label)}${x.items ? `<small>${esc(x.items.map(([, l, q]) => l + " " + q).join(", "))}</small>` : ""}</span><span class="qb"><button data-m="${key}">−</button><b>${x.qty}</b><button data-p="${key}">+</button></span><b class="price">${won(x.unit * x.qty)}</b></div>`).join("")
       + (off > 0 ? `<div class="sum2"><div class="r"><span>낱개로 샀을 때</span><s>${won(unitAll)}</s></div><div class="r off"><span>${esc(t.how || "묶음, 이벤트")} 할인</span><b>-${won(off)}</b></div><div class="save">총 ${won(off)} 할인 받았어요</div></div>` : "")
-      + memberBox()
+      + benefitBox() + memberBox()
     : '<div style="padding:24px 0;color:var(--grey)">담은 상품이 없어요</div>';
   setFoot("cart");
 }
 $('lines').onclick = (e) => {
   const mb = e.target.closest('[data-mem]'); if (mb) { member.type = mb.dataset.mem || null; drawCart(); return; }
   const b = e.target.closest('button[data-m],button[data-p]'); if (!b) return; const k = b.dataset.m || b.dataset.p; if (!k || !cart.has(k)) return; addItem(k, cart.get(k), b.dataset.m ? -1 : 1); };
+// ── 혜택 안내 (지금 판 cartView의 nudge, 기기패키지 만들기, 일회용 증정, 레이저 각인과 같은 규칙) ──
+let engrave = null; // null = 안 함, 문자열 = 새길 문구
+const pkAddOf = (how) => /10병/.test(how) ? ADD.pr10 : how === "프리미엄 기기패키지" ? ADD.pr5 : how === "베이프렌드 기기패키지" ? ADD.vl5 : 0;
+function giftBase() { // 액상, 팟 금액 (기기, 기기패키지에 든 액상, 일회용은 빼고) — 10만원 이상이면 일회용 1개 증정
+  const t = totalOf(), c = t.c, items = [...cart.values()];
+  const e = estimate(c), liq = c.dev && e.how ? e.total - c.dev * MAIN_PRICE - pkAddOf(e.how) : prPrice(c.v + c.p) + pmPrice(c.m);
+  return Math.max(0, liq) + items.filter((x) => x.k === "bulk").reduce((a, x) => a + x.unit * x.qty, 0) + items.filter((x) => x.cc === "pod").reduce((a, x) => a + x.unit * x.qty, 0);
+}
+function benefitBox() {
+  const t = totalOf(), c = t.c, items = [...cart.values()], n = c.v + c.p, out = [];
+  const liqAll = n + c.m + items.filter((x) => x.k === "bulk").reduce((a, x) => a + x.items.reduce((s, [, , q]) => s + q, 0) * x.qty, 0);
+  const hasDev = items.some((x) => x.k === "dev");
+  // 프리미엄 묶음 (기기 없을 때)
+  if (n && !c.dev) {
+    if (n >= 11) out.push(`<div class="nudge"><b>프리미엄 11병 90,000원 적용 중</b><span>지금 ${n}병</span></div>`);
+    else { const goal = n < 5 ? 5 : 11, more = goal - n, diff = prPrice(n + more) - prPrice(n);
+      out.push(`<div class="nudge"><b>${diff < 0 ? `${more}병 더 담으면 오히려 ${won(-diff)} 싸져요` : `${more}병 더 담으면 ${goal}병 ${goal === 5 ? "49,500" : "90,000"}원`}</b><span>지금 ${n}병, 목표 ${goal === 5 ? "5병 49,500원" : "11병 90,000원 (병당 약 8,200원)"}</span><div class="bar2"><i style="width:${Math.min(100, n / goal * 100)}%"></i></div></div>`); }
+    // 하복2 기기패키지 만들기
+    const h2 = devOpts("하복2")[0];
+    if (h2) { const withDev = estimate({ ...c, dev: 1 }).total + c.other;
+      out.push(`<button class="upsell" data-up="1"><span><b>이 맛들로 하복2 패키지 만들기</b><small>하복2 더하면 총 ${won(withDev)} (기기 89,000원이 ${won(withDev - t.total)}에)</small></span><i>→</i></button>`); }
+  }
+  // 일회용 증정
+  const base = giftBase();
+  if (base > 0) out.push(base >= 100000 ? `<div class="nudge gift"><b>🎁 일회용 기기 1개 증정 대상이에요</b><span>액상, 팟 ${won(base)} (10만원 이상)</span></div>`
+    : `<div class="nudge"><b>액상, 팟 ${won(100000 - base)} 더 담으면 일회용 1개 증정</b><span>지금 ${won(base)}, 기기와 일회용 금액은 빼고 계산</span><div class="bar2"><i style="width:${Math.min(100, base / 1000)}%"></i></div></div>`);
+  // 레이저 각인 무료 (기기 또는 액상 10병 이상)
+  const eok = hasDev || liqAll >= 10; if (!eok) engrave = null;
+  if (eok) out.push(engrave === null ? `<div class="engr"><div><b>레이저 각인 무료 대상이에요!</b><span>원하시면 [각인 추가]를 눌러 주세요</span></div><button data-eg="add">각인 추가 0원</button></div>`
+    : `<div class="engr on"><div style="flex:1"><b>레이저 각인 0원</b><input type="text" id="engrText" maxlength="20" placeholder="새길 문구 (이름, 이니셜 등 20자 이내)" value="${esc(engrave)}"></div><button data-eg="del">빼기</button></div>`);
+  else if (liqAll) out.push(`<div class="nudge"><b>액상 ${10 - liqAll}병 더 담으면 레이저 각인 무료</b><span>10병 이상이면 원하는 문구를 무료로 새겨 드려요</span></div>`);
+  return out.join("");
+}
+$('lines').addEventListener('click', (e) => {
+  const eg = e.target.closest('[data-eg]'), up = e.target.closest('[data-up]');
+  if (eg) { engrave = eg.dataset.eg === "add" ? "" : null; drawCart(); }
+  if (up) { const h2 = devOpts("하복2")[0]; addItem(h2.id, { k: "dev", n: h2.n, label: h2.n, img: DEV_IMG.하복2[h2.opt], unit: h2.price, model: "하복2" }); toast("하복2 " + h2.opt + "를 담았어요, 색은 기기 화면에서 바꿀 수 있어요"); }
+});
+$('lines').addEventListener('input', (e) => { if (e.target.id === "engrText") engrave = e.target.value; });
+const extraLines = () => (engrave !== null ? `<div class="scan" data-n="1" data-free="1" data-code="" data-nm="레이저 각인"><div class="hd"><b>레이저 각인 (0원)</b><span>× 1</span></div><div class="s">문구: ${engrave ? esc(engrave) : "손님께 확인"}</div></div>` : "")
+  + (giftBase() >= 100000 ? `<div class="scan" data-n="1" data-free="1" data-code="" data-nm="일회용 증정"><div class="hd"><b>🎁 일회용 기기 1개 증정</b><span>× 1</span></div><div class="s">액상, 팟 10만원 이상, 손님이 고른 일회용을 서비스(0원)로</div></div>` : "");
 // 회원 (지금 판 memberBox와 같은 흐름: 처음이에요 = 이름, 번호, 동의 / 회원이에요 = 번호만)
 const member = { type: null, name: "", phone: "", agree: false };
 function memberBox() {
@@ -456,7 +520,7 @@ function setFoot(mode) {
 $('shBtns').onclick = (e) => { const b = e.target.closest('[data-f]'); if (!b) return; const f = b.dataset.f;
   if (f === "cart") cartViewBack(); if (f === "staff") staffView(); if (f === "qr") qrView(); if (f === "done") doneSale(); };
 function doneSale() { if (!confirm("결제 완료하고 처음 화면으로 갈까요?")) return;
-  cart.clear(); Object.assign(member, { type: null, name: "", phone: "", agree: false }); goalN = 0;
+  cart.clear(); Object.assign(member, { type: null, name: "", phone: "", agree: false }); goalN = 0; engrave = null;
   document.body.classList.remove('open'); cartViewBack(); drawLiq(); drawGoal(); go('home'); toast("감사합니다! 처음 화면으로 왔어요"); }
 
 // ── 기기 화면 ──
@@ -476,7 +540,7 @@ function drawDev() {
   $('pk').style.display = dm === "하복2" && cur ? "" : "none";
   $('pk').innerHTML = [[0, "기기만", MAIN_PRICE, 0], [5, "+ 빌런, 릭 5병", MAIN_PRICE + ADD.vl5, MAIN_PRICE + 75000], [10, "+ 액상 10병", MAIN_PRICE + ADD.pr10, MAIN_PRICE + 90000]]
     .map(([k, t, p, was]) => `<button data-k="${k}" class="${pkSel === k ? "on" : ""}"><b>${t}</b><div>${was ? `<s>${won(was)}</s>` : ""}<div class="price">${won(p)}</div></div></button>`).join("");
-  $('devAdd').disabled = !cur; $('devAdd').textContent = cur ? (dm === "하복2" && pkSel ? `하복2 ${dc} 담고 액상 ${pkSel}병 고르기` : `${dm} ${dc} 담기`) : "이 지점 재고 없음";
+  $('devAdd').disabled = !cur; drawPods(); document.querySelector('.hero .ph').style.background = HEX[dc] ? HEX[dc] + '26' : ''; $('devAdd').textContent = cur ? (dm === "하복2" && pkSel ? `하복2 ${dc} 담고 액상 ${pkSel}병 고르기` : `${dm} ${dc} 담기`) : "이 지점 재고 없음";
 }
 $('colors').onclick = (e) => { const b = e.target.closest('button'); if (b) { dc = b.dataset.c; drawDev(); } };
 $('thumbs').onclick = (e) => { const b = e.target.closest('button'); if (b) { dm = b.dataset.m; pkSel = 0; drawDev(); } };
@@ -493,7 +557,7 @@ $('chips').innerHTML = ["전체", "빌런", "릭", "베이퍼"].map((t) => `<but
 $('chips').onclick = (e) => { const b = e.target.closest('button'); if (!b) return; lf = b.dataset.f; $('chips').querySelectorAll('button').forEach((x) => x.classList.toggle('on', x === b)); drawLiq(); };
 function drawLiq() {
   $('liqGrid').innerHTML = LQ.filter((x) => lf === "전체" || BR_OF(x) === lf).map((x) => { const q = (cart.get(x.id) || {}).qty || 0, out = !posOf(x.n);
-    return `<div class="it ${q ? "got" : ""} ${out ? "sold" : ""}">${out ? '<span class="badge so">품절</span>' : q ? `<span class="badge">${q}병</span>` : ""}<div class="im"><img src="${LIQ_IMG[x.n] || ""}" alt="" loading="lazy"></div><div class="nm">${esc(short(x.n))}</div><div class="fl">${esc([x.f, (x.t || []).includes("노멘솔") ? "노멘솔" : ""].filter(Boolean).join(", "))}</div><div class="bt"><span class="price">15,000원</span>${out ? "" : `<button class="add" data-a="${x.id}">+</button>`}</div></div>`; }).join("");
+    return `<div class="it ${q ? "got" : ""} ${out ? "sold" : ""}" ${out ? `data-ask="${esc(x.n)}"` : ""}>${out ? '<span class="badge so">품절, 다른 지점 확인</span>' : q ? `<span class="badge">${q}병</span>` : ""}<div class="im" style="background:${tintOf(x)}"><img src="${LIQ_IMG[x.n] || ""}" alt="" loading="lazy"></div><div class="nm">${esc(short(x.n))}</div><div class="fl">${esc([x.f, (x.t || []).includes("노멘솔") ? "노멘솔" : ""].filter(Boolean).join(", "))}</div><div class="bt"><span class="price">15,000원</span>${out ? "" : `<button class="add" data-a="${x.id}">+</button>`}</div></div>`; }).join("");
 }
 $('liqGrid').onclick = (e) => { const b = e.target.closest('[data-a]'); if (!b) return; const x = LQ.find((y) => y.id === b.dataset.a);
   addItem(x.id, { k: "liq", n: x.n, label: short(x.n), img: LIQ_IMG[x.n] || "", unit: 15000 }); };
@@ -531,7 +595,7 @@ function staffView() {
     + (devs.length ? stp(++i, "기기 먼저 찍기") + devs.map((x) => blk(x.label, "기기", x.n, x.qty)).join("") : "")
     + (bund.length ? stp(++i, "묶음 상품으로 돈 받기", "이 바코드로 결제 금액이 잡혀요") + bund.join("") : "")
     + (liqBlocks ? stp(++i, "낱개로 찍기", note) + liqBlocks : "")
-    + evs.map((x) => evStaff(x, ++i)).join("") + memLine();
+    + evs.map((x) => evStaff(x, ++i)).join("") + extraLines() + memLine();
   document.querySelectorAll('#lines svg.bcd').forEach((el) => { try { JsBarcode(el, el.dataset.v, { format: el.dataset.f, height: 64, width: 2.2, fontSize: 16, margin: 6 }); } catch (e) { JsBarcode(el, el.dataset.v, { format: "CODE128", height: 64, width: 2.2, fontSize: 16, margin: 6 }); } });
 }
 function cartViewBack() { staffOn = false; $('shH').textContent = "담은 상품"; drawCart(); }
@@ -579,7 +643,7 @@ function openEv(k) {
 function closeEv() { document.body.classList.remove('evon'); }
 $('evX').onclick = closeEv;
 const evCard = (id, img, name, sub, price, out) => { const q = EV.pick.get(id) || 0;
-  return `<div class="it ${q ? "got" : ""} ${out ? "sold" : ""}" data-e="${out ? "" : id}">${out ? '<span class="badge so">품절</span>' : q ? `<span class="badge">${q}</span><button class="mn" data-em="${id}">−</button>` : ""}<div class="im"><img src="${img}" alt="" loading="lazy"></div><div class="nm">${esc(name)}</div><div class="fl">${esc(sub)}</div>${price ? `<div class="bt"><span class="price" style="font-size:15px">${won(price)}</span></div>` : ""}</div>`; };
+  return `<div class="it ${q ? "got" : ""} ${out ? "sold" : ""}" data-e="${out ? "" : id}">${out ? '<span class="badge so">품절</span>' : q ? `<span class="badge">${q}</span><button class="mn" data-em="${id}">−</button>` : ""}<div class="im" style="background:${tintOf({ n: name, f: sub })}"><img src="${img}" alt="" loading="lazy"></div><div class="nm">${esc(name)}</div><div class="fl">${esc(sub)}</div>${price ? `<div class="bt"><span class="price" style="font-size:15px">${won(price)}</span></div>` : ""}</div>`; };
 // 10/27 사장님 "굳이 다 골라야 하나, 다른 액상 피고 싶을 수도": ① 다 안 골라도 담기(남은 건 매장에서) ② 추천 조합 한 번에 ③ 하복2 패키지는 다른 프리미엄도 검색
 const DSP_MIN = () => Math.min(...DSP_POOL().map((g) => g.price));
 function dspTotal(rest = 0) { // 15개 중 가장 싼 5개 서비스. 매장에서 고를 개수(rest)는 가장 싼 값으로 셈
@@ -697,20 +761,80 @@ function drawSearch() {
   const r = searchItems(q);
   $('sres').innerHTML = r.length ? r.map((o) => { const x = o.x, liq = o.t === "liq", key = x.id, have = (cart.get(key) || {}).qty || 0, out = !posOf(x.n);
     const img = liq ? imgOf(x) : gImg(x), price = liq ? liqPrice(x) : x.price;
-    return `<div class="sr ${out ? "sold" : ""}"><div class="im">${img ? `<img src="${img}" alt="" loading="lazy">` : { dev: "🔋", pod: "🧩", dsp: "🚬" }[x.c] || "💧"}</div><div class="n"><b>${esc(liq ? short(x.n) : x.n)}</b><span>${esc(liq ? [x.br, x.line, x.f].filter(Boolean).join(", ") : { dev: "기기", pod: "팟, 코일", dsp: "일회용" }[x.c] || "")}${out ? " · 품절" : ""}</span>${have ? `<span class="q"> 담음 ${have}</span>` : ""}</div><b class="price">${won(price)}</b>${out ? "" : `<button class="add" data-s="${key}" data-t="${o.t}">+</button>`}</div>`; }).join("")
+    return `<div class="sr ${out ? "sold" : ""}"><div class="im" style="background:${liq ? tintOf(x) : "#f4f4f6"}">${img ? `<img src="${img}" alt="" loading="lazy">` : { dev: "🔋", pod: "🧩", dsp: "🚬" }[x.c] || "💧"}</div><div class="n"><b>${esc(liq ? short(x.n) : x.n)}</b><span>${esc(liq ? [x.br, x.line, x.f].filter(Boolean).join(", ") : { dev: "기기", pod: "팟, 코일", dsp: "일회용" }[x.c] || "")}${out ? " · 품절" : ""}</span>${have ? `<span class="q"> 담음 ${have}</span>` : ""}</div><b class="price">${won(price)}</b>${out ? `<button class="askb" data-ask="${esc(x.n)}">다른 지점 확인</button>` : `<button class="add" data-s="${key}" data-t="${o.t}">+</button>`}</div>`; }).join("")
     : '<div style="padding:40px 0;text-align:center;color:var(--grey)">찾는 상품이 없어요</div>';
 }
 $('q').addEventListener('input', drawSearch);
 $('qx').onclick = (e) => { e.preventDefault(); $('q').value = ""; drawSearch(); };
 $('sres').onclick = (e) => { const b = e.target.closest('[data-s]'); if (!b) return; const id = b.dataset.s;
   if (b.dataset.t === "liq") { const x = ALL_LQ.find((y) => y.id === id); addItem(id, { k: "liq", n: x.n, label: short(x.n), img: imgOf(x), unit: liqPrice(x), prime: x.line === "프라임" }); }
-  else { const g = GDS.find((y) => y.id === id); addItem(id, { k: g.c === "dev" ? "dev" : "goods", n: g.n, label: g.n, img: gImg(g), unit: g.price, model: g.model }); }
+  else { const g = GDS.find((y) => y.id === id); addItem(id, { k: g.c === "dev" ? "dev" : "goods", n: g.n, label: g.n, img: gImg(g), unit: g.price, model: g.model, cc: g.c }); }
   toast("담았어요"); drawSearch(); };
+
+// ── 톤온톤: 맛 이름으로 카드 배경을 옅은 같은 색으로 (10/27 사장님 "톤앤톤 잘 해봐") ──
+const TINT = [[/자두|플럼|피치|복숭아|딸기|체리/, "#fbe1ea"], [/석류|적사과|레즈|로젤|레드/, "#fadcd8"], [/레몬|파인애플|바나나|망고|라무네|유자/, "#fbf1cc"],
+  [/청포도|청사과|샤인|머스캣|그린|라임|멜론|알로에|키위/, "#e3f2d6"], [/소다|블루|마린|워터|보석바|아이스|민트|멘솔|쿨/, "#dceefa"], [/포도|알포|그레이프|베리/, "#e9e0f5"],
+  [/시가|타바코|블랙티|커피|토바코|812/, "#efe5d8"]];
+const tintOf = (x) => { const t = (x.n || "") + " " + (x.f || ""); return (TINT.find(([re]) => re.test(t)) || [, "#f4f4f6"])[1]; };
+
+// ── 기기별 전용 팟, 코일 (지금 판 POD_DEV, PACK 그대로: 1팩 개수만큼 담겨서 바코드도 그만큼 찍힘) ──
+const POD_RE = { 하복2: /^하복2 .*(팟|코일)/, 발라맥스프로: /발라맥스|발라\(맥\)/, "맥스프로 스티그마": /스티그마.*(팟|코일)/, 조바: /^조바 .*팟/ };
+const PACK = [[/^하복2/, 2], [/^젤로0\.8옴/, 3], [/^발라맥스프로팟/, 2], [/^발라코일/, 4], [/^말론팟/, 2], [/^발라\(맥\)/, 4], [/^하복코일/, 4], [/^조바 0.7옴팟$/, 2], [/^플러키/, 2]];
+const packOf = (g) => (PACK.find(([re]) => re.test(g.n)) || [])[1] || 0;
+function drawPods() {
+  const re = POD_RE[dm], pods = re ? GDS.filter((g) => g.c === "pod" && re.test(g.n) && !/케이스/.test(g.n)) : [];
+  $('pods').innerHTML = pods.length ? `<div class="evsec" style="margin-top:22px">${dm} 전용 팟, 코일</div>` + pods.map((g) => { const k = packOf(g), q = (cart.get(g.id) || {}).qty || 0;
+    return `<div class="sr"><div class="im">🧩</div><div class="n"><b>${esc(g.n)}</b><span>${won(g.price)} (낱개)${q ? ` · <b style="color:var(--red);display:inline">담음 ${q}</b>` : ""}</span></div>${k ? `<button class="pkb" data-pod="${g.id}" data-k="${k}">1팩 ${k}개 ${won(g.price * k)}</button>` : ""}<button class="pkb ln1" data-pod="${g.id}" data-k="1">낱개</button></div>`; }).join("") : "";
+}
+$('pods').onclick = (e) => { const b = e.target.closest('[data-pod]'); if (!b) return; const g = GDS.find((y) => y.id === b.dataset.pod);
+  addItem(g.id, { k: "goods", n: g.n, label: g.n, img: "", unit: g.price, cc: "pod" }, +b.dataset.k); toast(g.n + " " + b.dataset.k + "개 담았어요"); drawPods(); };
+
+// ── 다른 지점 재고 확인 요청 (지금 판과 같은 길: 웹훅 → 운영봇 → 관리 서버 [가능][불가] → stockask.json으로 답) ──
+const HOOK = "https://discord.com/api/webhooks/1555156884753743905/BLK7tRBQACouQrOE_hvOkm2-iD44gnfnxdJvQXxiBAJKXJU3MG4bjnACFsXgDkDWLBrh";
+const ASK_API = "https://api.github.com/repos/officialvafriend/vape/contents/menu/stockask.json?ref=main";
+const PAD_NO = new URLSearchParams(location.search).get("pad") || "1";
+const asked = new Map(); // 상품 → 요청 시각 (지금 판과 같은 저장 이름이라 같은 패드면 이어짐)
+try { for (const [n, t] of Object.entries(JSON.parse(localStorage.getItem("vf-asked") || "{}"))) if (Date.now() - t < 12 * 3600e3) asked.set(n, t); } catch (e) {}
+const askedSave = () => { try { localStorage.setItem("vf-asked", JSON.stringify(Object.fromEntries(asked))); } catch (e) {} };
+let ASKANS = {}, askEtag = "", askRows = null, askQty = 1, askItem = null;
+const askList = () => [...asked.entries()].filter(([, t]) => Date.now() - t < 2 * 3600e3).sort((a, b) => b[1] - a[1]);
+function askOpen(n) { askItem = n; askQty = 1; drawAsk(); document.body.classList.add('askon'); }
+function drawAsk() {
+  const l = askList(), one = askItem;
+  const st = (n) => { const an = ASKANS[n]; return an && an.yes.length ? `<b class="ok">가능: ${an.yes.map(esc).join(", ")}</b>` : an && an.no.length ? `<span>불가: ${an.no.map(esc).join(", ")}</span>` : asked.has(n) ? "<span>답 기다리는 중</span>" : ""; };
+  const sent = one && Date.now() - (asked.get(one) || 0) < 10 * 60e3;
+  $('askB').innerHTML = (one ? `<div class="askh"><small>${esc(BRANCH)}엔 없어요</small><b>${esc(one.replace(/^VF /, ""))}</b>${st(one) ? `<div class="askst">${st(one)}</div>` : ""}</div>
+    <div class="askrow"><span>필요 수량</span><span class="qb"><button data-aq="-1">−</button><b>${askQty}</b><button data-aq="1">+</button></span></div>
+    <button class="cta" data-asksend="1" ${sent ? "disabled" : ""}>${sent ? "요청 보냈어요" : "다른 지점에 재고 확인 요청"}</button>` : "")
+    + (l.filter(([n]) => n !== one).length ? `<div class="evsec">보낸 요청</div>` + l.filter(([n]) => n !== one).map(([n, t]) => `<div class="askit"><b>${esc(n.replace(/^VF /, ""))}</b><small>${new Date(t).toTimeString().slice(0, 5)}</small>${st(n)}</div>`).join("") : "");
+}
+$('askB').onclick = async (e) => { const q = e.target.closest('[data-aq]'), s2 = e.target.closest('[data-asksend]');
+  if (q) { askQty = Math.max(1, askQty + +q.dataset.aq); drawAsk(); }
+  if (s2 && !s2.disabled) { s2.disabled = true; s2.textContent = "보내는 중…";
+    try { const r = await fetch(HOOK, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ content: JSON.stringify({ type: "stockask", branch: BRANCH, pad: PAD_NO, item: askItem, qty: askQty }), allowed_mentions: { parse: [] }, flags: 4096 }) });
+      if (!r.ok) throw new Error("응답 " + r.status); asked.set(askItem, Date.now()); askedSave(); delete ASKANS[askItem]; toast("요청했어요, 답이 오면 알려 드려요"); drawAsk(); askChip(); }
+    catch (er) { s2.disabled = false; s2.textContent = "다른 지점에 재고 확인 요청"; toast("요청 못 했어요 (" + (navigator.onLine ? er.message : "인터넷 끊김") + "), 다시 눌러 주세요"); } } };
+$('askX').onclick = () => document.body.classList.remove('askon');
+function askChip() { const l = askList(), c = $('askChip'); if (!l.length) return c.classList.remove('on');
+  const yes = l.filter(([n]) => ASKANS[n] && ASKANS[n].yes.length).length; c.innerHTML = `📦 재고 확인 ${l.length}건${yes ? ` <b>가능 ${yes}건</b>` : " · 답 기다리는 중"}`; c.classList.add('on'); }
+$('askChip').onclick = () => { askItem = null; drawAsk(); document.body.classList.add('askon'); };
+async function askFetch() {
+  try { const r = await fetch(ASK_API, { cache: "no-store", headers: { Accept: "application/vnd.github.raw+json", ...(askEtag ? { "If-None-Match": askEtag } : {}) } });
+    if (r.status === 304) return askRows; if (r.ok) { askEtag = r.headers.get("ETag") || ""; askRows = await r.json(); return askRows; } } catch (e) {}
+  return askRows;
+}
+async function loadAskAns() { askChip(); if (!askList().length) return;
+  const rows = await askFetch(); if (!Array.isArray(rows)) return; const next = {};
+  for (const r of rows) if (r.from === BRANCH && asked.has(r.item) && r.at >= asked.get(r.item) - 120e3) next[r.item] = { yes: r.yes || [], no: r.no || [] };
+  const changed = JSON.stringify(next) !== JSON.stringify(ASKANS); ASKANS = next; if (!changed) return;
+  askChip(); for (const [n, v] of Object.entries(next)) if (v.yes.length) toast(n.replace(/^VF /, "") + ", " + v.yes.join(", ") + "에 있대요");
+  if (document.body.classList.contains('askon')) drawAsk(); }
+setInterval(loadAskAns, 15e3); loadAskAns();
+document.addEventListener('click', (e) => { const a = e.target.closest('[data-ask]'); if (a && !e.target.closest('#askB')) { e.stopPropagation(); askOpen(a.dataset.ask); } }, true);
 
 // 일회용: A그룹 아님, 이번엔 보기만 (판매 연결은 다음 단계)
 const dcard = (n, img, p) => `<div class="it"><span class="badge">10+5</span><div class="im"><img src="${img}" alt="" loading="lazy"></div><div class="nm">${n}</div><div class="fl">여러 맛</div><div class="bt"><span class="price">${won(p)}</span></div></div>`;
 $('dspGrid').innerHTML = dcard("팜팜바", "dsp_farm.png", 24900) + dcard("모스바", "dsp_moss.png", 25000);
-$('note').textContent = `B안 테스트 (${BRANCH} 기준). 기기, 액상은 A그룹만 판매 연결됨. 일회용과 다른 상품은 지금 판을 써 주세요.`;
 drawDev(); drawLiq(); drawCart(); drawGoal();
 </script>
 </body>
