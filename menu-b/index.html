@@ -178,6 +178,16 @@ body.open .sheet{transform:translate(-50%,0)}
 .warn{display:block;font-size:12.5px;color:var(--red);font-weight:700}
 .toast{position:fixed;left:50%;bottom:110px;transform:translate(-50%,20px);background:var(--ink);color:#fff;padding:12px 20px;border-radius:14px;font-size:15px;opacity:0;pointer-events:none;transition:.3s}
 .toast.on{opacity:1;transform:translate(-50%,0)}
+/* 검색 */
+.srch{gap:8px}.srch input{flex:1;border:0;outline:0;background:none;font:inherit;font-size:16px;color:var(--ink);min-width:0}.srch button{display:none;font-size:15px;color:var(--grey)}.srch.on button{display:block}
+.sres{display:none;position:absolute;left:0;right:0;top:64px;bottom:88px;z-index:15;background:var(--bg);overflow-y:auto;padding:4px var(--pad) var(--pad)}
+body.srchon .sres{display:block}
+.sr{display:flex;align-items:center;gap:14px;background:var(--card);border-radius:16px;padding:10px 14px;margin-bottom:8px}
+.sr .im{width:56px;height:56px;border-radius:12px;background:#f4f4f6;display:flex;align-items:center;justify-content:center;overflow:hidden;font-size:24px;flex:none}.sr .im img{width:100%;height:100%;object-fit:contain}
+.sr .n{flex:1;min-width:0}.sr .n b{display:block;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.sr .n span{font-size:13px;color:var(--grey)}
+.sr .price{font-size:16px}.sr .add{width:40px;height:40px;border-radius:50%;background:var(--ink);color:var(--card);font-size:22px;flex:none}
+.sr.sold{opacity:.45}.sr .q{font-size:13px;font-weight:800;color:var(--red)}
+.app{position:relative}
 .ln .n small{display:block;font-size:12px;font-weight:400;color:var(--grey);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:380px}
 /* 이벤트 구매 화면 */
 .evs{position:fixed;left:50%;bottom:0;width:100%;max-width:800px;height:92%;background:var(--bg);border-radius:28px 28px 0 0;transform:translate(-50%,105%);transition:transform .5s cubic-bezier(.22,1,.36,1);display:flex;flex-direction:column;z-index:20;box-shadow:0 -10px 40px rgba(0,0,0,.18)}
@@ -229,10 +239,11 @@ body[data-theme=dark] .scan svg{background:#fff;border-radius:8px}
 <div class="app">
   <div class="top">
     <div class="logo" id="logo" onclick="logoPlay()"><span class="v r">V</span><span class="m x" style="--i:0;--j:5">A</span><span class="m r" style="--i:1">F</span><span class="m x" style="--i:2;--j:4">R</span><span class="m x" style="--i:3;--j:3">I</span><span class="m x" style="--i:4;--j:2">E</span><span class="m x" style="--i:5;--j:1">N</span><span class="d x" style="--j:0">D</span></div>
-    <div class="srch">🔍 맛, 브랜드, 기기 이름</div>
+    <label class="srch">🔍<input id="q" placeholder="맛, 브랜드, 기기 이름 (초성도 돼요)" autocomplete="off" enterkeyhint="search"><button id="qx" aria-label="지우기">✕</button></label>
     <button class="home-btn" id="themeBtn" aria-label="낮 밤 모드"></button>
     <button class="home-btn" onclick="go('home')">처음</button>
   </div>
+  <div class="sres" id="sres"></div>
   <div class="tabs"><div class="seg" id="seg">
     <button data-v="dev" onclick="go('dev')">기기</button>
     <button data-v="liq" onclick="go('liq')">액상</button>
@@ -377,19 +388,20 @@ const short = (n) => n.replace(/^VF /, "");
 const MAIN_PRICE = 89000, ADD = { vl5: 30000, pr5: 40000, pr10: 75000 };
 const best = (n, deals, unit) => { const memo = {}; const f = (k) => { if (k <= 0) return 0; if (memo[k] != null) return memo[k]; let b = k * unit; for (const [q, p] of deals) if (k >= q) b = Math.min(b, p + f(k - q)); return (memo[k] = b); }; return f(n); };
 const prPrice = (n) => best(n, [[11, 90000], [5, 49500]], 15000);
+const pmPrice = (n) => best(n, [[10, 160000], [3, 50000]], 20000); // 프라임 1병 20,000 / 3병 50,000 / 10병 160,000 (지금 판과 같음)
 function estimate(c) { // c = { dev: 하복2 대수, v: 빌런+릭, p: 다른 프리미엄 }
   let b = c.dev * MAIN_PRICE + prPrice(c.v + c.p), how = "";
   const tryPk = (need, add, label, onlyVL) => { if (!c.dev) return;
     for (let a = 0; a <= Math.min(need, c.v); a++) { if (need - a > (onlyVL ? 0 : c.p)) continue;
       const t = (c.dev - 1) * MAIN_PRICE + MAIN_PRICE + add + prPrice(c.v - a + c.p - (need - a)); if (t < b) { b = t; how = label; } } };
   tryPk(5, ADD.vl5, "베이프렌드 기기패키지", true); tryPk(5, ADD.pr5, "프리미엄 기기패키지", false); tryPk(10, ADD.pr10, "프리미엄 기기패키지 10병", false);
-  return { total: b, how };
+  return { total: b + pmPrice(c.m || 0), how };
 }
 
 // ── 장바구니: key → { k: "dev"|"liq", n: 포스 상품명, label, img, unit, qty, model } ──
 const cart = new Map();
-const countCart = () => { const c = { dev: 0, v: 0, p: 0, other: 0 };
-  for (const x of cart.values()) { if (x.items) { c.other += x.unit * x.qty; continue; } if (x.k === "dev") { if (x.model === "하복2") c.dev += x.qty; else c.other += x.unit * x.qty; } else if (isVL(x)) c.v += x.qty; else c.p += x.qty; } return c; };
+const countCart = () => { const c = { dev: 0, v: 0, p: 0, m: 0, other: 0 };
+  for (const x of cart.values()) { if (x.items) { c.other += x.unit * x.qty; continue; } if (x.k === "dev") { if (x.model === "하복2") c.dev += x.qty; else c.other += x.unit * x.qty; } else if (x.k === "goods") c.other += x.unit * x.qty; else if (x.prime) c.m += x.qty; else if (isVL(x)) c.v += x.qty; else c.p += x.qty; } return c; };
 const totalOf = () => { const c = countCart(), e = estimate(c); return { ...e, total: e.total + c.other, c }; };
 function addItem(key, it, d = 1) { const cur = cart.get(key); const q = (cur ? cur.qty : 0) + d;
   if (q <= 0) cart.delete(key); else cart.set(key, { ...(cur || it), qty: q }); drawCart(); drawLiq(); drawGoal(); }
@@ -482,7 +494,7 @@ function drawGoal() { const c = countCart(), have = c.v + c.p, g = $('goal');
   g.innerHTML = have >= goalN ? `<b>액상 ${goalN}병 다 골랐어요</b><span>${totalOf().how || "패키지"} 적용, 합계 ${won(totalOf().total)}</span>` : `<b>하복2 패키지: 액상 ${have} / ${goalN}병</b><span>${goalN === 5 ? "빌런, 릭으로 5병 고르면 119,000원" : "10병 고르면 164,000원"}</span>`; }
 
 // ── 직원 화면: 지금 판 staffView와 같은 순서 (기기 먼저 → 묶음 상품으로 돈 받기 → 낱개 찍기, 묶음에 든 병은 서비스 0원) ──
-const POS_BUNDLE = { pr10: ["입호흡 기기 패키지 75,000원 (10병)", "입호흡 패키지 75,000원 (10병)"], pr5: ["입호흡 패키지 40,000원 (5병)"], vl5: ["빌런,릭,디오 패키지 30,000원 (5병)", "빌런,릭 패키지 30,000원 (5병)"], p11: ["프리미엄 90,000원(11병)"], p5: ["프리미엄 49,500원(5병)"] };
+const POS_BUNDLE = { pr10: ["입호흡 기기 패키지 75,000원 (10병)", "입호흡 패키지 75,000원 (10병)"], pr5: ["입호흡 패키지 40,000원 (5병)"], vl5: ["빌런,릭,디오 패키지 30,000원 (5병)", "빌런,릭 패키지 30,000원 (5병)"], p11: ["프리미엄 90,000원(11병)"], p5: ["프리미엄 49,500원(5병)"], m10: ["프라임 160,000원(10병)"], m3: ["프라임 50,000원(3병)"] };
 const posBundle = (k) => POS_BUNDLE[k].find((n) => posOf(n)) || POS_BUNDLE[k][0];
 function setsOf(n, deals, unit) { const f = [{ c: 0, s: [] }];
   for (let k = 1; k <= n; k++) { let b = { c: f[k - 1].c + unit, s: f[k - 1].s }; for (const [q, p] of deals) if (k >= q && f[k - q].c + p < b.c) b = { c: f[k - q].c + p, s: [...f[k - q].s, q] }; f[k] = b; }
@@ -493,15 +505,19 @@ const stp = (i, t, s) => `<div class="stp"><i>${i}</i><div><b>${t}</b>${s ? `<sp
 let staffOn = false;
 function staffView() {
   staffOn = true; $('shH').textContent = `직원 확인용, 포스 스캔 (${BRANCH})`; setFoot("staff");
-  const t = totalOf(), c = t.c, devs = [...cart.values()].filter((x) => x.k === "dev"), liqs = [...cart.values()].filter((x) => x.k === "liq"), evs = [...cart.values()].filter((x) => x.items);
+  const t = totalOf(), c = t.c, devs = [...cart.values()].filter((x) => x.k === "dev"), liqs = [...cart.values()].filter((x) => x.k === "liq" && !x.prime), prms = [...cart.values()].filter((x) => x.prime), gds = [...cart.values()].filter((x) => x.k === "goods"), evs = [...cart.values()].filter((x) => x.items);
   const pk = /10병/.test(t.how) ? ["pr10", 10, ADD.pr10] : t.how === "프리미엄 기기패키지" ? ["pr5", 5, ADD.pr5] : t.how === "베이프렌드 기기패키지" ? ["vl5", 5, ADD.vl5] : null;
   const bund = [];
   if (pk) bund.push(blk(posBundle(pk[0]), `기기패키지 액상 ${pk[1]}병 값 ${won(pk[2])}`, posBundle(pk[0]), 1));
   const prN = c.v + c.p - (pk ? pk[1] : 0), sets = setsOf(prN, [[11, 90000, "p11"], [5, 49500, "p5"]], 15000);
   for (const [q, p, key, k] of sets) bund.push(blk(posBundle(key), `${q}병 ${won(p)}`, posBundle(key), k));
+  const pmSets = setsOf(c.m, [[10, 160000, "m10"], [3, 50000, "m3"]], 20000); for (const [q, p, key, k] of pmSets) bund.push(blk(posBundle(key), `프라임 ${q}병 ${won(p)}`, posBundle(key), k));
+  let pmSvc = pmSets.reduce((a, [q, , , k]) => a + q * k, 0);
   let svc = (pk ? pk[1] : 0) + sets.reduce((a, [q, , , k]) => a + q * k, 0);
   const liqN = c.v + c.p, note = !liqN ? "" : svc >= liqN ? `액상 ${liqN}병 전부 서비스(0원)` : svc ? `액상 ${liqN}병 중 ${svc}병 서비스(0원), ${liqN - svc}병은 1병 15,000원` : "";
-  const liqBlocks = liqs.map((x) => { const f = Math.min(x.qty, svc); svc -= f; return blk(x.label, "프리미엄 액상" + (f ? ` <b style="color:var(--red)">서비스(0원)${f >= x.qty ? "" : " " + f + "병"}</b>` : ""), x.n, x.qty, f); }).join("");
+  const liqBlocks = liqs.map((x) => { const f = Math.min(x.qty, svc); svc -= f; return blk(x.label, "프리미엄 액상" + (f ? ` <b style="color:var(--red)">서비스(0원)${f >= x.qty ? "" : " " + f + "병"}</b>` : ""), x.n, x.qty, f); }).join("")
+    + prms.map((x) => { const f = Math.min(x.qty, pmSvc); pmSvc -= f; return blk(x.label, "프라임 액상" + (f ? ` <b style="color:var(--red)">서비스(0원)${f >= x.qty ? "" : " " + f + "병"}</b>` : ""), x.n, x.qty, f); }).join("")
+    + gds.map((x) => blk(x.label, won(x.unit), x.n, x.qty)).join("");
   let i = 0;
   $('lines').innerHTML = (cart.size ? "" : '<div style="padding:24px 0;color:var(--grey)">담은 상품이 없어요</div>')
     + (devs.length ? stp(++i, "기기 먼저 찍기") + devs.map((x) => blk(x.label, "기기", x.n, x.qty)).join("") : "")
@@ -614,6 +630,38 @@ function evStaff(x, i) {
   return stp(i, "일회용 10+5 찍기", "포스 묶음 상품이 없어서 낱개로, 가장 싼 5개는 서비스(0원)") + x.items.map(([n, l, q, p]) => blk(l, won(p) + (free[n] ? ` <b style="color:var(--red)">서비스(0원) ${free[n] >= q ? "전부" : free[n] + "개"}</b>` : ""), n, q, free[n] || 0)).join("");
 }
 document.querySelector('.dim').addEventListener('click', closeEv);
+
+// ── 검색 (지금 판 searchItems와 같은 규칙: 초성, 맛, 브랜드, "멘솔" 찾으면 노멘솔 빼기) ── 액상 전체 + 지점 기기, 팟, 일회용
+const CHO = "ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ";
+const cho = (str) => [...str].map((ch) => { const c = ch.charCodeAt(0) - 0xac00; return c >= 0 && c < 11172 ? CHO[Math.floor(c / 588)] : ch; }).join("");
+const norm = (str) => String(str).toLowerCase().replace(/^vf\s*/, "").replace(/\s+/g, "");
+const ALL_LQ = (window.LIQ || []).filter((x) => !/^디오 (딸기망고|콜라)$/.test(x.n));
+const IDX = [...ALL_LQ.map((x) => ({ x, t: "liq", nm: norm(x.n), all: norm([x.n, x.br, x.f, x.g, x.line, ...(x.t || [])].join(" ")) })),
+  ...GDS.map((g) => ({ x: g, t: "goods", nm: norm(g.n), all: norm([g.n, { dev: "기기", pod: "팟 코일", dsp: "일회용" }[g.c], g.sub || ""].join(" ")) }))].map((o) => ({ ...o, cho: cho(o.nm) }));
+function searchItems(qs) {
+  const q = norm(qs); if (!q) return [];
+  const onlyCho = /^[ㄱ-ㅎ]+$/.test(q), noNo = !q.includes("노멘솔") && q.includes("멘솔");
+  return IDX.map((o0) => { const o = noNo ? { ...o0, nm: o0.nm.replace(/노멘솔/g, ""), all: o0.all.replace(/노멘솔/g, "") } : o0; let sc = 0;
+    if (onlyCho) { if (o.cho.startsWith(q)) sc = 3; else if (o.cho.includes(q)) sc = 2; } else if (o.nm.startsWith(q)) sc = 4; else if (o.nm.includes(q)) sc = 3; else if (o.all.includes(q)) sc = 1;
+    return [sc, o]; }).filter(([sc]) => sc).sort((a, b) => b[0] - a[0]).slice(0, 40).map(([, o]) => o);
+}
+const liqPrice = (x) => x.line === "프라임" ? 20000 : 15000;
+const gImg = (g) => g.c === "dev" ? ((DEV_IMG[g.model] || {})[g.opt] || "") : g.c === "dsp" ? (DSP_IMG[g.model] || "") : "";
+function drawSearch() {
+  const q = $('q').value; $('q').parentElement.classList.toggle('on', !!q); document.body.classList.toggle('srchon', !!q.trim());
+  if (!q.trim()) return;
+  const r = searchItems(q);
+  $('sres').innerHTML = r.length ? r.map((o) => { const x = o.x, liq = o.t === "liq", key = x.id, have = (cart.get(key) || {}).qty || 0, out = !posOf(x.n);
+    const img = liq ? imgOf(x) : gImg(x), price = liq ? liqPrice(x) : x.price;
+    return `<div class="sr ${out ? "sold" : ""}"><div class="im">${img ? `<img src="${img}" alt="" loading="lazy">` : { dev: "🔋", pod: "🧩", dsp: "🚬" }[x.c] || "💧"}</div><div class="n"><b>${esc(liq ? short(x.n) : x.n)}</b><span>${esc(liq ? [x.br, x.line, x.f].filter(Boolean).join(", ") : { dev: "기기", pod: "팟, 코일", dsp: "일회용" }[x.c] || "")}${out ? " · 품절" : ""}</span>${have ? `<span class="q"> 담음 ${have}</span>` : ""}</div><b class="price">${won(price)}</b>${out ? "" : `<button class="add" data-s="${key}" data-t="${o.t}">+</button>`}</div>`; }).join("")
+    : '<div style="padding:40px 0;text-align:center;color:var(--grey)">찾는 상품이 없어요</div>';
+}
+$('q').addEventListener('input', drawSearch);
+$('qx').onclick = (e) => { e.preventDefault(); $('q').value = ""; drawSearch(); };
+$('sres').onclick = (e) => { const b = e.target.closest('[data-s]'); if (!b) return; const id = b.dataset.s;
+  if (b.dataset.t === "liq") { const x = ALL_LQ.find((y) => y.id === id); addItem(id, { k: "liq", n: x.n, label: short(x.n), img: imgOf(x), unit: liqPrice(x), prime: x.line === "프라임" }); }
+  else { const g = GDS.find((y) => y.id === id); addItem(id, { k: g.c === "dev" ? "dev" : "goods", n: g.n, label: g.n, img: gImg(g), unit: g.price, model: g.model }); }
+  toast("담았어요"); drawSearch(); };
 
 // 일회용: A그룹 아님, 이번엔 보기만 (판매 연결은 다음 단계)
 const dcard = (n, img, p) => `<div class="it"><span class="badge">10+5</span><div class="im"><img src="${img}" alt="" loading="lazy"></div><div class="nm">${n}</div><div class="fl">여러 맛</div><div class="bt"><span class="price">${won(p)}</span></div></div>`;
