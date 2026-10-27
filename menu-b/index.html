@@ -203,6 +203,13 @@ body.askon .asks{transform:translate(-50%,0)}
 .askrow{display:flex;justify-content:space-between;align-items:center;background:var(--card);border-radius:16px;padding:12px 16px;margin:10px 0;font-size:16px;font-weight:700}
 .askit{background:var(--card);border-radius:14px;padding:12px 16px;margin-bottom:8px;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}.askit small{color:var(--grey)}.askit span{font-size:14px;color:var(--grey)}
 .askchip{position:fixed;left:24px;bottom:100px;z-index:12;background:var(--ink);color:var(--card);border-radius:999px;padding:12px 18px;font-size:14px;font-weight:700;display:none;box-shadow:0 6px 20px rgba(0,0,0,.2)}.askchip.on{display:block}.askchip b{color:#7ee2a8}
+.scan{cursor:pointer;transition:opacity .2s}.scan.done{opacity:.4}.scan.done .hd b{text-decoration:line-through}.scan.done .hd::after{content:"✓";color:#1b8a4b;font-weight:900;margin-left:8px}
+.sv{color:var(--red)}
+.svbox{background:#fff4f4;border-radius:18px;padding:2px 12px 6px;margin:8px -6px}.svbox .scan{background:#fff;border-color:#f3c7c7}
+body[data-theme=dark] .svbox{background:#2a1c1d}body[data-theme=dark] .svbox .scan{background:var(--card);border-color:#5a3436}
+.final{display:flex;justify-content:space-between;align-items:center;background:var(--ink);color:var(--card);border-radius:16px;padding:16px 18px}.final span{font-size:15px}.final b{font-size:28px;font-family:var(--num)}
+.prog{position:sticky;top:0;z-index:2;background:var(--card);padding:8px 0 10px;overflow:hidden}.prog b{font-size:16px}.prog span{font-size:12.5px;color:var(--grey);margin-left:8px}.prog i{display:block;height:5px;border-radius:3px;background:#1b8a4b;margin-top:6px;transition:width .3s}
+.qrbox.svq{box-shadow:inset 0 0 0 3px #f3c7c7}
 .combo{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:4px 0 14px}.combo button{background:var(--card);border-radius:16px;padding:14px;text-align:left;box-shadow:inset 0 0 0 1.5px var(--line)}.combo b{display:block;font-size:16px}.combo span{font-size:13px;color:var(--grey)}
 .evtip{font-size:13.5px;color:var(--grey);margin:-4px 0 10px}
 .evq{width:100%;height:52px;border:1px solid var(--line);border-radius:14px;padding:0 16px;font-size:17px;background:var(--card);color:var(--ink)}
@@ -521,7 +528,7 @@ function setFoot(mode) {
 $('shBtns').onclick = (e) => { const b = e.target.closest('[data-f]'); if (!b) return; const f = b.dataset.f;
   if (f === "cart") cartViewBack(); if (f === "staff") staffView(); if (f === "qr") qrView(); if (f === "done") doneSale(); };
 function doneSale() { if (!confirm("결제 완료하고 처음 화면으로 갈까요?")) return;
-  cart.clear(); Object.assign(member, { type: null, name: "", phone: "", agree: false }); goalN = 0; engrave = null;
+  cart.clear(); Object.assign(member, { type: null, name: "", phone: "", agree: false }); goalN = 0; engrave = null; scanDone.clear();
   document.body.classList.remove('open'); cartViewBack(); drawLiq(); drawGoal(); go('home'); toast("감사합니다! 처음 화면으로 왔어요"); }
 
 // ── 기기 화면 ──
@@ -576,48 +583,80 @@ const bc = (name) => { const p = posOf(name); return p ? `<svg class="bcd" data-
 const blk = (t, sub, name, n, free = 0) => `<div class="scan" data-n="${n}" data-free="${free}" data-code="${esc((posOf(name) || [])[1] || "")}" data-nm="${esc(t)}"><div class="hd"><b>${esc(t)}</b><span>× ${n}</span></div><div class="s">${sub}</div>${bc(name)}</div>`;
 const stp = (i, t, s) => `<div class="stp"><i>${i}</i><div><b>${t}</b>${s ? `<span>${s}</span>` : ""}</div></div>`;
 let staffOn = false;
+// 직원 화면 = 결제 순서 (10/27 사장님 "서비스로 찍고 처리하는 것도 순서대로"):
+// ① 기기 → ② 돈 받는 묶음 바코드 → ③ 정가 낱개 → ④ 서비스(0원)로 찍을 것(찍고 포스에서 서비스 처리) → ⑤ 포스 금액, 회원 확인. 찍은 칸은 눌러서 체크
+const scanDone = new Set();
 function staffView() {
-  staffOn = true; $('shH').textContent = `직원 확인용, 포스 스캔 (${BRANCH})`; setFoot("staff");
-  const t = totalOf(), c = t.c, devs = [...cart.values()].filter((x) => x.k === "dev"), liqs = [...cart.values()].filter((x) => x.k === "liq" && !x.prime), prms = [...cart.values()].filter((x) => x.prime), gds = [...cart.values()].filter((x) => x.k === "goods"), evs = [...cart.values()].filter((x) => x.items);
+  staffOn = true; $('shH').textContent = `직원 확인용, 결제 순서 (${BRANCH})`; setFoot("staff");
+  const t = totalOf(), c = t.c, all = [...cart.values()];
+  const devs = all.filter((x) => x.k === "dev"), liqs = all.filter((x) => x.k === "liq" && !x.prime), prms = all.filter((x) => x.prime), gds = all.filter((x) => x.k === "goods"), evs = all.filter((x) => x.items);
   const pk = /10병/.test(t.how) ? ["pr10", 10, ADD.pr10] : t.how === "프리미엄 기기패키지" ? ["pr5", 5, ADD.pr5] : t.how === "베이프렌드 기기패키지" ? ["vl5", 5, ADD.vl5] : null;
-  const bund = [];
+  const bund = [], paid = [], free = [];
   if (pk) bund.push(blk(posBundle(pk[0]), `기기패키지 액상 ${pk[1]}병 값 ${won(pk[2])}`, posBundle(pk[0]), 1));
-  const prN = c.v + c.p - (pk ? pk[1] : 0), sets = setsOf(prN, [[11, 90000, "p11"], [5, 49500, "p5"]], 15000);
-  for (const [q, p, key, k] of sets) bund.push(blk(posBundle(key), `${q}병 ${won(p)}`, posBundle(key), k));
-  const pmSets = setsOf(c.m, [[10, 160000, "m10"], [3, 50000, "m3"]], 20000); for (const [q, p, key, k] of pmSets) bund.push(blk(posBundle(key), `프라임 ${q}병 ${won(p)}`, posBundle(key), k));
-  let pmSvc = pmSets.reduce((a, [q, , , k]) => a + q * k, 0);
-  let svc = (pk ? pk[1] : 0) + sets.reduce((a, [q, , , k]) => a + q * k, 0);
-  const liqN = c.v + c.p, note = !liqN ? "" : svc >= liqN ? `액상 ${liqN}병 전부 서비스(0원)` : svc ? `액상 ${liqN}병 중 ${svc}병 서비스(0원), ${liqN - svc}병은 1병 15,000원` : "";
-  const liqBlocks = liqs.map((x) => { const f = Math.min(x.qty, svc); svc -= f; return (x.todo ? (t, sb, nm, q, ff) => todoBlk(t, sb, q, ff) : blk)(x.label, "프리미엄 액상" + (f ? ` <b style="color:var(--red)">서비스(0원)${f >= x.qty ? "" : " " + f + "병"}</b>` : ""), x.n, x.qty, f); }).join("")
-    + prms.map((x) => { const f = Math.min(x.qty, pmSvc); pmSvc -= f; return blk(x.label, "프라임 액상" + (f ? ` <b style="color:var(--red)">서비스(0원)${f >= x.qty ? "" : " " + f + "병"}</b>` : ""), x.n, x.qty, f); }).join("")
-    + gds.map((x) => blk(x.label, won(x.unit), x.n, x.qty)).join("");
+  const sets = setsOf(c.v + c.p - (pk ? pk[1] : 0), [[11, 90000, "p11"], [5, 49500, "p5"]], 15000);
+  for (const [q, p, key, k] of sets) bund.push(blk(posBundle(key), `프리미엄 ${q}병 ${won(p)}`, posBundle(key), k));
+  const pmSets = setsOf(c.m, [[10, 160000, "m10"], [3, 50000, "m3"]], 20000);
+  for (const [q, p, key, k] of pmSets) bund.push(blk(posBundle(key), `프라임 ${q}병 ${won(p)}`, posBundle(key), k));
+  let svc = (pk ? pk[1] : 0) + sets.reduce((a, [q, , , k]) => a + q * k, 0), pmSvc = pmSets.reduce((a, [q, , , k]) => a + q * k, 0);
+  const SV = '<b class="sv">서비스(0원)</b>';
+  // 한 상품이 묶음에 일부만 들어가면 서비스 몫과 정가 몫을 나눠서 따로 칸을 만듦
+  const split = (x, f, kind) => {
+    if (f) free.push(x.todo ? todoBlk(x.label.replace(/\d+병/, f + "병"), kind + " " + SV, f, f) : blk(x.label, kind + " " + SV, x.n, f, f));
+    const r = x.qty - f; if (r) paid.push(x.todo ? todoBlk(x.label.replace(/\d+병/, r + "병"), kind + " 1병 " + won(x.unit), r, 0) : blk(x.label, kind + " " + won(x.unit), x.n, r, 0));
+  };
+  for (const x of liqs) { const f = Math.min(x.qty, svc); svc -= f; split(x, f, "프리미엄 액상"); }
+  for (const x of prms) { const f = Math.min(x.qty, pmSvc); pmSvc -= f; split(x, f, "프라임 액상"); }
+  for (const x of gds) paid.push(blk(x.label, won(x.unit), x.n, x.qty, 0));
+  for (const x of evs) {
+    if (x.k === "bulk") { bund.push(blk(x.n, won(x.unit) + " (이 바코드로 돈 받기)", x.n, x.qty));
+      for (const [n, l, q] of x.items) free.push(n ? blk(l, "대량구매 " + SV, n, q * x.qty, q * x.qty) : todoBlk(`대량구매 액상 ${q * x.qty}병 매장에서 고르기`, "빌런, 릭, 디오, 아이스샷, 토바코샷 중 " + SV, q * x.qty, q * x.qty)); }
+    else { // 일회용 10+5: 포스 묶음 상품이 없어서 낱개로, 가장 싼 5개 서비스
+      const units = x.items.flatMap(([n, l, q, p]) => Array(q).fill([n, p])).sort((a, b) => a[1] - b[1]), fr = {}; units.slice(0, 5).forEach(([n]) => fr[n] = (fr[n] || 0) + 1);
+      for (const [n, l, q, p] of x.items) { const f = fr[n] || 0;
+        if (f) free.push(n ? blk(l, "일회용 10+5 " + SV, n, f, f) : todoBlk(`일회용 ${f}개 매장에서 고르기`, "가장 싼 맛으로 " + SV, f, f));
+        if (q - f) paid.push(n ? blk(l, "일회용 " + won(p), n, q - f, 0) : todoBlk(`일회용 ${q - f}개 매장에서 고르기`, "정가", q - f, 0)); } }
+  }
+  const ex = extraLines(); // 각인, 증정 (0원)
   let i = 0;
-  $('lines').innerHTML = (cart.size ? "" : '<div style="padding:24px 0;color:var(--grey)">담은 상품이 없어요</div>')
-    + (devs.length ? stp(++i, "기기 먼저 찍기") + devs.map((x) => blk(x.label, "기기", x.n, x.qty)).join("") : "")
-    + (bund.length ? stp(++i, "묶음 상품으로 돈 받기", "이 바코드로 결제 금액이 잡혀요") + bund.join("") : "")
-    + (liqBlocks ? stp(++i, "낱개로 찍기", note) + liqBlocks : "")
-    + evs.map((x) => evStaff(x, ++i)).join("") + extraLines() + memLine();
+  const html = (devs.length ? stp(++i, "기기 찍기", "정가") + devs.map((x) => blk(x.label, "기기 " + won(x.unit), x.n, x.qty)).join("") : "")
+    + (bund.length ? stp(++i, "묶음 상품 찍기", "이 바코드가 결제 금액을 잡아요") + bund.join("") : "")
+    + (paid.length ? stp(++i, "정가로 찍기", "") + paid.join("") : "")
+    + (free.length || ex ? `<div class="svbox">${stp(++i, "서비스(0원)로 찍기", "찍은 다음 포스에서 서비스(0원) 처리해 주세요. 재고만 빠지고 금액은 0원")}${free.join("")}${ex}</div>` : "")
+    + (cart.size ? stp(++i, "결제 전 확인", "") + `<div class="final"><span>포스 결제 금액이 이 금액인지 확인</span><b>${won(t.total)}</b></div>` + memLine() : '<div style="padding:24px 0;color:var(--grey)">담은 상품이 없어요</div>');
+  $('lines').innerHTML = `<div class="prog" id="prog"></div>` + html;
+  document.querySelectorAll('#lines .scan').forEach((el, k) => { el.dataset.key = k + ":" + el.dataset.nm + ":" + el.dataset.n; if (scanDone.has(el.dataset.key)) el.classList.add("done"); });
   document.querySelectorAll('#lines svg.bcd').forEach((el) => { try { JsBarcode(el, el.dataset.v, { format: el.dataset.f, height: 64, width: 2.2, fontSize: 16, margin: 6 }); } catch (e) { JsBarcode(el, el.dataset.v, { format: "CODE128", height: 64, width: 2.2, fontSize: 16, margin: 6 }); } });
+  progDraw();
 }
+function progDraw() { const all = document.querySelectorAll('#lines .scan'), d = document.querySelectorAll('#lines .scan.done').length, p = $('prog'); if (!p) return;
+  p.innerHTML = all.length ? `<b>${d === all.length ? "다 찍었어요! 포스 금액 확인하고 결제하세요" : `찍은 칸 ${d} / ${all.length}`}</b><span>찍은 칸은 눌러서 체크</span><i style="width:${all.length ? d / all.length * 100 : 0}%"></i>` : ""; }
+$('lines').addEventListener('click', (e) => { if (!staffOn) return; const el = e.target.closest('.scan'); if (!el || !el.dataset.key) return;
+  el.classList.toggle('done'); el.classList.contains('done') ? scanDone.add(el.dataset.key) : scanDone.delete(el.dataset.key); progDraw(); });
 function cartViewBack() { staffOn = false; $('shH').textContent = "담은 상품"; drawCart(); }
 document.querySelector('.dim').addEventListener('click', cartViewBack);
 // QR 한 번에 찍기 (지금 판 qrView와 같음): 직원 화면 바코드를 순서대로 모아 QR 하나로, 서비스(0원) 수량은 뺌
 const QR_SEPS = { cr: "\r", crlf: "\r\n", lf: "\n", tab: "\t" };
 let qrSep = (() => { try { return localStorage.getItem("vf-qr-sep") || "cr"; } catch (e) { return "cr"; } })();
+// QR 두 개 (10/27 사장님 "QR로 찍으면 바로 처리"): ① 결제 QR = 기기 + 묶음 + 정가 낱개 → 찍으면 결제 금액이 바로 맞음
+// ② 서비스 QR = 묶음에 든 액상, 이벤트 서비스분 → 찍고 그 줄들만 포스에서 서비스(0원) 처리 (재고 빼기용). 서비스는 결제 QR에 안 섞음(사장님 10/27 지금 판 규칙)
 function qrView() {
   staffView(); staffOn = true;
-  const codes = [], miss = [], svc = [];
+  const codes = [], svcCodes = [], miss = [], svcMiss = [];
   document.querySelectorAll('#lines .scan').forEach((el) => { const n = +el.dataset.n || 1, f = Math.min(n, +el.dataset.free || 0), c = el.dataset.code, nm = el.dataset.nm;
-    if (f) svc.push(nm + (f > 1 ? " ×" + f : "")); if (c) for (let i = 0; i < n - f; i++) codes.push(c); else if (n - f > 0) miss.push(nm); });
-  if (!codes.length) { toast("QR로 만들 바코드가 없어요"); return; }
-  const sep = QR_SEPS[qrSep] || "\r", q = qrcode(0, "M"); q.addData(codes.join(sep) + sep, "Byte"); q.make();
-  $('shH').textContent = "QR 한 번에 찍기";
-  $('lines').innerHTML = `<div style="font-size:14.5px;color:var(--grey);margin-bottom:10px">포스 판매 화면에서 스캐너로 이 QR을 한 번 찍으세요. (${esc(BRANCH)} 포스 기준)</div>
-    <div class="qrbox">${q.createSvgTag({ cellSize: 6, margin: 4, scalable: true })}<div style="font-size:16px;font-weight:800;margin-top:8px">총 ${codes.length}번 찍힌 것과 같아요</div></div>
-    ${svc.length ? `<div class="posw" style="background:#eef7ee;color:#1b5e20">묶음에 들어간 서비스(0원)는 QR에 안 넣었어요: ${svc.map(esc).join(", ")}</div>` : ""}
-    ${miss.length ? `<div class="posw">QR에 안 들어간 것: ${miss.map(esc).join(", ")} → 직접 찍어 주세요</div>` : ""}
-    <div class="posw">서비스(0원) 처리는 지금처럼 포스에서 직접 해 주세요. 하나만 찍히면 아래 구분 문자를 바꿔 보세요.</div>
-    <div style="margin-top:10px;font-size:14px;color:var(--grey)">구분 문자 <select id="qrSep">${Object.keys(QR_SEPS).map((k) => `<option value="${k}" ${k === qrSep ? "selected" : ""}>${{ cr: "Enter (CR)", crlf: "Enter (CR+LF)", lf: "줄바꿈 (LF)", tab: "Tab" }[k]}</option>`).join("")}</select></div>${memLine()}`;
+    if (c) { for (let i = 0; i < n - f; i++) codes.push(c); for (let i = 0; i < f; i++) svcCodes.push(c); }
+    else { if (n - f > 0) miss.push(nm + (n - f > 1 ? " ×" + (n - f) : "")); if (f && !/각인|증정/.test(nm)) svcMiss.push(nm + (f > 1 ? " ×" + f : "")); } });
+  if (!codes.length && !svcCodes.length) { toast("QR로 만들 바코드가 없어요"); return; }
+  const sep = QR_SEPS[qrSep] || "\r";
+  const qr = (list) => { const q = qrcode(0, "M"); q.addData(list.join(sep) + sep, "Byte"); q.make(); return q.createSvgTag({ cellSize: 6, margin: 4, scalable: true }); };
+  const t = totalOf().total;
+  $('shH').textContent = "QR로 한 번에 찍기";
+  $('lines').innerHTML = `<div style="font-size:14.5px;color:var(--grey);margin-bottom:10px">포스 판매 화면에서 스캐너로 위에서부터 차례로 찍으세요. (${esc(BRANCH)} 포스 기준)</div>
+    ${codes.length ? `${stp(1, "결제 QR 찍기", "기기, 묶음 상품, 정가 상품이 한 번에 들어가요")}<div class="qrbox">${qr(codes)}<div style="font-size:16px;font-weight:800;margin-top:8px">${codes.length}개 찍힘 · 포스 금액 ${won(t)} 확인</div></div>` : ""}
+    ${svcCodes.length ? `${stp(2, "서비스 QR 찍기", "찍은 다음 새로 들어온 줄만 포스에서 서비스(0원) 처리해 주세요")}<div class="qrbox svq">${qr(svcCodes)}<div style="font-size:16px;font-weight:800;margin-top:8px">서비스 ${svcCodes.length}개 (금액 0원으로 처리)</div></div>` : ""}
+    ${miss.length ? `<div class="posw">QR에 안 들어간 것 (직접 찍기): ${miss.map(esc).join(", ")}</div>` : ""}
+    ${svcMiss.length ? `<div class="posw">매장에서 고를 서비스분 (진열대에서 골라 찍고 서비스 처리): ${svcMiss.map(esc).join(", ")}</div>` : ""}
+    <div class="final" style="margin-top:12px"><span>포스 결제 금액이 이 금액인지 확인</span><b>${won(t)}</b></div>
+    <div style="margin-top:10px;font-size:14px;color:var(--grey)">하나만 찍히면 구분 문자를 바꿔 보세요 <select id="qrSep">${Object.keys(QR_SEPS).map((k) => `<option value="${k}" ${k === qrSep ? "selected" : ""}>${{ cr: "Enter (CR)", crlf: "Enter (CR+LF)", lf: "줄바꿈 (LF)", tab: "Tab" }[k]}</option>`).join("")}</select></div>${memLine()}`;
   $('qrSep').onchange = (e) => { qrSep = e.target.value; try { localStorage.setItem("vf-qr-sep", qrSep); } catch (er) {} qrView(); };
   setFoot("qr");
 }
