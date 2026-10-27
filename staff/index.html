@@ -236,7 +236,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.26-37";
+const VER = "10.26-38";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -2030,6 +2030,7 @@ function closeConfirm() {
   box.innerHTML = `<h2>꼼꼼히 확인하셨나요?</h2><div class="desc">${MIDMODE ? "봇이 지금까지 포스 숫자와 맞춰 볼게요." : "보내면 팀장님께 바로 보고돼요. 포스 화면과 숫자가 같은지 한 번 더 봐 주세요."}</div>
     ${SALES.some(([id]) => has(id)) ? `<div class="cashsum" style="margin-top:14px">${SALES.filter(([id]) => has(id)).map(([id, l]) => `<div><span>${l} (직접 입력)</span><b>${w(numv(id))}</b></div>`).join("")}</div>` : ""}
     <div class="cashsum" style="margin-top:10px"><div><span>오늘 준비금</span><b>${has("cPrep") ? w(numv("cPrep")) : "포스 자동"}</b></div><div><span>현금 지출 ${CX.filter((x) => x.a).length}건</span><b>${w(k.exp)}</b></div><div><span>돈통 합계</span><b>${w(k.drawer)}</b></div><div class="hi"><span>시재</span><b>${w(k.sij)}</b></div><div><span>내일 준비금</span><b>${w(k.drawer - k.sij)}</b></div>
+      ${!MIDMODE && k.sij === 0 && cashN("c50") === 0 ? `<div style="margin:8px 0;color:var(--red);font-weight:800;font-size:14px">⚠️ 시재가 0원이에요. 시재(5만원권, 10장 넘는 1만원권)를 먼저 빼고 센 건 아닌가요? 뺀 돈까지 다시 넣어서 세 주세요</div>` : ""}
       <div class="diff ${k.diff == null ? "" : k.diff ? "bad" : "good"}"><span>현금 차액</span><b>${k.diff == null ? "보내면 포스 숫자로 계산돼요" : (k.diff > 0 ? "+" : "") + w(k.diff)}</b></div>${k.diff ? `<p>사유: ${esc($("#cWhy").value.trim())}</p>` : ""}</div>
     <div class="cashsum" style="margin-top:10px"><div><span>마감 날짜</span><b>${$("#cDate").value}${$("#cDate").value !== todayKey() ? " (나중 입력)" : ""}</b></div><div><span>은행 잔액</span><b>${has("bankBal") ? w(numv("bankBal")) + ", " + esc($("#bankName").value.trim()) : "-"}</b></div>
       <div><span>영수객수, 객단가</span><b>${has("kBills") ? `${v("kBills")}건, ${k.sales ? w(Math.round(k.sales / numv("kBills"))) : "-"}` : "포스 자동"}</b></div><div><span>프리미엄, 지정</span><b>${v("kPrem") || 0}, ${v("kDes") || 0}</b></div><div><span>일회용, 입호흡, 발맥</span><b>${v("kDisp") || 0}, ${v("kDev") || 0}, ${v("kValm") || 0}</b></div>${MIDMODE ? `<div><span>리뷰</span><b>${v("cRev") || 0}</b></div>` : `<div><span>리뷰, 각인</span><b>${v("cRev") || 0}, ${v("cEng") || 0}</b></div>`}
