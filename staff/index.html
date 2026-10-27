@@ -236,7 +236,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.26-39";
+const VER = "10.26-40";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -1521,10 +1521,10 @@ function parcelHtml() {
   if (UI2) return `<div class="cols one"><div><div class="card"><h2>📦 택배 <small style="color:var(--red)">테스트 중</small></h2>${mine}
       <div class="btns" style="margin:0 0 12px"><button class="btn primary" data-go="pcnew">＋ 택배 요청</button></div>
       ${L.length ? L.map(row).join("") : '<div class="desc" style="padding:4px 0 12px">진행 중인 택배가 없어요</div>'}</div></div></div>`;
-  return `<div class="cols"><div>${sendsHtml()}<div class="card"><h2>📦 택배 <small style="color:var(--red)">테스트 중</small></h2>
-      <div class="btns" style="margin:4px 0 12px"><button class="btn primary" data-go="pcnew">＋ 택배 요청</button></div>
-      ${L.length ? L.map(row).join("") : '<div class="desc" style="padding:4px 0 12px">진행 중인 택배가 없어요</div>'}</div></div>
-    <div><div class="card"><h2>오늘 지점별 택배</h2>${day}<div class="btns" style="margin:12px 0 14px"><button class="btn" data-go="pdaygo">우리 지점 오늘 택배 출고됐어요</button></div></div></div></div>`;
+  // 10/27 사장님 '왼쪽은 계속 길어지고 오른쪽 택배현황은 그대로라 안 맞음': 한 열로(퀵/전달, 택배), 택배현황은 우리 지점 한 줄(다른 지점은 택배 요청 창에서)
+  return `<div class="cols one"><div>${sendsHtml()}<div class="card"><h2>📦 택배 <small style="color:var(--red)">테스트 중</small></h2>${mine}
+      <div class="btns" style="margin:0 0 12px"><button class="btn primary" data-go="pcnew">＋ 택배 요청</button></div>
+      ${L.length ? L.map(row).join("") : '<div class="desc" style="padding:4px 0 12px">진행 중인 택배가 없어요</div>'}</div></div></div>`;
 }
 function sheetPcNew() {
   PC.to = null; PK = { list: [], res: [] }; if (UI2) loadProds();
