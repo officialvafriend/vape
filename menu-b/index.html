@@ -6,6 +6,9 @@
 <meta name="robots" content="noindex">
 <title>베이프렌드 상담패드 B안 (세로 뼈대)</title>
 <link rel="stylesheet" href="brand.css">
+<!-- 포스터 글자용 글꼴: 하복2 기기 이름 = 나눔명조, 나머지 = 카페24 오스퀘어, 작은 글씨 = Pretendard -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@800&display=swap">
 <style>
 /* B안 세로 뼈대 10/27: 기준 800×1280. 1번 레퍼런스 = 연회색 바탕 + 흰 카드, 빨강은 가격과 버튼만 */
 :root{
@@ -62,7 +65,30 @@ body[data-v=home] #vHome,body[data-v=dev] #vDev,body[data-v=liq] #vLiq,body[data
 
 /* 첫 화면: 포스터 752×940 + 3갈래 */
 .poster{width:100%;aspect-ratio:4/5;border-radius:var(--r);overflow:hidden;background:#ddd;position:relative}
-.poster img{width:100%;height:100%;object-fit:cover;transition:opacity .35s}
+/* 포스터 = 글자 없는 그림(pst_c_) + 화면 글자. 1080×1350 기준으로 짜고 포스터 크기에 맞게 줄임 (디자인작업/261027_상담패드B안/gpt/compose.html과 같은 배치) */
+@font-face{font-family:Ohsquare;src:url(https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/Cafe24Ohsquare.woff) format("woff");font-display:swap}
+.pv{position:absolute;left:0;top:0;width:1080px;height:1350px;transform-origin:0 0;font-family:Pretendard,var(--kr);color:#15120f;letter-spacing:-.025em;overflow:hidden}
+.pv .bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.pv .t{position:absolute;left:84px;right:84px;top:72px}.pv .t.c{text-align:center}
+.pv .p{position:absolute;left:0;right:0;bottom:0;padding:150px 84px 72px;background:linear-gradient(to bottom,rgba(242,242,244,0),rgba(242,242,244,.94) 55%)}
+.pv .eye{font-size:28px;font-weight:600;color:#6e6e73;letter-spacing:0}
+.pv .ti{font-size:100px;font-weight:800;line-height:1.02;margin-top:14px;letter-spacing:-.04em}
+.pv .sub{font-size:34px;font-weight:600;margin-top:16px;line-height:1.35}
+.pv .r1{display:flex;gap:16px;align-items:center;margin-bottom:12px}.pv .r1 s{font-size:30px;color:#8d887f}.pv .r1 .l{font-size:28px;font-weight:600;color:#6e6e73}
+.pv .pl{background:#d81f2a;color:#fff;border-radius:999px;padding:8px 20px 9px;font-size:28px;font-weight:800}
+.pv .pb{display:block;font-size:120px;color:#d81f2a;letter-spacing:-.045em;line-height:1}.pv .pb small{font-size:56px}
+.pv.oh .ti,.pv.oh .pb,.pv.oh .sub{font-family:Ohsquare;font-weight:400;letter-spacing:-.02em}
+.pv.mj .ti{font-family:"Nanum Myeongjo";font-weight:800;letter-spacing:-.04em;font-size:108px}.pv.mj .eye{letter-spacing:.2em}
+.pv.big .ti{font-size:150px}.pv.big .pb{font-size:170px}.pv.big .pb small{font-size:70px}
+.pv.dk .t{color:#fff}.pv.dk .eye{color:rgba(255,255,255,.85)}.pv.dk .p{background:linear-gradient(to bottom,rgba(0,0,0,0),rgba(0,0,0,.55) 55%,rgba(0,0,0,.7))}
+.pv.dk .pb{color:#fff}.pv.dk .r1 s,.pv.dk .r1 .l{color:rgba(255,255,255,.85)}
+/* 등장: 바뀔 때 한 번만, 제목 → 설명 → 가격 순서로 아래에서 살짝 (가격도 0.3초 안에 시작) */
+@keyframes pvUp{from{opacity:0;transform:translateY(26px)}to{opacity:1;transform:none}}
+@keyframes pvBg{from{transform:scale(1.05)}to{transform:none}}
+.pv.go .bg{animation:pvBg 1.4s cubic-bezier(.2,.8,.2,1) both}
+.pv.go .eye,.pv.go .ti,.pv.go .sub,.pv.go .r1,.pv.go .pb{animation:pvUp .6s cubic-bezier(.2,.8,.2,1) both}
+.pv.go .ti{animation-delay:.06s}.pv.go .sub{animation-delay:.14s}.pv.go .r1{animation-delay:.2s}.pv.go .pb{animation-delay:.26s}
+@media (prefers-reduced-motion:reduce){.pv.go *{animation:none!important}}
 .dots{position:absolute;left:0;right:0;bottom:16px;display:flex;justify-content:center;gap:8px}
 .dots i{width:8px;height:8px;border-radius:4px;background:rgba(255,255,255,.5)}
 .dots i.on{width:24px;background:#fff}
@@ -216,7 +242,7 @@ body[data-theme=dark] .scan svg{background:#fff;border-radius:8px}
   <div class="body" id="body">
     <!-- 첫 화면 -->
     <div class="view" id="vHome">
-      <div class="poster" id="poster"><img id="pImg" alt=""><div class="dots" id="dots"></div></div>
+      <div class="poster" id="poster"><div class="pv" id="pv"></div><div class="dots" id="dots"></div></div>
       <div class="go3">
         <button onclick="go('dev')"><span class="tag">배경 이미지 자리</span><small>하복2, 젤로, 발라리안</small><b>기기</b></button>
         <button onclick="go('liq')"><span class="tag">배경 이미지 자리</span><small>맛으로 찾기</small><b>액상</b></button>
@@ -287,10 +313,25 @@ function go(v){ if (v === 'home' && document.body.dataset.v !== 'home') logoPlay
 // 첫 화면 포스터 10/27: 이벤트 3개(하복2, 대량, 일회용), 새로고침마다 이벤트별 시안 중 하나를 골라 보여 줌 (pst_b_*.jpg, 디자인작업/261027_상담패드B안/gpt)
 const PB = { H: [1,2,3,4,5], B: [1,2,3,4,5], D: [1,2,3,4] }; // 10/27 v3: B 빛과 그림자, D 톤온톤 (D5는 사장님 "어떻게 해도 별로"라 뺌)
 const PB_OLD = { H: "pst_havok2_v7.jpg", B: "pst_bulk3050.jpg", D: "pst_dsp105.jpg" };
-const PST = Object.keys(PB).map(k => PB[k].length ? "pst_b_" + k + PB[k][Math.floor(Math.random() * PB[k].length)] + ".jpg" : PB_OLD[k]);
+const PID = Object.keys(PB).map(k => PB[k].length ? k + PB[k][Math.floor(Math.random() * PB[k].length)] : null); // 예: ["H3", "B1", "D4"]
+const PST = PID.map((id, i) => id ? "pst_b_" + id + ".jpg" : PB_OLD[Object.keys(PB)[i]]); // 글자 박힌 판 (이벤트 화면 썸네일용)
+// 글자 (10/27 확정 문구, 가격은 사장님 확인값): 위 = 작은 글 + 제목 + 설명 / 아래 = 빨간 딱지 + 큰 숫자
+const PTX = {
+  H: { cls: "mj oh", top: `<div class="eye">베이프렌드 기기패키지</div><div class="ti">HAVOK II</div><div class="sub">하복2 + 입호흡 액상 10병</div>`, pr: `<div class="r1"><span class="pl">15,000원 할인</span><s>179,000원</s></div><b class="pb">164,000<small>원</small></b>` },
+  B: { cls: "oh big", top: `<div class="eye">빌런, 릭, 디오, 아이스샷, 토바코샷 섞어서</div><div class="ti">대량 특가</div><div class="sub">30병 210,000원 &nbsp;|&nbsp; 50병 340,000원</div>`, pr: `<div class="r1"><span class="pl">병당 최저</span><span class="l">50병 기준</span></div><b class="pb">6,800<small>원</small></b>` },
+  D: { cls: "oh", top: `<div class="eye">팜팜바, 모스바 원하는 맛으로 15개</div><div class="ti">10개 사면<br>5개 더</div>`, pr: `<div class="r1"><span class="pl">최대 할인</span><span class="l">15개 중 5개 서비스</span></div><b class="pb">33<small>%</small></b>` },
+};
+// 그림마다 제목 정렬, 흰 글자 (그림 밝기 보고 정함): c = 가운데, w = 어두운 그림
+const POPT = { H1: "", H2: "c", H3: "c", H4: "", H5: "c", B1: "c", B2: "c w", B3: "c w", B4: "c w", B5: "c w", D1: "c", D2: "c", D3: "c", D4: "c" };
+const pvFit = () => { const pv = $('pv'); pv.style.transform = `scale(${$('poster').clientWidth / 1080})`; };
+new ResizeObserver(pvFit).observe($('poster'));
 let pi = 0;
-function showP(i){ pi = (i + PST.length) % PST.length; const im = $('pImg'); im.style.opacity = 0;
-  setTimeout(() => { im.src = PST[pi]; im.style.opacity = 1; }, 200);
+function showP(i){ pi = (i + PST.length) % PST.length; const id = PID[pi], pv = $('pv');
+  if (!id) { pv.className = "pv"; pv.innerHTML = `<img class="bg" src="${PST[pi]}" alt="">`; }
+  else { const tx = PTX[id[0]], o = POPT[id] || "c";
+    pv.className = "pv " + tx.cls + (o.includes("w") ? " dk" : "");
+    pv.innerHTML = `<img class="bg" src="pst_c_${id}.jpg" alt=""><div class="t ${o.includes("c") ? "c" : ""}">${tx.top}</div><div class="p">${tx.pr}</div>`; }
+  void pv.offsetWidth; pv.classList.add("go"); pvFit();
   $('dots').innerHTML = PST.map((_, k) => `<i class="${k === pi ? 'on' : ''}"></i>`).join(''); }
 showP(0); setInterval(() => { if (document.body.dataset.v === 'home') showP(pi + 1); }, 5000);
 const PST_K = Object.keys(PB); // PST 순서 = 이벤트 키 (H 하복2, B 대량, D 일회용)
