@@ -236,15 +236,15 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.27-5";
+const VER = "10.27-6";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
-const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
+const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍", "동성로2"];
 // 오픈 체크가 오픈 시간보다 늦은 분 (안 늦었으면 0)
 const lateMin = (t) => { const [h, m] = (t || "").split(":").map(Number), [oh, om] = (OPEN_AT[B] || "").split(":").map(Number); const d = h * 60 + m - (oh * 60 + om); return d > 0 && d < 600 ? d : 0; };
 // 10/26 영업 마감 시각 (베이프렌드_지점정보.md): 요일 0=일 … 6=토
 const closeAtOf = (b, d = new Date()) => { const w = d.getDay(); if (["동성로", "광장코아", "현풍"].includes(b)) return "22:00"; if (b === "본점") return w === 5 || w === 6 ? "24:00" : "22:00"; return w >= 1 && w <= 4 ? "21:00" : "22:00"; };
-const OPEN_AT = { 동성로: "11:00", 수성: "10:30", 본점: "11:00", 율하: "10:30", 반월당: "10:30", 상인: "10:30", 광장코아: "11:00", 현풍: "11:00" };
+const OPEN_AT = { 동성로: "11:00", 수성: "10:30", 본점: "11:00", 율하: "10:30", 반월당: "10:30", 상인: "10:30", 광장코아: "11:00", 현풍: "11:00", 동성로2: "11:00" }; // 동성로2 임시
 // 운영봇(운영봇_시험.mjs)의 CHECK와 같은 목록이어야 기록이 맞아요
 const CHECK = {
   open: ["바닥 쓸기/닦기, 유리, 거울 닦기", "진열장, 포스, 단말기 먼지 제거", "입/폐/일회용 기기 배터리 체크", "시연대 정리정돈", "자판기 청소, 작동 체크", "매장 환기", "유니폼 착용"],
@@ -1204,7 +1204,7 @@ function renderPick() {
 
 // ── 요청 보내기 (10/5) ── 고객 택배, 퀵 / 지점 요청 / 재고 확인 → 웹훅 → 운영봇이 🙋요청 카드로
 // 가까운 지점: 지도 API 없이 '구, 읍면' 대략 위치로 계산 (정확한 거리 아님 — 순서만 참고)
-const BR_POS = { 동성로: [35.8693, 128.5950], 수성: [35.8572, 128.6230], 본점: [35.8780, 128.6280], 율하: [35.8680, 128.6950], 반월당: [35.8655, 128.5930], 상인: [35.8180, 128.5370], 광장코아: [35.8550, 128.5470], 현풍: [35.6950, 128.4560] };
+const BR_POS = { 동성로: [35.8693, 128.5950], 수성: [35.8572, 128.6230], 본점: [35.8780, 128.6280], 율하: [35.8680, 128.6950], 반월당: [35.8655, 128.5930], 상인: [35.8180, 128.5370], 광장코아: [35.8550, 128.5470], 현풍: [35.6950, 128.4560], 동성로2: [35.8693, 128.5950] }; // 동성로2 좌표는 임시(동성로와 같게)
 const AREA = [ // [주소에 들어가는 말, 대략 위치] — 앞에 있을수록 먼저 봄(읍면 > 구)
   [/현풍|유가|구지/, [35.69, 128.45]], [/논공/, [35.73, 128.43]], [/화원|옥포/, [35.80, 128.50]], [/다사|하빈/, [35.86, 128.46]], [/가창/, [35.80, 128.62]],
   [/안심|율하|반야월|동호|신서|각산/, [35.87, 128.70]], [/동대구|신천동|신암/, [35.88, 128.63]], [/상인|월배|진천|대곡|도원/, [35.82, 128.54]], [/감삼|두류|죽전|본리/, [35.85, 128.54]],
@@ -1408,7 +1408,8 @@ let BOARD = B ? cacheGet("board") : null, LEADS = [], OLDS = [], OLDF = "all", O
 // 10/27 보내기 중계(시험 모드 먼저): 보내기, 택배는 board.json(1~몇 분 늦음) 말고 Apps Script에서 5~15초마다 읽어 덮어씀. board.json이 더 새것이면 그것
 const RELAY_URL = "https://script.google.com/macros/s/AKfycbyQ5TQlIahbUQXr3FenYTGuQgyzgjYInrmZk7GBG7nzFh1a0XQlhYfZKYL0VxDa298uvA/exec", RELAY_ON = TEST;
 let RELAY = null, BOARD_RAW = null, BOARD_AT = 0;
-const withRelay = (bd) => !RELAY || RELAY.at < BOARD_AT - 60e3 ? bd : { ...(bd || {}), sends: RELAY.v.sends || [], parcels: RELAY.v.parcels || [] }; // 깃허브 한도로 board.json을 못 읽어도 보내기는 뜨게
+const withRelay = (bd) => !RELAY || RELAY.at < BOARD_AT - 60e3 ? bd : { ...(bd || {}), sends: RELAY.v.sends || [], parcels: RELAY.v.parcels || [], creqs: relayCreqs(bd?.creqs || [], RELAY.v.ords || []) };
+const relayCreqs = (old, ords) => { const m = new Map(ords.map((r) => [r.id, r])); return [...old.map((r) => m.get(r.id) || r), ...ords.filter((r) => !old.some((o) => o.id === r.id))]; }; // 깃허브 한도로 board.json을 못 읽어도 보내기는 뜨게
 async function loadRelay() {
   if (!RELAY_ON || !B || document.visibilityState !== "visible") return;
   try {
@@ -1463,8 +1464,11 @@ function ilItems() {
   for (const r of creqList()) {
     if (r.pending) { L.push({ k: "c", cat: r.cat === "각인" ? "e" : "c", id: r.id, raw: r, ic: "🧾", pend: true, due: r.due || null, title: `${custName(r) ? custName(r) + "님, " : ""}${crItems(r)}`, sub: `⏳ 남겼어요, 1~2분 안에 확정돼요 (다시 적지 않아도 돼요), 남김 ${sd(r.d)} ${r.by}` }); continue; }
     const nm = custName(r), today = r.due && dLeft(r.due) <= 0, arr = r.step === "wait" && r.arrived;
-    L.push({ k: "c", cat: r.cat === "각인" ? "e" : "c", id: r.id, raw: r, ic: r.cat === "각인" ? "✨" : "🧾", lead: !!r.lead, due: r.due || null, hot: !r.lead && (today || (r.ost === "불가" && r.step === "wait") || (arr && !(r.ext && r.due && dLeft(r.due) > 0))), title: `${nm ? nm + "님, " : ""}${r.title || crItems(r)}`,
-      sub: [r.ost === "불가" && r.step === "wait" ? `🚫 주문 불가${r.nogo ? ` (${r.nogo})` : ""}, 손님께 안내하고 [취소]` : "", r.sms ? `📩 ${r.sms.label.replace(" 문자", "")} ${sd(r.sms.at.slice(0, 10))}` : "", r.from && r.from !== B ? `📥 ${ho(r.from)}에서 맡김` : "", r.eng && r.eng !== B ? `각인 ${ho(r.eng)}` : "", r.lead ? "👔 팀장 처리 중" : arr ? "📦 입고됨, 손님께 연락" : r.step === "ready" ? "챙겨둠" : "입고 대기", r.due ? `${r.step === "ready" || arr ? "수령 예정" : "약속일"} ${puTxt(r.due)}` : "", `남김 ${sd(r.d)} ${r.by}`].filter(Boolean).join(", ") });
+    const o2 = r.ord2 && r.step === "wait" && !arr, paid = r.pay === "결제완료" || PAID.has(r.id), payNow = o2 && r.ost === "확인" && !paid;
+    const alt = o2 && r.auto?.alt?.length ? `🔁 다른 지점 재고 ${r.auto.alt.map(([b, , q]) => `${ho(b)} ${q}개`).join(", ")} (전달이 더 빨라요)` : "";
+    const o2s = !o2 ? "" : r.ost === "요청" ? "⏳ 주문 가능한지 관리자 확인 중, 손님께 확인되면 연락드린다고 안내" : payNow ? "✅ 주문 가능, 손님께 결제 받고 [결제함]" : r.ost === "확인" ? "💳 결제 받음, 관리자 주문 기다림" : r.ost === "주문함" ? "🛒 주문함, 입고 기다림" : "";
+    L.push({ k: "c", cat: r.cat === "각인" ? "e" : "c", id: r.id, raw: r, ic: r.cat === "각인" ? "✨" : "🧾", lead: !!r.lead, due: r.due || null, payNow, hot: !r.lead && (today || payNow || (r.ost === "불가" && r.step === "wait") || (arr && !(r.ext && r.due && dLeft(r.due) > 0))), title: `${nm ? nm + "님, " : ""}${r.title || crItems(r)}`,
+      sub: [o2s, alt, r.ost === "불가" && r.step === "wait" ? `🚫 주문 불가${r.nogo ? ` (${r.nogo})` : ""}, 손님께 안내하고 [취소]` : "", r.sms ? `📩 ${r.sms.label.replace(" 문자", "")} ${sd(r.sms.at.slice(0, 10))}` : "", r.from && r.from !== B ? `📥 ${ho(r.from)}에서 맡김` : "", r.eng && r.eng !== B ? `각인 ${ho(r.eng)}` : "", r.lead ? "👔 팀장 처리 중" : arr ? "📦 입고됨, 손님께 연락" : r.step === "ready" ? "챙겨둠" : "입고 대기", r.due ? `${r.step === "ready" || arr ? "수령 예정" : "약속일"} ${puTxt(r.due)}` : "", `남김 ${sd(r.d)} ${r.by}`].filter(Boolean).join(", ") });
   }
   for (const m of memoList()) {
     if (m.to === "keep" || MDONE.has(m.id)) continue;
@@ -1473,7 +1477,8 @@ function ilItems() {
   }
   return L;
 }
-const ilBtns = (it, dark) => it.lead || it.pend ? "" : `<button class="ok" data-ildone="${it.k}" data-id="${it.id}">완료</button><button data-ilpost="${it.k}" data-id="${it.id}">미루기</button><button data-ilcx="${it.k}" data-id="${it.id}">취소</button>`;
+const PAID = new Set(); // 이 기기에서 방금 [결제함] 누른 것 (봇 반영 전까지)
+const ilBtns = (it, dark) => it.lead || it.pend ? "" : it.payNow ? `<button class="ok" data-crpay="${it.id}">결제함</button><button data-ilcx="${it.k}" data-id="${it.id}">취소</button>` : `<button class="ok" data-ildone="${it.k}" data-id="${it.id}">완료</button><button data-ilpost="${it.k}" data-id="${it.id}">미루기</button><button data-ilcx="${it.k}" data-id="${it.id}">취소</button>`;
 function todoItems() { return ilItems().filter((x) => x.hot); }
 function todoItemsOld() {
   const L = [];
@@ -2123,7 +2128,7 @@ function sheetCreq(cat = "") {
     <div class="desc" style="margin-top:14px">받는 방법</div><div class="chips">${["방문수령", "택배", "퀵"].map((x) => `<button class="chip ${x === cr.how ? "on" : ""}" data-crh="${x}">${x}</button>`).join("")}</div>
     <div class="desc" style="margin-top:14px">결제 <b style="color:var(--red)">*</b></div><div class="chips"><button class="chip" data-crp="결제완료">💳 결제완료</button><button class="chip" data-crp="미결제">미결제</button></div>
     <div class="desc" style="margin-top:14px">지금 상태 <span id="crNote"></span></div><div class="chips" id="crSt">${crStChips()}</div>
-    <div class="desc" style="margin-top:14px">재고 주문요청 <small style="color:var(--red)">결제 완료 건만 (선결제)</small></div><div class="chips"><button class="chip on" data-crord="0">필요 없음</button><button class="chip" data-crord="1">📦 주문요청 필요</button></div>
+    <div class="desc" style="margin-top:14px">재고 주문요청 <small style="color:var(--red)">${TEST ? "결제 전에 주문 가능한지 먼저 확인해요" : "결제 완료 건만 (선결제)"}</small></div><div class="chips"><button class="chip on" data-crord="0">필요 없음</button><button class="chip" data-crord="1">📦 주문요청 필요</button></div>
     <div id="crDueW"><div class="desc" style="margin-top:14px" id="crDueL">손님 수령 예정일</div><div class="chips" style="align-items:center"><button class="chip on" data-crdays="7">7일 뒤 (${md(addDay(7))})</button><input type="date" class="input" id="crDue" min="${addDay(1)}" style="width:auto;flex:1;margin:0"></div></div>
     <div class="desc" style="margin-top:10px">남기는 날짜 <small>(기본 오늘, 예전 건이면 그날로)</small></div><input type="date" class="input" id="crDate" value="${todayKey()}" max="${todayKey()}" style="margin-top:4px">
     <input class="input" id="crPhone" placeholder="고객 연락처 (필수)" inputmode="tel" maxlength="20">
@@ -2160,8 +2165,9 @@ async function doCreq() {
   if (!cr.items.length && !v("#crFree")) return toast("상품을 찾아 담거나 직접 적어 주세요");
   const byIn = v("#crByIn"); if (byIn) cr.by = byIn;
   if (!cr.by) return toast("담당자를 고르거나 적어 주세요");
+  if (TEST && cr.order && !cr.pay) cr.pay = "미결제"; // 10/27 시험: 주문 가능 확인 뒤 결제
   if (!cr.pay) return toast("결제했는지 골라 주세요");
-  if (cr.order && cr.pay !== "결제완료") return toast("주문요청은 결제 완료 건만 가능해요 (선결제)");
+  if (cr.order && cr.pay !== "결제완료" && !TEST) return toast("주문요청은 결제 완료 건만 가능해요 (선결제)");
   if (v("#crPhone").replace(/\D/g, "").length < 8) return toast("고객 연락처를 넣어 주세요");
   const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 5), by = cr.by; // 10/20 담당자 한 명(칩 또는 직접 적은 이름)
   const body = { type: "creq", id, items: cr.items, free: v("#crFree"), how: cr.how, pay: cr.pay, step: cr.step, days: cr.days, order: cr.order, cat: cr.cat, eng: cr.engManual ? cr.eng : "", // 직접 바꾼 때만 보냄, 아니면 봇이 그 순간 건수로 고름
@@ -2171,8 +2177,15 @@ async function doCreq() {
     await send(body);
     ls.set(`vf-app-${B}-creqs`, [...ls.get(`vf-app-${B}-creqs`, []), { ...body, test: TEST, d: body.d || todayKey(), t: now(), ts: Date.now() }]);
     render();
+    if (TEST && cr.order && cr.pay !== "결제완료") return void openSheet(`<h2>주문 가능한지 확인할게요</h2><div class="say">주문 가능한지 확인하고 바로 연락드릴게요. 가능하면 그때 결제해 주시면 돼요.</div><div class="desc">몇 초 뒤 지금 할 일에 결과가 떠요. 바로 가능이면 그 자리에서 결제 받으면 돼요.</div><div class="btns"><button class="btn primary" data-x>확인</button></div>`);
     openSheet(`<h2>손님께 이렇게 말해 주세요</h2><div class="say">${cr.days}일 안으로 준비해 드릴게요. 그 전에 준비되면 바로 연락드리고, 늦어지면 ${md(addDay(cr.days))}에 저희가 먼저 연락드릴게요.</div><div class="desc">${md(addDay(cr.days))}이 되면 맨 위 오늘 일정에 떠요.</div><div class="btns"><button class="btn primary" data-x>확인</button></div>`);
   } catch (e) { $("#okCr").disabled = false; fail(e); }
+}
+// 10/27 주문 가능 확인 뒤 손님 결제 → [결제함] → 관리자 [주문함]이 열림
+async function doCreqPay(id) {
+  const by = working().join(", ");
+  if (!by) return needIn(() => doCreqPay(id));
+  try { await send({ type: "creqpay", id, by }); PAID.add(id); render(); toast("결제함으로 바꿨어요. 관리자가 주문해요"); } catch (e) { fail(e); }
 }
 async function doCreqStep(id, k) {
   const by = working().join(", ");
@@ -2543,6 +2556,7 @@ document.addEventListener("click", (e) => {
   if (t.id === "okMid") return doMid();
   if (t.id === "okCr") return doCreq();
   if (t.dataset.crchk) { cr.check = !cr.check; t.classList.toggle("on", cr.check); const d = $("#crDue"); if (cr.check) { cr.days = 3; if (d) d.value = addDay(3); document.querySelectorAll("[data-crdays]").forEach((x) => x.classList.remove("on")); } else { cr.days = 7; if (d) d.value = ""; document.querySelectorAll("[data-crdays]").forEach((x) => x.classList.add("on")); } return; }
+  if (t.dataset.crpay) return doCreqPay(t.dataset.crpay);
   if (t.dataset.crord) { cr.order = t.dataset.crord === "1"; document.querySelectorAll("[data-crord]").forEach((x) => x.classList.toggle("on", x === t)); return; }
   if (t.dataset.creng) { cr.eng = t.dataset.creng; cr.engManual = true; document.querySelectorAll("[data-creng]").forEach((x) => x.classList.toggle("on", x === t)); return; }
   if (t.dataset.crby) { if ($("#crByIn")) $("#crByIn").value = ""; cr.by = t.dataset.crby; document.querySelectorAll("[data-crby]").forEach((x) => x.classList.toggle("on", x === t)); return; }
