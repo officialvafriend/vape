@@ -236,7 +236,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.27-11";
+const VER = "10.27-12";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍", "동성로2"];
@@ -378,7 +378,7 @@ const VIEWS_ALL = [["home", "🏠", "오늘"], ["work", "🕘", "출퇴근, 마�
 // 10/20 사장님: 오늘(오픈, 마감) + 요청(인수인계, 고객요청) 두 화면만
 // 10/23 재고조사 → 포스 바로 조정: 포스 조정이 연결된 지점만 메뉴 보임 (운영봇 ADJ_BRANCHES와 같게)
 const ADJ_BR = []; // 10/25 재고 조정은 아침 재고보고로 하기로 해서 재고조사 메뉴는 숨김(다시 열려면 지점 넣기)
-const VIEWS = ONLY_OPEN_CLOSE ? [["home", "🏠", "오늘"], ["talk", "📅", "일정"], ["blog", "📝", "블로그"], ["parcel", "🛵", "보내기"], ...(ADJ_BR.includes(B) ? [["stock", "📦", "재고조사"]] : []), ["as2", "🔧", "AS관리"], ["note", "📝", "매장 노트"], ["reply", "💬", "응대 모음"]] : VIEWS_ALL;
+const VIEWS = ONLY_OPEN_CLOSE ? [["home", "🏠", "오늘"], ["talk", "📅", "일정"], ["blog", "📝", "블로그"], ["parcel", "🛵", "보내기"], ...(ADJ_BR.includes(B) ? [["stock", "📦", "재고조사"]] : []), ["as2", "🔧", "AS관리"], ["note", "📝", "매장 노트"], ["reply", "💬", "응대 모음"], ["game", "🎮", "쉬는 시간"]] : VIEWS_ALL;
 let VIEW = ls.get("vf-app-view", "home");
 if (!VIEWS.some((v) => v[0] === VIEW)) VIEW = "home";
 // 10/23 30초마다 화면을 다시 그리면 누르던 버튼이 바뀌어 안 눌림 → 손 댄 지 1.2초 안이면 조금 뒤에 그림
@@ -441,6 +441,7 @@ function render() {
     note: noteHtml(),
     reply: replyHtml(),
     blog: blogHtml(),
+    game: gameHtml(),
     parcel: parcelHtml(), // 10/27 사장님 '각이 안 맞음': 왼쪽에 퀵/전달 + 택배, 오른쪽에 오늘 지점별 택배
   }[VIEW];
   const badge = (k) => { const n = k === "talk" ? talkCount() : k === "home" ? todoItems().length : k === "blog" ? blogDue().length : k === "as2" ? as2Items().filter((x) => (B === "본점" && (x.st === 0 || x.st === 1)) || (x.b === B && !a2Lead(x) && (x.st === 3 || (x.st === 4 && !x.contact)))).length : 0; return n ? `<em class="bd">${n}</em>` : ""; };
@@ -2185,6 +2186,36 @@ async function doCreq() {
   } catch (e) { $("#okCr").disabled = false; fail(e); }
 }
 // 10/27 주문 가능 확인 뒤 손님 결제 → [결제함] → 관리자 [주문함]이 열림
+// ── 쉬는 시간 게임 (10/27 사장님) ── 출근한 사람 이름으로 하루 5판(봇이 셈), 이번 주 랭킹, 1등 바뀌면 매장노트에 자동
+// 게임은 오른쪽 내용 칸 위에 겹쳐 띄움(화면을 새로 그려도 게임이 안 끊기게 #app 밖에 둠)
+const GAME = { who: ls.get("vf-game-who", null), local: {} };
+const gUsed = (n) => Math.max(BOARD?.game?.plays?.[n] || 0, GAME.local[`${todayKey()}|${n}`] || 0);
+function gameHtml() {
+  const g = BOARD?.game || {}, max = g.max || 5, names = working(), me = names.includes(GAME.who) ? GAME.who : names.length === 1 ? names[0] : null, left = me ? Math.max(0, max - gUsed(me)) : 0;
+  const rank = (g.rank || []).map(([b, n, sc], i) => `<div class="crow" style="width:100%"><div style="display:flex;gap:10px;align-items:center;width:100%"><b style="width:28px;font-size:18px">${["🥇", "🥈", "🥉"][i] || i + 1}</b><b style="flex:1">${esc(ho(b))} ${esc(n)}</b><b style="font-variant-numeric:tabular-nums">${(+sc).toFixed(2)}초</b></div></div>`).join("");
+  return `<div class="cols one"><div><div class="card"><h2>🎮 연기 피하기</h2>
+    <div class="desc">연기를 피해 오래 버티면 이겨요. 하루 ${max}판, 이번 주 1등은 월요일에 발표해요.${TEST ? " <b style='color:var(--red)'>시험 모드는 랭킹에 안 올라가요</b>" : ""}</div>
+    ${names.length ? `<div class="desc" style="margin-top:10px">누가 할까요</div><div class="chips">${names.map((n) => `<button class="chip ${n === me ? "on" : ""}" data-gwho="${esc(n)}">${esc(n)} <small>${Math.max(0, max - gUsed(n))}판 남음</small></button>`).join("")}</div>` : '<div class="desc" style="margin-top:10px;color:var(--red)">출근하고 할 수 있어요</div>'}
+    <div class="btns"><button class="btn primary" id="gGo" ${me && left ? "" : "disabled"}>${!me ? "이름을 골라 주세요" : left ? `시작 (${left}판 남음)` : "오늘은 다 했어요, 내일 다시"}</button></div></div>
+    <div class="card"><h2>🏆 이번 주 랭킹</h2>${rank || '<div class="desc" style="padding:4px 0 12px">아직 기록이 없어요. 첫 1등이 돼 보세요</div>'}${g.last ? `<div class="desc" style="padding:8px 0 12px">지난주 1등: ${esc(ho(g.last[0]))} ${esc(g.last[1])} ${(+g.last[2]).toFixed(2)}초</div>` : '<div style="height:10px"></div>'}</div></div></div>`;
+}
+function gameOpen() {
+  const names = working(), me = names.includes(GAME.who) ? GAME.who : names.length === 1 ? names[0] : null;
+  if (!me || gUsed(me) >= (BOARD?.game?.max || 5)) return;
+  GAME.me = me; let L = $("#gameLayer");
+  if (!L) { L = document.createElement("div"); L.id = "gameLayer"; L.style.cssText = "position:fixed;z-index:45;background:#0f1218;border-radius:16px;overflow:hidden;box-shadow:0 10px 40px rgba(0,0,0,.35)"; document.body.appendChild(L); }
+  const r = (document.querySelector("main") || document.body).getBoundingClientRect();
+  Object.assign(L.style, { left: r.left + "px", top: Math.max(0, r.top) + "px", width: r.width + "px", height: Math.min(innerHeight, r.height || innerHeight) + "px", display: "block" });
+  L.innerHTML = `<iframe src="../game/smoke.html?embed=1&v=${VER}" style="width:100%;height:100%;border:0" allow="autoplay"></iframe><button id="gX" style="position:absolute;top:10px;right:12px;background:rgba(255,255,255,.12);color:#fff;border-radius:10px;padding:6px 10px;font-weight:800">✕ 닫기</button>`;
+  $("#gX").onclick = gameClose;
+}
+function gameClose() { const L = $("#gameLayer"); if (L) { L.innerHTML = ""; L.style.display = "none"; } render(); }
+addEventListener("message", async (e) => {
+  const m = e.data; if (!m || !m.vfGame || !GAME.me) return;
+  if (m.t === "start") { const k = `${todayKey()}|${GAME.me}`; GAME.local[k] = gUsed(GAME.me) + 1; try { await send({ type: "gstart", by: GAME.me }); } catch {} }
+  if (m.t === "score") { try { await send({ type: "gscore", by: GAME.me, s: m.s }); } catch {} }
+  if (m.t === "close") gameClose();
+});
 async function doCreqPay(id) {
   const by = working().join(", ");
   if (!by) return needIn(() => doCreqPay(id));
@@ -2560,6 +2591,8 @@ document.addEventListener("click", (e) => {
   if (t.id === "okCr") return doCreq();
   if (t.dataset.crchk) { cr.check = !cr.check; t.classList.toggle("on", cr.check); const d = $("#crDue"); if (cr.check) { cr.days = 3; if (d) d.value = addDay(3); document.querySelectorAll("[data-crdays]").forEach((x) => x.classList.remove("on")); } else { cr.days = 7; if (d) d.value = ""; document.querySelectorAll("[data-crdays]").forEach((x) => x.classList.add("on")); } return; }
   if (t.dataset.crpay) return doCreqPay(t.dataset.crpay);
+  if (t.dataset.gwho) { GAME.who = t.dataset.gwho; ls.set("vf-game-who", GAME.who); return render(); }
+  if (t.id === "gGo") return gameOpen();
   if (t.dataset.crord) { cr.order = t.dataset.crord === "1"; document.querySelectorAll("[data-crord]").forEach((x) => x.classList.toggle("on", x === t)); return; }
   if (t.dataset.creng) { cr.eng = t.dataset.creng; cr.engManual = true; document.querySelectorAll("[data-creng]").forEach((x) => x.classList.toggle("on", x === t)); return; }
   if (t.dataset.crby) { if ($("#crByIn")) $("#crByIn").value = ""; cr.by = t.dataset.crby; document.querySelectorAll("[data-crby]").forEach((x) => x.classList.toggle("on", x === t)); return; }
