@@ -236,7 +236,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.27-12";
+const VER = "10.27-13";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍", "동성로2"];
@@ -1410,7 +1410,7 @@ let BOARD = B ? cacheGet("board") : null, LEADS = [], OLDS = [], OLDF = "all", O
 // 10/27 보내기 중계(시험 모드 먼저): 보내기, 택배는 board.json(1~몇 분 늦음) 말고 Apps Script에서 5~15초마다 읽어 덮어씀. board.json이 더 새것이면 그것
 const RELAY_URL = "https://script.google.com/macros/s/AKfycbyQ5TQlIahbUQXr3FenYTGuQgyzgjYInrmZk7GBG7nzFh1a0XQlhYfZKYL0VxDa298uvA/exec", RELAY_ON = true; // 10/27 사장님 "공식으로": 정식 화면도
 let RELAY = null, BOARD_RAW = null, BOARD_AT = 0;
-const withRelay = (bd) => !RELAY || RELAY.at < BOARD_AT - 60e3 ? bd : { ...(bd || {}), sends: RELAY.v.sends || [], parcels: RELAY.v.parcels || [], creqs: relayCreqs(bd?.creqs || [], RELAY.v.ords || []) };
+const withRelay = (bd) => !RELAY || RELAY.at < BOARD_AT - 60e3 ? bd : { ...(bd || {}), sends: RELAY.v.sends || [], parcels: RELAY.v.parcels || [], creqs: relayCreqs(bd?.creqs || [], RELAY.v.ords || []), game: RELAY.v.game || bd?.game };
 const relayCreqs = (old, ords) => { const m = new Map(ords.map((r) => [r.id, r])); return [...old.map((r) => m.get(r.id) || r), ...ords.filter((r) => !old.some((o) => o.id === r.id))]; }; // 깃허브 한도로 board.json을 못 읽어도 보내기는 뜨게
 async function loadRelay() {
   if (!RELAY_ON || !B || document.visibilityState !== "visible") return;
@@ -2188,7 +2188,7 @@ async function doCreq() {
 // 10/27 주문 가능 확인 뒤 손님 결제 → [결제함] → 관리자 [주문함]이 열림
 // ── 쉬는 시간 게임 (10/27 사장님) ── 출근한 사람 이름으로 하루 5판(봇이 셈), 이번 주 랭킹, 1등 바뀌면 매장노트에 자동
 // 게임은 오른쪽 내용 칸 위에 겹쳐 띄움(화면을 새로 그려도 게임이 안 끊기게 #app 밖에 둠)
-const GAME = { who: ls.get("vf-game-who", null), local: {} };
+const GAME = { who: ls.get("vf-game-who", null), local: ls.get("vf-game-local", {}) }; // 이 기기에서 시작한 판 수 (새로고침해도 봇 숫자 오기 전까지 유지)
 const gUsed = (n) => Math.max(BOARD?.game?.plays?.[n] || 0, GAME.local[`${todayKey()}|${n}`] || 0);
 function gameHtml() {
   const g = BOARD?.game || {}, max = g.max || 5, names = working(), me = names.includes(GAME.who) ? GAME.who : names.length === 1 ? names[0] : null, left = me ? Math.max(0, max - gUsed(me)) : 0;
@@ -2212,7 +2212,7 @@ function gameOpen() {
 function gameClose() { const L = $("#gameLayer"); if (L) { L.innerHTML = ""; L.style.display = "none"; } render(); }
 addEventListener("message", async (e) => {
   const m = e.data; if (!m || !m.vfGame || !GAME.me) return;
-  if (m.t === "start") { const k = `${todayKey()}|${GAME.me}`; GAME.local[k] = gUsed(GAME.me) + 1; try { await send({ type: "gstart", by: GAME.me }); } catch {} }
+  if (m.t === "start") { const k = `${todayKey()}|${GAME.me}`; GAME.local[k] = gUsed(GAME.me) + 1; for (const x of Object.keys(GAME.local)) if (!x.startsWith(todayKey())) delete GAME.local[x]; ls.set("vf-game-local", GAME.local); try { await send({ type: "gstart", by: GAME.me }); } catch {} }
   if (m.t === "score") { try { await send({ type: "gscore", by: GAME.me, s: m.s }); } catch {} }
   if (m.t === "close") gameClose();
 });
