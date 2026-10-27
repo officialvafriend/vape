@@ -142,7 +142,7 @@
 @media (max-width:899px){.ops.sv td:nth-child(2)::before{content:"A그룹"}.ops.sv td:nth-child(3)::before{content:"B그룹"}.ops.sv td:nth-child(4)::before{content:"일회용"}.ops.sv td:nth-child(5)::before{content:"기기 A"}
   .sec.svsec{flex-wrap:wrap}.sec.svsec small{flex-basis:100%;margin-top:2px}.ops.sv tr{grid-template-columns:repeat(4,minmax(0,1fr))}.ops.sv td small{display:block;font-size:11px;color:var(--sub);font-weight:500}
   .kpis{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 0 12px}.kpi{background:var(--card);border-radius:18px;padding:16px 18px;text-align:left;width:100%;display:block}.kpi .num{font-size:22px!important;font-weight:800;letter-spacing:-.6px;margin-top:4px}.kpi .eyebrow{margin-bottom:4px;font-size:13px}.kpi .caption{margin-top:6px;font-size:13px}}
-@media (min-width:900px){.sec.svsec{margin-top:0}.cols.sv{margin-bottom:8px}.ops.sv td,.ops.sv th{padding-left:14px;padding-right:14px}.ops.sv td{height:48px}}
+@media (min-width:900px){.sec.svsec{margin-top:22px}.cols.sv+.sec.svsec{margin-top:22px}.cols.sv .sec.svsec{margin-top:0}.cols.sv{margin-bottom:8px}.ops.sv td,.ops.sv th{padding-left:14px;padding-right:14px}.ops.sv td{height:48px}}
 /* 폰: 표 대신 지점마다 카드 (지점 이름 한 줄 + 칸 3열) */
 @media (max-width:899px){
   .ops{min-width:0;display:block}.ops thead{display:none}.ops tbody{display:block}
@@ -832,7 +832,7 @@ function stockRepHtml() {
     const cap = !s ? "오늘 재고보고 전" : !a ? "조정 결과 기다리는 중" : !a.ok ? `실패: ${esc(a.err)}` : a.st === "nochange" ? "포스와 모두 같음" : `${a.n}개 조정 확정${a.miss ? `, 대응 없음 ${a.miss}` : ""}${a.skip ? `, 묶음 제외 ${a.skip}` : ""}`;
     const k = !s || !a ? "" : !a.ok ? "t-bad" : "t-good";
     return `<button class="kpi" data-srb="${esc(b)}"${!s ? ' style="opacity:.55"' : ""}><div class="eyebrow">${i + 1} ${esc(b)}${s ? `, ${esc(s.by)}` : ""}</div><div class="num" style="font-size:28px">${s ? esc(s.t) : "안 옴"}</div><div class="caption ${k}">${cap}</div></button>`; });
-  return `<div class="sec">오늘 재고보고 현황 <small>아침 보고 숫자로 포스 재고를 바로 맞춰요, 칸을 누르면 바뀐 상품</small></div>${SR ? `<div class="kpis">${cards.join("")}</div>` : '<div class="card"><div class="caption" style="margin:0">운영봇이 새로 켜진 뒤부터 여기에 보여요</div></div>'}`;
+  return `<div class="sec svsec">오늘 재고보고 현황 <small>아침 보고 숫자로 포스 재고를 바로 맞춰요, 칸을 누르면 바뀐 상품</small></div>${SR ? `<div class="kpis">${cards.join("")}</div>` : '<div class="card"><div class="caption" style="margin:0">운영봇이 새로 켜진 뒤부터 여기에 보여요</div></div>'}`;
 }
 function sheetStockRep(b) {
   const s = D.stockRep?.[b]; if (!s) return toast("오늘 재고보고가 아직 없어요");
