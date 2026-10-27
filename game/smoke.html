@@ -26,7 +26,9 @@
 // 하루 5회(시험판은 이 기기에만 기억), 판마다 패턴이 달라서 외워서 깰 수 없음
 const cv = document.getElementById("c"), ctx = cv.getContext("2d"), $ = (id) => document.getElementById(id);
 let W, H, DPR;
-function fit() { DPR = Math.min(2, devicePixelRatio || 1); W = innerWidth; H = innerHeight; cv.width = W * DPR; cv.height = H * DPR; ctx.setTransform(DPR, 0, 0, DPR, 0, 0); }
+// 판 크기는 폰처럼 세로로 고정 (PC 넓은 화면이 쉬워지지 않게, 폰과 PC가 같은 랭킹)
+let SW, SH, OX, OY;
+function fit() { DPR = Math.min(2, devicePixelRatio || 1); SW = innerWidth; SH = innerHeight; cv.width = SW * DPR; cv.height = SH * DPR; W = Math.min(SW, 420); H = Math.min(SH, 840); OX = (SW - W) / 2; OY = (SH - H) / 2; ctx.setTransform(DPR, 0, 0, DPR, 0, 0); }
 addEventListener("resize", fit); fit();
 
 const DAY = new Date().toISOString().slice(0, 10), KEY = "vf-smoke-" + DAY, MAX = 5;
@@ -72,6 +74,10 @@ function loop(now) {
   const dt = Math.min(0.033, (now - last) / 1000); last = now;
   if (run) {
     t += dt; spawnT -= dt; burstT -= dt;
+    const KS = 330, kx = (keys.arrowright || keys.d ? 1 : 0) - (keys.arrowleft || keys.a ? 1 : 0), ky = (keys.arrowdown || keys.s ? 1 : 0) - (keys.arrowup || keys.w ? 1 : 0);
+    if (kx || ky) { const m = Math.hypot(kx, ky); P.x += kx / m * KS * dt; P.y += ky / m * KS * dt; mouse = null; }
+    else if (mouse) { const dx = mouse.x - P.x, dy = mouse.y - P.y, d = Math.hypot(dx, dy), mv = Math.min(d, 520 * dt); if (d > 0.5) { P.x += dx / d * mv; P.y += dy / d * mv; } }
+    P.x = Math.max(P.draw, Math.min(W - P.draw, P.x)); P.y = Math.max(P.draw, Math.min(H - P.draw, P.y));
     while (spawnT <= 0) { spawnT += rate(t); const r = Math.random(); spawn(t > 15 && r < 0.12 ? "seek" : r < 0.22 ? "big" : "small"); }
     if (burstT <= 0) { burst(); burstT = Math.max(2.6, 7 - t * 0.08); }
     if (t >= nextPhase) { phaseMsg(nextPhase === 10 ? "빨라져요" : nextPhase === 20 ? "더 빨라져요" : nextPhase === 30 ? "고수 구간" : `${nextPhase}초!`); nextPhase += 10; }
@@ -89,7 +95,8 @@ function loop(now) {
   if (run || parts.length || shake > 0) requestAnimationFrame(loop);
 }
 function draw() {
-  ctx.save(); ctx.clearRect(0, 0, W, H);
+  ctx.save(); ctx.clearRect(0, 0, SW, SH); ctx.translate(OX, OY);
+  if (SW > W) { ctx.fillStyle = "#151a23"; ctx.fillRect(0, 0, W, H); ctx.strokeStyle = "#2a3240"; ctx.lineWidth = 2; ctx.strokeRect(0, 0, W, H); ctx.beginPath(); ctx.rect(0, 0, W, H); ctx.clip(); }
   if (shake > 0) { ctx.translate(rnd(-shake, shake), rnd(-shake, shake)); shake *= 0.85; if (shake < 0.5) shake = 0; }
   for (const p of puffs) { const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r * 1.25); g.addColorStop(0, p.home ? "rgba(255,90,106,.95)" : "rgba(220,226,235,.95)"); g.addColorStop(.7, p.home ? "rgba(255,90,106,.55)" : "rgba(170,180,195,.55)"); g.addColorStop(1, "rgba(150,160,175,0)"); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(p.x, p.y, p.r * 1.25, 0, 7); ctx.fill(); }
   if (run) { ctx.fillStyle = "#3dd6c4"; ctx.beginPath(); ctx.arc(P.x, P.y, P.draw, 0, 7); ctx.fill(); ctx.fillStyle = "#0f1218"; ctx.beginPath(); ctx.arc(P.x, P.y, 3, 0, 7); ctx.fill(); }
@@ -97,14 +104,18 @@ function draw() {
   ctx.restore();
 }
 // 손가락 위치로 순간이동하지 않고, 끄는 만큼만 움직임 (손가락에 캐릭터가 안 가려지게)
-cv.addEventListener("pointerdown", (e) => { drag = { x: e.clientX, y: e.clientY, px: P.x, py: P.y }; cv.setPointerCapture(e.pointerId); });
-cv.addEventListener("pointermove", (e) => { if (!drag || !run) return; P.x = Math.max(P.draw, Math.min(W - P.draw, drag.px + (e.clientX - drag.x) * 1.15)); P.y = Math.max(P.draw, Math.min(H - P.draw, drag.py + (e.clientY - drag.y) * 1.15)); });
+// PC: 마우스를 움직이면 점이 커서를 따라감(빠르기 제한), 방향키나 WASD도 됨
+let mouse = null; const keys = {};
+addEventListener("keydown", (e) => { keys[e.key.toLowerCase()] = 1; if (e.key === " " || e.key === "Enter") { const g = document.getElementById("go"); if (g && !g.disabled && $("ov").style.display !== "none") g.click(); } });
+addEventListener("keyup", (e) => { keys[e.key.toLowerCase()] = 0; });
+cv.addEventListener("pointerdown", (e) => { if (e.pointerType === "mouse") return; drag = { x: e.clientX, y: e.clientY, px: P.x, py: P.y }; cv.setPointerCapture(e.pointerId); });
+cv.addEventListener("pointermove", (e) => { if (e.pointerType === "mouse") { mouse = { x: e.clientX - OX, y: e.clientY - OY }; return; } if (!drag || !run) return; P.x = Math.max(P.draw, Math.min(W - P.draw, drag.px + (e.clientX - drag.x) * 1.15)); P.y = Math.max(P.draw, Math.min(H - P.draw, drag.py + (e.clientY - drag.y) * 1.15)); });
 addEventListener("pointerup", () => (drag = null));
 
 function menu(sc, nb) {
   const left = MAX - used(), ov = $("ov");
   ov.innerHTML = sc == null
-    ? `<h1>💨 연기 피하기</h1><p>화면 아무 데나 대고 끌어서<br>연기를 피해요. 버틴 시간이 점수예요.<br><b style="color:#ff5a6a">빨간 연기는 따라와요.</b></p><p>오늘 남은 판 <b style="color:#fff">${left}/${MAX}</b>${best() ? `, 내 최고 ${best().toFixed(2)}초` : ""}</p><button id="go" ${left ? "" : "disabled"}>${left ? "시작" : "오늘은 끝! 내일 다시"}</button>`
+    ? `<h1>💨 연기 피하기</h1><p>폰은 화면을 끌고, PC는 마우스나 방향키로<br>연기를 피해요. 버틴 시간이 점수예요.<br><b style="color:#ff5a6a">빨간 연기는 따라와요.</b></p><p>오늘 남은 판 <b style="color:#fff">${left}/${MAX}</b>${best() ? `, 내 최고 ${best().toFixed(2)}초` : ""}</p><button id="go" ${left ? "" : "disabled"}>${left ? "시작" : "오늘은 끝! 내일 다시"}</button>`
     : `<p>${nb ? "🎉 내 최고 기록!" : "버틴 시간"}</p><div class="big">${sc.toFixed(2)}초</div><p>내 최고 ${best().toFixed(2)}초<br>오늘 남은 판 <b style="color:#fff">${left}/${MAX}</b></p><button id="go" ${left ? "" : "disabled"}>${left ? "한 판 더" : "오늘은 끝! 내일 다시"}</button>`;
   ov.style.display = "flex"; $("left").textContent = `남은 판 ${left}`;
   const go = $("go"); if (go && left) go.onclick = start;
