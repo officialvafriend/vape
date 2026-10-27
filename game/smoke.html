@@ -31,6 +31,8 @@ let SW, SH, OX, OY;
 function fit() { DPR = Math.min(2, devicePixelRatio || 1); SW = innerWidth; SH = innerHeight; cv.width = SW * DPR; cv.height = SH * DPR; W = Math.min(SW, 420); H = Math.min(SH, 840); OX = (SW - W) / 2; OY = (SH - H) / 2; ctx.setTransform(DPR, 0, 0, DPR, 0, 0); }
 addEventListener("resize", fit); fit();
 
+// 직원웹 안(?embed=1): 판 수와 기록은 직원웹, 봇이 맡음. 한 번 열면 한 판, 끝나면 점수를 직원웹으로 보내고 [닫기]
+const EMBED = new URLSearchParams(location.search).get("embed") === "1", tell = (m) => { try { parent.postMessage({ vfGame: 1, ...m }, "*"); } catch {} };
 const DAY = new Date().toISOString().slice(0, 10), KEY = "vf-smoke-" + DAY, MAX = 5;
 const ls = { get: (k, d) => { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } }, set: (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} } };
 const used = () => ls.get(KEY, 0), best = () => ls.get("vf-smoke-best", 0);
@@ -59,14 +61,14 @@ function burst() { // 화면 가장자리 한 점에서 부채꼴로 터짐 (틈
 function phaseMsg(txt) { const el = $("ph"); el.textContent = txt; el.style.opacity = 1; setTimeout(() => (el.style.opacity = 0), 900); }
 
 function start() {
-  if (used() >= MAX) return;
-  ls.set(KEY, used() + 1);
+  if (!EMBED) { if (used() >= MAX) return; ls.set(KEY, used() + 1); } else { if (window.__played) return; window.__played = 1; tell({ t: "start" }); }
   P.x = W / 2; P.y = H * 0.62; puffs = []; parts = []; t = 0; spawnT = 0.6; burstT = 7; nextPhase = 10; shake = 0;
   $("ov").style.display = "none"; run = true; last = performance.now(); requestAnimationFrame(loop);
 }
 function over() {
   run = false; shake = 14;
   const sc = Math.floor(t * 100) / 100, b = best(); if (sc > b) ls.set("vf-smoke-best", sc);
+  if (EMBED) tell({ t: "score", s: sc });
   for (let i = 0; i < 40; i++) parts.push({ x: P.x, y: P.y, vx: rnd(-260, 260), vy: rnd(-260, 260), l: rnd(.4, .9) });
   setTimeout(() => menu(sc, sc > b), 700);
 }
@@ -113,6 +115,10 @@ cv.addEventListener("pointermove", (e) => { if (e.pointerType === "mouse") { mou
 addEventListener("pointerup", () => (drag = null));
 
 function menu(sc, nb) {
+  if (EMBED) { const ov = $("ov"); $("left").textContent = "";
+    ov.innerHTML = sc == null ? `<h1>💨 연기 피하기</h1><p>폰은 화면을 끌고, PC는 마우스나 방향키로<br>연기를 피해요. 버틴 시간이 점수예요.<br><b style="color:#ff5a6a">빨간 연기는 따라와요.</b></p><button id="go">시작 (1판 씀)</button>`
+      : `<p>${nb ? "🎉 이 기기 최고 기록!" : "버틴 시간"}</p><div class="big">${sc.toFixed(2)}초</div><p>기록은 랭킹에 올라가요</p><button id="go">닫기</button>`;
+    ov.style.display = "flex"; $("go").onclick = sc == null ? start : () => tell({ t: "close" }); return; }
   const left = MAX - used(), ov = $("ov");
   ov.innerHTML = sc == null
     ? `<h1>💨 연기 피하기</h1><p>폰은 화면을 끌고, PC는 마우스나 방향키로<br>연기를 피해요. 버틴 시간이 점수예요.<br><b style="color:#ff5a6a">빨간 연기는 따라와요.</b></p><p>오늘 남은 판 <b style="color:#fff">${left}/${MAX}</b>${best() ? `, 내 최고 ${best().toFixed(2)}초` : ""}</p><button id="go" ${left ? "" : "disabled"}>${left ? "시작" : "오늘은 끝! 내일 다시"}</button>`
