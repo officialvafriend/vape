@@ -236,7 +236,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.27-6";
+const VER = "10.27-7";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍", "동성로2"];
@@ -1406,7 +1406,7 @@ async function decAll() {
 const ENG = ["동성로", "본점", "상인"]; // 10/20 사장님: 각인기 1호, 3호, 6호(7호엔 없음) let ENGLOAD = {};
 let BOARD = B ? cacheGet("board") : null, LEADS = [], OLDS = [], OLDF = "all", OUTS = new Set(), STEPS = {}, MEMO_DONE = new Set(), cr = null;
 // 10/27 보내기 중계(시험 모드 먼저): 보내기, 택배는 board.json(1~몇 분 늦음) 말고 Apps Script에서 5~15초마다 읽어 덮어씀. board.json이 더 새것이면 그것
-const RELAY_URL = "https://script.google.com/macros/s/AKfycbyQ5TQlIahbUQXr3FenYTGuQgyzgjYInrmZk7GBG7nzFh1a0XQlhYfZKYL0VxDa298uvA/exec", RELAY_ON = TEST;
+const RELAY_URL = "https://script.google.com/macros/s/AKfycbyQ5TQlIahbUQXr3FenYTGuQgyzgjYInrmZk7GBG7nzFh1a0XQlhYfZKYL0VxDa298uvA/exec", RELAY_ON = true; // 10/27 사장님 "공식으로": 정식 화면도
 let RELAY = null, BOARD_RAW = null, BOARD_AT = 0;
 const withRelay = (bd) => !RELAY || RELAY.at < BOARD_AT - 60e3 ? bd : { ...(bd || {}), sends: RELAY.v.sends || [], parcels: RELAY.v.parcels || [], creqs: relayCreqs(bd?.creqs || [], RELAY.v.ords || []) };
 const relayCreqs = (old, ords) => { const m = new Map(ords.map((r) => [r.id, r])); return [...old.map((r) => m.get(r.id) || r), ...ords.filter((r) => !old.some((o) => o.id === r.id))]; }; // 깃허브 한도로 board.json을 못 읽어도 보내기는 뜨게
@@ -2128,7 +2128,7 @@ function sheetCreq(cat = "") {
     <div class="desc" style="margin-top:14px">받는 방법</div><div class="chips">${["방문수령", "택배", "퀵"].map((x) => `<button class="chip ${x === cr.how ? "on" : ""}" data-crh="${x}">${x}</button>`).join("")}</div>
     <div class="desc" style="margin-top:14px">결제 <b style="color:var(--red)">*</b></div><div class="chips"><button class="chip" data-crp="결제완료">💳 결제완료</button><button class="chip" data-crp="미결제">미결제</button></div>
     <div class="desc" style="margin-top:14px">지금 상태 <span id="crNote"></span></div><div class="chips" id="crSt">${crStChips()}</div>
-    <div class="desc" style="margin-top:14px">재고 주문요청 <small style="color:var(--red)">${TEST ? "결제 전에 주문 가능한지 먼저 확인해요" : "결제 완료 건만 (선결제)"}</small></div><div class="chips"><button class="chip on" data-crord="0">필요 없음</button><button class="chip" data-crord="1">📦 주문요청 필요</button></div>
+    <div class="desc" style="margin-top:14px">재고 주문요청 <small style="color:var(--red)">결제 전에 주문 가능한지 먼저 확인해요</small></div><div class="chips"><button class="chip on" data-crord="0">필요 없음</button><button class="chip" data-crord="1">📦 주문요청 필요</button></div>
     <div id="crDueW"><div class="desc" style="margin-top:14px" id="crDueL">손님 수령 예정일</div><div class="chips" style="align-items:center"><button class="chip on" data-crdays="7">7일 뒤 (${md(addDay(7))})</button><input type="date" class="input" id="crDue" min="${addDay(1)}" style="width:auto;flex:1;margin:0"></div></div>
     <div class="desc" style="margin-top:10px">남기는 날짜 <small>(기본 오늘, 예전 건이면 그날로)</small></div><input type="date" class="input" id="crDate" value="${todayKey()}" max="${todayKey()}" style="margin-top:4px">
     <input class="input" id="crPhone" placeholder="고객 연락처 (필수)" inputmode="tel" maxlength="20">
@@ -2165,9 +2165,8 @@ async function doCreq() {
   if (!cr.items.length && !v("#crFree")) return toast("상품을 찾아 담거나 직접 적어 주세요");
   const byIn = v("#crByIn"); if (byIn) cr.by = byIn;
   if (!cr.by) return toast("담당자를 고르거나 적어 주세요");
-  if (TEST && cr.order && !cr.pay) cr.pay = "미결제"; // 10/27 시험: 주문 가능 확인 뒤 결제
+  if (cr.order && !cr.pay) cr.pay = "미결제"; // 10/27 주문 가능 확인 뒤 결제
   if (!cr.pay) return toast("결제했는지 골라 주세요");
-  if (cr.order && cr.pay !== "결제완료" && !TEST) return toast("주문요청은 결제 완료 건만 가능해요 (선결제)");
   if (v("#crPhone").replace(/\D/g, "").length < 8) return toast("고객 연락처를 넣어 주세요");
   const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 5), by = cr.by; // 10/20 담당자 한 명(칩 또는 직접 적은 이름)
   const body = { type: "creq", id, items: cr.items, free: v("#crFree"), how: cr.how, pay: cr.pay, step: cr.step, days: cr.days, order: cr.order, cat: cr.cat, eng: cr.engManual ? cr.eng : "", // 직접 바꾼 때만 보냄, 아니면 봇이 그 순간 건수로 고름
@@ -2177,7 +2176,7 @@ async function doCreq() {
     await send(body);
     ls.set(`vf-app-${B}-creqs`, [...ls.get(`vf-app-${B}-creqs`, []), { ...body, test: TEST, d: body.d || todayKey(), t: now(), ts: Date.now() }]);
     render();
-    if (TEST && cr.order && cr.pay !== "결제완료") return void openSheet(`<h2>주문 가능한지 확인할게요</h2><div class="say">주문 가능한지 확인하고 바로 연락드릴게요. 가능하면 그때 결제해 주시면 돼요.</div><div class="desc">몇 초 뒤 지금 할 일에 결과가 떠요. 바로 가능이면 그 자리에서 결제 받으면 돼요.</div><div class="btns"><button class="btn primary" data-x>확인</button></div>`);
+    if (cr.order && cr.pay !== "결제완료") return void openSheet(`<h2>주문 가능한지 확인할게요</h2><div class="say">주문 가능한지 확인하고 바로 연락드릴게요. 가능하면 그때 결제해 주시면 돼요.</div><div class="desc">몇 초 뒤 지금 할 일에 결과가 떠요. 바로 가능이면 그 자리에서 결제 받으면 돼요.</div><div class="btns"><button class="btn primary" data-x>확인</button></div>`);
     openSheet(`<h2>손님께 이렇게 말해 주세요</h2><div class="say">${cr.days}일 안으로 준비해 드릴게요. 그 전에 준비되면 바로 연락드리고, 늦어지면 ${md(addDay(cr.days))}에 저희가 먼저 연락드릴게요.</div><div class="desc">${md(addDay(cr.days))}이 되면 맨 위 오늘 일정에 떠요.</div><div class="btns"><button class="btn primary" data-x>확인</button></div>`);
   } catch (e) { $("#okCr").disabled = false; fail(e); }
 }
