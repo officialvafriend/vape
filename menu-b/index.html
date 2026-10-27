@@ -272,6 +272,7 @@ body{word-break:keep-all;overflow-wrap:break-word}
 .devben li > .mini[data-eg]{position:absolute;right:10px;top:10px;margin:0}
 /* 바닥 시트, 어둡게 덮개가 카드 번호, BEST 표시보다 위에 오게 */
 .dim{z-index:9}.sheet{z-index:10}.cart{position:relative;z-index:8}
+.home-btn.inst{background:var(--red);color:#fff}
 .combo{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:4px 0 14px}.combo button{background:var(--card);border-radius:16px;padding:14px;text-align:left;box-shadow:inset 0 0 0 1.5px var(--line)}.combo b{display:block;font-size:16px}.combo span{font-size:13px;color:var(--grey)}
 .evtip{font-size:13.5px;color:var(--grey);margin:-4px 0 10px}
 .evq{width:100%;height:52px;border:1px solid var(--line);border-radius:14px;padding:0 16px;font-size:17px;background:var(--card);color:var(--ink)}
@@ -337,6 +338,7 @@ body[data-theme=dark] .scan svg{background:#fff;border-radius:8px}
   <div class="top">
     <div class="logo" id="logo" onclick="logoPlay()"><span class="v r">V</span><span class="m x" style="--i:0;--j:5">A</span><span class="m r" style="--i:1">F</span><span class="m x" style="--i:2;--j:4">R</span><span class="m x" style="--i:3;--j:3">I</span><span class="m x" style="--i:4;--j:2">E</span><span class="m x" style="--i:5;--j:1">N</span><span class="d x" style="--j:0">D</span></div>
     <label class="srch">🔍<input id="q" placeholder="맛, 브랜드, 기기 이름 (초성도 돼요)" autocomplete="off" enterkeyhint="search"><button id="qx" aria-label="지우기">✕</button></label>
+    <button class="home-btn inst" id="instBtn" hidden>⬇ 앱 설치</button>
     <button class="home-btn" id="themeBtn" aria-label="낮 밤 모드"></button>
     <button class="home-btn" onclick="go('home')">처음</button>
   </div>
@@ -1054,6 +1056,11 @@ function navPress(el) {
 }
 document.addEventListener('pointerdown', () => navSet(null)); // 손가락으로 누르면 커서 숨김
 
+// 앱 설치 버튼 (10/27 사장님 "B안 다운로드가 왜 안 되냐"): 크롬이 설치 가능하다고 알려 주면 위 줄에 [앱 설치] 버튼, 누르면 바로 설치 창
+let instEv = null;
+addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); instEv = e; $('instBtn').hidden = false; });
+$('instBtn').onclick = async () => { if (!instEv) return; instEv.prompt(); const r = await instEv.userChoice; instEv = null; $('instBtn').hidden = true; if (r.outcome === "accepted") toast("설치했어요, 홈 화면의 VF 패드B로 열어 주세요"); };
+addEventListener('appinstalled', () => { $('instBtn').hidden = true; toast("설치 완료!"); });
 // 오프라인 저장 + 앱 설치 (sw-b.js)
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw-b.js").catch(() => {});
 </script>
