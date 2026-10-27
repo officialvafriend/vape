@@ -237,6 +237,15 @@ body.land .hero{display:grid;grid-template-columns:1.1fr 1fr;gap:24px;align-item
 body.land .askchip{left:24px;bottom:24px}
 body.land .toast{left:calc((100% - 380px) / 2)}
 button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--red);outline-offset:2px}
+/* 커서(방향키)와 손가락, 마우스로 가리킨 칸: 살짝 커짐 */
+.kf{position:relative;z-index:4;transform:scale(1.06)!important;box-shadow:0 0 0 3px var(--red),0 14px 34px rgba(0,0,0,.22)!important;transition:transform .18s cubic-bezier(.3,1.5,.5,1),box-shadow .18s}
+.it,.go3 button,.thumbs button,.chips button,.combo button,.opt2 button,.pk button,.sr,.poster,.scan,.upsell{transition:transform .18s cubic-bezier(.3,1.5,.5,1),box-shadow .18s}
+@media (hover:hover){.it:hover,.go3 button:hover,.thumbs button:hover,.combo button:hover,.opt2 button:hover,.pk button:hover,.sr:hover,.upsell:hover{transform:scale(1.04);position:relative;z-index:3;box-shadow:0 10px 26px rgba(0,0,0,.14)}}
+.it:active,.go3 button:active,.thumbs button:active,.combo button:active,.opt2 button:active,.pk button:active{transform:scale(.97)}
+.poster.kf{transform:scale(1.015)!important}
+/* 첫 화면 기기, 액상, 일회용 카드 작게 (사장님 "버튼이 너무 크다") */
+.go3 button{height:132px;padding:14px 16px;border-radius:20px}.go3 b{font-size:26px}.go3 small{font-size:12px}.go3 img{transform:scale(1.6)}
+body.land #vHome .go3{grid-template-rows:repeat(3,150px);align-content:start}
 .combo{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:4px 0 14px}.combo button{background:var(--card);border-radius:16px;padding:14px;text-align:left;box-shadow:inset 0 0 0 1.5px var(--line)}.combo b{display:block;font-size:16px}.combo span{font-size:13px;color:var(--grey)}
 .evtip{font-size:13.5px;color:var(--grey);margin:-4px 0 10px}
 .evq{width:100%;height:52px;border:1px solid var(--line);border-radius:14px;padding:0 16px;font-size:17px;background:var(--card);color:var(--ink)}
@@ -933,16 +942,48 @@ document.addEventListener('keydown', (e) => {
   if (typing || e.altKey || e.metaKey) return;
   if (e.key === "/" || (e.ctrlKey && e.key.toLowerCase() === "f")) { e.preventDefault(); $('q').focus(); return; }
   if (e.ctrlKey) return;
-  const home = document.body.dataset.v === 'home' && !document.body.classList.contains('evon');
-  if (home && e.key === "ArrowRight") return showP(pi + 1);
-  if (home && e.key === "ArrowLeft") return showP(pi - 1);
-  if (home && e.key === "Enter" && document.activeElement === document.body) return openEv(PST_K[pi]);
+  if (/^Arrow/.test(e.key)) { e.preventDefault(); return navMove(e.key.slice(5).toLowerCase()); }
+  if (e.key === "Enter" && kf && document.contains(kf)) { e.preventDefault(); return navPress(kf); }
   const k = { "1": "dev", "2": "liq", "3": "dsp", "0": "home" }[e.key]; if (k) { closeEv(); return go(k); }
   const c = e.key.toLowerCase();
   if (c === "c") { document.body.classList.add('open'); return cartViewBack(); }
   if (c === "s" && cart.size) { document.body.classList.add('open'); return staffView(); }
   if (c === "q" && cart.size) { document.body.classList.add('open'); return qrView(); }
 });
+// ── 방향키 커서 (10/27 사장님 "방향키로 커서 움직이는 것처럼"): 지금 보이는 층(구매 창 > 재고 창 > 담은 상품 > 화면)에서
+// 가리킨 칸이 커지고 빨간 테두리, Enter = 누르기. 첫 화면 포스터를 가리킨 상태에선 ←→ = 포스터 넘기기
+const NAV = ".poster, .go3 button, #seg button, .chips button, .it, .sr, .thumbs button, .colors button, .pk button, .pkb, #devAdd, .combo button, .opt2 button, #evGo, .evh button, .shbtn button, .scan, .upsell, .engr button, .mem button, .qb button, .askrow button, [data-asksend], .home-btn, .srch";
+let kf = null;
+function navLayer() { const b = document.body.classList;
+  if (b.contains('evon')) return $('ev'); if (b.contains('askon')) return $('ask'); if (b.contains('srchon')) return $('sres');
+  if (b.contains('open') && !b.contains('land')) return document.querySelector('.sheet'); return document; }
+function navList() { const L = navLayer(), out = [];
+  for (const el of (L === document ? document.querySelectorAll(NAV) : L.querySelectorAll(NAV))) { const r = el.getBoundingClientRect();
+    if (r.width < 4 || r.height < 4 || getComputedStyle(el).visibility === "hidden") continue;
+    if (L === document && (el.closest('.evs') || el.closest('.asks') || (el.closest('.sheet') && !document.body.classList.contains('land')))) continue;
+    if (el.closest('.view') && !el.closest('.view').offsetParent) continue; out.push(el); }
+  return out; }
+function navSet(el) { if (kf) kf.classList.remove('kf'); kf = el; if (!el) return; el.classList.add('kf'); el.scrollIntoView({ block: "nearest", inline: "nearest", behavior: "smooth" }); }
+function navMove(dir) {
+  if (kf && kf.matches('.poster') && document.contains(kf) && (dir === "left" || dir === "right")) return showP(pi + (dir === "right" ? 1 : -1));
+  const list = navList(); if (!list.length) return;
+  if (!kf || !document.contains(kf) || !list.includes(kf)) return navSet(list.find((el) => !el.closest(".top")) || list[0]); // 처음엔 위 줄 말고 화면 첫 칸부터
+  const a = kf.getBoundingClientRect(), ax = a.left + a.width / 2, ay = a.top + a.height / 2; let best = null, bd = 1e9;
+  for (const el of list) { if (el === kf) continue; const r = el.getBoundingClientRect(), x = r.left + r.width / 2, y = r.top + r.height / 2, dx = x - ax, dy = y - ay;
+    const ok = dir === "right" ? dx > 8 : dir === "left" ? dx < -8 : dir === "down" ? dy > 8 : dy < -8; if (!ok) continue;
+    if ((dir === "left" || dir === "right") && Math.abs(dy) > (a.height + r.height) / 2 + 30) continue; // 좌우는 같은 줄에서만
+    const main = dir === "left" || dir === "right" ? Math.abs(dx) : Math.abs(dy), side = dir === "left" || dir === "right" ? Math.abs(dy) : Math.abs(dx);
+    const d = main + side * 2.5; if (d < bd) { bd = d; best = el; } }
+  if (best) navSet(best);
+}
+function navPress(el) {
+  if (el.matches('.poster')) return openEv(PST_K[pi]);
+  if (el.matches('.srch')) { navSet(null); return $('q').focus(); }
+  const inner = el.matches('.it, .sr') ? el.querySelector('[data-a], [data-s], [data-ask], .add, .askb') : null;
+  (inner || el).click(); setTimeout(() => { const l = navList(); if (kf && !document.contains(kf)) navSet(l[0] || null); }, 120);
+}
+document.addEventListener('pointerdown', () => navSet(null)); // 손가락으로 누르면 커서 숨김
+
 // 오프라인 저장 + 앱 설치 (sw-b.js)
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw-b.js").catch(() => {});
 </script>
