@@ -72,11 +72,11 @@ body[data-v=home] #vHome,body[data-v=dev] #vDev,body[data-v=liq] #vLiq,body[data
 .slot{display:flex;align-items:flex-end;padding:18px;border:2px dashed #d4d4da;color:var(--grey);font-size:12px}
 
 /* 첫 화면: 포스터 752×940 + 3갈래 */
-.poster{width:100%;aspect-ratio:4/5;border-radius:var(--r);overflow:hidden;background:#ddd;position:relative}
+.poster{touch-action:pan-y;user-select:none;-webkit-user-select:none;width:100%;aspect-ratio:4/5;border-radius:var(--r);overflow:hidden;background:#ddd;position:relative}
 /* 포스터 = 글자 없는 그림(pst_c_) + 화면 글자. 1080×1350 기준으로 짜고 포스터 크기에 맞게 줄임 (디자인작업/261027_상담패드B안/gpt/compose.html과 같은 배치) */
 @font-face{font-family:Ohsquare;src:url(https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/Cafe24Ohsquare.woff) format("woff");font-display:swap}
 .pv{position:absolute;left:0;top:0;width:1080px;height:1350px;transform-origin:0 0;font-family:Pretendard,var(--kr);color:#15120f;letter-spacing:-.025em;overflow:hidden}
-.pv .bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.pv .bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;-webkit-user-drag:none;pointer-events:none}
 .pv .t{position:absolute;left:84px;right:84px;top:72px}.pv .t.c{text-align:center}
 .pv .p{position:absolute;left:0;right:0;bottom:0;padding:150px 84px 72px;background:linear-gradient(to bottom,rgba(242,242,244,0),rgba(242,242,244,.94) 55%)}
 .pv .eye{font-size:28px;font-weight:600;color:#6e6e73;letter-spacing:0}
@@ -246,6 +246,15 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
 /* 첫 화면 기기, 액상, 일회용 카드 작게 (사장님 "버튼이 너무 크다") */
 .go3 button{height:132px;padding:14px 16px;border-radius:20px}.go3 b{font-size:26px}.go3 small{font-size:12px}.go3 img{transform:scale(1.6)}
 body.land #vHome .go3{grid-template-rows:repeat(3,150px);align-content:start}
+/* 시연팟 번호 + BEST/HOT (10/27 사장님 "깔끔하고 귀엽게") */
+.it .badge{z-index:3}.it.sold .badge.so{top:auto;bottom:122px;left:50%;transform:translateX(-50%);white-space:nowrap;border-radius:999px;padding:5px 12px}
+.it .rib{position:absolute;top:16px;left:16px;z-index:2;background:var(--red);color:#fff;font-family:var(--num);font-size:11px;letter-spacing:.06em;padding:3px 8px 4px;border-radius:999px;box-shadow:0 2px 6px rgba(216,31,42,.3)}
+.it .rib.hot{background:#ff7a00;box-shadow:0 2px 6px rgba(255,122,0,.3)}
+.pno{position:absolute;top:14px;right:14px;z-index:2;min-width:30px;height:30px;padding:0 6px;border-radius:15px;display:flex;align-items:center;justify-content:center;font-family:var(--num);font-size:14px;color:#15120f;background:#fff;border:2px solid #15120f;box-shadow:0 2px 0 #15120f}
+.pno.in{position:static;display:inline-flex;min-width:24px;height:22px;font-size:12px;border-width:1.5px;box-shadow:none;margin-right:6px;vertical-align:1px}
+.pno.lc-w{background:#fff}.pno.lc-b{background:#9cc8f0}.pno.lc-o{background:#ffb066}.pno.lc-g{background:#d3d3d3}.pno.lc-gr{background:#9ad39a}.pno.lc-y{background:#ffe36b}.pno.lc-v{background:#d4bff0}
+.it .qty{position:absolute;left:16px;top:calc(10px + (100% - 120px) * 0);z-index:2;display:none}
+.it.got .qty{display:block;top:auto;bottom:118px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--card);font-size:12px;font-weight:800;border-radius:999px;padding:4px 10px;white-space:nowrap}
 .combo{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:4px 0 14px}.combo button{background:var(--card);border-radius:16px;padding:14px;text-align:left;box-shadow:inset 0 0 0 1.5px var(--line)}.combo b{display:block;font-size:16px}.combo span{font-size:13px;color:var(--grey)}
 .evtip{font-size:13.5px;color:var(--grey);margin:-4px 0 10px}
 .evq{width:100%;height:52px;border:1px solid var(--line);border-radius:14px;padding:0 16px;font-size:17px;background:var(--card);color:var(--ink)}
@@ -408,7 +417,7 @@ const PTX = {
 };
 // 그림마다 제목 정렬, 흰 글자 (그림 밝기 보고 정함): c = 가운데, w = 어두운 그림
 const POPT = { H1: "", H2: "c", H3: "c", H4: "", H5: "c", B1: "c", B2: "c w", B3: "c w", B4: "c w", B5: "c w", D1: "c", D2: "c", D3: "c", D4: "c" };
-const pvFit = () => { const pv = $('pv'); pv.style.transform = `scale(${$('poster').clientWidth / 1080})`; };
+let pvK = 1; const pvFit = () => { const pv = $('pv'); pvK = $('poster').clientWidth / 1080; pv.style.transform = `scale(${pvK})`; };
 new ResizeObserver(pvFit).observe($('poster'));
 let pi = 0;
 function showP(i){ pi = (i + PST.length) % PST.length; const id = PID[pi], pv = $('pv');
@@ -420,11 +429,24 @@ function showP(i){ pi = (i + PST.length) % PST.length; const id = PID[pi], pv = 
   $('dots').innerHTML = PST.map((_, k) => `<i class="${k === pi ? 'on' : ''}"></i>`).join(''); }
 showP(0); setInterval(() => { if (document.body.dataset.v === 'home') showP(pi + 1); }, 5000);
 const PST_K = Object.keys(PB); // PST 순서 = 이벤트 키 (H 하복2, B 대량, D 일회용)
-$('poster').onclick = (e) => { if (e.target.closest('#dots')) return showP(pi + 1); openEv(PST_K[pi]); };
+$('poster').onclick = (e) => { if (pMoved) { pMoved = false; return; } if (e.target.closest('#dots')) return showP(pi + 1); openEv(PST_K[pi]); };
 $('dots').onclick = (e) => { e.stopPropagation(); showP(pi + 1); };
 // 손가락으로 밀어 넘기기
-let sx = null; $('poster').addEventListener('touchstart', (e) => { sx = e.touches[0].clientX; }, { passive: true });
-$('poster').addEventListener('touchend', (e) => { if (sx == null) return; const d = e.changedTouches[0].clientX - sx; sx = null; if (Math.abs(d) > 50) { e.preventDefault(); showP(pi + (d < 0 ? 1 : -1)); } });
+// 포스터 손으로 넘기기 (10/27 사장님 "가로 화면도 포스터는 손으로 넘겨도 되잖아"): 세로, 가로 둘 다
+// 손가락(마우스)을 따라 끌리고, 놓을 때 화면 폭 15% 넘게 밀었거나 빨리 튕기면 다음/이전, 아니면 제자리로. 끌고 난 뒤엔 구매 창 안 열림
+let drag = null, pMoved = false;
+$('poster').addEventListener('pointerdown', (e) => { if (e.target.closest('#dots')) return; drag = { x: e.clientX, y: e.clientY, t: Date.now(), dx: 0, id: e.pointerId }; $('pv').style.transition = "none"; });
+$('poster').addEventListener('pointermove', (e) => { if (!drag || e.pointerId !== drag.id) return; const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+  if (!drag.on) { if (Math.abs(dx) < 8 || Math.abs(dx) < Math.abs(dy)) return; drag.on = true; try { $('poster').setPointerCapture(e.pointerId); } catch (er) {} }
+  drag.dx = dx; $('pv').style.transform = `translateX(${dx}px) scale(${pvK})`; });
+const dragEnd = () => { if (!drag) return; const d = drag; drag = null; const pv = $('pv'), w = $('poster').clientWidth;
+  if (!d.on) return; pMoved = true; setTimeout(() => (pMoved = false), 350);
+  const fast = Math.abs(d.dx) / Math.max(1, Date.now() - d.t) > 0.5, go = Math.abs(d.dx) > w * 0.15 || (fast && Math.abs(d.dx) > 30);
+  pv.style.transition = "transform .28s cubic-bezier(.22,1,.36,1)";
+  if (!go) { pv.style.transform = `scale(${pvK})`; return; }
+  const dir = d.dx < 0 ? 1 : -1; pv.style.transform = `translateX(${-dir * w}px) scale(${pvK})`;
+  setTimeout(() => { pv.style.transition = "none"; showP(pi + dir); }, 230); };
+$('poster').addEventListener('pointerup', dragEnd); $('poster').addEventListener('pointercancel', dragEnd);
 
 // 낮, 밤 모드 (이 기기에 기억)
 function setTheme(t) { document.body.dataset.theme = t; $('themeBtn').textContent = t === "dark" ? "☀ 낮" : "🌙 밤"; try { localStorage.setItem("vf-b-theme", t); } catch (e) {} }
@@ -456,7 +478,16 @@ const A_LIQ = [...["자두", "청포도", "레즈애플", "청사과", "레몬",
 const LIQ_IMG = { "VF 빌런 레몬": "vl_sq_lemon.jpg", "VF 빌런 레즈애플": "vl_sq_redsapple.jpg", "VF 빌런 바나나라무네": "vl_sq_banana.jpg", "VF 빌런 보석바": "vl_sq_bosukbar.jpg", "VF 빌런 석류": "vl_sq_pomegranate.jpg", "VF 빌런 자두": "vl_sq_plum.jpg", "VF 빌런 청사과": "vl_sq_greenapple.jpg", "VF 빌런 청포도": "vl_sq_greengrape.jpg", "VF 빌런 파인애플": "vl_sq_pineapple.jpg",
   "VF 릭 바나나": "lk_sq_banana.jpg", "VF 릭 청사과": "lk_sq_greenapple.jpg", "VF 릭 청포도": "lk_sq_greengrape.jpg", "VF 릭 레몬": "lk_sq_lemon.jpg", "VF 릭 파인애플": "lk_sq_pineapple.jpg", "VF 릭 자두": "lk_sq_plum.jpg", "VF 릭 석류": "lk_sq_pomegranate.jpg", "VF 릭 적사과": "lk_sq_redapple.jpg", "VF 릭 소다": "lk_sq_soda.jpg",
   "베이퍼 시가812": "ph_032.jpg", "베이퍼 쿨멘솔": "ph_033.jpg" };
-const LQ = A_LIQ.map((n) => (window.LIQ || []).find((x) => x.n === n)).filter(Boolean);
+// 시연팟 번호와 라벨 색 (지금 판 menu.html LABELNO, LABELCOL 그대로 복사, 사장님 10/8 번호 순서)
+const LABELNO = {"VF 빌런 보석바":1,"VF 빌런 청사과":2,"VF 빌런 석류":3,"VF 빌런 레몬":4,"VF 빌런 청포도":5,"VF 빌런 레즈애플":6,"VF 빌런 파인애플":7,"VF 빌런 자두":8,"VF 빌런 바나나라무네":9,"베이퍼 시가812":29,"베이퍼 쿨멘솔":27,"VF 릭 청포도":18,"VF 릭 석류":19,"VF 릭 청사과":20,"VF 릭 파인애플":21,"VF 릭 소다":22,"VF 릭 자두":23,"VF 릭 적사과":24,"VF 릭 레몬":25,"VF 릭 바나나":26,"디오 레몬":10,"디오 샤인":11,"디오 블루마린":12,"디오 블랙티":13,"디오 알포":14,"디오 블루워터":15,"디오 로젤하트":16,"디오 멜론":17,"딸기 요거트":35,"피치 요거트":36,"환타지아":37,"크림타바코":38,"아쿠아":41,"스피아민트":42,"블루스위트":43,"백도우롱차":46,"땡모반":47,"말라이트":48,"카라망고":56,"콘치즈":57,"알로에포도":58,"스쿨사과":59,"고창수박":60,"메론바":61,"자두사탕":62,"에비앙":63,"알로에라임":65,"초코콕콕":67,"샤인머쓱캣":69,"얼음공주 자몽":70,"얼음공주 밀키소다":71,"느낌 무향":72,"(한) 와 블루레몬":73,"(한) 솔의눈":74,"(한) 레드포카리":75,"(한) 블루스카이":76,"(한) 뱅뱅":77,"(한) 아이스샷":78,"(한) 토바코샷":79,"제이코리아 블랙멘솔":80,"(한) 화이트 멘솔시가":83,"(한) 화이트 파인애플":84,"(한) 화이트 워터멜론":85,"(한) 화이트 화이트멜론":86,"(한) 화이트 블루레몬":87,"(한) 화이트 알로에베라":88,"(한) 화이트 크랜베리애플":89,"(한) 화이트 피치":90,"(한) 화이트 체리":91,"(한) 화이트 소다":92,"(한) 화이트 자몽":93,"(한) 화이트 라임":94,"(한) 마피아퀸":95,"(한) 사무라이퀸":96,"(한) 크루세이더퀸":97,"(한) 아마조네스퀸":98,"제로닉 석류":99,"제로닉 거봉":100,"제로닉 샤인머스캣":101,"제로닉 콜라":102,"제로닉 민트":103,"제로닉 노멘솔 포도":104,"제로닉 노멘솔 자몽":105,"제로닉 노멘솔알로에":106,"제로닉 노멘솔 체리":107,"제로닉 아이스스노우":109,"방그레 스피아민트":110,"크래프트 포도":111,"크래프트 자두":112,"(한) 크래스프라이트":113,"크래알포":114,"크래망고":115,"메가킥 마르키사":116,"메가킥 딸기":117,"메가킥 망고":34,"메가킥 피치":33,"메가킥 사과":119,"메가킥 샤인":120,"메가킥 소다":121,"메가킥 수박":122,"메가킥 자몽":32,"메가킥 포도":123,"메가킥 자두":31,"메가킥 파인애플":124,"스위든 멘솔마스터":127,"스위든 쿠반시가":128,"스위든 체어맨":129,"스위든 그린티":130,"스위든 아이스그린티":131,"스위든 선인장":132,"마샤 샤인":133,"마샤 블랙":134,"마샤 유자":135,"마샤 딸기":136,"마샤 더블샤인":137,"마르키사":138,"마르키사 라즈":139,"잽알베":140,"프라임 파워멘솔":141,"톡스 로젤하트":142,"슴오크쿠반":143,"파이 토트":144,"갱쥬스 알베":146,"컵콘":147,"더블슬블":148,"크오크":149,"용트림체리":150,"더블라임":151,"라임알로에":152,"모코 하와이":153,"모코 그레이프사워":154,"모코 더블망고":155,"모코 더블샤인":156,"설향 딸기":157,"설향 라임":158,"설향 자두":159};
+const LABELCOL = {"VF 빌런 보석바":"w","VF 빌런 청사과":"w","VF 빌런 석류":"w","VF 빌런 레몬":"w","VF 빌런 청포도":"w","VF 빌런 레즈애플":"w","VF 빌런 파인애플":"w","VF 빌런 자두":"w","VF 빌런 바나나라무네":"w","베이퍼 시가812":"g","베이퍼 쿨멘솔":"o","VF 릭 청포도":"b","VF 릭 석류":"b","VF 릭 청사과":"b","VF 릭 파인애플":"b","VF 릭 소다":"b","VF 릭 자두":"b","VF 릭 적사과":"b","VF 릭 레몬":"b","VF 릭 바나나":"b","디오 레몬":"w","디오 샤인":"w","디오 블루마린":"w","디오 블랙티":"w","디오 알포":"w","디오 블루워터":"w","디오 로젤하트":"w","디오 멜론":"w","딸기 요거트":"y","피치 요거트":"y","환타지아":"w","크림타바코":"g","아쿠아":"w","스피아민트":"o","블루스위트":"w","백도우롱차":"w","땡모반":"w","말라이트":"g","카라망고":"w","콘치즈":"y","알로에포도":"w","스쿨사과":"w","고창수박":"w","메론바":"w","자두사탕":"w","에비앙":"o","알로에라임":"w","초코콕콕":"y","샤인머쓱캣":"w","얼음공주 자몽":"w","얼음공주 밀키소다":"w","느낌 무향":"b","(한) 와 블루레몬":"w","(한) 솔의눈":"w","(한) 레드포카리":"w","(한) 블루스카이":"w","(한) 뱅뱅":"w","(한) 아이스샷":"o","(한) 토바코샷":"g","제이코리아 블랙멘솔":"o","(한) 화이트 멘솔시가":"o","(한) 화이트 파인애플":"w","(한) 화이트 워터멜론":"w","(한) 화이트 화이트멜론":"w","(한) 화이트 블루레몬":"w","(한) 화이트 알로에베라":"w","(한) 화이트 크랜베리애플":"w","(한) 화이트 피치":"w","(한) 화이트 체리":"w","(한) 화이트 소다":"w","(한) 화이트 자몽":"w","(한) 화이트 라임":"w","(한) 마피아퀸":"w","(한) 사무라이퀸":"w","(한) 크루세이더퀸":"w","(한) 아마조네스퀸":"w","제로닉 석류":"gr","제로닉 거봉":"gr","제로닉 샤인머스캣":"gr","제로닉 콜라":"gr","제로닉 민트":"gr","제로닉 노멘솔 포도":"gr","제로닉 노멘솔 자몽":"gr","제로닉 노멘솔알로에":"gr","제로닉 노멘솔 체리":"gr","제로닉 아이스스노우":"gr","방그레 스피아민트":"gr","크래프트 포도":"gr","크래프트 자두":"gr","(한) 크래스프라이트":"gr","크래알포":"gr","크래망고":"gr","메가킥 마르키사":"gr","메가킥 딸기":"gr","메가킥 망고":"gr","메가킥 피치":"gr","메가킥 사과":"gr","메가킥 샤인":"gr","메가킥 소다":"gr","메가킥 수박":"gr","메가킥 자몽":"gr","메가킥 포도":"gr","메가킥 자두":"gr","메가킥 파인애플":"gr","스위든 멘솔마스터":"o","스위든 쿠반시가":"g","스위든 체어맨":"g","스위든 그린티":"b","스위든 아이스그린티":"w","스위든 선인장":"w","마샤 샤인":"w","마샤 블랙":"w","마샤 유자":"w","마샤 딸기":"w","마샤 더블샤인":"w","마르키사":"w","마르키사 라즈":"w","잽알베":"w","프라임 파워멘솔":"o","톡스 로젤하트":"w","슴오크쿠반":"g","파이 토트":"g","갱쥬스 알베":"w","컵콘":"y","더블슬블":"w","크오크":"g","용트림체리":"w","더블라임":"w","라임알로에":"w","모코 하와이":"w","모코 그레이프사워":"w","모코 더블망고":"w","모코 더블샤인":"w","설향 딸기":"w","설향 라임":"w","설향 자두":"w"};
+(window.LIQ || []).forEach((x) => { if (LABELNO[x.n]) { x.no = LABELNO[x.n]; x.lc = LABELCOL[x.n]; } });
+const noOf = (n) => LABELNO[n] || LABELNO["VF " + n] || 0, lcOf = (n) => LABELCOL[n] || LABELCOL["VF " + n] || "w";
+// 메인 추천 액상 = A그룹(빌런, 릭, 시가812, 쿨멘솔) + 디오(HOT, 10/27 사장님 "디오도 들어가야지"), 시연팟 번호 순
+const DIO = (window.LIQ || []).filter((x) => /^디오 /.test(x.n) && !/딸기망고|콜라/.test(x.n)).map((x) => x.n);
+const LQ = [...A_LIQ, ...DIO].map((n) => (window.LIQ || []).find((x) => x.n === n)).filter(Boolean).sort((a, b) => (a.no || 999) - (b.no || 999));
+const badgeOf = (n) => /^(VF )?(빌런|릭) |시가812|쿨멘솔/.test(n) ? "BEST" : /^디오 /.test(n) ? "HOT" : "";
+const tagHtml = (n) => { const b = badgeOf(n), no = noOf(n); return (b ? `<span class="rib ${b === "HOT" ? "hot" : ""}">${b}</span>` : "") + (no ? `<span class="pno lc-${lcOf(n)}">${no}</span>` : ""); };
 const isVL = (x) => /^VF (빌런|릭) /.test(x.n);
 const short = (n) => n.replace(/^VF /, "");
 
@@ -599,15 +630,15 @@ $('devAdd').onclick = () => { const cur = devOpts(dm).find((o) => o.opt === dc);
 
 // ── 액상 화면: A그룹 20종 ──
 let lf = "전체";
-const BR_OF = (x) => /^VF 빌런/.test(x.n) ? "빌런" : /^VF 릭/.test(x.n) ? "릭" : "베이퍼";
-$('chips').innerHTML = ["전체", "빌런", "릭", "베이퍼"].map((t) => `<button data-f="${t}" class="${t === lf ? "on" : ""}">${t}</button>`).join("");
+const BR_OF = (x) => /^VF 빌런/.test(x.n) ? "빌런" : /^VF 릭/.test(x.n) ? "릭" : /^디오/.test(x.n) ? "디오" : "베이퍼";
+$('chips').innerHTML = ["전체", "빌런", "디오", "릭", "베이퍼"].map((t) => `<button data-f="${t}" class="${t === lf ? "on" : ""}">${t}</button>`).join("");
 $('chips').onclick = (e) => { const b = e.target.closest('button'); if (!b) return; lf = b.dataset.f; $('chips').querySelectorAll('button').forEach((x) => x.classList.toggle('on', x === b)); drawLiq(); };
 function drawLiq() {
   $('liqGrid').innerHTML = LQ.filter((x) => lf === "전체" || BR_OF(x) === lf).map((x) => { const q = (cart.get(x.id) || {}).qty || 0, out = outOf(x.n);
-    return `<div class="it ${q ? "got" : ""} ${out ? "sold" : ""}" ${out ? `data-ask="${esc(x.n)}"` : ""}>${out ? '<span class="badge so">품절, 다른 지점 확인</span>' : q ? `<span class="badge">${q}병</span>` : ""}<div class="im" style="background:${tintOf(x)}"><img src="${LIQ_IMG[x.n] || ""}" alt="" loading="lazy"></div><div class="nm">${esc(short(x.n))}</div><div class="fl">${esc([x.f, (x.t || []).includes("노멘솔") ? "노멘솔" : ""].filter(Boolean).join(", "))}</div><div class="bt"><span class="price">15,000원</span>${out ? "" : `<button class="add" data-a="${x.id}">+</button>`}</div></div>`; }).join("");
+    return `<div class="it ${q ? "got" : ""} ${out ? "sold" : ""}" ${out ? `data-ask="${esc(x.n)}"` : ""}>${out ? '<span class="badge so">품절, 다른 지점 확인</span>' : tagHtml(x.n)}${q ? `<span class="qty">${q}병 담음</span>` : ""}<div class="im" style="background:${tintOf(x)}"><img src="${imgOf(x)}" alt="" loading="lazy"></div><div class="nm">${esc(short(x.n))}</div><div class="fl">${esc([x.f, (x.t || []).includes("노멘솔") ? "노멘솔" : ""].filter(Boolean).join(", "))}</div><div class="bt"><span class="price">15,000원</span>${out ? "" : `<button class="add" data-a="${x.id}">+</button>`}</div></div>`; }).join("");
 }
 $('liqGrid').onclick = (e) => { const b = e.target.closest('[data-a]'); if (!b) return; const x = LQ.find((y) => y.id === b.dataset.a);
-  addItem(x.id, { k: "liq", n: x.n, label: short(x.n), img: LIQ_IMG[x.n] || "", unit: 15000 }); };
+  addItem(x.id, { k: "liq", n: x.n, label: short(x.n), img: imgOf(x), unit: 15000 }); };
 function drawGoal() { const c = countCart(), have = c.v + c.p, g = $('goal');
   if (!goalN || !c.dev) { g.style.display = "none"; return; } g.style.display = "";
   g.innerHTML = have >= goalN ? `<b>액상 ${goalN}병 다 골랐어요</b><span>${totalOf().how || "패키지"} 적용, 합계 ${won(totalOf().total)}</span>` : `<b>하복2 패키지: 액상 ${have} / ${goalN}병</b><span>${goalN === 5 ? "빌런, 릭으로 5병 고르면 119,000원" : "10병 고르면 164,000원"}</span>`; }
@@ -643,7 +674,7 @@ function staffView() {
     if (f) free.push(x.todo ? todoBlk(x.label.replace(/\d+병/, f + "병"), kind + " " + SV, f, f) : blk(x.label, kind + " " + SV, x.n, f, f));
     const r = x.qty - f; if (r) paid.push(x.todo ? todoBlk(x.label.replace(/\d+병/, r + "병"), kind + " 1병 " + won(x.unit), r, 0) : blk(x.label, kind + " " + won(x.unit), x.n, r, 0));
   };
-  for (const x of liqs) { const f = Math.min(x.qty, svc); svc -= f; split(x, f, "프리미엄 액상"); }
+  for (const x of liqs) { const f = Math.min(x.qty, svc); svc -= f; split(x, f, (noOf(x.n) ? `시연팟 ${noOf(x.n)}번 · ` : "") + "프리미엄 액상"); }
   for (const x of prms) { const f = Math.min(x.qty, pmSvc); pmSvc -= f; split(x, f, "프라임 액상"); }
   for (const x of gds) paid.push(blk(x.label, won(x.unit), x.n, x.qty, 0));
   for (const x of evs) {
@@ -722,7 +753,7 @@ function openEv(k) {
 function closeEv() { document.body.classList.remove('evon'); }
 $('evX').onclick = closeEv;
 const evCard = (id, img, name, sub, price, out) => { const q = EV.pick.get(id) || 0;
-  return `<div class="it ${q ? "got" : ""} ${out ? "sold" : ""}" data-e="${out ? "" : id}">${out ? '<span class="badge so">품절</span>' : q ? `<span class="badge">${q}</span><button class="mn" data-em="${id}">−</button>` : ""}<div class="im" style="background:${tintOf({ n: name, f: sub })}"><img src="${img}" alt="" loading="lazy"></div><div class="nm">${esc(name)}</div><div class="fl">${esc(sub)}</div>${price ? `<div class="bt"><span class="price" style="font-size:15px">${won(price)}</span></div>` : ""}</div>`; };
+  return `<div class="it ${q ? "got" : ""} ${out ? "sold" : ""}" data-e="${out ? "" : id}">${out ? '<span class="badge so">품절</span>' : tagHtml(name)}${q ? `<span class="qty">${q}</span><button class="mn" data-em="${id}">−</button>` : ""}<div class="im" style="background:${tintOf({ n: name, f: sub })}"><img src="${img}" alt="" loading="lazy"></div><div class="nm">${esc(name)}</div><div class="fl">${esc(sub)}</div>${price ? `<div class="bt"><span class="price" style="font-size:15px">${won(price)}</span></div>` : ""}</div>`; };
 // 10/27 사장님 "굳이 다 골라야 하나, 다른 액상 피고 싶을 수도": ① 다 안 골라도 담기(남은 건 매장에서) ② 추천 조합 한 번에 ③ 하복2 패키지는 다른 프리미엄도 검색
 const DSP_MIN = () => Math.min(...DSP_POOL().map((g) => g.price));
 function dspTotal(rest = 0) { // 15개 중 가장 싼 5개 서비스. 매장에서 고를 개수(rest)는 가장 싼 값으로 셈
@@ -840,7 +871,7 @@ function drawSearch() {
   const r = searchItems(q);
   $('sres').innerHTML = r.length ? r.map((o) => { const x = o.x, liq = o.t === "liq", key = x.id, have = (cart.get(key) || {}).qty || 0, out = outOf(x.n);
     const img = liq ? imgOf(x) : gImg(x), price = liq ? liqPrice(x) : x.price;
-    return `<div class="sr ${out ? "sold" : ""}"><div class="im" style="background:${liq ? tintOf(x) : "#f4f4f6"}">${img ? `<img src="${img}" alt="" loading="lazy">` : { dev: "🔋", pod: "🧩", dsp: "🚬" }[x.c] || "💧"}</div><div class="n"><b>${esc(liq ? short(x.n) : x.n)}</b><span>${esc(liq ? [x.br, x.line, x.f].filter(Boolean).join(", ") : { dev: "기기", pod: "팟, 코일", dsp: "일회용" }[x.c] || "")}${out ? " · 품절" : ""}</span>${have ? `<span class="q"> 담음 ${have}</span>` : ""}</div><b class="price">${won(price)}</b>${out ? `<button class="askb" data-ask="${esc(x.n)}">다른 지점 확인</button>` : `<button class="add" data-s="${key}" data-t="${o.t}">+</button>`}</div>`; }).join("")
+    return `<div class="sr ${out ? "sold" : ""}"><div class="im" style="background:${liq ? tintOf(x) : "#f4f4f6"}">${img ? `<img src="${img}" alt="" loading="lazy">` : { dev: "🔋", pod: "🧩", dsp: "🚬" }[x.c] || "💧"}</div><div class="n"><b>${liq && noOf(x.n) ? `<span class="pno in lc-${lcOf(x.n)}">${noOf(x.n)}</span>` : ""}${esc(liq ? short(x.n) : x.n)}</b><span>${esc(liq ? [x.br, x.line, x.f].filter(Boolean).join(", ") : { dev: "기기", pod: "팟, 코일", dsp: "일회용" }[x.c] || "")}${out ? " · 품절" : ""}</span>${have ? `<span class="q"> 담음 ${have}</span>` : ""}</div><b class="price">${won(price)}</b>${out ? `<button class="askb" data-ask="${esc(x.n)}">다른 지점 확인</button>` : `<button class="add" data-s="${key}" data-t="${o.t}">+</button>`}</div>`; }).join("")
     : '<div style="padding:40px 0;text-align:center;color:var(--grey)">찾는 상품이 없어요</div>';
 }
 $('q').addEventListener('input', drawSearch);
