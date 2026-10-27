@@ -1686,13 +1686,15 @@ function payPlan() {
   if (liqN) notes.push(prSvc >= liqN ? `입호흡 액상 ${liqN}병 전부 서비스(0원)` : prSvc ? `입호흡 액상 ${liqN}병 중 ${prSvc}병 서비스(0원), ${liqN - prSvc}병은 1병 15,000원` : "");
   if (c.m) notes.push(pmSvc >= c.m ? `프라임 ${c.m}병 전부 서비스(0원)` : pmSvc ? `프라임 ${c.m}병 중 ${pmSvc}병 서비스(0원)` : "");
   if (gc.lungN) notes.push(lSvc >= gc.lungN ? `폐호흡 ${gc.lungN}병 전부 서비스(0원)` : lSvc ? `폐호흡 ${gc.lungN}병 중 ${lSvc}병 서비스(0원), ${gc.lungN - lSvc}병 정상가` : "");
-  return { html: out.join(""), prAll: liqN && prSvc >= liqN, pmAll: c.m && pmSvc >= c.m, lungAll: gc.lungN && lSvc >= gc.lungN, note: notes.filter(Boolean).join(" · ") };
+  return { html: out.join(""), prAll: liqN && prSvc >= liqN, pmAll: c.m && pmSvc >= c.m, lungAll: gc.lungN && lSvc >= gc.lungN, prSvc, pmSvc, lSvc, note: notes.filter(Boolean).join(" · ") };
 }
 function staffView() {
   const items = [...cart];
   const vl = items.filter(([id]) => isVL(item(id))).reduce((a, [, n]) => a + n, 0);
   const dev = cart.get(DEVICE.id) || 0;
   const plan = payPlan(), gcB = goodsCalc().bulk;
+  let prLeft = plan.prSvc || 0, pmLeft = plan.pmSvc || 0, lLeft = plan.lSvc || 0; // 묶음(기기패키지, 5병·11병, 프라임, 폐 3병)에 들어간 병 수만큼 위에서부터 서비스(0원) 표시 → QR에서 빠짐 (10/27)
+  const svcNote = (f, n) => f ? ` · <b style='color:var(--red)'>서비스(0원)${f >= n ? "" : " " + f + "병"}</b>` : "";
   const step = (n, t, sub) => `<div class="stp"><i>${n}</i><div><b>${t}</b>${sub ? `<span>${sub}</span>` : ""}</div></div>`;
   const devIds = items.filter(([id]) => item(id).dev || item(id).c === "dev");
   const blockOf = ([id, n]) => {
@@ -1700,10 +1702,10 @@ function staffView() {
     if (x.dev) return devColor ? scanBlock(`${MAIN.name} · ${devColor}`, "기기", `${MAIN.model} ${devColor}`, n, "", id)
       : `<div class="scan"><div class="hd"><b>${MAIN.name}</b><span class="x">× ${n}</span></div><div class="s">색상을 골라야 바코드가 나와요</div><div class="colors" style="padding:10px 0 0">${DEV_COLORS.map((c) => `<button data-color2="${c}">${c}</button>`).join("")}</div></div>`;
     const svc = " · <b style='color:var(--red)'>서비스(0원)</b>";
-    if (x.c === "lung") return scanBlock(x.n, "폐호흡", x.n, n, plan.lungAll ? svc : "", id, plan.lungAll ? "all" : 0);
+    if (x.c === "lung") { const f = Math.min(n, lLeft); lLeft -= f; return scanBlock(x.n, "폐호흡", x.n, n, svcNote(f, n), id, f >= n ? "all" : f); }
     if (x.c) { const f = gcB.freeById[id] || 0; return scanBlock(x.n, won(x.price) + (x.ev ? " · " + evName(x.ev) + " 이벤트" : ""), x.n, n, f ? ` · <b style='color:var(--red)'>서비스(0원) ${f >= n ? "전부" : f + "개"}</b>` : "", id, f >= n ? "all" : f); }
-    const liqSvc = x.line === "프라임" ? plan.pmAll : plan.prAll;
-    return scanBlock(short(x.n), [x.no ? "라벨 " + x.no + "번" : "", x.br, x.loc ? "진열 " + x.loc : ""].filter(Boolean).join(" · "), x.n, n, liqSvc ? svc : "", id, liqSvc ? "all" : 0);
+    const pm = x.line === "프라임", f = Math.min(n, pm ? pmLeft : prLeft); if (pm) pmLeft -= f; else prLeft -= f;
+    return scanBlock(short(x.n), [x.no ? "라벨 " + x.no + "번" : "", x.br, x.loc ? "진열 " + x.loc : ""].filter(Boolean).join(" · "), x.n, n, svcNote(f, n), id, f >= n ? "all" : f);
   };
   const devBlocks = devIds.map(blockOf).join("");
   const restBlocks = items.filter(([id]) => !devIds.some(([d]) => d === id)).map(blockOf).join("");
