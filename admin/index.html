@@ -288,7 +288,7 @@ const ICON = {
 };
 // 10/19 사장님 "다 따로 들어가기 불편해": 네이버 앱, 직원앱을 관리자 안 메뉴로 (같은 사이트라 안에 띄움, 네이버 열쇠, 직원앱 지점은 각 앱이 이 기기에 기억)
 // 10/26 사장님 "홈이 가득가득, 업무 안에 블로그도": 메뉴 12개 → 7개 묶음, 묶음 안은 위쪽 작은 탭
-const GROUPS = [["home", "홈", ["home"]], ["tasks", "업무", ["tasks", "survey"]], ["close", "마감", ["close"]], ["kpi", "KPI", ["kpi"]], ["goods", "상품", ["bunbae", "order", "group", "must"]], ["note", "매장 노트", ["note"]], ["office", "사무실", ["office"]], ["staff", "직원앱", ["staff"]], ["naver", "네이버", ["naver"]]];
+const GROUPS = [["home", "홈", ["home"]], ["tasks", "업무", ["tasks"]], ["close", "마감", ["close"]], ["kpi", "KPI", ["kpi"]], ["goods", "상품", ["bunbae", "order", "group", "must"]], ["note", "매장 노트", ["note"]], ["office", "사무실", ["office"]], ["staff", "직원앱", ["staff"]], ["naver", "네이버", ["naver"]]];
 const SUBNM = { bunbae: "분배 넣기", tasks: "업무", blog: "블로그 발행", order: "주문요청", survey: "재고조사", group: "그룹관리", must: "추가 필수", office: "봇 상태", staff: "직원앱", naver: "네이버" };
 const grpOf = (t) => GROUPS.find((g) => g[2].includes(t === "blog" ? "tasks" : t)) || GROUPS[0];
 const grpTab = (g) => { const last = ls.get("vf-admin-sub-" + g[0]); return g[2].includes(last) ? last : g[2][0]; };
@@ -785,7 +785,7 @@ function sheetBranch(b, g) { openSheet(branchHtml(b, g)); bindSparks(); }
 function sheetTaskStatus(id) {
   const t = D.matrix.find((y) => y.id === id), def = D.tasks.find((y) => y.id === id);
   openSheet(`<div class="eyebrow">${esc(REP_TXT(def))}${t.time ? ", " + esc(t.time) : ""}</div><h3>${esc(t.title)}</h3>${def.note ? `<div class="caption">${esc(def.note)}</div>` : ""}
-    <div class="list">${Object.entries(t.br).map(([b, v]) => `<div class="item"><div class="av ${v ? "good" : ""}">${v ? "✓" : BR.indexOf(b) + 1}</div><div class="tx"><b>${esc(b)}</b><span>${v === null || v === undefined ? "오늘 대상 아님" : v ? `${esc(v.by)}, ${esc(v.t)}에 끝냄` : "아직이에요"}</span></div></div>`).join("")}</div>
+    <div class="list">${Object.entries(t.br).map(([b, v]) => `<div class="item"><div class="av ${v ? "good" : ""}">${v ? "✓" : BR.indexOf(b) + 1}</div><div class="tx"><b>${esc(b)}</b><span>${v === null || v === undefined ? "오늘 대상 아님" : v ? `${esc(v.by)}, ${esc(v.t)}에 끝냄` : "아직이에요"}${def.kind === "survey" ? svInfo(id, b) : ""}</span></div></div>`).join("")}</div>${def.kind === "survey" ? svRowsBlock(id) : ""}
     <div class="btns"><button class="btn red" data-tdelid="${id}" style="flex:0 0 96px">삭제</button><button class="btn gray" data-x>닫기</button><button class="btn sec2" data-tedit="${id}">고치기</button></div>`); // 10/25 사장님 "업무 지우기도 있으면": 고치기 안에 숨어 있던 삭제를 바로 보이게
 }
 function sparkSvg(h) {
@@ -892,9 +892,9 @@ function tasksHtml() {
     const ok = it.xs.filter((x) => x.done), no = it.xs.filter((x) => !x.done);
     return `<div class="item" style="align-items:flex-start"><div class="av ${no.length ? "blue" : "good"}">${no.length ? "📝" : "✓"}</div><div class="tx"><b>블로그 발행 ${dLabel(it.d)}</b><span style="white-space:normal">${it.xs.length}곳 중 ${ok.length}곳 올림${no.length ? `, 아직: ${no.map((x) => nm(x.b)).join(", ")}` : ""}${ok.length ? `<br>올림: ${ok.map((x) => `<a href="${esc(x.done.link)}" target="_blank" rel="noopener" style="color:var(--blue);font-weight:700">${nm(x.b)}</a>`).join(", ")}` : ""}</span></div></div>`;
   };
-  const give = `<div class="btns" style="margin-top:14px"><button class="btn" data-act="tnew" style="height:50px;font-size:16px">＋ 새 업무</button><button class="btn sec2" data-act="ntnew" style="height:50px;font-size:16px">＋ 공지</button></div>
+  const give = `<div class="btns" style="margin-top:14px"><button class="btn" data-act="tnew" style="height:50px;font-size:16px">＋ 새 업무</button><button class="btn sec2" data-act="ntnew" style="height:50px;font-size:16px">＋ 공지</button><button class="btn sec2" data-act="svnew" style="height:50px;font-size:16px">＋ 재고조사</button></div>
     <div class="lbl" style="margin:18px 0 6px">등록된 업무 <span style="font-weight:500">${D.tasks.length}개, 누르면 고치기</span></div>
-    <div class="list" style="margin:0 -20px -8px;background:none">${D.tasks.length ? D.tasks.map((t) => `<button class="item" data-tedit="${t.id}"><div class="av blue">${t.rep === "daily" ? "매일" : t.rep === "weekly" ? "주" : t.rep === "monthly" ? "월" : "1"}</div>
+    <div class="list" style="margin:0 -20px -8px;background:none">${D.tasks.length ? D.tasks.map((t) => `<button class="item" data-tedit="${t.id}"><div class="av blue">${t.kind === "survey" ? "📦" : t.rep === "daily" ? "매일" : t.rep === "weekly" ? "주" : t.rep === "monthly" ? "월" : "1"}</div>
       <div class="tx"><b>${esc(t.title)}</b><span>${esc(REP_TXT(t))}${t.time ? ", " + esc(t.time) : ""}, ${t.br.length === 8 ? "전 지점" : t.br.map(esc).join(", ")}</span></div><span class="chev">›</span></button>`).join("") : '<div class="empty">아직 없어요</div>'}</div>`;
   const runL = run.length ? `<div class="list" style="margin:8px -20px -8px;background:none">${run.map(row).join("")}</div>` : '<div class="empty" style="padding:16px 0 4px">진행 중인 게 없어요</div>';
   const doneL = done.length ? `<div class="list" style="margin:8px -20px -8px;background:none">${done.slice(0, 80).map(row).join("")}</div>` : '<div class="empty" style="padding:16px 0 4px">최근 7일에 끝난 게 없어요</div>';
@@ -905,6 +905,33 @@ function tasksHtml() {
     ${tkTab === "give" ? give : tkTab === "run" ? runL : doneL}</div>`;
 }
 const addDays = (d, n) => { const x = new Date(d + "T00:00:00Z"); x.setUTCDate(x.getUTCDate() + n); return x.toISOString().slice(0, 10); };
+// 10/27 사장님 "재고조사 시키는 거 그룹별로": 업무의 한 종류. 그룹, 지점, 날짜 → 운영봇 task(kind survey) → 직원웹 할 일 [세기] → 센 숫자로 포스 조정(운영봇 surveyAdjust)
+const SV_GROUPS = ["프리미엄 A", "프리미엄 B", "프리미엄 C", "기기 A", "기기 B", "기기 C", "일회용"];
+let svNew = null;
+const readSvForm = () => { if (!svNew) return; svNew.date = $("#svDate")?.value || svNew.date; svNew.time = $("#svTime")?.value || ""; };
+function sheetSurveyNew() {
+  const v = svNew;
+  openSheet(`<h3>재고조사 시키기</h3><div class="caption">지점 직원웹 오늘 할 일에 "그룹 재고조사"로 뜨고, 직원이 센 숫자로 그 순간 포스 재고를 맞춰요. 결과는 진행 중, 완료에서 봐요</div>
+    <div class="lbl">어느 그룹</div><div class="chips">${SV_GROUPS.map((g) => `<button class="chip ${v.g === g ? "on" : ""}" data-svg="${g}">${g}</button>`).join("")}</div>
+    <div class="lbl">어느 지점</div><div class="chips"><button class="chip ${v.br.length === 8 ? "on" : ""}" data-svball>전체</button>${BR.map((b) => `<button class="chip ${v.br.includes(b) ? "on" : ""}" data-svb="${b}">${esc(b)}</button>`).join("")}</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><div><div class="lbl">언제</div><input class="in" type="date" id="svDate" value="${esc(v.date)}"></div><div><div class="lbl">시각 <span style="font-weight:500">(선택)</span></div><input class="in" type="time" id="svTime" value="${esc(v.time)}"></div></div>
+    <div class="btns"><button class="btn gray" data-x style="flex:0 0 96px">닫기</button><button class="btn" data-act="svsave">시키기</button></div>`);
+}
+async function saveSurveyTask() {
+  readSvForm(); const v = svNew;
+  if (!v.g) return toast("그룹을 골라 주세요"); if (!v.br.length) return toast("지점을 골라 주세요"); if (!v.date) return toast("날짜를 골라 주세요");
+  const t = { id: Date.now().toString(36), title: `${v.g} 재고조사`, note: "", time: v.time, br: v.br, rep: "once", date: v.date, dow: [], dom: 1, kind: "survey", g: v.g };
+  try { await sendOp("task", t); D.tasks.push({ ...t }); svNew = null; closeSheet(); render(); toast("시켰어요. 직원웹에는 1~2분 뒤에 떠요"); setTimeout(() => reload(true), 90e3); }
+  catch (e) { toast("보내지 못했어요. 다시 눌러 주세요"); }
+}
+// 재고조사 할 일 상세: 지점별 센 개수, 포스 조정 결과(운영봇 db.surveys 의 task 연결)
+const svOf = (id, b) => (D.surveys || []).filter((x) => x.task === id && x.branch === b && !x.test).pop();
+const svInfo = (id, b) => { const v = svOf(id, b); if (!v) return ""; const a = v.adj; return `, ${v.items.length}개 셈` + (!a ? "" : v.status === "adj" ? ", 포스 반영 중" : v.status === "fail" ? `, <span class="t-bad">포스 반영 실패</span>` : `, 포스 조정 ${a.n}개`); };
+function svRowsBlock(id) {
+  const vs = (D.surveys || []).filter((x) => x.task === id && !x.test && x.adj && (x.adj.rows || []).some((r) => r.d));
+  if (!vs.length) return "";
+  return vs.map((v) => `<div class="lbl">${esc(v.branch)}, 바뀐 상품 ${v.adj.rows.filter((r) => r.d).length}개</div><div class="list" style="margin-top:0">${v.adj.rows.filter((r) => r.d).map((r) => `<div class="item" style="padding-top:9px;padding-bottom:9px"><div class="tx"><b style="font-size:15px">${esc(r.n)}</b><span>포스 ${r.cur} → 센 수량 ${r.cnt}</span></div><div class="val"><b class="${r.d < 0 ? "t-bad" : "t-good"}">${r.d > 0 ? "+" : ""}${r.d}</b></div></div>`).join("")}</div>`).join("");
+}
 function sheetNotice() {
   openSheet(`<h3>직원웹 공지</h3><div class="caption">지점 직원웹에 팝업으로 뜨고, 지점이 [확인했어요]를 누르면 진행 중에서 완료로 넘어가요</div>
     <div class="lbl">제목</div><input class="in" id="ntTitle" maxlength="60" placeholder="예: 블로그 단톡방 정리 안내">
@@ -1084,6 +1111,11 @@ document.addEventListener("click", async (e) => {
   if (t.dataset.tdelid) { const id = t.dataset.tdelid, def = D.tasks.find((x) => x.id === id); if (!def || !confirm(`'${def.title}' 업무를 지울까요? 직원앱 오늘 할 일에서도 빠져요.`)) return; t.disabled = true; try { await sendOp("taskdel", { id }); D.tasks = D.tasks.filter((x) => x.id !== id); D.matrix = D.matrix.filter((x) => x.id !== id); closeSheet(); render(); toast("지웠어요. 직원앱에는 1~2분 뒤에 빠져요"); } catch (err) { t.disabled = false; toast("못 지웠어요: " + err.message); } return; }
   if (t.dataset.mustgo) { mustB = t.dataset.mustgo; tab = "must"; draft = null; closeSheet(); render(); return scrollTo(0, 0); }
   // 업무
+  if (a === "svnew") { svNew = { g: "", br: [...BR], date: D.d, time: "" }; return sheetSurveyNew(); }
+  if (t.dataset.svg !== undefined) { readSvForm(); svNew.g = t.dataset.svg; return sheetSurveyNew(); }
+  if (t.dataset.svball !== undefined) { readSvForm(); svNew.br = svNew.br.length === 8 ? [] : [...BR]; return sheetSurveyNew(); }
+  if (t.dataset.svb) { readSvForm(); const b = t.dataset.svb, st = new Set(svNew.br); st.has(b) ? st.delete(b) : st.add(b); svNew.br = BR.filter((x) => st.has(x)); return sheetSurveyNew(); }
+  if (a === "svsave") return saveSurveyTask();
   if (a === "ntnew") return sheetNotice();
   if (a === "tnew") { editTask = { id: "", title: "", note: "", time: "", br: [], rep: "once", date: D.d, dow: [], dom: 1 }; return sheetTask(); }
   if (t.dataset.tedit) { editTask = JSON.parse(JSON.stringify(D.tasks.find((x) => x.id === t.dataset.tedit))); editTask.dow ||= []; return sheetTask(); }
