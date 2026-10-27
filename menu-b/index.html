@@ -2,7 +2,13 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="viewport" content="width=800, viewport-fit=cover">
+<script>/* 10/27 패드마다 크기 맞추기 + 가로, 세로 돌리기: 세로는 폭 800, 가로는 폭 1280 기준 화면을 기기 폭에 꽉 맞게 비율 조정
+   (울트라는 작고 레노버 M11은 커 보여서). 돌리면 다시 계산하고 body에 land 표시 */
+function vfFit(){var land=matchMedia("(orientation: landscape)").matches,a=screen.width,b=screen.height,w=land?Math.max(a,b):Math.min(a,b),base=land?1280:800,s=Math.round(w/base*1000)/1000,m=document.querySelector('meta[name=viewport]');
+  m.setAttribute('content',!w||Math.abs(s-1)<.02?'width='+base+',viewport-fit=cover':'width='+base+',initial-scale='+s+',minimum-scale='+s+',maximum-scale='+s+',user-scalable=no,viewport-fit=cover');
+  if(document.body)document.body.classList.toggle('land',land);}
+vfFit();addEventListener('orientationchange',function(){setTimeout(vfFit,60);});addEventListener('resize',function(){clearTimeout(window.__vft);window.__vft=setTimeout(vfFit,120);});</script>
 <meta name="robots" content="noindex">
 <title>베이프렌드 상담패드 B안 (세로 뼈대)</title>
 <link rel="stylesheet" href="brand.css">
@@ -214,6 +220,22 @@ body[data-theme=dark] .svbox{background:#2a1c1d}body[data-theme=dark] .svbox .sc
 .qrbox.svq{box-shadow:inset 0 0 0 3px #f3c7c7}
 .stk{font-size:13px;font-weight:600;color:var(--grey);margin-left:8px}
 .askyes{margin-top:8px;font-size:14px;color:#1b8a4b}
+/* ── 가로판 (1280×800 기준, 10/27 사장님 "가로버전 제작, 화면 회전에 맞게") ──
+   가운데 = 화면 내용, 오른쪽 380 = 담은 상품 늘 펼침, 구매 창과 재고 창은 가운데 위로 */
+body.land .app{max-width:none;margin:0 380px 0 0}
+body.land .cart,body.land .grab{display:none}
+body.land .sheet{left:auto;right:0;top:0;bottom:0;width:380px;max-width:none;height:100%;transform:none;border-radius:0;box-shadow:-1px 0 0 var(--line);padding-top:18px;z-index:10}
+body.land:not(.evon):not(.askon) .dim{opacity:0;pointer-events:none}
+body.land .evs,body.land .asks{left:calc((100% - 380px) / 2);max-width:860px;width:calc(100% - 380px - 40px)}
+body.land .sres{bottom:0}
+body.land #vHome{display:none}body.land[data-v=home] #vHome{display:grid;grid-template-columns:auto 1fr;gap:var(--gap);height:calc(100vh - 64px - var(--pad))}
+body.land #vHome .poster{height:100%;width:auto;aspect-ratio:4/5}
+body.land #vHome .go3{grid-template-columns:1fr;grid-template-rows:repeat(3,1fr);margin-top:0}
+body.land #vHome .go3 button{height:auto}
+body.land .grid{grid-template-columns:repeat(5,1fr)}
+body.land .hero{display:grid;grid-template-columns:1.1fr 1fr;gap:24px;align-items:center}body.land .hero .row{display:block;margin-top:0}body.land .hero .ph{height:420px}
+body.land .askchip{left:24px;bottom:24px}
+body.land .toast{left:calc((100% - 380px) / 2)}
 .combo{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:4px 0 14px}.combo button{background:var(--card);border-radius:16px;padding:14px;text-align:left;box-shadow:inset 0 0 0 1.5px var(--line)}.combo b{display:block;font-size:16px}.combo span{font-size:13px;color:var(--grey)}
 .evtip{font-size:13.5px;color:var(--grey);margin:-4px 0 10px}
 .evq{width:100%;height:52px;border:1px solid var(--line);border-radius:14px;padding:0 16px;font-size:17px;background:var(--card);color:var(--ink)}
@@ -274,7 +296,7 @@ body[data-theme=dark] .dim{background:rgba(0,0,0,.6)}
 body[data-theme=dark] .scan svg{background:#fff;border-radius:8px}
 </style>
 </head>
-<body data-v="home">
+<body data-v="home"><script>vfFit()</script>
 <div class="app">
   <div class="top">
     <div class="logo" id="logo" onclick="logoPlay()"><span class="v r">V</span><span class="m x" style="--i:0;--j:5">A</span><span class="m r" style="--i:1">F</span><span class="m x" style="--i:2;--j:4">R</span><span class="m x" style="--i:3;--j:3">I</span><span class="m x" style="--i:4;--j:2">E</span><span class="m x" style="--i:5;--j:1">N</span><span class="d x" style="--j:0">D</span></div>
@@ -895,6 +917,8 @@ setTimeout(loadStock, 0); setInterval(loadStock, 10 * 60e3);
 const dcard = (n, img, p) => `<div class="it"><span class="badge">10+5</span><div class="im"><img src="${img}" alt="" loading="lazy"></div><div class="nm">${n}</div><div class="fl">여러 맛</div><div class="bt"><span class="price">${won(p)}</span></div></div>`;
 $('dspGrid').innerHTML = dcard("팜팜바", "dsp_farm.png", 24900) + dcard("모스바", "dsp_moss.png", 25000);
 drawDev(); drawLiq(); drawCart(); drawGoal();
+// 가로판: 담은 상품 판 늘 보이게, 포스터 크기 다시
+new MutationObserver(() => pvFit()).observe(document.body, { attributes: true, attributeFilter: ['class'] });
 // 오프라인 저장 + 앱 설치 (sw-b.js)
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw-b.js").catch(() => {});
 </script>
