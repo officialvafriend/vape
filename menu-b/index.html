@@ -152,6 +152,51 @@ body.open .sheet{transform:translate(-50%,0)}
 .warn{display:block;font-size:12.5px;color:var(--red);font-weight:700}
 .toast{position:fixed;left:50%;bottom:110px;transform:translate(-50%,20px);background:var(--ink);color:#fff;padding:12px 20px;border-radius:14px;font-size:15px;opacity:0;pointer-events:none;transition:.3s}
 .toast.on{opacity:1;transform:translate(-50%,0)}
+.ln .n small{display:block;font-size:12px;font-weight:400;color:var(--grey);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:380px}
+/* 이벤트 구매 화면 */
+.evs{position:fixed;left:50%;bottom:0;width:100%;max-width:800px;height:92%;background:var(--bg);border-radius:28px 28px 0 0;transform:translate(-50%,105%);transition:transform .5s cubic-bezier(.22,1,.36,1);display:flex;flex-direction:column;z-index:20;box-shadow:0 -10px 40px rgba(0,0,0,.18)}
+body.evon .evs{transform:translate(-50%,0)}body.evon .dim{opacity:1;pointer-events:auto}
+.evh{display:flex;justify-content:space-between;align-items:center;padding:22px var(--pad) 12px}
+.evh small{display:block;font-size:14px;font-weight:700;color:var(--red)}.evh b{font-size:28px;font-weight:800;letter-spacing:-.02em}
+.evh button{width:48px;height:48px;border-radius:50%;background:var(--card);font-size:20px}
+.evb{flex:1;overflow-y:auto;padding:0 var(--pad) var(--pad)}
+.evf{padding:12px var(--pad) 20px;background:var(--card);box-shadow:0 -1px 0 var(--line)}
+.evbar{height:6px;border-radius:3px;background:var(--line);margin-bottom:12px;overflow:hidden}.evbar i{display:block;height:100%;width:0;background:var(--red);transition:width .3s}
+.evhero{display:flex;gap:16px;align-items:center;padding:16px;margin-bottom:var(--gap)}
+.evhero img{width:132px;height:165px;object-fit:cover;border-radius:16px}
+.evhero .pr s{font-size:15px;color:var(--grey)}.evhero .pr .price{font-size:34px;display:block}
+.evsec{font-size:18px;font-weight:800;margin:18px 0 10px;display:flex;justify-content:space-between;align-items:center}
+.evsec button{font-size:14px;font-weight:700;padding:8px 14px;border-radius:12px;background:var(--card)}
+.opt2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.opt2 button{background:var(--card);border-radius:18px;padding:18px;text-align:left}.opt2 button.on{box-shadow:inset 0 0 0 2px var(--ink)}
+.opt2 b{font-size:22px;display:block}.opt2 span{font-size:14px;color:var(--grey)}
+.it .mn{position:absolute;right:14px;top:14px;width:32px;height:32px;border-radius:50%;background:var(--card);box-shadow:0 1px 4px rgba(0,0,0,.2);font-size:18px;font-weight:800}
+.it.free::after{content:"서비스";position:absolute;left:16px;bottom:56px;font-size:11px;font-weight:800;color:#fff;background:#2f9e5a;border-radius:6px;padding:2px 6px}
+/* 밤 모드 */
+body[data-theme=dark]{--bg:#0f1012;--card:#1c1d20;--ink:#f1f1f3;--grey:#9b9ba3;--line:#2c2d31}
+body[data-theme=dark] .seg{background:#26272b}body[data-theme=dark] .seg button.on{background:#3a3b40;color:#fff}
+body[data-theme=dark] .add,body[data-theme=dark] .cart .show,body[data-theme=dark] .chips button.on,body[data-theme=dark] .stp i{background:#f1f1f3;color:#15120f}
+body[data-theme=dark] .shbtn .b1{background:#f1f1f3;color:#15120f}
+/* 결제 흐름: 금액 요약, 회원, 버튼 */
+.shbtn{display:flex;gap:10px}.shbtn button{flex:1;height:60px;border-radius:16px;font-size:17px;font-weight:800}
+.shbtn .b1{background:var(--ink);color:var(--card)}.shbtn .b2{background:var(--bg);color:var(--ink)}.shbtn .rd{background:var(--red);color:#fff}
+.shbtn button:disabled{opacity:.4}
+.sum2{background:var(--bg);border-radius:16px;padding:14px 16px;margin:14px 0}
+.sum2 .r{display:flex;justify-content:space-between;font-size:15px;padding:3px 0;color:var(--grey)}.sum2 .r.off b{color:var(--red)}
+.sum2 .save{font-size:14px;font-weight:800;color:var(--red);text-align:right;margin-top:4px}
+.mem{background:var(--bg);border-radius:16px;padding:14px 16px;margin:10px 0 4px}
+.mem .t{font-size:16px;font-weight:800;margin-bottom:10px;display:flex;justify-content:space-between}.mem .t button{font-size:13px;color:var(--grey);text-decoration:underline}
+.mem .pk2{display:block;width:100%;text-align:left;background:var(--card);border-radius:14px;padding:14px 16px;margin-bottom:8px}.mem .pk2 b{display:block;font-size:16px}.mem .pk2 span{font-size:13px;color:var(--grey)}
+.mem input[type=text],.mem input[type=tel]{width:100%;height:52px;border:1px solid var(--line);border-radius:12px;padding:0 14px;font-size:17px;margin-bottom:8px;background:var(--card);color:var(--ink)}
+.mem label{display:flex;gap:8px;align-items:center;font-size:13.5px;color:var(--grey)}
+.memline{font-size:14px;margin-top:14px;padding:12px 14px;border-radius:12px;background:var(--bg)}
+.qrbox{background:#fff;border-radius:16px;padding:16px;text-align:center;color:#15120f}.qrbox svg{max-width:340px;width:100%;height:auto}
+.posw{font-size:13.5px;background:#fff4e5;color:#8a4b00;border-radius:12px;padding:10px 12px;margin-top:10px}
+body[data-theme=dark] .srch,body[data-theme=dark] .home-btn{background:#1c1d20;color:#cfcfd5}
+body[data-theme=dark] .hero .ph{background:#e9e9ec}
+body[data-theme=dark] .it .im{background:#f4f4f6}
+body[data-theme=dark] .dim{background:rgba(0,0,0,.6)}
+body[data-theme=dark] .scan svg{background:#fff;border-radius:8px}
 </style>
 </head>
 <body data-v="home">
@@ -159,6 +204,7 @@ body.open .sheet{transform:translate(-50%,0)}
   <div class="top">
     <div class="logo" id="logo" onclick="logoPlay()"><span class="v r">V</span><span class="m x" style="--i:0;--j:5">A</span><span class="m r" style="--i:1">F</span><span class="m x" style="--i:2;--j:4">R</span><span class="m x" style="--i:3;--j:3">I</span><span class="m x" style="--i:4;--j:2">E</span><span class="m x" style="--i:5;--j:1">N</span><span class="d x" style="--j:0">D</span></div>
     <div class="srch">🔍 맛, 브랜드, 기기 이름</div>
+    <button class="home-btn" id="themeBtn" aria-label="낮 밤 모드"></button>
     <button class="home-btn" onclick="go('home')">처음</button>
   </div>
   <div class="tabs"><div class="seg" id="seg">
@@ -219,10 +265,14 @@ body.open .sheet{transform:translate(-50%,0)}
 <div class="dim" onclick="document.body.classList.remove('open')"></div>
 <div class="sheet"><div class="grab"></div><div class="h" style="margin-top:0" id="shH">담은 상품</div><div class="lines" id="lines"></div>
   <div class="tot" id="tot"><span id="how">합계</span><b class="price" id="sum2">0원</b></div>
-  <button class="cta" style="margin:0;background:var(--black)" id="staffBtn">직원 화면 열기 (바코드)</button></div>
+  <div class="shbtn" id="shBtns"></div></div>
+<!-- 포스터 누르면 올라오는 이벤트 구매 화면 (지금 판 #evp와 같은 역할) -->
+<div class="evs" id="ev"><div class="evh"><div><small id="evEye"></small><b id="evTi"></b></div><button id="evX" aria-label="닫기">✕</button></div>
+  <div class="evb" id="evB"></div>
+  <div class="evf"><div class="evbar"><i id="evBar"></i></div><button class="cta" id="evGo" style="margin:0"></button></div></div>
 <div class="toast" id="toast"></div>
 <!-- 지금 판과 같은 데이터: 액상(data.js), 지점별 포스 바코드(pos.js), 지점별 기기 재고와 판매가(goods.js) -->
-<script src="data.js"></script><script src="pos.js"></script><script src="goods.js"></script><script src="JsBarcode.all.min.js"></script>
+<script src="data.js"></script><script src="pos.js"></script><script src="goods.js"></script><script src="JsBarcode.all.min.js"></script><script src="qrcode.js"></script>
 <script>
 const $ = id => document.getElementById(id);
 // 로고: 새로고침, 처음 버튼, 로고 누를 때 재생 → 2.7초 뒤 VF만 남김
@@ -235,7 +285,7 @@ function go(v){ if (v === 'home' && document.body.dataset.v !== 'home') logoPlay
   document.querySelectorAll('#seg button').forEach(b => b.classList.toggle('on', b.dataset.v === v)); }
 
 // 첫 화면 포스터 10/27: 이벤트 3개(하복2, 대량, 일회용), 새로고침마다 이벤트별 시안 중 하나를 골라 보여 줌 (pst_b_*.jpg, 디자인작업/261027_상담패드B안/gpt)
-const PB = { H: [1,2,3,4,5], B: [], D: [] }; // B, D는 v3(톤온톤, 빛과 그림자) 나오면 다시 채움
+const PB = { H: [1,2,3,4,5], B: [1,2,3,4,5], D: [1,2,3,4] }; // 10/27 v3: B 빛과 그림자, D 톤온톤 (D5는 사장님 "어떻게 해도 별로"라 뺌)
 const PB_OLD = { H: "pst_havok2_v7.jpg", B: "pst_bulk3050.jpg", D: "pst_dsp105.jpg" };
 const PST = Object.keys(PB).map(k => PB[k].length ? "pst_b_" + k + PB[k][Math.floor(Math.random() * PB[k].length)] + ".jpg" : PB_OLD[k]);
 let pi = 0;
@@ -243,7 +293,17 @@ function showP(i){ pi = (i + PST.length) % PST.length; const im = $('pImg'); im.
   setTimeout(() => { im.src = PST[pi]; im.style.opacity = 1; }, 200);
   $('dots').innerHTML = PST.map((_, k) => `<i class="${k === pi ? 'on' : ''}"></i>`).join(''); }
 showP(0); setInterval(() => { if (document.body.dataset.v === 'home') showP(pi + 1); }, 5000);
-$('poster').onclick = () => showP(pi + 1);
+const PST_K = Object.keys(PB); // PST 순서 = 이벤트 키 (H 하복2, B 대량, D 일회용)
+$('poster').onclick = (e) => { if (e.target.closest('#dots')) return showP(pi + 1); openEv(PST_K[pi]); };
+$('dots').onclick = (e) => { e.stopPropagation(); showP(pi + 1); };
+// 손가락으로 밀어 넘기기
+let sx = null; $('poster').addEventListener('touchstart', (e) => { sx = e.touches[0].clientX; }, { passive: true });
+$('poster').addEventListener('touchend', (e) => { if (sx == null) return; const d = e.changedTouches[0].clientX - sx; sx = null; if (Math.abs(d) > 50) { e.preventDefault(); showP(pi + (d < 0 ? 1 : -1)); } });
+
+// 낮, 밤 모드 (이 기기에 기억)
+function setTheme(t) { document.body.dataset.theme = t; $('themeBtn').textContent = t === "dark" ? "☀ 낮" : "🌙 밤"; try { localStorage.setItem("vf-b-theme", t); } catch (e) {} }
+setTheme((() => { try { return localStorage.getItem("vf-b-theme") || "light"; } catch (e) { return "light"; } })());
+$('themeBtn').onclick = () => setTheme(document.body.dataset.theme === "dark" ? "light" : "dark");
 
 // ── 지점, 데이터 (지금 판 menu.html과 같은 방식) ──
 const BRANCH = (() => { const u = new URLSearchParams(location.search).get("branch"); try { if (u) localStorage.setItem("vf-menu-branch", u); return u || localStorage.getItem("vf-menu-branch") || "본점"; } catch (e) { return u || "본점"; } })();
@@ -288,7 +348,7 @@ function estimate(c) { // c = { dev: 하복2 대수, v: 빌런+릭, p: 다른 �
 // ── 장바구니: key → { k: "dev"|"liq", n: 포스 상품명, label, img, unit, qty, model } ──
 const cart = new Map();
 const countCart = () => { const c = { dev: 0, v: 0, p: 0, other: 0 };
-  for (const x of cart.values()) { if (x.k === "dev") { if (x.model === "하복2") c.dev += x.qty; else c.other += x.unit * x.qty; } else if (isVL(x)) c.v += x.qty; else c.p += x.qty; } return c; };
+  for (const x of cart.values()) { if (x.items) { c.other += x.unit * x.qty; continue; } if (x.k === "dev") { if (x.model === "하복2") c.dev += x.qty; else c.other += x.unit * x.qty; } else if (isVL(x)) c.v += x.qty; else c.p += x.qty; } return c; };
 const totalOf = () => { const c = countCart(), e = estimate(c); return { ...e, total: e.total + c.other, c }; };
 function addItem(key, it, d = 1) { const cur = cart.get(key); const q = (cur ? cur.qty : 0) + d;
   if (q <= 0) cart.delete(key); else cart.set(key, { ...(cur || it), qty: q }); drawCart(); drawLiq(); drawGoal(); }
@@ -297,10 +357,46 @@ function drawCart() {
   $('cnt').textContent = n; $('sum').textContent = $('sum2').textContent = won(t.total);
   $('how').textContent = t.how ? "합계 (" + t.how + " 적용)" : "합계";
   if (staffOn) return;
-  $('lines').innerHTML = cart.size ? [...cart].map(([key, x]) => `<div class="ln"><img src="${x.img}" alt=""><span class="n">${esc(x.label)}</span><span class="qb"><button data-m="${key}">−</button><b>${x.qty}</b><button data-p="${key}">+</button></span><b class="price">${won(x.unit * x.qty)}</b></div>`).join("")
+  // 낱개로 샀을 때 금액 (액상 1병 15,000 / 대량구매는 병 수 × 15,000 / 일회용 10+5는 15개 정가) → 할인 보여 주기
+  const unitAll = [...cart.values()].reduce((a, x) => a + (x.k === "bulk" ? x.items.reduce((s, [, , q]) => s + q * 15000, 0) * x.qty : x.k === "dsp15" ? x.items.reduce((s, [, , q, p]) => s + q * p, 0) * x.qty : x.unit * x.qty), 0);
+  const off = unitAll - t.total;
+  $('lines').innerHTML = cart.size ? [...cart].map(([key, x]) => `<div class="ln"><img src="${x.img}" alt=""><span class="n">${esc(x.label)}${x.items ? `<small>${esc(x.items.map(([, l, q]) => l + " " + q).join(", "))}</small>` : ""}</span><span class="qb"><button data-m="${key}">−</button><b>${x.qty}</b><button data-p="${key}">+</button></span><b class="price">${won(x.unit * x.qty)}</b></div>`).join("")
+      + (off > 0 ? `<div class="sum2"><div class="r"><span>낱개로 샀을 때</span><s>${won(unitAll)}</s></div><div class="r off"><span>${esc(t.how || "묶음, 이벤트")} 할인</span><b>-${won(off)}</b></div><div class="save">총 ${won(off)} 할인 받았어요</div></div>` : "")
+      + memberBox()
     : '<div style="padding:24px 0;color:var(--grey)">담은 상품이 없어요</div>';
+  setFoot("cart");
 }
-$('lines').onclick = (e) => { const b = e.target.closest('button'); if (!b) return; const k = b.dataset.m || b.dataset.p; if (!k || !cart.has(k)) return; addItem(k, cart.get(k), b.dataset.m ? -1 : 1); };
+$('lines').onclick = (e) => {
+  const mb = e.target.closest('[data-mem]'); if (mb) { member.type = mb.dataset.mem || null; drawCart(); return; }
+  const b = e.target.closest('button[data-m],button[data-p]'); if (!b) return; const k = b.dataset.m || b.dataset.p; if (!k || !cart.has(k)) return; addItem(k, cart.get(k), b.dataset.m ? -1 : 1); };
+// 회원 (지금 판 memberBox와 같은 흐름: 처음이에요 = 이름, 번호, 동의 / 회원이에요 = 번호만)
+const member = { type: null, name: "", phone: "", agree: false };
+function memberBox() {
+  if (!member.type) return `<div class="mem"><div class="t">혹시 처음 오셨나요?</div>
+    <button class="pk2" data-mem="new"><b>처음이에요, 회원등록하고 적립하기!</b><span>오늘 구매부터 바로 적립돼요</span></button>
+    <button class="pk2" data-mem="old"><b>회원이에요, 회원정보 입력하기</b><span>휴대폰 번호만 입력하면 적립돼요</span></button></div>`;
+  const back = `<button data-mem="">다시 고르기</button>`;
+  if (member.type === "new") return `<div class="mem"><div class="t">회원등록 ${back}</div>
+    <input type="text" id="memName" placeholder="이름" value="${esc(member.name)}"><input type="tel" id="memPhone" inputmode="numeric" placeholder="휴대폰 번호 (- 없이)" value="${esc(member.phone)}">
+    <label><input type="checkbox" id="memAgree" ${member.agree ? "checked" : ""}> 적립을 위한 개인정보(이름, 휴대폰 번호) 수집, 이용에 동의해요</label></div>`;
+  return `<div class="mem"><div class="t">회원정보 입력 ${back}</div><input type="tel" id="memPhone" inputmode="numeric" placeholder="가입하신 휴대폰 번호 (- 없이)" value="${esc(member.phone)}"></div>`;
+}
+$('lines').addEventListener('input', (e) => { const t = e.target;
+  if (t.id === "memName") member.name = t.value; if (t.id === "memPhone") { t.value = t.value.replace(/\D/g, "").slice(0, 11); member.phone = t.value; } if (t.id === "memAgree") member.agree = t.checked; });
+$('lines').addEventListener('change', (e) => { if (e.target.id === "memAgree") member.agree = e.target.checked; });
+const memLine = () => member.type ? `<div class="memline"><b>${member.type === "new" ? "신규 회원등록" : "기존 회원 적립"}</b> ${esc([member.name, member.phone.replace(/(\d{3})(\d{3,4})(\d{4})/, "$1-$2-$3")].filter(Boolean).join(", ") || "정보 미입력")}${member.type === "new" && !member.agree ? ' <span style="color:var(--red)">(동의 안 함)</span>' : ""}</div>` : `<div class="memline"><b>회원 정보 없음</b> 적립 원하시는지 한 번 여쭤봐 주세요</div>`;
+// 아래 버튼: 담은 상품 → 직원 바코드 / QR → 완료
+function setFoot(mode) {
+  const has = cart.size > 0;
+  $('shBtns').innerHTML = mode === "cart" ? `<button class="b2" data-f="qr" ${has ? "" : "disabled"}>QR 보기</button><button class="b1" data-f="staff" ${has ? "" : "disabled"}>직원에게 보여주기</button>`
+    : mode === "staff" ? `<button class="b2" data-f="cart">← 수정</button><button class="b2" data-f="qr">QR 보기</button><button class="rd" data-f="done">결제 완료</button>`
+    : `<button class="b2" data-f="staff">바코드로 보기</button><button class="rd" data-f="done">결제 완료</button>`;
+}
+$('shBtns').onclick = (e) => { const b = e.target.closest('[data-f]'); if (!b) return; const f = b.dataset.f;
+  if (f === "cart") cartViewBack(); if (f === "staff") staffView(); if (f === "qr") qrView(); if (f === "done") doneSale(); };
+function doneSale() { if (!confirm("결제 완료하고 처음 화면으로 갈까요?")) return;
+  cart.clear(); Object.assign(member, { type: null, name: "", phone: "", agree: false }); goalN = 0;
+  document.body.classList.remove('open'); cartViewBack(); drawLiq(); drawGoal(); go('home'); toast("감사합니다! 처음 화면으로 왔어요"); }
 
 // ── 기기 화면 ──
 const devOpts = (m) => GDS.filter((g) => g.c === "dev" && g.model === m);
@@ -351,12 +447,12 @@ function setsOf(n, deals, unit) { const f = [{ c: 0, s: [] }];
   for (let k = 1; k <= n; k++) { let b = { c: f[k - 1].c + unit, s: f[k - 1].s }; for (const [q, p] of deals) if (k >= q && f[k - q].c + p < b.c) b = { c: f[k - q].c + p, s: [...f[k - q].s, q] }; f[k] = b; }
   return deals.map(([q, p, key]) => [q, p, key, f[n].s.filter((x) => x === q).length]).filter((x) => x[3]); }
 const bc = (name) => { const p = posOf(name); return p ? `<svg class="bcd" data-v="${esc(p[1])}" data-f="${p[2]}"></svg>${p[3] ? "" : '<span class="warn">바코드 미등록, 포스 인식 확인 필요</span>'}` : `<span class="warn">${esc(BRANCH)} 포스에 이 상품이 없어요, 포스에서 직접 찾아 주세요</span>`; };
-const blk = (t, sub, name, n) => `<div class="scan"><div class="hd"><b>${esc(t)}</b><span>× ${n}</span></div><div class="s">${sub}</div>${bc(name)}</div>`;
+const blk = (t, sub, name, n, free = 0) => `<div class="scan" data-n="${n}" data-free="${free}" data-code="${esc((posOf(name) || [])[1] || "")}" data-nm="${esc(t)}"><div class="hd"><b>${esc(t)}</b><span>× ${n}</span></div><div class="s">${sub}</div>${bc(name)}</div>`;
 const stp = (i, t, s) => `<div class="stp"><i>${i}</i><div><b>${t}</b>${s ? `<span>${s}</span>` : ""}</div></div>`;
 let staffOn = false;
 function staffView() {
-  staffOn = true; $('shH').textContent = `직원 확인용, 포스 스캔 (${BRANCH})`; $('staffBtn').textContent = "← 담은 상품으로";
-  const t = totalOf(), c = t.c, devs = [...cart.values()].filter((x) => x.k === "dev"), liqs = [...cart.values()].filter((x) => x.k === "liq");
+  staffOn = true; $('shH').textContent = `직원 확인용, 포스 스캔 (${BRANCH})`; setFoot("staff");
+  const t = totalOf(), c = t.c, devs = [...cart.values()].filter((x) => x.k === "dev"), liqs = [...cart.values()].filter((x) => x.k === "liq"), evs = [...cart.values()].filter((x) => x.items);
   const pk = /10병/.test(t.how) ? ["pr10", 10, ADD.pr10] : t.how === "프리미엄 기기패키지" ? ["pr5", 5, ADD.pr5] : t.how === "베이프렌드 기기패키지" ? ["vl5", 5, ADD.vl5] : null;
   const bund = [];
   if (pk) bund.push(blk(posBundle(pk[0]), `기기패키지 액상 ${pk[1]}병 값 ${won(pk[2])}`, posBundle(pk[0]), 1));
@@ -364,17 +460,119 @@ function staffView() {
   for (const [q, p, key, k] of sets) bund.push(blk(posBundle(key), `${q}병 ${won(p)}`, posBundle(key), k));
   let svc = (pk ? pk[1] : 0) + sets.reduce((a, [q, , , k]) => a + q * k, 0);
   const liqN = c.v + c.p, note = !liqN ? "" : svc >= liqN ? `액상 ${liqN}병 전부 서비스(0원)` : svc ? `액상 ${liqN}병 중 ${svc}병 서비스(0원), ${liqN - svc}병은 1병 15,000원` : "";
-  const liqBlocks = liqs.map((x) => { const f = Math.min(x.qty, svc); svc -= f; return blk(x.label, "프리미엄 액상" + (f ? ` <b style="color:var(--red)">서비스(0원)${f >= x.qty ? "" : " " + f + "병"}</b>` : ""), x.n, x.qty); }).join("");
+  const liqBlocks = liqs.map((x) => { const f = Math.min(x.qty, svc); svc -= f; return blk(x.label, "프리미엄 액상" + (f ? ` <b style="color:var(--red)">서비스(0원)${f >= x.qty ? "" : " " + f + "병"}</b>` : ""), x.n, x.qty, f); }).join("");
   let i = 0;
   $('lines').innerHTML = (cart.size ? "" : '<div style="padding:24px 0;color:var(--grey)">담은 상품이 없어요</div>')
     + (devs.length ? stp(++i, "기기 먼저 찍기") + devs.map((x) => blk(x.label, "기기", x.n, x.qty)).join("") : "")
     + (bund.length ? stp(++i, "묶음 상품으로 돈 받기", "이 바코드로 결제 금액이 잡혀요") + bund.join("") : "")
-    + (liqBlocks ? stp(++i, "낱개로 찍기", note) + liqBlocks : "");
+    + (liqBlocks ? stp(++i, "낱개로 찍기", note) + liqBlocks : "")
+    + evs.map((x) => evStaff(x, ++i)).join("") + memLine();
   document.querySelectorAll('#lines svg.bcd').forEach((el) => { try { JsBarcode(el, el.dataset.v, { format: el.dataset.f, height: 64, width: 2.2, fontSize: 16, margin: 6 }); } catch (e) { JsBarcode(el, el.dataset.v, { format: "CODE128", height: 64, width: 2.2, fontSize: 16, margin: 6 }); } });
 }
-function cartViewBack() { staffOn = false; $('shH').textContent = "담은 상품"; $('staffBtn').textContent = "직원 화면 열기 (바코드)"; drawCart(); }
-$('staffBtn').onclick = () => staffOn ? cartViewBack() : staffView();
+function cartViewBack() { staffOn = false; $('shH').textContent = "담은 상품"; drawCart(); }
 document.querySelector('.dim').addEventListener('click', cartViewBack);
+// QR 한 번에 찍기 (지금 판 qrView와 같음): 직원 화면 바코드를 순서대로 모아 QR 하나로, 서비스(0원) 수량은 뺌
+const QR_SEPS = { cr: "\r", crlf: "\r\n", lf: "\n", tab: "\t" };
+let qrSep = (() => { try { return localStorage.getItem("vf-qr-sep") || "cr"; } catch (e) { return "cr"; } })();
+function qrView() {
+  staffView(); staffOn = true;
+  const codes = [], miss = [], svc = [];
+  document.querySelectorAll('#lines .scan').forEach((el) => { const n = +el.dataset.n || 1, f = Math.min(n, +el.dataset.free || 0), c = el.dataset.code, nm = el.dataset.nm;
+    if (f) svc.push(nm + (f > 1 ? " ×" + f : "")); if (c) for (let i = 0; i < n - f; i++) codes.push(c); else if (n - f > 0) miss.push(nm); });
+  if (!codes.length) { toast("QR로 만들 바코드가 없어요"); return; }
+  const sep = QR_SEPS[qrSep] || "\r", q = qrcode(0, "M"); q.addData(codes.join(sep) + sep, "Byte"); q.make();
+  $('shH').textContent = "QR 한 번에 찍기";
+  $('lines').innerHTML = `<div style="font-size:14.5px;color:var(--grey);margin-bottom:10px">포스 판매 화면에서 스캐너로 이 QR을 한 번 찍으세요. (${esc(BRANCH)} 포스 기준)</div>
+    <div class="qrbox">${q.createSvgTag({ cellSize: 6, margin: 4, scalable: true })}<div style="font-size:16px;font-weight:800;margin-top:8px">총 ${codes.length}번 찍힌 것과 같아요</div></div>
+    ${svc.length ? `<div class="posw" style="background:#eef7ee;color:#1b5e20">묶음에 들어간 서비스(0원)는 QR에 안 넣었어요: ${svc.map(esc).join(", ")}</div>` : ""}
+    ${miss.length ? `<div class="posw">QR에 안 들어간 것: ${miss.map(esc).join(", ")} → 직접 찍어 주세요</div>` : ""}
+    <div class="posw">서비스(0원) 처리는 지금처럼 포스에서 직접 해 주세요. 하나만 찍히면 아래 구분 문자를 바꿔 보세요.</div>
+    <div style="margin-top:10px;font-size:14px;color:var(--grey)">구분 문자 <select id="qrSep">${Object.keys(QR_SEPS).map((k) => `<option value="${k}" ${k === qrSep ? "selected" : ""}>${{ cr: "Enter (CR)", crlf: "Enter (CR+LF)", lf: "줄바꿈 (LF)", tab: "Tab" }[k]}</option>`).join("")}</select></div>${memLine()}`;
+  $('qrSep').onchange = (e) => { qrSep = e.target.value; try { localStorage.setItem("vf-qr-sep", qrSep); } catch (er) {} qrView(); };
+  setFoot("qr");
+}
+
+// ── 포스터 누르면 이벤트 구매 화면 (10/27 사장님 "A안처럼 구매 페이지") ──
+// H 하복2 기기패키지 = 색 + A그룹 액상 10병 → 장바구니에 기기와 액상으로 담김 (가격은 estimate가 164,000 자동)
+// B 대량구매 = 30병 210,000 / 50병 340,000, 빌런, 릭, 디오, 아이스샷, 토바코샷 섞어서 (포스 '대량구매 30병/50병' 묶음 + 낱개 서비스 0원)
+// D 일회용 10+5 = 팜팜바, 모스바 15개, 가장 싼 5개 서비스(0원) (지금 판 BULK와 같음, 포스 묶음 상품 없음)
+const IMGBASE = "https://officialvafriend.github.io/vape/img/";
+const EXTRA_IMG = { "(한) 아이스샷": "ph_002.jpg", "(한) 토바코샷": "ph_003.jpg" };
+const imgOf = (x) => LIQ_IMG[x.n] || EXTRA_IMG[x.n] || (x.img ? IMGBASE + x.img : "");
+const BULK_POOL = [...LQ.filter(isVL), ...(window.LIQ || []).filter((x) => /^디오 /.test(x.n) && !/딸기망고|콜라/.test(x.n)), ...["(한) 아이스샷", "(한) 토바코샷"].map((n) => (window.LIQ || []).find((x) => x.n === n)).filter(Boolean)];
+const BULK = { 30: 210000, 50: 340000 };
+const DSP_POOL = () => GDS.filter((g) => g.c === "dsp" && /^(팜팜바|모스바)/.test(g.n));
+const DSP_IMG = { 팜팜바: "dsp_farm.png", 모스바: "dsp_moss.png" };
+let EV = null; // { k, need, pick: Map(id → 수), color }
+const pickN = () => [...EV.pick.values()].reduce((a, n) => a + n, 0);
+function openEv(k) {
+  if (k === "H") { const o = devOpts("하복2"); if (!o.length) return toast(BRANCH + " 하복2 재고가 없어요"); EV = { k, need: 10, pick: new Map(), color: o[0].opt }; }
+  if (k === "B") EV = { k, need: 30, pick: new Map() };
+  if (k === "D") { if (!DSP_POOL().length) return toast(BRANCH + " 팜팜바, 모스바 재고가 없어요"); EV = { k, need: 15, pick: new Map() }; }
+  document.body.classList.add('evon'); drawEv(); $('evB').scrollTop = 0;
+}
+function closeEv() { document.body.classList.remove('evon'); }
+$('evX').onclick = closeEv;
+const evCard = (id, img, name, sub, price, out) => { const q = EV.pick.get(id) || 0;
+  return `<div class="it ${q ? "got" : ""} ${out ? "sold" : ""}" data-e="${out ? "" : id}">${out ? '<span class="badge so">품절</span>' : q ? `<span class="badge">${q}</span><button class="mn" data-em="${id}">−</button>` : ""}<div class="im"><img src="${img}" alt="" loading="lazy"></div><div class="nm">${esc(name)}</div><div class="fl">${esc(sub)}</div>${price ? `<div class="bt"><span class="price" style="font-size:15px">${won(price)}</span></div>` : ""}</div>`; };
+function dspTotal() { // 15개 중 가장 싼 5개 서비스
+  const units = []; for (const [id, n] of EV.pick) { const g = GDS.find((x) => x.id === id); for (let i = 0; i < n; i++) units.push(g.price); }
+  units.sort((a, b) => a - b); const free = Math.floor(units.length / 15) * 5; return units.slice(free).reduce((a, p) => a + p, 0);
+}
+function drawEv() {
+  const n = pickN(), done = n === EV.need; let h = "";
+  if (EV.k === "H") {
+    $('evEye').textContent = "베이프렌드 기기패키지"; $('evTi').textContent = "하복2 + 액상 10병";
+    const o = devOpts("하복2");
+    h += `<div class="card evhero"><img src="${PST.find((p) => /_H/.test(p)) || "pst_havok2_v7.jpg"}" alt=""><div class="pr"><s>179,000원</s><b class="price">164,000원</b><span style="font-size:14px;color:var(--grey)">하복2 89,000원 + 액상 10병 75,000원</span></div></div>`;
+    h += `<div class="evsec">① 색상</div><div class="card" style="padding:16px;display:flex;gap:16px;align-items:center"><img src="${DEV_IMG.하복2[EV.color] || ""}" style="width:110px;height:130px;object-fit:contain"><div><div class="colors" id="evCol">${o.map((x) => `<button style="background:${HEX[x.opt]}" class="${x.opt === EV.color ? "on" : ""}" data-ec="${x.opt}"></button>`).join("")}</div><div style="margin-top:10px;font-size:16px;font-weight:700">${EV.color}</div></div></div>`;
+    h += `<div class="evsec">② 액상 10병 (${n}/10)<button data-fill="1">빌런 인기 맛으로 채우기</button></div><div class="grid">${LQ.map((x) => evCard(x.id, imgOf(x), short(x.n), x.f || "", 0, !posOf(x.n))).join("")}</div>`;
+    $('evGo').textContent = done ? `이 구성으로 담기, 164,000원` : `액상 ${EV.need - n}병 더 골라 주세요`;
+  }
+  if (EV.k === "B") {
+    $('evEye').textContent = "베이프렌드 대량 특가"; $('evTi').textContent = "액상 대량구매";
+    h += `<div class="evsec">① 몇 병?</div><div class="opt2">${[30, 50].map((q) => `<button class="${EV.need === q ? "on" : ""}" data-bq="${q}"><b>${q}병 <span class="price" style="font-size:22px;color:var(--red)">${won(BULK[q])}</span></b><span>병당 ${won(BULK[q] / q)}</span></button>`).join("")}</div>`;
+    h += `<div class="evsec">② 맛 고르기 (${n}/${EV.need})<button data-fill="1">남은 병 골고루 채우기</button></div><div class="grid">${BULK_POOL.map((x) => evCard(x.id, imgOf(x), short(x.n), x.f || "", 0, !posOf(x.n))).join("")}</div>`;
+    $('evGo').textContent = done ? `${EV.need}병 담기, ${won(BULK[EV.need])}` : `${EV.need - n}병 더 골라 주세요`;
+  }
+  if (EV.k === "D") {
+    $('evEye').textContent = "베이프렌드 일회용 대량"; $('evTi').textContent = "10개 사면 5개 더";
+    const pool = DSP_POOL();
+    h += `<div class="card evhero" style="padding:20px"><div class="pr"><b style="font-size:20px">팜팜바, 모스바 원하는 맛으로 15개</b><span style="display:block;font-size:14px;color:var(--grey);margin-top:6px">15개 중 가장 싼 5개는 서비스(0원), 최대 33% 할인</span></div></div>`;
+    h += `<div class="evsec">맛 고르기 (${n}/15)</div><div class="grid">${pool.map((g) => evCard(g.id, DSP_IMG[g.model] || "", g.n, g.model, g.price, false)).join("")}</div>`;
+    $('evGo').textContent = done ? `15개 담기, ${won(dspTotal())}` : `${15 - n}개 더 골라 주세요`;
+  }
+  $('evB').innerHTML = h; $('evBar').style.width = Math.min(100, n / EV.need * 100) + "%"; $('evGo').disabled = !done;
+}
+$('evB').onclick = (e) => {
+  const m = e.target.closest('[data-em]'), c = e.target.closest('[data-ec]'), q = e.target.closest('[data-bq]'), f = e.target.closest('[data-fill]'), it = e.target.closest('[data-e]');
+  const st = $('evB').scrollTop;
+  if (m) { const id = m.dataset.em, v = (EV.pick.get(id) || 0) - 1; v > 0 ? EV.pick.set(id, v) : EV.pick.delete(id); }
+  else if (c) EV.color = c.dataset.ec;
+  else if (q) { EV.need = +q.dataset.bq; while (pickN() > EV.need) { const last = [...EV.pick.keys()].pop(); const v = EV.pick.get(last) - 1; v > 0 ? EV.pick.set(last, v) : EV.pick.delete(last); } }
+  else if (f) { const pool = (EV.k === "H" ? LQ.filter((x) => /빌런/.test(x.n)) : BULK_POOL.filter(isVL)).filter((x) => posOf(x.n)); let i = 0; while (pickN() < EV.need && pool.length) { const x = pool[i++ % pool.length]; EV.pick.set(x.id, (EV.pick.get(x.id) || 0) + 1); } }
+  else if (it && it.dataset.e) { if (pickN() >= EV.need) return toast(`${EV.need}${EV.k === "D" ? "개" : "병"}을 다 골랐어요`); EV.pick.set(it.dataset.e, (EV.pick.get(it.dataset.e) || 0) + 1); }
+  else return;
+  drawEv(); $('evB').scrollTop = st;
+};
+$('evGo').onclick = () => { if (pickN() !== EV.need) return;
+  if (EV.k === "H") { const d = devOpts("하복2").find((o) => o.opt === EV.color);
+    addItem(d.id, { k: "dev", n: d.n, label: d.n, img: DEV_IMG.하복2[EV.color], unit: d.price, model: "하복2" });
+    for (const [id, q] of EV.pick) { const x = LQ.find((y) => y.id === id); addItem(id, { k: "liq", n: x.n, label: short(x.n), img: imgOf(x), unit: 15000 }, q); } }
+  if (EV.k === "B") { const items = [...EV.pick].map(([id, q]) => { const x = BULK_POOL.find((y) => y.id === id); return [x.n, short(x.n), q]; });
+    addItem("bulk" + Date.now(), { k: "bulk", n: "대량구매 " + EV.need + "병", label: "대량구매 " + EV.need + "병", img: imgOf(BULK_POOL.find((y) => y.id === [...EV.pick.keys()][0])), unit: BULK[EV.need], items }); }
+  if (EV.k === "D") { const items = [...EV.pick].map(([id, q]) => { const g = GDS.find((x) => x.id === id); return [g.n, g.n, q, g.price]; });
+    addItem("dsp" + Date.now(), { k: "dsp15", n: "", label: "일회용 10+5 (15개)", img: DSP_IMG[GDS.find((x) => x.id === [...EV.pick.keys()][0]).model], unit: dspTotal(), items }); }
+  closeEv(); toast("담았어요"); setTimeout(() => document.body.classList.add('open'), 350);
+};
+// 직원 화면: 이벤트 묶음
+function evStaff(x, i) {
+  if (x.k === "bulk") return stp(i, x.label + " 찍기", "묶음 상품으로 돈 받고, 액상은 전부 서비스(0원)") + blk(x.n, won(x.unit), x.n, x.qty) + x.items.map(([n, l, q]) => blk(l, '<b style="color:var(--red)">서비스(0원)</b>', n, q * x.qty, q * x.qty)).join("");
+  // 일회용 10+5: 가장 싼 5개 서비스
+  const units = x.items.flatMap(([n, l, q, p]) => Array(q).fill([n, p])).sort((a, b) => a[1] - b[1]); const free = {}; units.slice(0, 5).forEach(([n]) => free[n] = (free[n] || 0) + 1);
+  return stp(i, "일회용 10+5 찍기", "포스 묶음 상품이 없어서 낱개로, 가장 싼 5개는 서비스(0원)") + x.items.map(([n, l, q, p]) => blk(l, won(p) + (free[n] ? ` <b style="color:var(--red)">서비스(0원) ${free[n] >= q ? "전부" : free[n] + "개"}</b>` : ""), n, q, free[n] || 0)).join("");
+}
+document.querySelector('.dim').addEventListener('click', closeEv);
 
 // 일회용: A그룹 아님, 이번엔 보기만 (판매 연결은 다음 단계)
 const dcard = (n, img, p) => `<div class="it"><span class="badge">10+5</span><div class="im"><img src="${img}" alt="" loading="lazy"></div><div class="nm">${n}</div><div class="fl">여러 맛</div><div class="bt"><span class="price">${won(p)}</span></div></div>`;
