@@ -142,6 +142,9 @@
 @media (max-width:899px){.ops.sv td:nth-child(2)::before{content:"A그룹"}.ops.sv td:nth-child(3)::before{content:"B그룹"}.ops.sv td:nth-child(4)::before{content:"일회용"}.ops.sv td:nth-child(5)::before{content:"기기 A"}
   .sec.svsec{flex-wrap:wrap}.sec.svsec small{flex-basis:100%;margin-top:2px}.ops.sv tr{grid-template-columns:repeat(4,minmax(0,1fr))}.ops.sv td small{display:block;font-size:11px;color:var(--sub);font-weight:500}
   .kpis{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 0 12px}.kpi{background:var(--card);border-radius:18px;padding:16px 18px;text-align:left;width:100%;display:block}.kpi .num{font-size:22px!important;font-weight:800;letter-spacing:-.6px;margin-top:4px}.kpi .eyebrow{margin-bottom:4px;font-size:13px}.kpi .caption{margin-top:6px;font-size:13px}}
+.item.svr{min-height:56px}.item.svr .tx span{white-space:normal}.item.svr .val{flex:0 0 auto;max-width:44%;font-size:14px;font-weight:600;color:var(--ink2);white-space:normal}.item.svr .val small{display:block;font-size:12px;font-weight:600;color:var(--sub)}.item.svr .val small.t-good{color:var(--green)}
+.item.opm{min-height:52px;padding-top:10px;padding-bottom:10px}.item.opm .tx b{font-size:15px}.item.opm .tx span{white-space:normal}.item.opm .tx em{font-style:normal;font-weight:600}.item.opm .val{font-size:13px}.item.opm .val b{font-size:13px;font-weight:700}.item.opm .val span{display:block;font-size:12px}
+@media (max-width:700px){.hstat{grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}.hstat div{min-height:72px;padding:12px 14px}.hstat span{font-size:12px}.hstat b{font-size:20px;margin-top:4px}}
 @media (min-width:900px){.sec.svsec{margin-top:22px}.cols.sv+.sec.svsec{margin-top:22px}.cols.sv .sec.svsec{margin-top:0}.cols.sv{margin-bottom:8px}.ops.sv td,.ops.sv th{padding-left:14px;padding-right:14px}.ops.sv td{height:48px}}
 /* 폰: 표 대신 지점마다 카드 (지점 이름 한 줄 + 칸 3열) */
 @media (max-width:899px){
@@ -730,7 +733,7 @@ function botMiniHtml() {
   const dot = (ok) => `<span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${ok ? "var(--green)" : "var(--red)"}"></span>`;
   return `<button id="botmini" data-tab="office" title="사무실에서 자세히" style="display:inline-flex;gap:14px;align-items:center;font-size:13px;font-weight:600;color:var(--sub);background:none;padding:2px 0 10px">${dot(ops)} 운영봇 ${dot(mas)} 마스터봇${BOT.adj ? ` ${dot(!dead && BOT.adj.ok && Object.values(BOT.adj.br || {}).every((v) => v.login))} 조정봇` : ""}${BOT.bsQ ? ` <span class="t-bad">시트 밀림 ${BOT.bsQ}</span>` : ""}</button>`;
 }
-function homeHtml() { return `<div style="padding-top:6px">${botWarn()}${statHtml()}${issuesHtml()}${opsHtml()}</div>`; }
+function homeHtml() { return `<div style="padding-top:6px">${botWarn()}${statHtml()}${issuesHtml()}${opsMobileHtml()}</div>`; }
 // ── 마감 보고 (직원앱 시재 + 포스 숫자) ──
 const won = (n) => Math.round(+n || 0).toLocaleString("ko-KR");
 function closingAllHtml() { return `<div class="pchead"><h1>마감 보고</h1><div class="caption">최근 40건, 누르면 보고문 전체</div></div>${closingListHtml(40) || '<div class="empty">아직 마감 보고가 없어요</div>'}`; }
@@ -806,8 +809,7 @@ function bindSparks() {
 const REP_TXT = (t) => !t ? "" : t.rep === "once" ? `${t.date.slice(5).replace("-", "/")} 한 번` : t.rep === "daily" ? "매일" : t.rep === "weekly" ? `매주 ${(t.dow || []).slice().sort((a, b) => ((a + 6) % 7) - ((b + 6) % 7)).map((d) => WD[d]).join(", ")}` : `매월 ${t.dom}일`;
 // ── 재고조사 (직원앱에서 센 수량 ↔ 포스 수량). [승인](포스 반영)은 아직 꺼 둠 ──
 const SVST = { wait: ["승인 대기", "blue"], reject: ["반려", "gray"], done: ["반영 완료", "good"] };
-// 10/27 사장님 "보기 불편": 재고조사 탭 = 왼쪽 A그룹 카드(품절/있음을 글자로), 오른쪽 지점×그룹 표, 아래 오늘 재고보고 현황(운영봇 stockRep). 승인형 재고조사 카드는 뺌(지난 기록이 있을 때만 아래)
-const SVG = ["프리미엄 A", "프리미엄 B", "일회용", "기기 A"];
+// 10/27 사장님 "보기 불편": 재고조사 탭 = 왼쪽 A그룹 카드(품절/있음을 글자로) + 지점당 한 줄(A그룹 품절, 오늘 재고보고와 조정 결과). 표와 %는 뺌(지점 상세에서), 승인형 재고조사 카드도 뺌(기록 있을 때만 아래)
 function surveyHtml() {
   const con = D.branches.filter((x) => x.connected);
   const aOut = con.flatMap((x) => G(x, "프리미엄 A").out.map((o) => ({ ...o, b: x.b }))), aTotal = G(con[0] || {}, "프리미엄 A").total, names = [...new Set(aOut.map((o) => o.n))];
@@ -816,38 +818,45 @@ function surveyHtml() {
     <div class="caption">A그룹 ${aTotal}종, 지점 ${con.length}곳 기준</div>
     ${names.length ? `<div class="list" style="margin:14px -20px -8px;background:none">${names.map((n) => { const xs = aOut.filter((o) => o.n === n), has = [...new Set(xs.flatMap((o) => o.others))];
       return `<div class="item" style="align-items:flex-start"><div class="av bad">${xs.length}</div><div class="tx"><b>${esc(n)}</b><span style="white-space:normal;color:var(--red);font-weight:600">품절: ${xs.map((o) => esc(o.b)).join(", ")}</span><span style="white-space:normal">${has.length ? "있음: " + has.map(esc).join(", ") : "재고 있는 지점이 없어요"}</span></div></div>`; }).join("")}</div>` : ""}</div>`;
-  // 지점 × 그룹 표: 칸 = 품절 종수, 작은 글씨 = 전체 종수와 %. 그룹마다 제일 심한 지점만 빨강, 0은 회색
-  const pc = (x, g) => { const r = G(x, g); return r.total ? r.out.length / r.total : 0; };
-  const worst = Object.fromEntries(SVG.map((g) => [g, Math.max(0, ...con.map((x) => pc(x, g)))]));
-  const cell = (x, g) => { const r = G(x, g); if (!r.total) return '<td class="n">-</td>'; const q = pc(x, g); return `<td class="${!r.out.length ? "n" : q === worst[g] ? "r" : ""}">${r.out.length ? `<b>${r.out.length}</b>` : "0"}<small>${r.total}종, ${Math.round(q * 100)}%</small></td>`; };
-  const tot = SVG.map((g) => { const n = con.reduce((a, x) => a + G(x, g).out.length, 0), t = con.reduce((a, x) => a + G(x, g).total, 0); return `<td><b>${n}</b><small>${t}종, ${t ? Math.round((n / t) * 100) : 0}%</small></td>`; });
-  const table = `<div class="sec svsec">지점별 품절 <small>칸 = 품절 종수, 그룹마다 제일 심한 지점이 빨강</small></div><div class="opsw"><table class="ops sv" style="min-width:0"><thead><tr><th>지점</th>${SVG.map((g) => `<th>${esc(GNAME[g])}</th>`).join("")}</tr></thead><tbody>
-    ${BR.map((b, i) => { const x = D.branches.find((y) => y.b === b); if (!x || !x.connected) return `<tr><td><b>${i + 1} ${esc(b)}</b></td><td colspan="4" class="n" style="text-align:left">포스 연결 전</td></tr>`; return `<tr class="cl" data-svbr="${esc(b)}"><td><b>${i + 1} ${esc(b)}</b></td>${SVG.map((g) => cell(x, g)).join("")}</tr>`; }).join("")}
-    <tr class="tot"><td><b>합계</b><small>지점 ${con.length}곳</small></td>${tot.join("")}</tr></tbody></table></div>`;
-  return `<div class="cols sv"><div>${hero}</div><div>${table}</div></div>${stockRepHtml()}${oldSurveyHtml()}`;
+  return `<div class="cols sv"><div>${hero}</div><div>${svRowsHtml()}</div></div>${oldSurveyHtml()}`;
 }
-function stockRepHtml() {
-  const SR = D.stockRep;
-  const cards = BR.map((b, i) => { const s = SR ? SR[b] : null, a = s && s.adj;
-    const cap = !s ? "오늘 재고보고 전" : !a ? "조정 결과 기다리는 중" : !a.ok ? `실패: ${esc(a.err)}` : a.st === "nochange" ? "포스와 모두 같음" : `${a.n}개 조정 확정${a.miss ? `, 대응 없음 ${a.miss}` : ""}${a.skip ? `, 묶음 제외 ${a.skip}` : ""}`;
-    const k = !s || !a ? "" : !a.ok ? "t-bad" : "t-good";
-    return `<button class="kpi" data-srb="${esc(b)}"${!s ? ' style="opacity:.55"' : ""}><div class="eyebrow">${i + 1} ${esc(b)}${s ? `, ${esc(s.by)}` : ""}</div><div class="num" style="font-size:28px">${s ? esc(s.t) : "안 옴"}</div><div class="caption ${k}">${cap}</div></button>`; });
-  return `<div class="sec svsec">오늘 재고보고 현황 <small>아침 보고 숫자로 포스 재고를 바로 맞춰요, 칸을 누르면 바뀐 상품</small></div>${SR ? `<div class="kpis">${cards.join("")}</div>` : '<div class="card"><div class="caption" style="margin:0">운영봇이 새로 켜진 뒤부터 여기에 보여요</div></div>'}`;
+// 지점당 한 줄: 왼쪽 번호+지점, 가운데 A그룹 품절 상품명(없으면 "모두 있음"), 오른쪽 오늘 재고보고(시각, 조정 수 / 안 옴 / 실패). 누르면 지점 상세 + 바뀐 상품
+function svRowsHtml() {
+  const SR = D.stockRep || null;
+  const rows = BR.map((b, i) => {
+    const x = D.branches.find((y) => y.b === b), con = !!(x && x.connected), out = con ? G(x, "프리미엄 A").out.map((o) => o.n) : [];
+    const s = SR ? SR[b] : null, a = s && s.adj;
+    const rep = !SR ? '<span class="t-sub">보고 현황 준비 중</span>' : !s ? '<span class="t-sub">보고 안 옴</span>' : !a ? `${esc(s.t)} 보고<small>조정 기다리는 중</small>` : !a.ok ? `<span class="t-bad">${esc(s.t)} 보고<small>조정 실패</small></span>` : a.st === "nochange" ? `${esc(s.t)} 보고<small class="t-good">포스와 같음</small>` : `${esc(s.t)} 보고<small class="t-good">${a.n}개 조정</small>`;
+    const mid = !con ? '<span class="t-sub">포스 연결 전</span>' : out.length ? `<span class="t-bad">품절 ${out.length}: ${out.map(esc).join(", ")}</span>` : '<span class="t-good">A그룹 모두 있음</span>';
+    return `<button class="item svr" data-svbr="${esc(b)}"><div class="av ${!con ? "" : out.length ? "bad" : "good"}">${i + 1}</div><div class="tx"><b>${esc(b)}</b><span>${mid}</span></div><div class="val">${rep}</div><span class="chev">›</span></button>`;
+  });
+  return `<div class="sec svsec">지점별 <small>A그룹 품절과 오늘 재고보고, 누르면 상세</small></div><div class="list">${rows.join("")}</div>`;
 }
-function sheetStockRep(b) {
-  const s = D.stockRep?.[b]; if (!s) return toast("오늘 재고보고가 아직 없어요");
+// 지점 상세(기존) 아래에 오늘 재고보고에서 바뀐 상품을 붙임
+function stockRepBlock(b) {
+  const s = D.stockRep?.[b]; if (!s) return "";
   const a = s.adj, rows = a?.rows || [];
-  openSheet(`<div class="eyebrow">${esc(ho(b))}, ${esc(s.by)}, ${esc(s.t)}</div><h3>${!a ? "조정 결과를 기다리는 중이에요" : !a.ok ? '포스 조정이 <span class="t-bad">실패</span>했어요' : a.st === "nochange" ? "포스와 모두 같았어요" : `${a.n}개를 포스에 맞췄어요`}</h3>
-    <div class="caption">${s.n}개 품목 보고${a ? `, 조정 ${esc(a.at)}` : ""}${a && !a.ok ? `<br>${esc(a.err)}` : ""}${a && a.skip ? `<br>직접 안 센 묶음 ${a.skip}개는 조정 안 함` : ""}</div>
-    ${rows.length ? `<div class="list">${rows.map(([n, cur, cnt, d]) => `<div class="item"><div class="tx"><b>${esc(n)}</b><span>포스 ${cur} → 센 수량 ${cnt}</span></div><div class="val"><b class="${d < 0 ? "t-bad" : "t-good"}">${d > 0 ? "+" : ""}${d}</b></div></div>`).join("")}</div>` : ""}
-    <div class="btns"><button class="btn gray" data-x>닫기</button></div>`);
+  return `<div class="lbl">오늘 재고보고 <span style="font-weight:500">${esc(s.by)}, ${esc(s.t)}, ${s.n}개 품목</span></div>
+    <div class="caption" style="margin:0 0 6px">${!a ? "조정 결과를 기다리는 중이에요" : !a.ok ? `<span class="t-bad">포스 조정 실패</span>, ${esc(a.err)}` : a.st === "nochange" ? "포스와 모두 같았어요" : `${a.n}개를 포스에 맞췄어요 (${esc(a.at)})`}${a && a.miss ? `, 대응 상품 없음 ${a.miss}` : ""}${a && a.skip ? `, 직접 안 센 묶음 ${a.skip}개는 조정 안 함` : ""}</div>
+    ${rows.length ? `<div class="list" style="margin-top:0">${rows.map(([n, cur, cnt, d]) => `<div class="item" style="padding-top:9px;padding-bottom:9px"><div class="tx"><b style="font-size:15px">${esc(n)}</b><span>포스 ${cur} → 센 수량 ${cnt}</span></div><div class="val"><b class="${d < 0 ? "t-bad" : "t-good"}">${d > 0 ? "+" : ""}${d}</b></div></div>`).join("")}</div>` : ""}`;
 }
+function sheetSurveyBranch(b) { openSheet(branchHtml(b, "프리미엄 A") + stockRepBlock(b)); bindSparks(); }
 function oldSurveyHtml() {
   const L = D.surveys || []; if (!L.length) return "";
   return `<div class="sec">지난 재고조사 <small>${L.length}건, 승인형(지금은 안 씀)</small></div><div class="list">${L.map((v) => { const df = v.items.filter((r) => r.diff).length, [stt, k] = SVST[v.status] || ["", ""];
       return `<button class="item" data-sv="${v.id}"><div class="av ${df ? (v.status === "wait" ? "warn" : "") : "good"}">${BR.indexOf(v.branch) + 1}</div>
         <div class="tx"><b>${esc(v.branch)}, ${esc(v.cat)}</b><span>${esc(v.by)}, ${v.d.slice(5).replace("-", "/")} ${v.t}, ${v.items.length}개 셈</span></div>
         <div class="val"><b>${df ? `${df}개 다름` : "모두 같음"}</b><span class="t-${k === "good" ? "good" : "sub"}">${stt}</span></div><span class="chev">›</span></button>`; }).join("")}</div>`;
+}
+// 10/27 폰 홈: 지점 표 대신 지점당 한 줄(매출, 객수 / 오픈 또는 마감 시각). 차액, 준비금 이상은 그 줄에 빨간 글씨. 누르면 상세
+function opsMobileHtml() {
+  if (!D.ops) return "";
+  const rows = D.ops.map((o) => { const c = o.close, L = !c && o.live ? o.live : null, s = c ? +c.총 || 0 : L ? L.sales : 0, n = c ? +c.bills || 0 : L ? L.bills : 0;
+    const warn = [o.prepDiff ? `준비금 ${o.prepDiff > 0 ? "+" : ""}${won(o.prepDiff)}` : "", c && c.diff ? `현금 차액 ${c.diff > 0 ? "+" : ""}${won(c.diff)}` : "", c && c.warn ? `확인 ${c.warn}건` : ""].filter(Boolean);
+    const right = c ? `<b class="${c.warn ? "t-bad" : "t-good"}">마감 ${esc(c.at)}</b>` : o.open ? `<b class="${o.late ? "t-bad" : ""}">오픈 ${esc(o.open)}</b>${o.late ? `<span class="t-bad">${o.late}분 늦음</span>` : ""}` : '<b class="t-sub">오픈 안 함</b>';
+    return `<button class="item opm" data-brpc="${esc(o.b)}"><div class="tx"><b>${BR.indexOf(o.b) + 1} ${esc(o.b)}</b><span>${s ? `${m1(s)}, ${n}명` : "아직 매출 없음"}${warn.length ? `<em class="t-bad">, ${warn.join(", ")}</em>` : ""}</span></div><div class="val">${right}</div><span class="chev">›</span></button>`; }).join("");
+  const done = D.ops.filter((o) => o.close).length;
+  return `<div class="sec">지점 한눈에 <small>${done}/${D.ops.length}곳 마감 보고, 누르면 상세</small></div><div class="list">${rows}</div>`;
 }
 function sheetSurvey(id) {
   const v = D.surveys.find((x) => x.id === id), df = v.items.filter((r) => r.diff), same = v.items.filter((r) => r.diff === 0).length, unk = v.items.filter((r) => r.pos == null);
@@ -1028,7 +1037,8 @@ document.addEventListener("click", async (e) => {
   if (t.dataset.brg) return usePanel() && panelKeep.includes("data-brpc") === false && panelKeep.includes("오늘 마감") ? panelBranch(t.dataset.b, t.dataset.brg) : sheetBranch(t.dataset.b, t.dataset.brg);
   if (t.dataset.br) return sheetBranch(t.dataset.br, "프리미엄 A");
   if (t.dataset.srb) return sheetStockRep(t.dataset.srb);
-  if (t.dataset.svbr) return sheetBranch(t.dataset.svbr, "프리미엄 A");
+  if (t.dataset.svbr) return sheetSurveyBranch(t.dataset.svbr);
+  if (t.dataset.brpc) return sheetBranch(t.dataset.brpc, "프리미엄 A");
   if (t.dataset.sv) return sheetSurvey(t.dataset.sv);
   if (t.dataset.cl !== undefined) return sheetClosing(+t.dataset.cl);
   if (a === "copyrpt") { try { await navigator.clipboard.writeText($("#rpt").textContent); toast("복사했어요, 카톡에 붙여 넣으면 돼요"); } catch { toast("복사하지 못했어요, 길게 눌러 복사해 주세요"); } return; }
