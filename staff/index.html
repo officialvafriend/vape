@@ -236,7 +236,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.27-13";
+const VER = "10.27-14";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍", "동성로2"];
@@ -1421,7 +1421,7 @@ async function loadRelay() {
     if (JSON.stringify(next) !== JSON.stringify(BOARD)) { BOARD = next; cacheSet("board", next); bgRender(); decAll(); }
   } catch {}
 }
-function relayTick() { const open = [...(BOARD?.sends || []), ...(BOARD?.parcels || [])].some((r) => !["done", "cancel"].includes(r.st)); loadRelay().finally(() => setTimeout(relayTick, open ? 5000 : 15000)); }
+function relayTick() { const open = [...(BOARD?.sends || []), ...(BOARD?.parcels || [])].some((r) => !["done", "cancel"].includes(r.st)); loadRelay().finally(() => setTimeout(relayTick, open || VIEW === "game" ? 4000 : 15000)); } // 게임 화면은 판 수, 랭킹이 바로 바뀌게
 async function loadBoard() {
   try {
     const j = await ghJson("board.json");
@@ -2150,6 +2150,17 @@ function crDraw() {
 const addDay = (n) => new Date(Date.parse(todayKey()) + n * 864e5).toISOString().slice(0, 10);
 const crDueSync = () => {};
 document.addEventListener("keydown", (e) => { if (e.key === "Enter" && e.target?.id === "ulPw") doUnlock(); if (e.key === "Enter" && e.target?.id === "keyUrl" && !$("#okKey")?.disabled) doKey(); if (e.key === "Enter" && e.target?.id === "rplAmt") { e.preventDefault(); rplAmtCopy(); } });
+// 10/27 동성로 "게임 칸이 없네"(예전 버전이 떠 있음): 3분마다 사이트의 버전을 보고, 새 버전이면 쓰고 있지 않을 때 알아서 새로고침
+async function verCheck() {
+  if (document.visibilityState !== "visible") return;
+  try {
+    const h = await (await fetch(location.pathname + "?vc=" + Date.now(), { cache: "no-store" })).text(), v = (h.match(/const VER = "([^"]+)"/) || [])[1];
+    if (!v || v === VER) return;
+    const busy = $("#dim")?.classList.contains("on") || $("#gameLayer")?.style.display === "block" || Date.now() - TOUCH < 60e3 || /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName || "");
+    if (!busy) location.reload();
+  } catch {}
+}
+setInterval(verCheck, 180e3); setTimeout(verCheck, 20e3); document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") verCheck(); });
 let A2QT = 0, RQT = 0;
 document.addEventListener("input", (e) => {
   if (e.target?.id === "rplQ") { RQ = e.target.value; clearTimeout(RQT); RQT = setTimeout(() => { render(); const q = $("#rplQ"); if (q) { q.focus(); q.setSelectionRange(q.value.length, q.value.length); } }, 300); return; }
@@ -2209,7 +2220,7 @@ function gameOpen() {
   L.innerHTML = `<iframe src="../game/smoke.html?embed=1&v=${VER}" style="width:100%;height:100%;border:0" allow="autoplay"></iframe><button id="gX" style="position:absolute;top:10px;right:12px;background:rgba(255,255,255,.12);color:#fff;border-radius:10px;padding:6px 10px;font-weight:800">✕ 닫기</button>`;
   $("#gX").onclick = gameClose;
 }
-function gameClose() { const L = $("#gameLayer"); if (L) { L.innerHTML = ""; L.style.display = "none"; } render(); }
+function gameClose() { const L = $("#gameLayer"); if (L) { L.innerHTML = ""; L.style.display = "none"; } render(); loadRelay(); setTimeout(loadRelay, 2500); }
 addEventListener("message", async (e) => {
   const m = e.data; if (!m || !m.vfGame || !GAME.me) return;
   if (m.t === "start") { const k = `${todayKey()}|${GAME.me}`; GAME.local[k] = gUsed(GAME.me) + 1; for (const x of Object.keys(GAME.local)) if (!x.startsWith(todayKey())) delete GAME.local[x]; ls.set("vf-game-local", GAME.local); try { await send({ type: "gstart", by: GAME.me }); } catch {} }
