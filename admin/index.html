@@ -870,12 +870,47 @@ function sheetSurvey(id) {
       <div class="caption" style="text-align:center">포스 반영은 시험이 끝나면 켜져요, 지금은 눌러도 반영되지 않아요</div>`
       : `<div class="caption" style="margin-top:16px">${SVST[v.status]?.[0] || ""}${v.why ? ", " + esc(v.why) : ""}${v.doneAt ? ", " + esc(v.doneAt) : ""}</div><div class="btns"><button class="btn gray" data-x>닫기</button></div>`}`);
 }
+// 10/27 사장님 "이 모든 걸 하나의 칸으로": 업무 탭 = 카드 하나, 위쪽 탭 나눠 주기 / 진행 중 / 완료. 공지 입력은 버튼 뒤(아래에서 올라오는 창), 블로그 발행과 공지도 진행 중, 완료에 같이. 완료는 최근 7일(운영봇 taskHist)
+let tkTab = ls.get("vf-admin-tktab") || "run";
+const dLabel = (d) => `${+d.slice(5, 7)}/${+d.slice(8)}(${"일월화수목금토"[new Date(d + "T00:00:00Z").getUTCDay()]})`;
 function tasksHtml() {
-  return `${noticeAdmHtml()}${tasksCardHtml()}${blogAdmHtml()}${D.matrix.length ? `<div class="sec">오늘 할 일 <small>${D.matrix.length}개</small></div><div class="list">${D.matrix.map(taskRow).join("")}</div>` : ""}<div class="card"><div class="eyebrow">업무 분배</div><div class="headline">지점에 할 일을<br>나눠 줄 수 있어요</div><div class="caption">정한 날 그 지점 직원앱 '오늘 할 일'에 떠요.<br>직원이 [완료]를 누르면 여기서 바로 보여요.</div>
-      <div class="btns"><button class="btn" data-act="tnew">＋ 새 업무 만들기</button></div></div>
-    <div class="sec">등록된 업무 <small>${D.tasks.length}개</small></div>
-    <div class="list">${D.tasks.length ? D.tasks.map((t) => `<button class="item" data-tedit="${t.id}"><div class="av blue">${t.rep === "daily" ? "매일" : t.rep === "weekly" ? "주" : t.rep === "monthly" ? "월" : "1"}</div>
+  const bl = (D.blogs || []).filter((x) => x.date >= addDays(D.d, -7)), blToday = bl.filter((x) => x.date === D.d);
+  const tDone = D.branches.reduce((a, x) => a + (x.tasks?.done || 0), 0) + blToday.filter((x) => x.done).length, tAll = D.branches.reduce((a, x) => a + (x.tasks?.total || 0), 0) + blToday.length, pct = tAll ? Math.round((tDone / tAll) * 100) : 0;
+  const run = [], done = [];
+  for (const t of D.matrix || []) { const due = Object.entries(t.br).filter(([, v]) => v !== null && v !== undefined); if (!due.length) continue; const dn = due.filter(([, v]) => v); (dn.length === due.length ? done : run).push({ k: "task", d: D.d, t }); }
+  for (const n of D.notices || []) { if (n.off || n.d < addDays(D.d, -7)) continue; const ok = n.br.filter((b) => n.ok?.[b]); (ok.length === n.br.length ? done : run).push({ k: "notice", d: n.d, n }); }
+  for (const d of [...new Set(bl.map((x) => x.date))]) { const xs = bl.filter((x) => x.date === d), ok = xs.filter((x) => x.done); if (d > D.d) run.push({ k: "blogNext", d, xs }); else if (ok.length === xs.length) done.push({ k: "blog", d, xs }); else run.push({ k: "blog", d, xs }); }
+  for (const h of D.taskHist || []) if (h.done.length >= h.n) done.push({ k: "hist", d: h.d, h });
+  run.sort((a, b2) => a.d.localeCompare(b2.d)); done.sort((a, b2) => b2.d.localeCompare(a.d));
+  const nm = (b) => `${BR.indexOf(b) + 1} ${esc(b)}`;
+  const row = (it) => {
+    if (it.k === "task") return taskRow(it.t);
+    if (it.k === "hist") return `<div class="item"><div class="av good">✓</div><div class="tx"><b>${esc(it.h.title)}</b><span>${dLabel(it.d)}, ${it.h.done.length}곳 완료</span></div></div>`;
+    if (it.k === "notice") { const n = it.n, ok = n.br.filter((b) => n.ok?.[b]), no = n.br.filter((b) => !n.ok?.[b]); return `<div class="item" style="align-items:flex-start"><div class="av ${no.length ? "blue" : "good"}">${no.length ? "📢" : "✓"}</div><div class="tx"><b>${esc(n.title)}</b><span style="white-space:normal">공지 ${dLabel(n.d)} ${esc(n.t)}, 확인 ${ok.length}/${n.br.length}곳${no.length ? `, 아직: ${no.map(nm).join(", ")}` : ""}</span></div>${no.length ? `<button class="btn gray" style="flex:0 0 64px;height:36px" data-ntoff="${n.id}">내리기</button>` : ""}</div>`; }
+    if (it.k === "blogNext") return `<div class="item"><div class="av blue">📝</div><div class="tx"><b>다음 블로그 발행 ${dLabel(it.d)}</b><span>${it.xs.length}곳 지시문 올라가 있어요</span></div></div>`;
+    const ok = it.xs.filter((x) => x.done), no = it.xs.filter((x) => !x.done);
+    return `<div class="item" style="align-items:flex-start"><div class="av ${no.length ? "blue" : "good"}">${no.length ? "📝" : "✓"}</div><div class="tx"><b>블로그 발행 ${dLabel(it.d)}</b><span style="white-space:normal">${it.xs.length}곳 중 ${ok.length}곳 올림${no.length ? `, 아직: ${no.map((x) => nm(x.b)).join(", ")}` : ""}${ok.length ? `<br>올림: ${ok.map((x) => `<a href="${esc(x.done.link)}" target="_blank" rel="noopener" style="color:var(--blue);font-weight:700">${nm(x.b)}</a>`).join(", ")}` : ""}</span></div></div>`;
+  };
+  const give = `<div class="btns" style="margin-top:14px"><button class="btn" data-act="tnew" style="height:50px;font-size:16px">＋ 새 업무</button><button class="btn sec2" data-act="ntnew" style="height:50px;font-size:16px">＋ 공지</button></div>
+    <div class="lbl" style="margin:18px 0 6px">등록된 업무 <span style="font-weight:500">${D.tasks.length}개, 누르면 고치기</span></div>
+    <div class="list" style="margin:0 -20px -8px;background:none">${D.tasks.length ? D.tasks.map((t) => `<button class="item" data-tedit="${t.id}"><div class="av blue">${t.rep === "daily" ? "매일" : t.rep === "weekly" ? "주" : t.rep === "monthly" ? "월" : "1"}</div>
       <div class="tx"><b>${esc(t.title)}</b><span>${esc(REP_TXT(t))}${t.time ? ", " + esc(t.time) : ""}, ${t.br.length === 8 ? "전 지점" : t.br.map(esc).join(", ")}</span></div><span class="chev">›</span></button>`).join("") : '<div class="empty">아직 없어요</div>'}</div>`;
+  const runL = run.length ? `<div class="list" style="margin:8px -20px -8px;background:none">${run.map(row).join("")}</div>` : '<div class="empty" style="padding:16px 0 4px">진행 중인 게 없어요</div>';
+  const doneL = done.length ? `<div class="list" style="margin:8px -20px -8px;background:none">${done.slice(0, 80).map(row).join("")}</div>` : '<div class="empty" style="padding:16px 0 4px">최근 7일에 끝난 게 없어요</div>';
+  return `<div class="card"><div class="eyebrow">업무</div>
+    <div class="headline">${tAll ? (tDone === tAll ? `오늘 할 일 <em>모두 끝났어요</em>` : `오늘 할 일 ${tAll}개 중 <em>${tDone}개</em> 끝났어요`) : "오늘 예정된 일이 없어요"}</div>
+    ${tAll ? `<div class="bar"><i style="width:${pct}%"></i></div>` : ""}
+    <div class="seg" style="margin-top:18px"><button class="${tkTab === "give" ? "on" : ""}" data-tktab="give">나눠 주기</button><button class="${tkTab === "run" ? "on" : ""}" data-tktab="run">진행 중${run.length ? ` ${run.length}` : ""}</button><button class="${tkTab === "done" ? "on" : ""}" data-tktab="done">완료${done.length ? ` ${done.length}` : ""}</button></div>
+    ${tkTab === "give" ? give : tkTab === "run" ? runL : doneL}</div>`;
+}
+const addDays = (d, n) => { const x = new Date(d + "T00:00:00Z"); x.setUTCDate(x.getUTCDate() + n); return x.toISOString().slice(0, 10); };
+function sheetNotice() {
+  openSheet(`<h3>직원웹 공지</h3><div class="caption">지점 직원웹에 팝업으로 뜨고, 지점이 [확인했어요]를 누르면 진행 중에서 완료로 넘어가요</div>
+    <div class="lbl">제목</div><input class="in" id="ntTitle" maxlength="60" placeholder="예: 블로그 단톡방 정리 안내">
+    <div class="lbl">내용</div><textarea class="in" id="ntBody" rows="6" maxlength="1200" placeholder="내용" style="width:100%;height:auto;padding:12px"></textarea>
+    <div class="lbl">어느 지점</div><div class="chips"><button class="chip ${NTBR.size === 8 ? "on" : ""}" data-ntall>전체</button>${BR.map((b) => `<button class="chip ${NTBR.has(b) ? "on" : ""}" data-ntb="${b}">${esc(b)}</button>`).join("")}</div>
+    <div class="btns"><button class="btn gray" data-x style="flex:0 0 96px">닫기</button><button class="btn" data-act="ntsend">공지 올리기</button></div>`);
+  $("#ntTitle").focus();
 }
 function sheetTask() {
   const t = editTask;
@@ -997,6 +1032,7 @@ document.addEventListener("click", async (e) => {
   const t = e.target.closest("button,tr[data-brpc]"); if (!t) return;
   if (t.tagName === "TR") return isPC() ? panelBranch(t.dataset.brpc, "프리미엄 A") : sheetBranch(t.dataset.brpc, "프리미엄 A");
   if (t.id === "go") return tryLogin();
+  if (t.dataset.tktab) { tkTab = t.dataset.tktab; ls.set("vf-admin-tktab", tkTab); return render(); }
   if (t.dataset.gf) { grpF = t.dataset.gf; return render(); }
   if (t.dataset.gbr !== undefined || t.dataset.gbrall !== undefined) { const n = t.dataset.gbr ?? t.dataset.gbrall, ed = grpEd(); if (!ed[n]) return; const cur = gBr(ed[n]); ed[n].br = t.dataset.gbrall !== undefined ? (cur.length === BR.length ? [] : [...BR]) : (cur.includes(t.dataset.b) ? cur.filter((x) => x !== t.dataset.b) : BR.filter((x) => cur.includes(x) || x === t.dataset.b)); grpSave(ed); const y = scrollY; render(); scrollTo(0, y); return; }
   if (t.dataset.act === "gbulk") { const to = $("#gbulk").value, map = D.grp?.map || {}, ed = grpEd(); let k = 0; document.querySelectorAll("[data-gn]").forEach((s) => { const n = s.dataset.gn; if (map[n] === to) return; ed[n] = { ...(ed[n] || {}), to, at: Date.now() }; k++; }); grpSave(ed); render(); return toast(`${k}개를 ${to}(으)로 골랐어요`); }
@@ -1011,7 +1047,7 @@ document.addEventListener("click", async (e) => {
   if (t.dataset.bbok) { const [id, b, i] = t.dataset.bbok.split("|"); try { await sendOp("bbShortOk", { id, b, i: +i }); const c = (D.bunbae || []).find((x) => x.id === id && x.b === b); if (c) c.items[+i].shortOk = true; render(); toast("해결로 뺐어요"); } catch { toast("못 보냈어요"); } return; }
   if (t.dataset.ntall !== undefined) { NTBR = NTBR.size === 8 ? new Set() : new Set(BR); document.querySelectorAll("[data-ntb]").forEach((x) => x.classList.toggle("on", NTBR.has(x.dataset.ntb))); t.classList.toggle("on", NTBR.size === 8); return; }
   if (t.dataset.ntb) { NTBR.has(t.dataset.ntb) ? NTBR.delete(t.dataset.ntb) : NTBR.add(t.dataset.ntb); t.classList.toggle("on", NTBR.has(t.dataset.ntb)); document.querySelector("[data-ntall]")?.classList.toggle("on", NTBR.size === 8); return; }
-  if (t.dataset.act === "ntsend") { const title = $("#ntTitle").value.trim(), body = $("#ntBody").value.trim(); if (!title) return toast("제목을 넣어 주세요"); if (!NTBR.size) return toast("지점을 골라 주세요"); if (!confirm(`${NTBR.size === 8 ? "전 지점" : [...NTBR].join(", ")}에 공지를 띄울까요?`)) return; const n = { id: Date.now().toString(36), title, body, br: BR.filter((b) => NTBR.has(b)) }; try { await sendOp("notice", n); (D.notices ||= []).push({ ...n, d: D.d, t: new Date().toTimeString().slice(0, 5), off: false, ok: {} }); render(); toast("올렸어요. 직원웹에는 1~2분 뒤에 떠요"); } catch (e) { toast("못 올렸어요: " + e.message); } return; }
+  if (t.dataset.act === "ntsend") { const title = $("#ntTitle").value.trim(), body = $("#ntBody").value.trim(); if (!title) return toast("제목을 넣어 주세요"); if (!NTBR.size) return toast("지점을 골라 주세요"); if (!confirm(`${NTBR.size === 8 ? "전 지점" : [...NTBR].join(", ")}에 공지를 띄울까요?`)) return; const n = { id: Date.now().toString(36), title, body, br: BR.filter((b) => NTBR.has(b)) }; try { await sendOp("notice", n); (D.notices ||= []).push({ ...n, d: D.d, t: new Date().toTimeString().slice(0, 5), off: false, ok: {} }); closeSheet(); render(); toast("올렸어요. 직원웹에는 1~2분 뒤에 떠요"); } catch (e) { toast("못 올렸어요: " + e.message); } return; }
   if (t.dataset.ntoff) { if (!confirm("이 공지를 내릴까요? 직원웹에서 사라져요")) return; try { await sendOp("noticeOff", { id: t.dataset.ntoff }); const n = (D.notices || []).find((x) => x.id === t.dataset.ntoff); if (n) n.off = true; render(); toast("내렸어요"); } catch { toast("못 보냈어요"); } return; }
   if (t.dataset.issok) { const s = issDone(); s.add(t.dataset.issok); issDoneSave(s); render(); return toast("확인 완료"); }
   if (t.dataset.issundo) { issDoneSave(new Set()); render(); return; }
@@ -1047,6 +1083,7 @@ document.addEventListener("click", async (e) => {
   if (t.dataset.tdelid) { const id = t.dataset.tdelid, def = D.tasks.find((x) => x.id === id); if (!def || !confirm(`'${def.title}' 업무를 지울까요? 직원앱 오늘 할 일에서도 빠져요.`)) return; t.disabled = true; try { await sendOp("taskdel", { id }); D.tasks = D.tasks.filter((x) => x.id !== id); D.matrix = D.matrix.filter((x) => x.id !== id); closeSheet(); render(); toast("지웠어요. 직원앱에는 1~2분 뒤에 빠져요"); } catch (err) { t.disabled = false; toast("못 지웠어요: " + err.message); } return; }
   if (t.dataset.mustgo) { mustB = t.dataset.mustgo; tab = "must"; draft = null; closeSheet(); render(); return scrollTo(0, 0); }
   // 업무
+  if (a === "ntnew") return sheetNotice();
   if (a === "tnew") { editTask = { id: "", title: "", note: "", time: "", br: [], rep: "once", date: D.d, dow: [], dom: 1 }; return sheetTask(); }
   if (t.dataset.tedit) { editTask = JSON.parse(JSON.stringify(D.tasks.find((x) => x.id === t.dataset.tedit))); editTask.dow ||= []; return sheetTask(); }
   if (t.dataset.tball !== undefined) { readTaskForm(); editTask.br = editTask.br.length === 8 ? [] : [...BR]; return sheetTask(); }
