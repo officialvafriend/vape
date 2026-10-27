@@ -236,7 +236,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.27-8";
+const VER = "10.27-9";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍", "동성로2"];
@@ -1702,7 +1702,10 @@ function sentCardHtml() {
   const PST = { req: "포장 기다림", packed: "포장 완료, 송장 기다림", shipped: "송장 나옴, 손님께 보내기" };
   const a = snList().filter((r) => r.from === B && !["done", "cancel", "no"].includes(r.st)).map((r) => `<button class="crow" data-snopen="${r.id}" style="width:100%;text-align:left"><div><b>${SKIND[r.kind]} → ${esc(toTxt(r))}: ${esc(r.items)}</b><span style="${snMine(r) ? "color:var(--red);font-weight:700" : ""}">${snMine(r) ? "우리 차례: " : ""}${STXT[r.st] || r.st}</span></div></button>`);
   const p = pcList().filter((r) => r.from === B && r.to !== B && !["done", "cancel"].includes(r.st)).map((r) => `<button class="crow" data-view="parcel" style="width:100%;text-align:left"><div><b>📦 택배 → ${esc(ho(r.to))}: ${esc(r.items)}</b><span style="${r.st === "shipped" ? "color:var(--red);font-weight:700" : ""}">${PST[r.st] || r.st}</span></div></button>`);
-  const L = [...a, ...p]; if (!L.length) return "";
+  // 10/27 사장님 "주문 가능 여부 확인 볼 수 있는 칸": 우리 지점 주문요청 진행 상황 (관리자 확인 중도 보이게)
+  const ost = (r) => r.arrived ? ["📥 입고됨, 손님께 연락", 1] : r.ost === "불가" ? [`🚫 주문 불가${r.nogo ? ` (${r.nogo})` : ""}, 손님 안내`, 1] : r.ost === "주문함" ? ["🛒 주문함, 입고 기다림"] : r.ost === "확인" ? (r.pay === "결제완료" || PAID.has(r.id) ? ["💳 결제 받음, 관리자 주문 기다림"] : ["✅ 주문 가능, 손님께 결제 받기", 1]) : ["⏳ 주문 가능한지 관리자 확인 중"];
+  const o = creqList().filter((r) => r.order && !r.pending && (r.from || r.branch || B) === B).map((r) => { const [t, hot] = ost(r); return `<div class="crow" style="width:100%"><div><b>📦 주문요청: ${esc(crItems(r))}${custName(r) ? `, ${esc(custName(r))}님` : ""}</b><span style="${hot ? "color:var(--red);font-weight:700" : ""}">${esc(t)}</span></div></div>`; });
+  const L = [...o, ...a, ...p]; if (!L.length) return "";
   return `<div class="card"><h2>📤 내가 보낸 요청 <small>${L.length}건</small></h2>${L.join("")}<div style="height:10px"></div></div>`;
 }
 function sendsHtml() {
