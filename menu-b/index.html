@@ -391,7 +391,8 @@ $('themeBtn').onclick = () => setTheme(document.body.dataset.theme === "dark" ? 
 // ── 지점, 데이터 (지금 판 menu.html과 같은 방식) ──
 const BRANCH = (() => { const u = new URLSearchParams(location.search).get("branch"); try { if (u) localStorage.setItem("vf-menu-branch", u); return u || localStorage.getItem("vf-menu-branch") || "본점"; } catch (e) { return u || "본점"; } })();
 const POSB = (window.POS || {})[BRANCH] || {};
-const posOf = (n) => POSB[n]; // [상품코드, 바코드, 형식, 바코드 등록 여부, 분류]
+const posOf = (n) => POSB[n];
+const outOf = (n) => !!(window.POS && window.POS[BRANCH]) && !POSB[n]; // 포스 자료가 없는 지점은 품절로 보지 않음 (지금 판 isOut과 같음) // [상품코드, 바코드, 형식, 바코드 등록 여부, 분류]
 const GDS = (window.GOODS_BY || {})[BRANCH] || window.GOODS || [];
 const won = (n) => n.toLocaleString() + "원";
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
@@ -556,7 +557,7 @@ const BR_OF = (x) => /^VF 빌런/.test(x.n) ? "빌런" : /^VF 릭/.test(x.n) ? "
 $('chips').innerHTML = ["전체", "빌런", "릭", "베이퍼"].map((t) => `<button data-f="${t}" class="${t === lf ? "on" : ""}">${t}</button>`).join("");
 $('chips').onclick = (e) => { const b = e.target.closest('button'); if (!b) return; lf = b.dataset.f; $('chips').querySelectorAll('button').forEach((x) => x.classList.toggle('on', x === b)); drawLiq(); };
 function drawLiq() {
-  $('liqGrid').innerHTML = LQ.filter((x) => lf === "전체" || BR_OF(x) === lf).map((x) => { const q = (cart.get(x.id) || {}).qty || 0, out = !posOf(x.n);
+  $('liqGrid').innerHTML = LQ.filter((x) => lf === "전체" || BR_OF(x) === lf).map((x) => { const q = (cart.get(x.id) || {}).qty || 0, out = outOf(x.n);
     return `<div class="it ${q ? "got" : ""} ${out ? "sold" : ""}" ${out ? `data-ask="${esc(x.n)}"` : ""}>${out ? '<span class="badge so">품절, 다른 지점 확인</span>' : q ? `<span class="badge">${q}병</span>` : ""}<div class="im" style="background:${tintOf(x)}"><img src="${LIQ_IMG[x.n] || ""}" alt="" loading="lazy"></div><div class="nm">${esc(short(x.n))}</div><div class="fl">${esc([x.f, (x.t || []).includes("노멘솔") ? "노멘솔" : ""].filter(Boolean).join(", "))}</div><div class="bt"><span class="price">15,000원</span>${out ? "" : `<button class="add" data-a="${x.id}">+</button>`}</div></div>`; }).join("");
 }
 $('liqGrid').onclick = (e) => { const b = e.target.closest('[data-a]'); if (!b) return; const x = LQ.find((y) => y.id === b.dataset.a);
@@ -652,7 +653,7 @@ function dspTotal(rest = 0) { // 15개 중 가장 싼 5개 서비스. 매장에�
   units.sort((a, b) => a - b); const free = Math.floor(units.length / 15) * 5; return units.slice(free).reduce((a, p) => a + p, 0);
 }
 // 추천 조합: [이름, 설명, 고를 목록(앞에서부터 돌아가며 채움)]
-const ok = (xs) => xs.filter((x) => posOf(x.n));
+const ok = (xs) => xs.filter((x) => !outOf(x.n));
 const byRe = (pool, re) => ok(pool.filter((x) => re.test(x.n)));
 const mix = (...ls) => { const out = [], m = Math.max(...ls.map((l) => l.length)); for (let i = 0; i < m; i++) for (const l of ls) if (l[i]) out.push(l[i]); return out; };
 const COMBO = {
@@ -675,22 +676,22 @@ function drawEv() {
     // 다른 프리미엄 액상 검색 (패키지 10병은 프리미엄이면 다 됨)
     const others = [...EV.pick.keys()].filter((id) => !LQ.some((x) => x.id === id)).map((id) => ALL_LQ.find((x) => x.id === id)).filter(Boolean);
     const found = evQ.trim() ? searchItems(evQ).filter((o) => o.t === "liq" && o.x.line === "프리미엄").map((o) => o.x).slice(0, 12) : [];
-    h += `<div class="grid">${LQ.map((x) => evCard(x.id, imgOf(x), short(x.n), x.f || "", 0, !posOf(x.n))).join("")}</div>`;
+    h += `<div class="grid">${LQ.map((x) => evCard(x.id, imgOf(x), short(x.n), x.f || "", 0, outOf(x.n))).join("")}</div>`;
     h += `<div class="evsec">다른 프리미엄 액상</div><input class="evq" id="evQ" placeholder="원래 피시던 맛 찾기 (이름, 초성)" value="${esc(evQ)}" autocomplete="off">`;
     const show = [...new Map([...others, ...found].map((x) => [x.id, x])).values()];
-    h += show.length ? `<div class="grid" style="margin-top:10px">${show.map((x) => evCard(x.id, imgOf(x), short(x.n), [x.br, x.f].filter(Boolean).join(", "), 0, !posOf(x.n))).join("")}</div>` : (evQ.trim() ? '<div class="evtip">찾는 프리미엄 액상이 없어요</div>' : "");
+    h += show.length ? `<div class="grid" style="margin-top:10px">${show.map((x) => evCard(x.id, imgOf(x), short(x.n), [x.br, x.f].filter(Boolean).join(", "), 0, outOf(x.n))).join("")}</div>` : (evQ.trim() ? '<div class="evtip">찾는 프리미엄 액상이 없어요</div>' : "");
     $('evGo').textContent = rest ? `${n}병 고르고 담기 (남은 ${rest}병은 매장에서), 164,000원` : `이 구성으로 담기, 164,000원`;
   }
   if (EV.k === "B") {
     $('evEye').textContent = "베이프렌드 대량 특가"; $('evTi').textContent = "액상 대량구매";
     h += `<div class="evsec">① 몇 병?</div><div class="opt2">${[30, 50].map((q) => `<button class="${EV.need === q ? "on" : ""}" data-bq="${q}"><b>${q}병 <span class="price" style="font-size:22px;color:var(--red)">${won(BULK[q])}</span></b><span>병당 ${won(BULK[q] / q)}</span></button>`).join("")}</div>`;
-    h += pickHead("② 맛 고르기") + `<div class="grid">${BULK_POOL.map((x) => evCard(x.id, imgOf(x), short(x.n), x.f || "", 0, !posOf(x.n))).join("")}</div>`;
+    h += pickHead("② 맛 고르기") + `<div class="grid">${BULK_POOL.map((x) => evCard(x.id, imgOf(x), short(x.n), x.f || "", 0, outOf(x.n))).join("")}</div>`;
     $('evGo').textContent = rest ? `${n}병 고르고 담기 (남은 ${rest}병은 매장에서), ${won(BULK[EV.need])}` : `${EV.need}병 담기, ${won(BULK[EV.need])}`;
   }
   if (EV.k === "D") {
     $('evEye').textContent = "베이프렌드 일회용 대량"; $('evTi').textContent = "10개 사면 5개 더";
     h += `<div class="card evhero" style="padding:20px"><div class="pr"><b style="font-size:20px">팜팜바, 모스바 원하는 맛으로 15개</b><span style="display:block;font-size:14px;color:var(--grey);margin-top:6px">15개 중 가장 싼 5개는 서비스(0원), 최대 33% 할인</span></div></div>`;
-    h += pickHead("맛 고르기") + `<div class="grid">${DSP_POOL().map((g) => evCard(g.id, DSP_IMG[g.model] || "", g.n, g.model, g.price, !posOf(g.n))).join("")}</div>`;
+    h += pickHead("맛 고르기") + `<div class="grid">${DSP_POOL().map((g) => evCard(g.id, DSP_IMG[g.model] || "", g.n, g.model, g.price, outOf(g.n))).join("")}</div>`;
     $('evGo').textContent = rest ? `${n}개 고르고 담기 (남은 ${rest}개는 매장에서), 약 ${won(dspTotal(rest))}` : `15개 담기, ${won(dspTotal())}`;
   }
   const qf = document.activeElement && document.activeElement.id === "evQ", pos = qf ? document.activeElement.selectionStart : 0;
@@ -759,7 +760,7 @@ function drawSearch() {
   const q = $('q').value; $('q').parentElement.classList.toggle('on', !!q); document.body.classList.toggle('srchon', !!q.trim());
   if (!q.trim()) return;
   const r = searchItems(q);
-  $('sres').innerHTML = r.length ? r.map((o) => { const x = o.x, liq = o.t === "liq", key = x.id, have = (cart.get(key) || {}).qty || 0, out = !posOf(x.n);
+  $('sres').innerHTML = r.length ? r.map((o) => { const x = o.x, liq = o.t === "liq", key = x.id, have = (cart.get(key) || {}).qty || 0, out = outOf(x.n);
     const img = liq ? imgOf(x) : gImg(x), price = liq ? liqPrice(x) : x.price;
     return `<div class="sr ${out ? "sold" : ""}"><div class="im" style="background:${liq ? tintOf(x) : "#f4f4f6"}">${img ? `<img src="${img}" alt="" loading="lazy">` : { dev: "🔋", pod: "🧩", dsp: "🚬" }[x.c] || "💧"}</div><div class="n"><b>${esc(liq ? short(x.n) : x.n)}</b><span>${esc(liq ? [x.br, x.line, x.f].filter(Boolean).join(", ") : { dev: "기기", pod: "팟, 코일", dsp: "일회용" }[x.c] || "")}${out ? " · 품절" : ""}</span>${have ? `<span class="q"> 담음 ${have}</span>` : ""}</div><b class="price">${won(price)}</b>${out ? `<button class="askb" data-ask="${esc(x.n)}">다른 지점 확인</button>` : `<button class="add" data-s="${key}" data-t="${o.t}">+</button>`}</div>`; }).join("")
     : '<div style="padding:40px 0;text-align:center;color:var(--grey)">찾는 상품이 없어요</div>';
