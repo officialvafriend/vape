@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>베이프렌드 상담패드 B안 (세로 뼈대)</title>
+<link rel="stylesheet" href="brand.css">
+<style>
+/* B안 세로 뼈대 10/27: 기준 800×1280. 1번 레퍼런스 = 연회색 바탕 + 흰 카드, 빨강은 가격과 버튼만 */
+:root{
+  --bg:#F2F2F4; --card:#fff; --ink:#15120f; --grey:#8d887f; --line:#e6e6ea;
+  --red:#d81f2a; --black:#15120f; --r:24px; --gap:16px; --pad:24px;
+  --kr:"NanumSquare","Pretendard","Malgun Gothic",sans-serif;
+  --num:"KBLJump","Arial Black","NanumSquare",sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--kr);-webkit-tap-highlight-color:transparent;overflow:hidden}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+img{display:block}
+.app{height:100%;display:flex;flex-direction:column;max-width:800px;margin:0 auto}
+
+/* 위 줄 64px */
+.top{height:64px;flex:none;display:flex;align-items:center;gap:12px;padding:0 var(--pad)}
+.logo{font-family:var(--num);font-size:20px;letter-spacing:.02em}
+.logo{cursor:pointer;white-space:nowrap}
+.logo span{display:inline-block;vertical-align:bottom;max-width:1.3em;transition:max-width .5s cubic-bezier(.6,0,.25,1),opacity .3s,transform .5s;transition-delay:calc(var(--j, 0) * .06s)}
+.logo.noT span{transition:none}
+/* 다 나오고 잠시 뒤 VF만 남김: D부터 거꾸로 접히며 F가 V 옆으로 붙음 */
+.logo.mini .x{max-width:0;opacity:0;transform:scaleX(.3)}
+/* 합쳐지면서 V, F가 굵어짐: 같은 색 외곽선을 0 → .1em으로 키움 */
+.logo .r{-webkit-text-stroke:0 var(--red);transition:-webkit-text-stroke-width .7s cubic-bezier(.3,1.4,.5,1) .35s,transform .7s cubic-bezier(.3,1.4,.5,1) .35s,max-width .5s}
+.logo.mini .r{-webkit-text-stroke-width:.08em;-webkit-text-stroke-linejoin:round;transform:scale(1.12) skewX(-9deg);transform-origin:left bottom}
+.logo .m.r{transition:-webkit-text-stroke-width .7s cubic-bezier(.3,1.4,.5,1) .35s,transform .7s cubic-bezier(.3,1.4,.5,1) .35s,max-width .5s,margin-left .7s cubic-bezier(.3,1.4,.5,1) .35s}
+.logo.mini .m.r{margin-left:.16em}.logo .r{color:var(--red)}
+/* 로고 연출 10/27: V가 먼저 톡 → AFRIEN이 V 뒤에서 늘어지며 펼쳐짐 → D가 위에서 떨어져 찌그러졌다 튀어 오름(픽사 램프처럼) */
+.logo.play .v{animation:lgV .45s cubic-bezier(.34,1.56,.64,1) both}
+.logo.play .m{transform-origin:left bottom;animation:lgM .55s cubic-bezier(.3,1.5,.5,1) both;animation-delay:calc(.3s + var(--i) * .055s)}
+.logo.play .d{transform-origin:center bottom;animation:lgD .7s ease-out both .78s}
+@keyframes lgV{0%{opacity:0;transform:scale(.3)}100%{opacity:1;transform:none}}
+@keyframes lgM{0%{opacity:0;transform:translateX(calc(var(--i) * -15px - 14px)) scaleX(.15)}55%{opacity:1;transform:translateX(2px) scaleX(1.22)}100%{opacity:1;transform:none}}
+@keyframes lgD{0%{opacity:0;transform:translateY(-30px) scale(.65,1.4)}40%{opacity:1;transform:translateY(0) scale(1.35,.65)}62%{transform:translateY(-10px) scale(.9,1.15)}80%{transform:translateY(0) scale(1.1,.9)}100%{opacity:1;transform:none}}
+.srch{flex:1;height:44px;border-radius:22px;background:var(--card);display:flex;align-items:center;padding:0 18px;color:var(--grey);font-size:15px}
+.home-btn{height:44px;padding:0 18px;border-radius:22px;background:var(--card);font-size:15px;font-weight:700}
+
+/* 탭 줄 56px (첫 화면에선 숨김) */
+.tabs{height:56px;flex:none;padding:0 var(--pad) 8px;display:flex}
+.seg{flex:1;display:flex;background:#e4e4e8;border-radius:16px;padding:4px}
+.seg button{flex:1;border-radius:12px;font-size:17px;font-weight:700;color:var(--grey)}
+.seg button.on{background:var(--card);color:var(--ink);box-shadow:0 1px 4px rgba(0,0,0,.08)}
+body[data-v=home] .tabs{display:none}
+
+/* 본문 */
+.body{flex:1;overflow-y:auto;padding:0 var(--pad) var(--pad)}
+.view{display:none}
+body[data-v=home] #vHome,body[data-v=dev] #vDev,body[data-v=liq] #vLiq,body[data-v=dsp] #vDsp{display:block}
+.card{background:var(--card);border-radius:var(--r)}
+.h{font-size:28px;font-weight:800;letter-spacing:-.02em;margin:8px 0 14px}
+.price{font-family:var(--num);color:var(--red)}
+.slot{display:flex;align-items:flex-end;padding:18px;border:2px dashed #d4d4da;color:var(--grey);font-size:12px}
+
+/* 첫 화면: 포스터 752×940 + 3갈래 */
+.poster{width:100%;aspect-ratio:4/5;border-radius:var(--r);overflow:hidden;background:#ddd;position:relative}
+.poster img{width:100%;height:100%;object-fit:cover;transition:opacity .35s}
+.dots{position:absolute;left:0;right:0;bottom:16px;display:flex;justify-content:center;gap:8px}
+.dots i{width:8px;height:8px;border-radius:4px;background:rgba(255,255,255,.5)}
+.dots i.on{width:24px;background:#fff}
+.go3{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--gap);margin-top:var(--gap)}
+.go3 button{height:160px;border-radius:var(--r);background:var(--card);text-align:left;padding:20px;display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden}
+.go3 b{font-size:30px;font-weight:800;letter-spacing:-.02em;position:relative}
+.go3 small{font-size:13px;color:var(--grey);position:relative}
+.go3 .tag{position:absolute;right:12px;bottom:14px;font-size:11px;color:#b5b5bb;border:1px dashed #cfcfd5;border-radius:8px;padding:2px 6px}
+
+/* 기기: 큰 카드 + 썸네일 줄 + 패키지 3칸 */
+.hero{padding:24px}
+.hero .ph{height:360px;border-radius:18px;background:var(--bg);display:flex;align-items:center;justify-content:center}
+.hero .ph img{max-height:330px;max-width:100%;object-fit:contain}
+.hero .row{display:flex;justify-content:space-between;align-items:flex-end;margin-top:20px}
+.hero .nm{font-size:32px;font-weight:800;letter-spacing:-.02em}
+.hero .sub{font-size:14px;color:var(--grey);margin-top:4px}
+.colors{display:flex;gap:12px;margin-top:16px}
+.colors button{width:36px;height:36px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.12)}
+.colors button.on{outline:2px solid var(--ink);outline-offset:3px}
+.thumbs{display:flex;gap:12px;overflow-x:auto;margin:var(--gap) calc(var(--pad)*-1) 0;padding:0 var(--pad) 4px}
+.thumbs button{flex:none;width:112px;height:132px;border-radius:18px;background:var(--card);padding:8px;display:flex;flex-direction:column;align-items:center;gap:6px;font-size:12px;font-weight:700}
+.thumbs button.on{box-shadow:inset 0 0 0 2px var(--ink)}
+.thumbs img{width:96px;height:88px;object-fit:contain}
+.pk{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:var(--gap)}
+.pk button{height:120px;border-radius:18px;background:var(--card);text-align:left;padding:16px;display:flex;flex-direction:column;justify-content:space-between}
+.pk button.on{box-shadow:inset 0 0 0 2px var(--ink)}
+.pk b{font-size:17px}
+.pk .price{font-size:20px}
+.pk s{font-size:13px;color:var(--grey)}
+.cta{width:100%;height:64px;border-radius:18px;background:var(--red);color:#fff;font-size:20px;font-weight:800;margin-top:var(--gap)}
+
+/* 액상, 일회용: 맛 태그 칩 + 4칸 진열 */
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:var(--gap)}
+.chips button{height:44px;padding:0 18px;border-radius:22px;background:var(--card);font-size:16px;font-weight:700;color:var(--ink)}
+.chips button.on{background:var(--ink);color:#fff}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.it{background:var(--card);border-radius:20px;padding:10px 10px 12px;position:relative}
+.it .im{aspect-ratio:1;border-radius:14px;background:#f6f6f8;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.it .im img{width:100%;height:100%;object-fit:contain}
+.it .nm{font-size:16px;font-weight:800;margin-top:10px;letter-spacing:-.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.it .fl{font-size:13px;color:var(--grey);margin-top:2px}
+.it .bt{display:flex;justify-content:space-between;align-items:center;margin-top:8px}
+.it .price{font-size:17px}
+.it .add{width:36px;height:36px;border-radius:50%;background:var(--black);color:#fff;font-size:22px;line-height:36px}
+.badge{position:absolute;left:16px;top:16px;background:var(--red);color:#fff;font-size:12px;font-weight:800;border-radius:8px;padding:3px 8px}
+.evbar{display:flex;justify-content:space-between;align-items:center;padding:18px 20px;margin-bottom:var(--gap)}
+.evbar b{font-size:20px}
+.evbar span{font-size:14px;color:var(--grey)}
+
+/* 아래 담은 상품 줄 88px */
+.cart{height:88px;flex:none;background:var(--card);display:flex;align-items:center;gap:16px;padding:0 var(--pad);box-shadow:0 -1px 0 var(--line)}
+.cart .cnt{font-size:16px;font-weight:700}
+.cart .cnt em{font-style:normal;display:inline-block;min-width:26px;height:26px;border-radius:13px;background:var(--red);color:#fff;text-align:center;line-height:26px;font-size:14px;margin-left:6px}
+.cart .sum{flex:1;text-align:right;font-size:28px}
+.cart .show{height:56px;padding:0 24px;border-radius:16px;background:var(--black);color:#fff;font-size:17px;font-weight:800}
+
+/* 담은 상품 시트 */
+.dim{position:fixed;inset:0;background:rgba(0,0,0,.35);opacity:0;pointer-events:none;transition:opacity .3s}
+.sheet{position:fixed;left:50%;bottom:0;width:100%;max-width:800px;height:70%;background:var(--card);border-radius:28px 28px 0 0;transform:translate(-50%,100%);transition:transform .45s cubic-bezier(.22,1,.36,1);padding:12px var(--pad) var(--pad);display:flex;flex-direction:column}
+body.open .dim{opacity:1;pointer-events:auto}
+body.open .sheet{transform:translate(-50%,0)}
+.grab{width:48px;height:5px;border-radius:3px;background:#d4d4da;margin:0 auto 16px}
+.lines{flex:1;overflow-y:auto}
+.ln{display:flex;align-items:center;gap:12px;height:64px;border-bottom:1px solid var(--line)}
+.ln img{width:48px;height:48px;border-radius:10px;object-fit:contain;background:#f6f6f8}
+.ln .n{flex:1;font-size:15px;font-weight:700}
+.ln .q{font-size:15px;color:var(--grey)}
+.tot{display:flex;justify-content:space-between;align-items:baseline;padding:16px 0}
+.tot span{font-size:16px;color:var(--grey)}
+.tot .price{font-size:32px}
+.note{font-size:12px;color:#b5b5bb;margin-top:20px;line-height:1.6}
+</style>
+</head>
+<body data-v="home">
+<div class="app">
+  <div class="top">
+    <div class="logo" id="logo" onclick="logoPlay()"><span class="v r">V</span><span class="m x" style="--i:0;--j:5">A</span><span class="m r" style="--i:1">F</span><span class="m x" style="--i:2;--j:4">R</span><span class="m x" style="--i:3;--j:3">I</span><span class="m x" style="--i:4;--j:2">E</span><span class="m x" style="--i:5;--j:1">N</span><span class="d x" style="--j:0">D</span></div>
+    <div class="srch">🔍 맛, 브랜드, 기기 이름</div>
+    <button class="home-btn" onclick="go('home')">처음</button>
+  </div>
+  <div class="tabs"><div class="seg" id="seg">
+    <button data-v="dev" onclick="go('dev')">기기</button>
+    <button data-v="liq" onclick="go('liq')">액상</button>
+    <button data-v="dsp" onclick="go('dsp')">일회용</button>
+  </div></div>
+
+  <div class="body" id="body">
+    <!-- 첫 화면 -->
+    <div class="view" id="vHome">
+      <div class="poster" id="poster"><img id="pImg" alt=""><div class="dots" id="dots"></div></div>
+      <div class="go3">
+        <button onclick="go('dev')"><span class="tag">배경 이미지 자리</span><small>하복2, 젤로, 발라리안</small><b>기기</b></button>
+        <button onclick="go('liq')"><span class="tag">배경 이미지 자리</span><small>맛으로 찾기</small><b>액상</b></button>
+        <button onclick="go('dsp')"><span class="tag">배경 이미지 자리</span><small>10개 사면 5개 더</small><b>일회용</b></button>
+      </div>
+    </div>
+
+    <!-- 기기 -->
+    <div class="view" id="vDev">
+      <div class="card hero">
+        <div class="ph"><img id="devImg" src="dev_havok2_silver.png" alt=""></div>
+        <div class="row">
+          <div><div class="nm" id="devNm">하복2</div><div class="sub">입호흡, 폐호흡 겸용</div>
+            <div class="colors" id="colors"></div></div>
+          <div style="text-align:right"><div class="sub">기기패키지 + 액상 10병</div><div class="price" style="font-size:28px">164,000원</div></div>
+        </div>
+      </div>
+      <div class="thumbs" id="thumbs"></div>
+      <div class="pk" id="pk">
+        <button data-k="0"><b>기기만</b><span class="sub" style="font-size:13px;color:var(--grey)">가격 연결 예정</span></button>
+        <button data-k="1"><b>+ 액상 5병</b><span class="sub" style="font-size:13px;color:var(--grey)">가격 연결 예정</span></button>
+        <button data-k="2" class="on"><b>+ 액상 10병</b><div><s>179,000원</s><div class="price">164,000원</div></div></button>
+      </div>
+      <button class="cta" onclick="add('하복2 패키지',164000,document.getElementById('devImg').src)">이 구성으로 담기</button>
+    </div>
+
+    <!-- 액상 -->
+    <div class="view" id="vLiq">
+      <div class="chips" id="chips"></div>
+      <div class="grid" id="liqGrid"></div>
+    </div>
+
+    <!-- 일회용 -->
+    <div class="view" id="vDsp">
+      <div class="card evbar"><b>10개 사면 5개 더</b><span>팜팜바, 모스바 섞어서 15개</span></div>
+      <div class="grid" id="dspGrid"></div>
+    </div>
+    <p class="note">B안 세로 뼈대(10/27). 배치와 크기만 확인용이에요. 가격, 재고, 바코드, 직원 화면은 지금 판 데이터를 연결할 예정이에요.</p>
+  </div>
+
+  <div class="cart">
+    <div class="cnt">담은 상품<em id="cnt">0</em></div>
+    <div class="sum price" id="sum">0원</div>
+    <button class="show" onclick="document.body.classList.add('open')">직원에게 보여주기</button>
+  </div>
+</div>
+<div class="dim" onclick="document.body.classList.remove('open')"></div>
+<div class="sheet"><div class="grab"></div><div class="h" style="margin-top:0">담은 상품</div><div class="lines" id="lines"></div>
+  <div class="tot"><span>합계</span><b class="price" id="sum2">0원</b></div>
+  <button class="cta" style="margin:0;background:var(--black)">직원 화면 열기 (바코드, QR)</button></div>
+<script>
+const $ = id => document.getElementById(id);
+// 로고: 새로고침, 처음 버튼, 로고 누를 때 재생 → 2.7초 뒤 VF만 남김
+let lgT;
+function logoPlay(){ const l = $('logo'); clearTimeout(lgT); l.classList.add('noT'); l.classList.remove('mini', 'play');
+  void l.offsetWidth; l.classList.remove('noT'); l.classList.add('play');
+  lgT = setTimeout(() => { l.classList.remove('play'); l.classList.add('mini'); }, 2700); }
+logoPlay();
+function go(v){ if (v === 'home' && document.body.dataset.v !== 'home') logoPlay(); document.body.dataset.v = v; $('body').scrollTop = 0;
+  document.querySelectorAll('#seg button').forEach(b => b.classList.toggle('on', b.dataset.v === v)); }
+
+// 첫 화면 포스터 10/27: 이벤트 3개(하복2, 대량, 일회용), 새로고침마다 이벤트별 시안 중 하나를 골라 보여 줌 (pst_b_*.jpg, 디자인작업/261027_상담패드B안/gpt)
+const PB = { H: [1,2,3,4,5], B: [], D: [] }; // B, D는 v3(톤온톤, 빛과 그림자) 나오면 다시 채움
+const PB_OLD = { H: "pst_havok2_v7.jpg", B: "pst_bulk3050.jpg", D: "pst_dsp105.jpg" };
+const PST = Object.keys(PB).map(k => PB[k].length ? "pst_b_" + k + PB[k][Math.floor(Math.random() * PB[k].length)] + ".jpg" : PB_OLD[k]);
+let pi = 0;
+function showP(i){ pi = (i + PST.length) % PST.length; const im = $('pImg'); im.style.opacity = 0;
+  setTimeout(() => { im.src = PST[pi]; im.style.opacity = 1; }, 200);
+  $('dots').innerHTML = PST.map((_, k) => `<i class="${k === pi ? 'on' : ''}"></i>`).join(''); }
+showP(0); setInterval(() => { if (document.body.dataset.v === 'home') showP(pi + 1); }, 5000);
+$('poster').onclick = () => showP(pi + 1);
+
+// 기기: 하복2 색 + 다른 기기 썸네일 (지금 판 사진 그대로)
+const HV = [["실버","#c9c9cc","dev_havok2_silver.png"],["블랙","#222","dev_havok2_black.png"],["네이비","#26324d","dev_havok2_navy.png"],["올리브","#6b6a4a","dev_havok2_olive.png"]];
+$('colors').innerHTML = HV.map((c,i) => `<button style="background:${c[1]}" class="${i?'':'on'}" title="${c[0]}" data-i="${i}"></button>`).join('');
+$('colors').onclick = e => { const b = e.target.closest('button'); if(!b) return;
+  $('colors').querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)); $('devImg').src = HV[b.dataset.i][2]; };
+const DEVS = [["하복2","dev_havok2_silver.png"],["하복SE","dev_havokse_white.png"],["젤로맥스","dev_v038.jpg"],["젤로울트라","dev_v041.jpg"],["발라맥스프로","dev_v019.jpg"],["발라리안에어","dev_v016.jpg"],["말론S","dev_v008.jpg"],["플러키","dev_v049.jpg"]];
+$('thumbs').innerHTML = DEVS.map((d,i) => `<button class="${i?'':'on'}"><img src="${d[1]}" alt="">${d[0]}</button>`).join('');
+$('pk').onclick = e => { const b = e.target.closest('button'); if(!b) return; $('pk').querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)); };
+
+// 액상: 이사님 병 사진 th_ (지금 판 OWN_IMG 앞쪽)
+const LIQ = [["라입 제로레몬","레몬","th_000.jpg"],["라입 제로석류","석류","th_001.jpg"],["라입 제로알로에","알로에","th_002.jpg"],["라입 제로타바코","타바코","th_003.jpg"],["라입 제로피치","복숭아","th_004.jpg"],["라입 쿨링라임","라임, 멘솔","th_005.jpg"],["라입 쿨링민트","민트","th_006.jpg"],["라입 쿨링워터멜론","수박, 멘솔","th_007.jpg"],["라입 쿨링피치","복숭아, 멘솔","th_008.jpg"],["라입 쿨링피치자몽","복숭아 자몽","th_009.jpg"],["얌 레몬","레몬","th_010.jpg"],["얌 복숭아","복숭아","th_011.jpg"],["얌 샤인머스캣","샤인머스캣","th_012.jpg"],["얌 수박","수박","th_013.jpg"],["얌 알로에","알로에","th_014.jpg"],["얌 자두","자두","th_015.jpg"]];
+$('chips').innerHTML = ["전체","과일","멘솔","노멘솔","디저트","담배맛","무향"].map((t,i) => `<button class="${i?'':'on'}">${t}</button>`).join('');
+$('chips').onclick = e => { const b = e.target.closest('button'); if(b) b.classList.toggle('on'); };
+const card = (n,f,img,p,badge) => `<div class="it">${badge?`<span class="badge">${badge}</span>`:''}<div class="im"><img src="${img}" alt="" loading="lazy"></div><div class="nm">${n}</div><div class="fl">${f}</div><div class="bt"><span class="price">${p.toLocaleString()}원</span><button class="add" onclick="add('${n}',${p},'${img}')">+</button></div></div>`;
+$('liqGrid').innerHTML = LIQ.map(l => card(l[0],l[1],l[2],15000)).join('');
+$('dspGrid').innerHTML = [["팜팜바","여러 맛","dsp_farm.png",24900],["모스바","여러 맛","dsp_moss.png",25000],["네스티","여러 맛","dsp_nasty.png",0],["인피","여러 맛","dsp_infy.jpg",0]]
+  .map(d => d[3] ? card(d[0],d[1],d[2],d[3],"10+5") : card(d[0],d[1],d[2],0).replace('0원','가격 연결 예정')).join('');
+
+// 담기
+const CART = [];
+function add(n,p,img){ CART.push({n,p,img}); const s = CART.reduce((a,c) => a + c.p, 0);
+  $('cnt').textContent = CART.length; $('sum').textContent = $('sum2').textContent = s.toLocaleString() + '원';
+  $('lines').innerHTML = CART.map(c => `<div class="ln"><img src="${c.img}" alt=""><span class="n">${c.n}</span><span class="q">1개</span><b class="price">${c.p.toLocaleString()}원</b></div>`).join(''); }
+</script>
+</body>
+</html>
