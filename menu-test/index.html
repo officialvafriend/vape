@@ -844,7 +844,7 @@
 <body data-mode=""><div id="testRibbon" style="position:fixed;left:0;right:0;bottom:0;z-index:99999;background:#d32f2f;color:#fff;text-align:center;font:700 13px sans-serif;padding:4px;pointer-events:none">테스트판 · 손님 상담에는 정식판을 쓰세요</div>
 <div class="app">
   <div class="top">
-    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">테스트 v10.27-0300</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
+    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">테스트 v10.27-0400</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
     <nav class="tabs" id="tabs" style="display:none"></nav>
     <div class="flow" id="flow"><span data-st="1">① 찾는 것</span><i>›</i><span data-st="2">② 고르기</span><i>›</i><span data-st="3">③ 담은 상품</span><i>›</i><span data-st="4">④ 직원 확인</span></div>
   </div>
@@ -900,7 +900,6 @@
   <section class="sec" id="sLiqBen" data-for="liq">
     <div class="hdr"><div class="n">03</div><div><div class="eb">Benefits</div><h2>액상 혜택</h2></div></div>
     <div class="spec">
-      <div class="row"><div><span class="k">액상·팟 10만원 이상</span><span class="u">기기·일회용 금액은 빼고 계산</span></div><div class="v"><span class="price" style="font-size:22px">일회용 1개 증정</span></div></div>
       <div class="row"><div><span class="k">액상 10병 이상</span><span class="u">원하는 문구를 새겨 드려요</span></div><div class="v"><span class="price" style="font-size:22px">레이저 각인 무료</span></div></div>
     </div>
   </section>
@@ -1373,6 +1372,7 @@ function airxBox(n, gc) {
     <div class="pk-or">또는</div>
     ${pick("dev", `에어릭스 기기 ${k > 1 ? k + "대 " : ""}받기 (${won(k * AIRX_DEV)} 상당)`, "팟은 그대로 결제하고 기기를 무료로 드려요")}</div>`;
 }
+const GIFT_ON = false; // 액상·팟 10만원 이상 일회용 1개 증정 (10/27 사장님: 이벤트 종료). 다시 하면 true + 액상 혜택 칸 줄 복구
 function goodsHints(gc, liqPart) {
   const out = [];
   if (gc.bulk.n) out.push(bulkBox(gc, "", ""));
@@ -1383,7 +1383,7 @@ function goodsHints(gc, liqPart) {
     if (r && evB(ev) !== BULK.ev) out.push(`<div class="nudge"><b>${label}: ${r >= buy ? `지금 ${buy + free - r}개 더 고르면 무료` : `${buy - r}개 더 담으면 ${free}개 무료`}</b><div class="u">지금 ${n}개 · 같은 제품끼리 맛 섞어도 돼요</div></div>`);
   }
   const base = liqPart + gc.pod + gc.lung; // 폐호흡 액상도 액상
-  if (base > 0) out.push(base >= 100000 ? `<div class="nudge" style="background:var(--red)"><b>🎁 일회용 기기 1개 증정 대상이에요</b><div class="u">액상·팟 ${won(base)} (10만원 이상)</div></div>`
+  if (GIFT_ON && base > 0) out.push(base >= 100000 ? `<div class="nudge" style="background:var(--red)"><b>🎁 일회용 기기 1개 증정 대상이에요</b><div class="u">액상·팟 ${won(base)} (10만원 이상)</div></div>`
     : `<div class="nudge"><b>액상·팟 ${won(100000 - base)} 더 담으면 일회용 1개 증정</b><div class="u">지금 액상·팟 ${won(base)} · 기기·일회용 금액은 빼고 계산</div><div class="bar2"><i style="width:${Math.min(100, base / 1000)}%"></i></div></div>`);
   return out.join("");
 }
@@ -1732,7 +1732,7 @@ function staffView() {
   ${restBlocks ? step(devBlocks || plan.html ? (devBlocks && plan.html ? 3 : 2) : 1, "낱개로 찍기", plan.note) : ""}
   <div class="scg" style="margin-top:6px">${restBlocks || (devBlocks ? "" : '<div style="padding:20px 0;color:var(--grey)">담은 상품이 없어요</div>')}</div>
   ${staffAdd ? `<div class="sadd"><div class="sadd-h"><b>상품 추가</b><button data-sadd="0">닫기</button></div><input class="in" id="sq" placeholder="이름·초성으로 찾기 (액상·팟·코일·일회용·기기)" value="${esc(staffQ)}"><div id="sqRes">${staffRes()}</div></div>` : `<button class="sadd-open" data-sadd="1">＋ 상품 추가 (액상 · 팟 · 코일 · 소모품)</button>`}
-  ${(() => { const gc = goodsCalc(), fr = Object.entries(gc.freeBy).filter(([k, n]) => n && !DSP_POS[k]); const base = estimate(countCart()).liq + gc.pod + gc.lung; return (fr.length ? `<div class="scan bundle"><div class="s" style="color:var(--ink)">일회용 이벤트 무료: ${fr.map(([k, n]) => evLabel(k) + " " + n + "개").join(", ")} → 포스에서 가장 싼 것부터 서비스(0원) 처리</div></div>` : "") + (gc.giftDev ? `<div class="scan bundle"><div class="s" style="color:var(--ink)">🎁 에어릭스 팟 10개 혜택 → 에어릭스 기기 ${gc.giftDev}대 증정 (서비스 0원 처리)</div></div>` : "") + (base >= 100000 ? `<div class="scan bundle"><div class="s" style="color:var(--ink)">🎁 액상·팟 ${won(base)} → 일회용 기기 1개 증정</div></div>` : ""); })()}
+  ${(() => { const gc = goodsCalc(), fr = Object.entries(gc.freeBy).filter(([k, n]) => n && !DSP_POS[k]); const base = estimate(countCart()).liq + gc.pod + gc.lung; return (fr.length ? `<div class="scan bundle"><div class="s" style="color:var(--ink)">일회용 이벤트 무료: ${fr.map(([k, n]) => evLabel(k) + " " + n + "개").join(", ")} → 포스에서 가장 싼 것부터 서비스(0원) 처리</div></div>` : "") + (gc.giftDev ? `<div class="scan bundle"><div class="s" style="color:var(--ink)">🎁 에어릭스 팟 10개 혜택 → 에어릭스 기기 ${gc.giftDev}대 증정 (서비스 0원 처리)</div></div>` : "") + (GIFT_ON && base >= 100000 ? `<div class="scan bundle"><div class="s" style="color:var(--ink)">🎁 액상·팟 ${won(base)} → 일회용 기기 1개 증정</div></div>` : ""); })()}
   ${engrave !== null ? `<div class="scan"><div class="hd"><b>레이저 각인 (0원)</b><span class="x">× 1</span></div><div class="s">문구: ${engrave ? esc(engrave) : "손님께 확인"}</div><span class="warn">포스에 0원 각인 상품 등록 후 바코드 연결</span></div>` : ""}
   ${review ? `<div class="line"><div class="mini" style="background:var(--red)">리뷰</div><div><b>클립 리뷰 할인 -3,000원</b><div class="s">네이버 클립 업로드 확인 후 할인</div></div></div>` : ""}
   ${(() => { const hs = items.filter(([id]) => isHi(item(id))); return hs.length ? `<div class="scan bundle"><div class="hd"><b>화학물질 장부 작성</b></div><div class="s" style="color:var(--ink);font-size:15px;margin-top:6px">${ledgerText() ? `<b>${esc(ledgerText())}</b> <span style="font-size:12.5px;color:var(--grey)">(구매자 직접 작성)</span>` : '<span class="warn">아직 작성 안 됨</span>'}</div><div class="s">${hs.map(([id, n]) => esc(item(id).n) + " ×" + n).join(" · ")}</div></div>` : ""; })()}
