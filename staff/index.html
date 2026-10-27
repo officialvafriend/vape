@@ -236,7 +236,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.26-38";
+const VER = "10.26-39";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -439,7 +439,7 @@ function render() {
     note: noteHtml(),
     reply: replyHtml(),
     blog: blogHtml(),
-    parcel: sendsHtml() + parcelHtml(),
+    parcel: parcelHtml(), // 10/27 사장님 '각이 안 맞음': 왼쪽에 퀵/전달 + 택배, 오른쪽에 오늘 지점별 택배
   }[VIEW];
   const badge = (k) => { const n = k === "talk" ? talkCount() : k === "home" ? todoItems().length : k === "blog" ? blogDue().length : k === "as2" ? as2Items().filter((x) => (B === "본점" && (x.st === 0 || x.st === 1)) || (x.b === B && !a2Lead(x) && (x.st === 3 || (x.st === 4 && !x.contact)))).length : 0; return n ? `<em class="bd">${n}</em>` : ""; };
   // 10/20 사장님 "여기 창이 별거 없네": 맨 위 칸 = 지금 할 일. 다음 단계 버튼을 바로 누르게, 진행 막대 대신 단계 점
@@ -1521,7 +1521,7 @@ function parcelHtml() {
   if (UI2) return `<div class="cols one"><div><div class="card"><h2>📦 택배 <small style="color:var(--red)">테스트 중</small></h2>${mine}
       <div class="btns" style="margin:0 0 12px"><button class="btn primary" data-go="pcnew">＋ 택배 요청</button></div>
       ${L.length ? L.map(row).join("") : '<div class="desc" style="padding:4px 0 12px">진행 중인 택배가 없어요</div>'}</div></div></div>`;
-  return `<div class="cols"><div><div class="card"><h2>📦 택배 <small style="color:var(--red)">테스트 중</small></h2>
+  return `<div class="cols"><div>${sendsHtml()}<div class="card"><h2>📦 택배 <small style="color:var(--red)">테스트 중</small></h2>
       <div class="btns" style="margin:4px 0 12px"><button class="btn primary" data-go="pcnew">＋ 택배 요청</button></div>
       ${L.length ? L.map(row).join("") : '<div class="desc" style="padding:4px 0 12px">진행 중인 택배가 없어요</div>'}</div></div>
     <div><div class="card"><h2>오늘 지점별 택배</h2>${day}<div class="btns" style="margin:12px 0 14px"><button class="btn" data-go="pdaygo">우리 지점 오늘 택배 출고됐어요</button></div></div></div></div>`;
@@ -1686,9 +1686,9 @@ function sentCardHtml() {
 function sendsHtml() {
   const L = snList();
   const row = (r) => `<div class="crow"><div><b>${SKIND[r.kind]} ${r.from === B ? `→ ${esc(toTxt(r))}` : `← ${esc(ho(r.from))} 요청`}: ${esc(r.items)}</b><span>${r.st === "done" ? (r.kind === "jeon" ? "받음 완료" : "출발 완료") : STXT[r.st] || r.st}${r.nm ? `, 손님 ${esc(r.nm)}` : ""}, ${esc(r.d.slice(5).replace("-", "/"))} ${esc(r.t)} ${esc(r.by)}</span></div><div class="tbtn">${snMine(r) ? `<button class="act" data-snopen="${r.id}">${r.st === "poll" && r.from === B ? "고르기" : SACT[r.kind + "|" + r.st] || "보기"}</button>` : `<button class="act gray" data-snopen="${r.id}">보기</button>`}</div></div>`;
-  return `<div class="cols one"><div><div class="card"><h2>🛵 퀵, 오픈퀵, 전달 <small style="color:var(--red)">테스트 중</small></h2>
+  return `<div class="card"><h2>🛵 퀵, 오픈퀵, 전달 <small style="color:var(--red)">테스트 중</small></h2>
     <div class="btns" style="margin:4px 0 12px"><button class="btn primary" data-snew="quick">＋ 퀵</button><button class="btn" data-snew="jeon">＋ 전달</button></div>
-    ${L.length ? L.map(row).join("") : '<div class="desc" style="padding:4px 0 12px">진행 중인 건이 없어요</div>'}</div></div></div>`;
+    ${L.length ? L.map(row).join("") : '<div class="desc" style="padding:4px 0 12px">진행 중인 건이 없어요</div>'}</div>`;
 }
 function sheetSnNew(kind) {
   SN.to = null; SN.kind = kind === "quick" && quickClosed() ? "openquick" : kind; PK = { list: [], res: [] }; if (UI2) loadProds();
