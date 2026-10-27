@@ -210,6 +210,8 @@ body[data-theme=dark] .svbox{background:#2a1c1d}body[data-theme=dark] .svbox .sc
 .final{display:flex;justify-content:space-between;align-items:center;background:var(--ink);color:var(--card);border-radius:16px;padding:16px 18px}.final span{font-size:15px}.final b{font-size:28px;font-family:var(--num)}
 .prog{position:sticky;top:0;z-index:2;background:var(--card);padding:8px 0 10px;overflow:hidden}.prog b{font-size:16px}.prog span{font-size:12.5px;color:var(--grey);margin-left:8px}.prog i{display:block;height:5px;border-radius:3px;background:#1b8a4b;margin-top:6px;transition:width .3s}
 .qrbox.svq{box-shadow:inset 0 0 0 3px #f3c7c7}
+.stk{font-size:13px;font-weight:600;color:var(--grey);margin-left:8px}
+.askyes{margin-top:8px;font-size:14px;color:#1b8a4b}
 .combo{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:4px 0 14px}.combo button{background:var(--card);border-radius:16px;padding:14px;text-align:left;box-shadow:inset 0 0 0 1.5px var(--line)}.combo b{display:block;font-size:16px}.combo span{font-size:13px;color:var(--grey)}
 .evtip{font-size:13.5px;color:var(--grey);margin:-4px 0 10px}
 .evq{width:100%;height:52px;border:1px solid var(--line);border-radius:14px;padding:0 16px;font-size:17px;background:var(--card);color:var(--ink)}
@@ -316,7 +318,7 @@ body[data-theme=dark] .scan svg{background:#fff;border-radius:8px}
     <!-- 액상 -->
     <div class="view" id="vLiq">
       <div class="card goal" id="goal"></div>
-      <div class="h">메인 추천 액상</div>
+      <div class="h">메인 추천 액상 <small id="stockAt" class="stk"></small></div>
       <div class="chips" id="chips"></div>
       <div class="grid" id="liqGrid"></div>
     </div>
@@ -399,7 +401,10 @@ $('themeBtn').onclick = () => setTheme(document.body.dataset.theme === "dark" ? 
 const BRANCH = (() => { const u = new URLSearchParams(location.search).get("branch"); try { if (u) localStorage.setItem("vf-menu-branch", u); return u || localStorage.getItem("vf-menu-branch") || "본점"; } catch (e) { return u || "본점"; } })();
 const POSB = (window.POS || {})[BRANCH] || {};
 const posOf = (n) => POSB[n];
-const outOf = (n) => !!(window.POS && window.POS[BRANCH]) && !POSB[n]; // 포스 자료가 없는 지점은 품절로 보지 않음 (지금 판 isOut과 같음) // [상품코드, 바코드, 형식, 바코드 등록 여부, 분류]
+// 실재고 (10/27 사장님 "실재고 다 연동"): 운영봇이 매시간 지점별 재고 0 상품명을 menu/stock.json에 올림 → 여기서 읽어 품절 처리 (지금 판과 같은 파일)
+const STOCK_URL = "https://officialvafriend.github.io/vape/menu/stock.json";
+let OUT = new Set(), STOCK_AT = "", STOCK_ALL = {};
+const outOf = (n) => OUT.has(n) || (!!(window.POS && window.POS[BRANCH]) && !POSB[n]); // 포스 자료가 없는 지점은 등록 여부로는 막지 않음 // [상품코드, 바코드, 형식, 바코드 등록 여부, 분류]
 const GDS = (window.GOODS_BY || {})[BRANCH] || window.GOODS || [];
 const won = (n) => n.toLocaleString() + "원";
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
@@ -532,7 +537,7 @@ function doneSale() { if (!confirm("결제 완료하고 처음 화면으로 갈�
   document.body.classList.remove('open'); cartViewBack(); drawLiq(); drawGoal(); go('home'); toast("감사합니다! 처음 화면으로 왔어요"); }
 
 // ── 기기 화면 ──
-const devOpts = (m) => GDS.filter((g) => g.c === "dev" && g.model === m);
+const devOpts = (m) => GDS.filter((g) => g.c === "dev" && g.model === m && !OUT.has(g.n));
 let dm = "하복2", dc = null, pkSel = 0;
 function drawDev() {
   const opts = devOpts(dm); if (!opts.find((o) => o.opt === dc)) dc = (opts[0] || {}).opt || null;
@@ -843,7 +848,8 @@ function drawAsk() {
   const l = askList(), one = askItem;
   const st = (n) => { const an = ASKANS[n]; return an && an.yes.length ? `<b class="ok">가능: ${an.yes.map(esc).join(", ")}</b>` : an && an.no.length ? `<span>불가: ${an.no.map(esc).join(", ")}</span>` : asked.has(n) ? "<span>답 기다리는 중</span>" : ""; };
   const sent = one && Date.now() - (asked.get(one) || 0) < 10 * 60e3;
-  $('askB').innerHTML = (one ? `<div class="askh"><small>${esc(BRANCH)}엔 없어요</small><b>${esc(one.replace(/^VF /, ""))}</b>${st(one) ? `<div class="askst">${st(one)}</div>` : ""}</div>
+  const yes = one ? Object.entries(STOCK_ALL).filter(([b, v]) => b !== BRANCH && window.POS && window.POS[b] && window.POS[b][one] && !(v.out || []).includes(one)).map(([b]) => b) : [];
+  $('askB').innerHTML = (one ? `<div class="askh"><small>${esc(BRANCH)}엔 없어요</small><b>${esc(one.replace(/^VF /, ""))}</b>${st(one) ? `<div class="askst">${st(one)}</div>` : ""}${yes.length ? `<div class="askyes">포스 기준 재고 있음: <b>${yes.map(esc).join(", ")}</b> (1시간마다 갱신)</div>` : ""}</div>
     <div class="askrow"><span>필요 수량</span><span class="qb"><button data-aq="-1">−</button><b>${askQty}</b><button data-aq="1">+</button></span></div>
     <button class="cta" data-asksend="1" ${sent ? "disabled" : ""}>${sent ? "요청 보냈어요" : "다른 지점에 재고 확인 요청"}</button>` : "")
     + (l.filter(([n]) => n !== one).length ? `<div class="evsec">보낸 요청</div>` + l.filter(([n]) => n !== one).map(([n, t]) => `<div class="askit"><b>${esc(n.replace(/^VF /, ""))}</b><small>${new Date(t).toTimeString().slice(0, 5)}</small>${st(n)}</div>`).join("") : "");
@@ -871,6 +877,17 @@ async function loadAskAns() { askChip(); if (!askList().length) return;
   if (document.body.classList.contains('askon')) drawAsk(); }
 setInterval(loadAskAns, 15e3); loadAskAns();
 document.addEventListener('click', (e) => { const a = e.target.closest('[data-ask]'); if (a && !e.target.closest('#askB')) { e.stopPropagation(); askOpen(a.dataset.ask); } }, true);
+
+// ── 실재고 불러오기 ──
+async function loadStock() {
+  try { const j = await (await fetch(STOCK_URL + "?t=" + Math.floor(Date.now() / 60e3), { cache: "no-store" })).json(); STOCK_ALL = j;
+    const b = j[BRANCH]; if (!b) return; const before = STOCK_AT + OUT.size; OUT = new Set(b.out || []); STOCK_AT = b.at || "";
+    if (before === STOCK_AT + OUT.size) return;
+    drawDev(); drawLiq(); if (document.body.classList.contains('evon')) drawEv(); if (document.body.classList.contains('srchon')) drawSearch(); if (document.body.classList.contains('askon')) drawAsk();
+    const sa = document.getElementById('stockAt'); if (sa) sa.textContent = `${BRANCH} 재고 ${STOCK_AT.split(" ").pop()} 기준`;
+  } catch (e) {}
+}
+setTimeout(loadStock, 0); setInterval(loadStock, 10 * 60e3);
 
 // 일회용: A그룹 아님, 이번엔 보기만 (판매 연결은 다음 단계)
 const dcard = (n, img, p) => `<div class="it"><span class="badge">10+5</span><div class="im"><img src="${img}" alt="" loading="lazy"></div><div class="nm">${n}</div><div class="fl">여러 맛</div><div class="bt"><span class="price">${won(p)}</span></div></div>`;
