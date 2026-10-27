@@ -802,12 +802,27 @@
   /* 첫 화면 = 하복2 색상 장면 사진(GPT, 디자인작업 261014_하복2_색상슬라이드). 가로판(울트라)에만 적용, 세로판은 원래 빨간 화면 그대로.
      사진은 #s1::before에 깔아서 따로 움직임. 사진은 칸을 꽉 채우고 오른쪽에 맞춤(사장님 10/14 "원래 이렇게였잖아" → 칸 채우기 방식 유지).
      기기 사진(.best-dev img)은 숨기고, 스펙 보기 누르는 자리만 기기 위치에 남김 */
+  /* 10/27 사장님 "하복 빨간 배경 다 없애고 우리가 만든 이미지로": 세로판 첫 화면도 빨간 배경 + 검정 누끼 대신 실버 장면 사진.
+     세로는 글이 위, 기기는 사진 아래쪽(150% 크기, 아래 맞춤)에 오게 하고 위는 어두운 색으로 이어 붙임 */
+  @media (orientation:portrait), (max-width:999px){
+    #s1{background:#070a10;position:relative;isolation:isolate}
+    #s1::before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,#070a10 0%,#070a10 26%,rgba(7,10,16,0) 50%),url(dev_havok2_bg_silver.jpg) center 100%/150% auto no-repeat;animation:s1bgP 1.4s cubic-bezier(.22,1,.36,1) both}
+    @keyframes s1bgP{from{opacity:0;transform:scale(1.04)}to{opacity:1;transform:none}}
+    #s1.s1off::before{animation:none}
+    #s1 .hdr .eb{color:#ff8a92}
+    #s1 .best-grid{align-items:flex-start}
+    #s1 .best-left{padding-top:4px}
+    #s1 .best-dev img{display:none}
+    #s1 .best-dev{position:absolute;left:auto;right:4%;top:38%;bottom:0;width:52%;height:auto;margin:0;transform:none;align-self:stretch} /* align-self:flex-end이면 위아래 다 잡아도 높이 0이 됨 */
+    #s1 .best-dev .spec-hit{width:100%;height:100%;background:none}
+    #s1 .spec-tag{right:6%;top:28%}
+  }
   @media (orientation:landscape) and (min-width:1000px){
     #s1{background:#070a10;position:relative;isolation:isolate;container-type:inline-size}
     #s1::before{content:"";position:absolute;inset:0;z-index:-1;background:url(dev_havok2_bg_silver.jpg) right center/cover no-repeat;animation:s1bg 1.8s cubic-bezier(.22,1,.36,1) both}
     #s1 .hdr .eb{color:#ff8a92}
     #s1 .best-dev img{display:none}
-    #s1 .best-dev{left:auto;right:6%;top:-40px;bottom:0;width:34%;height:auto;transform:none}
+    #s1 .best-dev{left:auto;right:6%;top:-40px;bottom:0;width:34%;height:auto;transform:none;align-self:stretch}
     #s1 .best-dev .spec-hit{width:100%;height:100%;background:none}
     #s1 .spec-tag{right:4%;top:22%;animation:s1fade .6s 1.6s both}
     /* 등장 애니메이션: 화면이 열릴 때마다(구역 전환 시) 다시 재생됨 */
@@ -829,7 +844,7 @@
 <body data-mode="">
 <div class="app">
   <div class="top">
-    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">v10.27-0200</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
+    <div class="bar"><span class="vf-logo"></span><span class="w">VAFRIEND</span><span class="s">MENU</span><span class="ver">v10.27-0300</span><button class="homebtn" id="homeBtn">처음</button><button class="find" id="findBtn" aria-label="검색">🔍 검색</button><button class="cart" id="cartBtn">담은 상품 <b id="cartN">0</b></button></div>
     <nav class="tabs" id="tabs" style="display:none"></nav>
     <div class="flow" id="flow"><span data-st="1">① 찾는 것</span><i>›</i><span data-st="2">② 고르기</span><i>›</i><span data-st="3">③ 담은 상품</span><i>›</i><span data-st="4">④ 직원 확인</span></div>
   </div>
