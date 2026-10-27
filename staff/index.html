@@ -236,7 +236,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.27-1";
+const VER = "10.27-2";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -1759,12 +1759,14 @@ async function doSnStep(t) {
 const BB_DONE = {}; // 이 기기에서 방금 보낸 것
 const bbPackList = () => (BOARD?.bbPack || []).filter((c) => !c.test === !TEST && !BB_DONE[c.id + "|" + c.b]);
 const bbInList = () => (BOARD?.bbIn || []).filter((c) => !c.test === !TEST && !BB_DONE[c.id + "|" + c.b]);
-const bbPills = () => bbPackList().map((c) => hp(`data-bbpack="${c.id}|${c.b}"`, "📦", "분배", `${esc(ho(c.b))} 챙기기 ${c.items.length}종`, `${esc(ho(c.b))} 분배 챙기기 ${c.items.length}종`, "챙기기")).join("")
-  + bbInList().map((c) => hp(`data-bbin="${c.id}"`, "📦", "분배", `본점에서 오는 중 ${c.items.filter((y) => y[2]).length}종`, `본점 분배 오는 중 ${c.items.filter((y) => y[2]).length}종`, "도착")).join("");
+const bbCu = (cu) => (cu || []).length ? `<div style="font-size:13px;font-weight:700;color:#c2344d;margin-top:2px">👤 손님 몫 ${cu.map(([nm, q]) => `${esc(nm)}님 ${q}개`).join(", ")}</div>` : "";
+const bbCuN = (c) => c.items.reduce((a, y) => a + (y[3] || []).length, 0);
+const bbPills = () => bbPackList().map((c) => hp(`data-bbpack="${c.id}|${c.b}"`, "📦", "분배", `${esc(ho(c.b))} 챙기기 ${c.items.length}종${bbCuN(c) ? `, 손님 몫 ${bbCuN(c)}` : ""}`, `${esc(ho(c.b))} 분배 챙기기 ${c.items.length}종${bbCuN(c) ? ` <span style="color:#c2344d">손님 몫 ${bbCuN(c)}</span>` : ""}`, "챙기기")).join("")
+  + bbInList().map((c) => hp(`data-bbin="${c.id}"`, "📦", "분배", `본점에서 오는 중 ${c.items.filter((y) => y[2]).length}종${bbCuN(c) ? `, 손님 몫 ${bbCuN(c)}` : ""}`, `본점 분배 오는 중 ${c.items.filter((y) => y[2]).length}종${bbCuN(c) ? ` <span style="color:#c2344d">손님 몫 ${bbCuN(c)}</span>` : ""}`, "도착")).join("");
 function sheetBbPack(key) {
   const c = bbPackList().find((x) => x.id + "|" + x.b === key); if (!c) return;
   openSheet(`<h2>📦 ${esc(ho(c.b))} 분배 챙기기</h2><div class="desc">챙긴 수량을 확인하고, 본점에도 없으면 [없음]을 눌러 주세요. 모자라면 숫자만 고쳐요.</div>
-    <div style="max-height:55vh;overflow:auto;margin-top:8px">${c.items.map(([n, q], i) => `<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-top:1px solid #eee"><b style="flex:1;font-size:15px">${esc(n)}</b><input class="input" id="bbq${i}" data-q="${q}" type="number" inputmode="numeric" min="0" value="${q}" style="width:72px;margin:0;text-align:center"><button class="act gray" data-bbnone="${i}">없음</button></div>`).join("")}</div>
+    <div style="max-height:55vh;overflow:auto;margin-top:8px">${bbCuN(c) ? '<div class="desc" style="color:#c2344d">👤 손님 몫은 손님이 결제하고 기다리는 거예요. 따로 봉투에 챙겨 주세요</div>' : ""}${c.items.map(([n, q, , cu], i) => `<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-top:1px solid #eee"><div style="flex:1"><b style="font-size:15px">${esc(n)}</b>${bbCu(cu)}</div><input class="input" id="bbq${i}" data-q="${q}" type="number" inputmode="numeric" min="0" value="${q}" style="width:72px;margin:0;text-align:center"><button class="act gray" data-bbnone="${i}">없음</button></div>`).join("")}</div>
     <div class="btns"><button class="btn" data-x>닫기</button><button class="btn primary" id="okBbPack" data-k="${key}">챙김 끝</button></div>`);
 }
 async function doBbPack(t) {
@@ -1778,7 +1780,7 @@ async function doBbPack(t) {
 function sheetBbIn(id) {
   const c = bbInList().find((x) => x.id === id); if (!c) return;
   openSheet(`<h2>📦 본점 분배 도착</h2><div class="desc">받은 물건이 맞는지 보고 [도착]을 눌러 주세요. 수량은 내일 아침 재고보고 때 맞춰져요.</div>
-    <div style="max-height:55vh;overflow:auto;margin-top:8px">${c.items.map(([n, q, g]) => `<div style="display:flex;gap:8px;padding:7px 0;border-top:1px solid #eee;${g ? "" : "color:var(--sub)"}"><b style="flex:1;font-size:15px">${esc(n)}</b><span style="font-weight:700">${g ? g + "개" : "없음 (본점에도 없음)"}</span></div>`).join("")}</div>
+    <div style="max-height:55vh;overflow:auto;margin-top:8px">${bbCuN(c) ? '<div class="desc" style="color:#c2344d">👤 손님 몫은 [도착]을 누르면 지금 할 일에 손님 연락으로 떠요</div>' : ""}${c.items.map(([n, q, g, cu]) => `<div style="display:flex;gap:8px;padding:7px 0;border-top:1px solid #eee;${g ? "" : "color:var(--sub)"}"><div style="flex:1"><b style="font-size:15px">${esc(n)}</b>${bbCu(cu)}</div><span style="font-weight:700">${g ? g + "개" : "없음 (본점에도 없음)"}</span></div>`).join("")}</div>
     <div class="btns"><button class="btn" data-x>닫기</button><button class="btn primary" id="okBbIn" data-id="${id}">도착</button></div>`);
 }
 async function doBbIn(t) {
