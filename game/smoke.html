@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>연기 피하기</title>
+<style>
+  :root{--bg:#0f1218;--ink:#fff;--sub:#9aa4b2;--mint:#3dd6c4;--red:#ff5a6a}
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
+  html,body{height:100%;background:var(--bg);color:var(--ink);font-family:Pretendard,"Malgun Gothic",sans-serif;overflow:hidden;touch-action:none}
+  canvas{display:block;width:100vw;height:100vh}
+  .hud{position:fixed;top:12px;left:0;right:0;display:flex;justify-content:space-between;padding:0 16px;pointer-events:none;font-weight:800}
+  .hud b{font-size:28px;font-variant-numeric:tabular-nums}.hud span{font-size:13px;color:var(--sub);align-self:center}
+  .ov{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:rgba(15,18,24,.86);text-align:center;padding:24px}
+  .ov h1{font-size:34px}.ov p{color:var(--sub);font-size:15px;line-height:1.6}
+  .ov .big{font-size:56px;font-weight:900;font-variant-numeric:tabular-nums}
+  .ov button{background:var(--mint);color:#0f1218;font-weight:900;font-size:18px;border:0;border-radius:16px;padding:14px 34px}
+  .ov button:disabled{background:#3a4250;color:#9aa4b2}
+  .phase{position:fixed;top:30%;left:0;right:0;text-align:center;font-size:30px;font-weight:900;color:var(--red);opacity:0;transition:opacity .3s;pointer-events:none}
+</style></head>
+<body>
+<canvas id="c"></canvas>
+<div class="hud"><b id="t">0.00</b><span id="left"></span></div>
+<div class="phase" id="ph"></div>
+<div class="ov" id="ov"></div>
+<script>
+// 10/27 사장님 "어려워야 해, 너무 쉬우면 안 돼": 직원웹 미니게임 시험판. 손가락으로 끌어 연기를 피하고 버틴 시간이 점수
+// 하루 5회(시험판은 이 기기에만 기억), 판마다 패턴이 달라서 외워서 깰 수 없음
+const cv = document.getElementById("c"), ctx = cv.getContext("2d"), $ = (id) => document.getElementById(id);
+let W, H, DPR;
+function fit() { DPR = Math.min(2, devicePixelRatio || 1); W = innerWidth; H = innerHeight; cv.width = W * DPR; cv.height = H * DPR; ctx.setTransform(DPR, 0, 0, DPR, 0, 0); }
+addEventListener("resize", fit); fit();
+
+const DAY = new Date().toISOString().slice(0, 10), KEY = "vf-smoke-" + DAY, MAX = 5;
+const ls = { get: (k, d) => { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } }, set: (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} } };
+const used = () => ls.get(KEY, 0), best = () => ls.get("vf-smoke-best", 0);
+
+const P = { x: 0, y: 0, r: 6, draw: 11 }; // 맞는 판정은 작게(6), 보이는 건 11
+let puffs = [], parts = [], t = 0, last = 0, run = false, spawnT = 0, burstT = 0, nextPhase = 10, shake = 0;
+let drag = null;
+
+// 난이도: 시간이 갈수록 나오는 간격은 줄고 속도는 빨라짐
+const rate = (s) => Math.max(0.09, 0.55 * Math.pow(0.955, s));       // 몇 초마다 하나
+const speed = (s) => 120 + s * 6.5 + Math.pow(s, 1.35);               // px/초
+const rnd = (a, b) => a + Math.random() * (b - a);
+
+function edgePoint() { const e = Math.floor(Math.random() * 4); return e === 0 ? [rnd(0, W), -30] : e === 1 ? [W + 30, rnd(0, H)] : e === 2 ? [rnd(0, W), H + 30] : [-30, rnd(0, H)]; }
+function spawn(kind) {
+  const [x, y] = edgePoint(), s = speed(t);
+  const aim = Math.atan2(P.y - y, P.x - x) + rnd(-0.35, 0.35);
+  if (kind === "big") puffs.push({ x, y, vx: Math.cos(aim) * s * 0.55, vy: Math.sin(aim) * s * 0.55, r: rnd(26, 38), home: 0 });
+  else if (kind === "seek") puffs.push({ x, y, vx: Math.cos(aim) * s * 0.7, vy: Math.sin(aim) * s * 0.7, r: 9, home: 1.6, life: 4.5 });
+  else puffs.push({ x, y, vx: Math.cos(aim) * s, vy: Math.sin(aim) * s, r: rnd(8, 14), home: 0 });
+}
+function burst() { // 화면 가장자리 한 점에서 부채꼴로 터짐 (틈 하나는 남김)
+  const [x, y] = edgePoint(), n = 10 + Math.min(14, Math.floor(t / 6)), base = Math.atan2(P.y - y, P.x - x), gap = Math.floor(rnd(2, n - 2)), s = speed(t) * 0.8;
+  for (let i = 0; i < n; i++) { if (i === gap || i === gap + 1) continue; const a = base + (i - n / 2) * 0.13; puffs.push({ x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s, r: 9, home: 0 }); }
+}
+function phaseMsg(txt) { const el = $("ph"); el.textContent = txt; el.style.opacity = 1; setTimeout(() => (el.style.opacity = 0), 900); }
+
+function start() {
+  if (used() >= MAX) return;
+  ls.set(KEY, used() + 1);
+  P.x = W / 2; P.y = H * 0.62; puffs = []; parts = []; t = 0; spawnT = 0.6; burstT = 7; nextPhase = 10; shake = 0;
+  $("ov").style.display = "none"; run = true; last = performance.now(); requestAnimationFrame(loop);
+}
+function over() {
+  run = false; shake = 14;
+  const sc = Math.floor(t * 100) / 100, b = best(); if (sc > b) ls.set("vf-smoke-best", sc);
+  for (let i = 0; i < 40; i++) parts.push({ x: P.x, y: P.y, vx: rnd(-260, 260), vy: rnd(-260, 260), l: rnd(.4, .9) });
+  setTimeout(() => menu(sc, sc > b), 700);
+}
+function loop(now) {
+  const dt = Math.min(0.033, (now - last) / 1000); last = now;
+  if (run) {
+    t += dt; spawnT -= dt; burstT -= dt;
+    while (spawnT <= 0) { spawnT += rate(t); const r = Math.random(); spawn(t > 15 && r < 0.12 ? "seek" : r < 0.22 ? "big" : "small"); }
+    if (burstT <= 0) { burst(); burstT = Math.max(2.6, 7 - t * 0.08); }
+    if (t >= nextPhase) { phaseMsg(nextPhase === 10 ? "빨라져요" : nextPhase === 20 ? "더 빨라져요" : nextPhase === 30 ? "고수 구간" : `${nextPhase}초!`); nextPhase += 10; }
+    for (const p of puffs) {
+      if (p.home && p.life > 0) { p.life -= dt; const a = Math.atan2(P.y - p.y, P.x - p.x), sp = Math.hypot(p.vx, p.vy); const cur = Math.atan2(p.vy, p.vx); let d = a - cur; d = Math.atan2(Math.sin(d), Math.cos(d)); const na = cur + Math.max(-p.home * dt, Math.min(p.home * dt, d)); p.vx = Math.cos(na) * sp; p.vy = Math.sin(na) * sp; }
+      p.x += p.vx * dt; p.y += p.vy * dt;
+      if (Math.hypot(p.x - P.x, p.y - P.y) < p.r * 0.82 + P.r) { over(); break; }
+    }
+    puffs = puffs.filter((p) => p.x > -80 && p.x < W + 80 && p.y > -80 && p.y < H + 80);
+    $("t").textContent = t.toFixed(2);
+  }
+  for (const q of parts) { q.x += q.vx * dt; q.y += q.vy * dt; q.l -= dt; }
+  parts = parts.filter((q) => q.l > 0);
+  draw();
+  if (run || parts.length || shake > 0) requestAnimationFrame(loop);
+}
+function draw() {
+  ctx.save(); ctx.clearRect(0, 0, W, H);
+  if (shake > 0) { ctx.translate(rnd(-shake, shake), rnd(-shake, shake)); shake *= 0.85; if (shake < 0.5) shake = 0; }
+  for (const p of puffs) { const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r * 1.25); g.addColorStop(0, p.home ? "rgba(255,90,106,.95)" : "rgba(220,226,235,.95)"); g.addColorStop(.7, p.home ? "rgba(255,90,106,.55)" : "rgba(170,180,195,.55)"); g.addColorStop(1, "rgba(150,160,175,0)"); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(p.x, p.y, p.r * 1.25, 0, 7); ctx.fill(); }
+  if (run) { ctx.fillStyle = "#3dd6c4"; ctx.beginPath(); ctx.arc(P.x, P.y, P.draw, 0, 7); ctx.fill(); ctx.fillStyle = "#0f1218"; ctx.beginPath(); ctx.arc(P.x, P.y, 3, 0, 7); ctx.fill(); }
+  for (const q of parts) { ctx.fillStyle = `rgba(61,214,196,${Math.max(0, q.l)})`; ctx.fillRect(q.x, q.y, 4, 4); }
+  ctx.restore();
+}
+// 손가락 위치로 순간이동하지 않고, 끄는 만큼만 움직임 (손가락에 캐릭터가 안 가려지게)
+cv.addEventListener("pointerdown", (e) => { drag = { x: e.clientX, y: e.clientY, px: P.x, py: P.y }; cv.setPointerCapture(e.pointerId); });
+cv.addEventListener("pointermove", (e) => { if (!drag || !run) return; P.x = Math.max(P.draw, Math.min(W - P.draw, drag.px + (e.clientX - drag.x) * 1.15)); P.y = Math.max(P.draw, Math.min(H - P.draw, drag.py + (e.clientY - drag.y) * 1.15)); });
+addEventListener("pointerup", () => (drag = null));
+
+function menu(sc, nb) {
+  const left = MAX - used(), ov = $("ov");
+  ov.innerHTML = sc == null
+    ? `<h1>💨 연기 피하기</h1><p>화면 아무 데나 대고 끌어서<br>연기를 피해요. 버틴 시간이 점수예요.<br><b style="color:#ff5a6a">빨간 연기는 따라와요.</b></p><p>오늘 남은 판 <b style="color:#fff">${left}/${MAX}</b>${best() ? `, 내 최고 ${best().toFixed(2)}초` : ""}</p><button id="go" ${left ? "" : "disabled"}>${left ? "시작" : "오늘은 끝! 내일 다시"}</button>`
+    : `<p>${nb ? "🎉 내 최고 기록!" : "버틴 시간"}</p><div class="big">${sc.toFixed(2)}초</div><p>내 최고 ${best().toFixed(2)}초<br>오늘 남은 판 <b style="color:#fff">${left}/${MAX}</b></p><button id="go" ${left ? "" : "disabled"}>${left ? "한 판 더" : "오늘은 끝! 내일 다시"}</button>`;
+  ov.style.display = "flex"; $("left").textContent = `남은 판 ${left}`;
+  const go = $("go"); if (go && left) go.onclick = start;
+}
+menu(null);
+</script>
+</body></html>
