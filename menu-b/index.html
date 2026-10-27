@@ -248,8 +248,9 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
 body.land #vHome .go3{grid-template-rows:repeat(3,150px);align-content:start}
 /* 시연팟 번호 + BEST/HOT (10/27 사장님 "깔끔하고 귀엽게") */
 .it .badge{z-index:3}.it.sold .badge.so{top:auto;bottom:122px;left:50%;transform:translateX(-50%);white-space:nowrap;border-radius:999px;padding:5px 12px}
-.it .rib{position:absolute;top:16px;left:16px;z-index:2;background:var(--red);color:#fff;font-family:var(--num);font-size:11px;letter-spacing:.06em;padding:3px 8px 4px;border-radius:999px;box-shadow:0 2px 6px rgba(216,31,42,.3)}
-.it .rib.hot{background:#ff7a00;box-shadow:0 2px 6px rgba(255,122,0,.3)}
+.it .rib{position:absolute;top:18px;left:18px;z-index:2;background:rgba(255,255,255,.92);color:var(--red);font-family:var(--num);font-size:10px;letter-spacing:.08em;padding:3px 7px;border-radius:6px;backdrop-filter:blur(4px)}
+.it .rib.hot{color:#ff7a00}
+.sno{font-style:normal;font-size:11px;font-weight:700;color:#b5b5bb;margin-left:5px;font-family:var(--num);letter-spacing:0}.sno::before{content:"#"}
 .pno{position:absolute;top:14px;right:14px;z-index:2;min-width:30px;height:30px;padding:0 6px;border-radius:15px;display:flex;align-items:center;justify-content:center;font-family:var(--num);font-size:14px;color:#15120f;background:#fff;border:2px solid #15120f;box-shadow:0 2px 0 #15120f}
 .pno.in{position:static;display:inline-flex;min-width:24px;height:22px;font-size:12px;border-width:1.5px;box-shadow:none;margin-right:6px;vertical-align:1px}
 .pno.lc-w{background:#fff}.pno.lc-b{background:#9cc8f0}.pno.lc-o{background:#ffb066}.pno.lc-g{background:#d3d3d3}.pno.lc-gr{background:#9ad39a}.pno.lc-y{background:#ffe36b}.pno.lc-v{background:#d4bff0}
@@ -499,7 +500,8 @@ const noOf = (n) => LABELNO[n] || LABELNO["VF " + n] || 0, lcOf = (n) => LABELCO
 const DIO = (window.LIQ || []).filter((x) => /^디오 /.test(x.n) && !/딸기망고|콜라/.test(x.n)).map((x) => x.n);
 const LQ = [...A_LIQ, ...DIO].map((n) => (window.LIQ || []).find((x) => x.n === n)).filter(Boolean).sort((a, b) => (a.no || 999) - (b.no || 999));
 const badgeOf = (n) => /^(VF )?(빌런|릭) |시가812|쿨멘솔/.test(n) ? "BEST" : /^디오 /.test(n) ? "HOT" : "";
-const tagHtml = (n) => { const b = badgeOf(n), no = noOf(n); return (b ? `<span class="rib ${b === "HOT" ? "hot" : ""}">${b}</span>` : "") + (no ? `<span class="pno lc-${lcOf(n)}">${no}</span>` : ""); };
+const tagHtml = (n) => { const b = badgeOf(n), no = noOf(n); return b ? `<span class="rib ${b === "HOT" ? "hot" : ""}">${b}</span>` : ""; };
+const noTag = (n) => noOf(n) ? `<i class="sno">${noOf(n)}</i>` : ""; // 시연팟 번호: 직원용이라 이름 끝에 작게
 const isVL = (x) => /^VF (빌런|릭) /.test(x.n);
 const short = (n) => n.replace(/^VF /, "");
 
@@ -663,7 +665,7 @@ $('chips').innerHTML = ["전체", "빌런", "디오", "릭", "베이퍼"].map((t
 $('chips').onclick = (e) => { const b = e.target.closest('button'); if (!b) return; lf = b.dataset.f; $('chips').querySelectorAll('button').forEach((x) => x.classList.toggle('on', x === b)); drawLiq(); };
 function drawLiq() {
   $('liqGrid').innerHTML = LQ.filter((x) => lf === "전체" || BR_OF(x) === lf).map((x) => { const q = (cart.get(x.id) || {}).qty || 0, out = outOf(x.n);
-    return `<div class="it ${q ? "got" : ""} ${out ? "sold" : ""}" ${out ? `data-ask="${esc(x.n)}"` : ""}>${out ? '<span class="badge so">품절, 다른 지점 확인</span>' : tagHtml(x.n)}${q ? `<span class="qty">${q}병 담음</span>` : ""}<div class="im" style="background:${tintOf(x)}"><img src="${imgOf(x)}" alt="" loading="lazy"></div><div class="nm">${esc(short(x.n))}</div><div class="fl">${esc([x.f, (x.t || []).includes("노멘솔") ? "노멘솔" : ""].filter(Boolean).join(", "))}</div><div class="bt"><span class="price">15,000원</span>${out ? "" : `<button class="add" data-a="${x.id}">+</button>`}</div></div>`; }).join("");
+    return `<div class="it ${q ? "got" : ""} ${out ? "sold" : ""}" ${out ? `data-ask="${esc(x.n)}"` : ""}>${out ? '<span class="badge so">품절, 다른 지점 확인</span>' : tagHtml(x.n)}${q ? `<span class="qty">${q}병 담음</span>` : ""}<div class="im" style="background:${tintOf(x)}"><img src="${imgOf(x)}" alt="" loading="lazy"></div><div class="nm">${esc(short(x.n))}${noTag(x.n)}</div><div class="fl">${esc([x.f, (x.t || []).includes("노멘솔") ? "노멘솔" : ""].filter(Boolean).join(", "))}</div><div class="bt"><span class="price">15,000원</span>${out ? "" : `<button class="add" data-a="${x.id}">+</button>`}</div></div>`; }).join("");
 }
 $('liqGrid').onclick = (e) => { const b = e.target.closest('[data-a]'); if (!b) return; const x = LQ.find((y) => y.id === b.dataset.a);
   addItem(x.id, { k: "liq", n: x.n, label: short(x.n), img: imgOf(x), unit: 15000 }); };
@@ -781,7 +783,7 @@ function openEv(k) {
 function closeEv() { document.body.classList.remove('evon'); }
 $('evX').onclick = closeEv;
 const evCard = (id, img, name, sub, price, out) => { const q = EV.pick.get(id) || 0;
-  return `<div class="it ${q ? "got" : ""} ${out ? "sold" : ""}" data-e="${out ? "" : id}">${out ? '<span class="badge so">품절</span>' : tagHtml(name)}${q ? `<span class="qty">${q}</span><button class="mn" data-em="${id}">−</button>` : ""}<div class="im" style="background:${tintOf({ n: name, f: sub })}"><img src="${img}" alt="" loading="lazy"></div><div class="nm">${esc(name)}</div><div class="fl">${esc(sub)}</div>${price ? `<div class="bt"><span class="price" style="font-size:15px">${won(price)}</span></div>` : ""}</div>`; };
+  return `<div class="it ${q ? "got" : ""} ${out ? "sold" : ""}" data-e="${out ? "" : id}">${out ? '<span class="badge so">품절</span>' : tagHtml(name)}${q ? `<span class="qty">${q}</span><button class="mn" data-em="${id}">−</button>` : ""}<div class="im" style="background:${tintOf({ n: name, f: sub })}"><img src="${img}" alt="" loading="lazy"></div><div class="nm">${esc(name)}${noTag(name)}</div><div class="fl">${esc(sub)}</div>${price ? `<div class="bt"><span class="price" style="font-size:15px">${won(price)}</span></div>` : ""}</div>`; };
 // 10/27 사장님 "굳이 다 골라야 하나, 다른 액상 피고 싶을 수도": ① 다 안 골라도 담기(남은 건 매장에서) ② 추천 조합 한 번에 ③ 하복2 패키지는 다른 프리미엄도 검색
 const DSP_MIN = () => Math.min(...DSP_POOL().map((g) => g.price));
 function dspTotal(rest = 0) { // 15개 중 가장 싼 5개 서비스. 매장에서 고를 개수(rest)는 가장 싼 값으로 셈
@@ -899,7 +901,7 @@ function drawSearch() {
   const r = searchItems(q);
   $('sres').innerHTML = r.length ? r.map((o) => { const x = o.x, liq = o.t === "liq", key = x.id, have = (cart.get(key) || {}).qty || 0, out = outOf(x.n);
     const img = liq ? imgOf(x) : gImg(x), price = liq ? liqPrice(x) : x.price;
-    return `<div class="sr ${out ? "sold" : ""}"><div class="im" style="background:${liq ? tintOf(x) : "#f4f4f6"}">${img ? `<img src="${img}" alt="" loading="lazy">` : { dev: "🔋", pod: "🧩", dsp: "🚬" }[x.c] || "💧"}</div><div class="n"><b>${liq && noOf(x.n) ? `<span class="pno in lc-${lcOf(x.n)}">${noOf(x.n)}</span>` : ""}${esc(liq ? short(x.n) : x.n)}</b><span>${esc(liq ? [x.br, x.line, x.f].filter(Boolean).join(", ") : { dev: "기기", pod: "팟, 코일", dsp: "일회용" }[x.c] || "")}${out ? " · 품절" : ""}</span>${have ? `<span class="q"> 담음 ${have}</span>` : ""}</div><b class="price">${won(price)}</b>${out ? `<button class="askb" data-ask="${esc(x.n)}">다른 지점 확인</button>` : `<button class="add" data-s="${key}" data-t="${o.t}">+</button>`}</div>`; }).join("")
+    return `<div class="sr ${out ? "sold" : ""}"><div class="im" style="background:${liq ? tintOf(x) : "#f4f4f6"}">${img ? `<img src="${img}" alt="" loading="lazy">` : { dev: "🔋", pod: "🧩", dsp: "🚬" }[x.c] || "💧"}</div><div class="n"><b>${esc(liq ? short(x.n) : x.n)}${liq ? noTag(x.n) : ""}</b><span>${esc(liq ? [x.br, x.line, x.f].filter(Boolean).join(", ") : { dev: "기기", pod: "팟, 코일", dsp: "일회용" }[x.c] || "")}${out ? " · 품절" : ""}</span>${have ? `<span class="q"> 담음 ${have}</span>` : ""}</div><b class="price">${won(price)}</b>${out ? `<button class="askb" data-ask="${esc(x.n)}">다른 지점 확인</button>` : `<button class="add" data-s="${key}" data-t="${o.t}">+</button>`}</div>`; }).join("")
     : '<div style="padding:40px 0;text-align:center;color:var(--grey)">찾는 상품이 없어요</div>';
 }
 $('q').addEventListener('input', drawSearch);
