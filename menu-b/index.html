@@ -255,6 +255,18 @@ body.land #vHome .go3{grid-template-rows:repeat(3,150px);align-content:start}
 .pno.lc-w{background:#fff}.pno.lc-b{background:#9cc8f0}.pno.lc-o{background:#ffb066}.pno.lc-g{background:#d3d3d3}.pno.lc-gr{background:#9ad39a}.pno.lc-y{background:#ffe36b}.pno.lc-v{background:#d4bff0}
 .it .qty{position:absolute;left:16px;top:calc(10px + (100% - 120px) * 0);z-index:2;display:none}
 .it.got .qty{display:block;top:auto;bottom:118px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--card);font-size:12px;font-weight:800;border-radius:999px;padding:4px 10px;white-space:nowrap}
+/* 줄바꿈: 한국어 단어 중간에서 안 끊기게 (사장님 "문장이 잘려서 어색") */
+body{word-break:keep-all;overflow-wrap:break-word}
+.ln{height:auto;min-height:64px;padding:8px 0}.ln .n{font-size:15px;line-height:1.3}.ln .qb{gap:6px}.ln .qb button{width:28px;height:28px;font-size:16px}.ln .price{min-width:0;font-size:16px;white-space:nowrap}
+.devben{background:var(--bg);border-radius:18px;padding:16px;margin:12px 0;box-shadow:inset 0 0 0 2px var(--red)}
+.devben .dbh{font-size:17px;font-weight:800;color:var(--red);margin-bottom:8px}
+.devben ul{list-style:none;margin:0;padding:0}.devben li{background:var(--card);border-radius:12px;padding:10px 12px;margin-top:8px;position:relative}
+.devben li b{display:block;font-size:15px}.devben li span{display:block;font-size:13px;color:var(--grey);margin-top:2px}.devben li.ok b::before{content:"✓ ";color:#1b8a4b}
+.devben li input{width:100%;height:42px;margin-top:6px;border:1px solid var(--line);border-radius:10px;padding:0 10px;font-size:15px;background:var(--bg);color:var(--ink)}
+.devben .mini{background:var(--red);color:#fff;border-radius:10px;padding:7px 12px;font-size:13px;font-weight:800;margin-top:6px}.devben .mini.ln{background:var(--ink);color:var(--card);margin-right:4px}
+.devben li > .mini[data-eg]{position:absolute;right:10px;top:10px;margin:0}
+/* 바닥 시트, 어둡게 덮개가 카드 번호, BEST 표시보다 위에 오게 */
+.dim{z-index:9}.sheet{z-index:10}.cart{position:relative;z-index:8}
 .combo{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:4px 0 14px}.combo button{background:var(--card);border-radius:16px;padding:14px;text-align:left;box-shadow:inset 0 0 0 1.5px var(--line)}.combo b{display:block;font-size:16px}.combo span{font-size:13px;color:var(--grey)}
 .evtip{font-size:13.5px;color:var(--grey);margin:-4px 0 10px}
 .evq{width:100%;height:52px;border:1px solid var(--line);border-radius:14px;padding:0 16px;font-size:17px;background:var(--card);color:var(--ink)}
@@ -539,34 +551,50 @@ function giftBase() { // 액상, 팟 금액 (기기, 기기패키지에 든 액�
   const e = estimate(c), liq = c.dev && e.how ? e.total - c.dev * MAIN_PRICE - pkAddOf(e.how) : prPrice(c.v + c.p) + pmPrice(c.m);
   return Math.max(0, liq) + items.filter((x) => x.k === "bulk").reduce((a, x) => a + x.unit * x.qty, 0) + items.filter((x) => x.cc === "pod").reduce((a, x) => a + x.unit * x.qty, 0);
 }
+// 기기 담았을 때 혜택 (10/27 사장님 "기기 구매 시 받을 수 있는 혜택이 있어요! 떠야", "케이스도 추천"): 하복2 액상 패키지, 레이저 각인, 전용 케이스
+const caseOf = (model) => { const k = norm(model); return GDS.filter((g) => /케이스/.test(g.n) && norm(g.n).startsWith(k) && !OUT.has(g.n) && !outOf(g.n)); };
+function devBenefit(c, devs) {
+  const n = c.v + c.p, rows = [];
+  if (c.dev) { // 하복2 기기패키지 (지금 판 규칙: 빌런, 릭 5병 30,000 / 프리미엄 5병 40,000 / 10병 75,000)
+    if (n >= 10) rows.push(`<li class="ok"><b>액상 10병 패키지 적용 중</b><span>액상 10병이 75,000원 (병당 7,500원)</span></li>`);
+    else { if (n < 5) rows.push(`<li><b>빌런, 릭 ${5 - n}병 더 담으면 5병 패키지</b><span>액상 5병이 30,000원 (병당 6,000원)</span></li>`);
+      rows.push(`<li><b>액상 ${10 - n}병 더 담으면 10병 패키지</b><span>하복2 + 액상 10병 164,000원 (179,000원에서 15,000원 할인)</span></li>`); } }
+  rows.push(engrave === null ? `<li><b>레이저 각인 무료</b><span>원하는 문구를 기기에 새겨 드려요</span><button class="mini" data-eg="add">각인 추가</button></li>`
+    : `<li class="ok"><b>레이저 각인 추가됨</b><input type="text" id="engrText" maxlength="20" placeholder="새길 문구 (이름, 이니셜 등)" value="${esc(engrave)}"><button class="mini ln" data-eg="del">빼기</button></li>`);
+  const cases = [...new Map(devs.flatMap((d) => caseOf(d.model || "")).map((g) => [g.id, g])).values()].filter((g) => !cart.has(g.id));
+  if (cases.length) rows.push(`<li><b>기기 보호 케이스도 있어요</b><span>${cases.map((g) => `<button class="mini ln" data-case="${g.id}">${esc(g.n)} ${won(g.price)}</button>`).join(" ")}</span></li>`);
+  return `<div class="devben"><div class="dbh">기기 구매 시 받을 수 있는 혜택이 있어요!</div><ul>${rows.join("")}</ul>${c.dev && n < 10 ? `<button class="cta" data-goliq="1" style="margin-top:10px;height:52px;font-size:16px">액상 고르러 가기</button>` : ""}</div>`;
+}
 function benefitBox() {
   const t = totalOf(), c = t.c, items = [...cart.values()], n = c.v + c.p, out = [];
   const liqAll = n + c.m + items.filter((x) => x.k === "bulk").reduce((a, x) => a + x.items.reduce((s, [, , q]) => s + q, 0) * x.qty, 0);
-  const hasDev = items.some((x) => x.k === "dev");
+  const devs = items.filter((x) => x.k === "dev");
+  if (devs.length) out.push(devBenefit(c, devs));
   // 프리미엄 묶음 (기기 없을 때)
   if (n && !c.dev) {
-    if (n >= 11) out.push(`<div class="nudge"><b>프리미엄 11병 90,000원 적용 중</b><span>지금 ${n}병</span></div>`);
+    if (n >= 11) out.push(`<div class="nudge"><b>프리미엄 11병 90,000원 적용 중</b><span>지금 ${n}병 담았어요</span></div>`);
     else { const goal = n < 5 ? 5 : 11, more = goal - n, diff = prPrice(n + more) - prPrice(n);
-      out.push(`<div class="nudge"><b>${diff < 0 ? `${more}병 더 담으면 오히려 ${won(-diff)} 싸져요` : `${more}병 더 담으면 ${goal}병 ${goal === 5 ? "49,500" : "90,000"}원`}</b><span>지금 ${n}병, 목표 ${goal === 5 ? "5병 49,500원" : "11병 90,000원 (병당 약 8,200원)"}</span><div class="bar2"><i style="width:${Math.min(100, n / goal * 100)}%"></i></div></div>`); }
-    // 하복2 기기패키지 만들기
+      out.push(`<div class="nudge"><b>${diff < 0 ? `${more}병 더 담으면 오히려 ${won(-diff)} 싸져요` : `${more}병 더 담으면 ${goal}병 ${goal === 5 ? "49,500" : "90,000"}원`}</b><span>지금 ${n}병, ${goal === 5 ? "5병 49,500원" : "11병 90,000원 (병당 약 8,200원)"}까지</span><div class="bar2"><i style="width:${Math.min(100, n / goal * 100)}%"></i></div></div>`); }
     const h2 = devOpts("하복2")[0];
-    if (h2) { const withDev = estimate({ ...c, dev: 1 }).total + c.other;
-      out.push(`<button class="upsell" data-up="1"><span><b>이 맛들로 하복2 패키지 만들기</b><small>하복2 더하면 총 ${won(withDev)} (기기 89,000원이 ${won(withDev - t.total)}에)</small></span><i>→</i></button>`); }
+    if (h2 && !devs.length) { const withDev = estimate({ ...c, dev: 1 }).total + c.other;
+      out.push(`<button class="upsell" data-up="1"><span><b>이 맛들로 하복2 패키지 만들기</b><small>하복2를 더하면 총 ${won(withDev)}, 기기가 ${won(withDev - t.total)}인 셈이에요</small></span><i>→</i></button>`); }
   }
   // 일회용 증정
   const base = giftBase();
-  if (base > 0) out.push(base >= 100000 ? `<div class="nudge gift"><b>🎁 일회용 기기 1개 증정 대상이에요</b><span>액상, 팟 ${won(base)} (10만원 이상)</span></div>`
-    : `<div class="nudge"><b>액상, 팟 ${won(100000 - base)} 더 담으면 일회용 1개 증정</b><span>지금 ${won(base)}, 기기와 일회용 금액은 빼고 계산</span><div class="bar2"><i style="width:${Math.min(100, base / 1000)}%"></i></div></div>`);
-  // 레이저 각인 무료 (기기 또는 액상 10병 이상)
-  const eok = hasDev || liqAll >= 10; if (!eok) engrave = null;
-  if (eok) out.push(engrave === null ? `<div class="engr"><div><b>레이저 각인 무료 대상이에요!</b><span>원하시면 [각인 추가]를 눌러 주세요</span></div><button data-eg="add">각인 추가 0원</button></div>`
-    : `<div class="engr on"><div style="flex:1"><b>레이저 각인 0원</b><input type="text" id="engrText" maxlength="20" placeholder="새길 문구 (이름, 이니셜 등 20자 이내)" value="${esc(engrave)}"></div><button data-eg="del">빼기</button></div>`);
-  else if (liqAll) out.push(`<div class="nudge"><b>액상 ${10 - liqAll}병 더 담으면 레이저 각인 무료</b><span>10병 이상이면 원하는 문구를 무료로 새겨 드려요</span></div>`);
+  if (base > 0) out.push(base >= 100000 ? `<div class="nudge gift"><b>🎁 일회용 기기 1개 증정 대상이에요</b><span>액상, 팟을 ${won(base)} 담았어요 (10만원 이상)</span></div>`
+    : `<div class="nudge"><b>액상, 팟 ${won(100000 - base)} 더 담으면 일회용 1개 증정</b><span>지금 ${won(base)} (기기, 일회용 금액은 빼고 계산)</span><div class="bar2"><i style="width:${Math.min(100, base / 1000)}%"></i></div></div>`);
+  // 레이저 각인: 기기가 있으면 위 혜택 카드 안에, 액상 10병 이상이면 따로
+  const eok = devs.length || liqAll >= 10; if (!eok) engrave = null;
+  if (!devs.length && eok) out.push(engrave === null ? `<div class="engr"><div><b>레이저 각인 무료</b><span>액상 10병 이상이면 원하는 문구를 새겨 드려요</span></div><button data-eg="add">각인 추가</button></div>`
+    : `<div class="engr on"><div style="flex:1"><b>레이저 각인 추가됨</b><input type="text" id="engrText" maxlength="20" placeholder="새길 문구 (이름, 이니셜 등)" value="${esc(engrave)}"></div><button data-eg="del">빼기</button></div>`);
+  else if (!devs.length && liqAll) out.push(`<div class="nudge"><b>액상 ${10 - liqAll}병 더 담으면 레이저 각인 무료</b><span>10병 이상이면 원하는 문구를 새겨 드려요</span></div>`);
   return out.join("");
 }
 $('lines').addEventListener('click', (e) => {
   const eg = e.target.closest('[data-eg]'), up = e.target.closest('[data-up]');
   if (eg) { engrave = eg.dataset.eg === "add" ? "" : null; drawCart(); }
+  const cs = e.target.closest('[data-case]'); if (cs) { const g = GDS.find((y) => y.id === cs.dataset.case); addItem(g.id, { k: "goods", n: g.n, label: g.n, img: "", unit: g.price, cc: "pod" }); toast(g.n + " 담았어요"); }
+  const gl = e.target.closest('[data-goliq]'); if (gl) { goalN = 10; if (!document.body.classList.contains('land')) document.body.classList.remove('open'); go('liq'); drawGoal(); }
   if (up) { const h2 = devOpts("하복2")[0]; addItem(h2.id, { k: "dev", n: h2.n, label: h2.n, img: DEV_IMG.하복2[h2.opt], unit: h2.price, model: "하복2" }); toast("하복2 " + h2.opt + "를 담았어요, 색은 기기 화면에서 바꿀 수 있어요"); }
 });
 $('lines').addEventListener('input', (e) => { if (e.target.id === "engrText") engrave = e.target.value; });
