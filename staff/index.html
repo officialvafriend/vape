@@ -451,7 +451,7 @@ function render() {
   const heroAs = AH.length ? `<div class="hil"><p class="hk" style="color:#9bd0ff">🔧 AS 지점 도착, 손님께 연락할 것 ${AH.length}개</p>${AH.slice(0, 3).map((x) => `<div class="hrow"><div class="ht"><b>${esc(as2Title(x))}</b><span>${esc(as2Name(x) || "손님")}, 접수 ${x.d.slice(5).replace("-", "/")} ${esc(x.by)}${x.loan && !x.loanBack ? ", 📱 대여 중: " + esc((x.loan === "대여 있음" ? "기기명 없음" : x.loan)) : ""}</span></div><div class="hbs"><button class="ok" data-a2sms="${x.id}">📩 문자</button><button data-a2go="5" data-id="${x.id}">전달 완료</button></div></div>`).join("")}${AH.length > 3 ? `<p style="margin-top:8px"><button data-view="as2" style="color:#9bd0ff;font-weight:800">외 ${AH.length - 3}개는 AS관리에서 →</button></p>` : ""}</div>` : "";
   const heroIl = TD.length ? `<div class="hil"><p class="hk">📅 오늘 일정 ${TD.length}개, 처리 못 하면 다음 근무자에게 넘어가요</p>${TD.map((it) => `<div class="hrow"><div class="ht"><b>${it.ic} ${esc(it.title)}</b><span>${esc(it.sub)}</span></div><div class="hbs">${ilBtns(it, true)}</div></div>`).join("")}</div>` : "";
   const heroPill = bbPills() + snPills() + pcPills() + blogDue().map((x) => hp(`data-view="blog"`, "📝", "블로그", `${esc(x.kw)}${x.date < todayKey() ? ` (${sd(x.date)}분)` : ""}${blogCnt(x) ? `, ${blogCnt(x)}` : ""}`, `블로그 발행: ${esc(x.kw)}${x.date < todayKey() ? ` (${sd(x.date)}분)` : ""}${blogCnt(x) ? ` <span style="color:#c2344d">${blogCnt(x)}</span>` : ""}`, "하기")).join("")
-    + (BOARD?.tasks || []).filter((t) => !t.done && !TASK_DONE[t.id]).map((t) => hp(`data-tdone="${t.id}"`, "🔔", "할 일", `${esc(t.title)}${t.time ? ` (${esc(t.time)})` : ""}${cntTxt(t) ? `, ${cntTxt(t)}` : ""}`, `할 일: ${esc(t.title)}${t.time ? ` (${esc(t.time)})` : ""}${cntTxt(t) ? ` <span style="color:#c2344d">${cntTxt(t)}</span>` : ""}`, "완료")).join("");
+    + (BOARD?.tasks || []).filter((t) => !t.done && !TASK_DONE[t.id]).map((t) => t.kind === "survey" ? hp(`data-tsv="${t.id}"`, "📦", "재고조사", `${esc(t.title)}${cntTxt(t) ? `, ${cntTxt(t)}` : ""}`, `재고조사: ${esc(t.title)}`, "세기") : hp(`data-tdone="${t.id}"`, "🔔", "할 일", `${esc(t.title)}${t.time ? ` (${esc(t.time)})` : ""}${cntTxt(t) ? `, ${cntTxt(t)}` : ""}`, `할 일: ${esc(t.title)}${t.time ? ` (${esc(t.time)})` : ""}${cntTxt(t) ? ` <span style="color:#c2344d">${cntTxt(t)}</span>` : ""}`, "완료")).join("");
   // 10/26 사장님 "오후 내내 '지금 할 일, 마감'이 웃김": 오픈 끝 ~ 마감 1시간 전은 '영업 중' 카드(요청 버튼). 우선 시험 모드에서만
   const cAt = closeAtOf(B, d), nowM = d.getHours() * 60 + d.getMinutes(), cAtM = (([h, m]) => +h * 60 + +m)(cAt.split(":"));
   const biz = done === N && !cSteps[0] && d.getHours() >= 5 && nowM < cAtM - 60;
@@ -1821,7 +1821,7 @@ function taskCardHtml() {
   const list = (BOARD?.tasks || []).map((t) => ({ ...t, done: t.done || TASK_DONE[t.id] || null }));
   if (!list.length) return "";
   const left = list.filter((t) => !t.done).length;
-  return `<div class="card"><h2>✅ 오늘 할 일, ${left ? `남은 것 ${left}개` : "모두 완료"}</h2>${list.map((t) => `<div class="crow"><div><b style="${t.done ? "color:var(--sub);text-decoration:line-through" : ""}">${esc(t.title)}</b><span>${t.time ? esc(t.time) + ", " : ""}${esc(t.note || "")}${t.done ? `, ✓ ${esc(t.done.by)} ${esc(t.done.t)}` : ""}</span></div>${t.done ? "" : `<button class="act" data-tdone="${t.id}">완료</button>`}</div>`).join("")}</div>`;
+  return `<div class="card"><h2>✅ 오늘 할 일, ${left ? `남은 것 ${left}개` : "모두 완료"}</h2>${list.map((t) => `<div class="crow"><div><b style="${t.done ? "color:var(--sub);text-decoration:line-through" : ""}">${esc(t.title)}</b><span>${t.time ? esc(t.time) + ", " : ""}${esc(t.note || "")}${t.done ? `, ✓ ${esc(t.done.by)} ${esc(t.done.t)}` : ""}</span></div>${t.done ? "" : t.kind === "survey" ? `<button class="act" data-tsv="${t.id}">세기</button>` : `<button class="act" data-tdone="${t.id}">완료</button>`}</div>`).join("")}</div>`;
 }
 async function doTaskDone(id) {
   const by = working().join(", "); if (!by) return needIn(() => doTaskDone(id));
@@ -1856,6 +1856,16 @@ function sheetSurveyList(cat) {
     <div id="svList">${names.map((n, i) => `<div class="sv-row" id="svr${i}"><b>${esc(n)}</b><input inputmode="numeric" pattern="[0-9]*" data-svi="${i}" placeholder="-"></div>`).join("")}</div>
     <div class="sv-bar"><div class="btns" style="margin:0"><button class="btn" data-go="survey">뒤로</button><button class="btn primary" id="okSv">전송, <span id="svN">0</span>/${names.length}</button></div></div>`);
 }
+// 10/27 관리자가 시킨 재고조사(그룹): 오늘 할 일 [세기] → 그 그룹 상품 목록 바로. 보내면 운영봇이 그 할 일을 완료로 표시하고 포스를 맞춤
+let svTask = "";
+async function sheetSurveyTask(id) {
+  const tk = (BOARD?.tasks || []).find((t) => t.id === id); if (!tk) return toast("할 일을 못 찾았어요");
+  if (!working().length) return needIn(() => sheetSurveyTask(id));
+  await loadGroups();
+  const cat = (SV_CATS.find(([k, n]) => k === tk.g || n === tk.g) || [])[0] || tk.g;
+  if (!svNames(cat).length) return toast(`${tk.g} 상품 목록이 없어요`);
+  svTask = id; sheetSurveyList(cat);
+}
 async function doSurvey() {
   const entries = sv.names.map((n, i) => [n, sv.cnt[i]]).filter(([, c]) => c !== undefined && c !== "");
   if (!entries.length) return toast("센 개수를 하나 이상 넣어 주세요");
@@ -1866,8 +1876,9 @@ async function doSurvey() {
   for (const it of items) { if (JSON.stringify([...cur, it]).length > 1300) { parts.push(cur); cur = []; } cur.push(it); } if (cur.length) parts.push(cur);
   $("#okSv").disabled = true;
   try {
-    for (let i = 0; i < parts.length; i++) { await send({ type: "survey", id, cat: sv.nm, part: i, total: parts.length, items: parts[i], by }); if (i < parts.length - 1) await new Promise((r) => setTimeout(r, 700)); }
-    closeSheet(); toast(ADJ_BR.includes(B) ? `${sv.nm} ${items.length}개 보냈어요, 1~2분 안에 포스에 반영돼요` : `${sv.nm} ${items.length}개 보냈어요, 관리자 페이지에서 확인해요`);
+    for (let i = 0; i < parts.length; i++) { await send({ type: "survey", id, cat: sv.nm, part: i, total: parts.length, items: parts[i], by, ...(svTask ? { task: svTask } : {}) }); if (i < parts.length - 1) await new Promise((r) => setTimeout(r, 700)); }
+    if (svTask && !TEST) TASK_DONE[svTask] = { by, t: now() }; svTask = "";
+    closeSheet(); render(); toast(`${sv.nm} ${items.length}개 보냈어요, 1~2분 안에 포스에 반영돼요`);
   } catch (e) { $("#okSv").disabled = false; fail(e); }
 }
 // ── 마감 보고 (10/19 전 지점) ── 포스 연동 없이 포스 일마감 화면 숫자를 직원이 옮겨 적음 (노션 마감 DB, 근무자별 DB와 같은 칸)
@@ -2495,6 +2506,7 @@ document.addEventListener("click", (e) => {
   if (t.id === "okClose") return closeConfirm();
   if (t.id === "closeBack") return closeBack();
   if (t.id === "okClose2") return doClosing();
+  if (t.dataset.tsv) return sheetSurveyTask(t.dataset.tsv);
   if (t.dataset.svc) return sheetSurveyList(t.dataset.svc);
   if (t.id === "okSv") return doSurvey();
   if (t.dataset.go === "creq") return sheetCreq(t.dataset.cat || "");
