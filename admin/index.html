@@ -580,6 +580,8 @@ function issues() {
   if (aOut.length) L.push({ go: "survey", t: "A그룹 품절", d: `${aOut.length}종, ${aOut.slice(0, 3).join(", ")}${aOut.length > 3 ? " 외" : ""}` });
   const ow = (D.orders || []).filter((o) => !o.test && o.ost === "요청" && !["done", "cancel"].includes(o.step));
   if (ow.length) L.push({ go: "order", t: "주문요청", d: `주문 가능한지 확인 전 ${ow.length}건` });
+  const obuy = (D.orders || []).filter((o) => !o.test && o.ost === "확인" && o.pay === "결제완료" && !o.arrived && !["done", "cancel"].includes(o.step));
+  if (obuy.length) L.push({ go: "order", t: "주문요청", d: `결제 받음, 주문할 것 ${obuy.length}건` });
   const sw = (D.surveys || []).filter((v) => v.status === "wait");
   if (sw.length) L.push({ go: "survey", t: "재고조사", d: `승인 기다리는 ${sw.length}건` });
   // 10/26 사장님 "포스엔 있는데 없음이라 한 건은 관리자에게": 운영봇 refuse(최근 3일)
