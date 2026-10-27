@@ -288,7 +288,7 @@ const ICON = {
 };
 // 10/19 사장님 "다 따로 들어가기 불편해": 네이버 앱, 직원앱을 관리자 안 메뉴로 (같은 사이트라 안에 띄움, 네이버 열쇠, 직원앱 지점은 각 앱이 이 기기에 기억)
 // 10/26 사장님 "홈이 가득가득, 업무 안에 블로그도": 메뉴 12개 → 7개 묶음, 묶음 안은 위쪽 작은 탭
-const GROUPS = [["home", "홈", ["home"]], ["tasks", "업무", ["tasks"]], ["close", "마감", ["close"]], ["kpi", "KPI", ["kpi"]], ["goods", "상품", ["bunbae", "order", "group", "must"]], ["note", "매장 노트", ["note"]], ["office", "사무실", ["office"]], ["staff", "직원앱", ["staff"]], ["naver", "네이버", ["naver"]]];
+const GROUPS = [["home", "홈", ["home"]], ["tasks", "업무", ["tasks"]], ["close", "마감", ["close"]], ["kpi", "KPI", ["kpi"]], ["goods", "상품", ["order", "bunbae", "group", "must"]], ["note", "매장 노트", ["note"]], ["office", "사무실", ["office"]], ["staff", "직원앱", ["staff"]], ["naver", "네이버", ["naver"]]];
 const SUBNM = { bunbae: "분배 넣기", tasks: "업무", blog: "블로그 발행", order: "주문요청", survey: "재고조사", group: "그룹관리", must: "추가 필수", office: "봇 상태", staff: "직원앱", naver: "네이버" };
 const grpOf = (t) => GROUPS.find((g) => g[2].includes(t === "blog" ? "tasks" : t)) || GROUPS[0];
 const grpTab = (g) => { const last = ls.get("vf-admin-sub-" + g[0]); return g[2].includes(last) ? last : g[2][0]; };
@@ -389,25 +389,27 @@ function staffKpiHtml(K) {
 // 홈: 직원 KPI 상위 3, 하위 3 (최근 30일)
 // 10/20 각인 매장(1, 3, 6호) 이번 달 건수, 직접 고른 건, 진행 중
 // ── 주문요청 (10/21) ── 전 지점 고객 주문요청 중 결제 완료 건만(선결제). 상품 확인 → 주문함. 나중에 이사님 재고주문 프로그램과 합칠 예정
-let orderF = "열린 것";
+let orderF = "확인 전";
 function orderHtml() { return engHtml() + orderHtml0(); }
 function orderHtml0() {
   const L0 = (D.orders || []).slice().sort((a, b) => (b.d + b.t).localeCompare(a.d + a.t));
-  const open = (o) => o.ost !== "주문함" && !["done", "cancel"].includes(o.step);
-  const F = { "열린 것": open, 요청: (o) => o.ost === "요청" && open(o), 확인: (o) => o.ost === "확인" && open(o), 주문함: (o) => o.ost === "주문함", 전체: () => true };
+  // 10/27 사장님: 주문 가능한지 확인 후 → 단계별로 한 곳에서. 확인 전 → 주문할 것(가능) → 입고 기다림(주문함) → 분배에 붙음 → 입고됨, 불가는 따로
+  const open = (o) => !["done", "cancel"].includes(o.step), on = (o) => o.ost === "주문함" && !o.arrived && open(o);
+  const F = { "확인 전": (o) => o.ost === "요청" && open(o), "주문할 것": (o) => o.ost === "확인" && open(o), "입고 기다림": (o) => on(o) && !o.bb, "분배에 붙음": (o) => on(o) && !!o.bb, 입고됨: (o) => !!o.arrived && open(o), 불가: (o) => o.ost === "불가" && open(o), 끝남: (o) => !open(o) };
   const L = L0.filter(F[orderF]);
   const chips = Object.keys(F).map((k) => `<button class="chip ${orderF === k ? "on" : ""}" data-orderf="${k}">${k} ${L0.filter(F[k]).length}</button>`).join("");
-  const tag = (o) => o.ost === "주문함" ? '<b class="t-good">주문함</b>' : o.ost === "확인" ? '<b style="color:#1b64da">확인함</b>' : '<b class="t-bad">새 요청</b>';
+  const tag = (o) => !open(o) ? `<b class="t-sub">${o.step === "done" ? "전달 끝" : "취소"}</b>` : o.arrived ? '<b class="t-good">입고됨</b>' : o.ost === "주문함" ? `<b class="t-good">${o.bb ? "분배에 붙음" : "주문함"}</b>` : o.ost === "확인" ? '<b style="color:#1b64da">주문 가능</b>' : o.ost === "불가" ? '<b class="t-bad">주문 불가</b>' : '<b class="t-bad">확인 전</b>';
   const card = (o) => `<div class="item" style="display:block"><div style="display:flex;gap:8px;align-items:center"><span class="caption">${BR.indexOf(o.b) + 1}호 ${esc(o.b)}, ${esc(o.d.slice(5).replace("-", "/"))} ${esc(o.t)}, ${esc(o.by)}</span><span style="margin-left:auto">${tag(o)}</span></div>
     <div style="font-size:17px;font-weight:800;margin:6px 0">${esc(o.items)}</div>
-    <div class="caption">손님 ${esc(o.name || "")} ${esc(o.phone || "")}, ${esc(o.how)}, 결제완료${o.arrived ? ", 입고됨" : o.bb ? `, 📦 ${+o.bb.d.slice(5, 7)}/${+o.bb.d.slice(8)} 분배에 붙음${o.bb.packed ? ", 본점 챙김 끝" : ""}` : o.ost === "주문함" ? ", 분배 기다림" : ""}${o.memo ? ", 메모: " + esc(o.memo) : ""}${o.ostBy ? `, ${esc(o.ost)}: ${esc(o.ostBy)} ${esc(o.ostAt.slice(5))}` : ""}</div>
-    <div style="display:flex;gap:8px;margin-top:8px">${o.ost === "요청" ? `<button class="chip on" data-ordst="확인" data-oid="${esc(o.id)}">상품 확인</button>` : ""}${o.ost !== "주문함" ? `<button class="chip" data-ordst="주문함" data-oid="${esc(o.id)}">주문함</button>` : `<button class="chip" data-ordst="확인" data-oid="${esc(o.id)}">되돌리기</button>`}</div></div>`;
-  return `<div class="pchead"><h1>주문요청</h1><div class="caption">전 지점 고객 주문요청, 결제 완료 건만. 상품 확인 후 주문하면 [주문함]</div></div>
+    <div class="caption">손님 ${esc(o.name || "")} ${esc(o.phone || "")}, ${esc(o.how)}, 결제완료${o.arrived ? ", 입고됨" : o.bb ? `, 📦 ${+o.bb.d.slice(5, 7)}/${+o.bb.d.slice(8)} 분배에 붙음${o.bb.packed ? ", 본점 챙김 끝" : ""}` : o.ost === "주문함" ? ", 분배 기다림" : ""}${o.memo ? ", 메모: " + esc(o.memo) : ""}${o.ostBy ? `, ${esc({ 요청: "되돌림", 확인: "주문 가능", 불가: "주문 불가" }[o.ost] || o.ost)}: ${esc(o.ostBy)} ${esc(o.ostAt.slice(5))}` : ""}${o.nogo ? `, 사유: ${esc(o.nogo)}` : ""}</div>
+    <div style="display:flex;gap:8px;margin-top:8px">${!open(o) || o.arrived ? "" : o.ost === "요청" ? `<button class="chip on" data-ordst="확인" data-oid="${esc(o.id)}">주문 가능</button><button class="chip" data-ordst="불가" data-oid="${esc(o.id)}">주문 불가</button>` : o.ost === "확인" ? `<button class="chip on" data-ordst="주문함" data-oid="${esc(o.id)}">주문함</button><button class="chip" data-ordst="요청" data-oid="${esc(o.id)}">되돌리기</button>` : `<button class="chip" data-ordst="${o.ost === "주문함" ? "확인" : "요청"}" data-oid="${esc(o.id)}">되돌리기</button>`}</div></div>`;
+  return `<div class="pchead"><h1>주문요청</h1><div class="caption">전 지점 고객 주문요청, 결제 완료 건만. 주문 가능한지 보고 [주문 가능] 또는 [주문 불가], 주문하면 [주문함]</div></div>
     <div class="chips" style="margin-bottom:10px">${chips}</div><div class="list">${L.map(card).join("") || '<div class="item">해당하는 주문요청이 없어요</div>'}</div>`;
 }
 async function orderStep(id, st) {
   const by = adminName(); if (!by) return;
-  try { await sendOp("orderStep", { id, st, by }); const o = (D.orders || []).find((y) => y.id === id); if (o) Object.assign(o, { ost: st, ostBy: by, ostAt: new Date().toISOString().slice(0, 16).replace("T", " ") }); render(); toast(st === "주문함" ? "주문함으로 바꿨어요" : "확인함으로 바꿨어요"); } catch (e) { toast("실패: " + e.message); }
+  let why = ""; if (st === "불가") { why = prompt("주문 불가 사유 (지점 직원웹에 보여요). 예: 단종, 도매처 품절", "") ; if (why === null) return; why = why.trim(); }
+  try { await sendOp("orderStep", { id, st, by, why }); const o = (D.orders || []).find((y) => y.id === id); if (o) Object.assign(o, { ost: st, nogo: why, ostBy: by, ostAt: new Date().toISOString().slice(0, 16).replace("T", " ") }); render(); toast({ 주문함: "주문함으로 바꿨어요", 확인: "주문 가능으로 바꿨어요", 불가: "주문 불가로 바꿨어요. 지점에 손님 안내 줄이 떠요", 요청: "되돌렸어요" }[st]); } catch (e) { toast("실패: " + e.message); }
 }
 // ── 매장 노트 (10/20) ── 직원들이 남긴 특이건. 👍와 댓글은 운영봇으로(서명), 이름은 이 기기에 기억
 let noteF = "전체", noteB = "전체";
@@ -571,6 +573,8 @@ function issues() {
   }
   const con = D.branches.filter((x) => x.connected), aOut = [...new Set(con.flatMap((x) => G(x, "프리미엄 A").out.map((o) => o.n)))];
   if (aOut.length) L.push({ go: "survey", t: "A그룹 품절", d: `${aOut.length}종, ${aOut.slice(0, 3).join(", ")}${aOut.length > 3 ? " 외" : ""}` });
+  const ow = (D.orders || []).filter((o) => o.ost === "요청" && !["done", "cancel"].includes(o.step));
+  if (ow.length) L.push({ go: "order", t: "주문요청", d: `주문 가능한지 확인 전 ${ow.length}건` });
   const sw = (D.surveys || []).filter((v) => v.status === "wait");
   if (sw.length) L.push({ go: "survey", t: "재고조사", d: `승인 기다리는 ${sw.length}건` });
   // 10/26 사장님 "포스엔 있는데 없음이라 한 건은 관리자에게": 운영봇 refuse(최근 3일)
