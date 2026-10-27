@@ -236,7 +236,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.27-7";
+const VER = "10.27-8";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍", "동성로2"];
@@ -274,7 +274,8 @@ function toast(m) { const t = $("#toast"); t.textContent = m; t.classList.add("o
 const qs = new URLSearchParams(location.search);
 // 10/19 시험 모드(?test=1): 신호에 test 표시 → 봇이 시험_ 탭에만 기록, 디스코드 알림 없음. 이 기기 기록도 따로
 const TEST = qs.get("test") === "1";
-const UI2 = TEST; if (UI2) document.body.classList.add("ui2"); // 10/26 새 화면(노란 줄 순서, 플로팅 뱃지, 바로 복사 한 줄)은 시험 모드 먼저. 정식에 켜려면 true
+const UI2 = TEST; if (UI2) document.body.classList.add("ui2");
+const PICK = true; // 10/27 사장님 "정식 화면에도 상품 고르기": 퀵, 택배, 전달은 상품을 목록에서 골라야 봇이 포스 재고를 맞춤 // 10/26 새 화면(노란 줄 순서, 플로팅 뱃지, 바로 복사 한 줄)은 시험 모드 먼저. 정식에 켜려면 true
 const LEADER = qs.get("leader") === "1"; // 10/20 팀장 화면: 전 지점 넘어온 고객요청, 인수인계
 // ?pick=1 이면 저장된 지점이 있어도 지점 고르기 화면부터 (드라이브 링크용)
 let B = qs.has("pick") ? null : BR.includes(qs.get("branch")) ? qs.get("branch") : ls.get("vf-app-branch", null);
@@ -1548,11 +1549,11 @@ function parcelHtml() {
       ${L.length ? L.map(row).join("") : '<div class="desc" style="padding:4px 0 12px">진행 중인 택배가 없어요</div>'}</div></div></div>`;
 }
 function sheetPcNew() {
-  PC.to = null; PK = { list: [], res: [] }; if (UI2) loadProds();
+  PC.to = null; PK = { list: [], res: [] }; if (PICK) loadProds();
   const chips = (order) => (order || BR.map((b) => [b, null])).map(([b, km], i) => { const x = pcState(b); return `<button class="chip ${PC.to === b ? "on" : ""}" data-pcto="${b}" style="${x.ok ? "" : "opacity:.6"}">${order && i === 0 ? "⭐ " : ""}${esc(ho(b))} <small>${esc(x.t)}${km != null ? `, 약 ${km < 1 ? 1 : Math.round(km)}km` : ""}</small></button>`; }).join("");
   window._pcChips = chips;
   openSheet(`<h2>📦 택배 요청</h2><div class="desc">손님 결제는 우리 지점 포스에서 먼저 해 주세요.</div>
-    ${UI2 ? pkHtml() : '<input class="input" id="pcItems" placeholder="품목, 수량 (예: 메가킥 망고 3병)" maxlength="120">'}
+    ${PICK ? pkHtml() : '<input class="input" id="pcItems" placeholder="품목, 수량 (예: 메가킥 망고 3병)" maxlength="120">'}
     <input class="input" id="pcName" placeholder="손님 이름" maxlength="20"><input class="input" id="pcPhone" placeholder="손님 연락처" inputmode="tel" maxlength="20">
     <input class="input" id="pcAddr" placeholder="받을 주소" maxlength="120">
     <div class="desc" style="margin-top:12px">보낼 지점 (주소를 넣으면 가까운 순)</div><div class="chips" id="pcTo">${chips(null)}</div>
@@ -1560,13 +1561,13 @@ function sheetPcNew() {
 }
 async function doPcNew(t) {
   const v = (id) => ($(id)?.value || "").trim();
-  const items = UI2 ? pkItems() : v("#pcItems");
+  const items = PICK ? pkItems() : v("#pcItems");
   if (!items) return toast("품목을 골라 주세요"); if (!v("#pcAddr")) return toast("주소를 넣어 주세요"); if (!PC.to) return toast("보낼 지점을 골라 주세요");
   const x = pcState(PC.to); if ((pcDay()[PC.to] || {}).none) return toast("그 지점은 택배를 안 해요");
   const by = working().join(", "); if (!by) return needIn(() => {});
   if (!x.ok && !confirm(`${ho(PC.to)}은 ${x.t}이라 내일 나가요. 그래도 보낼까요?`)) return;
   t.disabled = true;
-  try { await send({ type: "parcelnew", id: Date.now().toString(36) + Math.random().toString(36).slice(2, 5), to: PC.to, items, prods: UI2 ? pkProds() : [], name: v("#pcName"), phone: v("#pcPhone"), addr: v("#pcAddr"), late: !x.ok, by }); closeSheet(); render(); toast(`${ho(PC.to)}에 택배 요청을 보냈어요`); } catch (e) { t.disabled = false; fail(e); }
+  try { await send({ type: "parcelnew", id: Date.now().toString(36) + Math.random().toString(36).slice(2, 5), to: PC.to, items, prods: PICK ? pkProds() : [], name: v("#pcName"), phone: v("#pcPhone"), addr: v("#pcAddr"), late: !x.ok, by }); closeSheet(); render(); toast(`${ho(PC.to)}에 택배 요청을 보냈어요`); } catch (e) { t.disabled = false; fail(e); }
 }
 async function sheetPcPack(id) {
   const r = pcList().find((x) => x.id === id); if (!r) return;
@@ -1712,11 +1713,11 @@ function sendsHtml() {
     ${L.length ? L.map(row).join("") : '<div class="desc" style="padding:4px 0 12px">진행 중인 건이 없어요</div>'}</div>`;
 }
 function sheetSnNew(kind) {
-  SN.to = null; SN.kind = kind === "quick" && quickClosed() ? "openquick" : kind; PK = { list: [], res: [] }; if (UI2) loadProds();
+  SN.to = null; SN.kind = kind === "quick" && quickClosed() ? "openquick" : kind; PK = { list: [], res: [] }; if (PICK) loadProds();
   const k = SN.kind, list = BR.filter((b) => b !== B && !(k !== "jeon" && NO_QUICK.includes(b)));
   openSheet(`<h2>${SKIND[k]} 요청</h2>${k === "openquick" ? '<div class="desc" style="color:var(--red);font-weight:700">오늘 퀵은 마감됐어요. 오픈퀵으로 접수돼요 (보내는 매장이 바로 포장해 두고 내일 오픈하고 보내요)</div>' : ""}
     <div class="desc">${k === "jeon" ? "어느 지점에 있는 걸 받을까요?" : "어느 매장에서 보낼까요?"}</div><div class="chips">${k !== "openquick" ? '<button class="chip" data-snto="all" style="background:#e8f1ff;color:var(--blue)">📣 전 지점에 물어보기</button>' : ""}${list.map((b) => `<button class="chip" data-snto="${b}">${esc(ho(b))}</button>`).join("")}</div>
-    ${UI2 ? pkHtml() : '<input class="input" id="snItems" placeholder="상품, 수량 (예: 메가킥 망고 3병)" maxlength="160">'}
+    ${PICK ? pkHtml() : '<input class="input" id="snItems" placeholder="상품, 수량 (예: 메가킥 망고 3병)" maxlength="160">'}
     ${k === "openquick" ? `<input class="input" id="snName" placeholder="손님 이름" maxlength="20"><input class="input" id="snPhone" placeholder="손님 연락처" inputmode="tel" maxlength="20"><input class="input" id="snAddr" placeholder="받을 주소" maxlength="120">
       <label style="display:flex;gap:8px;align-items:center;margin-top:10px;font-size:15px"><input type="checkbox" id="snPaid"> 포스에서 결제했어요</label>` : ""}
     <input class="input" id="snMemo" placeholder="메모 (선택, 예: 손님이 오후 3시 전 원함)" maxlength="120">
@@ -1724,12 +1725,12 @@ function sheetSnNew(kind) {
 }
 async function doSnNew(t) {
   const v = (id) => ($(id)?.value || "").trim(), k = SN.kind;
-  const items = UI2 ? pkItems() : v("#snItems");
+  const items = PICK ? pkItems() : v("#snItems");
   if (!SN.to) return toast("지점을 골라 주세요"); if (!items) return toast("상품을 골라 주세요");
   if (k === "openquick") { if (!v("#snAddr")) return toast("받을 주소를 넣어 주세요"); if (!$("#snPaid")?.checked) return toast("포스에서 먼저 결제해 주세요"); }
   const by = working().join(", "); if (!by) return needIn(() => {});
   t.disabled = true;
-  try { await send({ type: "snew", id: Date.now().toString(36) + Math.random().toString(36).slice(2, 5), kind: k, to: SN.to, items, prods: UI2 ? pkProds() : [], memo: v("#snMemo"), name: v("#snName"), phone: v("#snPhone"), addr: v("#snAddr"), by }); closeSheet(); render(); toast(SN.to === "all" ? "전 지점에 물어봤어요" : `${ho(SN.to)}에 보냈어요`); } catch (e) { t.disabled = false; fail(e); }
+  try { await send({ type: "snew", id: Date.now().toString(36) + Math.random().toString(36).slice(2, 5), kind: k, to: SN.to, items, prods: PICK ? pkProds() : [], memo: v("#snMemo"), name: v("#snName"), phone: v("#snPhone"), addr: v("#snAddr"), by }); closeSheet(); render(); toast(SN.to === "all" ? "전 지점에 물어봤어요" : `${ho(SN.to)}에 보냈어요`); } catch (e) { t.disabled = false; fail(e); }
 }
 async function sheetSnStep(id) {
   const r = snList().find((x) => x.id === id); if (!r) return;
