@@ -207,7 +207,7 @@
 // 저장(필수 상품, 업무)은 디스코드 웹훅 → 운영봇. 같은 키로 서명해서 봇이 비밀번호를 아는 사람의 요청인지 확인함
 const HOOK = "https://discord.com/api/webhooks/1555156884753743905/BLK7tRBQACouQrOE_hvOkm2-iD44gnfnxdJvQXxiBAJKXJU3MG4bjnACFsXgDkDWLBrh";
 const SRC = ["https://api.github.com/repos/officialvafriend/vape/contents/admin/data.enc.json", "data.enc.json"];
-const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
+const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍", "동성로2"];
 const ho = (b) => `${BR.indexOf(b) + 1}호 ${b}`;
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
@@ -395,15 +395,20 @@ function orderHtml0() {
   const L0 = (D.orders || []).slice().sort((a, b) => (b.d + b.t).localeCompare(a.d + a.t));
   // 10/27 사장님: 주문 가능한지 확인 후 → 단계별로 한 곳에서. 확인 전 → 주문할 것(가능) → 입고 기다림(주문함) → 분배에 붙음 → 입고됨, 불가는 따로
   const open = (o) => !["done", "cancel"].includes(o.step), on = (o) => o.ost === "주문함" && !o.arrived && open(o);
-  const F = { "확인 전": (o) => o.ost === "요청" && open(o), "주문할 것": (o) => o.ost === "확인" && open(o), "입고 기다림": (o) => on(o) && !o.bb, "분배에 붙음": (o) => on(o) && !!o.bb, 입고됨: (o) => !!o.arrived && open(o), 불가: (o) => o.ost === "불가" && open(o), 끝남: (o) => !open(o) };
-  const L = L0.filter(F[orderF]);
-  const chips = Object.keys(F).map((k) => `<button class="chip ${orderF === k ? "on" : ""}" data-orderf="${k}">${k} ${L0.filter(F[k]).length}</button>`).join("");
-  const tag = (o) => !open(o) ? `<b class="t-sub">${o.step === "done" ? "전달 끝" : "취소"}</b>` : o.arrived ? '<b class="t-good">입고됨</b>' : o.ost === "주문함" ? `<b class="t-good">${o.bb ? "분배에 붙음" : "주문함"}</b>` : o.ost === "확인" ? '<b style="color:#1b64da">주문 가능</b>' : o.ost === "불가" ? '<b class="t-bad">주문 불가</b>' : '<b class="t-bad">확인 전</b>';
-  const card = (o) => `<div class="item" style="display:block"><div style="display:flex;gap:8px;align-items:center"><span class="caption">${BR.indexOf(o.b) + 1}호 ${esc(o.b)}, ${esc(o.d.slice(5).replace("-", "/"))} ${esc(o.t)}, ${esc(o.by)}</span><span style="margin-left:auto">${tag(o)}</span></div>
+  const F = { "확인 전": (o) => o.ost === "요청" && open(o), "결제 기다림": (o) => o.ost === "확인" && o.pay !== "결제완료" && open(o), "주문할 것": (o) => o.ost === "확인" && o.pay === "결제완료" && open(o), "입고 기다림": (o) => on(o) && !o.bb, "분배에 붙음": (o) => on(o) && !!o.bb, 입고됨: (o) => !!o.arrived && open(o), 불가: (o) => o.ost === "불가" && open(o), 끝남: (o) => !open(o) };
+  const NEW = "신규 입고 검토", NL = D.ordNew || [];
+  const L = orderF === NEW ? [] : L0.filter(F[orderF]);
+  const chips = Object.keys(F).map((k) => `<button class="chip ${orderF === k ? "on" : ""}" data-orderf="${k}">${k} ${L0.filter(F[k]).length}</button>`).join("") + `<button class="chip ${orderF === NEW ? "on" : ""}" data-orderf="${NEW}">🆕 ${NEW} ${NL.length}</button>`;
+  // 10/27 우리 포스에 없어서 주문 불가로 정한 상품을 몇 번 찾았는지 (이사님 입고 판단용)
+  if (orderF === NEW) return `<div class="pchead"><h1>주문요청</h1><div class="caption">우리 매장에 없어서 주문 불가로 정한 상품, 최근 60일 동안 손님이 찾은 횟수예요. 새로 들일지 볼 때 참고하세요</div></div>
+    <div class="chips" style="margin-bottom:10px">${chips}</div><div class="list">${NL.map((x) => `<div class="item" style="display:block"><div style="display:flex;gap:8px;align-items:center"><b style="font-size:17px">${x.test ? "🧪 " : ""}${esc(x.items)}</b><span style="margin-left:auto" class="t-bad"><b>${x.n}번</b></span></div><div class="caption">${Object.entries(x.br).map(([b, n]) => `${BR.indexOf(b) + 1}호 ${esc(b)} ${n}`).join(", ")}, 마지막 ${esc(x.last.slice(5).replace("-", "/"))}${x.why ? `, 사유: ${esc(x.why)}` : ""}</div></div>`).join("") || '<div class="item">아직 없어요</div>'}</div>`;
+  const tag = (o) => !open(o) ? `<b class="t-sub">${o.step === "done" ? "전달 끝" : "취소"}</b>` : o.arrived ? '<b class="t-good">입고됨</b>' : o.ost === "주문함" ? `<b class="t-good">${o.bb ? "분배에 붙음" : "주문함"}</b>` : o.ost === "확인" ? `<b style="color:#1b64da">${o.pay === "결제완료" ? "주문 가능, 결제 받음" : "주문 가능, 결제 기다림"}</b>` : o.ost === "불가" ? '<b class="t-bad">주문 불가</b>' : '<b class="t-bad">확인 전</b>';
+  const card = (o) => `<div class="item" style="display:block"><div style="display:flex;gap:8px;align-items:center"><span class="caption">${o.test ? "🧪 시험, " : ""}${BR.indexOf(o.b) + 1}호 ${esc(o.b)}, ${esc(o.d.slice(5).replace("-", "/"))} ${esc(o.t)}, ${esc(o.by)}</span><span style="margin-left:auto">${tag(o)}</span></div>
     <div style="font-size:17px;font-weight:800;margin:6px 0">${esc(o.items)}</div>
-    <div class="caption">손님 ${esc(o.name || "")} ${esc(o.phone || "")}, ${esc(o.how)}, 결제완료${o.arrived ? ", 입고됨" : o.bb ? `, 📦 ${+o.bb.d.slice(5, 7)}/${+o.bb.d.slice(8)} 분배에 붙음${o.bb.packed ? ", 본점 챙김 끝" : ""}` : o.ost === "주문함" ? ", 분배 기다림" : ""}${o.memo ? ", 메모: " + esc(o.memo) : ""}${o.ostBy ? `, ${esc({ 요청: "되돌림", 확인: "주문 가능", 불가: "주문 불가" }[o.ost] || o.ost)}: ${esc(o.ostBy)} ${esc(o.ostAt.slice(5))}` : ""}${o.nogo ? `, 사유: ${esc(o.nogo)}` : ""}</div>
-    <div style="display:flex;gap:8px;margin-top:8px">${!open(o) || o.arrived ? "" : o.ost === "요청" ? `<button class="chip on" data-ordst="확인" data-oid="${esc(o.id)}">주문 가능</button><button class="chip" data-ordst="불가" data-oid="${esc(o.id)}">주문 불가</button>` : o.ost === "확인" ? `<button class="chip on" data-ordst="주문함" data-oid="${esc(o.id)}">주문함</button><button class="chip" data-ordst="요청" data-oid="${esc(o.id)}">되돌리기</button>` : `<button class="chip" data-ordst="${o.ost === "주문함" ? "확인" : "요청"}" data-oid="${esc(o.id)}">되돌리기</button>`}</div></div>`;
-  return `<div class="pchead"><h1>주문요청</h1><div class="caption">전 지점 고객 주문요청, 결제 완료 건만. 주문 가능한지 보고 [주문 가능] 또는 [주문 불가], 주문하면 [주문함]</div></div>
+    ${o.auto ? `<div class="caption" style="margin-bottom:4px">${o.auto.lines.map(([n, v, w]) => `${v === "가능" ? "✅" : v === "불가" ? "🚫" : "❓"} ${esc(n)}: ${esc(w)}`).join("<br>")}${o.auto.alt?.length ? `<br>🔁 다른 지점 재고: ${o.auto.alt.map(([b, n, q]) => `${esc(b)} ${q}개`).join(", ")}` : ""}</div>` : ""}
+    <div class="caption">손님 ${esc(o.name || "")} ${esc(o.phone || "")}, ${esc(o.how)}, ${o.pay === "결제완료" ? "결제완료" : "결제 전"}${o.arrived ? ", 입고됨" : o.bb ? `, 📦 ${+o.bb.d.slice(5, 7)}/${+o.bb.d.slice(8)} 분배에 붙음${o.bb.packed ? ", 본점 챙김 끝" : ""}` : o.ost === "주문함" ? ", 분배 기다림" : ""}${o.memo ? ", 메모: " + esc(o.memo) : ""}${o.ostBy ? `, ${esc({ 요청: "되돌림", 확인: "주문 가능", 불가: "주문 불가" }[o.ost] || o.ost)}: ${esc(o.ostBy)} ${esc(o.ostAt.slice(5))}` : ""}${o.nogo ? `, 사유: ${esc(o.nogo)}` : ""}</div>
+    <div style="display:flex;gap:8px;margin-top:8px">${!open(o) || o.arrived ? "" : o.ost === "요청" ? `<button class="chip on" data-ordst="확인" data-oid="${esc(o.id)}">주문 가능</button><button class="chip" data-ordst="불가" data-oid="${esc(o.id)}">주문 불가</button>` : o.ost === "확인" ? `${o.pay === "결제완료" ? `<button class="chip on" data-ordst="주문함" data-oid="${esc(o.id)}">주문함</button>` : '<span class="caption" style="align-self:center">지점이 결제 받으면 [주문함]이 열려요</span>'}<button class="chip" data-ordst="요청" data-oid="${esc(o.id)}">되돌리기</button>` : `<button class="chip" data-ordst="${o.ost === "주문함" ? "확인" : "요청"}" data-oid="${esc(o.id)}">되돌리기</button>`}</div></div>`;
+  return `<div class="pchead"><h1>주문요청</h1><div class="caption">전 지점 고객 주문요청. 주문 가능한지 보고 [주문 가능] 또는 [주문 불가], 결제 받은 건은 주문하고 [주문함]</div></div>
     <div class="chips" style="margin-bottom:10px">${chips}</div><div class="list">${L.map(card).join("") || '<div class="item">해당하는 주문요청이 없어요</div>'}</div>`;
 }
 async function orderStep(id, st) {
@@ -472,7 +477,7 @@ function blogAdmHtml() {
 // ── 분배 넣기 (10/26) ── 이사님 분배표(엑셀)를 붙여넣거나 파일로 → 지점별 미리보기 → [지점에 보내기] = 직원웹 분배 카드
 // 표 모양: 첫 줄 '상품명 | 중구점'(지점 하나) 또는 '상품명 | 동성로 | 수성 …'(여러 지점). 여러 표를 이어 붙여도 됨(상품명 줄이 나올 때마다 새 표)
 let BBP = null, BBTEST = false, BBSHORT = true;
-const BB_ALIAS = [["동성로", /동성로|중구/], ["수성", /수성/], ["율하", /율하/], ["반월당", /반월당/], ["상인", /상인/], ["광장코아", /광장코아|광코/], ["현풍", /현풍/]];
+const BB_ALIAS = [["동성로2", /동성로\s*2|9호/], ["동성로", /동성로|중구/], ["수성", /수성/], ["율하", /율하/], ["반월당", /반월당/], ["상인", /상인/], ["광장코아", /광장코아|광코/], ["현풍", /현풍/]];
 const bbBranch = (h) => (BB_ALIAS.find(([, re]) => re.test(String(h || ""))) || [])[0] || null;
 const bbKey = (n) => String(n || "").replace(/\*+$/, "").replace(/\s+/g, "").toLowerCase();
 function bbParse(text) {
@@ -573,7 +578,7 @@ function issues() {
   }
   const con = D.branches.filter((x) => x.connected), aOut = [...new Set(con.flatMap((x) => G(x, "프리미엄 A").out.map((o) => o.n)))];
   if (aOut.length) L.push({ go: "survey", t: "A그룹 품절", d: `${aOut.length}종, ${aOut.slice(0, 3).join(", ")}${aOut.length > 3 ? " 외" : ""}` });
-  const ow = (D.orders || []).filter((o) => o.ost === "요청" && !["done", "cancel"].includes(o.step));
+  const ow = (D.orders || []).filter((o) => !o.test && o.ost === "요청" && !["done", "cancel"].includes(o.step));
   if (ow.length) L.push({ go: "order", t: "주문요청", d: `주문 가능한지 확인 전 ${ow.length}건` });
   const sw = (D.surveys || []).filter((v) => v.status === "wait");
   if (sw.length) L.push({ go: "survey", t: "재고조사", d: `승인 기다리는 ${sw.length}건` });
@@ -645,7 +650,7 @@ function noticeAdmHtml() {
   return `<div class="card" style="margin-top:12px"><div class="eyebrow">📢 직원웹 공지</div>
     <input class="in" id="ntTitle" maxlength="60" placeholder="제목 (예: 블로그 단톡방 정리 안내)" style="margin-top:6px">
     <textarea class="in" id="ntBody" rows="6" maxlength="1200" placeholder="내용" style="width:100%;height:auto;padding:12px;margin-top:8px"></textarea>
-    <div class="chips" style="margin-top:8px"><button class="chip ${NTBR.size === 8 ? "on" : ""}" data-ntall>전체</button>${BR.map((b) => `<button class="chip ${NTBR.has(b) ? "on" : ""}" data-ntb="${b}">${esc(b)}</button>`).join("")}</div>
+    <div class="chips" style="margin-top:8px"><button class="chip ${NTBR.size === BR.length ? "on" : ""}" data-ntall>전체</button>${BR.map((b) => `<button class="chip ${NTBR.has(b) ? "on" : ""}" data-ntb="${b}">${esc(b)}</button>`).join("")}</div>
     <div class="btns"><button class="btn" data-act="ntsend">공지 올리기</button></div></div>
     ${L.length ? `<div class="sec">올린 공지</div><div class="list">${L.map(row).join("")}</div>` : ""}`;
 }
@@ -899,7 +904,7 @@ function tasksHtml() {
   const give = `<div class="btns" style="margin-top:14px"><button class="btn" data-act="tnew" style="height:50px;font-size:16px">＋ 새 업무</button><button class="btn sec2" data-act="ntnew" style="height:50px;font-size:16px">＋ 공지</button><button class="btn sec2" data-act="svnew" style="height:50px;font-size:16px">＋ 재고조사</button></div>
     <div class="lbl" style="margin:18px 0 6px">등록된 업무 <span style="font-weight:500">${D.tasks.length}개, 누르면 고치기</span></div>
     <div class="list" style="margin:0 -20px -8px;background:none">${D.tasks.length ? D.tasks.map((t) => `<button class="item" data-tedit="${t.id}"><div class="av blue">${t.kind === "survey" ? "📦" : t.rep === "daily" ? "매일" : t.rep === "weekly" ? "주" : t.rep === "monthly" ? "월" : "1"}</div>
-      <div class="tx"><b>${esc(t.title)}</b><span>${esc(REP_TXT(t))}${t.time ? ", " + esc(t.time) : ""}, ${t.br.length === 8 ? "전 지점" : t.br.map(esc).join(", ")}</span></div><span class="chev">›</span></button>`).join("") : '<div class="empty">아직 없어요</div>'}</div>`;
+      <div class="tx"><b>${esc(t.title)}</b><span>${esc(REP_TXT(t))}${t.time ? ", " + esc(t.time) : ""}, ${t.br.length === BR.length ? "전 지점" : t.br.map(esc).join(", ")}</span></div><span class="chev">›</span></button>`).join("") : '<div class="empty">아직 없어요</div>'}</div>`;
   const runL = run.length ? `<div class="list" style="margin:8px -20px -8px;background:none">${run.map(row).join("")}</div>` : '<div class="empty" style="padding:16px 0 4px">진행 중인 게 없어요</div>';
   const doneL = done.length ? `<div class="list" style="margin:8px -20px -8px;background:none">${done.slice(0, 80).map(row).join("")}</div>` : '<div class="empty" style="padding:16px 0 4px">최근 7일에 끝난 게 없어요</div>';
   return `<div class="card"><div class="eyebrow">업무</div>
@@ -917,7 +922,7 @@ function sheetSurveyNew() {
   const v = svNew;
   openSheet(`<h3>재고조사 시키기</h3><div class="caption">지점 직원웹 오늘 할 일에 "그룹 재고조사"로 뜨고, 직원이 센 숫자로 그 순간 포스 재고를 맞춰요. 결과는 진행 중, 완료에서 봐요</div>
     <div class="lbl">어느 그룹</div><div class="chips">${SV_GROUPS.map((g) => `<button class="chip ${v.g === g ? "on" : ""}" data-svg="${g}">${g}</button>`).join("")}</div>
-    <div class="lbl">어느 지점</div><div class="chips"><button class="chip ${v.br.length === 8 ? "on" : ""}" data-svball>전체</button>${BR.map((b) => `<button class="chip ${v.br.includes(b) ? "on" : ""}" data-svb="${b}">${esc(b)}</button>`).join("")}</div>
+    <div class="lbl">어느 지점</div><div class="chips"><button class="chip ${v.br.length === BR.length ? "on" : ""}" data-svball>전체</button>${BR.map((b) => `<button class="chip ${v.br.includes(b) ? "on" : ""}" data-svb="${b}">${esc(b)}</button>`).join("")}</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><div><div class="lbl">언제</div><input class="in" type="date" id="svDate" value="${esc(v.date)}"></div><div><div class="lbl">시각 <span style="font-weight:500">(선택)</span></div><input class="in" type="time" id="svTime" value="${esc(v.time)}"></div></div>
     <div class="btns"><button class="btn gray" data-x style="flex:0 0 96px">닫기</button><button class="btn" data-act="svsave">시키기</button></div>`);
 }
@@ -940,7 +945,7 @@ function sheetNotice() {
   openSheet(`<h3>직원웹 공지</h3><div class="caption">지점 직원웹에 팝업으로 뜨고, 지점이 [확인했어요]를 누르면 진행 중에서 완료로 넘어가요</div>
     <div class="lbl">제목</div><input class="in" id="ntTitle" maxlength="60" placeholder="예: 블로그 단톡방 정리 안내">
     <div class="lbl">내용</div><textarea class="in" id="ntBody" rows="6" maxlength="1200" placeholder="내용" style="width:100%;height:auto;padding:12px"></textarea>
-    <div class="lbl">어느 지점</div><div class="chips"><button class="chip ${NTBR.size === 8 ? "on" : ""}" data-ntall>전체</button>${BR.map((b) => `<button class="chip ${NTBR.has(b) ? "on" : ""}" data-ntb="${b}">${esc(b)}</button>`).join("")}</div>
+    <div class="lbl">어느 지점</div><div class="chips"><button class="chip ${NTBR.size === BR.length ? "on" : ""}" data-ntall>전체</button>${BR.map((b) => `<button class="chip ${NTBR.has(b) ? "on" : ""}" data-ntb="${b}">${esc(b)}</button>`).join("")}</div>
     <div class="btns"><button class="btn gray" data-x style="flex:0 0 96px">닫기</button><button class="btn" data-act="ntsend">공지 올리기</button></div>`);
   $("#ntTitle").focus();
 }
@@ -949,7 +954,7 @@ function sheetTask() {
   openSheet(`<h3>${t.id && D.tasks.some((x) => x.id === t.id) ? "업무 고치기" : "새 업무"}</h3>
     <div class="lbl">무엇을 할까요</div><input class="in" id="tTitle" maxlength="60" placeholder="예) 진열장 유리 닦기" value="${esc(t.title)}">
     <div class="lbl">메모 <span style="font-weight:500">(선택)</span></div><input class="in" id="tNote" maxlength="200" placeholder="예) 끝나면 사진 찍어 두기" value="${esc(t.note)}">
-    <div class="lbl">어느 지점</div><div class="chips"><button class="chip ${t.br.length === 8 ? "on" : ""}" data-tball>전체</button>${BR.map((b) => `<button class="chip ${t.br.includes(b) ? "on" : ""}" data-tb="${b}">${esc(b)}</button>`).join("")}</div>
+    <div class="lbl">어느 지점</div><div class="chips"><button class="chip ${t.br.length === BR.length ? "on" : ""}" data-tball>전체</button>${BR.map((b) => `<button class="chip ${t.br.includes(b) ? "on" : ""}" data-tb="${b}">${esc(b)}</button>`).join("")}</div>
     <div class="lbl">언제</div><div class="seg">${[["once", "한 번"], ["daily", "매일"], ["weekly", "매주"], ["monthly", "매월"]].map(([k, n]) => `<button class="${t.rep === k ? "on" : ""}" data-trep="${k}">${n}</button>`).join("")}</div>
     <div style="margin-top:12px">${t.rep === "once" ? `<input class="in" type="date" id="tDate" value="${esc(t.date)}">`
       : t.rep === "weekly" ? `<div class="chips">${[1, 2, 3, 4, 5, 6, 0].map((d) => `<button class="chip ${t.dow.includes(d) ? "on" : ""}" data-tdow="${d}">${WD[d]}</button>`).join("")}</div>`
@@ -1077,9 +1082,9 @@ document.addEventListener("click", async (e) => {
   if (t.dataset.act === "bbsend") { BBSHORT = !!$("#bbShort")?.checked; BBTEST = !!$("#bbTest")?.checked; return bbSend(); }
   if (t.dataset.bbdel) { const [id, b] = t.dataset.bbdel.split("|"); if (!confirm(b + " 분배 카드를 지울까요?")) return; try { await sendOp("bbDel", { id, b }); D.bunbae = (D.bunbae || []).filter((c) => !(c.id === id && c.b === b)); render(); toast("지웠어요"); } catch (e) { toast("못 지웠어요"); } return; }
   if (t.dataset.bbok) { const [id, b, i] = t.dataset.bbok.split("|"); try { await sendOp("bbShortOk", { id, b, i: +i }); const c = (D.bunbae || []).find((x) => x.id === id && x.b === b); if (c) c.items[+i].shortOk = true; render(); toast("해결로 뺐어요"); } catch { toast("못 보냈어요"); } return; }
-  if (t.dataset.ntall !== undefined) { NTBR = NTBR.size === 8 ? new Set() : new Set(BR); document.querySelectorAll("[data-ntb]").forEach((x) => x.classList.toggle("on", NTBR.has(x.dataset.ntb))); t.classList.toggle("on", NTBR.size === 8); return; }
+  if (t.dataset.ntall !== undefined) { NTBR = NTBR.size === BR.length ? new Set() : new Set(BR); document.querySelectorAll("[data-ntb]").forEach((x) => x.classList.toggle("on", NTBR.has(x.dataset.ntb))); t.classList.toggle("on", NTBR.size === 8); return; }
   if (t.dataset.ntb) { NTBR.has(t.dataset.ntb) ? NTBR.delete(t.dataset.ntb) : NTBR.add(t.dataset.ntb); t.classList.toggle("on", NTBR.has(t.dataset.ntb)); document.querySelector("[data-ntall]")?.classList.toggle("on", NTBR.size === 8); return; }
-  if (t.dataset.act === "ntsend") { const title = $("#ntTitle").value.trim(), body = $("#ntBody").value.trim(); if (!title) return toast("제목을 넣어 주세요"); if (!NTBR.size) return toast("지점을 골라 주세요"); if (!confirm(`${NTBR.size === 8 ? "전 지점" : [...NTBR].join(", ")}에 공지를 띄울까요?`)) return; const n = { id: Date.now().toString(36), title, body, br: BR.filter((b) => NTBR.has(b)) }; try { await sendOp("notice", n); (D.notices ||= []).push({ ...n, d: D.d, t: new Date().toTimeString().slice(0, 5), off: false, ok: {} }); closeSheet(); render(); toast("올렸어요. 직원웹에는 1~2분 뒤에 떠요"); } catch (e) { toast("못 올렸어요: " + e.message); } return; }
+  if (t.dataset.act === "ntsend") { const title = $("#ntTitle").value.trim(), body = $("#ntBody").value.trim(); if (!title) return toast("제목을 넣어 주세요"); if (!NTBR.size) return toast("지점을 골라 주세요"); if (!confirm(`${NTBR.size === BR.length ? "전 지점" : [...NTBR].join(", ")}에 공지를 띄울까요?`)) return; const n = { id: Date.now().toString(36), title, body, br: BR.filter((b) => NTBR.has(b)) }; try { await sendOp("notice", n); (D.notices ||= []).push({ ...n, d: D.d, t: new Date().toTimeString().slice(0, 5), off: false, ok: {} }); closeSheet(); render(); toast("올렸어요. 직원웹에는 1~2분 뒤에 떠요"); } catch (e) { toast("못 올렸어요: " + e.message); } return; }
   if (t.dataset.ntoff) { if (!confirm("이 공지를 내릴까요? 직원웹에서 사라져요")) return; try { await sendOp("noticeOff", { id: t.dataset.ntoff }); const n = (D.notices || []).find((x) => x.id === t.dataset.ntoff); if (n) n.off = true; render(); toast("내렸어요"); } catch { toast("못 보냈어요"); } return; }
   if (t.dataset.issok) { const s = issDone(); s.add(t.dataset.issok); issDoneSave(s); render(); return toast("확인 완료"); }
   if (t.dataset.issundo) { issDoneSave(new Set()); render(); return; }
@@ -1117,13 +1122,13 @@ document.addEventListener("click", async (e) => {
   // 업무
   if (a === "svnew") { svNew = { g: "", br: [...BR], date: D.d, time: "" }; return sheetSurveyNew(); }
   if (t.dataset.svg !== undefined) { readSvForm(); svNew.g = t.dataset.svg; return sheetSurveyNew(); }
-  if (t.dataset.svball !== undefined) { readSvForm(); svNew.br = svNew.br.length === 8 ? [] : [...BR]; return sheetSurveyNew(); }
+  if (t.dataset.svball !== undefined) { readSvForm(); svNew.br = svNew.br.length === BR.length ? [] : [...BR]; return sheetSurveyNew(); }
   if (t.dataset.svb) { readSvForm(); const b = t.dataset.svb, st = new Set(svNew.br); st.has(b) ? st.delete(b) : st.add(b); svNew.br = BR.filter((x) => st.has(x)); return sheetSurveyNew(); }
   if (a === "svsave") return saveSurveyTask();
   if (a === "ntnew") return sheetNotice();
   if (a === "tnew") { editTask = { id: "", title: "", note: "", time: "", br: [], rep: "once", date: D.d, dow: [], dom: 1 }; return sheetTask(); }
   if (t.dataset.tedit) { editTask = JSON.parse(JSON.stringify(D.tasks.find((x) => x.id === t.dataset.tedit))); editTask.dow ||= []; return sheetTask(); }
-  if (t.dataset.tball !== undefined) { readTaskForm(); editTask.br = editTask.br.length === 8 ? [] : [...BR]; return sheetTask(); }
+  if (t.dataset.tball !== undefined) { readTaskForm(); editTask.br = editTask.br.length === BR.length ? [] : [...BR]; return sheetTask(); }
   if (t.dataset.tb) { readTaskForm(); const b = t.dataset.tb, s = new Set(editTask.br); s.has(b) ? s.delete(b) : s.add(b); editTask.br = BR.filter((x) => s.has(x)); return sheetTask(); }
   if (t.dataset.trep) { readTaskForm(); editTask.rep = t.dataset.trep; return sheetTask(); }
   if (t.dataset.tdow) { readTaskForm(); const d = +t.dataset.tdow, s = new Set(editTask.dow); s.has(d) ? s.delete(d) : s.add(d); editTask.dow = [...s]; return sheetTask(); }
