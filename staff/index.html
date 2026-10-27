@@ -236,7 +236,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.26-40";
+const VER = "10.27-1";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍"];
@@ -471,7 +471,7 @@ function render() {
       <main class="mainv">
         <div class="top mtop"><div class="logo">VAFRIEND <b>직원</b></div><button class="store" data-go="branchask" style="cursor:pointer;border:0" title="지점 바꾸기">${esc(ho(B))} ▾</button><div class="date">${d.getMonth() + 1}/${d.getDate()} (${"일월화수목금토"[d.getDay()]})</div></div>
         <div class="phead"><h1>${VIEWS.find((v) => v[0] === VIEW)[2]}</h1><span>${d.getMonth() + 1}월 ${d.getDate()}일 ${"일월화수목금토"[d.getDay()]}요일</span></div>
-        ${VIEW === "home" || VIEW === "work" ? `<div class="hero"${TEST ? ' style="background:#7a2e0e"' : ""}>${TEST ? '<p style="color:#ffd7a8;font-weight:800;margin-bottom:6px">🧪 시험 모드: 진짜 기록에 안 섞여요</p>' : ""}${heroBody}</div>` : `<button class="hmini" data-view="home"${TEST ? ' style="background:#7a2e0e"' : ""}>${TEST ? "🧪 " : ""}<span>지금 할 일</span><b>${nx ? nx[0] + " " + nx[1] : "오늘 마감 완료 🎉"}</b>${TD.length + AH.length ? `<em>할 일 ${TD.length + AH.length}개 더</em>` : ""}<i>오늘 화면 →</i></button>`}
+        ${VIEW === "home" || VIEW === "work" ? `<div class="hero"${TEST ? ' style="background:#7a2e0e"' : ""}>${TEST ? '<p style="color:#ffd7a8;font-weight:800;margin-bottom:6px">🧪 시험 모드: 진짜 기록에 안 섞여요</p>' : ""}${heroBody}</div>` : `<button class="hmini" data-view="home"${TEST ? ' style="background:#7a2e0e"' : ""}>${TEST ? "🧪 " : ""}${biz ? `<span>영업 중</span><b>마감 ${cAt === "24:00" ? "자정" : cAt}</b>` : `<span>지금 할 일</span><b>${nx ? nx[0] + " " + nx[1] : "오늘 마감 완료 🎉"}</b>`}${TD.length + AH.length ? `<em>할 일 ${TD.length + AH.length}개 더</em>` : ""}<i>오늘 화면 →</i></button>`}
         ${ONLY_OPEN_CLOSE ? "" : VIEW === "home" ? kpis : `<div class="pconly">${kpis}</div>`}
         ${body}
         ${!bKey() && !ONLY_OPEN_CLOSE ? "" : !bKey() ? `<button class="keybar" data-go="keyin" style="margin-bottom:10px">🔑 손님 이름, 번호를 보려면 눌러서 매장 코드 4자리를 넣어 주세요</button>` : ""}
