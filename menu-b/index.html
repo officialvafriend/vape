@@ -265,6 +265,10 @@ body{word-break:keep-all;overflow-wrap:break-word}
 .devben li b{display:block;font-size:15px}.devben li span{display:block;font-size:13px;color:var(--grey);margin-top:2px}.devben li.ok b::before{content:"✓ ";color:#1b8a4b}
 .devben li input{width:100%;height:42px;margin-top:6px;border:1px solid var(--line);border-radius:10px;padding:0 10px;font-size:15px;background:var(--bg);color:var(--ink)}
 .devben .mini{background:var(--red);color:#fff;border-radius:10px;padding:7px 12px;font-size:13px;font-weight:800;margin-top:6px}.devben .mini.ln{background:var(--ink);color:var(--card);margin-right:4px}
+.devben .csr{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.devben .csc{flex:1;min-width:110px;display:flex;align-items:center;gap:8px;background:var(--bg);border-radius:12px;padding:10px 12px;text-align:left;box-shadow:inset 0 0 0 1.5px var(--line)}
+.devben .csc i{font-style:normal;font-size:18px}.devben .csc b{flex:1;font-size:14px}.devben .csc em{font-style:normal;font-size:13px;color:var(--grey)}
+.devben .csc u{text-decoration:none;width:26px;height:26px;border-radius:50%;background:var(--ink);color:var(--card);display:flex;align-items:center;justify-content:center;font-weight:800}
 .devben li > .mini[data-eg]{position:absolute;right:10px;top:10px;margin:0}
 /* 바닥 시트, 어둡게 덮개가 카드 번호, BEST 표시보다 위에 오게 */
 .dim{z-index:9}.sheet{z-index:10}.cart{position:relative;z-index:8}
@@ -548,7 +552,9 @@ $('lines').onclick = (e) => {
 // ── 혜택 안내 (지금 판 cartView의 nudge, 기기패키지 만들기, 일회용 증정, 레이저 각인과 같은 규칙) ──
 let engrave = null; // null = 안 함, 문자열 = 새길 문구
 const pkAddOf = (how) => /10병/.test(how) ? ADD.pr10 : how === "프리미엄 기기패키지" ? ADD.pr5 : how === "베이프렌드 기기패키지" ? ADD.vl5 : 0;
-function giftBase() { // 액상, 팟 금액 (기기, 기기패키지에 든 액상, 일회용은 빼고) — 10만원 이상이면 일회용 1개 증정
+const GIFT_ON = false; // 액상, 팟 10만원 이상 일회용 증정 이벤트 (10/27 종료)
+function giftBase() {
+  if (!GIFT_ON) return 0; // 액상, 팟 금액 (기기, 기기패키지에 든 액상, 일회용은 빼고) — 10만원 이상이면 일회용 1개 증정
   const t = totalOf(), c = t.c, items = [...cart.values()];
   const e = estimate(c), liq = c.dev && e.how ? e.total - c.dev * MAIN_PRICE - pkAddOf(e.how) : prPrice(c.v + c.p) + pmPrice(c.m);
   return Math.max(0, liq) + items.filter((x) => x.k === "bulk").reduce((a, x) => a + x.unit * x.qty, 0) + items.filter((x) => x.cc === "pod").reduce((a, x) => a + x.unit * x.qty, 0);
@@ -564,7 +570,10 @@ function devBenefit(c, devs) {
   rows.push(engrave === null ? `<li><b>레이저 각인 무료</b><span>원하는 문구를 기기에 새겨 드려요</span><button class="mini" data-eg="add">각인 추가</button></li>`
     : `<li class="ok"><b>레이저 각인 추가됨</b><input type="text" id="engrText" maxlength="20" placeholder="새길 문구 (이름, 이니셜 등)" value="${esc(engrave)}"><button class="mini ln" data-eg="del">빼기</button></li>`);
   const cases = [...new Map(devs.flatMap((d) => caseOf(d.model || "")).map((g) => [g.id, g])).values()].filter((g) => !cart.has(g.id));
-  if (cases.length) rows.push(`<li><b>기기 보호 케이스도 있어요</b><span>${cases.map((g) => `<button class="mini ln" data-case="${g.id}">${esc(g.n)} ${won(g.price)}</button>`).join(" ")}</span></li>`);
+  if (cases.length) { // 케이스 (10/27 사장님 "못생기게 보여줄거야?"): 모델 이름은 빼고 색만, 작은 카드로 나란히
+    const nm = (g, model) => g.n.replace(model, "").replace(/케이스/, "").trim() || "기본";
+    rows.push(`<li class="cs"><b>케이스도 같이 챙겨 드릴까요?</b><span>떨어뜨려도 흠집 걱정 없게</span><div class="csr">${cases.map((g) => { const d = devs.find((x) => g.n.startsWith(x.model)) || devs[0];
+      return `<button class="csc" data-case="${g.id}"><i>🛡️</i><b>${esc(nm(g, d.model))}</b><em>${won(g.price)}</em><u>+</u></button>`; }).join("")}</div></li>`); }
   return `<div class="devben"><div class="dbh">기기 구매 시 받을 수 있는 혜택이 있어요!</div><ul>${rows.join("")}</ul>${c.dev && n < 10 ? `<button class="cta" data-goliq="1" style="margin-top:10px;height:52px;font-size:16px">액상 고르러 가기</button>` : ""}</div>`;
 }
 function benefitBox() {
