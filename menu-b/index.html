@@ -325,6 +325,17 @@ body.land #vHome .go5{grid-template-rows:repeat(5,1fr);align-content:stretch}
 .rkr .n{flex:1;min-width:0}.rkr .n b{display:block;font-size:17px}.rkr .n span{font-size:13px;color:var(--grey)}
 .rkr .add{width:40px;height:40px;border-radius:50%;background:var(--ink);color:var(--card);font-size:22px;flex:none}
 .rkr.sold .im,.rkr.sold .n{opacity:.45}
+@keyframes rkin{from{opacity:0;transform:translateX(-28px)}to{opacity:1;transform:none}}
+@keyframes rkpop{0%{transform:scale(.4)}70%{transform:scale(1.25)}100%{transform:scale(1)}}
+@keyframes rkbob{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+@keyframes rkshine{from{background-position:-200% 0}to{background-position:200% 0}}
+.rkin{animation:rkin .45s cubic-bezier(.2,.8,.2,1) both}
+.rkr.top > i{animation:rkpop .5s ease-out both;animation-delay:inherit}
+.rkr:first-child{background:linear-gradient(100deg,var(--card) 40%,rgba(255,215,120,.35) 50%,var(--card) 60%) var(--card);background-size:200% 100%;animation:rkin .45s cubic-bezier(.2,.8,.2,1) both,rkshine 3.2s linear 1s infinite}
+.rkr .mv{flex:none;width:62px;font-size:13px;font-weight:800;text-align:center;font-family:var(--num)}
+.rkr .mv.up{color:var(--red)}.rkr .mv.dn{color:#3b82f6}.rkr .mv.eq{color:var(--grey)}.rkr .mv.new{color:#ff7a00}
+.rkr .mv.hot{color:#fff;background:var(--red);border-radius:999px;padding:4px 6px;font-family:var(--kr,inherit);font-size:12px}.rkr .mv.hot u{display:inline-block;text-decoration:none;margin-right:2px;animation:rkbob .9s ease-in-out infinite}
+@media (prefers-reduced-motion:reduce){.rkin,.rkr.top > i,.rkr:first-child,.rkr .mv.hot u{animation:none}}
 /* 첫구매 혜택 */
 #perkBox{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:80}#perkBox.on{display:flex}
 #perkBox .pb{background:var(--card);color:var(--ink);border-radius:24px;padding:28px;width:min(440px,90vw);text-align:center}#perkBox .pb > b{font-size:22px}#perkBox p{color:var(--grey);margin:8px 0 14px}
@@ -1568,19 +1579,27 @@ function rkFind(kind, n) { // 랭킹 이름 → 패드 상품
   if (kind === "lung") { const k = (v) => v.replace(/\(?모드\)?|\s/g, ""); return LUNG.find((x) => x.n === n) || LUNG.find((x) => k(x.n) === k(n)); }
   if (kind === "dsp") return GDS.find((g) => g.c === "dsp" && g.n === n);
   return null; }
+// 순위 변동: prev = 어제 랭킹(랭킹_만들기.mjs가 같이 올림). 급상승 = 재고 많아서 끼운 것, VF 빌런, 릭
+function rkMv(b, row, i) {
+  const n = row[0], promo = row[2] === "재고" || (rkTab === "liq" && /^VF (빌런|릭) /.test(n));
+  if (promo) return '<span class="mv hot"><u>▲</u>급상승</span>';
+  const pv = b.prev && b.prev[rkTab]; if (!pv) return "";
+  const p = pv.indexOf(n) + 1; if (!p) return '<span class="mv new">NEW</span>';
+  const d = p - (i + 1); return d > 0 ? `<span class="mv up">▲${d}</span>` : d < 0 ? `<span class="mv dn">▼${-d}</span>` : '<span class="mv eq">-</span>';
+}
 function rkDraw() {
   const b = RK && RK.branches && RK.branches[BRANCH];
   $('rkAt').textContent = RK ? `${BRANCH}, ${(RK.from || "").slice(5).replace("-", "/")} ~ ${(RK.to || "").slice(5).replace("-", "/")} 판매 기준` : "";
   $('rkTab').innerHTML = RK_TABS.filter(([k]) => b && b[k] && b[k].length).map(([k, t]) => `<button data-rk="${k}" class="${k === rkTab ? "on" : ""}">${t}</button>`).join("");
   if (!b) { $('rkList').innerHTML = '<div class="evtip">이 매장 랭킹 자료가 아직 없어요</div>'; return; }
   const RK_N = { liq: 10, dsp: 10, dev: 5, lung: 5 }, list = (b[rkTab] || []).filter(([n]) => { const x = rkFind(rkTab, n); return !(x && outOf(x.n)); }).slice(0, RK_N[rkTab]);
-  $('rkList').innerHTML = list.map(([n], i) => {
+  $('rkList').innerHTML = list.map((row, i) => { const n = row[0], mv = rkMv(b, row, i), dl = `style="animation-delay:${(i * .08).toFixed(2)}s"`;
     if (rkTab === "dev") { const g = GDS.find((y) => y.c === "dev" && (y.model || y.n).startsWith(n)), im = devImgOf(n) || (g ? gImg2(g) : ""), ok = devModels().includes(n);
-      return `<div class="rkr ${i < 3 ? "top" : ""}"><i>${i + 1}</i><div class="im">${im ? `<img src="${im}" alt="">` : "🔋"}</div><div class="n"><b>${esc(n)}</b></div>${ok ? `<button class="pkb ln1" data-rkdev="${esc(n)}">보러 가기</button>` : g ? `<button class="pkb ln1" data-rkq="${esc(n)}">색상 보기</button>` : ""}</div>`; }
+      return `<div ${dl} class="rkr rkin ${i < 3 ? "top" : ""}"><i>${i + 1}</i>${mv}<div class="im">${im ? `<img src="${im}" alt="">` : "🔋"}</div><div class="n"><b>${esc(n)}</b></div>${ok ? `<button class="pkb ln1" data-rkdev="${esc(n)}">보러 가기</button>` : g ? `<button class="pkb ln1" data-rkq="${esc(n)}">색상 보기</button>` : ""}</div>`; }
     const x = rkFind(rkTab, n), out = x ? outOf(x.n) : false, q = x ? (cart.get(x.id) || {}).qty || 0 : 0;
     const img = !x ? "" : rkTab === "lung" ? (LUNG_IMG[x.n] || "") : rkTab === "dsp" ? gImg2(x) : imgOf(x);
     const label = rkTab === "liq" ? short(n) : rkTab === "lung" ? n.replace(/\s*\(?모드\)?$/, "") : n;
-    return `<div class="rkr ${i < 3 ? "top" : ""} ${out ? "sold" : ""}"><i>${i + 1}</i><div class="im" style="background:${x ? tintOf(x) : "#f4f4f6"}">${img ? `<img src="${img}" alt="" loading="lazy">` : ""}</div><div class="n"><b>${esc(label)}${x && rkTab === "liq" ? noTag(x.n) : ""}</b><span>${esc(x ? [x.f, x.br].filter(Boolean)[0] || "" : "")}${q ? ` · 담음 ${q}` : ""}${out ? " · 품절" : ""}</span></div>${!x ? "" : out ? `<button class="askb" data-ask="${esc(x.n)}">다른 지점 확인</button>` : `<button class="add" data-rka="${x.id}">+</button>`}</div>`; }).join("") || '<div class="evtip">이 분류는 아직 자료가 없어요</div>';
+    return `<div ${dl} class="rkr rkin ${i < 3 ? "top" : ""} ${out ? "sold" : ""}"><i>${i + 1}</i>${mv}<div class="im" style="background:${x ? tintOf(x) : "#f4f4f6"}">${img ? `<img src="${img}" alt="" loading="lazy">` : ""}</div><div class="n"><b>${esc(label)}${x && rkTab === "liq" ? noTag(x.n) : ""}</b><span>${esc(x ? [x.f, x.br].filter(Boolean)[0] || "" : "")}${q ? ` · 담음 ${q}` : ""}${out ? " · 품절" : ""}</span></div>${!x ? "" : out ? `<button class="askb" data-ask="${esc(x.n)}">다른 지점 확인</button>` : `<button class="add" data-rka="${x.id}">+</button>`}</div>`; }).join("") || '<div class="evtip">이 분류는 아직 자료가 없어요</div>';
 }
 $('rkTab').onclick = (e) => { const t = e.target.closest('[data-rk]'); if (t) { rkTab = t.dataset.rk; rkDraw(); } };
 $('rkList').onclick = (e) => { const a = e.target.closest('[data-rka]'), d = e.target.closest('[data-rkdev]'), sq = e.target.closest('[data-rkq]');
