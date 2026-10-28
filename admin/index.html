@@ -444,7 +444,6 @@ function noteHtml() {
     ${x.cmts.length ? `<div style="background:var(--bg,#f2f4f6);border-radius:10px;padding:8px 12px;margin:6px 0">${x.cmts.map((c) => `<div style="font-size:14px;padding:2px 0"><b>${c.adm ? "👔 " : ""}${esc(c.by)}</b> ${esc(c.text)}</div>`).join("")}</div>` : ""}
     <div style="display:flex;gap:8px;align-items:center;margin-top:6px"><button class="chip ${me && x.likes.includes(me) ? "on" : ""}" data-notelike="${esc(x.id)}">👍 ${x.likes.length || ""}</button><button class="chip" data-notecmt="${esc(x.id)}">💬 댓글</button><small class="t-sub">${esc(x.likes.join(", "))}</small></div></div>`;
   return `<div class="pchead"><h1>매장 노트</h1><div class="caption">직원들이 남긴 특이건, 최근 60일. 👍와 댓글은 직원웹에 바로 보여요</div></div>
-    <div class="chips" style="margin-bottom:10px;align-items:center"><small class="t-sub" style="margin-right:2px">내 이름</small>${adminNames().map((n) => `<button class="chip ${n === me ? "on" : ""}" data-admname="${esc(n)}">${esc(n)}</button>`).join("")}${ADMIN_NAMES.includes(me) ? "" : `<small class="t-bad" style="font-weight:600">먼저 골라 주세요</small>`}</div>
     <div class="chips" style="margin-bottom:6px">${brs}</div><div class="chips" style="margin-bottom:10px">${cats}</div>
     <div class="list">${N.map(card).join("") || '<div class="item">아직 노트가 없어요</div>'}</div>`;
 }
@@ -452,12 +451,24 @@ function noteHtml() {
 const ADMIN_NAMES = ["한섭이사", "민혁팀장", "동재팀장", "관리자"];
 function adminName() { let n = ls.get("vf-admin-name") || ""; if (ADMIN_NAMES.includes(n)) return n; n = (prompt("누구로 남길까요? 하나를 그대로 적어 주세요: " + ADMIN_NAMES.join(", ")) || "").trim(); if (!ADMIN_NAMES.includes(n)) { if (n) toast("목록에 있는 이름만 돼요"); return ""; } ls.set("vf-admin-name", n); return n; }
 // 10/28 사장님 "댓글 적을 때 누군지 고를 수 있게, 지금 다 보혜라서": 한 PC를 여러 명이 써서 처음 적은 이름이 계속 붙음 → 매장 노트 위에 이름 칩, 고른 이름으로 댓글과 👍
-const adminNames = () => ADMIN_NAMES;
-const addAdminName = (n) => { if (ADMIN_NAMES.includes(n)) ls.set("vf-admin-name", n); };
-async function noteAct(id, like) {
-  const by = adminName(); if (!by) return;
-  let cmt = ""; if (!like) { cmt = (prompt(`${by} 이름으로 댓글 (다른 사람이면 취소하고 위에서 이름을 골라 주세요)`) || "").trim().slice(0, 300); if (!cmt) return; }
-  try { await sendOp("noteReact", { id, by, ...(like ? { like: 1 } : { cmt }) }); const x = (D.notes || []).find((y) => y.id === id); if (x) { if (like) { const i = x.likes.indexOf(by); i < 0 ? x.likes.push(by) : x.likes.splice(i, 1); } else x.cmts.push({ by, text: cmt, adm: 1 }); } render(); toast(like ? "👍" : "댓글 남겼어요"); } catch (e) { toast("실패: " + e.message); }
+// 10/28 사장님 "댓글 남기는 사람이 고를 수 있도록": 댓글, 👍 누를 때 창에서 이름(넷 중 하나)을 고르고 남김. 마지막으로 고른 이름이 미리 켜져 있음
+let NA = null;
+function noteAct(id, like) {
+  const x = (D.notes || []).find((y) => y.id === id); if (!x) return;
+  const last = ls.get("vf-admin-name") || "";
+  NA = { id, like, by: ADMIN_NAMES.includes(last) ? last : null };
+  openSheet(`<h2>${like ? "👍 좋아요" : "💬 댓글"}</h2><div class="caption" style="white-space:pre-wrap;margin:8px 0 12px">${esc(x.text).slice(0, 160)}</div>
+    ${like ? "" : `<input class="in" id="naText" maxlength="300" placeholder="댓글, 직원웹에 바로 보여요">`}
+    <div class="lbl" style="margin-top:14px">누구로 남길까요</div><div class="chips">${ADMIN_NAMES.map((n) => `<button class="chip ${NA.by === n ? "on" : ""}" data-naby="${n}">${n}</button>`).join("")}</div>
+    <div class="btns"><button class="btn gray" data-x>닫기</button><button class="btn" data-act="naok">${like ? "👍 남기기" : "댓글 남기기"}</button></div>`);
+  if (!like) setTimeout(() => $("#naText")?.focus(), 50);
+}
+async function noteActGo() {
+  if (!NA) return; const { id, like } = NA, by = NA.by;
+  if (!by) return toast("누구로 남길지 골라 주세요");
+  let cmt = ""; if (!like) { cmt = ($("#naText")?.value || "").trim().slice(0, 300); if (!cmt) return toast("댓글을 적어 주세요"); }
+  ls.set("vf-admin-name", by);
+  try { await sendOp("noteReact", { id, by, ...(like ? { like: 1 } : { cmt }) }); const x = (D.notes || []).find((y) => y.id === id); if (x) { if (like) { const i = x.likes.indexOf(by); i < 0 ? x.likes.push(by) : x.likes.splice(i, 1); } else x.cmts.push({ by, text: cmt, adm: 1 }); } closeSheet(); render(); toast(like ? `👍 ${by}` : `${by} 댓글 남겼어요`); } catch (e) { toast("실패: " + e.message); }
 }
 function engHtml() {
   const E = D.engMonth; if (!E || !E.rows.some((r) => r.n)) return "";
@@ -1145,7 +1156,7 @@ document.addEventListener("click", async (e) => {
   if (t.dataset.orderf) { orderF = t.dataset.orderf; return render(); }
   if (t.dataset.ordst) return orderStep(t.dataset.oid, t.dataset.ordst);
   if (t.dataset.notef) { noteF = t.dataset.notef; return render(); }
-  if (t.dataset.admname) { const n = t.dataset.admname; addAdminName(n); toast(`이제 ${n} 이름으로 댓글과 👍가 남아요`); return render(); }
+  if (t.dataset.naby) { NA && (NA.by = t.dataset.naby); document.querySelectorAll("[data-naby]").forEach((x) => x.classList.toggle("on", x === t)); return; }
   if (t.dataset.noteb) { noteB = t.dataset.noteb; return render(); }
   if (t.dataset.notelike) return noteAct(t.dataset.notelike, true);
   if (t.dataset.notecmt) return noteAct(t.dataset.notecmt, false);
@@ -1165,6 +1176,7 @@ document.addEventListener("click", async (e) => {
   if (t.dataset.brpc) return sheetBranch(t.dataset.brpc, "프리미엄 A");
   if (t.dataset.sv) return sheetSurvey(t.dataset.sv);
   if (t.dataset.cl !== undefined) return sheetClosing(+t.dataset.cl);
+  if (a === "naok") return noteActGo();
   if (a === "copyrpt") { try { await navigator.clipboard.writeText($("#rpt").textContent); toast("복사했어요, 카톡에 붙여 넣으면 돼요"); } catch { toast("복사하지 못했어요, 길게 눌러 복사해 주세요"); } return; }
   if (t.dataset.svrej) { const why = prompt("반려 이유 (직원앱에 보여요, 비워도 돼요)", "다시 세 주세요"); if (why === null) return; try { await sendOp("surveyReject", { id: t.dataset.svrej, why }); const v = D.surveys.find((x) => x.id === t.dataset.svrej); v.status = "reject"; v.why = why; closeSheet(); render(); toast("반려했어요"); } catch { toast("반려하지 못했어요"); } return; }
   if (t.dataset.tk) return sheetTaskStatus(t.dataset.tk);
