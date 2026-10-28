@@ -683,8 +683,8 @@ function giftBase() {
 // 기기 담았을 때 혜택 (10/27 사장님 "기기 구매 시 받을 수 있는 혜택이 있어요! 떠야", "케이스도 추천"): 하복2 액상 패키지, 레이저 각인, 전용 케이스
 const caseOf = (model) => { const k = norm(model); return GDS.filter((g) => /케이스/.test(g.n) && norm(g.n).startsWith(k) && !OUT.has(g.n) && !outOf(g.n)); };
 function devBenefit(c, devs) {
-  const n = c.v + c.p, rows = [];
-  if (c.dev) { // 하복2 기기패키지 (지금 판 규칙: 빌런, 릭 5병 30,000 / 프리미엄 5병 40,000 / 10병 75,000)
+  const n = c.v + c.p, rows = [], how = estimate(c).how; // how 있으면 패키지 이미 적용
+  if (c.dev && !how) { // 기기패키지 (지금 판 규칙: 빌런, 릭 5병 30,000 / 프리미엄 5병 40,000 / 10병 75,000)
     if (n >= 10) rows.push(`<li class="ok"><b>액상 10병 패키지 적용 중</b><span>액상 10병이 75,000원 (병당 7,500원)</span></li>`);
     else { if (n < 5) rows.push(`<li><b>빌런, 릭 ${5 - n}병 더 담으면 5병 패키지</b><span>액상 5병이 30,000원 (병당 6,000원)</span></li>`);
       const d0 = devs[0] || {}; rows.push(`<li><b>액상 ${10 - n}병 더 담으면 10병 패키지</b><span>${d0.model === "하복2" ? "하복2 + 액상 10병 164,000원 (179,000원에서 15,000원 할인)" : `${esc(d0.model || "기기")} + 액상 10병 ${won((d0.unit || 0) + ADD.pr10)}`}</span></li>`); } }
@@ -695,7 +695,7 @@ function devBenefit(c, devs) {
     const nm = (g, model) => g.n.replace(model, "").replace(/케이스/, "").trim() || "기본";
     rows.push(`<li class="cs"><b>케이스도 같이 챙겨 드릴까요?</b><span>떨어뜨려도 흠집 걱정 없게</span><div class="csr">${cases.map((g) => { const d = devs.find((x) => g.n.startsWith(x.model)) || devs[0];
       return `<button class="csc" data-case="${g.id}"><i>🛡️</i><b>${esc(nm(g, d.model))}</b><em>${won(g.price)}</em><u>+</u></button>`; }).join("")}</div></li>`); }
-  return `<div class="devben"><div class="dbh">기기 구매 시 받을 수 있는 혜택이 있어요!</div><div class="dbs">기기 사시면 패키지 이벤트가 있어요. 현금이나 계좌이체로 결제하시면 할인이 들어가요.</div><ul>${rows.join("")}</ul>${c.dev && n < 10 ? `<button class="cta" data-goliq="1" style="margin-top:10px;height:52px;font-size:16px">액상 고르러 가기</button>` : ""}</div>`;
+  return `<div class="devben">${how ? `<div class="dbh">✓ ${esc(how)} 적용됐어요</div>` : '<div class="dbh">기기 구매 시 받을 수 있는 혜택이 있어요!</div><div class="dbs">기기 사시면 패키지 이벤트가 있어요. 현금이나 계좌이체로 결제하시면 할인이 들어가요.</div>'}<ul>${rows.join("")}</ul>${c.dev && !how && n < 10 ? `<button class="cta" data-goliq="1" style="margin-top:10px;height:52px;font-size:16px">액상 고르러 가기</button>` : ""}</div>`;
 }
 // 10/28 사장님: 네이버 리뷰 쓰면 다음 방문 2,000원 쿠폰 (1년)
 const REVIEW_TXT = '<div class="nudge rv"><b>네이버 리뷰 남겨 주시면 2,000원 할인쿠폰을 드려요</b><span>다음 방문 때 바로 쓰실 수 있고, 사용기간이 1년이라 넉넉해요</span></div>';
