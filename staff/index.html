@@ -60,6 +60,11 @@
   .thpo{position:relative;display:flex;justify-content:space-between;align-items:center;width:100%;text-align:left;background:#f2f4f6;border-radius:10px;padding:9px 12px;font-size:14px;font-weight:600;overflow:hidden}
   .thpo i{position:absolute;left:0;top:0;bottom:0;background:#e8f3ff;z-index:0}.thpo span,.thpo b{position:relative;z-index:1}.thpo.on{outline:2px solid #3182f6}.thpo.on i{background:#cfe3ff}
   .thpn{font-size:12px;color:var(--sub)}
+  .pkst{margin-top:10px;border:1px solid var(--line);border-radius:12px;padding:8px 12px}.pkst .desc{margin:0 0 4px}
+  .pksr{display:flex;align-items:center;gap:8px;padding:6px 0;border-top:1px solid #f2f4f6;font-size:14px}
+  .pksr b{width:92px;flex-shrink:0}.pksr span{flex:1;color:#4e5968;font-size:13px}.pksr em{font-style:normal;font-weight:800;font-size:13px}
+  .pksr.ok em{color:var(--green)}.pksr.part em{color:#b45309}.pksr.no{opacity:.55}.pksr.no em{color:var(--sub)}
+  .pkb{margin-left:4px;font-weight:800;font-size:12px}.pkb.ok{color:var(--green)}.pkb.no{color:var(--sub)}
   .ntday{font-size:14px;font-weight:800;color:var(--sub);margin:16px 2px 8px}
   .ntcard{background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px 16px;margin-bottom:10px}
   .nth{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px;color:var(--sub)}
@@ -260,7 +265,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.28-7";
+const VER = "10.28-8";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍", "동성로2"];
@@ -1601,14 +1606,17 @@ const pcState = (b) => { const x = pcDay()[b] || {}; const hm2 = (h) => { const 
   return { ok: true, t: `출고 전${x.carrier ? `, ${x.carrier}` : ""}${x.cut ? `, ${x.cut}까지` : ""}` }; };
 // 10/26 사장님: 노란 줄은 "누가 요청, 뭘, 손님" 순서로 바로 읽히게. 종류(택배, 퀵 등)는 작은 표시로
 const hp = (attr, ic, tag, txt, old, act) => UI2 ? `<button class="hpill" ${attr}>${ic} <i>${tag}</i> <b>${txt}</b><em>${act}</em></button>` : `<button class="hpill" ${attr}>${ic} <b>${old}</b><em>${act}</em></button>`;
-const pcPills = () => pcList().filter((r) => r.to === B && r.st === "req").map((r) => hp(`data-pcpack="${r.id}"`, "📦", "택배", `${r.from !== B ? esc(ho(r.from)) + " 요청, " : ""}${esc(r.items)}, ${esc(r.nm || "손님")}님`, `택배 포장, ${esc(r.nm || "손님")}님 ${esc(r.items)}${r.from !== B ? ` (${esc(ho(r.from))} 요청)` : ""}`, "포장")).join("")
+const pcPills = () => pcList().filter((r) => r.to === B && r.st === "ask").map((r) => hp(`data-view="parcel"`, "📦", "택배", `${esc(ho(r.from))} 요청, ${esc(r.items)} 재고 있나요?`, `택배 재고 확인, ${esc(r.items)} (${esc(ho(r.from))} 요청)`, "답하기")).join("")
+  + pcList().filter((r) => r.from === B && r.st === "okpay").map((r) => hp(`data-view="parcel"`, "📦", "택배", `${esc(ho(r.to))}에 재고 있음, ${esc(r.nm || "손님")}님 결제 받기`, `택배 재고 있음, ${esc(r.nm || "손님")}님 결제 받기`, "결제")).join("")
+  + pcList().filter((r) => r.from === B && r.st === "nostock").map((r) => hp(`data-view="parcel"`, "📦", "택배", `${esc(ho(r.to))}에 재고 없음, ${esc(r.items)}`, `택배 재고 없음, ${esc(r.items)}`, "확인")).join("")
+  + pcList().filter((r) => r.to === B && r.st === "req").map((r) => hp(`data-pcpack="${r.id}"`, "📦", "택배", `${r.from !== B ? esc(ho(r.from)) + " 요청, " : ""}${esc(r.items)}, ${esc(r.nm || "손님")}님`, `택배 포장, ${esc(r.nm || "손님")}님 ${esc(r.items)}${r.from !== B ? ` (${esc(ho(r.from))} 요청)` : ""}`, "포장")).join("")
   + pcList().filter((r) => r.to === B && r.st === "packed").map((r) => hp(`data-pcwb="${r.id}"`, "📦", "택배", `출고되면 송장번호, ${esc(r.items)}, ${esc(r.nm || "손님")}님`, `출고되면 송장번호 넣기, ${esc(r.nm || "손님")}님 ${esc(r.items)}`, "송장")).join("")
   + pcList().filter((r) => r.from === B && r.st === "shipped").map((r) => hp(`data-pctell="${r.id}"`, "📦", "택배", `송장 나옴, ${esc(r.items)}, ${esc(r.nm || "손님")}님께 문자`, `송장 나옴, ${esc(r.nm || "손님")}님께 보내기`, "문자")).join("");
 function parcelHtml() {
-  const L = pcList(), st = { req: "포장 기다림", packed: "포장 완료, 출고 뒤 송장 기다림", shipped: "송장 나옴, 손님께 전달 전", done: "완료, 손님께 송장 보냄", cancel: "취소" };
+  const L = pcList(), st = { ask: "재고 확인 기다림", okpay: "재고 있음, 결제 기다림", nostock: "재고 없음", req: "포장 기다림", packed: "포장 완료, 출고 뒤 송장 기다림", shipped: "송장 나옴, 손님께 전달 전", done: "완료, 손님께 송장 보냄", cancel: "취소" };
   const day = BR.map((b) => { const x = pcState(b); return `<div style="display:flex;justify-content:space-between;padding:7px 0;border-top:1px solid #eee;font-size:14px"><b>${esc(ho(b))}</b><span style="color:${x.ok ? "var(--green)" : "var(--sub)"};font-weight:700">${esc(x.t)}</span></div>`; }).join("");
   const row = (r) => `<div class="crow"><div><b>${r.from === B && r.to === B ? "" : r.from === B ? `→ ${esc(ho(r.to))} ` : `← ${esc(ho(r.from))} 요청 `}${esc(r.nm || "손님")}님, ${esc(r.items)}</b><span>${st[r.st]}${r.wb ? `, ${esc(r.carrier)} ${esc(r.wb)}` : ""}${r.late ? ", 내일 나감" : ""}, ${esc(r.d.slice(5).replace("-", "/"))} ${esc(r.t)} ${esc(r.by)}</span></div>
-    <div class="tbtn">${r.to === B && r.st === "req" ? `<button class="act" data-pcpack="${r.id}">포장</button>` : ""}${r.to === B && r.st === "packed" ? `<button class="act" data-pcwb="${r.id}">송장 넣기</button>` : ""}${r.from === B && r.st === "shipped" ? `<button class="act" data-pctell="${r.id}">손님께 보내기</button>` : ""}${r.st === "req" ? `<button class="act gray" data-pccx="${r.id}">취소</button>` : ""}</div></div>`;
+    <div class="tbtn">${r.to === B && r.st === "ask" ? `<button class="act" data-pcstep="parcelok" data-id="${r.id}">있어요</button><button class="act gray" data-pcstep="parcelno" data-id="${r.id}">없어요</button>` : ""}${r.from === B && r.st === "okpay" ? `<button class="act" data-pcstep="parcelpaid" data-id="${r.id}">결제했어요</button>` : ""}${r.to === B && r.st === "req" ? `<button class="act" data-pcpack="${r.id}">포장</button>` : ""}${r.to === B && r.st === "packed" ? `<button class="act" data-pcwb="${r.id}">송장 넣기</button>` : ""}${r.from === B && r.st === "shipped" ? `<button class="act" data-pctell="${r.id}">손님께 보내기</button>` : ""}${["ask", "okpay", "nostock", "req"].includes(r.st) ? `<button class="act gray" data-pccx="${r.id}">취소</button>` : ""}</div></div>`;
   // 10/26 사장님 "지점별 택배 표가 쓸데없이 크다": 우리 지점 상태 한 줄만. 다른 지점 상태는 택배 요청 창에서 지점 고를 때 보임
   const me = pcState(B), mine = `<div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--sub);margin:2px 0 10px"><span>우리 지점 <b style="color:${me.ok ? "var(--green)" : "var(--sub)"}">${esc(me.t)}</b></span>${me.ok ? `<button class="chip" data-go="pdaygo" style="margin-left:auto">오늘 출고됐어요</button>` : ""}</div>`;
   if (UI2) return `<div class="cols one"><div><div class="card"><h2>📦 택배</h2>${mine}
@@ -1620,15 +1628,15 @@ function parcelHtml() {
       ${L.length ? L.map(row).join("") : '<div class="desc" style="padding:4px 0 12px">진행 중인 택배가 없어요</div>'}</div></div></div>`;
 }
 function sheetPcNew() {
-  PC.to = null; PK = { list: [], res: [] }; if (PICK) loadProds();
+  PC.to = null; PK = { list: [], res: [] }; if (PICK) { loadProds(); loadPst().then(pkStockDraw); }
   const chips = (order) => (order || BR.map((b) => [b, null])).map(([b, km], i) => { const x = pcState(b); return `<button class="chip ${PC.to === b ? "on" : ""}" data-pcto="${b}" style="${x.ok ? "" : "opacity:.6"}">${order && i === 0 ? "⭐ " : ""}${esc(ho(b))} <small>${esc(x.t)}${km != null ? `, 약 ${km < 1 ? 1 : Math.round(km)}km` : ""}</small></button>`; }).join("");
   window._pcChips = chips;
-  openSheet(`<h2>📦 택배 요청</h2><div class="desc">손님 결제는 우리 지점 포스에서 먼저 해 주세요.</div>
+  openSheet(`<h2>📦 택배 요청</h2><div class="desc">보낼 지점이 [있어요]를 누르면 그때 손님 결제를 받아요.</div>
     ${PICK ? pkHtml() : '<input class="input" id="pcItems" placeholder="품목, 수량 (예: 메가킥 망고 3병)" maxlength="120">'}
     <input class="input" id="pcName" placeholder="손님 이름" maxlength="20"><input class="input" id="pcPhone" placeholder="손님 연락처" inputmode="tel" maxlength="20">
     <input class="input" id="pcAddr" placeholder="받을 주소" maxlength="120">
     <div class="desc" style="margin-top:12px">보낼 지점 (주소를 넣으면 가까운 순)</div><div class="chips" id="pcTo">${chips(null)}</div>
-    <div class="btns"><button class="btn" data-x>취소</button><button class="btn primary" id="okPcNew">요청 보내기</button></div>`);
+    <div class="btns"><button class="btn" data-x>취소</button><button class="btn primary" id="okPcNew">재고 물어보기</button></div>`);
 }
 async function doPcNew(t) {
   const v = (id) => ($(id)?.value || "").trim();
@@ -1686,6 +1694,12 @@ async function sheetPcTell(id) {
   openSheet(`<h2>📦 송장번호 손님께 보내기</h2><div class="desc">${c ? esc(c.name) + " " + esc(c.phone) : esc(r.nm || "손님")}님, ${esc(r.items)}</div><div class="say" style="white-space:pre-wrap;user-select:all">${esc(msg)}</div>
     <div class="btns"><button class="btn" data-x>닫기</button>${c?.phone ? `<a class="btn" href="sms:${esc(c.phone.replace(/[^0-9]/g, ""))}?body=${encodeURIComponent(msg)}">문자 열기</a>` : ""}<button class="btn primary" id="okPcTell" data-id="${id}">보냈어요</button></div>`);
 }
+async function pcStep(id, type) {
+  const by = working().join(", "); if (!by) return needIn(() => pcStep(id, type));
+  if (type === "parcelpaid" && !confirm("손님 결제를 받았나요?")) return;
+  const r = pcList().find((x) => x.id === id);
+  try { await send({ type, id, by }); if (r) r.st = { parcelok: "okpay", parcelno: "nostock", parcelpaid: "req" }[type]; render(); toast({ parcelok: "있다고 알렸어요", parcelno: "없다고 알렸어요", parcelpaid: "결제했다고 알렸어요, 포장 시작돼요" }[type]); setTimeout(loadBoard, 15000); } catch (e) { fail(e); }
+}
 async function doPcSend(t, type, ok) {
   const by = working().join(", "); if (!by) return needIn(() => {});
   try { await send({ type, id: t.dataset.id, by }); PC.done[t.dataset.id] = 1; closeSheet(); render(); toast(ok); } catch (e) { fail(e); }
@@ -1714,10 +1728,40 @@ setInterval(() => { if (!B || $("#dim").classList.contains("on")) return; const 
 let PRODS = null, PK = { list: [], res: [] };
 async function loadProds() { if (PRODS) return PRODS; let j = null; try { j = await ghJson("products.json"); } catch {} if (!j?.list) try { j = await (await fetch(`${SITE}staff/products.json`, { cache: "no-store" })).json(); } catch {} PRODS = j?.list || []; return PRODS; }
 const pkNorm = (x) => String(x).toLowerCase().replace(/\s+/g, "");
-const pkHtml = () => `<input class="input" id="pkQ" placeholder="🔍 상품 이름으로 찾기 (예: 메가킥 망고)" autocomplete="off"><div id="pkR"></div><div id="pkL">${pkListHtml()}</div>`;
+const pkHtml = () => `<input class="input" id="pkQ" placeholder="🔍 상품 이름으로 찾기 (예: 메가킥 망고)" autocomplete="off"><div id="pkR"></div><div id="pkL">${pkListHtml()}</div><div id="pkS"></div>`;
 const pkListHtml = () => PK.list.length ? PK.list.map(([n, q, c], i) => `<div class="pkrow"><b>${esc(n)}${c ? "" : ' <small style="color:var(--red)">(목록 밖)</small>'}</b><span><button data-pkdec="${i}">−</button><em>${q}</em><button data-pkinc="${i}">＋</button><button data-pkdel="${i}">✕</button></span></div>`).join("") : '<div class="desc" style="margin:8px 0 0">고른 상품이 여기 쌓여요. 수량은 ＋ −</div>';
+// 10/28 사장님 "퀵, 택배 보내기 전에 재고 확인 먼저": 고른 상품의 지점별 포스 재고(봇이 30분마다 staff/pstock.json, 재고 공유 열쇠로 잠금, 열쇠는 board.sk)
+let PST = null, PST_AT = 0;
+async function loadPst() {
+  if (PST && Date.now() - PST_AT < 5 * 60e3) return PST;
+  try {
+    const sk = BOARD?.sk ? await decOne(BOARD.sk) : null; if (!sk?.k) return PST;
+    const j = await (await fetch(`${SITE}staff/pstock.json?t=${Date.now()}`, { cache: "no-store" })).json();
+    const raw = Uint8Array.from(atob(sk.k.replace(/-/g, "+").replace(/_/g, "/") + "==".slice(0, (4 - (sk.k.length % 4)) % 4)), (c) => c.charCodeAt(0));
+    const key = await crypto.subtle.importKey("raw", raw, "AES-GCM", false, ["decrypt"]), b = Uint8Array.from(atob(j.e), (c) => c.charCodeAt(0));
+    PST = { at: j.at, br: j.br, ok: j.ok, q: JSON.parse(new TextDecoder().decode(await crypto.subtle.decrypt({ name: "AES-GCM", iv: b.slice(0, 12) }, key, b.slice(12)))) }; PST_AT = Date.now();
+  } catch {}
+  return PST;
+}
+const pstOf = (n, b) => { if (!PST) return null; const i = PST.br.indexOf(b); if (i < 0 || !PST.ok[i]) return null; const a = PST.q[n]; return a ? a[i] ?? 0 : 0; };
+function pkStockRows() {
+  return BR.filter((b) => b !== B).map((b) => { const L = PK.list.map(([n, q]) => [n, q, pstOf(n, b)]), unk = L.some((x) => x[2] == null); return { b, L, unk, enough: !unk && L.every(([, q, h]) => h >= q), some: L.some(([, , h]) => h > 0) }; })
+    .sort((x, y) => (y.enough - x.enough) || (y.some - x.some));
+}
+function pkStockHtml() {
+  if (!PK.list.length) return "";
+  if (!PST) return `<div class="desc" style="margin-top:8px">${BOARD?.sk ? "지점 재고 불러오는 중…" : "매장 코드를 넣은 기기에서 지점 재고가 보여요"}</div>`;
+  const multi = PK.list.length > 1;
+  return `<div class="pkst"><div class="desc">지점 재고 <small>포스 기준, ${esc(PST.at)}</small></div>${pkStockRows().map((r) => `<div class="pksr ${r.enough ? "ok" : r.some ? "part" : "no"}"><b>${esc(ho(r.b))}</b><span>${r.unk ? "못 읽음" : r.L.map(([n, , h]) => `${multi ? esc(n.slice(0, 10)) + " " : ""}${h}개`).join(", ")}</span><em>${r.unk ? "" : r.enough ? "✓ 있음" : r.some ? "일부" : "없음"}</em></div>`).join("")}</div>`;
+}
+function pkStockDraw() {
+  const el = $("#pkS"); if (el) el.innerHTML = pkStockHtml();
+  const R = PST && PK.list.length ? Object.fromEntries(pkStockRows().map((r) => [r.b, r])) : {};
+  document.querySelectorAll("[data-snto],[data-pcto]").forEach((ch) => { const b = ch.dataset.snto || ch.dataset.pcto, r = R[b]; let x = ch.querySelector(".pkb"); if (!r || r.unk) { if (x) x.remove(); return; } if (!x) { x = document.createElement("span"); ch.appendChild(x); } x.className = "pkb " + (r.enough ? "ok" : "no"); x.textContent = r.enough ? "✓ 재고" : r.some ? "일부" : "재고 없음"; });
+}
+function pkRedraw() { const el = $("#pkL"); if (el) el.innerHTML = pkListHtml(); pkStockDraw(); }
 function pkSearch(q) { const el = $("#pkR"); if (!el) return; const k = pkNorm(q); if (!k) { el.innerHTML = ""; PK.res = []; return; } PK.res = (PRODS || []).filter(([n]) => pkNorm(n).includes(k)).slice(0, 8); el.innerHTML = PK.res.map(([n, c, m], i) => `<button class="pkhit" data-pkadd="${i}">${esc(n)}<small>${esc(m)}</small></button>`).join("") + (PK.res.length ? "" : `<button class="pkhit" data-pkfree="1">"${esc(q.trim())}" 목록에 없어요. 그대로 넣기 <small>(재고조정은 안 돼요)</small></button>`); }
-function pkAdd(n, c) { const i = PK.list.findIndex((x) => x[0] === n); if (i >= 0) PK.list[i][1]++; else PK.list.push([n, 1, c]); $("#pkQ").value = ""; $("#pkR").innerHTML = ""; $("#pkL").innerHTML = pkListHtml(); }
+function pkAdd(n, c) { const i = PK.list.findIndex((x) => x[0] === n); if (i >= 0) PK.list[i][1]++; else PK.list.push([n, 1, c]); $("#pkQ").value = ""; $("#pkR").innerHTML = ""; pkRedraw(); }
 const pkItems = () => PK.list.map(([n, q]) => `${n} ${q}개`).join(", "), pkProds = () => PK.list.map(([n, q, c]) => [n, q, c || null]);
 document.addEventListener("input", (e) => { if (e.target.id === "pkQ") pkSearch(e.target.value); });
 // 퀵 출발 문자 (10/26 사장님): 요청 지점이 손님께 보냄, 지점 인스타 태그
@@ -1787,7 +1831,7 @@ function sendsHtml() {
     ${L.length ? L.map(row).join("") : '<div class="desc" style="padding:4px 0 12px">진행 중인 건이 없어요</div>'}</div>`;
 }
 function sheetSnNew(kind) {
-  SN.to = null; SN.kind = kind === "quick" && quickClosed() ? "openquick" : kind; PK = { list: [], res: [] }; if (PICK) loadProds();
+  SN.to = null; SN.kind = kind === "quick" && quickClosed() ? "openquick" : kind; PK = { list: [], res: [] }; if (PICK) { loadProds(); loadPst().then(pkStockDraw); }
   const k = SN.kind, list = BR.filter((b) => b !== B && !(k !== "jeon" && NO_QUICK.includes(b)));
   openSheet(`<h2>${SKIND[k]} 요청</h2>${k === "openquick" ? '<div class="desc" style="color:var(--red);font-weight:700">오늘 퀵은 마감됐어요. 오픈퀵으로 접수돼요 (보내는 매장이 바로 포장해 두고 내일 오픈하고 보내요)</div>' : ""}
     <div class="desc">${k === "jeon" ? "어느 지점에 있는 걸 받을까요?" : "어느 매장에서 보낼까요?"}</div><div class="chips">${k !== "openquick" ? '<button class="chip" data-snto="all" style="background:#e8f1ff;color:var(--blue)">📣 전 지점에 물어보기</button>' : ""}${list.map((b) => `<button class="chip" data-snto="${b}">${esc(ho(b))}</button>`).join("")}</div>
@@ -2654,13 +2698,14 @@ document.addEventListener("click", (e) => {
   if (t.id === "okSnTell") return doSnTell(t);
   if (t.dataset.pkadd !== undefined) { const h = PK.res[+t.dataset.pkadd]; if (h) pkAdd(h[0], h[1]); return; }
   if (t.dataset.pkfree) { const q = ($("#pkQ")?.value || "").trim(); if (q) pkAdd(q, null); return; }
-  if (t.dataset.pkinc !== undefined) { PK.list[+t.dataset.pkinc][1]++; $("#pkL").innerHTML = pkListHtml(); return; }
-  if (t.dataset.pkdec !== undefined) { const i = +t.dataset.pkdec; PK.list[i][1] = Math.max(1, PK.list[i][1] - 1); $("#pkL").innerHTML = pkListHtml(); return; }
-  if (t.dataset.pkdel !== undefined) { PK.list.splice(+t.dataset.pkdel, 1); $("#pkL").innerHTML = pkListHtml(); return; }
+  if (t.dataset.pkinc !== undefined) { PK.list[+t.dataset.pkinc][1]++; pkRedraw(); return; }
+  if (t.dataset.pkdec !== undefined) { const i = +t.dataset.pkdec; PK.list[i][1] = Math.max(1, PK.list[i][1] - 1); pkRedraw(); return; }
+  if (t.dataset.pkdel !== undefined) { PK.list.splice(+t.dataset.pkdel, 1); pkRedraw(); return; }
   if (t.dataset.go === "pccam") return pcCamOpen();
   if (t.dataset.go === "pcshot") return pcCamShot();
   if (t.dataset.pcto) { PC.to = t.dataset.pcto; document.querySelectorAll("[data-pcto]").forEach((x) => x.classList.toggle("on", x === t)); return; }
   if (t.id === "okPcNew") return doPcNew(t);
+  if (t.dataset.pcstep) return pcStep(t.dataset.id, t.dataset.pcstep);
   if (t.dataset.pcpack) return sheetPcPack(t.dataset.pcpack);
   if (t.id === "okPcPack") return doPcPack(t);
   if (t.dataset.pctell) return sheetPcTell(t.dataset.pctell);
