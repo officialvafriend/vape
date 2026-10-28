@@ -173,7 +173,7 @@
 .walker .tag{padding:3px 10px;border-radius:999px;color:#fff;font-size:12px;font-weight:700;white-space:nowrap}
 @media(max-width:700px){.field{height:220px}.walker{width:96px}.walker img{width:96px;height:84px}}
 /* 10/28 상품 > 재고보고: 노션 코일표처럼 품목 × 지점. 품목 칸과 머리글 고정, 가로 스크롤 */
-.srw{background:var(--card);border-radius:20px;overflow:auto;max-height:calc(100vh - 150px);margin-top:12px;border:1px solid var(--line)}
+.srw{background:var(--card);border-radius:20px;overflow:auto;max-height:calc(100vh - 150px);margin-top:0;border:1px solid var(--line)}
 .srt{border-collapse:separate;border-spacing:0;font-size:14px;min-width:100%;font-variant-numeric:tabular-nums}
 .srt th{position:sticky;top:0;background:var(--card);z-index:2;font-size:12px;color:var(--sub);font-weight:600;text-align:right;padding:8px 12px;border-bottom:1px solid var(--line2);white-space:nowrap;vertical-align:bottom}
 .srt th b{display:block;font-size:14px;color:var(--ink);font-weight:800}.srt th small{display:block;font-size:11px;font-weight:500;color:var(--sub)}
@@ -854,12 +854,10 @@ function stockTblHtml() {
   const pc = isPC(), show = !pc && srB ? col.filter((c) => c.b === srB) : col;
   const num = (c, n) => c.on && typeof c.r.q[n] === "number" ? c.r.q[n] : 0;
   const sum = (n) => col.reduce((a, c) => a + num(c, n), 0);
-  const hero = `<div class="card"><div class="eyebrow">오늘 재고보고</div>
-    <div class="headline">${onN ? `<em class="${onN >= BR.length ? "" : "r"}">${onN}곳</em> 보고 왔어요` : "아직 보고가 없어요"}${off.length && onN ? `<br><span style="font-size:15px;font-weight:600;color:var(--sub)">안 옴: ${off.map((c) => esc(c.b)).join(", ")}</span>` : ""}</div>
-    <div class="caption">노션 코일표와 같은 순서예요. 지점 이름을 누르면 그 지점 숫자가 세로로 복사돼요, 노션 그 지점 첫 칸에 붙여 넣으면 아래로 채워져요.</div>
-    <div class="srchips">${col.map((c) => `<span class="chip" style="${c.on ? "background:var(--green-soft);color:var(--green)" : ""}">${c.i} ${esc(c.b)} <small>${c.on ? esc(c.r.t) + " " + esc(String(c.r.by).split(",")[0]) : c.r ? "안 옴(" + esc(c.r.d.slice(5).replace("-", "/")) + " 보고)" : "안 옴"}</small></span>`).join("")}</div>
-    ${!pc ? `<div class="srchips" style="margin-top:14px"><button class="chip ${!srB ? "on" : ""}" data-srb="">전체</button>${col.map((c) => `<button class="chip ${srB === c.b ? "on" : ""}" data-srb="${esc(c.b)}">${c.i} ${esc(c.b)}</button>`).join("")}</div>` : ""}</div>`;
-  const head = `<tr><th>품목</th><th class="sum">합계</th>${show.map((c) => `<th class="${c.on ? "" : "na"}">${c.on ? `<button data-srcopy="${esc(c.b)}" title="숫자 세로로 복사"><small>${c.i}호</small><b>${esc(c.b)}</b><small>복사</small></button>` : `<small>${c.i}호</small><b>${esc(c.b)}</b><small>안 옴</small>`}</th>`).join("")}</tr>`;
+  // 10/28 사장님 "위에 따로 보여줘야 함? 지점 이름 옆에만 표시해도 되잖아" → 카드 없이 제목 한 줄, 보고 시각과 보고자는 지점 머리글에
+  const hero = `<div class="sec">오늘 재고보고 <small>${onN}곳 보고${off.length ? `, 안 옴: ${off.map((c) => esc(c.b)).join(", ")}` : ""}. 노션 코일표 순서, 지점 이름을 누르면 그 지점 숫자가 세로로 복사돼요</small></div>
+    ${!pc ? `<div class="srchips" style="margin:0 0 4px"><button class="chip ${!srB ? "on" : ""}" data-srb="">전체</button>${col.map((c) => `<button class="chip ${srB === c.b ? "on" : ""}" data-srb="${esc(c.b)}">${c.i} ${esc(c.b)}</button>`).join("")}</div>` : ""}`;
+  const head = `<tr><th>품목</th><th class="sum">합계</th>${show.map((c) => `<th class="${c.on ? "" : "na"}">${c.on ? `<button data-srcopy="${esc(c.b)}" title="숫자 세로로 복사"><small>${c.i}호</small><b>${esc(c.b)}</b><small>${esc(c.r.t)} ${esc(String(c.r.by).split(",")[0])}</small><small>복사</small></button>` : `<small>${c.i}호</small><b>${esc(c.b)}</b><small>안 옴${c.r ? "(" + esc(c.r.d.slice(5).replace("-", "/")) + ")" : ""}</small>`}</th>`).join("")}</tr>`;
   const rows = T.items.map((n) => `<tr><td>${esc(n)}</td><td class="sum">${sum(n)}</td>${show.map((c) => { if (!c.on) return '<td class="na">–</td>'; const v = c.r.q[n]; return v == null ? '<td class="na">–</td>' : `<td class="${v === 0 ? "z" : ""}">${v}</td>`; }).join("")}</tr>`).join("");
   const tot = `<tr class="tot"><td>지점 합계</td><td class="sum">${T.items.reduce((a, n) => a + sum(n), 0)}</td>${show.map((c) => c.on ? `<td>${T.items.reduce((a, n) => a + num(c, n), 0)}</td>` : '<td class="na">–</td>').join("")}</tr>`;
   return hero + `<div class="srw"><table class="srt"><thead>${head}</thead><tbody>${rows}${tot}</tbody></table></div>`;
