@@ -661,7 +661,7 @@ function drawCart() {
   // 낱개로 샀을 때 금액 (액상 1병 15,000 / 대량구매는 병 수 × 15,000 / 일회용 10+5는 15개 정가) → 할인 보여 주기
   const unitAll = [...cart.values()].reduce((a, x) => a + (x.k === "bulk" ? x.items.reduce((s, [, , q]) => s + q * 15000, 0) * x.qty : x.k === "dsp15" ? x.items.reduce((s, [, , q, p]) => s + q * p, 0) * x.qty : x.unit * x.qty), 0);
   const off = unitAll - t.total;
-  $('lines').innerHTML = cart.size ? [...cart].map(([key, x]) => `<div class="ln">${x.img ? `<img src="${x.img}" alt="">` : '<i class="noim"></i>'}<span class="n">${esc(x.label)}${x.items ? `<small>${esc(x.items.map(([, l, q]) => l + " " + q).join(", "))}</small>` : ""}</span><span class="qb"><button data-m="${key}">−</button><b>${x.qty}</b><button data-p="${key}">+</button></span><b class="price">${won(x.unit * x.qty)}</b></div>`).join("")
+  $('lines').innerHTML = cart.size ? [...cart].map(([key, x]) => `<div class="ln">${x.img ? `<img src="${x.img}" alt="">` : '<i class="noim"></i>'}<span class="n">${esc(x.label)}${x.k === "liq" && x.n ? noTag(x.n) : ""}${x.items ? `<small>${esc(x.items.map(([, l, q]) => l + " " + q).join(", "))}</small>` : ""}</span><span class="qb"><button data-m="${key}">−</button><b>${x.qty}</b><button data-p="${key}">+</button></span><b class="price">${won(x.unit * x.qty)}</b></div>`).join("")
       + (off > 0 ? `<div class="sum2"><div class="r"><span>낱개로 샀을 때</span><s>${won(unitAll)}</s></div><div class="r off"><span>${esc(t.how || "묶음, 이벤트")} 할인</span><b>-${won(off)}</b></div><div class="save">총 ${won(off)} 할인 받았어요</div></div>` : "")
       + benefitBox() + ledgerBox() + memberBox()
     : '<div style="padding:24px 0;color:var(--grey)">담은 상품이 없어요</div>';
@@ -826,7 +826,7 @@ function setsOf(n, deals, unit) { const f = [{ c: 0, s: [] }];
   for (let k = 1; k <= n; k++) { let b = { c: f[k - 1].c + unit, s: f[k - 1].s }; for (const [q, p] of deals) if (k >= q && f[k - q].c + p < b.c) b = { c: f[k - q].c + p, s: [...f[k - q].s, q] }; f[k] = b; }
   return deals.map(([q, p, key]) => [q, p, key, f[n].s.filter((x) => x === q).length]).filter((x) => x[3]); }
 const bc = (name) => { const p = posOf(name); return p ? `<svg class="bcd" data-v="${esc(p[1])}" data-f="${p[2]}"></svg>${p[3] ? "" : '<span class="warn">바코드 미등록, 포스 인식 확인 필요</span>'}` : `<span class="warn">${esc(BRANCH)} 포스에 이 상품이 없어요, 포스에서 직접 찾아 주세요</span>`; };
-const blk = (t, sub, name, n, free = 0) => `<div class="scan" data-n="${n}" data-free="${free}" data-code="${esc((posOf(name) || [])[1] || "")}" data-nm="${esc(t)}"><div class="hd"><b>${esc(t)}</b><span>× ${n}</span></div><div class="s">${sub}</div>${bc(name)}</div>`;
+const blk = (t, sub, name, n, free = 0) => `<div class="scan" data-n="${n}" data-free="${free}" data-code="${esc((posOf(name) || [])[1] || "")}" data-nm="${esc(t)}"><div class="hd"><b>${esc(t)}${name ? noTag(name) : ""}</b><span>× ${n}</span></div><div class="s">${sub}</div>${bc(name)}</div>`;
 const stp = (i, t, s) => `<div class="stp"><i>${i}</i><div><b>${t}</b>${s ? `<span>${s}</span>` : ""}</div></div>`;
 let staffOn = false;
 // 직원 화면 = 결제 순서 (10/27 사장님 "서비스로 찍고 처리하는 것도 순서대로"):
@@ -1033,7 +1033,7 @@ $('evGo').onclick = () => { const rest = EV.need - pickN();
   closeEv(); toast("담았어요"); setTimeout(() => document.body.classList.add('open'), 350);
 };
 // 매장에서 고를 몫: 바코드 대신 안내 (QR에는 안 들어가고 '직접 찍기'로 나옴)
-const todoBlk = (t, sub, n, free = 0) => `<div class="scan" data-n="${n}" data-free="${free}" data-code="" data-nm="${esc(t)}"><div class="hd"><b>${esc(t)}</b><span>× ${n}</span></div><div class="s">${sub}</div><span class="warn">손님과 진열대에서 맛 골라 바코드 직접 찍기</span></div>`;
+const todoBlk = (t, sub, n, free = 0) => `<div class="scan" data-n="${n}" data-free="${free}" data-code="" data-nm="${esc(t)}"><div class="hd"><b>${esc(t)}${name ? noTag(name) : ""}</b><span>× ${n}</span></div><div class="s">${sub}</div><span class="warn">손님과 진열대에서 맛 골라 바코드 직접 찍기</span></div>`;
 // 직원 화면: 이벤트 묶음
 function evStaff(x, i) {
   if (x.k === "bulk") return stp(i, x.label + " 찍기", "묶음 상품으로 돈 받고, 액상은 전부 서비스(0원)") + blk(x.n, won(x.unit), x.n, x.qty)
@@ -1517,7 +1517,7 @@ function QZ_RULE(A) {
 let qzRes = null, qzSel = new Set(); // 결과 화면에서 손님이 고른 액상 (없으면 앞 4개)
 let qzT = 0, qzAnim = false;
 const qzCard = (x, d) => { const lung = x.c === "lung", im = lung ? LUNG_IMG[x.n] : imgOf(x), sel = qzSel.has(x.id);
-  return `<div class="qzc ${sel ? "got" : ""} ${qzAnim ? "qzin" : ""}" data-qs="${x.id}" style="animation-delay:${d}s"><div class="im">${lung ? (LUNG_BEST.some((r) => r.test(x.n)) ? '<span class="rib">BEST</span>' : "") : tagHtml(x.n)}${im ? `<img src="${im}" alt="">` : `<span class="ltile">${esc(x.n.slice(0, 5))}</span>`}${sel ? '<em class="ok">골랐어요</em>' : ""}</div><b>${esc(lung ? x.n.replace(/\s*\(?모드\)?$/, "") : short(x.n))}</b><span>${esc(x.f || (lung ? "폐호흡" : ""))}</span></div>`; };
+  return `<div class="qzc ${sel ? "got" : ""} ${qzAnim ? "qzin" : ""}" data-qs="${x.id}" style="animation-delay:${d}s"><div class="im">${lung ? (LUNG_BEST.some((r) => r.test(x.n)) ? '<span class="rib">BEST</span>' : "") : tagHtml(x.n)}${im ? `<img src="${im}" alt="">` : `<span class="ltile">${esc(x.n.slice(0, 5))}</span>`}${sel ? '<em class="ok">골랐어요</em>' : ""}</div><b>${lung ? "" : noTag(x.n)}${esc(lung ? x.n.replace(/\s*\(?모드\)?$/, "") : short(x.n))}</b><span>${esc(x.f || (lung ? "폐호흡" : ""))}</span></div>`; };
 function qzResult(keep) {
   if (!keep) { qzSel = new Set(); qzRes = QZ_RULE(qz.ans); clearTimeout(qzT);
     // 10/28 사장님: 한 번에 다 뜨면 답이 정해진 것 같으니, 잠깐 고르는 시간을 두고 차례로
