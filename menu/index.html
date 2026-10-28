@@ -283,6 +283,13 @@ body{word-break:keep-all;overflow-wrap:break-word}
 .dmh .price{font-size:16px}.dmh .got{background:var(--red);color:#fff;border-radius:999px;font-size:12px;font-weight:800;padding:2px 8px}.dmh i{font-style:normal;font-size:22px;color:var(--grey);width:20px;text-align:center}
 .fl2{display:flex;flex-wrap:wrap;gap:8px;padding:2px 14px 14px}.flc{background:var(--bg);border-radius:12px;padding:10px 14px;font-size:15px;font-weight:700}.flc.on{background:var(--ink);color:var(--card)}.flc b{color:#ffb4b4}.flc.sold{opacity:.45}
 .ledg{box-shadow:inset 0 0 0 2px #8a4b00}.ldprev{font-size:14px;margin-top:6px}
+.specb{position:absolute;right:16px;top:50%;transform:translateY(-50%);z-index:2;background:var(--bg);color:var(--ink);border-radius:999px;padding:8px 14px;font-size:13px;font-weight:800;box-shadow:inset 0 0 0 1.5px var(--line)}
+body.spon .sps{transform:translate(-50%,0)}body.spon .dim{opacity:1;pointer-events:auto}.sps{z-index:30;max-height:88%}
+body.land .sps{left:calc((100% - 380px) / 2)}
+.sp-hero{border-radius:20px;height:300px;display:flex;align-items:center;justify-content:center;position:relative}.sp-hero img{max-height:270px;max-width:80%;object-fit:contain}.sp-hero span{position:absolute;right:16px;bottom:14px;font-size:14px;font-weight:700;color:var(--grey)}
+.sp-two,.sp-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}.sp-grid{grid-template-columns:repeat(3,1fr)}
+.sp-two div,.sp-grid div{background:var(--card);border-radius:14px;padding:12px 14px}.sp-two b,.sp-grid b{display:block;font-size:12px;color:var(--grey);font-weight:700}.sp-two strong{display:block;font-size:20px;margin-top:2px}.sp-grid strong{display:block;font-size:16px;margin-top:2px}.sp-two span,.sp-grid span{display:block;font-size:12px;color:var(--grey);margin-top:2px}
+.sp-desc{background:var(--card);border-radius:14px;padding:12px 14px;margin-top:10px;font-size:14px;line-height:1.6;color:var(--ink)}
 .combo{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:4px 0 14px}.combo button{background:var(--card);border-radius:16px;padding:14px;text-align:left;box-shadow:inset 0 0 0 1.5px var(--line)}.combo b{display:block;font-size:16px}.combo span{font-size:13px;color:var(--grey)}
 .evtip{font-size:13.5px;color:var(--grey);margin:-4px 0 10px}
 .evq{width:100%;height:52px;border:1px solid var(--line);border-radius:14px;padding:0 16px;font-size:17px;background:var(--card);color:var(--ink)}
@@ -374,7 +381,7 @@ body[data-theme=dark] .scan svg{background:#fff;border-radius:8px}
     <!-- 기기 -->
     <div class="view" id="vDev">
       <div class="h">메인 기기</div>
-      <div class="card hero">
+      <div class="card hero" style="position:relative"><button class="specb" id="devSpec" style="top:24px;transform:none">스펙 보기 ›</button>
         <div class="ph"><img id="devImg" alt=""></div>
         <div class="row">
           <div><div class="nm" id="devNm"></div><div class="sub" id="devSub"></div>
@@ -428,9 +435,10 @@ body[data-theme=dark] .scan svg{background:#fff;border-radius:8px}
   <div class="evf"><div class="evbar"><i id="evBar"></i></div><button class="cta" id="evGo" style="margin:0"></button></div></div>
 <div class="asks" id="ask"><div class="evh"><div><small style="color:var(--grey)">다른 지점 재고</small><b>재고 확인</b></div><button id="askX" aria-label="닫기">✕</button></div><div class="evb" id="askB"></div></div>
 <button class="askchip" id="askChip"></button>
+<div class="asks sps" id="sp"><div class="evh"><div><small style="color:var(--grey)">전자담배 기기</small><b id="spTi">스펙</b></div><button id="spX" aria-label="닫기">✕</button></div><div class="evb" id="spB"></div></div>
 <div class="toast" id="toast"></div>
 <!-- 지금 판과 같은 데이터: 액상(data.js), 지점별 포스 바코드(pos.js), 지점별 기기 재고와 판매가(goods.js) -->
-<script src="data.js"></script><script src="pos.js"></script><script src="goods.js"></script><script src="lung.js"></script><script src="JsBarcode.all.min.js"></script><script src="qrcode.js"></script>
+<script src="data.js"></script><script src="pos.js"></script><script src="goods.js"></script><script src="lung.js"></script><script src="devinfo.js"></script><script src="JsBarcode.all.min.js"></script><script src="qrcode.js"></script>
 <script>
 const $ = id => document.getElementById(id);
 // 로고: 새로고침, 처음 버튼, 로고 누를 때 재생 → 2.7초 뒤 VF만 남김
@@ -679,7 +687,7 @@ function drawDev() {
   $('pk').style.display = dm === "하복2" && cur ? "" : "none";
   $('pk').innerHTML = [[0, "기기만", MAIN_PRICE, 0], [5, "+ 빌런, 릭 5병", MAIN_PRICE + ADD.vl5, MAIN_PRICE + 75000], [10, "+ 액상 10병", MAIN_PRICE + ADD.pr10, MAIN_PRICE + 90000]]
     .map(([k, t, p, was]) => `<button data-k="${k}" class="${pkSel === k ? "on" : ""}"><b>${t}</b><div>${was ? `<s>${won(was)}</s>` : ""}<div class="price">${won(p)}</div></div></button>`).join("");
-  $('devAdd').disabled = !cur; drawPods(); document.querySelector('.hero .ph').style.background = HEX[dc] ? HEX[dc] + '26' : ''; $('devAdd').textContent = cur ? (dm === "하복2" && pkSel ? `하복2 ${dc} 담고 액상 ${pkSel}병 고르기` : `${dm} ${dc} 담기`) : "이 지점 재고 없음";
+  $('devSpec').dataset.spec = dm; $('devSpec').dataset.c = dc || ""; $('devAdd').disabled = !cur; drawPods(); document.querySelector('.hero .ph').style.background = HEX[dc] ? HEX[dc] + '26' : ''; $('devAdd').textContent = cur ? (dm === "하복2" && pkSel ? `하복2 ${dc} 담고 액상 ${pkSel}병 고르기` : `${dm} ${dc} 담기`) : "이 지점 재고 없음";
 }
 $('colors').onclick = (e) => { const b = e.target.closest('button'); if (b) { dc = b.dataset.c; drawDev(); } };
 $('thumbs').onclick = (e) => { const b = e.target.closest('button'); if (b) { dm = b.dataset.m; pkSel = 0; drawDev(); } };
@@ -852,7 +860,7 @@ function drawEv() {
     $('evEye').textContent = "베이프렌드 기기패키지"; $('evTi').textContent = "하복2 + 액상 10병";
     const o = devOpts("하복2");
     h += `<div class="card evhero"><img src="${PST.find((p) => /_H/.test(p)) || "pst_havok2_v7.jpg"}" alt=""><div class="pr"><s>179,000원</s><b class="price">164,000원</b><span style="font-size:14px;color:var(--grey)">하복2 89,000원 + 액상 10병 75,000원</span></div></div>`;
-    h += `<div class="evsec">① 색상</div><div class="card" style="padding:16px;display:flex;gap:16px;align-items:center"><img src="${DEV_IMG.하복2[EV.color] || ""}" style="width:110px;height:130px;object-fit:contain"><div><div class="colors" id="evCol">${o.map((x) => `<button style="background:${HEX[x.opt]}" class="${x.opt === EV.color ? "on" : ""}" data-ec="${x.opt}"></button>`).join("")}</div><div style="margin-top:10px;font-size:16px;font-weight:700">${EV.color}</div></div></div>`;
+    h += `<div class="evsec">① 색상</div><div class="card" style="padding:16px;display:flex;gap:16px;align-items:center;position:relative"><button class="specb" data-spec="하복2" data-c="${EV.color}">스펙 보기 ›</button><img src="${DEV_IMG.하복2[EV.color] || ""}" style="width:110px;height:130px;object-fit:contain"><div><div class="colors" id="evCol">${o.map((x) => `<button style="background:${HEX[x.opt]}" class="${x.opt === EV.color ? "on" : ""}" data-ec="${x.opt}"></button>`).join("")}</div><div style="margin-top:10px;font-size:16px;font-weight:700">${EV.color}</div></div></div>`;
     h += pickHead("② 액상 10병");
     // 다른 프리미엄 액상 검색 (패키지 10병은 프리미엄이면 다 됨)
     const others = [...EV.pick.keys()].filter((id) => !LQ.some((x) => x.id === id)).map((id) => ALL_LQ.find((x) => x.id === id)).filter(Boolean);
@@ -919,7 +927,7 @@ function evStaff(x, i) {
     + x.items.map(([n, l, q, p]) => n ? blk(l, won(p) + (free[n] ? ` <b style="color:var(--red)">서비스(0원) ${free[n] >= q ? "전부" : free[n] + "개"}</b>` : ""), n, q, free[n] || 0)
       : todoBlk(`일회용 ${q}개 매장에서 고르기`, "팜팜바, 모스바 중" + (free[""] ? ` <b style="color:var(--red)">가장 싼 것 ${free[""]}개 서비스(0원)</b>` : ""), q, 0)).join("");
 }
-document.querySelector('.dim').addEventListener('click', closeEv);
+document.querySelector('.dim').addEventListener('click', () => { if (document.body.classList.contains('spon')) return document.body.classList.remove('spon'); closeEv(); });
 
 // ── 검색 (지금 판 searchItems와 같은 규칙: 초성, 맛, 브랜드, "멘솔" 찾으면 노멘솔 빼기) ── 액상 전체 + 지점 기기, 팟, 일회용
 const CHO = "ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ";
@@ -1215,6 +1223,7 @@ new MutationObserver(() => pvFit()).observe(document.body, { attributes: true, a
 document.addEventListener('keydown', (e) => {
   const typing = /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement && document.activeElement.tagName);
   if (e.key === "Escape") { if (typing) { document.activeElement.blur(); if ($('q').value) { $('q').value = ""; drawSearch(); } return; }
+    if (document.body.classList.contains('spon')) return document.body.classList.remove('spon');
     if (document.body.classList.contains('askon')) return document.body.classList.remove('askon');
     if (document.body.classList.contains('evon')) return closeEv();
     if (document.body.classList.contains('open')) { document.body.classList.remove('open'); return cartViewBack(); }
@@ -1232,9 +1241,10 @@ document.addEventListener('keydown', (e) => {
 });
 // ── 방향키 커서 (10/27 사장님 "방향키로 커서 움직이는 것처럼"): 지금 보이는 층(구매 창 > 재고 창 > 담은 상품 > 화면)에서
 // 가리킨 칸이 커지고 빨간 테두리, Enter = 누르기. 첫 화면 포스터를 가리킨 상태에선 ←→ = 포스터 넘기기
-const NAV = ".dmh, .flc, .ev105, #podSub button, #podDev button, .poster, .go3 button, #seg button, .chips button, .it, .sr, .thumbs button, .colors button, .pk button, .pkb, #devAdd, .combo button, .opt2 button, #evGo, .evh button, .shbtn button, .scan, .upsell, .engr button, .mem button, .qb button, .askrow button, [data-asksend], .home-btn, .srch";
+const NAV = ".specb, .dmh, .flc, .ev105, #podSub button, #podDev button, .poster, .go3 button, #seg button, .chips button, .it, .sr, .thumbs button, .colors button, .pk button, .pkb, #devAdd, .combo button, .opt2 button, #evGo, .evh button, .shbtn button, .scan, .upsell, .engr button, .mem button, .qb button, .askrow button, [data-asksend], .home-btn, .srch";
 let kf = null;
 function navLayer() { const b = document.body.classList;
+  if (b.contains('spon')) return $('sp');
   if (b.contains('evon')) return $('ev'); if (b.contains('askon')) return $('ask'); if (b.contains('srchon')) return $('sres');
   if (b.contains('open') && !b.contains('land')) return document.querySelector('.sheet'); return document; }
 function navList() { const L = navLayer(), out = [];
@@ -1269,6 +1279,49 @@ let instEv = null;
 addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); instEv = e; $('instBtn').hidden = false; });
 $('instBtn').onclick = async () => { if (!instEv) return; instEv.prompt(); const r = await instEv.userChoice; instEv = null; $('instBtn').hidden = true; if (r.outcome === "accepted") toast("설치했어요, 홈 화면의 VF 패드B로 열어 주세요"); };
 addEventListener('appinstalled', () => { $('instBtn').hidden = true; toast("설치 완료!"); });
+// ── 기기 스펙 보기 (10/27 사장님 "색상 칸 안에 스펙보기, 버튼 작게 우측 중앙") — 지금 판 mainSpecView, devSpecView 내용 그대로 ──
+const MAIN_SPEC = [
+  ["카트리지", "5.5ml", "일체형으로 편하게 교체 가능해요."],
+  ["배터리", "2,800mAh", "Type-C 고속충전 5V/2A"],
+  ["입호흡", "0.6Ω · 14~28W", "기기박스 아래에 들어있어요."],
+  ["폐호흡", "0.15Ω · 40~80W", "기본 장착"],
+  ["크기", "106.5mm", "44.8 × 20.6 × 106.5mm"],
+  ["무게", "117g", "비누 하나와 비슷해요."],
+  ["AS 보증", "6개월", "베이프렌드 매장 AS · 모든 기기 동일"],
+  ["구성품", "카트리지 2개", "충전케이블과 설명서 그리고 컬러드립팁이 들어있어요."],
+];
+const MAIN_TIPS = ["입호흡과 폐호흡은 PG/VG 비율이 달라요.", "팟은 입호흡 기준 액상 1병당 1개씩 교체해줘야해요. 기간은 7~10일에 한번씩 교체를 권장해요.", "기존 하복 코일·카트리지와는 호환되지 않아요"];
+const DEVMAP = [ // [포스 모델명 규칙, 교육 사이트 기기 이름]
+  [/^하복SE|^하복 SE|^하복$/, "하복 SE"], [/^크로스/, "베이프레소 크로스 시리즈"], [/^하부/, "하부코일"], [/^발라맥스프로|^맥스프로 스티그마/, "발라리안 맥스프로"], [/^발라리안에어|^발라리안 에어/, "발라리안 에어"],
+  [/^말론S/, "말론 S"], [/^말론/, "말론"], [/^젤로 크리스탈/, "젤로 크리스탈"], [/^젤로/, "젤로 / 젤로 맥스"], [/^플러키/, "플러키"],
+  [/^썬더Q|^위넥스Q/, "긱베이프 썬더Q / 위넥스Q"], [/^브이메이트|^브이스루/, "브이스루 / 브이메이트 시리즈"], [/^소울/, "긱베이프 소울1 / 소울2"],
+  [/^글렌트/, "글렌트"], [/^벨본/, "벨본"], [/^럭스Q/, "럭스Q / 럭스Q2"], [/^아스몬/, "아스몬 / 아스몬 하이"], [/^베이비/, "아보카도 베이비 / 베이비프로 / 베이비 AIO프로"],
+  [/에이펙스|APEX/i, "플렉서스 에이펙스 (APEX)"], [/^아스트로/, "아스트로 MK.3 모터헤드 에디션"], [/^닷/, "닷모드 닷파티"], [/^AVP|^AX/, "AVP AX"], [/^디오/, "디오 X"],
+];
+const devInfo = (model) => { const m = DEVMAP.find(([re]) => re.test(model)); return m ? (window.DEVINFO || []).find((d) => d.n === m[1]) : null; };
+const DEVSIZE = {
+  "하복 SE": { w: 101, h: 100, size: "42.9×19.2×100mm" }, // 유웰 공식 HAVOK(V1) 사양과 같음 — myuwell.com/products/pod-mod/havok.html (10/5 조사)
+};
+const feelW = (g) => g < 45 ? "건전지 두 개 정도로 가벼워요" : g < 80 ? "계란 하나 정도 무게예요" : g < 130 ? "비누 하나와 비슷해요" : "스마트폰보다 조금 가벼워요";
+const feelH = (mm) => mm < 78 ? "립밤만 한 길이예요" : mm < 95 ? "라이터만 한 길이예요" : mm < 120 ? "손바닥에 쏙 들어와요" : "볼펜보다 조금 짧아요";
+function specOpen(model, color) {
+  const xs = devOpts(model), c = color || (xs[0] || {}).opt, img = (DEV_IMG[model] || {})[c] || Object.values(DEV_IMG[model] || {})[0] || "";
+  const d = devInfo(model), sz = d && DEVSIZE[d.n], cur = xs.find((x) => x.opt === c) || xs[0];
+  let rows, two;
+  if (model === "하복2") { rows = MAIN_SPEC; two = [["가격", won(cur ? cur.price : MAIN_PRICE), "레이저 각인 무료"], ["호흡 방식", "입호흡 + 폐호흡", "팟만 바꿔 끼우면 돼요"]]; }
+  else { rows = [d && d.b && ["배터리", d.b], d && d.f && ["팟, 용량", d.f], d && d.o && ["저항(옴)", d.o], d && d.cp && ["소모품", d.cp], sz && sz.w && ["무게", sz.w + "g", feelW(sz.w)], sz && sz.h && ["크기", sz.size || "높이 " + sz.h + "mm", feelH(sz.h)], ["AS 보증", "6개월", "베이프렌드 매장 AS, 모든 기기 동일"]].filter(Boolean);
+    two = [["가격", cur ? won(cur.price) : "-", "레이저 각인 무료"], ["호흡 방식", DEV_SUB[model] || "입호흡", ""]]; }
+  $('spTi').textContent = model;
+  $('spB').innerHTML = `<div class="sp-hero" style="background:${HEX[c] ? HEX[c] + "22" : "var(--card)"}"><img src="${img}" alt=""><span>${esc(c || "")}</span></div>
+    <div class="sp-two">${two.map(([k, v, u]) => `<div><b>${k}</b><strong>${esc(v)}</strong>${u ? `<span>${esc(u)}</span>` : ""}</div>`).join("")}</div>
+    ${d && d.desc && model !== "하복2" ? `<div class="sp-desc">${esc(d.desc)}</div>` : ""}
+    <div class="sp-grid">${rows.map(([k, v, u]) => `<div><b>${esc(k)}</b><strong>${esc(v)}</strong>${u ? `<span>${esc(u)}</span>` : ""}</div>`).join("")}</div>
+    ${model === "하복2" ? `<div class="sp-desc">${MAIN_TIPS.map(esc).join("<br>")}</div>` : !d ? '<div class="sp-desc">상세 스펙 준비 중이에요</div>' : ""}`;
+  document.body.classList.add('spon');
+}
+$('spX').onclick = () => document.body.classList.remove('spon');
+document.addEventListener('click', (e) => { const b = e.target.closest('[data-spec]'); if (!b) return; e.stopPropagation(); specOpen(b.dataset.spec, b.dataset.c); }, true);
+
 // 오프라인 저장 + 앱 설치 (sw-b.js)
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw-b.js").catch(() => {});
 </script>
