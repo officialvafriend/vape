@@ -236,7 +236,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.28-2";
+const VER = "10.28-3";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍", "동성로2"];
@@ -330,13 +330,23 @@ async function shrinkPhoto(file) {
   const k = Math.min(1, 1280 / Math.max(img.width, img.height)), c = document.createElement("canvas"); c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
   c.getContext("2d").drawImage(img, 0, 0, c.width, c.height); return await new Promise((ok) => c.toBlob(ok, "image/jpeg", 0.8));
 }
+// 10/28 신호 확인값: 신호 내용을 그 지점 열쇠(매장 코드로 풀린 것)로 HMAC → sig. 봇이 같은 열쇠로 맞춰 봄. 기기번호(dev)로 낯선 기기도 봄
+const DEV = (() => { try { let d = localStorage.getItem("vf-dev"); if (!d) { d = Array.from(crypto.getRandomValues(new Uint8Array(6)), (x) => x.toString(16).padStart(2, "0")).join(""); localStorage.setItem("vf-dev", d); } return d; } catch { return ""; } })();
+async function signed(obj) {
+  const o = { ...obj, dev: DEV, ua: navigator.userAgent.replace("Mozilla/5.0 ", "").slice(0, 80), ts: Date.now() };
+  let k = ""; try { k = localStorage.getItem("vf-app-key-" + o.branch) || ""; } catch {}
+  const s = JSON.stringify(o); if (!k || !crypto.subtle) return s;
+  const key = await crypto.subtle.importKey("raw", new TextEncoder().encode(k), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+  const mac = new Uint8Array(await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(s)));
+  return JSON.stringify({ ...o, sig: btoa(String.fromCharCode(...mac)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "").slice(0, 32) });
+}
 async function sendWithPhoto(body, file) {
-  const fd = new FormData(); fd.append("payload_json", JSON.stringify({ content: JSON.stringify({ ...body, branch: B, ver: VER, ...(TEST ? { test: true } : {}) }), allowed_mentions: { parse: [] } }));
+  const fd = new FormData(); fd.append("payload_json", JSON.stringify({ content: await signed({ ...body, branch: B, ver: VER, ...(TEST ? { test: true } : {}) }), allowed_mentions: { parse: [] } }));
   fd.append("files[0]", await shrinkPhoto(file), "pack.jpg");
   const r = await fetch(HOOK, { method: "POST", body: fd }); if (!r.ok) throw new Error("응답 " + r.status);
 }
 async function send(body) {
-  const r = await fetch(HOOK, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ content: JSON.stringify({ ...body, branch: B, ver: VER, ...(TEST ? { test: true } : {}) }), allowed_mentions: { parse: [] } }) });
+  const r = await fetch(HOOK, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ content: await signed({ ...body, branch: B, ver: VER, ...(TEST ? { test: true } : {}) }), allowed_mentions: { parse: [] } }) });
   if (!r.ok) throw new Error("응답 " + r.status);
   if (RELAY_ON) { setTimeout(loadRelay, 3000); setTimeout(loadRelay, 6500); } // 누른 결과가 몇 초 안에 돌아오게
 }
@@ -2360,15 +2370,19 @@ function needIn(then) {
   const d = document.querySelector("#sheet .desc"); if (d) d.innerHTML = `지금 근무 중인 사람이 없어요${left.length ? `, ${esc(left.join(", "))}` : ""}. 누가 근무 중인가요?`;
 }
 const runAfterIn = () => { const f = AFTER_IN; AFTER_IN = null; if (f) setTimeout(f, 50); };
+// 10/28 사장님: 이름을 직접 쳐서 성 있고 없고가 섞임 → 운영봇이 주는 지점 직원 목록(노션식 이름)에서 고르게. 없으면 직접 적기. 적은 이름도 목록 이름으로 맞춤(안보혜→보혜)
+const roster = () => (BOARD?.staff || []).filter((n) => /^[가-힣a-zA-Z]{2,}$/.test(n));
+const canonLocal = (n) => { n = String(n || "").trim(); const R = roster(); if (R.includes(n)) return n; if (n.length >= 3) { const g = n.slice(1); if (R.includes(g) && !R.some((r) => r !== g && r.endsWith(g))) return g; } return n; };
 function sheetIn() {
-  const s = st(), recent = ls.get(`vf-app-${B}-names`, []).filter((n) => !s.ins.some((x) => x.name === n));
-  openSheet(`<h2>출근</h2><div class="desc">이름을 고르거나 입력해 주세요.</div>
-    ${recent.length ? `<div class="chips">${recent.map((n) => `<button class="chip" data-name="${esc(n)}">${esc(n)}</button>`).join("")}</div>` : ""}
-    <input class="input" id="nm" placeholder="이름" maxlength="20">
+  const s = st(), R = roster(), recent = ls.get(`vf-app-${B}-names`, []).map(canonLocal).filter((n, i, a) => a.indexOf(n) === i && !R.includes(n));
+  const names = [...R, ...recent].filter((n) => !s.ins.some((x) => x.name === n && !x.out));
+  openSheet(`<h2>출근</h2><div class="desc">${R.length ? "이름을 누르면 바로 출근돼요." : "이름을 고르거나 입력해 주세요."}</div>
+    ${names.length ? `<div class="chips">${names.map((n) => `<button class="chip" data-name="${esc(n)}">${esc(n)}</button>`).join("")}</div>` : ""}
+    <input class="input" id="nm" placeholder="${R.length ? "목록에 없으면 직접 적기" : "이름"}" maxlength="20" style="margin-top:10px">
     <div class="btns"><button class="btn" data-x>취소</button><button class="btn primary" id="okIn">출근 보내기</button></div>`);
 }
 async function doIn(name) {
-  name = name.trim(); if (!name) return toast("이름을 넣어 주세요"); if (!/[가-힣a-zA-Z]{2,}/.test(name)) return toast("이름을 두 글자 이상 정확히 넣어 주세요"); // 10/5 '0'으로 출근 기록된 일
+  name = canonLocal(name.trim()); if (!name) return toast("이름을 넣어 주세요"); if (!/[가-힣a-zA-Z]{2,}/.test(name)) return toast("이름을 두 글자 이상 정확히 넣어 주세요"); // 10/5 '0'으로 출근 기록된 일
   const s = st(), again = s.ins.find((x) => x.name === name); if (again && !again.out) return toast("지금 근무 중이에요"); // 퇴근했다가 다시 출근은 허용 (10/6)
   $("#okIn").disabled = true;
   try {
