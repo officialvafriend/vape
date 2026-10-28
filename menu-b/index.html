@@ -1469,7 +1469,7 @@ function qzResult(keep) {
 }
 // 10/28 사장님(이사님 지시): 추천 패키지에 팟을 같이 넣어 객단가 19만원 정도 (하복2+10병 164,000 + 팟 4개 24,000 = 188,000)
 const QZ_POD_N = 6; // 10/28 사장님: 20만원 조금 넘게 잡고 혜택 받으면 19만원대 (164,000 + 팟 6개 36,000 = 200,000 → 혜택 2,000원 할인 198,000)
-const qzPod = (ohm) => GDS.find((g) => g.c === "pod" && g.n.replace(/s/g, "") === `하복2${ohm}옴팟` && !outOf(g.n));
+const qzPod = (ohm) => GDS.find((g) => g.c === "pod" && g.n.replace(/\s/g, "") === `하복2${ohm}옴팟` && !outOf(g.n));
 function perkOpen(k) {
   const o = PERK_OPTS.find((x) => x[0] === k), u = perkUrl(k);
   let qrs = ""; if (u) { const q = qrcode(0, "M"); q.addData(u, "Byte"); q.make(); qrs = q.createSvgTag({ cellSize: 6, margin: 3, scalable: true }); }
