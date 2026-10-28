@@ -710,7 +710,7 @@ function botHtml() {
   const bank = BR.map((b) => { const v = BOT.bank?.[b], o = v && typeof v === "object" ? v : { last: v || null }; const mm = o.last ? Math.round((Date.now() - Date.parse(o.last.replace(" ", "T") + ":00+09:00")) / 60e3) : null;
     let txt, cls = "";
     if (o.posTr == null) { const bad = mm == null || (open && mm > 240); txt = mm == null ? "연결 전" : "마지막 " + agoTxt(mm); if (bad) cls = "background:var(--red-soft);color:var(--red)"; }
-    else if (o.posTr === 0) { txt = "오늘 이체 없음"; if (mm == null) { txt = "연결 전"; cls = "background:var(--red-soft);color:var(--red)"; } }
+    else if (o.posTr === 0) { txt = "오늘 이체 없음"; if (mm == null) { txt = "연결 전"; cls = "background:var(--red-soft);color:var(--red)"; } else if (o.bankN) { txt = `통장 입금 ${o.bankN}건, 포스엔 이체 0건`; cls = "background:var(--amber-soft);color:var(--amber)"; } } // 10/28 동성로: 이체 손님을 포스에 현금으로 찍어 포스 이체 0, 통장 2건 → 노란색으로 알림
     else if ((o.bankN || 0) >= o.posTr) { txt = `이체 ${o.posTr}건 다 들어옴`; cls = "background:var(--green-soft);color:var(--green)"; }
     else { txt = `포스 이체 ${o.posTr}건, 통장 ${o.bankN || 0}건`; cls = "background:var(--red-soft);color:var(--red)"; }
     return `<span class="chip" style="display:inline-flex;align-items:center;gap:5px;height:34px;padding:0 12px;font-size:14px;${cls}" title="${o.last ? "마지막 통장 알림 " + esc(o.last) : ""}${o.posAt ? ", 포스 " + esc(o.posAt) + " 기준" : ""}">${BR.indexOf(b) + 1}호 ${b} <small>${txt}</small></span>`; }).join("");
