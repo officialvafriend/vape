@@ -36,6 +36,30 @@
   @keyframes pdot{0%,80%,100%{opacity:.15}40%{opacity:1}}
   .midok{text-align:center;padding:10px 0 4px}.midokc{width:96px;height:96px;margin:0 auto;border-radius:50%;background:var(--green);color:#fff;font-size:60px;font-weight:900;line-height:96px;animation:midpop .55s cubic-bezier(.2,1.6,.4,1) both}
   @keyframes midpop{0%{transform:scale(0) rotate(-30deg);opacity:0}100%{transform:scale(1) rotate(0);opacity:1}}
+  /* 10/28 매장 노트 쓰레드 형식 */
+  .thw{background:#fff;border-radius:18px;overflow:hidden;border:1px solid var(--line)}
+  .thtabs{display:flex;gap:20px;padding:0 18px;border-bottom:1px solid var(--line);overflow-x:auto}
+  .thtabs button{background:none;font-size:15px;font-weight:700;color:var(--sub);padding:12px 0;border-bottom:2px solid transparent;white-space:nowrap}
+  .thtabs button.on{color:var(--ink,#191f28);border-color:var(--ink,#191f28)}.thtabs small{font-size:12px;margin-left:2px}
+  .thcomp{display:flex;width:100%;text-align:left;background:#fff;gap:12px;align-items:center;padding:14px 18px;border-bottom:1px solid var(--line);cursor:pointer}
+  .thcomp .ph{flex:1;color:var(--sub);font-size:15px}.thcomp .post{background:#191f28;color:#fff;border-radius:10px;padding:8px 16px;font-weight:700;font-size:14px}
+  .thav{width:40px;height:40px;border-radius:50%;flex-shrink:0;display:grid;place-items:center;font-weight:800;font-size:15px;color:#fff}
+  .thav.s{width:28px;height:28px;font-size:12px}
+  .th{padding:14px 18px 4px;border-bottom:1px solid var(--line)}
+  .throw{display:flex;gap:12px}.thrail{display:flex;flex-direction:column;align-items:center}
+  .thrail .ln{flex:1;width:2px;background:var(--line);margin:6px 0 2px;min-height:12px;border-radius:2px}
+  .thbody{flex:1;min-width:0;padding-bottom:12px}
+  .thmeta{display:flex;align-items:center;gap:6px;font-size:14px;flex-wrap:wrap}.thmeta .br{color:var(--sub)}.thmeta .t{color:var(--sub);margin-left:auto;font-size:13px}
+  .thcat{font-size:12px;font-weight:700;border-radius:6px;padding:1px 6px}.thadm{color:#6b3fd4;font-size:12px;font-weight:700}
+  .thtxt{font-size:15px;line-height:1.55;margin-top:3px;white-space:pre-wrap;word-break:break-word}
+  .thacts{display:flex;gap:18px;margin-top:8px}.thacts button{background:none;font-size:15px;color:#4e5968;padding:4px 0;display:flex;gap:5px;align-items:center}.thacts button.on{color:#f04452}
+  .thlk{font-size:13px;color:var(--sub);margin-top:4px}
+  .thmore{display:flex;gap:12px;align-items:center;padding:0 0 12px;color:var(--sub);font-size:14px;background:none;width:100%;text-align:left}
+  .thmore .fc{width:40px;display:flex;justify-content:center}.thmore i{width:18px;height:18px;border-radius:50%;border:2px solid #fff;margin-left:-6px;display:block}
+  .thpoll{margin-top:8px;display:flex;flex-direction:column;gap:6px}
+  .thpo{position:relative;display:flex;justify-content:space-between;align-items:center;width:100%;text-align:left;background:#f2f4f6;border-radius:10px;padding:9px 12px;font-size:14px;font-weight:600;overflow:hidden}
+  .thpo i{position:absolute;left:0;top:0;bottom:0;background:#e8f3ff;z-index:0}.thpo span,.thpo b{position:relative;z-index:1}.thpo.on{outline:2px solid #3182f6}.thpo.on i{background:#cfe3ff}
+  .thpn{font-size:12px;color:var(--sub)}
   .ntday{font-size:14px;font-weight:800;color:var(--sub);margin:16px 2px 8px}
   .ntcard{background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px 16px;margin-bottom:10px}
   .nth{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px;color:var(--sub)}
@@ -236,7 +260,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.28-5";
+const VER = "10.28-6";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍", "동성로2"];
@@ -937,20 +961,32 @@ function noteHtml() {
   const chips = ["전체", ...Object.keys(NCAT)].map((c) => `<button class="chip ${NF === c ? "on" : ""}" data-nf="${c}">${c === "전체" ? "전체" : NCAT[c][0] + " " + c} <small>${cnt(c)}</small></button>`).join("");
   const brSel = hq ? `<select class="a2sel" id="ntBr">${["전체", ...BR].map((b, i) => `<option value="${b}" ${NB === b ? "selected" : ""}>${b === "전체" ? "전 지점" : i + "호 " + b}</option>`).join("")}</select>` : "";
   const mine = all.filter((x) => x.d === todayKey() && x.b === B).length;
+  // 10/28 사장님 "쓰레드 형식으로" (시안 매장노트_쓰레드_시안.html): 동그라미 프로필(지점 번호), 세로선 따라 댓글, 3개 넘으면 접기, ♡
+  const tabs = ["전체", ...Object.keys(NCAT)].map((c) => `<button class="${NF === c ? "on" : ""}" data-nf="${c}">${c === "전체" ? "전체" : NCAT[c][0] + " " + c}<small>${cnt(c) || ""}</small></button>`).join("");
+  const av = (b, by, adm, sm) => { const n = BR.indexOf(b) + 1, k = sm ? " s" : ""; if (/^🎮/.test(by || "")) return `<div class="thav${k}" style="background:#191f28">🎮</div>`; if (/^🎭/.test(by || "")) return `<div class="thav${k}" style="background:#2a2a35">🎭</div>`; if (adm) return `<div class="thav${k}" style="background:#6b3fd4">👔</div>`; return n > 0 ? `<div class="thav${k}" style="background:${NOTE_COL[n - 1]}">${n}</div>` : `<div class="thav${k}" style="background:#b0b8c1">${esc(String(by || "?").slice(0, 1))}</div>`; };
   const card = (x) => {
-    const [ic, bg, fg] = NCAT[x.cat] || NCAT.매장, dt = noteTxt(x), liked = me && x.likes.includes(me);
-    const cm = x.cmts.map((c, i) => `<div class="ntc"><b>${c.adm ? "👔 " : ""}${esc(c.by)}</b> ${esc(dt?.c?.[i] ?? "…")} <small>${whenTxt(c.d, c.t)}</small></div>`).join("");
-    return `<div class="ntcard" style="border-left:4px solid ${fg}"><div class="nth"><span class="ntcat" style="background:${bg};color:${fg}">${ic} ${x.cat}</span><span>${hq ? esc(ho(x.b)) + ", " : ""}${esc(x.by)}, ${whenTxt(x.d, x.t)}</span></div>
-      <div class="ntx">${dt ? esc(dt.x) : '<span style="color:var(--sub)">매장 전용 주소로 연 기기에서 보여요</span>'}</div>
-      ${cm ? `<div class="ntcs">${cm}</div>` : ""}
-      <div class="ntb"><button class="ntbtn ${liked ? "on" : ""}" data-ntlike="${x.id}">👍 ${x.likes.length || ""}</button><button class="ntbtn" data-ntcmt="${x.id}">💬 댓글${x.cmts.length ? " " + x.cmts.length : ""}</button>${x.likes.length ? `<small style="color:var(--sub)">${esc(x.likes.join(", ").slice(0, 40))}</small>` : ""}</div></div>`;
+    const [ic, bg, fg] = NCAT[x.cat] || NCAT.매장, dt = noteTxt(x), liked = me && x.likes.includes(me), game = /^🎮/.test(x.by), open = NOPEN.has(x.id);
+    const cs = open ? x.cmts : x.cmts.slice(0, 3), hid = x.cmts.length - cs.length;
+    const head = `<div class="throw"><div class="thrail">${av(x.b, x.by)}${x.cmts.length ? '<div class="ln"></div>' : ""}</div><div class="thbody">
+      <div class="thmeta"><b>${esc(x.by)}</b>${game ? "" : `<span class="br">${esc(ho(x.b))}</span>`}<span class="thcat" style="background:${bg};color:${fg}">${ic} ${x.cat}</span><span class="t">${whenTxt(x.d, x.t)}</span></div>
+      <div class="thtxt">${dt ? esc(dt.x) : '<span style="color:var(--sub)">매장 전용 주소로 연 기기에서 보여요</span>'}</div>
+      ${x.poll ? (() => { const o = dt?.o || [], vs = Object.values(x.poll.v || {}), tot = vs.length, mv = x.poll.v?.[me]; return `<div class="thpoll">${Array.from({ length: x.poll.n }, (_, k) => { const c = vs.filter((v) => v === k).length, p = tot ? Math.round((c / tot) * 100) : 0; return `<button class="thpo ${mv === k ? "on" : ""}" data-ntvote="${x.id}" data-k="${k}"><i style="width:${p}%"></i><span>${mv === k ? "✓ " : ""}${esc(o[k] ?? "…")}</span><b>${tot ? p + "%" : ""}</b></button>`; }).join("")}<div class="thpn">${tot}개 지점 투표${tot ? ", " + esc(Object.keys(x.poll.v).join(", ").slice(0, 60)) : ""}</div></div>`; })() : ""}
+      <div class="thacts"><button class="${liked ? "on" : ""}" data-ntlike="${x.id}">${liked ? "♥" : "♡"} ${x.likes.length || ""}</button><button data-ntcmt="${x.id}">💬 ${x.cmts.length || ""}</button></div>
+      ${x.likes.length ? `<div class="thlk">${esc(x.likes.join(", ").slice(0, 60))} 좋아해요</div>` : ""}</div></div>`;
+    const reps = cs.map((c, i) => { const anon = /^🎭/.test(c.by || ""); return `<div class="throw"><div class="thrail">${av(anon ? "" : c.b, c.by, c.adm, 1)}${i < cs.length - 1 || hid ? '<div class="ln"></div>' : ""}</div><div class="thbody">
+      <div class="thmeta"><b>${esc(c.by)}</b>${c.adm ? '<span class="thadm">관리자</span>' : c.b && !anon ? `<span class="br">${BR.indexOf(c.b) + 1}호</span>` : ""}<span class="t">${whenTxt(c.d, c.t)}</span></div>
+      <div class="thtxt" style="font-size:14px">${esc(dt?.c?.[i] ?? "…")}</div></div></div>`; }).join("");
+    const more = hid ? `<button class="thmore" data-ntmore="${x.id}"><span class="fc">${x.cmts.slice(3, 6).map((c) => `<i style="background:${c.adm ? "#6b3fd4" : BR.indexOf(c.b) >= 0 ? NOTE_COL[BR.indexOf(c.b)] : "#b0b8c1"}"></i>`).join("")}</span>답글 ${hid}개 더 보기</button>` : "";
+    return `<div class="th">${head}${reps}${more}</div>`;
   };
-  const days = []; for (const x of L) { let g = days.find((y) => y[0] === x.d); if (!g) days.push((g = [x.d, []])); g[1].push(x); }
-  return `<div class="card"><div class="lhead"><h2 style="margin:6px 0">📝 매장 노트</h2><div style="display:flex;gap:8px;align-items:center">${brSel}<button class="act" data-go="ntnew">＋ 쓰기</button></div></div>
-    <div class="a2cheer">${mine ? `✍️ 오늘 노트 <b>${mine}개</b>, 손님 얘기 하나하나가 다음 주문이 돼요` : "손님이 찾은 것, 매장에서 있었던 일, 한 줄이면 충분해요"}</div>
-    <div class="chips" style="margin-bottom:6px">${chips}</div>
-    <div class="a2list">${days.map(([d, xs]) => `<div class="ntday">${d === todayKey() ? "오늘" : d === addDay(-1) ? "어제" : sd(d)}</div>${xs.map(card).join("")}`).join("") || '<div class="a2empty">✍️ 첫 노트를 남겨 보세요</div>'}</div></div>`;
+  return `<div class="card" style="padding:0;background:none;box-shadow:none"><div class="thw">
+    <div class="lhead" style="padding:16px 18px 4px"><h2 style="margin:0">📝 매장 노트</h2>${brSel}</div>
+    <div class="thtabs">${tabs}</div>
+    <button class="thcomp" data-go="ntnew">${av(B, "")}<div class="ph">${mine ? `오늘 우리 지점 노트 ${mine}개, 하나 더 남겨 볼까요` : "오늘 매장에서 있었던 일, 한 줄이면 충분해요"}</div><span class="post">쓰기</span></button>
+    ${L.map(card).join("") || '<div class="a2empty" style="padding:30px">✍️ 첫 노트를 남겨 보세요</div>'}</div></div>`;
 }
+const NOTE_COL = ["#ff8a3d", "#20c997", "#3182f6", "#a259ff", "#f04452", "#00a3bf", "#ffb100", "#5f6b7a", "#e64980"];
+const NOPEN = new Set();
 // 10/28 사장님 "노트마다 바뀌는 맛 이름 익명, 관리자도 누군지 몰라야 함": 이름 대신 "🎭 스노우청포도" 같은 맛 이름을 보냄.
 // 맛 이름 = 이 기기의 비밀값 + 노트 번호 + 고른 이름을 섞은 해시 → 같은 노트 안에선 같은 사람이 같은 맛, 다른 노트에선 바뀜. 고른 이름은 기기 안에서 맛을 정하는 데만 쓰고 보내지 않음(봇, 시트, 관리자 모두 맛 이름만 받음)
 const ANON_FLAVORS = ["스노우청포도", "러브피치", "스노우사이다", "예티", "골드키위", "포카리", "체어맨", "하와이", "마샤블랙", "마르키사", "더블라임", "용트림체리", "타박멘솔", "미스후라보노", "몬테세븐", "그린티", "쿨툰드라", "모모라즈", "적포도슬러쉬", "마샤유자", "퍼플베리", "멘솔마스터", "모니모니", "파이토트", "라임알로에", "아카시아", "순수레몬", "파워멘솔", "마샤샤인", "선인장", "하이민트", "용트림알로에", "머루포도", "에너제틱", "베리베리", "레인보우", "그린펀치", "블루펀치", "피치키스", "미미메론", "파인화채", "코코팜", "핑크석류", "망고파인피치", "리치레몬", "정글쥬스"];
@@ -964,6 +1000,7 @@ function sheetNoteNew() {
   openSheet(`<h2>📝 매장 노트 쓰기</h2>
     <div class="desc" style="margin-top:6px">어떤 얘기예요?</div><div class="chips">${Object.keys(NCAT).map((c) => `<button class="chip ${NW.cat === c ? "on" : ""}" data-ntcat="${c}">${NCAT[c][0]} ${c}</button>`).join("")}</div>
     <textarea class="input" id="ntText" rows="4" maxlength="500" placeholder="예: 박진주 고객님 말론S 티파니 블루 찾으셨는데 재고 없었음" style="margin-top:10px"></textarea>
+    <button class="btn sm" data-go="ntpoll" id="ntPollBtn" style="margin-top:8px">📊 투표 넣기</button><div id="ntPoll"></div>
     <div class="desc" style="margin-top:10px">쓴 사람</div><div class="chips">${working().map((n) => `<button class="chip ${NW.by === n ? "on" : ""}" data-ntby="${esc(n)}">${esc(n)}</button>`).join("")}${anonChip("ntanon", NW.anon)}</div>${ANON_DESC}
     <div class="btns"><button class="btn" data-x>닫기</button><button class="btn primary" id="okNt">올리기</button></div>`);
   setTimeout(() => $("#ntText")?.focus(), 50);
@@ -974,11 +1011,26 @@ async function doNoteNew() {
   $("#okNt").disabled = true;
   const id = "n" + Date.now().toString(36) + Math.random().toString(36).slice(2, 4);
   const by = NW.anon ? anonAlias(id, NW.by) : NW.by; // 익명이면 맛 이름만 보냄
+  const poll = [...document.querySelectorAll("[data-ntpo]")].map((i) => i.value.trim()).filter(Boolean).slice(0, 4);
+  if (document.querySelector("[data-ntpo]") && poll.length < 2) { $("#okNt").disabled = false; return toast("투표 보기를 2개 이상 적어 주세요"); }
   try {
-    await send({ type: "note", id, cat: NW.cat, text, by });
-    (BOARD.notes ||= []).push({ id, b: B, by, cat: NW.cat, d: todayKey(), t: now(), likes: [], cmts: [], test: TEST, enc: null }); DEC["nt" + id + ":0"] = { x: text, c: [] };
+    await send({ type: "note", id, cat: NW.cat, text, by, ...(poll.length ? { poll } : {}) });
+    (BOARD.notes ||= []).push({ id, b: B, by, cat: NW.cat, d: todayKey(), t: now(), likes: [], cmts: [], test: TEST, enc: null, ...(poll.length ? { poll: { n: poll.length, v: {} } } : {}) }); DEC["nt" + id + ":0"] = { x: text, c: [], ...(poll.length ? { o: poll } : {}) };
     closeSheet(); render(); toast("✍️ 올렸어요, 고마워요!"); setTimeout(loadBoard, 15000);
   } catch (e) { $("#okNt").disabled = false; fail(e); }
+}
+// 10/28 사장님 "투표 기능도": 표는 지점마다 하나(👍처럼 ho(B)), 같은 보기 다시 누르면 취소, 다른 보기 누르면 바꿈
+async function noteVote(id, k) {
+  const by = ho(B), x = noteItems().find((y) => y.id === id); if (!x?.poll) return;
+  x.poll.v[by] === k ? delete x.poll.v[by] : (x.poll.v[by] = k); render();
+  try { await send({ type: "notereact", id, vote: k, by }); } catch (e) { fail(e); }
+}
+function ntPollDraw(add) {
+  const box = $("#ntPoll"); if (!box) return;
+  const cur = [...box.querySelectorAll("[data-ntpo]")].map((i) => i.value);
+  if (add) cur.push(""); while (cur.length < 2) cur.push("");
+  box.innerHTML = cur.slice(0, 4).map((v, i) => `<input class="input" data-ntpo="${i}" maxlength="30" placeholder="보기 ${i + 1}" value="${esc(v)}" style="margin-top:6px">`).join("") + '<div class="thpn" style="margin-top:4px">보기는 4개까지, 지점마다 한 표예요</div>';
+  const b = $("#ntPollBtn"); if (b) { b.textContent = cur.length >= 4 ? "📊 보기는 4개까지" : "＋ 보기 추가"; b.disabled = cur.length >= 4; }
 }
 async function noteLike(id) {
   const by = ho(B);
@@ -2672,6 +2724,7 @@ document.addEventListener("click", (e) => {
   if (go === "ilnew") return sheetIlNew();
   if (go === "a2new") return sheetAs2New();
   if (go === "ntnew") return sheetNoteNew();
+  if (go === "ntpoll") return ntPollDraw(!!document.querySelector("[data-ntpo]"));
   if (go === "keyin") { closeSheet(); return sheetKey(); }
   if (t.id === "okKey") return doKey();
   if (t.dataset.rf) { RF = t.dataset.rf; return render(); }
@@ -2685,6 +2738,8 @@ document.addEventListener("click", (e) => {
   if (t.id === "okNc") return doNoteCmt();
   if (t.dataset.nf) { NF = t.dataset.nf; return render(); }
   if (t.dataset.ntlike) return noteLike(t.dataset.ntlike);
+  if (t.dataset.ntmore) { NOPEN.add(t.dataset.ntmore); return render(); }
+  if (t.dataset.ntvote) return noteVote(t.dataset.ntvote, +t.dataset.k);
   if (t.dataset.ntcmt) return sheetNoteCmt(t.dataset.ntcmt);
   if (t.dataset.ntcat) { NW.cat = t.dataset.ntcat; document.querySelectorAll("[data-ntcat]").forEach((x) => x.classList.toggle("on", x === t)); return; }
   if (t.dataset.ntby) { NW.by = t.dataset.ntby; document.querySelectorAll("[data-ntby]").forEach((x) => x.classList.toggle("on", x === t)); return; }
