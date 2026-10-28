@@ -1447,9 +1447,9 @@ document.addEventListener('click', (e) => { const b = e.target.closest('[data-sp
 // 담배 종류 → 맛 힌트 (사장님 10/28: 멘솔 캡슐, 강한 타격감, 과일향 캡슐 / 아이코스, 릴 하이브리드 캡슐)
 const QZ_HINT = { "멘솔 캡슐": ["시원한 멘솔", "과일"], "강한 타격감": ["담배맛"], "과일향 캡슐": ["과일"], "아이코스 일반": ["담배맛"], "아이코스 멘솔, 캡슐": ["시원한 멘솔", "과일"], "릴 하이브리드": ["과일", "시원한 멘솔"] };
 const QZ = [
-  { k: "now", q: "지금 무엇을 피우세요?", a: [["연초", "일반 담배", "🚬"], ["궐련형", "아이코스, 릴 등", "🔥"], ["전자담배", "써 본 적 있어요", "💨"], ["처음이에요", "아직 안 피워요", "🌱"]] },
-  { k: "cig", if: (A) => A.now === "연초", q: "어떤 담배를 피우세요?", h: "비슷한 쪽을 골라 주세요", a: [["멘솔 캡슐", "에쎄 체인지, 에쎄 히말라야 같은", "🧊"], ["강한 타격감", "디스플러스, 메비우스(마일드세븐), 말보로 골드 같은", "💪"], ["과일향 캡슐", "레종 프레소, 디스 아프리카 룰라 같은", "🍇"], ["잘 모르겠어요", "직원이 같이 봐 드려요", "🤔"]] },
-  { k: "heat", if: (A) => A.now === "궐련형", q: "어떤 걸 쓰세요?", h: "비슷한 쪽을 골라 주세요", a: [["아이코스 일반", "담배맛 스틱", "🍂"], ["아이코스 멘솔, 캡슐", "멘솔이나 과일 캡슐 스틱", "🧊"], ["릴 하이브리드", "캡슐 넣는 릴", "🍇"], ["릴, 글로 일반", "그 밖의 궐련형", "🔥"]] },
+  { k: "now", q: "지금 무엇을 피우세요?", h: "같이 피우시면 여러 개 골라 주세요", multi: true, a: [["연초", "일반 담배", "🚬"], ["궐련형", "아이코스, 릴 등", "🔥"], ["전자담배", "써 본 적 있어요", "💨"], ["처음이에요", "아직 안 피워요", "🌱"]] },
+  { k: "cig", if: (A) => [].concat(A.now || []).includes("연초"), q: "어떤 담배를 피우세요?", h: "비슷한 쪽을 골라 주세요", a: [["멘솔 캡슐", "에쎄 체인지, 에쎄 히말라야 같은", "🧊"], ["강한 타격감", "디스플러스, 메비우스(마일드세븐), 말보로 골드 같은", "💪"], ["과일향 캡슐", "레종 프레소, 디스 아프리카 룰라 같은", "🍇"], ["잘 모르겠어요", "직원이 같이 봐 드려요", "🤔"]] },
+  { k: "heat", if: (A) => [].concat(A.now || []).includes("궐련형"), q: "어떤 걸 쓰세요?", h: "비슷한 쪽을 골라 주세요", a: [["아이코스 일반", "담배맛 스틱", "🍂"], ["아이코스 멘솔, 캡슐", "멘솔이나 과일 캡슐 스틱", "🧊"], ["릴 하이브리드", "캡슐 넣는 릴", "🍇"], ["릴, 글로 일반", "그 밖의 궐련형", "🔥"]] },
   { k: "amount", q: "하루에 얼마나 피우세요?", a: [["반 갑 이하", "가끔 피워요"], ["반 갑에서 한 갑", "보통이에요"], ["한 갑 이상", "많이 피워요"]] },
   { k: "hit", q: "목넘김은 어떤 게 좋으세요?", a: [["묵직하게", "연초처럼 확실하게"], ["중간", "적당히"], ["부드럽게", "목이 편하게"]] },
   { k: "draw", q: "연기를 어떻게 빨아들이세요?", a: [["입에 머금었다가", "연초처럼 (입호흡)"], ["바로 깊게", "폐까지 한 번에 (폐호흡)"], ["잘 모르겠어요", "직원이 같이 봐 드려요"]] },
@@ -1482,10 +1482,11 @@ $('qz').onclick = (e) => {
 // 추천 규칙 (사장님 10/28): 담배 종류와 맛으로 액상(빌런 위주), 하루 양으로 패키지
 function QZ_RULE(A) {
   // 멘솔 없는 담배(강한 타격감 연초, 아이코스 일반, 릴, 글로 일반)를 피우던 분께는 멘솔을 권하지 않음 (사장님 10/28 "멘솔 없는 거 피우던 사람이 멘솔 있는 거 펴도 되겠나?")
-  const plain = ["강한 타격감", "아이코스 일반", "릴, 글로 일반"].includes(A.cig || A.heat);
-  const t = [...new Set([...(QZ_HINT[A.cig] || QZ_HINT[A.heat] || []), ...(A.taste || [])])], noMint = A.mint === "없이" || (plain && A.mint !== "시원하게");
+  const smk = [A.cig, A.heat].filter(Boolean), plain = smk.length > 0 && smk.every((x) => ["강한 타격감", "아이코스 일반", "릴, 글로 일반"].includes(x));
+  const multi = [].concat(A.now || []).length >= 2; // 여러 가지 같이 피움 = 사용량 많음
+  const t = [...new Set([...(QZ_HINT[A.cig] || []), ...(QZ_HINT[A.heat] || []), ...(A.taste || [])])], noMint = A.mint === "없이" || (plain && A.mint !== "시원하게");
   // 하루 양 (10/28 사장님): 한 갑 정도면 하복2, 반 갑 정도면 발라맥스프로도 같이 보기, 반 갑 이하는 발라맥스프로나 일회용
-  const low = A.amount === "반 갑 이하", mid = A.amount === "반 갑에서 한 갑";
+  const low = !multi && A.amount === "반 갑 이하", mid = !multi && A.amount === "반 갑에서 한 갑";
   const pI = qzPod("0.6"), pL = qzPod("0.15"), PI = pI ? pI.price * QZ_POD_N : 0, PL = pL ? pL.price * QZ_POD_N : 0, podT = (p) => p ? ` + 팟 ${QZ_POD_N / POD_PER_PACK}팩` : "";
   const devP = ((devOpts("하복2") || [])[0] || {}).price || 0, vb = (devOpts("발라맥스프로") || [])[0];
   const vbPack = vb ? [["V", "발라맥스프로 기기패키지", `하루 반 갑 정도면 잘 맞아요, 기기 ${won(vb.price)}`]] : [];
@@ -1504,14 +1505,14 @@ function QZ_RULE(A) {
   }
   if (A.mint === "시원하게" && !t.includes("시원한 멘솔")) grp("시원한 멘솔 계열", "박하처럼 화한 맛", pool.filter((x) => /쿨멘솔|보석바|블루마린/.test(x.n)));
   if (!G.length) grp("상큼한 과일 계열", "자두, 포도, 사과 같은 과일맛", pool.filter((x) => /빌런/.test(x.n)));
-  const who = A.cig || A.heat || A.now || "";
+  const who = smk.join(", ") || [].concat(A.now || []).join(", ");
   const strong = A.hit === "묵직하게" || A.cig === "강한 타격감" || A.amount === "한 갑 이상";
   const H10 = ["H10", "하복2 + 액상 10병" + podT(pI), won(164000 + PI) + (PI ? "" : " (15,000원 할인)")], H5 = ["H5", "하복2 + 빌런, 릭 5병" + podT(pI), won(119000 + PI)];
   const packs = low ? [["D", "일회용 10+5 패키지", "팜팜바, 모스바 15개, 5개 서비스"], ...vbPack, H10, H5] : mid ? [H10, ...vbPack, H5] : [H10, H5];
   const lowDev = low && vb;
   return { kind: "dev", dev: lowDev ? "발라맥스프로" : "하복2", groups: G, liqs: G.flatMap((g) => g[2]), packs, title: lowDev ? "가볍게 시작하는 조합" : "하복2 기기패키지",
     why: (who ? who + " 피우시던 분께 " : "") + (t.length ? t.join(", ") + " 쪽 액상을 골랐어요. " : "") + (strong && !lowDev ? "묵직한 목넘김이면 0.6Ω 입호흡 팟이 잘 맞아요. " : "") + (noMint ? (plain && A.mint !== "없이" ? "멘솔 없는 담배를 피우셨으니 노멘솔로 골랐어요. " : "멘솔 없는 노멘솔로 골랐어요. ") : "")
-      + (low ? "하루 반 갑 이하면 가벼운 발라맥스프로나 일회용으로 시작해도 좋아요." : mid ? "하루 한 갑 가까이 피우시면 하복2가 잘 맞고, 반 갑 정도면 발라맥스프로도 함께 보세요." : "하루 한 갑 이상이면 하복2가 잘 맞아요. 10병 패키지가 병당 7,500원이라 가장 아껴요.") };
+      + (multi ? "여러 가지를 같이 피우시면 하루 양이 많아서 하복2 패키지가 잘 맞아요. 10병 패키지가 병당 7,500원이라 가장 아껴요." : low ? "하루 반 갑 이하면 가벼운 발라맥스프로나 일회용으로 시작해도 좋아요." : mid ? "하루 한 갑 가까이 피우시면 하복2가 잘 맞고, 반 갑 정도면 발라맥스프로도 함께 보세요." : "하루 한 갑 이상이면 하복2가 잘 맞아요. 10병 패키지가 병당 7,500원이라 가장 아껴요.") };
 }
 let qzRes = null, qzSel = new Set(); // 결과 화면에서 손님이 고른 액상 (없으면 앞 4개)
 let qzT = 0, qzAnim = false;
@@ -1525,7 +1526,7 @@ function qzResult(keep) {
   const A = qz.ans, R = (qzRes = QZ_RULE(A)), d = R.dev && devOpts(R.dev)[0], img = R.kind === "dsp" ? "dsp_farm_all.png" : d ? (DEV_IMG[R.dev] || {})[d.opt] : "";
   let t = 0; const nx = (s2) => { const v = t; t += s2; return v.toFixed(2); }, ain = qzAnim ? "qzin" : "";
   $('qz').innerHTML = `<div class="qz-top"><button data-qb="1" aria-label="뒤로">‹</button><div class="qz-bar"><i style="width:100%"></i></div><span class="qz-n">결과</span></div>
-    <div class="qz-res"><div class="rh ${ain}" style="animation-delay:${nx(.35)}s"><img src="${img}" alt=""><div><small>${esc(member.name || "손님")}께 맞는 조합</small><b>${esc(R.title)}</b><p>${esc([A.now, A.cig || A.heat, A.amount, A.hit, A.draw, (A.taste || []).join("+"), "멘솔 " + (A.mint || "-")].filter(Boolean).join(", "))}</p></div></div>
+    <div class="qz-res"><div class="rh ${ain}" style="animation-delay:${nx(.35)}s"><img src="${img}" alt=""><div><small>${esc(member.name || "손님")}께 맞는 조합</small><b>${esc(R.title)}</b><p>${esc([[].concat(A.now || []).join("+"), A.cig, A.heat, A.amount, A.hit, A.draw, (A.taste || []).join("+"), "멘솔 " + (A.mint || "-")].filter(Boolean).join(", "))}</p></div></div>
     <div class="why ${ain}" style="animation-delay:${nx(.45)}s">${esc(R.why)}</div>
     ${(R.groups || []).map(([gt, gs, xs], gi) => `<div class="qzg ${ain}" style="animation-delay:${nx(.3)}s"><b>${esc(gt)}</b><span>${esc(gs)}</span>${gi ? "" : '<small class="stk">마음에 드는 맛을 눌러 골라 주세요</small>'}</div><div class="qzgrid">${xs.map((x) => qzCard(x, nx(.12))).join("")}</div>`).join("")}
     <div class="${ain}" style="animation-delay:${nx(.3)}s"><div class="evsec">패키지 고르기</div><div class="qzinfo">액상 한 병이면 담배 6갑 반 정도 피울 수 있어요. 10병이면 65갑쯤이라, 하루 한 갑 피우시면 두 달 넘게 넉넉해요.</div>${R.packs.some(([k]) => k === "V") && R.packs.some(([k]) => /^H/.test(k)) ? '<div class="qzinfo"><b>발라맥스프로랑 뭐가 달라요?</b> 하복2가 가장 최근에 나온 신상이에요. 팟만 바꾸면 입호흡, 폐호흡 둘 다 돼요.</div>' : ""}<div class="qz-pk">${R.packs.map(([k, t2, p], i) => `<button data-qr="${k}" class="${i ? "" : "rec"}">${/^H/.test(k) ? '<em class="nw">신제품</em><em class="pop">인기</em>' : i ? "" : '<em>추천</em>'}<b>${esc(t2)}</b><span>${esc(p)}</span></button>`).join("")}</div></div>
