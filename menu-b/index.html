@@ -331,6 +331,24 @@ body.land #vHome .go5{grid-template-rows:repeat(5,1fr);align-content:stretch}
 #perkBox .pq{width:240px;margin:0 auto 16px;background:#fff;border-radius:12px;padding:6px}#perkBox .pq svg{width:100%;height:auto;display:block}
 #perkBox .pbb{display:grid;grid-template-columns:1fr 2fr;gap:8px}#perkBox .pbb button{padding:14px;border-radius:14px;background:var(--bg);color:var(--ink);font-weight:700}#perkBox .pbb button.on{background:var(--red);color:#fff}
 .pstep{display:flex;align-items:center;gap:8px}.pstep button{width:40px;height:40px;border-radius:50%;background:var(--bg);color:var(--ink);font-size:20px;font-weight:700}.pstep b{min-width:44px;text-align:center}
+/* 문진 결과 (10/28): 계열 묶음, 카드 칸 통일, 차례로 뜨기 */
+.qz-wait{min-height:420px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center}
+.qz-wait i{width:54px;height:54px;border-radius:50%;border:5px solid var(--bg);border-top-color:var(--red);animation:qzspin .8s linear infinite;margin-bottom:8px}
+.qz-wait b{font-size:22px}.qz-wait span{color:var(--grey);font-size:15px}
+@keyframes qzspin{to{transform:rotate(360deg)}}
+@keyframes qzup{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.qzin{opacity:0;animation:qzup .45s ease-out forwards}
+.qzg{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin:22px 0 10px}.qzg b{font-size:20px}.qzg span{color:var(--grey);font-size:14px}.qzg small{margin-left:auto}
+.qzgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.qzc{background:var(--card);border-radius:18px;padding:10px 10px 12px;cursor:pointer;position:relative}
+.qzc .im{position:relative;aspect-ratio:1;border-radius:14px;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:8%}
+.qzc .im img{width:100%;height:100%;object-fit:contain}
+.qzc .im .rib{position:absolute;left:8px;top:8px;z-index:2;background:rgba(255,255,255,.92);color:var(--red);font-family:var(--num);font-size:10px;letter-spacing:.08em;padding:3px 7px;border-radius:6px}.qzc .im .rib.hot{color:#ff7a00}
+.qzc b{display:block;font-size:16px;margin-top:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.qzc span{display:block;font-size:13px;color:var(--grey);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-height:18px}
+.qzc.got{box-shadow:inset 0 0 0 3px var(--red)}.qzc .ok{position:absolute;right:8px;bottom:8px;background:var(--red);color:#fff;font-style:normal;font-size:12px;font-weight:800;border-radius:999px;padding:3px 9px}
+.qzinfo{background:var(--card);border-radius:14px;padding:12px 16px;margin-bottom:10px;font-size:15px;line-height:1.6}
+body.land .qzgrid{grid-template-columns:repeat(5,1fr)}
 .combo{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:4px 0 14px}.combo button{background:var(--card);border-radius:16px;padding:14px;text-align:left;box-shadow:inset 0 0 0 1.5px var(--line)}.combo b{display:block;font-size:16px}.combo span{font-size:13px;color:var(--grey)}
 .evtip{font-size:13.5px;color:var(--grey);margin:-4px 0 10px}
 .evq{width:100%;height:52px;border:1px solid var(--line);border-radius:14px;padding:0 16px;font-size:17px;background:var(--card);color:var(--ink)}
@@ -1319,7 +1337,7 @@ document.addEventListener('keydown', (e) => {
 });
 // ── 방향키 커서 (10/27 사장님 "방향키로 커서 움직이는 것처럼"): 지금 보이는 층(구매 창 > 재고 창 > 담은 상품 > 화면)에서
 // 가리킨 칸이 커지고 빨간 테두리, Enter = 누르기. 첫 화면 포스터를 가리킨 상태에선 ←→ = 포스터 넘기기
-const NAV = ".rkr, #rkTab button, .qz-pk button, [data-hq], .qz-a button, .qz-btns button, .qz-top button, .specb, .dmh, .flc, .ev105, #podSub button, #podDev button, .poster, .go3 button, #seg button, .chips button, .it, .sr, .thumbs button, .colors button, .pk button, .pkb, #devAdd, .combo button, .opt2 button, #evGo, .evh button, .shbtn button, .scan, .upsell, .engr button, .mem button, .qb button, .askrow button, [data-asksend], .home-btn, .srch";
+const NAV = ".qzc, .rkr, #rkTab button, .qz-pk button, [data-hq], .qz-a button, .qz-btns button, .qz-top button, .specb, .dmh, .flc, .ev105, #podSub button, #podDev button, .poster, .go3 button, #seg button, .chips button, .it, .sr, .thumbs button, .colors button, .pk button, .pkb, #devAdd, .combo button, .opt2 button, #evGo, .evh button, .shbtn button, .scan, .upsell, .engr button, .mem button, .qb button, .askrow button, [data-asksend], .home-btn, .srch";
 let kf = null;
 function navLayer() { const b = document.body.classList;
   if (b.contains('spon')) return $('sp');
@@ -1442,38 +1460,53 @@ function QZ_RULE(A) {
   // 멘솔 없는 담배(강한 타격감 연초, 아이코스 일반, 릴, 글로 일반)를 피우던 분께는 멘솔을 권하지 않음 (사장님 10/28 "멘솔 없는 거 피우던 사람이 멘솔 있는 거 펴도 되겠나?")
   const plain = ["강한 타격감", "아이코스 일반", "릴, 글로 일반"].includes(A.cig || A.heat);
   const t = [...new Set([...(QZ_HINT[A.cig] || QZ_HINT[A.heat] || []), ...(A.taste || [])])], noMint = A.mint === "없이" || (plain && A.mint !== "시원하게");
-  const low = A.amount === "반 갑 이하";
+  // 하루 양 (10/28 사장님): 한 갑 정도면 하복2, 반 갑 정도면 발라맥스프로도 같이 보기, 반 갑 이하는 발라맥스프로나 일회용
+  const low = A.amount === "반 갑 이하", mid = A.amount === "반 갑에서 한 갑";
   const pI = qzPod("0.6"), pL = qzPod("0.15"), PI = pI ? pI.price * QZ_POD_N : 0, PL = pL ? pL.price * QZ_POD_N : 0, podT = (p) => p ? ` + 팟 ${QZ_POD_N / POD_PER_PACK}팩` : "";
-  const devP = ((devOpts("하복2") || [])[0] || {}).price || 0;
+  const devP = ((devOpts("하복2") || [])[0] || {}).price || 0, vb = (devOpts("발라맥스프로") || [])[0];
+  const vbPack = vb ? [["V", "발라맥스프로", `하루 반 갑 정도면 이 기기도 좋아요, ${won(vb.price)}`]] : [];
+  const G = [], grp = (title, sub, xs, n = 4) => { const u = [...new Map(xs.filter(Boolean).map((x) => [x.id, x])).values()].slice(0, n); if (u.length) G.push([title, sub, u]); };
   if (A.draw === "바로 깊게") { const L = LUNG.filter((x) => !outOf(x.n)).sort((a, b) => (LUNG_BEST.findIndex((r) => r.test(a.n)) + 1 || 99) - (LUNG_BEST.findIndex((r) => r.test(b.n)) + 1 || 99));
-    return { kind: "lung", dev: "하복2", liqs: L.slice(0, 6), title: "하복2 + 프리미엄 폐호흡", packs: [["lung", "하복2 + 폐호흡 3병" + podT(pL), devP ? won(devP + 40000 + PL) : "폐호흡 3병 40,000원"], ["H10", "하복2 + 입호흡 액상 10병" + podT(pI), won(164000 + PI)]], why: "깊게 빨아들이시면 폐호흡이 맞아요. 하복2는 팟만 바꾸면 입호흡, 폐호흡 둘 다 돼요." }; }
+    grp("폐호흡 액상", "깊게 빨아들이는 분께 맞는 맛", L, 6);
+    return { kind: "lung", dev: "하복2", groups: G, liqs: G.flatMap((g) => g[2]), title: "하복2 + 프리미엄 폐호흡", packs: [["lung", "하복2 + 폐호흡 3병" + podT(pL), devP ? won(devP + 40000 + PL) : "폐호흡 3병 40,000원"], ["H10", "하복2 + 입호흡 액상 10병" + podT(pI), won(164000 + PI)]], why: "깊게 빨아들이시면 폐호흡이 맞아요. 하복2는 팟만 바꾸면 입호흡, 폐호흡 둘 다 돼요." }; }
   let pool = LQ.filter((x) => !outOf(x.n));
   if (noMint) pool = pool.filter((x) => /^VF 릭 /.test(x.n) || (x.t || []).includes("노멘솔"));
-  const want = [];
-  if (t.includes("과일")) want.push(...pool.filter((x) => /빌런/.test(x.n)), ...pool.filter((x) => /릭 /.test(x.n)));
-  if (t.includes("시원한 멘솔") || A.mint === "시원하게") want.push(...pool.filter((x) => /쿨멘솔|보석바|블루마린/.test(x.n)));
-  if (t.includes("담배맛")) { const zt = ALL_LQ.find((x) => x.n === "(한) 라입 제로타바코" && !outOf(x.n)); want.unshift(...pool.filter((x) => /시가812/.test(x.n)), ...(zt ? [zt] : []), ...pool.filter((x) => /블랙티/.test(x.n))); }
-  if (t.includes("디저트, 음료")) want.push(...pool.filter((x) => /소다|라무네|블루워터/.test(x.n)));
-  if (!want.length) want.push(...pool.filter((x) => /빌런/.test(x.n)));
-  const liqs = [...new Map(want.map((x) => [x.id, x])).values()].slice(0, 8);
+  const order = t.includes("담배맛") ? ["담배맛", ...t.filter((k) => k !== "담배맛")] : t;
+  for (const k of order) {
+    if (k === "담배맛") { const zt = ALL_LQ.find((x) => x.n === "(한) 라입 제로타바코" && !outOf(x.n)); grp("타격감 있는 연초 계열", "구수하고 묵직한 담배맛", [...pool.filter((x) => /시가812/.test(x.n)), zt, ...pool.filter((x) => /블랙티/.test(x.n))]); }
+    if (k === "과일") grp("상큼한 과일 계열", "자두, 포도, 사과 같은 과일맛", [...pool.filter((x) => /빌런/.test(x.n)), ...pool.filter((x) => /릭 /.test(x.n))]);
+    if (k === "시원한 멘솔") grp("시원한 멘솔 계열", "박하처럼 화한 맛", pool.filter((x) => /쿨멘솔|보석바|블루마린/.test(x.n)));
+    if (k === "디저트, 음료") grp("음료, 디저트 계열", "탄산, 음료 같은 달달한 맛", pool.filter((x) => /소다|라무네|블루워터/.test(x.n)));
+  }
+  if (A.mint === "시원하게" && !t.includes("시원한 멘솔")) grp("시원한 멘솔 계열", "박하처럼 화한 맛", pool.filter((x) => /쿨멘솔|보석바|블루마린/.test(x.n)));
+  if (!G.length) grp("상큼한 과일 계열", "자두, 포도, 사과 같은 과일맛", pool.filter((x) => /빌런/.test(x.n)));
   const who = A.cig || A.heat || A.now || "";
   const strong = A.hit === "묵직하게" || A.cig === "강한 타격감" || A.amount === "한 갑 이상";
-  const packs = low ? [["D", "일회용 10+5", "팜팜바, 모스바 15개, 5개 서비스"], ["H5", "하복2 + 빌런, 릭 5병" + podT(pI), won(119000 + PI)], ["H10", "하복2 + 액상 10병" + podT(pI), won(164000 + PI)]]
-    : [["H10", "하복2 + 액상 10병" + podT(pI), won(164000 + PI) + (PI ? "" : " (15,000원 할인)")], ["H5", "하복2 + 빌런, 릭 5병" + podT(pI), won(119000 + PI)]];
-  return { kind: "dev", dev: "하복2", liqs, packs, title: low ? "가볍게 시작하는 조합" : "하복2 기기패키지",
-    why: (who ? who + " 피우시던 분께 " : "") + (t.length ? t.join(", ") + " 쪽 액상을 골랐어요. " : "") + (strong ? "묵직한 목넘김이면 0.6Ω 입호흡 팟이 잘 맞아요. " : "") + (noMint ? (plain && A.mint !== "없이" ? "멘솔 없는 담배를 피우셨으니 노멘솔로 골랐어요. " : "멘솔 없는 노멘솔로 골랐어요. ") : "") + (low ? "많이 안 피우시면 일회용이나 5병 패키지로 가볍게 시작해도 좋아요." : "매일 피우시면 10병 패키지가 병당 7,500원이라 가장 아껴요.") };
+  const H10 = ["H10", "하복2 + 액상 10병" + podT(pI), won(164000 + PI) + (PI ? "" : " (15,000원 할인)")], H5 = ["H5", "하복2 + 빌런, 릭 5병" + podT(pI), won(119000 + PI)];
+  const packs = low ? [...vbPack, ["D", "일회용 10+5", "팜팜바, 모스바 15개, 5개 서비스"], H5] : mid ? [H10, ...vbPack, H5] : [H10, H5];
+  const lowDev = low && vb;
+  return { kind: "dev", dev: lowDev ? "발라맥스프로" : "하복2", groups: G, liqs: G.flatMap((g) => g[2]), packs, title: lowDev ? "가볍게 시작하는 조합" : "하복2 기기패키지",
+    why: (who ? who + " 피우시던 분께 " : "") + (t.length ? t.join(", ") + " 쪽 액상을 골랐어요. " : "") + (strong && !lowDev ? "묵직한 목넘김이면 0.6Ω 입호흡 팟이 잘 맞아요. " : "") + (noMint ? (plain && A.mint !== "없이" ? "멘솔 없는 담배를 피우셨으니 노멘솔로 골랐어요. " : "멘솔 없는 노멘솔로 골랐어요. ") : "")
+      + (low ? "하루 반 갑 이하면 가벼운 발라맥스프로나 일회용으로 시작해도 좋아요." : mid ? "하루 한 갑 가까이 피우시면 하복2가 잘 맞고, 반 갑 정도면 발라맥스프로도 함께 보세요." : "하루 한 갑 이상이면 하복2가 잘 맞아요. 10병 패키지가 병당 7,500원이라 가장 아껴요.") };
 }
 let qzRes = null, qzSel = new Set(); // 결과 화면에서 손님이 고른 액상 (없으면 앞 4개)
+let qzT = 0, qzAnim = false;
+const qzCard = (x, d) => { const lung = x.c === "lung", im = lung ? LUNG_IMG[x.n] : imgOf(x), sel = qzSel.has(x.id);
+  return `<div class="qzc ${sel ? "got" : ""} ${qzAnim ? "qzin" : ""}" data-qs="${x.id}" style="animation-delay:${d}s"><div class="im">${lung ? (LUNG_BEST.some((r) => r.test(x.n)) ? '<span class="rib">BEST</span>' : "") : tagHtml(x.n)}${im ? `<img src="${im}" alt="">` : `<span class="ltile">${esc(x.n.slice(0, 5))}</span>`}${sel ? '<em class="ok">골랐어요</em>' : ""}</div><b>${esc(lung ? x.n.replace(/\s*\(?모드\)?$/, "") : short(x.n))}</b><span>${esc(x.f || (lung ? "폐호흡" : ""))}</span></div>`; };
 function qzResult(keep) {
-  if (!keep) qzSel = new Set();
+  if (!keep) { qzSel = new Set(); qzRes = QZ_RULE(qz.ans); clearTimeout(qzT);
+    // 10/28 사장님: 한 번에 다 뜨면 답이 정해진 것 같으니, 잠깐 고르는 시간을 두고 차례로
+    $('qz').innerHTML = '<div class="qz-wait"><i></i><b>답변 보고 맞는 액상을 고르고 있어요</b><span>담배 종류, 하루 양, 좋아하는 맛</span></div>';
+    qzT = setTimeout(() => { qzAnim = true; qzResult(true); qzAnim = false; }, 1600); return; }
   const A = qz.ans, R = (qzRes = QZ_RULE(A)), d = R.dev && devOpts(R.dev)[0], img = R.kind === "dsp" ? "dsp_farm_all.png" : d ? (DEV_IMG[R.dev] || {})[d.opt] : "";
+  let t = 0; const nx = (s2) => { const v = t; t += s2; return v.toFixed(2); }, ain = qzAnim ? "qzin" : "";
   $('qz').innerHTML = `<div class="qz-top"><button data-qb="1" aria-label="뒤로">‹</button><div class="qz-bar"><i style="width:100%"></i></div><span class="qz-n">결과</span></div>
-    <div class="qz-res"><div class="rh"><img src="${img}" alt=""><div><small>${esc(member.name || "손님")}께 맞는 조합</small><b>${esc(R.title)}</b><p>${esc([A.now, A.cig || A.heat, A.amount, A.hit, A.draw, (A.taste || []).join("+"), "멘솔 " + (A.mint || "-")].filter(Boolean).join(", "))}</p></div></div>
-    <div class="why">${esc(R.why)}</div>
-    ${R.liqs && R.liqs.length ? `<div class="evsec">추천 액상 <small class="stk">마음에 드는 맛을 눌러 골라 주세요</small></div><div class="grid">${R.liqs.map((x) => `<div class="it ${qzSel.has(x.id) ? "got" : ""}" data-qs="${x.id}">${x.c === "lung" ? (LUNG_BEST.some((r) => r.test(x.n)) ? '<span class="rib">BEST</span>' : "") : tagHtml(x.n)}${qzSel.has(x.id) ? '<span class="qty">골랐어요</span>' : ""}<div class="im" style="background:${tintOf(x)}">${(x.c === "lung" ? LUNG_IMG[x.n] : imgOf(x)) ? `<img src="${x.c === "lung" ? LUNG_IMG[x.n] : imgOf(x)}" alt="">` : `<span class="ltile">${esc(x.n.slice(0, 5))}</span>`}</div><div class="nm">${esc(x.c === "lung" ? x.n.replace(/\s*\(?모드\)?$/, "") : short(x.n))}</div><div class="fl">${esc(x.f || (x.c === "lung" ? "폐호흡" : ""))}</div></div>`).join("")}</div>` : ""}
-    <div class="evsec">패키지 고르기</div><div class="qz-pk">${R.packs.map(([k, t2, p], i) => `<button data-qr="${k}" class="${i ? "" : "rec"}">${i ? "" : '<em>추천</em>'}<b>${esc(t2)}</b><span>${esc(p)}</span></button>`).join("")}</div>
-    <div class="evsec">첫 구매 혜택 <small style="color:var(--red);font-weight:700">하나만 하면 ${won(PERK_AMT)} 할인</small></div><div class="qz-pk perk">${PERK_OPTS.map(([k, t2, sub]) => `<button data-perk="${k}" class="${PERK === k ? "rec" : ""}">${PERK === k ? '<em>선택</em>' : ""}<b>${t2}</b><span>${sub}</span></button>`).join("")}</div>
-    <div class="qz-btns" style="grid-template-columns:1fr"><button data-qr="staff">직원에게 상담받기</button></div></div>`;
+    <div class="qz-res"><div class="rh ${ain}" style="animation-delay:${nx(.35)}s"><img src="${img}" alt=""><div><small>${esc(member.name || "손님")}께 맞는 조합</small><b>${esc(R.title)}</b><p>${esc([A.now, A.cig || A.heat, A.amount, A.hit, A.draw, (A.taste || []).join("+"), "멘솔 " + (A.mint || "-")].filter(Boolean).join(", "))}</p></div></div>
+    <div class="why ${ain}" style="animation-delay:${nx(.45)}s">${esc(R.why)}</div>
+    ${(R.groups || []).map(([gt, gs, xs], gi) => `<div class="qzg ${ain}" style="animation-delay:${nx(.3)}s"><b>${esc(gt)}</b><span>${esc(gs)}</span>${gi ? "" : '<small class="stk">마음에 드는 맛을 눌러 골라 주세요</small>'}</div><div class="qzgrid">${xs.map((x) => qzCard(x, nx(.12))).join("")}</div>`).join("")}
+    <div class="${ain}" style="animation-delay:${nx(.3)}s"><div class="evsec">패키지 고르기</div><div class="qzinfo">액상 한 병이면 담배 6갑 반 정도 피울 수 있어요. 10병이면 65갑쯤이라, 하루 한 갑 피우시면 두 달 넘게 넉넉해요.</div><div class="qz-pk">${R.packs.map(([k, t2, p], i) => `<button data-qr="${k}" class="${i ? "" : "rec"}">${i ? "" : '<em>추천</em>'}<b>${esc(t2)}</b><span>${esc(p)}</span></button>`).join("")}</div></div>
+    <div class="${ain}" style="animation-delay:${nx(.3)}s"><div class="evsec">첫 구매 혜택 <small style="color:var(--red);font-weight:700">하나만 하면 ${won(PERK_AMT)} 할인</small></div><div class="qz-pk perk">${PERK_OPTS.map(([k, t2, sub]) => `<button data-perk="${k}" class="${PERK === k ? "rec" : ""}">${PERK === k ? '<em>선택</em>' : ""}<b>${t2}</b><span>${sub}</span></button>`).join("")}</div>
+    <div class="qz-btns" style="grid-template-columns:1fr"><button data-qr="staff">직원에게 상담받기</button></div></div></div>`;
 }
 // 10/28 사장님(이사님 지시): 추천 패키지에 팟을 같이 넣어 객단가 19만원 정도 (하복2+10병 164,000 + 팟 4개 24,000 = 188,000)
 const POD_PER_PACK = 2; // 상품 MASTER 포장당판매단위수 (하복2 팟 1팩 = 2개, 1개 6,000원)
@@ -1491,6 +1524,7 @@ function qzAct(a) { const R = qzRes; if (!R) return;
   if (a === "lung") { const p = qzPod("0.15"); if (p) addGoods(p, QZ_POD_N); } // 하복2 패키지(H5, H10)는 패키지 시트에서 팟 같이 담음
   if (a === "staff") { toast("직원이 결과를 보고 상담해 드릴게요"); return; }
   if (a === "D") return openEv("D");
+  if (a === "V") { dm = "발라맥스프로"; pkSel = 0; go('dev'); drawDev(); return; }
   if (a === "lung") { const d = devOpts("하복2")[0]; if (d) addItem(d.id, { k: "dev", n: d.n, label: d.n, img: DEV_IMG.하복2[d.opt], unit: d.price, model: "하복2" }); (qzSel.size ? R.liqs.filter((x) => qzSel.has(x.id)) : R.liqs.slice(0, 3)).forEach((x) => addGoods(x)); document.body.classList.add('open'); drawCart(); return; }
   const n = a === "H5" ? 5 : 10; openEv("H", n);
   const base = qzSel.size ? R.liqs.filter((x) => qzSel.has(x.id)) : R.liqs.slice(0, 4); (n === 5 ? base.filter(isVL) : base.filter((x) => x.c !== "lung")).slice(0, n).forEach((x) => EV.pick.set(x.id, 1)); drawEv(); }
