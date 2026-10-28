@@ -172,6 +172,20 @@
 .walker img{width:130px;height:112px;object-fit:contain;display:block}
 .walker .tag{padding:3px 10px;border-radius:999px;color:#fff;font-size:12px;font-weight:700;white-space:nowrap}
 @media(max-width:700px){.field{height:220px}.walker{width:96px}.walker img{width:96px;height:84px}}
+/* 10/28 상품 > 재고보고: 노션 코일표처럼 품목 × 지점. 품목 칸과 머리글 고정, 가로 스크롤 */
+.srw{background:var(--card);border-radius:20px;overflow:auto;max-height:calc(100vh - 150px);margin-top:12px;border:1px solid var(--line)}
+.srt{border-collapse:separate;border-spacing:0;font-size:14px;min-width:100%;font-variant-numeric:tabular-nums}
+.srt th{position:sticky;top:0;background:var(--card);z-index:2;font-size:12px;color:var(--sub);font-weight:600;text-align:right;padding:8px 12px;border-bottom:1px solid var(--line2);white-space:nowrap;vertical-align:bottom}
+.srt th b{display:block;font-size:14px;color:var(--ink);font-weight:800}.srt th small{display:block;font-size:11px;font-weight:500;color:var(--sub)}
+.srt th button{font:inherit;color:inherit;text-align:right;padding:0;background:none}.srt th button small:last-child{color:var(--green)}
+.srt td{padding:9px 12px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+.srt th:first-child,.srt td:first-child{position:sticky;left:0;background:var(--card);text-align:left;z-index:1;min-width:140px;max-width:220px;white-space:normal;overflow-wrap:anywhere;font-weight:700;box-shadow:1px 0 0 var(--line)}
+.srt th:first-child{z-index:3}
+.srt .sum{font-weight:800;background:var(--bg)}.srt td.z{color:var(--red);font-weight:700}.srt td.na,.srt th.na{color:var(--sub);opacity:.55}
+.srt tbody tr:hover td{background:var(--press)}
+.srt tr.tot td{border-top:1px solid var(--line2);border-bottom:0;background:var(--bg);font-weight:800;position:sticky;bottom:0;z-index:1}.srt tr.tot td:first-child{z-index:2}
+.srchips{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}.srchips .chip{height:34px;padding:0 12px;font-size:13px}
+@media (max-width:899px){.srt{font-size:13px}.srt th,.srt td{padding:8px 9px}.srt th:first-child,.srt td:first-child{min-width:112px;max-width:150px;font-size:13px}.srw{max-height:calc(100vh - 230px)}}
 /* 10/25 그룹관리, 추가 필수: PC는 왼쪽 조작, 오른쪽 목록 여러 칸 (사장님 "여백 활용") */
 .gwrap{display:grid;gap:12px}
 .gstat{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}.gstat div{background:var(--bg);border-radius:12px;padding:10px 12px}.gstat b{display:block;font-size:22px;font-weight:800;font-variant-numeric:tabular-nums}.gstat span{font-size:12px;color:var(--sub)}
@@ -288,8 +302,8 @@ const ICON = {
 };
 // 10/19 사장님 "다 따로 들어가기 불편해": 네이버 앱, 직원앱을 관리자 안 메뉴로 (같은 사이트라 안에 띄움, 네이버 열쇠, 직원앱 지점은 각 앱이 이 기기에 기억)
 // 10/26 사장님 "홈이 가득가득, 업무 안에 블로그도": 메뉴 12개 → 7개 묶음, 묶음 안은 위쪽 작은 탭
-const GROUPS = [["home", "홈", ["home"]], ["tasks", "업무", ["tasks"]], ["close", "마감", ["close"]], ["kpi", "KPI", ["kpi"]], ["goods", "상품", ["order", "bunbae", "group", "must"]], ["note", "매장 노트", ["note"]], ["office", "사무실", ["office"]], ["staff", "직원앱", ["staff"]], ["naver", "네이버", ["naver"]]];
-const SUBNM = { bunbae: "분배 넣기", tasks: "업무", blog: "블로그 발행", order: "주문요청", survey: "재고조사", group: "그룹관리", must: "추가 필수", office: "봇 상태", staff: "직원앱", naver: "네이버" };
+const GROUPS = [["home", "홈", ["home"]], ["tasks", "업무", ["tasks"]], ["close", "마감", ["close"]], ["kpi", "KPI", ["kpi"]], ["goods", "상품", ["order", "bunbae", "stockrep", "group", "must"]], ["note", "매장 노트", ["note"]], ["office", "사무실", ["office"]], ["staff", "직원앱", ["staff"]], ["naver", "네이버", ["naver"]]];
+const SUBNM = { bunbae: "분배 넣기", tasks: "업무", blog: "블로그 발행", order: "주문요청", stockrep: "재고보고", survey: "재고조사", group: "그룹관리", must: "추가 필수", office: "봇 상태", staff: "직원앱", naver: "네이버" };
 const grpOf = (t) => GROUPS.find((g) => g[2].includes(t === "blog" ? "tasks" : t)) || GROUPS[0];
 const grpTab = (g) => { const last = ls.get("vf-admin-sub-" + g[0]); return g[2].includes(last) ? last : g[2][0]; };
 const subnavHtml = () => { const g = grpOf(tab); return g[2].length > 1 ? `<div class="subnav">${g[2].map((k) => `<button class="${k === tab ? "on" : ""}" data-tab="${k}">${SUBNM[k]}</button>`).join("")}</div>` : ""; };
@@ -307,7 +321,7 @@ function render() {
   document.querySelectorAll("#nav button").forEach((b) => { const g = GROUPS.find((x) => x[0] === b.dataset.g); if (g) { b.dataset.tab = grpTab(g); b.classList.toggle("on", grpOf(tab) === g); if (!b.dataset.ic) { b.dataset.ic = 1; b.innerHTML = (g[0] === "goods" ? ICON.survey : ICON[g[0]]) + (g[0] === "note" ? "노트" : g[1]); } } });
   const [, hh, mm] = D.at.match(/(\d{2}):(\d{2})$/) || [];
   if (EMBED[tab] && $("#app .emb") && $("#app .emb").dataset.k === tab + staffB) return; // 자동 새로고침 때 안에 띄운 앱이 처음으로 돌아가지 않게
-  const body0 = EMBED[tab] ? embedHtml() : tab === "home" ? (pc ? homePC() : homeHtml()) : tab === "kpi" ? kpiHtml() : tab === "close" ? closingAllHtml() : tab === "survey" ? surveyHtml() : tab === "tasks" ? tasksHtml() : tab === "note" ? noteHtml() : tab === "order" ? orderHtml() : tab === "office" ? officeHtml() : tab === "group" ? groupHtml() : tab === "bunbae" ? bunbaeHtml() : tab === "blog" ? (blogAdmHtml() || '<div class="empty">올라온 블로그 지시문이 없어요</div>') : mustHtml();
+  const body0 = EMBED[tab] ? embedHtml() : tab === "home" ? (pc ? homePC() : homeHtml()) : tab === "kpi" ? kpiHtml() : tab === "close" ? closingAllHtml() : tab === "survey" ? surveyHtml() : tab === "tasks" ? tasksHtml() : tab === "note" ? noteHtml() : tab === "order" ? orderHtml() : tab === "office" ? officeHtml() : tab === "group" ? groupHtml() : tab === "stockrep" ? stockTblHtml() : tab === "bunbae" ? bunbaeHtml() : tab === "blog" ? (blogAdmHtml() || '<div class="empty">올라온 블로그 지시문이 없어요</div>') : mustHtml();
   const body = subnavHtml() + body0;
   if (!pc) { $("#app").innerHTML = `<div class="top"><div class="logo">VAFRIEND <b>관리자</b></div><div class="r"><button class="ic" data-act="reload">${hh ? `${hh}:${mm} 기준 ↻` : "새로고침"}</button><button class="ic" data-act="logout">잠그기</button></div></div>${body}`; markEmb(); return; }
   const ICG = { goods: ICON.order };
@@ -829,6 +843,27 @@ const REP_TXT = (t) => !t ? "" : t.rep === "once" ? `${t.date.slice(5).replace("
 // ── 재고조사 (직원앱에서 센 수량 ↔ 포스 수량). [승인](포스 반영)은 아직 꺼 둠 ──
 const SVST = { wait: ["승인 대기", "blue"], reject: ["반려", "gray"], done: ["반영 완료", "good"] };
 // 10/27 사장님 "보기 불편": 재고조사 탭 = 왼쪽 A그룹 카드(품절/있음을 글자로) + 지점당 한 줄(A그룹 품절, 오늘 재고보고와 조정 결과). 표와 %는 뺌(지점 상세에서), 승인형 재고조사 카드도 뺌(기록 있을 때만 아래)
+// 10/28 사장님 "재고보고 오면 관리자웹에서 노션처럼 몇 개인지 확인": 상품 > 재고보고. 노션 코일표 순서(운영봇 stockTbl.items) × 지점(본점 먼저). 오늘 보고만 숫자, 안 온 지점은 '–'.
+// 지점 머리글을 누르면 그 지점 숫자가 세로로 복사됨(노션 첫 칸에 붙여 넣으면 아래로 채워짐). 폰에서는 지점 칩으로 한 지점만 볼 수 있음
+let srB = ls.get("vf-admin-srb") || "";
+function stockTblHtml() {
+  const T = D.stockTbl; if (!T) return '<div class="empty">재고보고 표는 운영봇이 다음 갱신 때 보내요(몇 분 안)</div>';
+  const today = D.d || (D.at || "").slice(0, 10), order = ["본점", ...BR.filter((b) => b !== "본점")];
+  const col = order.map((b) => { const r = T.br?.[b]; const on = !!(r && r.d === today); return { b, i: BR.indexOf(b) + 1, r, on }; });
+  const onN = col.filter((c) => c.on).length, off = col.filter((c) => !c.on);
+  const pc = isPC(), show = !pc && srB ? col.filter((c) => c.b === srB) : col;
+  const num = (c, n) => c.on && typeof c.r.q[n] === "number" ? c.r.q[n] : 0;
+  const sum = (n) => col.reduce((a, c) => a + num(c, n), 0);
+  const hero = `<div class="card"><div class="eyebrow">오늘 재고보고</div>
+    <div class="headline">${onN ? `<em class="${onN >= BR.length ? "" : "r"}">${onN}곳</em> 보고 왔어요` : "아직 보고가 없어요"}${off.length && onN ? `<br><span style="font-size:15px;font-weight:600;color:var(--sub)">안 옴: ${off.map((c) => esc(c.b)).join(", ")}</span>` : ""}</div>
+    <div class="caption">노션 코일표와 같은 순서예요. 지점 이름을 누르면 그 지점 숫자가 세로로 복사돼요, 노션 그 지점 첫 칸에 붙여 넣으면 아래로 채워져요.</div>
+    <div class="srchips">${col.map((c) => `<span class="chip" style="${c.on ? "background:var(--green-soft);color:var(--green)" : ""}">${c.i} ${esc(c.b)} <small>${c.on ? esc(c.r.t) + " " + esc(String(c.r.by).split(",")[0]) : c.r ? "안 옴(" + esc(c.r.d.slice(5).replace("-", "/")) + " 보고)" : "안 옴"}</small></span>`).join("")}</div>
+    ${!pc ? `<div class="srchips" style="margin-top:14px"><button class="chip ${!srB ? "on" : ""}" data-srb="">전체</button>${col.map((c) => `<button class="chip ${srB === c.b ? "on" : ""}" data-srb="${esc(c.b)}">${c.i} ${esc(c.b)}</button>`).join("")}</div>` : ""}</div>`;
+  const head = `<tr><th>품목</th><th class="sum">합계</th>${show.map((c) => `<th class="${c.on ? "" : "na"}">${c.on ? `<button data-srcopy="${esc(c.b)}" title="숫자 세로로 복사"><small>${c.i}호</small><b>${esc(c.b)}</b><small>복사</small></button>` : `<small>${c.i}호</small><b>${esc(c.b)}</b><small>안 옴</small>`}</th>`).join("")}</tr>`;
+  const rows = T.items.map((n) => `<tr><td>${esc(n)}</td><td class="sum">${sum(n)}</td>${show.map((c) => { if (!c.on) return '<td class="na">–</td>'; const v = c.r.q[n]; return v == null ? '<td class="na">–</td>' : `<td class="${v === 0 ? "z" : ""}">${v}</td>`; }).join("")}</tr>`).join("");
+  const tot = `<tr class="tot"><td>지점 합계</td><td class="sum">${T.items.reduce((a, n) => a + sum(n), 0)}</td>${show.map((c) => c.on ? `<td>${T.items.reduce((a, n) => a + num(c, n), 0)}</td>` : '<td class="na">–</td>').join("")}</tr>`;
+  return hero + `<div class="srw"><table class="srt"><thead>${head}</thead><tbody>${rows}${tot}</tbody></table></div>`;
+}
 function surveyHtml() {
   const con = D.branches.filter((x) => x.connected);
   const aOut = con.flatMap((x) => G(x, "프리미엄 A").out.map((o) => ({ ...o, b: x.b }))), aTotal = G(con[0] || {}, "프리미엄 A").total, names = [...new Set(aOut.map((o) => o.n))];
@@ -1110,6 +1145,8 @@ document.addEventListener("click", async (e) => {
   if (t.dataset.notelike) return noteAct(t.dataset.notelike, true);
   if (t.dataset.notecmt) return noteAct(t.dataset.notecmt, false);
   if (t.dataset.staffb) { staffB = t.dataset.staffb; ls.set("vf-admin-staffb", staffB); return render(); }
+  if (t.dataset.srb != null) { srB = t.dataset.srb; ls.set("vf-admin-srb", srB); return render(); }
+  if (t.dataset.srcopy) { const b = t.dataset.srcopy, r = D.stockTbl?.br?.[b]; if (!r) return; const txt = D.stockTbl.items.map((n) => r.q[n] == null ? "" : r.q[n]).join("\n"); try { await navigator.clipboard.writeText(txt); toast(`${b} 숫자 ${D.stockTbl.items.length}개 복사했어요, 노션 ${b} 칸 첫 줄에 붙여 넣으면 돼요`); } catch { toast("복사하지 못했어요"); } return; }
   if (t.dataset.tab) { tab = t.dataset.tab; ls.set("vf-admin-tab", tab); closeSheet(); render(); return scrollTo(0, 0); }
   const a = t.dataset.act;
   if (a === "reload") return reload();
