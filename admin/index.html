@@ -172,6 +172,13 @@
 .walker img{width:130px;height:112px;object-fit:contain;display:block}
 .walker .tag{padding:3px 10px;border-radius:999px;color:#fff;font-size:12px;font-weight:700;white-space:nowrap}
 @media(max-width:700px){.field{height:220px}.walker{width:96px}.walker img{width:96px;height:84px}}
+/* 10/28 마감 보고 지점별 카드 */
+.clgrid{display:grid;gap:12px}@media(min-width:900px){.clgrid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.clcard{background:var(--card);border-radius:20px;padding:12px 16px 6px}
+.clhead{display:flex;align-items:center;gap:10px;padding:4px 0 8px}.clhead b{font-size:16px}.clhead small{color:var(--sub);font-size:12px;margin-left:auto}
+.clrow{display:flex;align-items:center;gap:8px;width:100%;padding:9px 0;border-top:1px solid var(--line);font-size:14px;text-align:left;color:var(--ink);background:none}
+.clrow b{min-width:42px;font-variant-numeric:tabular-nums}.clrow .m{flex:1;font-weight:700;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.clrow .m small{display:block;font-weight:500;color:var(--sub);font-size:12px}
+.clrow>small{color:var(--sub);max-width:34%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.clrow .chev{color:var(--sub)}
 /* 10/28 상품 > 재고보고: 노션 코일표처럼 품목 × 지점. 품목 칸과 머리글 고정, 가로 스크롤 */
 .srw{background:var(--card);border-radius:20px;overflow:auto;max-height:calc(100vh - 150px);margin-top:0;border:1px solid var(--line)}
 .srt{border-collapse:separate;border-spacing:0;font-size:14px;width:100%;font-variant-numeric:tabular-nums}
@@ -328,7 +335,7 @@ function render() {
   $("#app").innerHTML = `<div class="shell"><aside class="side"><div class="logo">VAFRIEND <b>관리자</b></div>
       ${GROUPS.map((g) => `<button class="navb ${grpOf(tab) === g ? "on" : ""}" data-tab="${grpTab(g)}">${ICG[g[0]] || ICON[g[0]]}${g[1]}${g[0] === "office" && botBad() ? ' <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--red);margin-left:4px"></span>' : ""}</button>`).join("")}
       <div class="foot"><button class="navb" data-act="reload">↻ ${hh ? `${hh}:${mm} 기준` : "새로고침"}</button><button class="navb" data-act="logout">🔒 잠그기</button></div></aside>
-    <main class="main ${EMBED[tab] ? "embm" : ""}">${tab === "home" || tab === "kpi" || tab === "survey" || tab === "group" || tab === "must" || tab === "stockrep" || EMBED[tab] ? body : `<div class="narrow">${body}</div>`}</main></div>`;
+    <main class="main ${EMBED[tab] ? "embm" : ""}">${tab === "home" || tab === "kpi" || tab === "survey" || tab === "group" || tab === "must" || tab === "stockrep" || tab === "close" || EMBED[tab] ? body : `<div class="narrow">${body}</div>`}</main></div>`;
   markEmb();
   if (tab === "home") { $("#panel").innerHTML = panelKeep || panelDefault(); bindSparks(); }
 }
@@ -786,7 +793,23 @@ function botMiniHtml() {
 function homeHtml() { return `<div style="padding-top:6px">${botWarn()}${statHtml()}${issuesHtml()}${opsMobileHtml()}</div>`; }
 // ── 마감 보고 (직원앱 시재 + 포스 숫자) ──
 const won = (n) => Math.round(+n || 0).toLocaleString("ko-KR");
-function closingAllHtml() { return `<div class="pchead"><h1>마감 보고</h1><div class="caption">최근 40건, 누르면 보고문 전체</div></div>${closingListHtml(40) || '<div class="empty">아직 마감 보고가 없어요</div>'}`; }
+// 10/28 사장님 "세로로 쌓이기보다 지점별로": 전체 = 지점 카드 9개(지점마다 최근 마감 7건), 지점 칩을 누르면 그 지점만 길게
+let clB = ls.get("vf-admin-clb") || "전체";
+function closingAllHtml() {
+  const all = D.closings || [];
+  const chips = ["전체", ...BR].map((b, i) => `<button class="chip ${clB === b ? "on" : ""}" data-clb="${b}">${b === "전체" ? "전 지점" : i + "호 " + b}</button>`).join("");
+  return `<div class="pchead"><h1>마감 보고</h1><div class="caption">지점별 최근 마감, 누르면 보고문 전체</div></div><div class="chips" style="margin-bottom:12px">${chips}</div>${all.length ? (clB === "전체" ? closingByBranchHtml() : closingBranchListHtml(clB)) : '<div class="empty">아직 마감 보고가 없어요</div>'}`;
+}
+const clRow = (c, i) => { const w = warnsOf(c).length; return `<button class="clrow" data-cl="${i}"><b class="${w ? "t-bad" : ""}">${c.date.slice(5).replace("-", "/")}</b><span class="m">${c.status === "done" ? `총 ${won(c.nums.총)}<small>시재 ${won(c.sijae)}</small>` : c.status === "error" ? `<span class="t-bad">${esc(c.err || "실패")}</span>` : "만드는 중"}</span><small>${esc(c.by)}</small>${w ? `<span class="t-bad">⚠️${w}</span>` : ""}<span class="chev">›</span></button>`; };
+function closingByBranchHtml() {
+  const all = D.closings || [];
+  return `<div class="clgrid">${BR.map((b, bi) => { const L = all.map((c, i) => [c, i]).filter(([c]) => c.b === b).slice(0, 7), last = L[0]?.[0], wn = L.reduce((a, [c]) => a + warnsOf(c).length, 0);
+    return `<div class="clcard"><div class="clhead"><div class="av ${!last ? "" : wn ? "bad" : "good"}">${bi + 1}</div><b>${esc(b)}</b><small>${last ? "마지막 " + last.date.slice(5).replace("-", "/") + (wn ? `, <span class="t-bad">⚠️ ${wn}</span>` : "") : "마감 보고 없음"}</small></div>${L.map(([c, i]) => clRow(c, i)).join("") || '<div class="caption">최근 기록이 없어요</div>'}</div>`; }).join("")}</div>`;
+}
+function closingBranchListHtml(b) {
+  const L = (D.closings || []).map((c, i) => [c, i]).filter(([c]) => c.b === b);
+  return `<div class="clcard">${L.map(([c, i]) => clRow(c, i)).join("") || '<div class="caption">이 지점은 최근 마감 보고가 없어요</div>'}</div>`;
+}
 function closingListHtml(max = 8) {
   const L = (D.closings || []).slice(0, max);
   if (!L.length) return "";
@@ -1162,6 +1185,7 @@ document.addEventListener("click", async (e) => {
   if (t.dataset.notecmt) return noteAct(t.dataset.notecmt, false);
   if (t.dataset.staffb) { staffB = t.dataset.staffb; ls.set("vf-admin-staffb", staffB); return render(); }
   if (t.dataset.srb != null) { srB = t.dataset.srb; ls.set("vf-admin-srb", srB); return render(); }
+  if (t.dataset.clb) { clB = t.dataset.clb; ls.set("vf-admin-clb", clB); return render(); }
   if (t.dataset.srcopy) { const b = t.dataset.srcopy, r = D.stockTbl?.br?.[b]; if (!r) return; const txt = D.stockTbl.items.map((n) => r.q[n] == null ? "" : r.q[n]).join("\n"); try { await navigator.clipboard.writeText(txt); toast(`${b} 숫자 ${D.stockTbl.items.length}개 복사했어요, 노션 ${b} 칸 첫 줄에 붙여 넣으면 돼요`); } catch { toast("복사하지 못했어요"); } return; }
   if (t.dataset.tab) { tab = t.dataset.tab; ls.set("vf-admin-tab", tab); closeSheet(); render(); return scrollTo(0, 0); }
   const a = t.dataset.act;
