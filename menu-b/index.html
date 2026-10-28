@@ -331,11 +331,10 @@ body.land #vHome .go5{grid-template-rows:repeat(5,1fr);align-content:stretch}
 @keyframes rkshine{from{background-position:-200% 0}to{background-position:200% 0}}
 .rkin{animation:rkin .45s cubic-bezier(.2,.8,.2,1) both}
 .rkr.top > i{animation:rkpop .5s ease-out both;animation-delay:inherit}
-.rkr:first-child{background:linear-gradient(100deg,var(--card) 40%,rgba(255,215,120,.35) 50%,var(--card) 60%) var(--card);background-size:200% 100%;animation:rkin .45s cubic-bezier(.2,.8,.2,1) both,rkshine 3.2s linear 1s infinite}
 .rkr .mv{flex:none;width:62px;font-size:13px;font-weight:800;text-align:center;font-family:var(--num)}
 .rkr .mv.up{color:var(--red)}.rkr .mv.dn{color:#3b82f6}.rkr .mv.eq{color:var(--grey)}.rkr .mv.new{color:#ff7a00}
 .rkr .mv.hot{color:#fff;background:var(--red);border-radius:999px;padding:4px 6px;font-family:var(--kr,inherit);font-size:12px}.rkr .mv.hot u{display:inline-block;text-decoration:none;margin-right:2px;animation:rkbob .9s ease-in-out infinite}
-@media (prefers-reduced-motion:reduce){.rkin,.rkr.top > i,.rkr:first-child,.rkr .mv.hot u{animation:none}}
+@media (prefers-reduced-motion:reduce){.rkin,.rkr.top > i,.rkr .mv.hot u{animation:none}}
 /* 첫구매 혜택 */
 #perkBox{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:80}#perkBox.on{display:flex}
 #perkBox .pb{background:var(--card);color:var(--ink);border-radius:24px;padding:28px;width:min(440px,90vw);text-align:center}#perkBox .pb > b{font-size:22px}#perkBox p{color:var(--grey);margin:8px 0 14px}
@@ -361,6 +360,7 @@ body.land #vHome .go5{grid-template-rows:repeat(5,1fr);align-content:stretch}
 .qz-pk em.hotm{background:#ff7a00}.qzinfo + .qz-pk,.evsec + .qz-pk{margin-top:16px}.qz-pk{row-gap:20px}.qz-pk em.nw{background:var(--red)}.qz-pk em.pop{background:#ff7a00;left:76px}
 .evt{display:inline-block;background:var(--red);color:#fff;font-family:var(--num);font-size:13px;letter-spacing:.06em;padding:3px 10px;border-radius:8px;margin-right:6px;transform:rotate(-3deg)}
 .qzinfo.evq2{border:1.5px dashed var(--red)}
+.qznote{font-size:14px;color:var(--grey);line-height:1.6;margin:-4px 2px 10px}.qznote b{color:var(--ink)}
 .qzinfo{background:var(--card);border-radius:14px;padding:12px 16px;margin-bottom:10px;font-size:15px;line-height:1.6}
 body.land .qzgrid{grid-template-columns:repeat(5,1fr)}
 .devben .dbs{font-size:14px;color:var(--grey);margin:-2px 0 8px}
@@ -697,7 +697,7 @@ function devBenefit(c, devs) {
   const n = c.v + c.p, rows = [], how = estimate(c).how; // how 있으면 패키지 이미 적용
   if (c.dev && !how) { // 기기패키지 (지금 판 규칙: 빌런, 릭 5병 30,000 / 프리미엄 5병 40,000 / 10병 75,000)
     if (n >= 10) rows.push(`<li class="ok"><b>액상 10병 패키지 적용 중</b><span>액상 10병이 75,000원 (병당 7,500원)</span></li>`);
-    else { if (n < 5) rows.push(`<li><b>빌런, 릭 ${5 - n}병 더 담으면 5병 패키지</b><span>액상 5병이 30,000원 (병당 6,000원)</span></li>`);
+    else { // 10/28 점검: 5병, 10병 둘 다 띄우면 복잡 → 10병 하나만 (사장님 "10병 먼저")
       const d0 = devs[0] || {}; rows.push(`<li><b>액상 ${10 - n}병 더 담으면 10병 패키지</b><span>${d0.model === "하복2" ? "하복2 + 액상 10병 164,000원 (179,000원에서 15,000원 할인)" : `${esc(d0.model || "기기")} + 액상 10병 ${won((d0.unit || 0) + ADD.pr10)}`}</span></li>`); } }
   rows.push(engrave === null ? `<li><b>레이저 각인 무료</b><span>원하는 문구를 기기에 새겨 드려요</span><button class="mini" data-eg="add">각인 추가</button></li>`
     : `<li class="ok"><b>레이저 각인 추가됨</b><input type="text" id="engrText" maxlength="20" placeholder="새길 문구 (이름, 이니셜 등)" value="${esc(engrave)}"><button class="mini ln" data-eg="del">빼기</button></li>`);
@@ -1540,7 +1540,7 @@ function qzResult(keep) {
     <div class="qz-res"><div class="rh ${ain}" style="animation-delay:${nx(.35)}s"><img src="${img}" alt=""><div><small>${esc(member.name || "손님")}께 맞는 조합</small><b>${esc(R.title)}</b><p>${esc([[].concat(A.now || []).join("+"), A.cig, A.heat, A.amount, A.hit, A.draw, (A.taste || []).join("+"), "멘솔 " + (A.mint || "-")].filter(Boolean).join(", "))}</p></div></div>
     <div class="why ${ain}" style="animation-delay:${nx(.45)}s">${esc(R.why)}</div>
     ${(R.groups || []).map(([gt, gs, xs], gi) => `<div class="qzg ${ain}" style="animation-delay:${nx(.3)}s"><b>${esc(gt)}</b><span>${esc(gs)}</span>${gi ? "" : '<small class="stk">마음에 드는 맛을 눌러 골라 주세요</small>'}</div><div class="qzgrid">${xs.map((x) => qzCard(x, nx(.12))).join("")}</div>`).join("")}
-    <div class="${ain}" style="animation-delay:${nx(.3)}s"><div class="evsec">패키지 고르기</div><div class="qzinfo">액상 한 병이면 담배 6갑 반 정도 피울 수 있어요. 10병이면 65갑쯤이라, 하루 한 갑 피우시면 두 달 넘게 넉넉해요.</div>${R.packs.some(([k]) => k === "V") && R.packs.some(([k]) => /^H/.test(k)) ? '<div class="qzinfo"><b>발라맥스프로랑 뭐가 달라요?</b> 하복2가 가장 최근에 나온 신상이에요. 팟만 바꾸면 입호흡, 폐호흡 둘 다 돼요.</div>' : ""}<div class="qz-pk">${R.packs.map(([k, t2, p], i) => `<button data-qr="${k}" class="${i ? "" : "rec"}">${/^H/.test(k) ? '<em class="nw">신제품</em><em class="pop">인기</em>' : i ? "" : '<em>추천</em>'}<b>${esc(t2)}</b><span>${esc(p)}</span></button>`).join("")}</div></div>
+    <div class="${ain}" style="animation-delay:${nx(.3)}s"><div class="evsec">패키지 고르기</div><div class="qznote">액상 한 병이면 담배 6갑 반 정도 피울 수 있어요. 10병이면 65갑쯤이라, 하루 한 갑 피우시면 두 달 넘게 넉넉해요.</div>${R.packs.some(([k]) => k === "V") && R.packs.some(([k]) => /^H/.test(k)) ? '<div class="qznote"><b>발라맥스프로랑 뭐가 달라요?</b> 하복2가 가장 최근에 나온 신상이에요. 팟만 바꾸면 입호흡, 폐호흡 둘 다 돼요.</div>' : ""}<div class="qz-pk">${R.packs.map(([k, t2, p], i) => `<button data-qr="${k}" class="${i ? "" : "rec"}">${/^H/.test(k) ? '<em class="nw">신제품</em><em class="pop">인기</em>' : i ? "" : '<em>추천</em>'}<b>${esc(t2)}</b><span>${esc(p)}</span></button>`).join("")}</div></div>
     <div class="${ain}" style="animation-delay:${nx(.3)}s"><div class="evsec"><span><span class="evt">EVENT!</span> 기기 패키지 20만원 이상 구매 혜택</span></div><div class="qzinfo evq2">현금이나 계좌이체로 결제하시면, 아래 셋 중 하나만 해도 <b style="color:var(--red)">${won(PERK_AMT)} 할인</b>해 드려요</div><div class="qz-pk perk">${PERK_OPTS.map(([k, t2, sub]) => `<button data-perk="${k}" class="${PERK === k ? "rec" : ""}">${PERK === k ? '<em>선택</em>' : ""}<b>${t2}</b><span>${sub}</span></button>`).join("")}</div>
     <div class="qz-btns" style="grid-template-columns:1fr"><button data-qr="staff">직원에게 상담받기</button></div></div></div>`;
 }
