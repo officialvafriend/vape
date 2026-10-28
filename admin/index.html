@@ -692,7 +692,14 @@ function botHtml() {
   const row = (name, bad, txt, btn) => `<div style="display:flex;align-items:center;gap:10px;padding:12px 0;border-top:1px solid var(--line2)"><b style="width:64px">${name}</b><span class="${bad ? "t-bad" : "t-good"}" style="flex:1;font-weight:700">${bad ? "⚠️" : "✅"} ${esc(txt)}</span>${btn}</div>`;
   const rb = (bot) => `<button class="btn gray" style="width:auto;height:40px;padding:0 14px;font-size:15px" data-restart="${bot}">다시 켜기</button>`;
   const hh = new Date(Date.now() + 9 * 3600e3).getUTCHours(), open = hh >= 11 && hh < 22;
-  const bank = BR.map((b) => { const v = BOT.bank?.[b]; const mm = v ? Math.round((Date.now() - Date.parse(v.replace(" ", "T") + ":00+09:00")) / 60e3) : null; const bad = mm == null || (open && mm > 240); return `<span class="chip" style="display:inline-flex;align-items:center;gap:5px;height:34px;padding:0 12px;font-size:14px;${bad ? "background:var(--red-soft);color:var(--red)" : ""}">${BR.indexOf(b) + 1}호 ${b} <small>${mm == null ? "연결 전" : agoTxt(mm)}</small></span>`; }).join("");
+  // 10/28 사장님 "신호가 안 온 줄 알았다": 마지막 알림 시각 대신 오늘 포스 이체 건수와 통장 입금 건수를 비교. 이체 손님이 없으면 회색, 다 들어왔으면 초록, 포스엔 있는데 통장에 없으면 빨강
+  const bank = BR.map((b) => { const v = BOT.bank?.[b], o = v && typeof v === "object" ? v : { last: v || null }; const mm = o.last ? Math.round((Date.now() - Date.parse(o.last.replace(" ", "T") + ":00+09:00")) / 60e3) : null;
+    let txt, cls = "";
+    if (o.posTr == null) { const bad = mm == null || (open && mm > 240); txt = mm == null ? "연결 전" : "마지막 " + agoTxt(mm); if (bad) cls = "background:var(--red-soft);color:var(--red)"; }
+    else if (o.posTr === 0) { txt = "오늘 이체 없음"; if (mm == null) { txt = "연결 전"; cls = "background:var(--red-soft);color:var(--red)"; } }
+    else if ((o.bankN || 0) >= o.posTr) { txt = `이체 ${o.posTr}건 다 들어옴`; cls = "background:var(--green-soft);color:var(--green)"; }
+    else { txt = `포스 이체 ${o.posTr}건, 통장 ${o.bankN || 0}건`; cls = "background:var(--red-soft);color:var(--red)"; }
+    return `<span class="chip" style="display:inline-flex;align-items:center;gap:5px;height:34px;padding:0 12px;font-size:14px;${cls}" title="${o.last ? "마지막 통장 알림 " + esc(o.last) : ""}${o.posAt ? ", 포스 " + esc(o.posAt) + " 기준" : ""}">${BR.indexOf(b) + 1}호 ${b} <small>${txt}</small></span>`; }).join("");
   return `<div class="card" id="botcard"><div class="eyebrow">봇 상태 <span class="t-sub" style="font-weight:500">${agoTxt(m)} 기준${dead ? ", 이 PC나 운영봇이 꺼진 것 같아요 (10분마다 자동으로 다시 켜요)" : ""}</span></div>
     ${row("운영봇", opsBad, dead ? "소식 없음 " + agoTxt(m) : BOT.ops.s + (BOT.ops.line ? ", " + BOT.ops.line : ""), rb("운영봇"))}
     ${row("마스터봇", masterBad, masterTxt, rb("마스터봇"))}
@@ -700,7 +707,7 @@ function botHtml() {
     ${BOT.bsQ ? `<div class="t-bad" style="padding:8px 0;font-weight:700">⚠️ 시트에 못 들어간 기록 ${BOT.bsQ}건 (다시 보내는 중)</div>` : ""}
     ${BOT.bigWait ? `<div class="t-warn" style="padding:8px 0;font-weight:700">💰 지점 확인 기다리는 큰 입금 ${BOT.bigWait}건</div>` : ""}
     ${visitsHtml()}
-    <div style="padding-top:12px;border-top:1px solid var(--line2)"><div class="eyebrow" style="margin-bottom:6px">지점별 마지막 은행 알림 <span class="t-sub" style="font-weight:500">영업시간에 4시간 넘으면 빨간색</span></div><div style="display:flex;flex-wrap:wrap;gap:6px">${bank}</div></div></div>`;
+    <div style="padding-top:12px;border-top:1px solid var(--line2)"><div class="eyebrow" style="margin-bottom:6px">지점별 통장 입금 <span class="t-sub" style="font-weight:500">오늘 포스 이체와 비교, 포스엔 있는데 통장 알림이 없으면 빨간색</span></div><div style="display:flex;flex-wrap:wrap;gap:6px">${bank}</div></div></div>`;
 }
 // 10/25 사장님: 봇 상태 자세히는 '사무실' 메뉴로, 홈에는 신호등처럼 작게(누르면 사무실)
 function officeHtml() { return `<div class="pchead"><h1>사무실</h1><div class="caption">봇 상태, 포스 조정 로그인, 지점 직원앱 접속, 은행 알림</div></div>${charsHtml()}${botHtml()}`; }
