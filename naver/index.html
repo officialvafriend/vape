@@ -182,7 +182,7 @@
 <div class="dim" id="dim"><div class="sheet" id="sheet"></div></div>
 <div class="toast" id="toast"></div>
 <script>
-const VER = "10.14-1";
+const VER = "10.28-1";
 const APPS_URL = "https://script.google.com/macros/s/AKfycbyLK49pLpgbSpZ6TT47V8rezYHme0lFk_6dn_4NPvkbPINm0szww9TmuPAellcHv9Ry/exec";
 const KIND = ["대표사진", "소개글", "블로그 발행", "리뷰", "트래픽 작업", "가격표, 소식", "키워드", "기타"];
 const LINE = ["#3B4A6B", "#8A97B5", "#C3CBDB"];
@@ -472,7 +472,9 @@ function renderBranch() {
   // 주간 통계: 지표 4칸 (최근 주 숫자 + 전주 대비 + 최근 6주 막대)
   const num = (v) => { const n = parseFloat(String(v ?? "").replace(/[^\d.\-]/g, "")); return isNaN(n) ? null : n; };
   const metric = (label, key, priv) => {
-    const vals = wk.map((w) => ({ wk: w.wk, per: w.per, raw: w[key], n: num(w[key]) }));
+    // 10/28 사장님 "쉼표 없으니 보기 불편": 숫자만 있는 칸은 1,234,000처럼 쉼표
+    const comma = (v) => (/^\s*-?[\d,]+(\.\d+)?\s*$/.test(String(v ?? "")) ? num(v).toLocaleString("ko-KR") : v);
+    const vals = wk.map((w) => ({ wk: w.wk, per: w.per, raw: comma(w[key]), n: num(w[key]) }));
     const last = vals[vals.length - 1], prev = vals[vals.length - 2];
     const pct = last && prev && last.n != null && prev.n ? Math.round(((last.n - prev.n) / prev.n) * 100) : null;
     const max = Math.max(1, ...vals.map((v) => v.n || 0));
