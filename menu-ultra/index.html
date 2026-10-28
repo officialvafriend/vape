@@ -347,7 +347,7 @@ body.land #vHome .go5{grid-template-rows:repeat(5,1fr);align-content:stretch}
 .qzc b{display:block;font-size:16px;margin-top:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .qzc span{display:block;font-size:13px;color:var(--grey);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-height:18px}
 .qzc.got{box-shadow:inset 0 0 0 3px var(--red)}.qzc .ok{position:absolute;right:8px;bottom:8px;background:var(--red);color:#fff;font-style:normal;font-size:12px;font-weight:800;border-radius:999px;padding:3px 9px}
-.qz-pk em.hotm{background:#ff7a00}.qz-pk em.nw{background:var(--red)}.qz-pk em.pop{background:#ff7a00;left:76px}
+.qz-pk em.hotm{background:#ff7a00}.qzinfo + .qz-pk,.evsec + .qz-pk{margin-top:16px}.qz-pk{row-gap:20px}.qz-pk em.nw{background:var(--red)}.qz-pk em.pop{background:#ff7a00;left:76px}
 .evt{display:inline-block;background:var(--red);color:#fff;font-family:var(--num);font-size:13px;letter-spacing:.06em;padding:3px 10px;border-radius:8px;margin-right:6px;transform:rotate(-3deg)}
 .qzinfo.evq2{border:1.5px dashed var(--red)}
 .qzinfo{background:var(--card);border-radius:14px;padding:12px 16px;margin-bottom:10px;font-size:15px;line-height:1.6}
@@ -643,13 +643,13 @@ const countCart = () => { const c = { dev: 0, devSum: 0, v: 0, p: 0, m: 0, other
   for (const x of cart.values()) { if (x.k === "dsp1" || x.k === "lung") continue; if (x.items) { c.other += x.unit * x.qty; continue; } if (x.k === "dev") { c.dev += x.qty; c.devSum += x.unit * x.qty; } else if (x.k === "goods") c.other += x.unit * x.qty; else if (x.prime) c.m += x.qty; else if (isVL(x)) c.v += x.qty; else c.p += x.qty; } return c; };
 // ── 첫구매 혜택 (10/28 이사님, 사장님): 셋 중 하나 하면 PERK_AMT 할인. 직원이 포스에서 할인 처리 ──
 const PERK_AMT = 2000, PERK_MIN = 200000; // 기기패키지 20만원 이상, 현금, 계좌이체 결제일 때만 (10/28 사장님)
-const PERK_OPTS = [["clip", "네이버 클립 올리기", "직원이 도와드려요"], ["insta", "인스타 팔로우하기", "QR 찍고 팔로우"], ["kakao", "카카오톡 친구추가 하기", "QR 찍고 친구추가"]];
+const PERK_OPTS = [["clip", "네이버 클립 올리기", "QR 찍고 올리기, 직원이 도와드려요"], ["insta", "인스타 팔로우하기", "QR 찍고 팔로우"], ["kakao", "카카오톡 친구추가 하기", "QR 찍고 친구추가"]];
 // 지점 인스타(10/25 검색 확인). 상인, 반월당은 아직 못 찾음, 카톡 채널 주소는 사장님께 받으면 넣기. 비어 있으면 QR 대신 "직원이 안내해요"
 const INSTA = { 본점: "official_vafrriend", 동성로: "vafriend_dongseongro", 동성로2: "vafriend_dongseongro2", 수성: "vafriend_soosung", 율하: "vafriend_yulha", 광장코아: "vafriend_gk", 현풍: "vafriend_hyunpoong" };
 const KAKAO_URL = "https://pf.kakao.com/_agsZxj/friend"; // 대구베이프렌드 (vafriend.com 카카오톡 문의 링크에서 확인)
-const CLIP_URL = {}; // 지점별 네이버 클립 올리기 링크 (받으면 넣기). 비어 있으면 직원이 도와줌
+const CLIP_URL = {}, CLIP_DEF = "https://clip.naver.com/upload"; // 네이버 클립 올리기 바로가기 (지점별로 다르면 CLIP_URL에)
 let PERK = null;
-const perkUrl = (k) => k === "clip" ? (CLIP_URL[BRANCH] || "") : k === "insta" ? (INSTA[BRANCH] ? "https://www.instagram.com/" + INSTA[BRANCH] + "/" : "") : k === "kakao" ? KAKAO_URL : "";
+const perkUrl = (k) => k === "clip" ? (CLIP_URL[BRANCH] || CLIP_DEF) : k === "insta" ? (INSTA[BRANCH] ? "https://www.instagram.com/" + INSTA[BRANCH] + "/" : "") : k === "kakao" ? KAKAO_URL : "";
 const totalOf = () => { const c = countCart(), e = estimate(c), gp = goodsPlan(), base = e.total + c.other + gp.total, ok = !!(c.dev && e.how && base >= PERK_MIN), off = PERK && ok ? PERK_AMT : 0; return { ...e, total: base - off, perkOff: off, perkOk: ok, c, gp }; };
 function addItem(key, it, d = 1) { const cur = cart.get(key); const q = (cur ? cur.qty : 0) + d; setTimeout(() => { if (typeof drawDspList === "function") { drawDspList(); drawPodView(); } }, 0);
   if (q <= 0) cart.delete(key); else cart.set(key, { ...(cur || it), qty: q }); drawCart(); drawLiq(); drawGoal(); }
@@ -661,7 +661,7 @@ function drawCart() {
   // 낱개로 샀을 때 금액 (액상 1병 15,000 / 대량구매는 병 수 × 15,000 / 일회용 10+5는 15개 정가) → 할인 보여 주기
   const unitAll = [...cart.values()].reduce((a, x) => a + (x.k === "bulk" ? x.items.reduce((s, [, , q]) => s + q * 15000, 0) * x.qty : x.k === "dsp15" ? x.items.reduce((s, [, , q, p]) => s + q * p, 0) * x.qty : x.unit * x.qty), 0);
   const off = unitAll - t.total;
-  $('lines').innerHTML = cart.size ? [...cart].map(([key, x]) => `<div class="ln">${x.img ? `<img src="${x.img}" alt="">` : '<i class="noim"></i>'}<span class="n">${esc(x.label)}${x.items ? `<small>${esc(x.items.map(([, l, q]) => l + " " + q).join(", "))}</small>` : ""}</span><span class="qb"><button data-m="${key}">−</button><b>${x.qty}</b><button data-p="${key}">+</button></span><b class="price">${won(x.unit * x.qty)}</b></div>`).join("")
+  $('lines').innerHTML = cart.size ? [...cart].map(([key, x]) => `<div class="ln">${x.img ? `<img src="${x.img}" alt="">` : '<i class="noim"></i>'}<span class="n">${esc(x.label)}${x.k === "liq" && x.n ? noTag(x.n) : ""}${x.items ? `<small>${esc(x.items.map(([, l, q]) => l + " " + q).join(", "))}</small>` : ""}</span><span class="qb"><button data-m="${key}">−</button><b>${x.qty}</b><button data-p="${key}">+</button></span><b class="price">${won(x.unit * x.qty)}</b></div>`).join("")
       + (off > 0 ? `<div class="sum2"><div class="r"><span>낱개로 샀을 때</span><s>${won(unitAll)}</s></div><div class="r off"><span>${esc(t.how || "묶음, 이벤트")} 할인</span><b>-${won(off)}</b></div><div class="save">총 ${won(off)} 할인 받았어요</div></div>` : "")
       + benefitBox() + ledgerBox() + memberBox()
     : '<div style="padding:24px 0;color:var(--grey)">담은 상품이 없어요</div>';
@@ -826,7 +826,7 @@ function setsOf(n, deals, unit) { const f = [{ c: 0, s: [] }];
   for (let k = 1; k <= n; k++) { let b = { c: f[k - 1].c + unit, s: f[k - 1].s }; for (const [q, p] of deals) if (k >= q && f[k - q].c + p < b.c) b = { c: f[k - q].c + p, s: [...f[k - q].s, q] }; f[k] = b; }
   return deals.map(([q, p, key]) => [q, p, key, f[n].s.filter((x) => x === q).length]).filter((x) => x[3]); }
 const bc = (name) => { const p = posOf(name); return p ? `<svg class="bcd" data-v="${esc(p[1])}" data-f="${p[2]}"></svg>${p[3] ? "" : '<span class="warn">바코드 미등록, 포스 인식 확인 필요</span>'}` : `<span class="warn">${esc(BRANCH)} 포스에 이 상품이 없어요, 포스에서 직접 찾아 주세요</span>`; };
-const blk = (t, sub, name, n, free = 0) => `<div class="scan" data-n="${n}" data-free="${free}" data-code="${esc((posOf(name) || [])[1] || "")}" data-nm="${esc(t)}"><div class="hd"><b>${esc(t)}</b><span>× ${n}</span></div><div class="s">${sub}</div>${bc(name)}</div>`;
+const blk = (t, sub, name, n, free = 0) => `<div class="scan" data-n="${n}" data-free="${free}" data-code="${esc((posOf(name) || [])[1] || "")}" data-nm="${esc(t)}"><div class="hd"><b>${esc(t)}${name ? noTag(name) : ""}</b><span>× ${n}</span></div><div class="s">${sub}</div>${bc(name)}</div>`;
 const stp = (i, t, s) => `<div class="stp"><i>${i}</i><div><b>${t}</b>${s ? `<span>${s}</span>` : ""}</div></div>`;
 let staffOn = false;
 // 직원 화면 = 결제 순서 (10/27 사장님 "서비스로 찍고 처리하는 것도 순서대로"):
@@ -1033,7 +1033,7 @@ $('evGo').onclick = () => { const rest = EV.need - pickN();
   closeEv(); toast("담았어요"); setTimeout(() => document.body.classList.add('open'), 350);
 };
 // 매장에서 고를 몫: 바코드 대신 안내 (QR에는 안 들어가고 '직접 찍기'로 나옴)
-const todoBlk = (t, sub, n, free = 0) => `<div class="scan" data-n="${n}" data-free="${free}" data-code="" data-nm="${esc(t)}"><div class="hd"><b>${esc(t)}</b><span>× ${n}</span></div><div class="s">${sub}</div><span class="warn">손님과 진열대에서 맛 골라 바코드 직접 찍기</span></div>`;
+const todoBlk = (t, sub, n, free = 0) => `<div class="scan" data-n="${n}" data-free="${free}" data-code="" data-nm="${esc(t)}"><div class="hd"><b>${esc(t)}${name ? noTag(name) : ""}</b><span>× ${n}</span></div><div class="s">${sub}</div><span class="warn">손님과 진열대에서 맛 골라 바코드 직접 찍기</span></div>`;
 // 직원 화면: 이벤트 묶음
 function evStaff(x, i) {
   if (x.k === "bulk") return stp(i, x.label + " 찍기", "묶음 상품으로 돈 받고, 액상은 전부 서비스(0원)") + blk(x.n, won(x.unit), x.n, x.qty)
@@ -1490,7 +1490,7 @@ function QZ_RULE(A) {
   const pI = qzPod("0.6"), pL = qzPod("0.15"), PI = pI ? pI.price * QZ_POD_N : 0, PL = pL ? pL.price * QZ_POD_N : 0, podT = (p) => p ? ` + 팟 ${QZ_POD_N / POD_PER_PACK}팩` : "";
   const devP = ((devOpts("하복2") || [])[0] || {}).price || 0, vb = (devOpts("발라맥스프로") || [])[0];
   const vbPack = vb ? [["V", "발라맥스프로 기기패키지", `하루 반 갑 정도면 잘 맞아요, 기기 ${won(vb.price)}`]] : [];
-  const G = [], grp = (title, sub, xs, n = 4) => { const u = [...new Map(xs.filter(Boolean).map((x) => [x.id, x])).values()].slice(0, n); if (u.length) G.push([title, sub, u]); };
+  const G = [], grp = (title, sub, xs, n = 4) => { const used = new Set(G.flatMap((g) => g[2].map((x) => x.id))), u = [...new Map(xs.filter((x) => x && !used.has(x.id)).map((x) => [x.id, x])).values()].slice(0, n); if (u.length) G.push([title, sub, u]); };
   if (A.draw === "바로 깊게") { const L = LUNG.filter((x) => !outOf(x.n)).sort((a, b) => (LUNG_BEST.findIndex((r) => r.test(a.n)) + 1 || 99) - (LUNG_BEST.findIndex((r) => r.test(b.n)) + 1 || 99));
     grp("폐호흡 액상", "깊게 빨아들이는 분께 맞는 맛", L, 6);
     return { kind: "lung", dev: "하복2", groups: G, liqs: G.flatMap((g) => g[2]), title: "하복2 + 프리미엄 폐호흡", packs: [["lung", "하복2 + 폐호흡 3병" + podT(pL), devP ? won(devP + 40000 + PL) : "폐호흡 3병 40,000원"], ["H10", "하복2 + 입호흡 액상 10병" + podT(pI), won(164000 + PI)]], why: "깊게 빨아들이시면 폐호흡이 맞아요. 하복2는 팟만 바꾸면 입호흡, 폐호흡 둘 다 돼요." }; }
@@ -1507,7 +1507,7 @@ function QZ_RULE(A) {
   if (!G.length) grp("상큼한 과일 계열", "자두, 포도, 사과 같은 과일맛", pool.filter((x) => /빌런/.test(x.n)));
   const who = smk.join(", ") || [].concat(A.now || []).join(", ");
   const strong = A.hit === "묵직하게" || A.cig === "강한 타격감" || A.amount === "한 갑 이상";
-  const H10 = ["H10", "하복2 + 액상 10병" + podT(pI), won(164000 + PI) + (PI ? "" : " (15,000원 할인)")], H5 = ["H5", "하복2 + 빌런, 릭 5병" + podT(pI), won(119000 + PI)];
+  const H10 = ["H10", "하복2 + 액상 10병" + podT(pI), won(164000 + PI) + (PI ? ` (패키지 164,000원 + 팟 ${won(PI)})` : " (15,000원 할인)")], H5 = ["H5", "하복2 + 빌런, 릭 5병" + podT(pI), won(119000 + PI) + (PI ? ` (패키지 119,000원 + 팟 ${won(PI)})` : "")];
   const packs = low ? [["D", "일회용 10+5 패키지", "팜팜바, 모스바 15개, 5개 서비스"], ...vbPack, H10, H5] : mid ? [H10, ...vbPack, H5] : [H10, H5];
   const lowDev = low && vb;
   return { kind: "dev", dev: lowDev ? "발라맥스프로" : "하복2", groups: G, liqs: G.flatMap((g) => g[2]), packs, title: lowDev ? "가볍게 시작하는 조합" : "하복2 기기패키지",
@@ -1517,7 +1517,7 @@ function QZ_RULE(A) {
 let qzRes = null, qzSel = new Set(); // 결과 화면에서 손님이 고른 액상 (없으면 앞 4개)
 let qzT = 0, qzAnim = false;
 const qzCard = (x, d) => { const lung = x.c === "lung", im = lung ? LUNG_IMG[x.n] : imgOf(x), sel = qzSel.has(x.id);
-  return `<div class="qzc ${sel ? "got" : ""} ${qzAnim ? "qzin" : ""}" data-qs="${x.id}" style="animation-delay:${d}s"><div class="im">${lung ? (LUNG_BEST.some((r) => r.test(x.n)) ? '<span class="rib">BEST</span>' : "") : tagHtml(x.n)}${im ? `<img src="${im}" alt="">` : `<span class="ltile">${esc(x.n.slice(0, 5))}</span>`}${sel ? '<em class="ok">골랐어요</em>' : ""}</div><b>${esc(lung ? x.n.replace(/\s*\(?모드\)?$/, "") : short(x.n))}</b><span>${esc(x.f || (lung ? "폐호흡" : ""))}</span></div>`; };
+  return `<div class="qzc ${sel ? "got" : ""} ${qzAnim ? "qzin" : ""}" data-qs="${x.id}" style="animation-delay:${d}s"><div class="im">${lung ? (LUNG_BEST.some((r) => r.test(x.n)) ? '<span class="rib">BEST</span>' : "") : tagHtml(x.n)}${im ? `<img src="${im}" alt="">` : `<span class="ltile">${esc(x.n.slice(0, 5))}</span>`}${sel ? '<em class="ok">골랐어요</em>' : ""}</div><b>${lung ? "" : noTag(x.n)}${esc(lung ? x.n.replace(/\s*\(?모드\)?$/, "") : short(x.n))}</b><span>${esc(x.f || (lung ? "폐호흡" : ""))}</span></div>`; };
 function qzResult(keep) {
   if (!keep) { qzSel = new Set(); qzRes = QZ_RULE(qz.ans); clearTimeout(qzT);
     // 10/28 사장님: 한 번에 다 뜨면 답이 정해진 것 같으니, 잠깐 고르는 시간을 두고 차례로
@@ -1530,7 +1530,7 @@ function qzResult(keep) {
     <div class="why ${ain}" style="animation-delay:${nx(.45)}s">${esc(R.why)}</div>
     ${(R.groups || []).map(([gt, gs, xs], gi) => `<div class="qzg ${ain}" style="animation-delay:${nx(.3)}s"><b>${esc(gt)}</b><span>${esc(gs)}</span>${gi ? "" : '<small class="stk">마음에 드는 맛을 눌러 골라 주세요</small>'}</div><div class="qzgrid">${xs.map((x) => qzCard(x, nx(.12))).join("")}</div>`).join("")}
     <div class="${ain}" style="animation-delay:${nx(.3)}s"><div class="evsec">패키지 고르기</div><div class="qzinfo">액상 한 병이면 담배 6갑 반 정도 피울 수 있어요. 10병이면 65갑쯤이라, 하루 한 갑 피우시면 두 달 넘게 넉넉해요.</div>${R.packs.some(([k]) => k === "V") && R.packs.some(([k]) => /^H/.test(k)) ? '<div class="qzinfo"><b>발라맥스프로랑 뭐가 달라요?</b> 하복2가 가장 최근에 나온 신상이에요. 팟만 바꾸면 입호흡, 폐호흡 둘 다 돼요.</div>' : ""}<div class="qz-pk">${R.packs.map(([k, t2, p], i) => `<button data-qr="${k}" class="${i ? "" : "rec"}">${/^H/.test(k) ? '<em class="nw">신제품</em><em class="pop">인기</em>' : i ? "" : '<em>추천</em>'}<b>${esc(t2)}</b><span>${esc(p)}</span></button>`).join("")}</div></div>
-    <div class="${ain}" style="animation-delay:${nx(.3)}s"><div class="evsec"><span class="evt">EVENT!</span> 기기 패키지 20만원 이상 구매 혜택</div><div class="qzinfo evq2">현금이나 계좌이체로 결제하시면, 아래 셋 중 하나만 해도 <b style="color:var(--red)">${won(PERK_AMT)} 할인</b>해 드려요</div><div class="qz-pk perk">${PERK_OPTS.map(([k, t2, sub]) => `<button data-perk="${k}" class="${PERK === k ? "rec" : ""}">${PERK === k ? '<em>선택</em>' : ""}<b>${t2}</b><span>${sub}</span></button>`).join("")}</div>
+    <div class="${ain}" style="animation-delay:${nx(.3)}s"><div class="evsec"><span><span class="evt">EVENT!</span> 기기 패키지 20만원 이상 구매 혜택</span></div><div class="qzinfo evq2">현금이나 계좌이체로 결제하시면, 아래 셋 중 하나만 해도 <b style="color:var(--red)">${won(PERK_AMT)} 할인</b>해 드려요</div><div class="qz-pk perk">${PERK_OPTS.map(([k, t2, sub]) => `<button data-perk="${k}" class="${PERK === k ? "rec" : ""}">${PERK === k ? '<em>선택</em>' : ""}<b>${t2}</b><span>${sub}</span></button>`).join("")}</div>
     <div class="qz-btns" style="grid-template-columns:1fr"><button data-qr="staff">직원에게 상담받기</button></div></div></div>`;
 }
 // 10/28 사장님(이사님 지시): 추천 패키지에 팟을 같이 넣어 객단가 19만원 정도 (하복2+10병 164,000 + 팟 4개 24,000 = 188,000)
@@ -1540,7 +1540,7 @@ const qzPod = (ohm) => GDS.find((g) => g.c === "pod" && g.n.replace(/\s/g, "") =
 function perkOpen(k) {
   const o = PERK_OPTS.find((x) => x[0] === k), u = perkUrl(k);
   let qrs = ""; if (u) { const q = qrcode(0, "M"); q.addData(u, "Byte"); q.make(); qrs = q.createSvgTag({ cellSize: 6, margin: 3, scalable: true }); }
-  $('perkBox').innerHTML = `<div class="pb"><b>${o[1]}</b><p>${k === "clip" && !u ? "직원이 같이 올려 드려요. 올리고 나면 아래 버튼을 눌러 주세요" : u ? "폰 카메라로 찍고 " + (k === "insta" ? "팔로우" : k === "kakao" ? "친구추가" : "클립 올리기") + " 해 주세요" : "직원이 안내해 드려요"}</p>${qrs ? `<div class="pq">${qrs}</div>` : ""}<div class="pbb"><button data-pk="no">닫기</button><button data-pk="ok" class="on">했어요, ${won(PERK_AMT)} 할인 받기</button></div></div>`;
+  $('perkBox').innerHTML = `<div class="pb"><b>${o[1]}</b><p>${k === "clip" && !u ? "직원이 같이 올려 드려요. 올리고 나면 아래 버튼을 눌러 주세요" : u ? (k === "clip" ? "폰 카메라로 찍으면 네이버 클립 올리기가 열려요. 위치 추가에 우리 매장을 넣어 주세요" : "폰 카메라로 찍고 " + (k === "insta" ? "팔로우" : "친구추가") + " 해 주세요") : "직원이 안내해 드려요"}</p>${qrs ? `<div class="pq">${qrs}</div>` : ""}<div class="pbb"><button data-pk="no">닫기</button><button data-pk="ok" class="on">했어요, ${won(PERK_AMT)} 할인 받기</button></div></div>`;
   $('perkBox').classList.add('on'); $('perkBox').dataset.k = k; }
 $('perkBox').onclick = (e) => { const b = e.target.closest('[data-pk]'); if (!b && e.target.id !== 'perkBox') return;
   if (b && b.dataset.pk === "ok") { PERK = $('perkBox').dataset.k; toast(totalOf().perkOk ? `EVENT ${won(PERK_AMT)} 할인, 직원이 확인할게요` : `기기 패키지 20만원 이상이면 ${won(PERK_AMT)} 할인돼요`); if (typeof ev === "function") ev("b", PERK); qzResult(true); if (typeof drawCart === "function") drawCart(); }
