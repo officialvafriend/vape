@@ -337,7 +337,7 @@ body.land #vHome .go5{grid-template-rows:repeat(5,1fr);align-content:stretch}
 .qz-wait b{font-size:22px}.qz-wait span{color:var(--grey);font-size:15px}
 @keyframes qzspin{to{transform:rotate(360deg)}}
 @keyframes qzup{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
-.qzin{opacity:0;animation:qzup .45s ease-out forwards}
+.qzin{animation:qzup .45s ease-out both}@media (prefers-reduced-motion:reduce){.qzin{animation:none}}
 .qzg{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin:22px 0 10px}.qzg b{font-size:20px}.qzg span{color:var(--grey);font-size:14px}.qzg small{margin-left:auto}
 .qzgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
 .qzc{background:var(--card);border-radius:18px;padding:10px 10px 12px;cursor:pointer;position:relative}
@@ -897,7 +897,7 @@ function qrView() {
 // D 일회용 10+5 = 팜팜바, 모스바 15개, 가장 싼 5개 서비스(0원) (지금 판 BULK와 같음, 포스 묶음 상품 없음)
 const IMGBASE = "https://officialvafriend.github.io/vape/img/";
 // 옛 사이트 400px 사진을 GPT로 고화질로 다시 만든 것 (10/28, 디자인작업±028_사진고화질패드반영.py 가 이 줄을 갱신)
-const GP_IMG = {"p064.jpg": "gp_064.jpg", "p088.jpg": "gp_088.jpg", "p122.jpg": "gp_122.jpg", "p135.jpg": "gp_135.jpg", "p149.jpg": "gp_149.jpg", "p168.jpg": "gp_168.jpg", "p184.jpg": "gp_184.jpg", "p202.jpg": "gp_202.jpg", "p221.jpg": "gp_221.jpg", "p251.jpg": "gp_251.jpg", "p258.jpg": "gp_258.jpg", "p264.jpg": "gp_264.jpg", "p269.jpg": "gp_269.jpg", "p283.jpg": "gp_283.jpg", "p296.jpg": "gp_296.jpg", "p302.jpg": "gp_302.jpg", "p360.jpg": "gp_360.jpg"};
+const GP_IMG = {"p021.jpg": "gp_021.jpg", "p037.jpg": "gp_037.jpg", "p064.jpg": "gp_064.jpg", "p076.jpg": "gp_076.jpg", "p079.jpg": "gp_079.jpg", "p084.jpg": "gp_084.jpg", "p087.jpg": "gp_087.jpg", "p088.jpg": "gp_088.jpg", "p099.jpg": "gp_099.jpg", "p107.jpg": "gp_107.jpg", "p109.jpg": "gp_109.jpg", "p114.jpg": "gp_114.jpg", "p122.jpg": "gp_122.jpg", "p134.jpg": "gp_134.jpg", "p135.jpg": "gp_135.jpg", "p149.jpg": "gp_149.jpg", "p153.jpg": "gp_153.jpg", "p162.jpg": "gp_162.jpg", "p165.jpg": "gp_165.jpg", "p168.jpg": "gp_168.jpg", "p178.jpg": "gp_178.jpg", "p184.jpg": "gp_184.jpg", "p202.jpg": "gp_202.jpg", "p205.jpg": "gp_205.jpg", "p221.jpg": "gp_221.jpg", "p231.jpg": "gp_231.jpg", "p238.jpg": "gp_238.jpg", "p239.jpg": "gp_239.jpg", "p251.jpg": "gp_251.jpg", "p255.jpg": "gp_255.jpg", "p258.jpg": "gp_258.jpg", "p260.jpg": "gp_260.jpg", "p263.jpg": "gp_263.jpg", "p264.jpg": "gp_264.jpg", "p269.jpg": "gp_269.jpg", "p283.jpg": "gp_283.jpg", "p291.jpg": "gp_291.jpg", "p296.jpg": "gp_296.jpg", "p302.jpg": "gp_302.jpg", "p316.jpg": "gp_316.jpg", "p317.jpg": "gp_317.jpg", "p360.jpg": "gp_360.jpg"};
 const hq = (u) => (u && GP_IMG[u.split("/").pop()]) || u;
 const EXTRA_IMG = { "(한) 아이스샷": "ph_002.jpg", "(한) 토바코샷": "ph_003.jpg" };
 // A안 OWN_IMG 그대로 (10/25 이사님 입호흡 사진 등). 바뀌면 menu.html 에서 다시 복사
