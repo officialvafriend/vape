@@ -1458,7 +1458,7 @@ async function rkLoad() { try { RK = await (await fetch(RANK_URL + "?t=" + Math.
 async function rkOpen() { go('rk'); if (!RK) { $('rkList').innerHTML = '<div class="evtip">불러오는 중…</div>'; await rkLoad(); } rkDraw(); }
 function rkFind(kind, n) { // 랭킹 이름 → 패드 상품
   if (kind === "liq") return ALL_LQ.find((x) => x.n === n) || ALL_LQ.find((x) => x.n.replace(/^VF /, "") === n.replace(/^VF /, ""));
-  if (kind === "lung") { const k = (v) => v.replace(/(?모드)?|s/g, ""); return LUNG.find((x) => x.n === n) || LUNG.find((x) => k(x.n) === k(n)); }
+  if (kind === "lung") { const k = (v) => v.replace(/\(?모드\)?|\s/g, ""); return LUNG.find((x) => x.n === n) || LUNG.find((x) => k(x.n) === k(n)); }
   if (kind === "dsp") return GDS.find((g) => g.c === "dsp" && g.n === n);
   return null; }
 function rkDraw() {
