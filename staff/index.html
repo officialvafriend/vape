@@ -260,7 +260,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.28-6";
+const VER = "10.28-7";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍", "동성로2"];
@@ -400,7 +400,7 @@ function visitPing() {
   let last = 0; try { last = +localStorage.getItem("vf-app-visit-" + B) || 0; } catch {}
   if (Date.now() - last < 30 * 60e3) return;
   try { localStorage.setItem("vf-app-visit-" + B, String(Date.now())); } catch {}
-  send({ type: "visit", dev: matchMedia("(max-width:700px)").matches ? "phone" : "pc" }).catch(() => {});
+  send({ type: "visit", kind: matchMedia("(max-width:700px)").matches ? "phone" : "pc" }).catch(() => {});
 }
 setTimeout(visitPing, 3000); setInterval(visitPing, 60e3);
 const fail = (e) => toast(`못 보냈어요 (${navigator.onLine ? e.message : "인터넷 끊김"}), 다시 눌러 주세요`);
