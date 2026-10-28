@@ -1510,9 +1510,9 @@ function QZ_RULE(A) {
   const order = t.includes("담배맛") ? ["담배맛", ...t.filter((k) => k !== "담배맛")] : t;
   for (const k of order) {
     if (k === "담배맛") { const zt = ALL_LQ.find((x) => x.n === "(한) 라입 제로타바코" && !outOf(x.n)); grp("타격감 있는 연초 계열", "구수하고 묵직한 담배맛", [...pool.filter((x) => /시가812/.test(x.n)), zt, ...pool.filter((x) => /블랙티/.test(x.n))]); }
-    if (k === "과일") grp("상큼한 과일 계열", "자두, 포도, 사과 같은 과일맛", [...pool.filter((x) => /빌런/.test(x.n)), ...pool.filter((x) => /릭 /.test(x.n))]);
+    if (k === "과일") grp("상큼한 과일 계열", "자두, 포도, 사과 같은 과일맛", [...pool.filter((x) => /빌런/.test(x.n) && !/보석바/.test(x.n)), ...pool.filter((x) => /릭 /.test(x.n))]);
     if (k === "시원한 멘솔") grp("깔끔한 쿨멘솔", "단맛 없이 시원하게, 입에 향이 남지 않아요", pool.filter((x) => /쿨멘솔/.test(x.n)));
-    if (k === "디저트, 음료") grp("음료, 디저트 계열", "탄산, 음료 같은 달달한 맛", pool.filter((x) => /소다|라무네|블루워터/.test(x.n)));
+    if (k === "디저트, 음료") grp("톡 쏘는 소다, 음료 계열", "탄산, 음료 같은 달달한 맛", pool.filter((x) => /보석바|소다|라무네|블루워터/.test(x.n)));
   }
   if (A.mint === "시원하게" && !t.includes("시원한 멘솔")) grp("깔끔한 쿨멘솔", "단맛 없이 시원하게, 입에 향이 남지 않아요", pool.filter((x) => /쿨멘솔/.test(x.n)));
   if (!G.length) grp("상큼한 과일 계열", "자두, 포도, 사과 같은 과일맛", pool.filter((x) => /빌런/.test(x.n)));
