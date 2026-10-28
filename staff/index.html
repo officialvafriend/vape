@@ -236,7 +236,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.28-3";
+const VER = "10.28-4";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍", "동성로2"];
@@ -951,13 +951,20 @@ function noteHtml() {
     <div class="chips" style="margin-bottom:6px">${chips}</div>
     <div class="a2list">${days.map(([d, xs]) => `<div class="ntday">${d === todayKey() ? "오늘" : d === addDay(-1) ? "어제" : sd(d)}</div>${xs.map(card).join("")}`).join("") || '<div class="a2empty">✍️ 첫 노트를 남겨 보세요</div>'}</div></div>`;
 }
+// 10/28 사장님 "노트마다 바뀌는 맛 이름 익명, 관리자도 누군지 몰라야 함": 이름 대신 "🎭 스노우청포도" 같은 맛 이름을 보냄.
+// 맛 이름 = 이 기기의 비밀값 + 노트 번호 + 고른 이름을 섞은 해시 → 같은 노트 안에선 같은 사람이 같은 맛, 다른 노트에선 바뀜. 고른 이름은 기기 안에서 맛을 정하는 데만 쓰고 보내지 않음(봇, 시트, 관리자 모두 맛 이름만 받음)
+const ANON_FLAVORS = ["스노우청포도", "러브피치", "스노우사이다", "예티", "골드키위", "포카리", "체어맨", "하와이", "마샤블랙", "마르키사", "더블라임", "용트림체리", "타박멘솔", "미스후라보노", "몬테세븐", "그린티", "쿨툰드라", "모모라즈", "적포도슬러쉬", "마샤유자", "퍼플베리", "멘솔마스터", "모니모니", "파이토트", "라임알로에", "아카시아", "순수레몬", "파워멘솔", "마샤샤인", "선인장", "하이민트", "용트림알로에", "머루포도", "에너제틱", "베리베리", "레인보우", "그린펀치", "블루펀치", "피치키스", "미미메론", "파인화채", "코코팜", "핑크석류", "망고파인피치", "리치레몬", "정글쥬스"];
+const anonSecret = () => { let k = ls.get("vf-anon-secret", ""); if (!k) { k = Array.from(crypto.getRandomValues(new Uint8Array(12)), (b) => b.toString(16).padStart(2, "0")).join(""); ls.set("vf-anon-secret", k); } return k; };
+const anonAlias = (noteId, name) => { const str = anonSecret() + "|" + noteId + "|" + (name || ""); let h = 2166136261; for (let i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; } return "🎭 " + ANON_FLAVORS[h % ANON_FLAVORS.length]; };
+const anonChip = (k, on) => `<button class="chip ${on ? "on" : ""}" data-${k}="1" style="${on ? "background:#2a2a35;color:#fff;border-color:#2a2a35" : ""}">🎭 익명으로</button>`;
+const ANON_DESC = `<div class="desc" style="margin-top:6px;font-size:12px;color:var(--sub)">익명이면 이름 대신 맛 이름(예: 🎭 스노우청포도)으로 올라가요. 같은 노트 안에서는 같은 맛, 다른 노트에선 바뀌고, 누구인지는 봇도 관리자도 몰라요.</div>`;
 function sheetNoteNew() {
   if (!working().length) return needIn(() => sheetNoteNew());
-  NW = { cat: "손님", by: working().length === 1 ? working()[0] : null };
+  NW = { cat: "손님", by: working().length === 1 ? working()[0] : null, anon: false };
   openSheet(`<h2>📝 매장 노트 쓰기</h2>
     <div class="desc" style="margin-top:6px">어떤 얘기예요?</div><div class="chips">${Object.keys(NCAT).map((c) => `<button class="chip ${NW.cat === c ? "on" : ""}" data-ntcat="${c}">${NCAT[c][0]} ${c}</button>`).join("")}</div>
     <textarea class="input" id="ntText" rows="4" maxlength="500" placeholder="예: 박진주 고객님 말론S 티파니 블루 찾으셨는데 재고 없었음" style="margin-top:10px"></textarea>
-    <div class="desc" style="margin-top:10px">쓴 사람</div><div class="chips">${working().map((n) => `<button class="chip ${NW.by === n ? "on" : ""}" data-ntby="${esc(n)}">${esc(n)}</button>`).join("")}</div>
+    <div class="desc" style="margin-top:10px">쓴 사람</div><div class="chips">${working().map((n) => `<button class="chip ${NW.by === n ? "on" : ""}" data-ntby="${esc(n)}">${esc(n)}</button>`).join("")}${anonChip("ntanon", NW.anon)}</div>${ANON_DESC}
     <div class="btns"><button class="btn" data-x>닫기</button><button class="btn primary" id="okNt">올리기</button></div>`);
   setTimeout(() => $("#ntText")?.focus(), 50);
 }
@@ -966,9 +973,10 @@ async function doNoteNew() {
   if (!NW.by) return toast("쓴 사람을 골라 주세요");
   $("#okNt").disabled = true;
   const id = "n" + Date.now().toString(36) + Math.random().toString(36).slice(2, 4);
+  const by = NW.anon ? anonAlias(id, NW.by) : NW.by; // 익명이면 맛 이름만 보냄
   try {
-    await send({ type: "note", id, cat: NW.cat, text, by: NW.by });
-    (BOARD.notes ||= []).push({ id, b: B, by: NW.by, cat: NW.cat, d: todayKey(), t: now(), likes: [], cmts: [], test: TEST, enc: null }); DEC["nt" + id + ":0"] = { x: text, c: [] };
+    await send({ type: "note", id, cat: NW.cat, text, by });
+    (BOARD.notes ||= []).push({ id, b: B, by, cat: NW.cat, d: todayKey(), t: now(), likes: [], cmts: [], test: TEST, enc: null }); DEC["nt" + id + ":0"] = { x: text, c: [] };
     closeSheet(); render(); toast("✍️ 올렸어요, 고마워요!"); setTimeout(loadBoard, 15000);
   } catch (e) { $("#okNt").disabled = false; fail(e); }
 }
@@ -981,20 +989,20 @@ async function noteLike(id) {
 function sheetNoteCmt(id) {
   if (!working().length) return needIn(() => sheetNoteCmt(id));
   const x = noteItems().find((y) => y.id === id); if (!x) return;
-  NC = { id, by: working().length === 1 ? working()[0] : null };
+  NC = { id, by: working().length === 1 ? working()[0] : null, anon: false };
   openSheet(`<h2>💬 댓글</h2><div class="say">${esc(noteTxt(x)?.x || "")}</div>
     <input class="input" id="ntCmt" maxlength="300" placeholder="예: 다음 분배 때 넣을게요" style="margin-top:10px">
-    <div class="desc" style="margin-top:10px">쓴 사람</div><div class="chips">${working().map((n) => `<button class="chip ${NC.by === n ? "on" : ""}" data-ncby="${esc(n)}">${esc(n)}</button>`).join("")}</div>
+    <div class="desc" style="margin-top:10px">쓴 사람</div><div class="chips">${working().map((n) => `<button class="chip ${NC.by === n ? "on" : ""}" data-ncby="${esc(n)}">${esc(n)}</button>`).join("")}${anonChip("ncanon", NC.anon)}</div>${ANON_DESC}
     <div class="btns"><button class="btn" data-x>닫기</button><button class="btn primary" id="okNc">남기기</button></div>`);
   setTimeout(() => $("#ntCmt")?.focus(), 50);
 }
 async function doNoteCmt() {
   const c = ($("#ntCmt")?.value || "").trim(); if (!c) return toast("댓글을 적어 주세요");
   if (!NC.by) return toast("쓴 사람을 골라 주세요");
-  const x = noteItems().find((y) => y.id === NC.id);
+  const x = noteItems().find((y) => y.id === NC.id), by = NC.anon ? anonAlias(NC.id, NC.by) : NC.by;
   try {
-    await send({ type: "notereact", id: NC.id, cmt: c, by: NC.by });
-    if (x) { const old = noteTxt(x); x.cmts.push({ by: NC.by, d: todayKey(), t: now(), adm: 0 }); DEC["nt" + x.id + ":" + x.cmts.length] = { x: old?.x || "", c: [...(old?.c || []), c] }; }
+    await send({ type: "notereact", id: NC.id, cmt: c, by });
+    if (x) { const old = noteTxt(x); x.cmts.push({ by, d: todayKey(), t: now(), adm: 0 }); DEC["nt" + x.id + ":" + x.cmts.length] = { x: old?.x || "", c: [...(old?.c || []), c] }; }
     closeSheet(); render(); toast("💬 남겼어요");
   } catch (e) { fail(e); }
 }
@@ -2681,6 +2689,8 @@ document.addEventListener("click", (e) => {
   if (t.dataset.ntcat) { NW.cat = t.dataset.ntcat; document.querySelectorAll("[data-ntcat]").forEach((x) => x.classList.toggle("on", x === t)); return; }
   if (t.dataset.ntby) { NW.by = t.dataset.ntby; document.querySelectorAll("[data-ntby]").forEach((x) => x.classList.toggle("on", x === t)); return; }
   if (t.dataset.ncby) { NC.by = t.dataset.ncby; document.querySelectorAll("[data-ncby]").forEach((x) => x.classList.toggle("on", x === t)); return; }
+  if (t.dataset.ntanon) { NW.anon = !NW.anon; t.outerHTML = anonChip("ntanon", NW.anon); return; }
+  if (t.dataset.ncanon) { NC.anon = !NC.anon; t.outerHTML = anonChip("ncanon", NC.anon); return; }
   if (t.dataset.oldf) { OLDF = t.dataset.oldf; return render(); }
   if (t.dataset.a2t) { A2T = t.dataset.a2t; A2SEL.clear(); return render(); }
   if (t.dataset.a2c) { A2SEL.has(t.dataset.a2c) ? A2SEL.delete(t.dataset.a2c) : A2SEL.add(t.dataset.a2c); return render(); }
