@@ -56,7 +56,7 @@
 <div class="foot" id="foot"><button class="send" id="send">재고보고 보내기</button></div>
 <div class="toast" id="toast"></div>
 <script>
-const VER = "10.25-stock3";
+const VER = "10.28-stock4";
 // 노션 '코일' 표(지점별 칸)에 있던 품목 그대로. 지난 값 = 2026-10-01 노션 값(시험용). 순서: 본점,1호,2호,4호,5호,6호,7호,8호
 const COLS = ["본점", "동성로", "수성", "율하", "반월당", "상인", "광장코아", "현풍", "동성로2"];
 const HO = { 동성로: 1, 수성: 2, 본점: 3, 율하: 4, 반월당: 5, 상인: 6, 광장코아: 7, 현풍: 8, 동성로2: 9 };
@@ -168,13 +168,23 @@ const SHEET_API = "https://script.google.com/macros/s/AKfycbwUuHXfCaIC6kHv6ACAdu
 const pinOf = () => { try { return localStorage.getItem("vf-as-pin") || ""; } catch { return ""; } };
 const backUrl = () => (/^\/vape\/[\w-]+\/$/.test(qs.get("back") || "") ? qs.get("back") : `../staff/`) + `?branch=${encodeURIComponent(B)}${TEST ? "&test=1" : ""}`; // 10/19 돌아갈 때 지점, 시험 모드 유지
 const HOOK = "https://discord.com/api/webhooks/1555156884753743905/BLK7tRBQACouQrOE_hvOkm2-iD44gnfnxdJvQXxiBAJKXJU3MG4bjnACFsXgDkDWLBrh";
+// 10/28 신호 확인값: 신호 내용을 그 지점 열쇠(매장 코드로 풀린 것)로 HMAC → sig. 봇이 같은 열쇠로 맞춰 봄. 기기번호(dev)로 낯선 기기도 봄
+const DEV = (() => { try { let d = localStorage.getItem("vf-dev"); if (!d) { d = Array.from(crypto.getRandomValues(new Uint8Array(6)), (x) => x.toString(16).padStart(2, "0")).join(""); localStorage.setItem("vf-dev", d); } return d; } catch { return ""; } })();
+async function signed(obj) {
+  const o = { ...obj, dev: DEV, ua: navigator.userAgent.replace("Mozilla/5.0 ", "").slice(0, 80), ts: Date.now() };
+  let k = ""; try { k = localStorage.getItem("vf-app-key-" + o.branch) || ""; } catch {}
+  const s = JSON.stringify(o); if (!k || !crypto.subtle) return s;
+  const key = await crypto.subtle.importKey("raw", new TextEncoder().encode(k), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+  const mac = new Uint8Array(await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(s)));
+  return JSON.stringify({ ...o, sig: btoa(String.fromCharCode(...mac)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "").slice(0, 32) });
+}
 $("#send").addEventListener("click", async () => {
   if (!who) { $("#who").focus(); return toast("보고하는 사람 이름을 넣어 주세요"); }
   const v = ITEMS.map((_, i) => cur[i]);
   const body = { type: "stock", branch: B, by: who, items: ITEMS.map((it, i) => [it.n, v[i], prev(i), touch[i] ? 1 : 0]), ver: VER, ...(TEST ? { test: true } : {}) };
   $("#send").disabled = true; $("#send").textContent = "보내는 중…";
   try {
-    const r = await fetch(HOOK, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ content: JSON.stringify(body), allowed_mentions: { parse: [] } }) });
+    const r = await fetch(HOOK, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ content: await signed(body), allowed_mentions: { parse: [] } }) });
     if (!r.ok) throw new Error("디스코드 응답 " + r.status);
     let sheetMsg = "디스코드 보고 채널에 올라갔어요.";
     if (false && pinOf()) { try { const sr = await fetch(SHEET_API, { method: "POST", body: JSON.stringify({ pin: pinOf(), action: "stockAdd", branch: B, by: who, items: body.items, test: !!TEST }) }); const sj = await sr.json(); sheetMsg = sj.ok ? "지점 시트 '재고보고' 탭과 디스코드에 기록됐어요." : "디스코드엔 올라갔고, 시트 기록은 실패했어요(" + sj.error + ")"; } catch (e) { sheetMsg = "디스코드엔 올라갔고, 시트 기록은 실패했어요(인터넷)"; } }
