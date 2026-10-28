@@ -1419,8 +1419,10 @@ function QZ_RULE(A) {
   const plain = ["강한 타격감", "아이코스 일반", "릴, 글로 일반"].includes(A.cig || A.heat);
   const t = [...new Set([...(QZ_HINT[A.cig] || QZ_HINT[A.heat] || []), ...(A.taste || [])])], noMint = A.mint === "없이" || (plain && A.mint !== "시원하게");
   const low = A.amount === "반 갑 이하";
+  const pI = qzPod("0.6"), pL = qzPod("0.15"), PI = pI ? pI.price * QZ_POD_N : 0, PL = pL ? pL.price * QZ_POD_N : 0, podT = (p) => p ? ` + 팟 ${QZ_POD_N}개` : "";
+  const devP = ((devOpts("하복2") || [])[0] || {}).price || 0;
   if (A.draw === "바로 깊게") { const L = LUNG.filter((x) => !outOf(x.n)).sort((a, b) => (LUNG_BEST.findIndex((r) => r.test(a.n)) + 1 || 99) - (LUNG_BEST.findIndex((r) => r.test(b.n)) + 1 || 99));
-    return { kind: "lung", dev: "하복2", liqs: L.slice(0, 6), title: "하복2 + 프리미엄 폐호흡", packs: [["lung", "하복2 + 폐호흡 3병", "폐호흡 3병 40,000원"], ["H10", "하복2 + 입호흡 액상 10병", "164,000원"]], why: "깊게 빨아들이시면 폐호흡이 맞아요. 하복2는 팟만 바꾸면 입호흡, 폐호흡 둘 다 돼요." }; }
+    return { kind: "lung", dev: "하복2", liqs: L.slice(0, 6), title: "하복2 + 프리미엄 폐호흡", packs: [["lung", "하복2 + 폐호흡 3병" + podT(pL), devP ? won(devP + 40000 + PL) : "폐호흡 3병 40,000원"], ["H10", "하복2 + 입호흡 액상 10병" + podT(pI), won(164000 + PI)]], why: "깊게 빨아들이시면 폐호흡이 맞아요. 하복2는 팟만 바꾸면 입호흡, 폐호흡 둘 다 돼요." }; }
   let pool = LQ.filter((x) => !outOf(x.n));
   if (noMint) pool = pool.filter((x) => /^VF 릭 /.test(x.n) || (x.t || []).includes("노멘솔"));
   const want = [];
@@ -1432,8 +1434,8 @@ function QZ_RULE(A) {
   const liqs = [...new Map(want.map((x) => [x.id, x])).values()].slice(0, 8);
   const who = A.cig || A.heat || A.now || "";
   const strong = A.hit === "묵직하게" || A.cig === "강한 타격감" || A.amount === "한 갑 이상";
-  const packs = low ? [["D", "일회용 10+5", "팜팜바, 모스바 15개, 5개 서비스"], ["H5", "하복2 + 빌런, 릭 5병", "119,000원"], ["H10", "하복2 + 액상 10병", "164,000원"]]
-    : [["H10", "하복2 + 액상 10병", "164,000원 (15,000원 할인)"], ["H5", "하복2 + 빌런, 릭 5병", "119,000원"]];
+  const packs = low ? [["D", "일회용 10+5", "팜팜바, 모스바 15개, 5개 서비스"], ["H5", "하복2 + 빌런, 릭 5병" + podT(pI), won(119000 + PI)], ["H10", "하복2 + 액상 10병" + podT(pI), won(164000 + PI)]]
+    : [["H10", "하복2 + 액상 10병" + podT(pI), won(164000 + PI) + (PI ? "" : " (15,000원 할인)")], ["H5", "하복2 + 빌런, 릭 5병" + podT(pI), won(119000 + PI)]];
   return { kind: "dev", dev: "하복2", liqs, packs, title: low ? "가볍게 시작하는 조합" : "하복2 기기패키지",
     why: (who ? who + " 피우시던 분께 " : "") + (t.length ? t.join(", ") + " 쪽 액상을 골랐어요. " : "") + (strong ? "묵직한 목넘김이면 0.6Ω 입호흡 팟이 잘 맞아요. " : "") + (noMint ? (plain && A.mint !== "없이" ? "멘솔 없는 담배를 피우셨으니 노멘솔로 골랐어요. " : "멘솔 없는 노멘솔로 골랐어요. ") : "") + (low ? "많이 안 피우시면 일회용이나 5병 패키지로 가볍게 시작해도 좋아요." : "매일 피우시면 10병 패키지가 병당 7,500원이라 가장 아껴요.") };
 }
@@ -1448,7 +1450,11 @@ function qzResult(keep) {
     <div class="evsec">패키지 고르기</div><div class="qz-pk">${R.packs.map(([k, t2, p], i) => `<button data-qr="${k}" class="${i ? "" : "rec"}">${i ? "" : '<em>추천</em>'}<b>${esc(t2)}</b><span>${esc(p)}</span></button>`).join("")}</div>
     <div class="qz-btns" style="grid-template-columns:1fr"><button data-qr="staff">직원에게 상담받기</button></div></div>`;
 }
+// 10/28 사장님(이사님 지시): 추천 패키지에 팟을 같이 넣어 객단가 19만원 정도 (하복2+10병 164,000 + 팟 4개 24,000 = 188,000)
+const QZ_POD_N = 4;
+const qzPod = (ohm) => GDS.find((g) => g.c === "pod" && g.n.replace(/s/g, "") === `하복2${ohm}옴팟` && !outOf(g.n));
 function qzAct(a) { const R = qzRes; if (!R) return;
+  if (["lung", "H5", "H10"].includes(a)) { const p = qzPod(a === "lung" ? "0.15" : "0.6"); if (p) addGoods(p, QZ_POD_N); }
   if (a === "staff") { toast("직원이 결과를 보고 상담해 드릴게요"); return; }
   if (a === "D") return openEv("D");
   if (a === "lung") { const d = devOpts("하복2")[0]; if (d) addItem(d.id, { k: "dev", n: d.n, label: d.n, img: DEV_IMG.하복2[d.opt], unit: d.price, model: "하복2" }); (qzSel.size ? R.liqs.filter((x) => qzSel.has(x.id)) : R.liqs.slice(0, 3)).forEach((x) => addGoods(x)); document.body.classList.add('open'); drawCart(); return; }
@@ -1489,6 +1495,48 @@ $('rkList').onclick = (e) => { const a = e.target.closest('[data-rka]'), d = e.t
   if (a) { const id = a.dataset.rka, x = ALL_LQ.find((y) => y.id === id); if (x) addItem(id, { k: "liq", n: x.n, label: short(x.n), img: imgOf(x), unit: 15000 }); else addGoods(GDS.find((y) => y.id === id) || LUNG.find((y) => y.id === id)); toast("담았어요"); rkDraw(); }
   if (d) { dm = d.dataset.rkdev; pkSel = 0; go('dev'); drawDev(); } };
 rkLoad(); setInterval(rkLoad, 30 * 60e3);
+
+// ── 사용 기록 (10/28 사장님 "여기서도 사용 로그"): A안과 같은 형식 → 웹훅 → 운영봇 padEvents → data/패드기록.jsonl ──
+// 패드 안에 모았다가 1분에 한 번 묶어서 보냄(실패하면 다음에, 최대 500건). 상품명, 검색어, 지점, 시각만, 회원 이름, 전화, 장부는 안 보냄
+// 종류: o 앱 열기, m 화면, v 상세, a 담기, f 직원에게 보여주기, q 검색(결과수/품절수), k 다른 지점 재고 문의, e 이벤트, z 문진 결과, r 랭킹 탭, d 판매 완료(QR)
+const PADV = "B-10.28";
+const EVQ_KEY = "vf-ev-b";
+const evq = (() => { try { return JSON.parse(localStorage.getItem(EVQ_KEY) || "[]"); } catch (e) { return []; } })();
+const evSave = () => { try { localStorage.setItem(EVQ_KEY, JSON.stringify(evq)); } catch (e) {} };
+function ev(k, n = "", x = "") {
+  const t = Math.round(Date.now() / 1000), last = evq[evq.length - 1];
+  if (last && last[1] === k && last[2] === String(n).slice(0, 40) && t - last[0] < 5) return; // 같은 동작 연타는 1번
+  evq.push([t, k, String(n).slice(0, 40), String(x).slice(0, 20)]);
+  if (evq.length > 500) evq.splice(0, evq.length - 500);
+  evSave();
+}
+let evBusy = false;
+async function evFlush() {
+  if (evBusy || !evq.length || !navigator.onLine) return;
+  evBusy = true;
+  try {
+    const take = []; let len = 0;
+    for (const e of evq) { const n = JSON.stringify(e).length + 1; if (len + n > 1500) break; take.push(e); len += n; }
+    const content = JSON.stringify({ type: "ev", branch: BRANCH, pad: PAD_NO, v: PADV, e: take });
+    const res = await fetch(HOOK, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ content, allowed_mentions: { parse: [] }, flags: 4096 }), keepalive: true });
+    if (res.ok) { evq.splice(0, take.length); evSave(); }
+  } catch (e) {} finally { evBusy = false; }
+}
+setInterval(evFlush, 60e3);
+document.addEventListener("visibilitychange", () => { if (document.hidden) evFlush(); });
+// 기존 함수에 기록만 덧붙임 (동작은 그대로)
+const evWrap = (name, f) => { const o = window[name] || eval(name); const w = function (...a) { const r = o.apply(this, a); try { f(...a); } catch (e) {} return r; }; eval(name + " = w"); };
+evWrap("go", (v) => ev("m", v));
+evWrap("addItem", (key, it, d = 1) => ev("a", (it && (it.n || it.label)) || key, d > 1 ? String(d) : ""));
+evWrap("specOpen", (m, c) => ev("v", m, c || ""));
+evWrap("openEv", (k, need) => ev("e", k, need || ""));
+evWrap("staffView", () => ev("f", "", String([...cart.values()].reduce((a, b) => a + (b.qty || 0), 0))));
+evWrap("qrView", () => ev("d", "", String(cart.size)));
+evWrap("askOpen", (n) => ev("k", n));
+evWrap("qzResult", (keep) => keep || ev("z", (qzRes && qzRes.title) || "", Object.values(qz.ans).flat().join("+").slice(0, 20)));
+evWrap("rkDraw", () => ev("r", rkTab));
+let evQT = 0; $('q').addEventListener('input', () => { clearTimeout(evQT); evQT = setTimeout(() => { const q = $('q').value.trim(); if (!q) return; const r = searchItems(q); ev("q", q, `${r.length}/${r.filter((o) => outOf(o.x.n)).length}`); }, 1500); });
+ev("o", BRANCH, PADV);
 
 // 오프라인 저장 + 앱 설치 (sw-b.js)
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw-b.js").catch(() => {});
