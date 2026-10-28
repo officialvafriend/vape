@@ -443,14 +443,18 @@ function noteHtml() {
     <div style="font-size:16px;line-height:1.6;margin:6px 0;white-space:pre-wrap">${esc(x.text)}</div>
     ${x.cmts.length ? `<div style="background:var(--bg,#f2f4f6);border-radius:10px;padding:8px 12px;margin:6px 0">${x.cmts.map((c) => `<div style="font-size:14px;padding:2px 0"><b>${c.adm ? "👔 " : ""}${esc(c.by)}</b> ${esc(c.text)}</div>`).join("")}</div>` : ""}
     <div style="display:flex;gap:8px;align-items:center;margin-top:6px"><button class="chip ${me && x.likes.includes(me) ? "on" : ""}" data-notelike="${esc(x.id)}">👍 ${x.likes.length || ""}</button><button class="chip" data-notecmt="${esc(x.id)}">💬 댓글</button><small class="t-sub">${esc(x.likes.join(", "))}</small></div></div>`;
-  return `<div class="pchead"><h1>매장 노트</h1><div class="caption">직원들이 남긴 특이건, 최근 60일. 👍와 댓글은 직원앱에 바로 보여요</div></div>
+  return `<div class="pchead"><h1>매장 노트</h1><div class="caption">직원들이 남긴 특이건, 최근 60일. 👍와 댓글은 직원웹에 바로 보여요</div></div>
+    <div class="chips" style="margin-bottom:10px;align-items:center"><small class="t-sub" style="margin-right:2px">내 이름</small>${adminNames().map((n) => `<button class="chip ${n === me ? "on" : ""}" data-admname="${esc(n)}">${esc(n)}</button>`).join("")}<button class="chip" data-admname="">+ 다른 이름</button></div>
     <div class="chips" style="margin-bottom:6px">${brs}</div><div class="chips" style="margin-bottom:10px">${cats}</div>
     <div class="list">${N.map(card).join("") || '<div class="item">아직 노트가 없어요</div>'}</div>`;
 }
 function adminName() { let n = ls.get("vf-admin-name") || ""; if (!n) { n = (prompt("댓글, 👍에 보일 이름 (예: 한섭 이사)") || "").trim().slice(0, 20); if (n) ls.set("vf-admin-name", n); } return n; }
+// 10/28 사장님 "댓글 적을 때 누군지 고를 수 있게, 지금 다 보혜라서": 한 PC를 여러 명이 써서 처음 적은 이름이 계속 붙음 → 매장 노트 위에 이름 칩, 고른 이름으로 댓글과 👍
+const adminNames = () => { let L = []; try { L = JSON.parse(ls.get("vf-admin-names") || "[]"); } catch {} const s = new Set(L); const me = ls.get("vf-admin-name"); if (me) s.add(me); for (const x of D.notes || []) for (const c of x.cmts || []) if (c.adm && c.by) s.add(c.by); return [...s]; };
+const addAdminName = (n) => { const L = adminNames(); if (!L.includes(n)) L.push(n); ls.set("vf-admin-names", JSON.stringify(L)); ls.set("vf-admin-name", n); };
 async function noteAct(id, like) {
   const by = adminName(); if (!by) return;
-  let cmt = ""; if (!like) { cmt = (prompt("댓글") || "").trim().slice(0, 300); if (!cmt) return; }
+  let cmt = ""; if (!like) { cmt = (prompt(`${by} 이름으로 댓글 (다른 사람이면 취소하고 위에서 이름을 골라 주세요)`) || "").trim().slice(0, 300); if (!cmt) return; }
   try { await sendOp("noteReact", { id, by, ...(like ? { like: 1 } : { cmt }) }); const x = (D.notes || []).find((y) => y.id === id); if (x) { if (like) { const i = x.likes.indexOf(by); i < 0 ? x.likes.push(by) : x.likes.splice(i, 1); } else x.cmts.push({ by, text: cmt, adm: 1 }); } render(); toast(like ? "👍" : "댓글 남겼어요"); } catch (e) { toast("실패: " + e.message); }
 }
 function engHtml() {
@@ -1139,6 +1143,7 @@ document.addEventListener("click", async (e) => {
   if (t.dataset.orderf) { orderF = t.dataset.orderf; return render(); }
   if (t.dataset.ordst) return orderStep(t.dataset.oid, t.dataset.ordst);
   if (t.dataset.notef) { noteF = t.dataset.notef; return render(); }
+  if (t.dataset.admname != null) { let n = t.dataset.admname; if (!n) { n = (prompt("댓글, 👍에 보일 이름 (예: 한섭 이사)") || "").trim().slice(0, 20); if (!n) return; } addAdminName(n); toast(`이제 ${n} 이름으로 댓글과 👍가 남아요`); return render(); }
   if (t.dataset.noteb) { noteB = t.dataset.noteb; return render(); }
   if (t.dataset.notelike) return noteAct(t.dataset.notelike, true);
   if (t.dataset.notecmt) return noteAct(t.dataset.notecmt, false);
