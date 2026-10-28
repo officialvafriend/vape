@@ -236,7 +236,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.27-14";
+const VER = "10.28-2";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍", "동성로2"];
@@ -348,13 +348,13 @@ function bigDepCardHtml() {
   if (!L.length) return "";
   const won = (n) => (+n || 0).toLocaleString() + "원";
   const wait = L.filter((x) => x.st === "wait" && !BD_DONE[x.id]);
-  return `<div class="card" style="${wait.length ? "border:2px solid var(--red)" : ""}"><h2>💰 확인할 입금 ${wait.length ? `<small style="color:var(--red);font-weight:800">${wait.length}건</small>` : ""}</h2>
-    <div class="desc" style="margin-bottom:8px">통장엔 들어왔는데 포스에 이체로 안 찍힌 큰 입금이에요. 판매면 포스에 이체로 찍어 주세요.</div>
-    ${L.map((x) => { const done = BD_DONE[x.id] || (x.st !== "wait" ? x.st : ""); return `<div style="border-top:1px solid #eee;padding:12px 0">
-      <div style="font-size:17px;font-weight:800">${esc(x.d.slice(5).replace("-", "/"))} ${esc(x.t)} ${won(x.amt)} <span style="font-weight:600">${esc(x.nm || "")}</span></div>
-      ${done ? `<div style="margin-top:6px;color:var(--green);font-weight:700">✓ ${BD_ST[done] || ""}${x.by && !BD_DONE[x.id] ? `, ${esc(x.by)} ${esc(x.at || "")}` : ""}</div>`
-        : `<div class="btns" style="margin-top:8px;flex-wrap:wrap"><button class="btn primary" data-bdid="${x.id}" data-bdans="sale">✅ 판매 맞아요</button><button class="btn" data-bdid="${x.id}" data-bdans="once">매출 아님 (이번만)</button><button class="btn" data-bdid="${x.id}" data-bdans="always">매출 아님 (이 사람은 항상)</button></div>`}
-    </div>`; }).join("")}</div>`;
+  // 10/28 사장님 "너무 크게 보여주지 말자": 은행 정보는 봇이 받고 있으니 홈에선 한 줄로 접어 두고, 눌러야 펼쳐짐. 답한 건은 안 보임
+  if (!wait.length) return "";
+  return `<details class="card" style="padding:10px 16px" ${window.BD_OPEN ? "open" : ""} ontoggle="window.BD_OPEN=this.open"><summary style="cursor:pointer;font-size:14px;color:var(--sub,#666)">💰 포스에 이체로 안 찍힌 입금 ${wait.length}건</summary>
+    ${wait.map((x) => `<div style="border-top:1px solid #eee;padding:10px 0;font-size:14px">
+      <div style="font-weight:700">${esc(x.d.slice(5).replace("-", "/"))} ${esc(x.t)} ${won(x.amt)} <span style="font-weight:500">${esc(x.nm || "")}</span></div>
+      <div class="btns" style="margin-top:6px;flex-wrap:wrap"><button class="btn" data-bdid="${x.id}" data-bdans="sale">판매 맞아요</button><button class="btn" data-bdid="${x.id}" data-bdans="once">매출 아님 (이번만)</button><button class="btn" data-bdid="${x.id}" data-bdans="always">매출 아님 (이 사람은 항상)</button></div>
+    </div>`).join("")}</details>`;
 }
 async function doBigDep(id, ans) {
   if (ans === "always" && !confirm("이 사람이 보낸 돈은 앞으로도 매출에서 빼요. 맞나요?")) return;
@@ -1410,7 +1410,7 @@ let BOARD = B ? cacheGet("board") : null, LEADS = [], OLDS = [], OLDF = "all", O
 // 10/27 보내기 중계(시험 모드 먼저): 보내기, 택배는 board.json(1~몇 분 늦음) 말고 Apps Script에서 5~15초마다 읽어 덮어씀. board.json이 더 새것이면 그것
 const RELAY_URL = "https://script.google.com/macros/s/AKfycbyQ5TQlIahbUQXr3FenYTGuQgyzgjYInrmZk7GBG7nzFh1a0XQlhYfZKYL0VxDa298uvA/exec", RELAY_ON = true; // 10/27 사장님 "공식으로": 정식 화면도
 let RELAY = null, BOARD_RAW = null, BOARD_AT = 0;
-const withRelay = (bd) => !RELAY || RELAY.at < BOARD_AT - 60e3 ? bd : { ...(bd || {}), sends: RELAY.v.sends || [], parcels: RELAY.v.parcels || [], creqs: relayCreqs(bd?.creqs || [], RELAY.v.ords || []), game: RELAY.v.game || bd?.game };
+const withRelay = (bd) => !RELAY || RELAY.at < BOARD_AT - 60e3 ? bd : { ...(bd || {}), sends: RELAY.v.sends || [], parcels: RELAY.v.parcels || [], creqs: relayCreqs(bd?.creqs || [], RELAY.v.ords || []), game: RELAY.v.game || bd?.game, exps: RELAY.v.exps || bd?.exps };
 const relayCreqs = (old, ords) => { const m = new Map(ords.map((r) => [r.id, r])); return [...old.map((r) => m.get(r.id) || r), ...ords.filter((r) => !old.some((o) => o.id === r.id))]; }; // 깃허브 한도로 board.json을 못 읽어도 보내기는 뜨게
 async function loadRelay() {
   if (!RELAY_ON || !B || document.visibilityState !== "visible") return;
@@ -2002,7 +2002,7 @@ function closeRowHtml(stepRow) {
   if (CLOSEPEND) return stepRow("💰", false, "마감 보고", { t: `${PEND_TXT} ${esc(CLOSEPEND.t)} 보냄, 포스와 맞춰보고 보고문 만드는 중 (1~2분)` }, '<button class="act gray" disabled>처리 중</button>');
   const c = CLOSE_SENT && CLOSE_SENT.date === closeDay() && (!bc || CLOSE_SENT.at >= bc.at) ? CLOSE_SENT : bc;
   const info = !c ? { t: "아직 안 함, 포스 일마감 숫자와 돈통" } : c.status === "done" ? ((c.warn || []).length ? { t: `${c.at} 보고됨, 확인 필요: ` + c.warn.join(" / "), w: 1 } : { t: `${c.at} 보고 완료, ${c.by}, 돈통 차액 없음` }) : c.status === "error" ? { t: `못 보냈어요: ${c.err || ""}`, w: 1 } : { t: "보내는 중…" };
-  return stepRow("💰", c?.status === "done", "마감 보고", info, `${c?.status === "done" ? '<button class="act" data-go="report" style="margin-right:6px">📋 마감 결과</button>' : ""}<button class="act ${c?.status === "done" ? "gray" : ""}" data-go="closing">${c ? "다시" : "보고"}</button>`);
+  return stepRow("💰", c?.status === "done", "마감 보고", info, `<button class="act gray" data-go="expnow" style="margin-right:6px">💸 지출${expList().length ? ` ${expList().length}` : ""}</button>${c?.status === "done" ? '<button class="act" data-go="report" style="margin-right:6px">📋 마감 결과</button>' : ""}<button class="act ${c?.status === "done" ? "gray" : ""}" data-go="closing">${c ? "다시" : "보고"}</button>`);
 }
 // 입력 칸: [id, 이름, 필수]
 const SALES = [["pCash", "현금", 0], ["pCard", "카드", 0], ["pTr", "이체", 0], ["pEtc", "기타 (회원포인트 등)", 0]]; // 10/19 오후: 포스에서 자동(본사 계정), 직원 입력은 선택
@@ -2014,7 +2014,7 @@ const fld = ([id, label, req], money) => `<label><span>${label}${req ? ' <em cla
 let MIDMODE = false;
 function sheetClosing(mid) {
   if (!working().length) return needIn(() => sheetClosing(mid));
-  CX = []; MIDMODE = !!mid;
+  MIDMODE = !!mid; CX = expList().map((x) => ({ n: x.n, a: x.a })); // 10/28 💸 지출로 낮에 적은 것
   const prep = todayPrep();
   // 10/19 저녁 사장님 "개복잡": 기본 화면은 돈통, 리뷰/각인, 확인 2개, 지출 버튼만. 포스 숫자를 고칠 때만 아래 '직접 입력'을 펼침
   openSheet(`${MIDMODE ? '<h2>🔎 중간 체크</h2><div class="desc">마감할 때처럼 <b>돈통을 장수대로 세고</b> 리뷰, 지출까지 넣어 주세요. 포스와 다 맞으면 ✅가 떠요. 마감 기록은 안 남아요.</div>' : '<h2>💰 마감 보고</h2><div class="desc">포스 일마감을 먼저 하고, <b>돈통만 세면 돼요.</b></div>'}${!MIDMODE && todoItems().length ? `<div class="desc" style="color:var(--amber);font-weight:700;display:flex;align-items:center;gap:8px;margin-top:8px">남은 일정 ${todoItems().length}건은 다음 근무자에게 그대로 넘어가요<button class="act gray" data-go="ilgate" style="margin-left:auto">보기</button></div>` : ""}
@@ -2037,12 +2037,45 @@ function sheetClosing(mid) {
       <div class="grp">판매 개수</div><div class="cash">${KPI_IN.filter(([id]) => id !== "cRev" && id !== "cEng").map((x) => fld(x, 0)).join("")}</div><div class="kpig" id="cKpi"></div>
     </div>
     <div class="sv-bar"><div class="btns" style="margin:0"><button class="btn" data-x>취소</button><button class="btn primary" id="okClose">보고 보내기</button></div></div>`);
+  if (CX.length) { expDraw(); const eb = $("#expBtn"); if (eb) eb.textContent = "＋ 지출 하나 더"; }
   closeCalc();
 }
 function expDraw() {
   $("#cExp").innerHTML = CX.map((x, i) => `<div class="exrow"><input class="input" data-exn="${i}" maxlength="20" placeholder="지출 사유 (예: 택배, 퀵비)" value="${esc(x.n)}"><input class="input" data-exa="${i}" inputmode="numeric" placeholder="원" value="${x.a ? x.a.toLocaleString() : ""}"><button class="exdel" data-exdel="${i}">✕</button></div>`).join("");
 }
 const expSum = () => CX.reduce((a, x) => a + (+x.a || 0), 0);
+// ── 💸 지출 바로 적기 (10/28 사장님 "보고 옆에 지출칸") ── 돈 낸 그 자리에서 사유, 금액만. 봇에 기록되고 마감 보고 지출에 미리 채워짐
+const EXP_LS = () => `vf-exp-${B}-${todayKey()}${TEST ? "-t" : ""}`;
+const expLocal = () => ls.get(EXP_LS(), { add: [], del: [] });
+function expList() {
+  const L = expLocal(), bd = (BOARD?.exps || []).filter((x) => !x.test === !TEST), ids = new Set(bd.map((x) => x.id));
+  return [...bd, ...L.add.filter((x) => !ids.has(x.id))].filter((x) => !L.del.includes(x.id));
+}
+function sheetExp() {
+  const L = expList(), w = (n) => (+n || 0).toLocaleString() + "원";
+  openSheet(`<h2>💸 오늘 현금 지출</h2><div class="desc">돈통에서 돈을 낸 그 자리에서 적어 주세요. 마감 보고 지출에 자동으로 들어가요.</div>
+    ${L.length ? `<div style="margin:10px 0">${L.map((x) => `<div class="exrow" style="align-items:center"><div style="flex:1"><b>${esc(x.n)}</b> ${w(x.a)} <small style="color:var(--sub,#888)">${esc(x.t || "")} ${esc(x.by || "")}</small></div><button class="exdel" data-xpdel="${x.id}">✕</button></div>`).join("")}<div class="desc">합계 ${w(L.reduce((a, x) => a + x.a, 0))}</div></div>` : ""}
+    <div class="chips" style="margin-top:8px">${["택배", "퀵비", "소모품", "환불"].map((n) => `<button class="chip" data-xpn="${n}">${n}</button>`).join("")}</div>
+    <div class="exrow" style="margin-top:8px"><input class="input" id="xpN" maxlength="20" placeholder="사유 (예: 택배)"><input class="input" id="xpA" inputmode="numeric" placeholder="원"></div>
+    <div class="sv-bar"><div class="btns" style="margin:0"><button class="btn" data-x>닫기</button><button class="btn primary" id="xpOk">적기</button></div></div>`);
+  $("#xpOk").onclick = expAdd;
+}
+async function expAdd() {
+  const n = $("#xpN").value.trim(), a = +$("#xpA").value.replace(/D/g, "") || 0;
+  if (!n) return toast("사유를 적어 주세요 (예: 택배)"); if (!a) return toast("금액을 적어 주세요");
+  if (expList().length >= 8) return toast("지출은 하루 8건까지 적을 수 있어요");
+  if (!working().length) return needIn(sheetExp);
+  const id = Math.random().toString(36).slice(2, 8), by = working().join(", "), L = expLocal();
+  L.add.push({ id, n, a, by, t: new Date().toTimeString().slice(0, 5), test: TEST }); ls.set(EXP_LS(), L);
+  try { await send({ type: "expense", id, n, a, by }); toast(`${n} ${a.toLocaleString()}원 적었어요`); } catch { toast("보내기 실패, 다시 눌러 주세요"); L.add = L.add.filter((x) => x.id !== id); ls.set(EXP_LS(), L); }
+  sheetExp(); render();
+}
+async function expDel(id) {
+  if (!confirm("이 지출을 지울까요?")) return;
+  const L = expLocal(); L.del.push(id); ls.set(EXP_LS(), L);
+  try { await send({ type: "expdel", id, by: working().join(", ") }); } catch {}
+  sheetExp(); render();
+}
 // 계산 한 번에: 화면 숫자 갱신 + 보내기 버튼의 '남은 칸'
 function closeCalc() {
   if (!$("#cSales")) return;
@@ -2574,6 +2607,7 @@ document.addEventListener("click", (e) => {
   if (go === "ilgate") return sheetIlGate();
   if (t.dataset.cck) return t.classList.toggle("on");
   if (go === "cmore") { const m = $("#cMore"), on = m.style.display === "none"; m.style.display = on ? "" : "none"; t.textContent = on ? "직접 입력 접기" : "포스 숫자가 틀릴 때만 → 직접 입력"; return; }
+  if (go === "expnow") return sheetExp();
   if (go === "expadd") { const eb = $("#expBtn"); if (eb) eb.textContent = "＋ 지출 하나 더"; }
   if (go === "expadd") { if (CX.length >= 8) return toast("지출은 8건까지 적을 수 있어요"); CX.push({ n: "", a: 0 }); expDraw(); const el = document.querySelector(`[data-exn="${CX.length - 1}"]`); if (el) el.focus(); return; }
   if (t.dataset.exdel) { CX.splice(+t.dataset.exdel, 1); expDraw(); return closeCalc(); }
@@ -2602,6 +2636,8 @@ document.addEventListener("click", (e) => {
   if (t.id === "okCr") return doCreq();
   if (t.dataset.crchk) { cr.check = !cr.check; t.classList.toggle("on", cr.check); const d = $("#crDue"); if (cr.check) { cr.days = 3; if (d) d.value = addDay(3); document.querySelectorAll("[data-crdays]").forEach((x) => x.classList.remove("on")); } else { cr.days = 7; if (d) d.value = ""; document.querySelectorAll("[data-crdays]").forEach((x) => x.classList.add("on")); } return; }
   if (t.dataset.crpay) return doCreqPay(t.dataset.crpay);
+  if (t.dataset.xpn) { $("#xpN").value = t.dataset.xpn; return $("#xpA").focus(); }
+  if (t.dataset.xpdel) return expDel(t.dataset.xpdel);
   if (t.dataset.gwho) { GAME.who = t.dataset.gwho; ls.set("vf-game-who", GAME.who); return render(); }
   if (t.id === "gGo") return gameOpen();
   if (t.dataset.crord) { cr.order = t.dataset.crord === "1"; document.querySelectorAll("[data-crord]").forEach((x) => x.classList.toggle("on", x === t)); return; }
