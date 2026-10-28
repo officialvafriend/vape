@@ -1490,7 +1490,7 @@ function QZ_RULE(A) {
   const pI = qzPod("0.6"), pL = qzPod("0.15"), PI = pI ? pI.price * QZ_POD_N : 0, PL = pL ? pL.price * QZ_POD_N : 0, podT = (p) => p ? ` + 팟 ${QZ_POD_N / POD_PER_PACK}팩` : "";
   const devP = ((devOpts("하복2") || [])[0] || {}).price || 0, vb = (devOpts("발라맥스프로") || [])[0];
   const vbPack = vb ? [["V", "발라맥스프로 기기패키지", `하루 반 갑 정도면 잘 맞아요, 기기 ${won(vb.price)}`]] : [];
-  const G = [], grp = (title, sub, xs, n = 4) => { const u = [...new Map(xs.filter(Boolean).map((x) => [x.id, x])).values()].slice(0, n); if (u.length) G.push([title, sub, u]); };
+  const G = [], grp = (title, sub, xs, n = 4) => { const used = new Set(G.flatMap((g) => g[2].map((x) => x.id))), u = [...new Map(xs.filter((x) => x && !used.has(x.id)).map((x) => [x.id, x])).values()].slice(0, n); if (u.length) G.push([title, sub, u]); };
   if (A.draw === "바로 깊게") { const L = LUNG.filter((x) => !outOf(x.n)).sort((a, b) => (LUNG_BEST.findIndex((r) => r.test(a.n)) + 1 || 99) - (LUNG_BEST.findIndex((r) => r.test(b.n)) + 1 || 99));
     grp("폐호흡 액상", "깊게 빨아들이는 분께 맞는 맛", L, 6);
     return { kind: "lung", dev: "하복2", groups: G, liqs: G.flatMap((g) => g[2]), title: "하복2 + 프리미엄 폐호흡", packs: [["lung", "하복2 + 폐호흡 3병" + podT(pL), devP ? won(devP + 40000 + PL) : "폐호흡 3병 40,000원"], ["H10", "하복2 + 입호흡 액상 10병" + podT(pI), won(164000 + PI)]], why: "깊게 빨아들이시면 폐호흡이 맞아요. 하복2는 팟만 바꾸면 입호흡, 폐호흡 둘 다 돼요." }; }
@@ -1507,7 +1507,7 @@ function QZ_RULE(A) {
   if (!G.length) grp("상큼한 과일 계열", "자두, 포도, 사과 같은 과일맛", pool.filter((x) => /빌런/.test(x.n)));
   const who = smk.join(", ") || [].concat(A.now || []).join(", ");
   const strong = A.hit === "묵직하게" || A.cig === "강한 타격감" || A.amount === "한 갑 이상";
-  const H10 = ["H10", "하복2 + 액상 10병" + podT(pI), won(164000 + PI) + (PI ? "" : " (15,000원 할인)")], H5 = ["H5", "하복2 + 빌런, 릭 5병" + podT(pI), won(119000 + PI)];
+  const H10 = ["H10", "하복2 + 액상 10병" + podT(pI), won(164000 + PI) + (PI ? ` (패키지 164,000원 + 팟 ${won(PI)})` : " (15,000원 할인)")], H5 = ["H5", "하복2 + 빌런, 릭 5병" + podT(pI), won(119000 + PI) + (PI ? ` (패키지 119,000원 + 팟 ${won(PI)})` : "")];
   const packs = low ? [["D", "일회용 10+5 패키지", "팜팜바, 모스바 15개, 5개 서비스"], ...vbPack, H10, H5] : mid ? [H10, ...vbPack, H5] : [H10, H5];
   const lowDev = low && vb;
   return { kind: "dev", dev: lowDev ? "발라맥스프로" : "하복2", groups: G, liqs: G.flatMap((g) => g[2]), packs, title: lowDev ? "가볍게 시작하는 조합" : "하복2 기기패키지",
