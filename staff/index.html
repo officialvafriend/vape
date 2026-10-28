@@ -236,7 +236,7 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.28-4";
+const VER = "10.28-5";
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍", "동성로2"];
@@ -931,12 +931,12 @@ const noteTxt = (x) => DEC["nt" + x.id + ":" + x.cmts.length] || null;
 const whenTxt = (d, t) => (d === todayKey() ? "오늘 " : d === addDay(-1) ? "어제 " : sd(d) + " ") + (t || "");
 function noteHtml() {
   noteDec();
-  const hq = B === "본점", me = ho(B);
+  const hq = true, me = ho(B); // 10/28 사장님 "지점끼리 서로 댓글": 모든 지점이 전 지점 노트를 보고 댓글, 👍 (전엔 본점만)
   let L = noteItems().filter((x) => (NF === "전체" || x.cat === NF) && (!hq || NB === "전체" || x.b === NB)).sort((a, b) => (b.d + b.t).localeCompare(a.d + a.t));
   const all = noteItems(), cnt = (c) => all.filter((x) => (c === "전체" || x.cat === c) && (!hq || NB === "전체" || x.b === NB)).length;
   const chips = ["전체", ...Object.keys(NCAT)].map((c) => `<button class="chip ${NF === c ? "on" : ""}" data-nf="${c}">${c === "전체" ? "전체" : NCAT[c][0] + " " + c} <small>${cnt(c)}</small></button>`).join("");
   const brSel = hq ? `<select class="a2sel" id="ntBr">${["전체", ...BR].map((b, i) => `<option value="${b}" ${NB === b ? "selected" : ""}>${b === "전체" ? "전 지점" : i + "호 " + b}</option>`).join("")}</select>` : "";
-  const mine = all.filter((x) => x.d === todayKey()).length;
+  const mine = all.filter((x) => x.d === todayKey() && x.b === B).length;
   const card = (x) => {
     const [ic, bg, fg] = NCAT[x.cat] || NCAT.매장, dt = noteTxt(x), liked = me && x.likes.includes(me);
     const cm = x.cmts.map((c, i) => `<div class="ntc"><b>${c.adm ? "👔 " : ""}${esc(c.by)}</b> ${esc(dt?.c?.[i] ?? "…")} <small>${whenTxt(c.d, c.t)}</small></div>`).join("");
