@@ -172,7 +172,7 @@ body.open .sheet{transform:translate(-50%,0)}
 .grab{width:48px;height:5px;border-radius:3px;background:#d4d4da;margin:0 auto 16px}
 .lines{flex:1;overflow-y:auto}
 .ln{display:flex;align-items:center;gap:12px;height:64px;border-bottom:1px solid var(--line)}
-.ln img{width:48px;height:48px;border-radius:10px;object-fit:contain;background:#f6f6f8}
+.ln img,.ln .noim{width:48px;height:48px;border-radius:10px;object-fit:contain;background:#f6f6f8;flex:none}
 .ln .n{flex:1;font-size:15px;font-weight:700}
 .ln .q{font-size:15px;color:var(--grey)}
 .tot{display:flex;justify-content:space-between;align-items:baseline;padding:16px 0}
@@ -330,6 +330,7 @@ body.land #vHome .go5{grid-template-rows:repeat(5,1fr);align-content:stretch}
 #perkBox .pb{background:var(--card);color:var(--ink);border-radius:24px;padding:28px;width:min(440px,90vw);text-align:center}#perkBox .pb > b{font-size:22px}#perkBox p{color:var(--grey);margin:8px 0 14px}
 #perkBox .pq{width:240px;margin:0 auto 16px;background:#fff;border-radius:12px;padding:6px}#perkBox .pq svg{width:100%;height:auto;display:block}
 #perkBox .pbb{display:grid;grid-template-columns:1fr 2fr;gap:8px}#perkBox .pbb button{padding:14px;border-radius:14px;background:var(--bg);color:var(--ink);font-weight:700}#perkBox .pbb button.on{background:var(--red);color:#fff}
+.pstep{display:flex;align-items:center;gap:8px}.pstep button{width:40px;height:40px;border-radius:50%;background:var(--bg);color:var(--ink);font-size:20px;font-weight:700}.pstep b{min-width:44px;text-align:center}
 .combo{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:4px 0 14px}.combo button{background:var(--card);border-radius:16px;padding:14px;text-align:left;box-shadow:inset 0 0 0 1.5px var(--line)}.combo b{display:block;font-size:16px}.combo span{font-size:13px;color:var(--grey)}
 .evtip{font-size:13.5px;color:var(--grey);margin:-4px 0 10px}
 .evq{width:100%;height:52px;border:1px solid var(--line);border-radius:14px;padding:0 16px;font-size:17px;background:var(--card);color:var(--ink)}
@@ -613,9 +614,10 @@ const PERK_AMT = 2000;
 const PERK_OPTS = [["clip", "네이버 클립 올리기", "직원이 도와드려요"], ["insta", "인스타 팔로우하기", "QR 찍고 팔로우"], ["kakao", "카카오톡 친구추가 하기", "QR 찍고 친구추가"]];
 // 지점 인스타(10/25 검색 확인). 상인, 반월당은 아직 못 찾음, 카톡 채널 주소는 사장님께 받으면 넣기. 비어 있으면 QR 대신 "직원이 안내해요"
 const INSTA = { 본점: "official_vafrriend", 동성로: "vafriend_dongseongro", 동성로2: "vafriend_dongseongro2", 수성: "vafriend_soosung", 율하: "vafriend_yulha", 광장코아: "vafriend_gk", 현풍: "vafriend_hyunpoong" };
-const KAKAO_URL = "";
+const KAKAO_URL = "https://pf.kakao.com/_agsZxj/friend"; // 대구베이프렌드 (vafriend.com 카카오톡 문의 링크에서 확인)
+const CLIP_URL = {}; // 지점별 네이버 클립 올리기 링크 (받으면 넣기). 비어 있으면 직원이 도와줌
 let PERK = null;
-const perkUrl = (k) => k === "insta" ? (INSTA[BRANCH] ? "https://www.instagram.com/" + INSTA[BRANCH] + "/" : "") : k === "kakao" ? KAKAO_URL : "";
+const perkUrl = (k) => k === "clip" ? (CLIP_URL[BRANCH] || "") : k === "insta" ? (INSTA[BRANCH] ? "https://www.instagram.com/" + INSTA[BRANCH] + "/" : "") : k === "kakao" ? KAKAO_URL : "";
 const totalOf = () => { const c = countCart(), e = estimate(c), gp = goodsPlan(), off = PERK && cart.size ? PERK_AMT : 0; return { ...e, total: e.total + c.other + gp.total - off, perkOff: off, c, gp }; };
 function addItem(key, it, d = 1) { const cur = cart.get(key); const q = (cur ? cur.qty : 0) + d; setTimeout(() => { if (typeof drawDspList === "function") { drawDspList(); drawPodView(); } }, 0);
   if (q <= 0) cart.delete(key); else cart.set(key, { ...(cur || it), qty: q }); drawCart(); drawLiq(); drawGoal(); }
@@ -627,7 +629,7 @@ function drawCart() {
   // 낱개로 샀을 때 금액 (액상 1병 15,000 / 대량구매는 병 수 × 15,000 / 일회용 10+5는 15개 정가) → 할인 보여 주기
   const unitAll = [...cart.values()].reduce((a, x) => a + (x.k === "bulk" ? x.items.reduce((s, [, , q]) => s + q * 15000, 0) * x.qty : x.k === "dsp15" ? x.items.reduce((s, [, , q, p]) => s + q * p, 0) * x.qty : x.unit * x.qty), 0);
   const off = unitAll - t.total;
-  $('lines').innerHTML = cart.size ? [...cart].map(([key, x]) => `<div class="ln"><img src="${x.img}" alt=""><span class="n">${esc(x.label)}${x.items ? `<small>${esc(x.items.map(([, l, q]) => l + " " + q).join(", "))}</small>` : ""}</span><span class="qb"><button data-m="${key}">−</button><b>${x.qty}</b><button data-p="${key}">+</button></span><b class="price">${won(x.unit * x.qty)}</b></div>`).join("")
+  $('lines').innerHTML = cart.size ? [...cart].map(([key, x]) => `<div class="ln">${x.img ? `<img src="${x.img}" alt="">` : '<i class="noim"></i>'}<span class="n">${esc(x.label)}${x.items ? `<small>${esc(x.items.map(([, l, q]) => l + " " + q).join(", "))}</small>` : ""}</span><span class="qb"><button data-m="${key}">−</button><b>${x.qty}</b><button data-p="${key}">+</button></span><b class="price">${won(x.unit * x.qty)}</b></div>`).join("")
       + (off > 0 ? `<div class="sum2"><div class="r"><span>낱개로 샀을 때</span><s>${won(unitAll)}</s></div><div class="r off"><span>${esc(t.how || "묶음, 이벤트")} 할인</span><b>-${won(off)}</b></div><div class="save">총 ${won(off)} 할인 받았어요</div></div>` : "")
       + benefitBox() + ledgerBox() + memberBox()
     : '<div style="padding:24px 0;color:var(--grey)">담은 상품이 없어요</div>';
@@ -691,7 +693,7 @@ function benefitBox() {
 $('lines').addEventListener('click', (e) => {
   const eg = e.target.closest('[data-eg]'), up = e.target.closest('[data-up]');
   if (eg) { engrave = eg.dataset.eg === "add" ? "" : null; drawCart(); }
-  const cs = e.target.closest('[data-case]'); if (cs) { const g = GDS.find((y) => y.id === cs.dataset.case); addItem(g.id, { k: "goods", n: g.n, label: g.n, img: "", unit: g.price, cc: "pod" }); toast(g.n + " 담았어요"); }
+  const cs = e.target.closest('[data-case]'); if (cs) { const g = GDS.find((y) => y.id === cs.dataset.case); addItem(g.id, { k: "goods", n: g.n, label: g.n, img: gImg(g), unit: g.price, cc: "pod" }); toast(g.n + " 담았어요"); }
   const gl = e.target.closest('[data-goliq]'); if (gl) { goalN = 10; if (!document.body.classList.contains('land')) document.body.classList.remove('open'); go('liq'); drawGoal(); }
   if (up) { const h2 = devOpts("하복2")[0]; addItem(h2.id, { k: "dev", n: h2.n, label: h2.n, img: DEV_IMG.하복2[h2.opt], unit: h2.price, model: "하복2" }); toast("하복2 " + h2.opt + "를 담았어요, 색은 기기 화면에서 바꿀 수 있어요"); }
 });
@@ -888,7 +890,7 @@ const DSP_IMG = { 팜팜바: "dsp_farm.png", 모스바: "dsp_moss.png" };
 let EV = null; // { k, need, pick: Map(id → 수), color }
 const pickN = () => [...EV.pick.values()].reduce((a, n) => a + n, 0);
 function openEv(k, need) {
-  if (k === "H") { const o = devOpts("하복2"); if (!o.length) return toast(BRANCH + " 하복2 재고가 없어요"); EV = { k, need: need === 5 ? 5 : 10, pick: new Map(), color: o[0].opt }; }
+  if (k === "H") { const o = devOpts("하복2"); if (!o.length) return toast(BRANCH + " 하복2 재고가 없어요"); EV = { k, need: need === 5 ? 5 : 10, pick: new Map(), color: o[0].opt, pods: QZ_POD_N }; }
   if (k === "B") EV = { k, need: 30, pick: new Map() };
   if (k === "D") { if (!DSP_POOL().length) return toast(BRANCH + " 팜팜바, 모스바 재고가 없어요"); EV = { k, need: 15, pick: new Map() }; }
   document.body.classList.add('evon'); drawEv(); $('evB').scrollTop = 0;
@@ -935,7 +937,10 @@ function drawEv() {
     if (!p5) {
     const show = [...new Map([...others, ...found].map((x) => [x.id, x])).values()];
     h += show.length ? `<div class="grid" style="margin-top:10px">${show.map((x) => evCard(x.id, imgOf(x), short(x.n), [x.br, x.f].filter(Boolean).join(", "), 0, outOf(x.n))).join("")}</div>` : (evQ.trim() ? '<div class="evtip">찾는 프리미엄 액상이 없어요</div>' : ""); }
-    $('evGo').textContent = rest ? `${n}병 고르고 담기 (남은 ${rest}병은 매장에서), ${p5 ? "119,000원" : "164,000원"}` : `이 구성으로 담기, ${p5 ? "119,000원" : "164,000원"}`;
+    // 10/28 이사님, 사장님: 팟 같이 (객단가 19만원대). 기본 3팩, 손님이 빼거나 더할 수 있음
+    const pod = qzPod("0.6"), podW = pod ? pod.price * EV.pods : 0, tot = won((p5 ? 119000 : 164000) + podW), pk = EV.pods / POD_PER_PACK;
+    if (pod) h += `<div class="evsec">③ 하복2 팟 같이 담기</div><div class="card" style="padding:14px 16px;display:flex;gap:14px;align-items:center"><img src="dev_havok2_pod.jpg" alt="" style="width:76px;height:76px;object-fit:contain;border-radius:12px;background:#fff"><div style="flex:1"><b style="font-size:17px">하복2 팟 0.6옴</b><div style="color:var(--grey);font-size:14px">1팩(${POD_PER_PACK}개) ${won(pod.price * POD_PER_PACK)}${pk ? `, ${pk}팩 ${won(podW)}` : ""}</div></div><div class="pstep"><button data-evpod="-1">-</button><b>${pk}팩</b><button data-evpod="1">+</button></div></div>`;
+    $('evGo').textContent = rest ? `${n}병 고르고 담기 (남은 ${rest}병은 매장에서), ${tot}` : `이 구성으로 담기, ${tot}`;
   }
   if (EV.k === "B") {
     $('evEye').textContent = "베이프렌드 대량 특가"; $('evTi').textContent = "액상 대량구매";
@@ -959,6 +964,7 @@ $('evB').onclick = (e) => {
   const st = $('evB').scrollTop;
   if (m) { const id = m.dataset.em, v = (EV.pick.get(id) || 0) - 1; v > 0 ? EV.pick.set(id, v) : EV.pick.delete(id); }
   else if (c) EV.color = c.dataset.ec;
+  else if (e.target.closest('[data-evpod]')) EV.pods = Math.max(0, Math.min(20, (EV.pods || 0) + POD_PER_PACK * +e.target.closest('[data-evpod]').dataset.evpod));
   else if (e.target.closest('[data-hq]')) { EV.need = +e.target.closest('[data-hq]').dataset.hq; if (EV.need === 5) for (const id of [...EV.pick.keys()]) { const x = LQ.find((y) => y.id === id); if (!x || !isVL(x)) EV.pick.delete(id); } while (pickN() > EV.need) { const last = [...EV.pick.keys()].pop(); const v = EV.pick.get(last) - 1; v > 0 ? EV.pick.set(last, v) : EV.pick.delete(last); } }
   else if (q) { EV.need = +q.dataset.bq; while (pickN() > EV.need) { const last = [...EV.pick.keys()].pop(); const v = EV.pick.get(last) - 1; v > 0 ? EV.pick.set(last, v) : EV.pick.delete(last); } }
   else if (clr) EV.pick.clear();
@@ -971,7 +977,8 @@ $('evGo').onclick = () => { const rest = EV.need - pickN();
   if (EV.k === "H") { const d = devOpts("하복2").find((o) => o.opt === EV.color);
     addItem(d.id, { k: "dev", n: d.n, label: d.n, img: DEV_IMG.하복2[EV.color], unit: d.price, model: "하복2" });
     for (const [id, q] of EV.pick) { const x = LQ.find((y) => y.id === id) || ALL_LQ.find((y) => y.id === id); addItem(id, { k: "liq", n: x.n, label: short(x.n), img: imgOf(x), unit: 15000 }, q); }
-    if (rest) addItem("todo" + Date.now(), { k: "liq", n: "", label: EV.need === 5 ? `빌런, 릭 ${rest}병 (매장에서 고르기)` : `액상 ${rest}병 (매장에서 고르기)`, img: "", unit: 15000, todo: true, vl: EV.need === 5 }, rest); }
+    if (rest) addItem("todo" + Date.now(), { k: "liq", n: "", label: EV.need === 5 ? `빌런, 릭 ${rest}병 (매장에서 고르기)` : `액상 ${rest}병 (매장에서 고르기)`, img: "", unit: 15000, todo: true, vl: EV.need === 5 }, rest);
+    const pod = qzPod("0.6"); if (pod && EV.pods) addGoods(pod, EV.pods); }
   if (EV.k === "B") { const items = [...EV.pick].map(([id, q]) => { const x = BULK_POOL.find((y) => y.id === id); return [x.n, short(x.n), q]; });
     if (rest) items.push(["", "매장에서 고르기", rest]);
     const first = BULK_POOL.find((y) => y.id === [...EV.pick.keys()][0]);
@@ -1011,7 +1018,7 @@ function searchItems(qs) {
     return [sc, o]; }).filter(([sc]) => sc).sort((a, b) => b[0] - a[0]).slice(0, 40).map(([, o]) => o);
 }
 const liqPrice = (x) => x.line === "프라임" ? 20000 : 15000;
-const gImg = (g) => g.c === "dev" ? ((DEV_IMG[g.model] || {})[g.opt] || "") : g.c === "dsp" ? (DSP_IMG[g.model] || "") : "";
+const gImg = (g) => g.c === "dev" ? ((DEV_IMG[g.model] || {})[g.opt] || "") : g.c === "dsp" ? (DSP_IMG[g.model] || "") : g.c === "pod" && g.n.includes("하복2") && g.n.includes("팟") ? "dev_havok2_pod.jpg" : "";
 function drawSearch() {
   const q = $('q').value; $('q').parentElement.classList.toggle('on', !!q); document.body.classList.toggle('srchon', !!q.trim());
   if (!q.trim()) return;
@@ -1054,7 +1061,7 @@ function drawPods() {
     return `<div class="sr"><div class="im">🧩</div><div class="n"><b>${esc(g.n)}</b><span>${won(g.price)} (낱개)${q ? ` · <b style="color:var(--red);display:inline">담음 ${q}</b>` : ""}</span></div>${k ? `<button class="pkb" data-pod="${g.id}" data-k="${k}">1팩 ${k}개 ${won(g.price * k)}</button>` : ""}<button class="pkb ln1" data-pod="${g.id}" data-k="1">낱개</button></div>`; }).join("") : "";
 }
 $('pods').onclick = (e) => { const b = e.target.closest('[data-pod]'); if (!b) return; const g = GDS.find((y) => y.id === b.dataset.pod);
-  addItem(g.id, { k: "goods", n: g.n, label: g.n, img: "", unit: g.price, cc: "pod" }, +b.dataset.k); toast(g.n + " " + b.dataset.k + "개 담았어요"); drawPods(); };
+  addItem(g.id, { k: "goods", n: g.n, label: g.n, img: gImg(g), unit: g.price, cc: "pod" }, +b.dataset.k); toast(g.n + " " + b.dataset.k + "개 담았어요"); drawPods(); };
 
 // ── 다른 지점 재고 확인 요청 (지금 판과 같은 길: 웹훅 → 운영봇 → 관리 서버 [가능][불가] → stockask.json으로 답) ──
 const HOOK = "https://discord.com/api/webhooks/1555156884753743905/BLK7tRBQACouQrOE_hvOkm2-iD44gnfnxdJvQXxiBAJKXJU3MG4bjnACFsXgDkDWLBrh";
@@ -1179,7 +1186,7 @@ const DSPF_IMG = {"팜팜바 그린애플":"dsp_f00.jpg","팜팜바 딸기":"dsp
 const gImg2 = (g) => g.c === "dsp" ? DSPF_IMG[g.n] || (dInfo(g.model).img ? dsrc(dInfo(g.model).img) : "") : gImg(g);
 function addGoods(g, q = 1) {
   if (g.c === "dsp") addItem(g.id, { k: "dsp1", n: g.n, label: g.n, img: gImg2(g), unit: g.price, ev: g.ev || "", model: g.model, hi: isHi(g) }, q);
-  else if (g.c === "lung") addItem(g.id, { k: "lung", n: g.n, label: g.n.replace(/\s*\(?모드\)?$/, ""), img: "", unit: g.price }, q);
+  else if (g.c === "lung") addItem(g.id, { k: "lung", n: g.n, label: g.n.replace(/\s*\(?모드\)?$/, ""), img: LUNG_IMG[g.n] || "", unit: g.price }, q);
   else addItem(g.id, { k: g.c === "dev" ? "dev" : "goods", n: g.n, label: g.n, img: gImg(g), unit: g.price, model: g.model, cc: g.c }, q);
 }
 // 결제 계획: 일회용(10+5, 3+1, 5+1, 에어릭스 10+2), 폐호흡 3병 40,000원. 상품마다 정가/서비스 수량과 포스 묶음 상품을 정함 → 합계와 직원 화면이 같은 결과를 씀
@@ -1435,7 +1442,7 @@ function QZ_RULE(A) {
   const plain = ["강한 타격감", "아이코스 일반", "릴, 글로 일반"].includes(A.cig || A.heat);
   const t = [...new Set([...(QZ_HINT[A.cig] || QZ_HINT[A.heat] || []), ...(A.taste || [])])], noMint = A.mint === "없이" || (plain && A.mint !== "시원하게");
   const low = A.amount === "반 갑 이하";
-  const pI = qzPod("0.6"), pL = qzPod("0.15"), PI = pI ? pI.price * QZ_POD_N : 0, PL = pL ? pL.price * QZ_POD_N : 0, podT = (p) => p ? ` + 팟 ${QZ_POD_N}개` : "";
+  const pI = qzPod("0.6"), pL = qzPod("0.15"), PI = pI ? pI.price * QZ_POD_N : 0, PL = pL ? pL.price * QZ_POD_N : 0, podT = (p) => p ? ` + 팟 ${QZ_POD_N / POD_PER_PACK}팩` : "";
   const devP = ((devOpts("하복2") || [])[0] || {}).price || 0;
   if (A.draw === "바로 깊게") { const L = LUNG.filter((x) => !outOf(x.n)).sort((a, b) => (LUNG_BEST.findIndex((r) => r.test(a.n)) + 1 || 99) - (LUNG_BEST.findIndex((r) => r.test(b.n)) + 1 || 99));
     return { kind: "lung", dev: "하복2", liqs: L.slice(0, 6), title: "하복2 + 프리미엄 폐호흡", packs: [["lung", "하복2 + 폐호흡 3병" + podT(pL), devP ? won(devP + 40000 + PL) : "폐호흡 3병 40,000원"], ["H10", "하복2 + 입호흡 액상 10병" + podT(pI), won(164000 + PI)]], why: "깊게 빨아들이시면 폐호흡이 맞아요. 하복2는 팟만 바꾸면 입호흡, 폐호흡 둘 다 돼요." }; }
@@ -1468,18 +1475,19 @@ function qzResult(keep) {
     <div class="qz-btns" style="grid-template-columns:1fr"><button data-qr="staff">직원에게 상담받기</button></div></div>`;
 }
 // 10/28 사장님(이사님 지시): 추천 패키지에 팟을 같이 넣어 객단가 19만원 정도 (하복2+10병 164,000 + 팟 4개 24,000 = 188,000)
+const POD_PER_PACK = 2; // 상품 MASTER 포장당판매단위수 (하복2 팟 1팩 = 2개, 1개 6,000원)
 const QZ_POD_N = 6; // 10/28 사장님: 20만원 조금 넘게 잡고 혜택 받으면 19만원대 (164,000 + 팟 6개 36,000 = 200,000 → 혜택 2,000원 할인 198,000)
 const qzPod = (ohm) => GDS.find((g) => g.c === "pod" && g.n.replace(/\s/g, "") === `하복2${ohm}옴팟` && !outOf(g.n));
 function perkOpen(k) {
   const o = PERK_OPTS.find((x) => x[0] === k), u = perkUrl(k);
   let qrs = ""; if (u) { const q = qrcode(0, "M"); q.addData(u, "Byte"); q.make(); qrs = q.createSvgTag({ cellSize: 6, margin: 3, scalable: true }); }
-  $('perkBox').innerHTML = `<div class="pb"><b>${o[1]}</b><p>${k === "clip" ? "직원이 같이 올려 드려요. 올리고 나면 아래 버튼을 눌러 주세요" : u ? "폰 카메라로 찍고 " + (k === "insta" ? "팔로우" : "친구추가") + " 해 주세요" : "직원이 안내해 드려요"}</p>${qrs ? `<div class="pq">${qrs}</div>` : ""}<div class="pbb"><button data-pk="no">닫기</button><button data-pk="ok" class="on">했어요, ${won(PERK_AMT)} 할인 받기</button></div></div>`;
+  $('perkBox').innerHTML = `<div class="pb"><b>${o[1]}</b><p>${k === "clip" && !u ? "직원이 같이 올려 드려요. 올리고 나면 아래 버튼을 눌러 주세요" : u ? "폰 카메라로 찍고 " + (k === "insta" ? "팔로우" : k === "kakao" ? "친구추가" : "클립 올리기") + " 해 주세요" : "직원이 안내해 드려요"}</p>${qrs ? `<div class="pq">${qrs}</div>` : ""}<div class="pbb"><button data-pk="no">닫기</button><button data-pk="ok" class="on">했어요, ${won(PERK_AMT)} 할인 받기</button></div></div>`;
   $('perkBox').classList.add('on'); $('perkBox').dataset.k = k; }
 $('perkBox').onclick = (e) => { const b = e.target.closest('[data-pk]'); if (!b && e.target.id !== 'perkBox') return;
   if (b && b.dataset.pk === "ok") { PERK = $('perkBox').dataset.k; toast(`혜택 ${won(PERK_AMT)} 할인, 직원이 확인할게요`); if (typeof ev === "function") ev("b", PERK); qzResult(true); if (typeof drawCart === "function") drawCart(); }
   $('perkBox').classList.remove('on'); };
 function qzAct(a) { const R = qzRes; if (!R) return;
-  if (["lung", "H5", "H10"].includes(a)) { const p = qzPod(a === "lung" ? "0.15" : "0.6"); if (p) addGoods(p, QZ_POD_N); }
+  if (a === "lung") { const p = qzPod("0.15"); if (p) addGoods(p, QZ_POD_N); } // 하복2 패키지(H5, H10)는 패키지 시트에서 팟 같이 담음
   if (a === "staff") { toast("직원이 결과를 보고 상담해 드릴게요"); return; }
   if (a === "D") return openEv("D");
   if (a === "lung") { const d = devOpts("하복2")[0]; if (d) addItem(d.id, { k: "dev", n: d.n, label: d.n, img: DEV_IMG.하복2[d.opt], unit: d.price, model: "하복2" }); (qzSel.size ? R.liqs.filter((x) => qzSel.has(x.id)) : R.liqs.slice(0, 3)).forEach((x) => addGoods(x)); document.body.classList.add('open'); drawCart(); return; }
