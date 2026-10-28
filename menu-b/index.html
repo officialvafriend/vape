@@ -311,9 +311,9 @@ body.land #vHome .go5{grid-template-rows:repeat(5,1fr);align-content:stretch}
 .qz-a button b{font-size:21px}.qz-a button span{font-size:14px;color:var(--grey)}.qz-a button i{font-style:normal;font-size:26px}
 .qz-a button.on{box-shadow:inset 0 0 0 3px var(--ink)}.qz-a button:active{transform:scale(.97)}
 .qz-next{margin-top:16px}
-.qz-res .rh{background:var(--card);border-radius:24px;padding:22px;display:grid;grid-template-columns:200px 1fr;gap:20px;align-items:center}
-.qz-res .rh img{width:100%;height:220px;object-fit:contain;background:var(--bg);border-radius:16px}
-.qz-res .rh small{font-size:14px;font-weight:700;color:var(--red)}.qz-res .rh b{display:block;font-size:30px;margin:4px 0}.qz-res .rh p{font-size:15px;color:var(--grey);line-height:1.6;margin:0}
+.qz-res .rh{background:var(--card);border-radius:24px;padding:18px;display:grid;grid-template-columns:130px 1fr;gap:18px;align-items:center}
+.qz-res .rh img{width:100%;height:150px;object-fit:contain;background:var(--bg);border-radius:16px}
+.qz-res .rh small{font-size:14px;font-weight:700;color:var(--red)}.qz-res .rh b{display:block;font-size:30px;margin:4px 0}.qz-res .rh p{font-size:13px;color:var(--grey);line-height:1.6;margin:0}.qz-res .rh p.rw{font-size:15px;color:var(--ink);margin:2px 0 6px}
 .qz-res .why{background:var(--card);border-radius:18px;padding:14px 18px;margin-top:12px;font-size:15px;line-height:1.7}
 .qz-pk{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}.qz-pk button{position:relative;background:var(--card);border-radius:18px;padding:18px;text-align:left}.qz-pk button.rec{box-shadow:inset 0 0 0 3px var(--red)}.qz-pk b{display:block;font-size:18px}.qz-pk span{font-size:14px;color:var(--grey)}.qz-pk em{position:absolute;top:-9px;left:14px;font-style:normal;font-size:12px;font-weight:800;color:#fff;background:var(--red);border-radius:999px;padding:2px 9px}
 .qz-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}.qz-btns button{height:60px;border-radius:16px;font-size:17px;font-weight:800;background:var(--card)}.qz-btns .rd{background:var(--red);color:#fff}
@@ -348,8 +348,8 @@ body.land #vHome .go5{grid-template-rows:repeat(5,1fr);align-content:stretch}
 @keyframes qzspin{to{transform:rotate(360deg)}}
 @keyframes qzup{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 .qzin{animation:qzup .45s ease-out both}@media (prefers-reduced-motion:reduce){.qzin{animation:none}}
-.qzg{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin:22px 0 10px}.qzg b{font-size:20px}.qzg span{color:var(--grey);font-size:14px}.qzg small{margin-left:auto}
-.qzgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.qzg{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin:18px 0 8px}.qzg b{font-size:20px}.qzg span{color:var(--grey);font-size:14px}.qzg small{margin-left:auto}
+.qzgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
 .qzc{background:var(--card);border-radius:18px;padding:10px 10px 12px;cursor:pointer;position:relative}
 .qzc .im{position:relative;aspect-ratio:1;border-radius:14px;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:8%}
 .qzc .im img{width:100%;height:100%;object-fit:contain}
@@ -362,7 +362,7 @@ body.land #vHome .go5{grid-template-rows:repeat(5,1fr);align-content:stretch}
 .qzinfo.evq2{border:1.5px dashed var(--red)}
 .qznote{font-size:14px;color:var(--grey);line-height:1.6;margin:-4px 2px 10px}.qznote b{color:var(--ink)}
 .qzinfo{background:var(--card);border-radius:14px;padding:12px 16px;margin-bottom:10px;font-size:15px;line-height:1.6}
-body.land .qzgrid{grid-template-columns:repeat(5,1fr)}
+body.land .qzgrid{grid-template-columns:repeat(6,1fr)}
 .devben .dbs{font-size:14px;color:var(--grey);margin:-2px 0 8px}
 .nudge.rv{border:1.5px dashed var(--red)}
 .nudge.md input{width:100%;margin-top:10px;padding:12px 14px;border-radius:12px;border:1px solid var(--line, #ddd);background:var(--bg);color:var(--ink);font-size:16px}
@@ -1511,10 +1511,10 @@ function QZ_RULE(A) {
   for (const k of order) {
     if (k === "담배맛") { const zt = ALL_LQ.find((x) => x.n === "(한) 라입 제로타바코" && !outOf(x.n)); grp("타격감 있는 연초 계열", "구수하고 묵직한 담배맛", [...pool.filter((x) => /시가812/.test(x.n)), zt, ...pool.filter((x) => /블랙티/.test(x.n))]); }
     if (k === "과일") grp("상큼한 과일 계열", "자두, 포도, 사과 같은 과일맛", [...pool.filter((x) => /빌런/.test(x.n)), ...pool.filter((x) => /릭 /.test(x.n))]);
-    if (k === "시원한 멘솔") grp("시원한 멘솔 계열", "박하처럼 화한 맛", pool.filter((x) => /쿨멘솔|보석바|블루마린/.test(x.n)));
+    if (k === "시원한 멘솔") grp("깔끔한 쿨멘솔", "단맛 없이 시원하게, 입에 향이 남지 않아요", pool.filter((x) => /쿨멘솔/.test(x.n)));
     if (k === "디저트, 음료") grp("음료, 디저트 계열", "탄산, 음료 같은 달달한 맛", pool.filter((x) => /소다|라무네|블루워터/.test(x.n)));
   }
-  if (A.mint === "시원하게" && !t.includes("시원한 멘솔")) grp("시원한 멘솔 계열", "박하처럼 화한 맛", pool.filter((x) => /쿨멘솔|보석바|블루마린/.test(x.n)));
+  if (A.mint === "시원하게" && !t.includes("시원한 멘솔")) grp("깔끔한 쿨멘솔", "단맛 없이 시원하게, 입에 향이 남지 않아요", pool.filter((x) => /쿨멘솔/.test(x.n)));
   if (!G.length) grp("상큼한 과일 계열", "자두, 포도, 사과 같은 과일맛", pool.filter((x) => /빌런/.test(x.n)));
   const who = smk.join(", ") || [].concat(A.now || []).join(", ");
   const strong = A.hit === "묵직하게" || A.cig === "강한 타격감" || A.amount === "한 갑 이상";
@@ -1528,7 +1528,7 @@ function QZ_RULE(A) {
 let qzRes = null, qzSel = new Set(); // 결과 화면에서 손님이 고른 액상 (없으면 앞 4개)
 let qzT = 0, qzAnim = false;
 const qzCard = (x, d) => { const lung = x.c === "lung", im = lung ? LUNG_IMG[x.n] : imgOf(x), sel = qzSel.has(x.id);
-  return `<div class="qzc ${sel ? "got" : ""} ${qzAnim ? "qzin" : ""}" data-qs="${x.id}" style="animation-delay:${d}s"><div class="im">${lung ? (LUNG_BEST.some((r) => r.test(x.n)) ? '<span class="rib">BEST</span>' : "") : tagHtml(x.n)}${im ? `<img src="${im}" alt="">` : `<span class="ltile">${esc(x.n.slice(0, 5))}</span>`}${sel ? '<em class="ok">골랐어요</em>' : ""}</div><b>${lung ? "" : noTag(x.n)}${esc(lung ? x.n.replace(/\s*\(?모드\)?$/, "") : short(x.n))}</b><span>${esc(x.f || (lung ? "폐호흡" : ""))}</span></div>`; };
+  return `<div class="qzc ${sel ? "got" : ""} ${qzAnim ? "qzin" : ""}" data-qs="${x.id}" style="animation-delay:${d}s"><div class="im">${lung ? (LUNG_BEST.some((r) => r.test(x.n)) ? '<span class="rib">BEST</span>' : "") : tagHtml(x.n)}${im ? `<img src="${im}" alt="">` : `<span class="ltile">${esc(x.n.slice(0, 5))}</span>`}${sel ? '<em class="ok">골랐어요</em>' : ""}</div><b>${esc(lung ? x.n.replace(/\s*\(?모드\)?$/, "") : short(x.n))}</b><span>${esc(x.f || (lung ? "폐호흡" : ""))}${lung ? "" : noTag(x.n)}</span></div>`; };
 function qzResult(keep) {
   if (!keep) { qzSel = new Set(); qzRes = QZ_RULE(qz.ans); clearTimeout(qzT);
     // 10/28 사장님: 한 번에 다 뜨면 답이 정해진 것 같으니, 잠깐 고르는 시간을 두고 차례로
@@ -1537,8 +1537,8 @@ function qzResult(keep) {
   const A = qz.ans, R = (qzRes = QZ_RULE(A)), d = R.dev && devOpts(R.dev)[0], img = R.kind === "dsp" ? "dsp_farm_all.png" : d ? (DEV_IMG[R.dev] || {})[d.opt] : "";
   let t = 0; const nx = (s2) => { const v = t; t += s2; return v.toFixed(2); }, ain = qzAnim ? "qzin" : "";
   $('qz').innerHTML = `<div class="qz-top"><button data-qb="1" aria-label="뒤로">‹</button><div class="qz-bar"><i style="width:100%"></i></div><span class="qz-n">결과</span></div>
-    <div class="qz-res"><div class="rh ${ain}" style="animation-delay:${nx(.35)}s"><img src="${img}" alt=""><div><small>${esc(member.name || "손님")}께 맞는 조합</small><b>${esc(R.title)}</b><p>${esc([[].concat(A.now || []).join("+"), A.cig, A.heat, A.amount, A.hit, A.draw, (A.taste || []).join("+"), "멘솔 " + (A.mint || "-")].filter(Boolean).join(", "))}</p></div></div>
-    <div class="why ${ain}" style="animation-delay:${nx(.45)}s">${esc(R.why)}</div>
+    <div class="qz-res"><div class="rh ${ain}" style="animation-delay:${nx(.35)}s"><img src="${img}" alt=""><div><small>${esc(member.name || "손님")}께 맞는 조합</small><b>${esc(R.title)}</b><p class="rw">${esc(R.why)}</p><p>${esc([[].concat(A.now || []).join("+"), A.cig, A.heat, A.amount, A.hit, A.draw, (A.taste || []).join("+"), "멘솔 " + (A.mint || "-")].filter(Boolean).join(", "))}</p></div></div>
+    
     ${(R.groups || []).map(([gt, gs, xs], gi) => `<div class="qzg ${ain}" style="animation-delay:${nx(.3)}s"><b>${esc(gt)}</b><span>${esc(gs)}</span>${gi ? "" : '<small class="stk">마음에 드는 맛을 눌러 골라 주세요</small>'}</div><div class="qzgrid">${xs.map((x) => qzCard(x, nx(.12))).join("")}</div>`).join("")}
     <div class="${ain}" style="animation-delay:${nx(.3)}s"><div class="evsec">패키지 고르기</div><div class="qznote">액상 한 병이면 담배 6갑 반 정도 피울 수 있어요. 10병이면 65갑쯤이라, 하루 한 갑 피우시면 두 달 넘게 넉넉해요.</div>${R.packs.some(([k]) => k === "V") && R.packs.some(([k]) => /^H/.test(k)) ? '<div class="qznote"><b>발라맥스프로랑 뭐가 달라요?</b> 하복2가 가장 최근에 나온 신상이에요. 팟만 바꾸면 입호흡, 폐호흡 둘 다 돼요.</div>' : ""}<div class="qz-pk">${R.packs.map(([k, t2, p], i) => `<button data-qr="${k}" class="${i ? "" : "rec"}">${/^H/.test(k) ? '<em class="nw">신제품</em><em class="pop">인기</em>' : i ? "" : '<em>추천</em>'}<b>${esc(t2)}</b><span>${esc(p)}</span></button>`).join("")}</div></div>
     <div class="${ain}" style="animation-delay:${nx(.3)}s"><div class="evsec"><span><span class="evt">EVENT!</span> 기기 패키지 20만원 이상 구매 혜택</span></div><div class="qzinfo evq2">현금이나 계좌이체로 결제하시면, 아래 셋 중 하나만 해도 <b style="color:var(--red)">${won(PERK_AMT)} 할인</b>해 드려요</div><div class="qz-pk perk">${PERK_OPTS.map(([k, t2, sub]) => `<button data-perk="${k}" class="${PERK === k ? "rec" : ""}">${PERK === k ? '<em>선택</em>' : ""}<b>${t2}</b><span>${sub}</span></button>`).join("")}</div>
