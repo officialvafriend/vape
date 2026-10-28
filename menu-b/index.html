@@ -347,6 +347,7 @@ body.land #vHome .go5{grid-template-rows:repeat(5,1fr);align-content:stretch}
 .qzc b{display:block;font-size:16px;margin-top:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .qzc span{display:block;font-size:13px;color:var(--grey);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-height:18px}
 .qzc.got{box-shadow:inset 0 0 0 3px var(--red)}.qzc .ok{position:absolute;right:8px;bottom:8px;background:var(--red);color:#fff;font-style:normal;font-size:12px;font-weight:800;border-radius:999px;padding:3px 9px}
+.qz-pk em.hotm{background:#ff7a00}
 .qzinfo{background:var(--card);border-radius:14px;padding:12px 16px;margin-bottom:10px;font-size:15px;line-height:1.6}
 body.land .qzgrid{grid-template-columns:repeat(5,1fr)}
 .combo{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:4px 0 14px}.combo button{background:var(--card);border-radius:16px;padding:14px;text-align:left;box-shadow:inset 0 0 0 1.5px var(--line)}.combo b{display:block;font-size:16px}.combo span{font-size:13px;color:var(--grey)}
@@ -1464,7 +1465,7 @@ function QZ_RULE(A) {
   const low = A.amount === "반 갑 이하", mid = A.amount === "반 갑에서 한 갑";
   const pI = qzPod("0.6"), pL = qzPod("0.15"), PI = pI ? pI.price * QZ_POD_N : 0, PL = pL ? pL.price * QZ_POD_N : 0, podT = (p) => p ? ` + 팟 ${QZ_POD_N / POD_PER_PACK}팩` : "";
   const devP = ((devOpts("하복2") || [])[0] || {}).price || 0, vb = (devOpts("발라맥스프로") || [])[0];
-  const vbPack = vb ? [["V", "발라맥스프로", `하루 반 갑 정도면 이 기기도 좋아요, ${won(vb.price)}`]] : [];
+  const vbPack = vb ? [["V", "발라맥스프로 기기패키지", `하루 반 갑 정도면 잘 맞아요, 기기 ${won(vb.price)}`]] : [];
   const G = [], grp = (title, sub, xs, n = 4) => { const u = [...new Map(xs.filter(Boolean).map((x) => [x.id, x])).values()].slice(0, n); if (u.length) G.push([title, sub, u]); };
   if (A.draw === "바로 깊게") { const L = LUNG.filter((x) => !outOf(x.n)).sort((a, b) => (LUNG_BEST.findIndex((r) => r.test(a.n)) + 1 || 99) - (LUNG_BEST.findIndex((r) => r.test(b.n)) + 1 || 99));
     grp("폐호흡 액상", "깊게 빨아들이는 분께 맞는 맛", L, 6);
@@ -1483,7 +1484,7 @@ function QZ_RULE(A) {
   const who = A.cig || A.heat || A.now || "";
   const strong = A.hit === "묵직하게" || A.cig === "강한 타격감" || A.amount === "한 갑 이상";
   const H10 = ["H10", "하복2 + 액상 10병" + podT(pI), won(164000 + PI) + (PI ? "" : " (15,000원 할인)")], H5 = ["H5", "하복2 + 빌런, 릭 5병" + podT(pI), won(119000 + PI)];
-  const packs = low ? [...vbPack, ["D", "일회용 10+5", "팜팜바, 모스바 15개, 5개 서비스"], H5] : mid ? [H10, ...vbPack, H5] : [H10, H5];
+  const packs = low ? [["D", "일회용 10+5 패키지", "팜팜바, 모스바 15개, 5개 서비스"], ...vbPack, H10, H5] : mid ? [H10, ...vbPack, H5] : [H10, H5];
   const lowDev = low && vb;
   return { kind: "dev", dev: lowDev ? "발라맥스프로" : "하복2", groups: G, liqs: G.flatMap((g) => g[2]), packs, title: lowDev ? "가볍게 시작하는 조합" : "하복2 기기패키지",
     why: (who ? who + " 피우시던 분께 " : "") + (t.length ? t.join(", ") + " 쪽 액상을 골랐어요. " : "") + (strong && !lowDev ? "묵직한 목넘김이면 0.6Ω 입호흡 팟이 잘 맞아요. " : "") + (noMint ? (plain && A.mint !== "없이" ? "멘솔 없는 담배를 피우셨으니 노멘솔로 골랐어요. " : "멘솔 없는 노멘솔로 골랐어요. ") : "")
@@ -1504,7 +1505,7 @@ function qzResult(keep) {
     <div class="qz-res"><div class="rh ${ain}" style="animation-delay:${nx(.35)}s"><img src="${img}" alt=""><div><small>${esc(member.name || "손님")}께 맞는 조합</small><b>${esc(R.title)}</b><p>${esc([A.now, A.cig || A.heat, A.amount, A.hit, A.draw, (A.taste || []).join("+"), "멘솔 " + (A.mint || "-")].filter(Boolean).join(", "))}</p></div></div>
     <div class="why ${ain}" style="animation-delay:${nx(.45)}s">${esc(R.why)}</div>
     ${(R.groups || []).map(([gt, gs, xs], gi) => `<div class="qzg ${ain}" style="animation-delay:${nx(.3)}s"><b>${esc(gt)}</b><span>${esc(gs)}</span>${gi ? "" : '<small class="stk">마음에 드는 맛을 눌러 골라 주세요</small>'}</div><div class="qzgrid">${xs.map((x) => qzCard(x, nx(.12))).join("")}</div>`).join("")}
-    <div class="${ain}" style="animation-delay:${nx(.3)}s"><div class="evsec">패키지 고르기</div><div class="qzinfo">액상 한 병이면 담배 6갑 반 정도 피울 수 있어요. 10병이면 65갑쯤이라, 하루 한 갑 피우시면 두 달 넘게 넉넉해요.</div><div class="qz-pk">${R.packs.map(([k, t2, p], i) => `<button data-qr="${k}" class="${i ? "" : "rec"}">${i ? "" : '<em>추천</em>'}<b>${esc(t2)}</b><span>${esc(p)}</span></button>`).join("")}</div></div>
+    <div class="${ain}" style="animation-delay:${nx(.3)}s"><div class="evsec">패키지 고르기</div><div class="qzinfo">액상 한 병이면 담배 6갑 반 정도 피울 수 있어요. 10병이면 65갑쯤이라, 하루 한 갑 피우시면 두 달 넘게 넉넉해요.</div><div class="qz-pk">${R.packs.map(([k, t2, p], i) => `<button data-qr="${k}" class="${i ? "" : "rec"}">${/^H/.test(k) ? '<em class="hotm">HOT</em>' : i ? "" : '<em>추천</em>'}<b>${esc(t2)}</b><span>${esc(p)}</span></button>`).join("")}</div></div>
     <div class="${ain}" style="animation-delay:${nx(.3)}s"><div class="evsec">첫 구매 혜택 <small style="color:var(--red);font-weight:700">하나만 하면 ${won(PERK_AMT)} 할인</small></div><div class="qz-pk perk">${PERK_OPTS.map(([k, t2, sub]) => `<button data-perk="${k}" class="${PERK === k ? "rec" : ""}">${PERK === k ? '<em>선택</em>' : ""}<b>${t2}</b><span>${sub}</span></button>`).join("")}</div>
     <div class="qz-btns" style="grid-template-columns:1fr"><button data-qr="staff">직원에게 상담받기</button></div></div></div>`;
 }
