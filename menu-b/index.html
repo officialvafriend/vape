@@ -715,7 +715,7 @@ function memberBox() {
 $('lines').addEventListener('input', (e) => { const t = e.target;
   if (t.id === "memName") member.name = t.value; if (t.id === "memPhone") { t.value = t.value.replace(/\D/g, "").slice(0, 11); member.phone = t.value; } if (t.id === "memAgree") member.agree = t.checked; });
 $('lines').addEventListener('change', (e) => { if (e.target.id === "memAgree") member.agree = e.target.checked; });
-const memLine = () => member.type ? `<div class="memline"><b>${member.type === "new" ? "신규 회원등록" : "기존 회원 적립"}</b> ${esc([member.name, member.phone.replace(/(\d{3})(\d{3,4})(\d{4})/, "$1-$2-$3")].filter(Boolean).join(", ") || "정보 미입력")}${member.type === "new" && !member.agree ? ' <span style="color:var(--red)">(동의 안 함)</span>' : ""}</div>` : `<div class="memline"><b>회원 정보 없음</b> 적립 원하시는지 한 번 여쭤봐 주세요</div>`;
+const memLine = () => member.type ? `<div class="memline"><b>${member.type === "new" ? "신규 회원등록" : "기존 회원 적립"}</b> ${esc([member.name, member.phone.replace(/(\d{3})(\d{3,4})(\d{4})/, "$1-$2-$3")].filter(Boolean).join(", ") || "정보 미입력")}${member.type === "new" && !member.agree ? ' <span style="color:var(--red)">(동의 안 함)</span>' : ""}</div>` : `<div class="memline"><b>회원 정보 없음</b> 적립 원하시는지 여쭤보고, 회원이면 포스에서 조회 먼저</div>`;
 // 아래 버튼: 담은 상품 → 직원 바코드 / QR → 완료
 function setFoot(mode) {
   const has = cart.size > 0;
@@ -826,13 +826,14 @@ function staffView() {
   }
   const ex = extraLines(); // 각인, 증정 (0원)
   let i = 0;
-  const html = (devs.length ? stp(++i, "기기 찍기", "정가") + devs.map((x) => blk(x.label, "기기 " + won(x.unit), x.n, x.qty)).join("") : "")
+  const html = stp(++i, "회원 먼저", "포스에서 회원 등록 또는 회원 조회부터 해야 결제 이력이 남아요") + memLine()
+    + (devs.length ? stp(++i, "기기 찍기", "정가") + devs.map((x) => blk(x.label, "기기 " + won(x.unit), x.n, x.qty)).join("") : "")
     + (bund.length ? stp(++i, "묶음 상품 찍기", "이 바코드가 결제 금액을 잡아요") + bund.join("") : "")
     + (paid.length ? stp(++i, "정가로 찍기", "") + paid.join("") : "")
     + (free.length || ex ? `<div class="svbox">${stp(++i, "서비스(0원)로 찍기", "찍은 다음 포스에서 서비스(0원) 처리해 주세요. 재고만 빠지고 금액은 0원")}${free.join("")}${ex}</div>` : "")
     + (hiItems().length ? stp(++i, "화학물질 장부 확인", "고농도 제품, 구매자 직접 작성") + `<div class="final" style="background:var(--bg);color:var(--ink)"><span>장부</span><b style="font-family:var(--kr);font-size:18px">${ledgerText() ? esc(ledgerText()) : '<span style="color:var(--red)">아직 작성 안 됨</span>'}</b></div>` : "")
     + (cart.size && PERK ? stp(++i, "첫구매 혜택 할인", "손님이 한 것 확인하고 포스에서 할인") + `<div class="final" style="background:var(--bg);color:var(--ink)"><span>${esc((PERK_OPTS.find((o) => o[0] === PERK) || [])[1] || "")}</span><b>-${won(PERK_AMT)}</b></div>` : "")
-    + (cart.size ? stp(++i, "결제 전 확인", "") + `<div class="final"><span>포스 결제 금액이 이 금액인지 확인</span><b>${won(t.total)}</b></div>` + memLine() + qzLine() : '<div style="padding:24px 0;color:var(--grey)">담은 상품이 없어요</div>');
+    + (cart.size ? stp(++i, "결제 전 확인", "") + `<div class="final"><span>포스 결제 금액이 이 금액인지 확인</span><b>${won(t.total)}</b></div>` + qzLine() : '<div style="padding:24px 0;color:var(--grey)">담은 상품이 없어요</div>');
   $('lines').innerHTML = `<div class="prog" id="prog"></div>` + html;
   document.querySelectorAll('#lines .scan').forEach((el, k) => { el.dataset.key = k + ":" + el.dataset.nm + ":" + el.dataset.n; if (scanDone.has(el.dataset.key)) el.classList.add("done"); });
   document.querySelectorAll('#lines svg.bcd').forEach((el) => { try { JsBarcode(el, el.dataset.v, { format: el.dataset.f, height: 64, width: 2.2, fontSize: 16, margin: 6 }); } catch (e) { JsBarcode(el, el.dataset.v, { format: "CODE128", height: 64, width: 2.2, fontSize: 16, margin: 6 }); } });
@@ -925,10 +926,11 @@ function drawEv() {
     const p5 = EV.need === 5; // 5병 = 빌런, 릭 5병 30,000원 (베이프렌드 기기패키지) / 10병 = 프리미엄 10병 75,000원
     $('evEye').textContent = "베이프렌드 기기패키지"; $('evTi').textContent = p5 ? "하복2 + 빌런, 릭 5병" : "하복2 + 액상 10병";
     const o = devOpts("하복2");
+    const pod = qzPod("0.6"), podW = pod ? pod.price * EV.pods : 0, tot = won((p5 ? 119000 : 164000) + podW), pk = EV.pods / POD_PER_PACK; let podH = "";
     h += `<div class="card evhero"><img src="${PST.find((p) => /_H/.test(p)) || "pst_havok2_v7.jpg"}" alt=""><div class="pr"><s>${p5 ? "164,000원" : "179,000원"}</s><b class="price">${p5 ? "119,000원" : "164,000원"}</b><span style="font-size:14px;color:var(--grey)">${p5 ? "하복2 89,000원 + 빌런, 릭 5병 30,000원" : "하복2 89,000원 + 액상 10병 75,000원"}</span></div></div>
       <div class="opt2" style="margin-bottom:var(--gap)">${[[5, "빌런, 릭 5병", "119,000원"], [10, "액상 10병", "164,000원"]].map(([q, t, p]) => `<button class="${EV.need === q ? "on" : ""}" data-hq="${q}"><b style="font-size:18px">${t}</b><span>${p}</span></button>`).join("")}</div>`;
     h += `<div class="evsec">① 색상</div><div class="card" style="padding:16px;display:flex;gap:16px;align-items:center;position:relative"><button class="specb" data-spec="하복2" data-c="${EV.color}">스펙 보기 ›</button><img src="${DEV_IMG.하복2[EV.color] || ""}" style="width:110px;height:130px;object-fit:contain"><div><div class="colors" id="evCol">${o.map((x) => `<button style="background:${HEX[x.opt]}" class="${x.opt === EV.color ? "on" : ""}" data-ec="${x.opt}"></button>`).join("")}</div><div style="margin-top:10px;font-size:16px;font-weight:700">${EV.color}</div></div></div>`;
-    h += pickHead(p5 ? "② 빌런, 릭 5병" : "② 액상 10병");
+    h += podH + pickHead(p5 ? "③ 빌런, 릭 5병" : "③ 액상 10병");
     // 다른 프리미엄 액상 검색 (패키지 10병은 프리미엄이면 다 됨)
     const others = [...EV.pick.keys()].filter((id) => !LQ.some((x) => x.id === id)).map((id) => ALL_LQ.find((x) => x.id === id)).filter(Boolean);
     const found = evQ.trim() ? searchItems(evQ).filter((o) => o.t === "liq" && o.x.line === "프리미엄").map((o) => o.x).slice(0, 12) : [];
@@ -938,8 +940,7 @@ function drawEv() {
     const show = [...new Map([...others, ...found].map((x) => [x.id, x])).values()];
     h += show.length ? `<div class="grid" style="margin-top:10px">${show.map((x) => evCard(x.id, imgOf(x), short(x.n), [x.br, x.f].filter(Boolean).join(", "), 0, outOf(x.n))).join("")}</div>` : (evQ.trim() ? '<div class="evtip">찾는 프리미엄 액상이 없어요</div>' : ""); }
     // 10/28 이사님, 사장님: 팟 같이 (객단가 19만원대). 기본 3팩, 손님이 빼거나 더할 수 있음
-    const pod = qzPod("0.6"), podW = pod ? pod.price * EV.pods : 0, tot = won((p5 ? 119000 : 164000) + podW), pk = EV.pods / POD_PER_PACK;
-    if (pod) h += `<div class="evsec">③ 하복2 팟 같이 담기</div><div class="card" style="padding:14px 16px;display:flex;gap:14px;align-items:center"><img src="dev_havok2_pod.jpg" alt="" style="width:76px;height:76px;object-fit:contain;border-radius:12px;background:#fff"><div style="flex:1"><b style="font-size:17px">하복2 팟 0.6옴</b><div style="color:var(--grey);font-size:14px">1팩(${POD_PER_PACK}개) ${won(pod.price * POD_PER_PACK)}${pk ? `, ${pk}팩 ${won(podW)}` : ""}</div></div><div class="pstep"><button data-evpod="-1">-</button><b>${pk}팩</b><button data-evpod="1">+</button></div></div>`;
+    if (pod) podH = `<div class="evsec">② 하복2 팟 같이 담기</div><div class="card" style="padding:14px 16px;display:flex;gap:14px;align-items:center"><img src="dev_havok2_pod.jpg" alt="" style="width:76px;height:76px;object-fit:contain;border-radius:12px;background:#fff"><div style="flex:1"><b style="font-size:17px">하복2 팟 0.6옴</b><div style="color:var(--grey);font-size:14px">1팩(${POD_PER_PACK}개) ${won(pod.price * POD_PER_PACK)}${pk ? `, ${pk}팩 ${won(podW)}` : ""}</div></div><div class="pstep"><button data-evpod="-1">-</button><b>${pk}팩</b><button data-evpod="1">+</button></div></div>`;
     $('evGo').textContent = rest ? `${n}병 고르고 담기 (남은 ${rest}병은 매장에서), ${tot}` : `이 구성으로 담기, ${tot}`;
   }
   if (EV.k === "B") {
