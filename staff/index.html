@@ -285,7 +285,7 @@
 })();
 </script>
 <script>
-const VER = "10.29-9"; window.VER_ERR = VER;
+const VER = "10.29-10"; window.VER_ERR = VER;
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍", "동성로2"];
@@ -460,7 +460,9 @@ function askHtml() {
   // 10/29 액상덕후 "팀장님 연락처는 하나씩 순서대로": 봇이 고른 한 분만. 번호는 매장 코드 넣은 기기에서만(board.leads 잠금)
   if (BOARD?.leads && ASK.leadsEnc !== BOARD.leads) { ASK.leadsEnc = BOARD.leads; decOne(BOARD.leads).then((o) => { ASK.leads = o?.L || null; if (VIEW === "ask") bgRender(); }).catch(() => {}); }
   const leadLine = (x) => { if (x.lead == null || !x.leadName) return ""; const c = ASK.leads?.[x.lead]; return `\n\n📞 ${esc(x.leadName)} 팀장님 ${c ? `<a href="tel:${esc(c[1])}" style="color:var(--blue);font-weight:800">${esc(c[1])}</a>` : '<span style="color:var(--sub)">(매장 코드를 넣으면 번호가 보여요)</span>'}`; };
-  const msgs = L.map((x) => me(x) + (x.a ? bot(esc(x.at || ""), esc(x.a).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>") + leadLine(x)) : bot("", `<span style="color:var(--sub)">${ASK_CLOSE(x.q) ? "포스랑 은행 기록을 보고 있어요. 1분쯤 걸려요" : "답 쓰는 중이에요"} <span class="bef-dots"><i>●</i><i>●</i><i>●</i></span></span>`))).join("");
+  // 10/29 액상덕후 "답변이 도움이 되었나요? 버튼 만들어서 민심 수집": 답마다 👍 👎 한 번. 👎 받은 답은 봇이 다시 안 씀
+  const fbHtml = (x) => { const v = x.fb || ASK.fb?.[x.id]; return `<div style="margin:-4px 0 8px 38px;font-size:12px;color:var(--sub);display:flex;gap:6px;align-items:center">${v ? (v > 0 ? "👍 고마워요!" : "👎 알려 줘서 고마워요. 고칠게요") : `도움이 됐나요? <button data-befb="${esc(x.id)}|1" style="background:#f2f4f6;border:0;border-radius:12px;padding:4px 10px;font-size:14px">👍</button><button data-befb="${esc(x.id)}|-1" style="background:#f2f4f6;border:0;border-radius:12px;padding:4px 10px;font-size:14px">👎</button>`}</div>`; };
+  const msgs = L.map((x) => me(x) + (x.a ? bot(esc(x.at || ""), esc(x.a).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>") + leadLine(x)) + fbHtml(x) : bot("", `<span style="color:var(--sub)">${ASK_CLOSE(x.q) ? "포스랑 은행 기록을 보고 있어요. 1분쯤 걸려요" : "답 쓰는 중이에요"} <span class="bef-dots"><i>●</i><i>●</i><i>●</i></span></span>`))).join("");
   setTimeout(() => { const box = $("#askBox"), q = $("#askQ"); if (box) box.scrollTop = box.scrollHeight; if (q && ASK.focus) { q.focus(); q.setSelectionRange(q.value.length, q.value.length); } }, 0);
   return `<div class="cols one"><div><div class="card" style="padding:0;display:flex;flex-direction:column;height:calc(100vh - 190px);min-height:420px;overflow:hidden">
     <div style="padding:14px 16px;border-bottom:1px solid var(--line);font-weight:800">💛 베프 <small style="color:var(--sub);font-weight:500">오늘 대화만 보여요</small></div>
@@ -486,6 +488,7 @@ async function askGo(text, faq) {
 }
 document.addEventListener("input", (e) => { if (e.target?.id === "askQ") { ASK.draft = e.target.value; e.target.style.height = "auto"; e.target.style.height = Math.min(e.target.scrollHeight, 120) + "px"; } });
 document.addEventListener("keydown", (e) => { if (e.target?.id === "askQ" && e.key === "Enter" && !e.shiftKey && !e.isComposing) { e.preventDefault(); askGo(); } });
+document.addEventListener("click", async (e) => { const f = e.target.closest?.("[data-befb]"); if (!f) return; const [id, v] = f.dataset.befb.split("|"); (ASK.fb ||= {})[id] = +v; render(); try { await send({ type: "askfb", id, v: +v, by: working().join(", ") }); } catch (er) { delete ASK.fb[id]; render(); fail(er); } });
 document.addEventListener("click", (e) => { const b = e.target.closest?.("[data-askfaq]"); if (b) { const f = (BOARD?.faq || [])[+b.dataset.askfaq]; if (f) askGo(f.q, f); } });
 const ALERT_SEEN = () => `vf-alert-seen-${B}-${todayKey()}`;
 let ALERT_OPEN = null;
