@@ -265,7 +265,27 @@
 <div class="toast" id="toast"></div>
 <script src="../menu/pos.js"></script>
 <script>
-const VER = "10.28-8";
+// 10/29 본점 "하얀 화면": 화면을 그리다 멈추면(오래된 브라우저가 새 문법을 못 읽는 것 포함) 하얀 화면 대신 오류를 보여 주고 봇에 남김. 아래 큰 스크립트보다 먼저 따로 둠
+(function () {
+  var sent = 0;
+  function show(msg, src) {
+    try {
+      if (sent++ < 3) { var b = (location.search.match(/branch=([^&]+)/) || [])[1]; fetch("https://discord.com/api/webhooks/1555156884753743905/BLK7tRBQACouQrOE_hvOkm2-iD44gnfnxdJvQXxiBAJKXJU3MG4bjnACFsXgDkDWLBrh", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ content: JSON.stringify({ type: "apperr", branch: b ? decodeURIComponent(b) : "", ver: window.VER_ERR || "", msg: String(msg).slice(0, 400), src: String(src || "").slice(0, 120), ua: navigator.userAgent.slice(0, 120), dev: (function () { try { return localStorage.getItem("vf-dev") || ""; } catch (e) { return ""; } })() }), allowed_mentions: { parse: [] } }) }); }
+    } catch (e) {}
+    var app = document.getElementById("app");
+    if (app && app.innerText.replace(/\s/g, "").length > 20) return; // 화면이 이미 그려져 있으면 그대로 둠
+    var d = document.getElementById("errbox") || document.createElement("div"); d.id = "errbox";
+    d.style.cssText = "margin:40px auto;max-width:520px;padding:24px;border-radius:16px;background:#fff0f0;color:#c0262d;font:16px/1.6 sans-serif;text-align:center";
+    // 10/29 사장님 "오류 내용이 도움이 하나도 안 됨, 매장 사람이 아니어도 보면 알아야": 영어 오류 글은 안 보여 주고 할 일만(오류 내용은 봇 기록에만)
+    d.innerHTML = "<b>화면이 안 떠요</b><br>새로고침을 눌러 주세요. 계속 안 되면 팀장님께 \"직원웹 하얀 화면\"이라고 알려 주세요.<br><button onclick='location.reload()' style='margin-top:14px;padding:12px 24px;border-radius:12px;border:0;background:#3182f6;color:#fff;font-weight:700;font-size:16px'>새로고침</button>";
+    document.body.appendChild(d);
+  }
+  window.addEventListener("error", function (e) { show(e.message || "오류", (e.filename || "") + ":" + (e.lineno || "")); });
+  window.addEventListener("unhandledrejection", function (e) { var r = e.reason; if (r && /render|is not|undefined|null/i.test(String(r.message || r))) show("(비동기) " + (r.message || r), ""); });
+})();
+</script>
+<script>
+const VER = "10.29-1"; window.VER_ERR = VER;
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍", "동성로2"];
@@ -426,9 +446,9 @@ function bgRender() { const w = 1200 - (Date.now() - TOUCH); if (w > 0) return v
 function render() {
   if (LEADER) return renderLeader();
   if (!B) return renderPick();
-  const s = st(), sd = stockDone(), working = s.ins.filter((x) => !x.out);
+  const s = st(), stDone = stockDone() /* 10/29 본점 하얀 화면: 지역 변수 sd가 날짜 함수 sd()를 가려 블로그 밀린 날 홈이 죽었음 */, working = s.ins.filter((x) => !x.out);
   const d = new Date();
-  const steps = [s.ins.length > 0, !!s.open, !!sd], done = steps.filter(Boolean).length, N = steps.length; // 10/19 밤 사장님: 오픈 = 출근, 오픈 체크, 아침 재고보고(폰으로)
+  const steps = [s.ins.length > 0, !!s.open, !!stDone], done = steps.filter(Boolean).length, N = steps.length; // 10/19 밤 사장님: 오픈 = 출근, 오픈 체크, 아침 재고보고(폰으로)
   const cSteps = [!!s.close].concat(CLOSE_OK.includes(B) ? [!!(CLOSE_SENT && CLOSE_SENT.status === "done")] : []).concat([s.ins.length > 0 && !working.length]), cDone = cSteps.filter(Boolean).length;
   const title = done < N ? `오픈까지 ${N - done}단계 남았어요` : cDone === cSteps.length ? "오늘 마감 완료! 수고하셨어요" : `마감까지 ${cSteps.length - cDone}단계 남았어요`;
   const heroP = done < N ? `오픈 ${OPEN_AT[B]}, 출근 → 오픈 체크 → 재고보고` : `✅ 오픈 완료 ${s.open ? s.open.t : ""}, 마감 체크 →${CLOSE_OK.includes(B) ? " 마감 보고 →" : ""} 퇴근`;
@@ -440,7 +460,7 @@ function render() {
     : `<div class="card"><h2>오픈</h2>
       ${stepRow(1, steps[0], "출근", { t: s.ins.length ? s.ins.map((x) => `${esc(x.name)} ${x.t}${x.out ? `~${x.out}` : ""}`).join(", ") : "아직 안 함" }, `<button class="act ${steps[0] ? "gray" : ""}" data-go="in">${steps[0] ? "추가" : "출근"}</button>`)}
       ${stepRow(2, steps[1], "오픈 체크", s.open ? { t: `${s.open.t} 완료${openCheckTxt()}${s.open.missed.length ? `, 못 한 것 ${s.open.missed.length}개` : ""}`, w: s.open.missed.length } : { t: lateMin(now()) ? `오픈 ${OPEN_AT[B]}, 벌써 ${lateMin(now())}분 지났어요` : "아직 안 함", w: lateMin(now()) }, `<button class="act ${steps[1] ? "gray" : ""}" data-go="open">${steps[1] ? "다시" : "체크"}</button>`)}
-      ${stepRow(3, steps[2], "아침 재고보고", sd ? { t: `${sd.t} 완료, ${esc(sd.by || "")}` } : { t: "포스 재고가 미리 들어가 있어요" }, `<a class="act ${steps[2] ? "gray" : ""}" href="${SITE}stock/?branch=${encodeURIComponent(B)}${TEST ? "&test=1" : ""}&by=${encodeURIComponent(working.map((x) => x.name).join(", "))}&back=${encodeURIComponent(location.pathname)}">${steps[2] ? "다시" : "하기"}</a>`)}
+      ${stepRow(3, steps[2], "아침 재고보고", stDone ? { t: `${stDone.t} 완료, ${esc(stDone.by || "")}` } : { t: "포스 재고가 미리 들어가 있어요" }, `<a class="act ${steps[2] ? "gray" : ""}" href="${SITE}stock/?branch=${encodeURIComponent(B)}${TEST ? "&test=1" : ""}&by=${encodeURIComponent(working.map((x) => x.name).join(", "))}&back=${encodeURIComponent(location.pathname)}">${steps[2] ? "다시" : "하기"}</a>`)}
     </div>`;
   const closeCard = `<div class="card"><h2>마감</h2>
       ${stepRow("🔎", (TEST ? BOARD?.midCheckTest : BOARD?.midCheck)?.status === "같음", "중간 체크", midInfo(), `${MIDPEND ? '<button class="act gray" disabled>확인 중</button>' : `${(TEST ? BOARD?.midCheckTest : BOARD?.midCheck)?.full ? '<button class="act" data-go="midres" style="margin-right:6px">결과</button>' : ""}<button class="act gray" data-go="mid">체크</button>`}`)}
@@ -2477,16 +2497,16 @@ const runAfterIn = () => { const f = AFTER_IN; AFTER_IN = null; if (f) setTimeou
 // 10/28 사장님: 이름을 직접 쳐서 성 있고 없고가 섞임 → 운영봇이 주는 지점 직원 목록(노션식 이름)에서 고르게. 없으면 직접 적기. 적은 이름도 목록 이름으로 맞춤(안보혜→보혜)
 const roster = () => (BOARD?.staff || []).filter((n) => /^[가-힣a-zA-Z]{2,}$/.test(n));
 const canonLocal = (n) => { n = String(n || "").trim(); const R = roster(); if (R.includes(n)) return n; if (n.length >= 3) { const g = n.slice(1); if (R.includes(g) && !R.some((r) => r !== g && r.endsWith(g))) return g; } return n; };
+// 10/29 사장님 "출근 입력은 전에 버전이 더 괜찮음": 지점 직원 목록, 성 떼기(10/28) 되돌림 → 이 기기에서 최근 적은 이름 + 직접 적기, 적은 그대로
 function sheetIn() {
-  const s = st(), R = roster(), recent = ls.get(`vf-app-${B}-names`, []).map(canonLocal).filter((n, i, a) => a.indexOf(n) === i && !R.includes(n));
-  const names = [...R, ...recent].filter((n) => !s.ins.some((x) => x.name === n && !x.out));
-  openSheet(`<h2>출근</h2><div class="desc">${R.length ? "이름을 누르면 바로 출근돼요." : "이름을 고르거나 입력해 주세요."}</div>
-    ${names.length ? `<div class="chips">${names.map((n) => `<button class="chip" data-name="${esc(n)}">${esc(n)}</button>`).join("")}</div>` : ""}
-    <input class="input" id="nm" placeholder="${R.length ? "목록에 없으면 직접 적기" : "이름"}" maxlength="20" style="margin-top:10px">
+  const s = st(), recent = ls.get(`vf-app-${B}-names`, []).filter((n) => !s.ins.some((x) => x.name === n));
+  openSheet(`<h2>출근</h2><div class="desc">이름을 고르거나 입력해 주세요.</div>
+    ${recent.length ? `<div class="chips">${recent.map((n) => `<button class="chip" data-name="${esc(n)}">${esc(n)}</button>`).join("")}</div>` : ""}
+    <input class="input" id="nm" placeholder="이름" maxlength="20">
     <div class="btns"><button class="btn" data-x>취소</button><button class="btn primary" id="okIn">출근 보내기</button></div>`);
 }
 async function doIn(name) {
-  name = canonLocal(name.trim()); if (!name) return toast("이름을 넣어 주세요"); if (!/[가-힣a-zA-Z]{2,}/.test(name)) return toast("이름을 두 글자 이상 정확히 넣어 주세요"); // 10/5 '0'으로 출근 기록된 일
+  name = name.trim(); if (!name) return toast("이름을 넣어 주세요"); if (!/[가-힣a-zA-Z]{2,}/.test(name)) return toast("이름을 두 글자 이상 정확히 넣어 주세요"); // 10/5 '0'으로 출근 기록된 일
   const s = st(), again = s.ins.find((x) => x.name === name); if (again && !again.out) return toast("지금 근무 중이에요"); // 퇴근했다가 다시 출근은 허용 (10/6)
   $("#okIn").disabled = true;
   try {
