@@ -285,7 +285,7 @@
 })();
 </script>
 <script>
-const VER = "10.29-6"; window.VER_ERR = VER;
+const VER = "10.29-7"; window.VER_ERR = VER;
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍", "동성로2"];
@@ -444,19 +444,35 @@ if (!VIEWS.some((v) => v[0] === VIEW)) VIEW = "home";
 let TOUCH = 0; document.addEventListener("pointerdown", () => { TOUCH = Date.now(); }, true);
 function bgRender() { const w = 1200 - (Date.now() - TOUCH); if (w > 0) return void setTimeout(bgRender, w); if (!$("#dim").classList.contains("on")) render(); }
 // ── 10/29 액상덕후 "신입 질문봇, 알림 팝업" ── 질문은 봇이 하이쿠로 답함(지점당 하루 30번), 알림은 봇의 놓친 일 순찰
-const ASK = { prev: "" };
+// 10/29 액상덕후 "인스타 DM처럼 주고받게": 대화창 모양, 아래 입력칸, 엔터로 보내기. 화면이 새로 그려져도 쓰던 글은 ASK.draft로 남김
+const ASK = { prev: "", draft: "", focus: false };
+const ASK_EX = ["말론S 0.4옴 팟은 입호흡이야?", "하복2에 맞는 코일 뭐야?", "교환은 며칠 안에 돼?"];
 function askHtml() {
-  const L = (BOARD?.qa || []).filter((x) => !x.test === !TEST).slice().reverse();
-  return `<div class="cols one"><div><div class="card"><h2>🙋 물어보기</h2><div class="desc">상품, 교환, 가격, 응대처럼 궁금한 걸 물어보세요. 자료에 없는 건 팀장님께 물어보라고 답해요.</div>
-    <textarea class="input" id="askQ" rows="3" maxlength="300" placeholder="예: 말론S 0.4옴 팟은 입호흡이야?" style="margin-top:10px"></textarea>
-    <div class="btns"><button class="btn primary" id="askGo">물어보기</button></div></div>
-    ${L.length ? `<div class="card">${L.map((x) => `<div style="border-top:1px solid #eee;padding:12px 0"><div style="font-weight:800">🙋 ${esc(x.q)} <small style="color:var(--sub);font-weight:500">${esc(x.t)} ${esc(x.by || "")}</small></div><div style="margin-top:6px;white-space:pre-wrap;line-height:1.6">${x.a ? esc(x.a) : '<span style="color:var(--sub)">생각 중이에요…</span>'}</div></div>`).join("")}</div>` : ""}</div></div>`;
+  const L = (BOARD?.qa || []).filter((x) => !x.test === !TEST);
+  ASK.focus = document.activeElement?.id === "askQ"; // 다시 그리기 전에 입력 중이었는지
+  const bot = (t, inner) => `<div style="display:flex;gap:8px;align-items:flex-end;margin:10px 0"><div style="width:30px;height:30px;border-radius:50%;background:var(--blue-soft);display:flex;align-items:center;justify-content:center;flex:none">🤖</div><div style="max-width:78%"><div style="background:#f2f4f6;border-radius:18px 18px 18px 4px;padding:10px 14px;white-space:pre-wrap;line-height:1.6;font-size:15px">${inner}</div>${t ? `<div style="font-size:11px;color:var(--sub);margin:3px 0 0 6px">${t}</div>` : ""}</div></div>`;
+  const me = (x) => `<div style="display:flex;justify-content:flex-end;margin:10px 0"><div style="max-width:78%;text-align:right"><div style="background:var(--blue);color:#fff;border-radius:18px 18px 4px 18px;padding:10px 14px;white-space:pre-wrap;line-height:1.6;font-size:15px;text-align:left">${esc(x.q)}</div><div style="font-size:11px;color:var(--sub);margin:3px 6px 0 0">${esc(x.by || "")} ${esc(x.t)}</div></div></div>`;
+  const hi = bot("", `안녕하세요! 상품, 교환, 가격, 응대 뭐든 물어보세요.\n자료에 없는 건 팀장님께 물어보라고 알려 드려요.`)
+    + (L.length ? "" : `<div style="display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 0 38px">${ASK_EX.map((q) => `<button class="act gray" data-askex="${esc(q)}">${esc(q)}</button>`).join("")}</div>`);
+  const msgs = L.map((x) => me(x) + (x.a ? bot(esc(x.at || ""), esc(x.a).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>")) : bot("", '<span style="color:var(--sub)">답 쓰는 중이에요 …</span>'))).join("");
+  setTimeout(() => { const box = $("#askBox"), q = $("#askQ"); if (box) box.scrollTop = box.scrollHeight; if (q && ASK.focus) { q.focus(); q.setSelectionRange(q.value.length, q.value.length); } }, 0);
+  return `<div class="cols one"><div><div class="card" style="padding:0;display:flex;flex-direction:column;height:calc(100vh - 190px);min-height:420px;overflow:hidden">
+    <div style="padding:14px 16px;border-bottom:1px solid var(--line);font-weight:800">🤖 질문봇 <small style="color:var(--sub);font-weight:500">오늘 대화만 보여요</small></div>
+    <div id="askBox" style="flex:1;overflow-y:auto;padding:6px 14px">${hi}${msgs}</div>
+    <div style="display:flex;gap:8px;align-items:flex-end;padding:10px 12px;border-top:1px solid var(--line);background:#fff">
+      <textarea id="askQ" rows="1" maxlength="300" placeholder="메시지 보내기" style="flex:1;resize:none;border:1px solid var(--line);border-radius:20px;padding:10px 14px;font:inherit;font-size:15px;max-height:120px;outline:none;background:#f9fafb">${esc(ASK.draft)}</textarea>
+      <button id="askGo" style="background:var(--blue);color:#fff;border:0;border-radius:20px;padding:10px 16px;font-weight:800;flex:none">보내기</button>
+    </div></div></div></div>`;
 }
-async function askGo() {
-  const q = ($("#askQ")?.value || "").trim(); if (!q) return toast("궁금한 걸 적어 주세요");
+async function askGo(text) {
+  const q = (text || $("#askQ")?.value || "").trim(); if (!q) return;
   const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 5), by = working().join(", ");
-  try { await send({ type: "ask", id, q, prev: ASK.prev, by }); ASK.prev = q; (BOARD.qa ||= []).push({ id, q, a: null, by, t: new Date().toTimeString().slice(0, 5), test: TEST }); render(); setTimeout(loadRelay, 4000); } catch (e) { fail(e); }
+  ASK.draft = ""; if ($("#askQ")) $("#askQ").value = "";
+  try { await send({ type: "ask", id, q, prev: ASK.prev, by }); ASK.prev = q; (BOARD.qa ||= []).push({ id, q, a: null, by, t: new Date().toTimeString().slice(0, 5), test: TEST }); render(); setTimeout(loadRelay, 4000); } catch (e) { ASK.draft = q; render(); fail(e); }
 }
+document.addEventListener("input", (e) => { if (e.target?.id === "askQ") { ASK.draft = e.target.value; e.target.style.height = "auto"; e.target.style.height = Math.min(e.target.scrollHeight, 120) + "px"; } });
+document.addEventListener("keydown", (e) => { if (e.target?.id === "askQ" && e.key === "Enter" && !e.shiftKey && !e.isComposing) { e.preventDefault(); askGo(); } });
+document.addEventListener("click", (e) => { const b = e.target.closest?.("[data-askex]"); if (b) askGo(b.dataset.askex); });
 const ALERT_SEEN = () => `vf-alert-seen-${B}-${todayKey()}`;
 let ALERT_OPEN = null;
 function beep() { try { const c = new (window.AudioContext || window.webkitAudioContext)(), o = c.createOscillator(), g = c.createGain(); o.frequency.value = 880; g.gain.value = 0.08; o.connect(g); g.connect(c.destination); o.start(); setTimeout(() => { o.frequency.value = 1320; }, 140); setTimeout(() => { o.stop(); c.close(); }, 320); } catch {} }
