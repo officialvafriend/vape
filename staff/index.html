@@ -285,7 +285,7 @@
 })();
 </script>
 <script>
-const VER = "10.29-1"; window.VER_ERR = VER;
+const VER = "10.29-2"; window.VER_ERR = VER;
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍", "동성로2"];
@@ -2499,7 +2499,8 @@ const roster = () => (BOARD?.staff || []).filter((n) => /^[가-힣a-zA-Z]{2,}$/.
 const canonLocal = (n) => { n = String(n || "").trim(); const R = roster(); if (R.includes(n)) return n; if (n.length >= 3) { const g = n.slice(1); if (R.includes(g) && !R.some((r) => r !== g && r.endsWith(g))) return g; } return n; };
 // 10/29 사장님 "출근 입력은 전에 버전이 더 괜찮음": 지점 직원 목록, 성 떼기(10/28) 되돌림 → 이 기기에서 최근 적은 이름 + 직접 적기, 적은 그대로
 function sheetIn() {
-  const s = st(), recent = ls.get(`vf-app-${B}-names`, []).filter((n) => !s.ins.some((x) => x.name === n));
+  // 10/29 사장님 "이름이 다 여러 개": 10/28 성 떼던 동안 저장된 '시원' 같은 짧은 이름은, 같은 기기 목록에 '김시원'이 있으면 빼고 성 있는 이름만
+  const s = st(), all = ls.get(`vf-app-${B}-names`, []), recent = all.filter((n) => !(n.length === 2 && all.some((m) => m.length === 3 && m.endsWith(n)))).filter((n) => !s.ins.some((x) => x.name === n));
   openSheet(`<h2>출근</h2><div class="desc">이름을 고르거나 입력해 주세요.</div>
     ${recent.length ? `<div class="chips">${recent.map((n) => `<button class="chip" data-name="${esc(n)}">${esc(n)}</button>`).join("")}</div>` : ""}
     <input class="input" id="nm" placeholder="이름" maxlength="20">
