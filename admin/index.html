@@ -731,13 +731,11 @@ function botHtml() {
   const rb = (bot) => `<button class="btn gray" style="width:auto;height:40px;padding:0 14px;font-size:15px" data-restart="${bot}">다시 켜기</button>`;
   const hh = new Date(Date.now() + 9 * 3600e3).getUTCHours(), open = hh >= 11 && hh < 22;
   // 10/28 사장님 "신호가 안 온 줄 알았다": 마지막 알림 시각 대신 오늘 포스 이체 건수와 통장 입금 건수를 비교. 이체 손님이 없으면 회색, 다 들어왔으면 초록, 포스엔 있는데 통장에 없으면 빨강
-  const bank = BR.map((b) => { const v = BOT.bank?.[b], o = v && typeof v === "object" ? v : { last: v || null }; const mm = o.last ? Math.round((Date.now() - Date.parse(o.last.replace(" ", "T") + ":00+09:00")) / 60e3) : null;
-    let txt, cls = "";
-    if (o.posTr == null) { const bad = mm == null || (open && mm > 240); txt = mm == null ? "연결 전" : "마지막 " + agoTxt(mm); if (bad) cls = "background:var(--red-soft);color:var(--red)"; }
-    else if (o.posTr === 0) { txt = "오늘 이체 없음"; if (mm == null) { txt = "연결 전"; cls = "background:var(--red-soft);color:var(--red)"; } else if (o.bankN) { txt = `통장 입금 ${o.bankN}건, 포스엔 이체 0건`; cls = "background:var(--amber-soft);color:var(--amber)"; } } // 10/28 동성로: 이체 손님을 포스에 현금으로 찍어 포스 이체 0, 통장 2건 → 노란색으로 알림
-    else if ((o.bankN || 0) >= o.posTr) { txt = `이체 ${o.posTr}건 다 들어옴`; cls = "background:var(--green-soft);color:var(--green)"; }
-    else { txt = `포스 이체 ${o.posTr}건, 통장 ${o.bankN || 0}건${o.gap ? `, 폰 알림 끊김 ${o.gap}` : ""}`; cls = o.gap ? "background:var(--amber-soft);color:var(--amber)" : "background:var(--red-soft);color:var(--red)"; } // 10/28 폰 알림이 끊긴 시간대가 있으면 노란색으로 이유 표시
-    return `<span class="chip" style="display:inline-flex;align-items:center;gap:5px;height:34px;padding:0 12px;font-size:14px;${cls}" title="${o.last ? "마지막 통장 알림 " + esc(o.last) : ""}${o.posAt ? ", 포스 " + esc(o.posAt) + " 기준" : ""}">${BR.indexOf(b) + 1}호 ${b} <small>${txt}</small></span>`; }).join("");
+  // 10/29 사장님 "전처럼 깔끔하게": 칩은 폰 알림 앱 상태만. 정상(초록, 마지막 알림 시각) / 알림 끊김(빨강) / 오늘 조용함(회색) / 연결 전(회색). 포스 대조는 칩을 누르면(다음 단계)
+  const bank = BR.map((b) => { const v = BOT.bank?.[b], o = v && typeof v === "object" ? v : { last: v || null, st: v ? "ok" : "none" };
+    const lt = o.last ? o.last.slice(5).replace("-", "/").replace(/^(\d\d\/\d\d) /, (m, d) => (d === todayMD() ? "" : d + " ")) : "";
+    const [txt, cls] = o.st === "cut" ? [`알림 끊김, 마지막 ${lt}`, "background:var(--red-soft);color:var(--red)"] : o.st === "none" ? ["연결 전", "color:var(--sub)"] : o.st === "quiet" ? ["오늘 알림 아직 없음", "color:var(--sub)"] : [`정상, 마지막 ${lt}`, "background:var(--green-soft);color:var(--green)"];
+    return `<span class="chip" style="display:inline-flex;align-items:center;gap:5px;height:34px;padding:0 12px;font-size:14px;${cls}" title="${o.gap ? "오늘 끊겼던 시간 " + esc(o.gap) : ""}${o.posTr != null ? " 포스 이체 " + o.posTr + "건" : ""}">${BR.indexOf(b) + 1}호 ${b} <small>${txt}${o.gap ? " ⚠️" : ""}</small></span>`; }).join("");
   return `<div class="card" id="botcard"><div class="eyebrow">봇 상태 <span class="t-sub" style="font-weight:500">${agoTxt(m)} 기준${dead ? ", 이 PC나 운영봇이 꺼진 것 같아요 (10분마다 자동으로 다시 켜요)" : ""}</span></div>
     ${row("운영봇", opsBad, dead ? "소식 없음 " + agoTxt(m) : BOT.ops.s + (BOT.ops.line ? ", " + BOT.ops.line : ""), rb("운영봇"))}
     ${row("마스터봇", masterBad, masterTxt, rb("마스터봇"))}
@@ -745,7 +743,7 @@ function botHtml() {
     ${BOT.bsQ ? `<div class="t-bad" style="padding:8px 0;font-weight:700">⚠️ 시트에 못 들어간 기록 ${BOT.bsQ}건 (다시 보내는 중)</div>` : ""}
     ${BOT.bigWait ? `<div class="t-warn" style="padding:8px 0;font-weight:700">💰 지점 확인 기다리는 큰 입금 ${BOT.bigWait}건</div>` : ""}
     ${visitsHtml()}
-    <div style="padding-top:12px;border-top:1px solid var(--line2)"><div class="eyebrow" style="margin-bottom:6px">지점별 통장 입금 <span class="t-sub" style="font-weight:500">오늘 포스 이체와 비교, 포스엔 있는데 통장 알림이 없으면 빨간색</span></div><div style="display:flex;flex-wrap:wrap;gap:6px">${bank}</div></div></div>`;
+    <div style="padding-top:12px;border-top:1px solid var(--line2)"><div class="eyebrow" style="margin-bottom:6px">지점 폰 은행알림 <span class="t-sub" style="font-weight:500">포스에 이체가 찍혔는데 30분 넘게 알림이 없으면 빨간색</span></div><div style="display:flex;flex-wrap:wrap;gap:6px">${bank}</div></div></div>`;
 }
 // 10/25 사장님: 봇 상태 자세히는 '사무실' 메뉴로, 홈에는 신호등처럼 작게(누르면 사무실)
 function officeHtml() { return `<div class="pchead"><h1>사무실</h1><div class="caption">봇 상태, 포스 조정 로그인, 지점 직원앱 접속, 은행 알림</div></div>${charsHtml()}${botHtml()}`; }
@@ -792,6 +790,7 @@ function botMiniHtml() {
 }
 function homeHtml() { return `<div style="padding-top:6px">${botWarn()}${statHtml()}${issuesHtml()}${opsMobileHtml()}</div>`; }
 // ── 마감 보고 (직원앱 시재 + 포스 숫자) ──
+const todayMD = () => { const d = new Date(Date.now() + 9 * 3600e3); return String(d.getUTCMonth() + 1).padStart(2, "0") + "/" + String(d.getUTCDate()).padStart(2, "0"); };
 const won = (n) => Math.round(+n || 0).toLocaleString("ko-KR");
 // 10/28 사장님 "세로로 쌓이기보다 지점별로": 전체 = 지점 카드 9개(지점마다 최근 마감 7건), 지점 칩을 누르면 그 지점만 길게
 let clB = ls.get("vf-admin-clb") || "전체";
