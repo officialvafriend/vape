@@ -285,7 +285,7 @@
 })();
 </script>
 <script>
-const VER = "10.29-4"; window.VER_ERR = VER;
+const VER = "10.29-5"; window.VER_ERR = VER;
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍", "동성로2"];
@@ -2371,20 +2371,21 @@ const gUsed = (n) => Math.max(BOARD?.game?.plays?.[n] || 0, GAME.local[`${todayK
 // 10/29 사장님 "이사님은 본점에 오시니까 본점에 한섭이사 넣고, 쉬는 시간 탭에서 항상 5판": 출근 안 해도 고를 수 있는 고정 이름(지점별), 판수는 봇이 이름으로 하루 5판 셈
 const GAME_EXTRA = { 본점: ["한섭이사"] };
 const gameNames = () => { const n = working().slice(); for (const x of GAME_EXTRA[B] || []) if (!n.includes(x)) n.push(x); return n; };
-const gFree = (n) => (BOARD?.game?.free || ["한섭이사"]).includes(n); // 10/29 사장님 "한섭이사님은 횟수 무한"
-const gLeft = (n, max) => (gFree(n) ? 99 : Math.max(0, max - gUsed(n)));
+const gMaxOf = (n, max) => (BOARD?.game?.limit || { 한섭이사: 10 })[n] || max; // 10/29 사장님: 한섭이사는 하루 10판(무제한은 명의 도용 위험으로 취소)
+const gFree = () => false;
+const gLeft = (n, max) => Math.max(0, gMaxOf(n, max) - gUsed(n));
 function gameHtml() {
   const g = BOARD?.game || {}, max = g.max || 5, names = gameNames(), me = names.includes(GAME.who) ? GAME.who : names.length === 1 ? names[0] : null, left = me ? gLeft(me, max) : 0;
   const rank = (g.rank || []).map(([b, n, sc], i) => `<div class="crow" style="width:100%"><div style="display:flex;gap:10px;align-items:center;width:100%"><b style="width:28px;font-size:18px">${["🥇", "🥈", "🥉"][i] || i + 1}</b><b style="flex:1">${esc(ho(b))} ${esc(n)}</b><b style="font-variant-numeric:tabular-nums">${(+sc).toFixed(2)}초</b></div></div>`).join("");
   return `<div class="cols one"><div><div class="card"><h2>🎮 연기 피하기</h2>
     <div class="desc">연기를 피해 오래 버티면 이겨요. 하루 ${max}판, 이번 주 1등은 월요일에 발표해요.${TEST ? " <b style='color:var(--red)'>시험 모드는 랭킹에 안 올라가요</b>" : ""}</div>
-    ${names.length ? `<div class="desc" style="margin-top:10px">누가 할까요</div><div class="chips">${names.map((n) => `<button class="chip ${n === me ? "on" : ""}" data-gwho="${esc(n)}">${esc(n)} <small>${gFree(n) ? "무제한" : Math.max(0, max - gUsed(n)) + "판 남음"}</small></button>`).join("")}</div>` : '<div class="desc" style="margin-top:10px;color:var(--red)">출근하고 할 수 있어요</div>'}
-    <div class="btns"><button class="btn primary" id="gGo" ${me && left ? "" : "disabled"}>${!me ? "이름을 골라 주세요" : gFree(me) ? "시작" : left ? `시작 (${left}판 남음)` : "오늘은 다 했어요, 내일 다시"}</button></div></div>
+    ${names.length ? `<div class="desc" style="margin-top:10px">누가 할까요</div><div class="chips">${names.map((n) => `<button class="chip ${n === me ? "on" : ""}" data-gwho="${esc(n)}">${esc(n)} <small>${gLeft(n, max)}판 남음</small></button>`).join("")}</div>` : '<div class="desc" style="margin-top:10px;color:var(--red)">출근하고 할 수 있어요</div>'}
+    <div class="btns"><button class="btn primary" id="gGo" ${me && left ? "" : "disabled"}>${!me ? "이름을 골라 주세요" : left ? `시작 (${left}판 남음)` : "오늘은 다 했어요, 내일 다시"}</button></div></div>
     <div class="card"><h2>🏆 이번 주 랭킹</h2>${rank || '<div class="desc" style="padding:4px 0 12px">아직 기록이 없어요. 첫 1등이 돼 보세요</div>'}${g.last ? `<div class="desc" style="padding:8px 0 12px">지난주 1등: ${esc(ho(g.last[0]))} ${esc(g.last[1])} ${(+g.last[2]).toFixed(2)}초</div>` : '<div style="height:10px"></div>'}</div></div></div>`;
 }
 function gameOpen() {
   const names = gameNames(), me = names.includes(GAME.who) ? GAME.who : names.length === 1 ? names[0] : null;
-  if (!me || (!gFree(me) && gUsed(me) >= (BOARD?.game?.max || 5))) return;
+  if (!me || gUsed(me) >= gMaxOf(me, BOARD?.game?.max || 5)) return;
   GAME.me = me; let L = $("#gameLayer");
   if (!L) { L = document.createElement("div"); L.id = "gameLayer"; L.style.cssText = "position:fixed;z-index:45;background:#0f1218;border-radius:16px;overflow:hidden;box-shadow:0 10px 40px rgba(0,0,0,.35)"; document.body.appendChild(L); }
   const r = (document.querySelector("main") || document.body).getBoundingClientRect();
