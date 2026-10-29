@@ -285,7 +285,7 @@
 })();
 </script>
 <script>
-const VER = "10.29-5"; window.VER_ERR = VER;
+const VER = "10.29-6"; window.VER_ERR = VER;
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍", "동성로2"];
@@ -437,15 +437,51 @@ const VIEWS_ALL = [["home", "🏠", "오늘"], ["work", "🕘", "출퇴근, 마�
 // 10/20 사장님: 오늘(오픈, 마감) + 요청(인수인계, 고객요청) 두 화면만
 // 10/23 재고조사 → 포스 바로 조정: 포스 조정이 연결된 지점만 메뉴 보임 (운영봇 ADJ_BRANCHES와 같게)
 const ADJ_BR = []; // 10/25 재고 조정은 아침 재고보고로 하기로 해서 재고조사 메뉴는 숨김(다시 열려면 지점 넣기)
-const VIEWS = ONLY_OPEN_CLOSE ? [["home", "🏠", "오늘"], ["talk", "📅", "일정"], ["blog", "📝", "블로그"], ["parcel", "🛵", "보내기"], ...(ADJ_BR.includes(B) ? [["stock", "📦", "재고조사"]] : []), ["as2", "🔧", "AS관리"], ["note", "📝", "매장 노트"], ["reply", "💬", "응대 모음"], ["game", "🎮", "쉬는 시간"]] : VIEWS_ALL;
+const VIEWS = ONLY_OPEN_CLOSE ? [["home", "🏠", "오늘"], ["talk", "📅", "일정"], ["blog", "📝", "블로그"], ["parcel", "🛵", "보내기"], ...(ADJ_BR.includes(B) ? [["stock", "📦", "재고조사"]] : []), ["as2", "🔧", "AS관리"], ["note", "📝", "매장 노트"], ["reply", "💬", "응대 모음"], ["ask", "🙋", "물어보기"], ["game", "🎮", "쉬는 시간"]] : VIEWS_ALL;
 let VIEW = ls.get("vf-app-view", "home");
 if (!VIEWS.some((v) => v[0] === VIEW)) VIEW = "home";
 // 10/23 30초마다 화면을 다시 그리면 누르던 버튼이 바뀌어 안 눌림 → 손 댄 지 1.2초 안이면 조금 뒤에 그림
 let TOUCH = 0; document.addEventListener("pointerdown", () => { TOUCH = Date.now(); }, true);
 function bgRender() { const w = 1200 - (Date.now() - TOUCH); if (w > 0) return void setTimeout(bgRender, w); if (!$("#dim").classList.contains("on")) render(); }
+// ── 10/29 액상덕후 "신입 질문봇, 알림 팝업" ── 질문은 봇이 하이쿠로 답함(지점당 하루 30번), 알림은 봇의 놓친 일 순찰
+const ASK = { prev: "" };
+function askHtml() {
+  const L = (BOARD?.qa || []).filter((x) => !x.test === !TEST).slice().reverse();
+  return `<div class="cols one"><div><div class="card"><h2>🙋 물어보기</h2><div class="desc">상품, 교환, 가격, 응대처럼 궁금한 걸 물어보세요. 자료에 없는 건 팀장님께 물어보라고 답해요.</div>
+    <textarea class="input" id="askQ" rows="3" maxlength="300" placeholder="예: 말론S 0.4옴 팟은 입호흡이야?" style="margin-top:10px"></textarea>
+    <div class="btns"><button class="btn primary" id="askGo">물어보기</button></div></div>
+    ${L.length ? `<div class="card">${L.map((x) => `<div style="border-top:1px solid #eee;padding:12px 0"><div style="font-weight:800">🙋 ${esc(x.q)} <small style="color:var(--sub);font-weight:500">${esc(x.t)} ${esc(x.by || "")}</small></div><div style="margin-top:6px;white-space:pre-wrap;line-height:1.6">${x.a ? esc(x.a) : '<span style="color:var(--sub)">생각 중이에요…</span>'}</div></div>`).join("")}</div>` : ""}</div></div>`;
+}
+async function askGo() {
+  const q = ($("#askQ")?.value || "").trim(); if (!q) return toast("궁금한 걸 적어 주세요");
+  const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 5), by = working().join(", ");
+  try { await send({ type: "ask", id, q, prev: ASK.prev, by }); ASK.prev = q; (BOARD.qa ||= []).push({ id, q, a: null, by, t: new Date().toTimeString().slice(0, 5), test: TEST }); render(); setTimeout(loadRelay, 4000); } catch (e) { fail(e); }
+}
+const ALERT_SEEN = () => `vf-alert-seen-${B}-${todayKey()}`;
+let ALERT_OPEN = null;
+function beep() { try { const c = new (window.AudioContext || window.webkitAudioContext)(), o = c.createOscillator(), g = c.createGain(); o.frequency.value = 880; g.gain.value = 0.08; o.connect(g); g.connect(c.destination); o.start(); setTimeout(() => { o.frequency.value = 1320; }, 140); setTimeout(() => { o.stop(); c.close(); }, 320); } catch {} }
+function alertCheck() {
+  if (!B || ALERT_OPEN) return;
+  const seen = ls.get(ALERT_SEEN(), []), L = (BOARD?.alerts || []).filter((a) => !a.test === !TEST && !seen.includes(a.id));
+  if (!L.length) return;
+  const a = L.find((x) => x.lvl === "big") || L[0]; ALERT_OPEN = a.id; beep();
+  const done = () => { const s2 = ls.get(ALERT_SEEN(), []); if (!s2.includes(a.id)) s2.push(a.id); ls.set(ALERT_SEEN(), s2.slice(-200)); ALERT_OPEN = null; box.remove(); setTimeout(alertCheck, 400); };
+  const box = document.createElement("div");
+  if (a.lvl === "big") {
+    box.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:80;display:flex;align-items:center;justify-content:center;padding:16px";
+    box.innerHTML = `<div style="background:#fff;border-radius:18px;max-width:440px;width:100%;padding:22px;box-shadow:0 10px 40px rgba(0,0,0,.25)"><div style="font-size:13px;color:var(--sub)">🔔 ${esc(a.t)}</div><div style="font-size:18px;font-weight:800;line-height:1.5;margin:8px 0 16px">${esc(a.text)}</div><div class="btns" style="margin:0"><button class="btn" data-al="ok">확인</button>${a.go ? '<button class="btn primary" data-al="go">보러 가기</button>' : ""}</div></div>`;
+  } else {
+    box.style.cssText = "position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:80;background:#191f28;color:#fff;border-radius:14px;padding:12px 16px;max-width:92vw;box-shadow:0 6px 24px rgba(0,0,0,.25);font-weight:700;display:flex;gap:12px;align-items:center";
+    box.innerHTML = `<span>🔔 ${esc(a.text)}</span><button data-al="ok" style="background:rgba(255,255,255,.15);color:#fff;border-radius:10px;padding:6px 10px">확인</button>`;
+    setTimeout(() => { if (document.body.contains(box)) done(); }, 9000);
+  }
+  box.addEventListener("click", (e) => { const k = e.target.closest("[data-al]")?.dataset.al; if (!k) return; if (k === "go" && a.go) { VIEW = a.go; render(); } done(); });
+  document.body.appendChild(box);
+}
 function render() {
   if (LEADER) return renderLeader();
   if (!B) return renderPick();
+  setTimeout(alertCheck, 300);
   const s = st(), stDone = stockDone() /* 10/29 본점 하얀 화면: 지역 변수 sd가 날짜 함수 sd()를 가려 블로그 밀린 날 홈이 죽었음 */, working = s.ins.filter((x) => !x.out);
   const d = new Date();
   const steps = [s.ins.length > 0, !!s.open, !!stDone], done = steps.filter(Boolean).length, N = steps.length; // 10/19 밤 사장님: 오픈 = 출근, 오픈 체크, 아침 재고보고(폰으로)
@@ -501,6 +537,7 @@ function render() {
     reply: replyHtml(),
     blog: blogHtml(),
     game: gameHtml(),
+    ask: askHtml(),
     parcel: parcelHtml(), // 10/27 사장님 '각이 안 맞음': 왼쪽에 퀵/전달 + 택배, 오른쪽에 오늘 지점별 택배
   }[VIEW];
   const badge = (k) => { const n = k === "talk" ? talkCount() : k === "home" ? todoItems().length : k === "blog" ? blogDue().length : k === "as2" ? as2Items().filter((x) => (B === "본점" && (x.st === 0 || x.st === 1)) || (x.b === B && !a2Lead(x) && (x.st === 3 || (x.st === 4 && !x.contact)))).length : 0; return n ? `<em class="bd">${n}</em>` : ""; };
@@ -1505,7 +1542,7 @@ let BOARD = B ? cacheGet("board") : null, LEADS = [], OLDS = [], OLDF = "all", O
 // 10/27 보내기 중계(시험 모드 먼저): 보내기, 택배는 board.json(1~몇 분 늦음) 말고 Apps Script에서 5~15초마다 읽어 덮어씀. board.json이 더 새것이면 그것
 const RELAY_URL = "https://script.google.com/macros/s/AKfycbyQ5TQlIahbUQXr3FenYTGuQgyzgjYInrmZk7GBG7nzFh1a0XQlhYfZKYL0VxDa298uvA/exec", RELAY_ON = true; // 10/27 사장님 "공식으로": 정식 화면도
 let RELAY = null, BOARD_RAW = null, BOARD_AT = 0;
-const withRelay = (bd) => !RELAY || RELAY.at < BOARD_AT - 60e3 ? bd : { ...(bd || {}), sends: RELAY.v.sends || [], parcels: RELAY.v.parcels || [], creqs: relayCreqs(bd?.creqs || [], RELAY.v.ords || []), game: RELAY.v.game || bd?.game, exps: RELAY.v.exps || bd?.exps };
+const withRelay = (bd) => !RELAY || RELAY.at < BOARD_AT - 60e3 ? bd : { ...(bd || {}), sends: RELAY.v.sends || [], parcels: RELAY.v.parcels || [], creqs: relayCreqs(bd?.creqs || [], RELAY.v.ords || []), game: RELAY.v.game || bd?.game, exps: RELAY.v.exps || bd?.exps, alerts: RELAY.v.alerts || bd?.alerts, qa: RELAY.v.qa || bd?.qa };
 const relayCreqs = (old, ords) => { const m = new Map(ords.map((r) => [r.id, r])); return [...old.map((r) => m.get(r.id) || r), ...ords.filter((r) => !old.some((o) => o.id === r.id))]; }; // 깃허브 한도로 board.json을 못 읽어도 보내기는 뜨게
 async function loadRelay() {
   if (!RELAY_ON || !B || document.visibilityState !== "visible") return;
@@ -1516,7 +1553,7 @@ async function loadRelay() {
     if (JSON.stringify(next) !== JSON.stringify(BOARD)) { BOARD = next; cacheSet("board", next); bgRender(); decAll(); }
   } catch {}
 }
-function relayTick() { const open = [...(BOARD?.sends || []), ...(BOARD?.parcels || [])].some((r) => !["done", "cancel"].includes(r.st)); loadRelay().finally(() => setTimeout(relayTick, open || VIEW === "game" ? 4000 : 15000)); } // 게임 화면은 판 수, 랭킹이 바로 바뀌게
+function relayTick() { const open = [...(BOARD?.sends || []), ...(BOARD?.parcels || [])].some((r) => !["done", "cancel"].includes(r.st)); loadRelay().finally(() => setTimeout(relayTick, open || VIEW === "game" || (VIEW === "ask" && (BOARD?.qa || []).some((x) => !x.a)) ? 4000 : 15000)); } // 게임 화면은 판 수, 랭킹이 바로 바뀌게
 async function loadBoard() {
   try {
     const j = await ghJson("board.json");
@@ -2786,6 +2823,7 @@ document.addEventListener("click", (e) => {
   if (t.dataset.xpdel) return expDel(t.dataset.xpdel);
   if (t.dataset.gwho) { GAME.who = t.dataset.gwho; ls.set("vf-game-who", GAME.who); return render(); }
   if (t.id === "gGo") return gameOpen();
+  if (t.id === "askGo") return askGo();
   if (t.dataset.crord) { cr.order = t.dataset.crord === "1"; document.querySelectorAll("[data-crord]").forEach((x) => x.classList.toggle("on", x === t)); return; }
   if (t.dataset.creng) { cr.eng = t.dataset.creng; cr.engManual = true; document.querySelectorAll("[data-creng]").forEach((x) => x.classList.toggle("on", x === t)); return; }
   if (t.dataset.crby) { if ($("#crByIn")) $("#crByIn").value = ""; cr.by = t.dataset.crby; document.querySelectorAll("[data-crby]").forEach((x) => x.classList.toggle("on", x === t)); return; }
