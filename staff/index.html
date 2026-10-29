@@ -285,7 +285,7 @@
 })();
 </script>
 <script>
-const VER = "10.29-7"; window.VER_ERR = VER;
+const VER = "10.29-8"; window.VER_ERR = VER;
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍", "동성로2"];
@@ -437,7 +437,7 @@ const VIEWS_ALL = [["home", "🏠", "오늘"], ["work", "🕘", "출퇴근, 마�
 // 10/20 사장님: 오늘(오픈, 마감) + 요청(인수인계, 고객요청) 두 화면만
 // 10/23 재고조사 → 포스 바로 조정: 포스 조정이 연결된 지점만 메뉴 보임 (운영봇 ADJ_BRANCHES와 같게)
 const ADJ_BR = []; // 10/25 재고 조정은 아침 재고보고로 하기로 해서 재고조사 메뉴는 숨김(다시 열려면 지점 넣기)
-const VIEWS = ONLY_OPEN_CLOSE ? [["home", "🏠", "오늘"], ["talk", "📅", "일정"], ["blog", "📝", "블로그"], ["parcel", "🛵", "보내기"], ...(ADJ_BR.includes(B) ? [["stock", "📦", "재고조사"]] : []), ["as2", "🔧", "AS관리"], ["note", "📝", "매장 노트"], ["reply", "💬", "응대 모음"], ["ask", "🙋", "물어보기"], ["game", "🎮", "쉬는 시간"]] : VIEWS_ALL;
+const VIEWS = ONLY_OPEN_CLOSE ? [["home", "🏠", "오늘"], ["talk", "📅", "일정"], ["ask", "💛", "베프"], ["blog", "📝", "블로그"], ["parcel", "🛵", "보내기"], ...(ADJ_BR.includes(B) ? [["stock", "📦", "재고조사"]] : []), ["as2", "🔧", "AS관리"], ["note", "📝", "매장 노트"], ["reply", "💬", "응대 모음"], ["game", "🎮", "쉬는 시간"]] : VIEWS_ALL;
 let VIEW = ls.get("vf-app-view", "home");
 if (!VIEWS.some((v) => v[0] === VIEW)) VIEW = "home";
 // 10/23 30초마다 화면을 다시 그리면 누르던 버튼이 바뀌어 안 눌림 → 손 댄 지 1.2초 안이면 조금 뒤에 그림
@@ -446,33 +446,35 @@ function bgRender() { const w = 1200 - (Date.now() - TOUCH); if (w > 0) return v
 // ── 10/29 액상덕후 "신입 질문봇, 알림 팝업" ── 질문은 봇이 하이쿠로 답함(지점당 하루 30번), 알림은 봇의 놓친 일 순찰
 // 10/29 액상덕후 "인스타 DM처럼 주고받게": 대화창 모양, 아래 입력칸, 엔터로 보내기. 화면이 새로 그려져도 쓰던 글은 ASK.draft로 남김
 const ASK = { prev: "", draft: "", focus: false };
-const ASK_EX = ["말론S 0.4옴 팟은 입호흡이야?", "하복2에 맞는 코일 뭐야?", "교환은 며칠 안에 돼?"];
+// 10/29 액상덕후 "베프로 하자", "자주묻는질문은 미리 준비(API 비용)", "질문 정리 잘해서 올리라고": 자주 묻는 질문 버튼은 바로 답(봇은 기록만), 너무 짧은 질문은 한 번 더 적게
 function askHtml() {
   const L = (BOARD?.qa || []).filter((x) => !x.test === !TEST);
   ASK.focus = document.activeElement?.id === "askQ"; // 다시 그리기 전에 입력 중이었는지
-  const bot = (t, inner) => `<div style="display:flex;gap:8px;align-items:flex-end;margin:10px 0"><div style="width:30px;height:30px;border-radius:50%;background:var(--blue-soft);display:flex;align-items:center;justify-content:center;flex:none">🤖</div><div style="max-width:78%"><div style="background:#f2f4f6;border-radius:18px 18px 18px 4px;padding:10px 14px;white-space:pre-wrap;line-height:1.6;font-size:15px">${inner}</div>${t ? `<div style="font-size:11px;color:var(--sub);margin:3px 0 0 6px">${t}</div>` : ""}</div></div>`;
+  const bot = (t, inner) => `<div style="display:flex;gap:8px;align-items:flex-end;margin:10px 0"><div style="width:30px;height:30px;border-radius:50%;background:var(--blue-soft);display:flex;align-items:center;justify-content:center;flex:none">💛</div><div style="max-width:78%"><div style="background:#f2f4f6;border-radius:18px 18px 18px 4px;padding:10px 14px;white-space:pre-wrap;line-height:1.6;font-size:15px">${inner}</div>${t ? `<div style="font-size:11px;color:var(--sub);margin:3px 0 0 6px">${t}</div>` : ""}</div></div>`;
   const me = (x) => `<div style="display:flex;justify-content:flex-end;margin:10px 0"><div style="max-width:78%;text-align:right"><div style="background:var(--blue);color:#fff;border-radius:18px 18px 4px 18px;padding:10px 14px;white-space:pre-wrap;line-height:1.6;font-size:15px;text-align:left">${esc(x.q)}</div><div style="font-size:11px;color:var(--sub);margin:3px 6px 0 0">${esc(x.by || "")} ${esc(x.t)}</div></div></div>`;
-  const hi = bot("", `안녕하세요! 상품, 교환, 가격, 응대 뭐든 물어보세요.\n자료에 없는 건 팀장님께 물어보라고 알려 드려요.`)
-    + (L.length ? "" : `<div style="display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 0 38px">${ASK_EX.map((q) => `<button class="act gray" data-askex="${esc(q)}">${esc(q)}</button>`).join("")}</div>`);
+  const hi = bot("", `안녕하세요, 베프예요! 상품, 교환, 가격, 응대 뭐든 물어보세요.\n궁금한 건 한 번에 다 적어서 보내 주세요.\n(어떤 상품인지, 손님이 뭐라고 했는지, 뭘 알고 싶은지)\n자주 묻는 건 아래 버튼을 누르면 바로 나와요.`);
+  const faq = BOARD?.faq || [];
   const msgs = L.map((x) => me(x) + (x.a ? bot(esc(x.at || ""), esc(x.a).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>")) : bot("", '<span style="color:var(--sub)">답 쓰는 중이에요 …</span>'))).join("");
   setTimeout(() => { const box = $("#askBox"), q = $("#askQ"); if (box) box.scrollTop = box.scrollHeight; if (q && ASK.focus) { q.focus(); q.setSelectionRange(q.value.length, q.value.length); } }, 0);
   return `<div class="cols one"><div><div class="card" style="padding:0;display:flex;flex-direction:column;height:calc(100vh - 190px);min-height:420px;overflow:hidden">
-    <div style="padding:14px 16px;border-bottom:1px solid var(--line);font-weight:800">🤖 질문봇 <small style="color:var(--sub);font-weight:500">오늘 대화만 보여요</small></div>
+    <div style="padding:14px 16px;border-bottom:1px solid var(--line);font-weight:800">💛 베프 <small style="color:var(--sub);font-weight:500">오늘 대화만 보여요</small></div>
     <div id="askBox" style="flex:1;overflow-y:auto;padding:6px 14px">${hi}${msgs}</div>
-    <div style="display:flex;gap:8px;align-items:flex-end;padding:10px 12px;border-top:1px solid var(--line);background:#fff">
-      <textarea id="askQ" rows="1" maxlength="300" placeholder="메시지 보내기" style="flex:1;resize:none;border:1px solid var(--line);border-radius:20px;padding:10px 14px;font:inherit;font-size:15px;max-height:120px;outline:none;background:#f9fafb">${esc(ASK.draft)}</textarea>
+    ${faq.length ? `<div style="display:flex;gap:6px;overflow-x:auto;padding:8px 12px 2px;border-top:1px solid var(--line);white-space:nowrap">${faq.map((x, i) => `<button class="act gray" data-askfaq="${i}" style="flex:none">${esc(x.q)}</button>`).join("")}</div>` : ""}
+    <div style="display:flex;gap:8px;align-items:flex-end;padding:10px 12px;${faq.length ? "" : "border-top:1px solid var(--line);"}background:#fff">
+      <textarea id="askQ" rows="1" maxlength="1500" placeholder="상품, 상황까지 한 번에 적어 주세요" style="flex:1;resize:none;border:1px solid var(--line);border-radius:20px;padding:10px 14px;font:inherit;font-size:15px;max-height:120px;outline:none;background:#f9fafb">${esc(ASK.draft)}</textarea>
       <button id="askGo" style="background:var(--blue);color:#fff;border:0;border-radius:20px;padding:10px 16px;font-weight:800;flex:none">보내기</button>
     </div></div></div></div>`;
 }
-async function askGo(text) {
+async function askGo(text, faq) {
   const q = (text || $("#askQ")?.value || "").trim(); if (!q) return;
-  const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 5), by = working().join(", ");
-  ASK.draft = ""; if ($("#askQ")) $("#askQ").value = "";
-  try { await send({ type: "ask", id, q, prev: ASK.prev, by }); ASK.prev = q; (BOARD.qa ||= []).push({ id, q, a: null, by, t: new Date().toTimeString().slice(0, 5), test: TEST }); render(); setTimeout(loadRelay, 4000); } catch (e) { ASK.draft = q; render(); fail(e); }
+  if (!faq && q.replace(/\s/g, "").length < 6) return toast("상품, 상황까지 한 번에 적어 주세요");
+  const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 5), by = working().join(", "), t = new Date().toTimeString().slice(0, 5);
+  if (!faq) { ASK.draft = ""; if ($("#askQ")) $("#askQ").value = ""; }
+  try { await send({ type: "ask", id, q, prev: ASK.prev, by, ...(faq ? { faq: 1 } : {}) }); ASK.prev = q; (BOARD.qa ||= []).push({ id, q, a: faq ? faq.a : null, at: faq ? t : "", by, t, test: TEST, faq: !!faq }); render(); setTimeout(loadRelay, 4000); } catch (e) { if (!faq) ASK.draft = q; render(); fail(e); }
 }
 document.addEventListener("input", (e) => { if (e.target?.id === "askQ") { ASK.draft = e.target.value; e.target.style.height = "auto"; e.target.style.height = Math.min(e.target.scrollHeight, 120) + "px"; } });
 document.addEventListener("keydown", (e) => { if (e.target?.id === "askQ" && e.key === "Enter" && !e.shiftKey && !e.isComposing) { e.preventDefault(); askGo(); } });
-document.addEventListener("click", (e) => { const b = e.target.closest?.("[data-askex]"); if (b) askGo(b.dataset.askex); });
+document.addEventListener("click", (e) => { const b = e.target.closest?.("[data-askfaq]"); if (b) { const f = (BOARD?.faq || [])[+b.dataset.askfaq]; if (f) askGo(f.q, f); } });
 const ALERT_SEEN = () => `vf-alert-seen-${B}-${todayKey()}`;
 let ALERT_OPEN = null;
 function beep() { try { const c = new (window.AudioContext || window.webkitAudioContext)(), o = c.createOscillator(), g = c.createGain(); o.frequency.value = 880; g.gain.value = 0.08; o.connect(g); g.connect(c.destination); o.start(); setTimeout(() => { o.frequency.value = 1320; }, 140); setTimeout(() => { o.stop(); c.close(); }, 320); } catch {} }
