@@ -734,7 +734,9 @@ function botHtml() {
   // 10/29 사장님 "전처럼 깔끔하게": 칩은 폰 알림 앱 상태만. 정상(초록, 마지막 알림 시각) / 알림 끊김(빨강) / 오늘 조용함(회색) / 연결 전(회색). 포스 대조는 칩을 누르면(다음 단계)
   const bank = BR.map((b) => { const v = BOT.bank?.[b], o = v && typeof v === "object" ? v : { last: v || null, st: v ? "ok" : "none" };
     const lt = o.last ? o.last.slice(5).replace("-", "/").replace(/^(\d\d\/\d\d) /, (m, d) => (d === todayMD() ? "" : d + " ")) : "";
-    const [txt, cls] = o.st === "cut" ? [`알림 끊김, 마지막 ${lt}`, "background:var(--red-soft);color:var(--red)"] : o.st === "none" ? ["연결 전", "color:var(--sub)"] : o.st === "quiet" ? ["오늘 알림 아직 없음", "color:var(--sub)"] : [`정상, 마지막 ${lt}`, "background:var(--green-soft);color:var(--green)"];
+    // 10/29 생존 신호(폰 매크로가 15분마다 보냄)가 있는 지점은 그 시각으로: 살아 있음 HH:MM / 신호 끊김
+    const bt = o.beat ? o.beat.slice(5).replace("-", "/").replace(/^(\d\d\/\d\d) /, (m, d) => (d === todayMD() ? "" : d + " ")) : "";
+    const [txt, cls] = o.st === "cut" ? [o.beat ? `신호 끊김, 마지막 ${bt}` : `알림 끊김, 마지막 ${lt}`, "background:var(--red-soft);color:var(--red)"] : o.st === "none" ? ["연결 전", "color:var(--sub)"] : o.st === "quiet" && !o.beat ? ["오늘 알림 아직 없음", "color:var(--sub)"] : [o.beat ? `살아 있음 ${bt}` : `정상, 마지막 ${lt}`, "background:var(--green-soft);color:var(--green)"];
     return `<span class="chip" style="display:inline-flex;align-items:center;gap:5px;height:34px;padding:0 12px;font-size:14px;${cls}" title="${o.gap ? "오늘 끊겼던 시간 " + esc(o.gap) : ""}${o.posTr != null ? " 포스 이체 " + o.posTr + "건" : ""}">${BR.indexOf(b) + 1}호 ${b} <small>${txt}${o.gap ? " ⚠️" : ""}</small></span>`; }).join("");
   return `<div class="card" id="botcard"><div class="eyebrow">봇 상태 <span class="t-sub" style="font-weight:500">${agoTxt(m)} 기준${dead ? ", 이 PC나 운영봇이 꺼진 것 같아요 (10분마다 자동으로 다시 켜요)" : ""}</span></div>
     ${row("운영봇", opsBad, dead ? "소식 없음 " + agoTxt(m) : BOT.ops.s + (BOT.ops.line ? ", " + BOT.ops.line : ""), rb("운영봇"))}
