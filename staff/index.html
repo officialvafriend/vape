@@ -285,7 +285,7 @@
 })();
 </script>
 <script>
-const VER = "10.29-10"; window.VER_ERR = VER;
+const VER = "10.30-1"; window.VER_ERR = VER;
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍", "동성로2"];
@@ -2436,8 +2436,9 @@ async function doCreq() {
 // 10/27 주문 가능 확인 뒤 손님 결제 → [결제함] → 관리자 [주문함]이 열림
 // ── 쉬는 시간 게임 (10/27 사장님) ── 출근한 사람 이름으로 하루 5판(봇이 셈), 이번 주 랭킹, 1등 바뀌면 매장노트에 자동
 // 게임은 오른쪽 내용 칸 위에 겹쳐 띄움(화면을 새로 그려도 게임이 안 끊기게 #app 밖에 둠)
-const GAME = { who: ls.get("vf-game-who", null), local: ls.get("vf-game-local", {}) }; // 이 기기에서 시작한 판 수 (새로고침해도 봇 숫자 오기 전까지 유지)
-const gUsed = (n) => Math.max(BOARD?.game?.plays?.[n] || 0, GAME.local[`${todayKey()}|${n}`] || 0);
+const GAME = { who: ls.get("vf-game-who", null), local: ls.get("vf-game-local", {}), lg: ls.get("vf-game-lg", {}) }; // 이 기기에서 시작한 판 수 (새로고침해도 봇 숫자 오기 전까지 유지)
+// 10/30 사장님 "판 돌려줬는데 왜 안 보여": 관리자가 판수를 돌려주면 봇 give 표시가 바뀜 → 이 기기 기억이 그 전 것이면 버리고 봇 숫자를 씀
+const gUsed = (n) => { const k = `${todayKey()}|${n}`, gv = BOARD?.game?.give?.[n] || "", loc = gv && (GAME.lg[k] || "") !== gv ? 0 : GAME.local[k] || 0; return Math.max(BOARD?.game?.plays?.[n] || 0, loc); };
 // 10/29 사장님 "이사님은 본점에 오시니까 본점에 한섭이사 넣고, 쉬는 시간 탭에서 항상 5판": 출근 안 해도 고를 수 있는 고정 이름(지점별), 판수는 봇이 이름으로 하루 5판 셈
 const GAME_EXTRA = { 본점: ["한섭이사"] };
 const gameNames = () => { const n = working().slice(); for (const x of GAME_EXTRA[B] || []) if (!n.includes(x)) n.push(x); return n; };
@@ -2466,7 +2467,7 @@ function gameOpen() {
 function gameClose() { const L = $("#gameLayer"); if (L) { L.innerHTML = ""; L.style.display = "none"; } render(); loadRelay(); setTimeout(loadRelay, 2500); }
 addEventListener("message", async (e) => {
   const m = e.data; if (!m || !m.vfGame || !GAME.me) return;
-  if (m.t === "start") { const k = `${todayKey()}|${GAME.me}`; GAME.local[k] = gUsed(GAME.me) + 1; for (const x of Object.keys(GAME.local)) if (!x.startsWith(todayKey())) delete GAME.local[x]; ls.set("vf-game-local", GAME.local); try { await send({ type: "gstart", by: GAME.me }); } catch {} }
+  if (m.t === "start") { const k = `${todayKey()}|${GAME.me}`; GAME.local[k] = gUsed(GAME.me) + 1; GAME.lg[k] = BOARD?.game?.give?.[GAME.me] || ""; for (const x of Object.keys(GAME.local)) if (!x.startsWith(todayKey())) delete GAME.local[x]; for (const x of Object.keys(GAME.lg)) if (!x.startsWith(todayKey())) delete GAME.lg[x]; ls.set("vf-game-local", GAME.local); ls.set("vf-game-lg", GAME.lg); try { await send({ type: "gstart", by: GAME.me }); } catch {} }
   if (m.t === "score") { try { await send({ type: "gscore", by: GAME.me, s: m.s }); } catch {} }
   if (m.t === "close") gameClose();
 });
