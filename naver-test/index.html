@@ -182,7 +182,7 @@
 <div class="dim" id="dim"><div class="sheet" id="sheet"></div></div>
 <div class="toast" id="toast"></div>
 <script>
-const VER = "10.28-1";
+const VER = "11.02-1";
 const APPS_URL = "https://script.google.com/macros/s/AKfycbyLK49pLpgbSpZ6TT47V8rezYHme0lFk_6dn_4NPvkbPINm0szww9TmuPAellcHv9Ry/exec";
 const KIND = ["대표사진", "소개글", "블로그 발행", "리뷰", "트래픽 작업", "가격표, 소식", "키워드", "기타"];
 const LINE = ["#3B4A6B", "#8A97B5", "#C3CBDB"];
@@ -374,7 +374,7 @@ function renderOverview() {
       <div class="card stat"><div class="ct">이번 주 할 일</div><div class="big">${R ? left : "–"}<em>${R ? "남음" : ""}</em></div><div class="sub">${R ? `전체 ${td.length}개` : "🔒 열쇠 필요"}</div></div>
     </div>
     <div class="card chartc"><div class="ct">플레이스 평균 순위<small>${avgNow != null ? `오늘 ${avgNow.toFixed(1)}위` : ""}${avgPrev != null ? ` · 어제 ${avgPrev.toFixed(1)}위` : ""}</small></div>
-      <div class="cs">8개 지점 지정 키워드 평균 · 위로 갈수록 좋음 · 점선 = 바꾼 날</div>
+      <div class="cs">${D.branches.length}개 지점 지정 키워드 평균 · 위로 갈수록 좋음 · 점선 = 바꾼 날</div>
       <div class="area">${chart([{ color: LINE[0], val: (d) => avg(d) }], changes())}</div></div>
     <div class="split">
       <div class="card"><div class="ct">평소보다 떨어진 곳<small>평소 = 주간통계 지도검색 순위 + 최근 2주 기록</small></div><div class="list">${listHtml}</div></div>
@@ -383,7 +383,7 @@ function renderOverview() {
 }
 
 // ── 대구전자담배 (공통 키워드 지도 순위, 8개 지점) ──
-const BR_COLOR = ["#3B4A6B", "#F04452", "#03B26C", "#F5B400", "#7B61FF", "#00A3D9", "#E0679B", "#8B95A1"];
+const BR_COLOR = ["#3B4A6B", "#F04452", "#03B26C", "#F5B400", "#7B61FF", "#00A3D9", "#E0679B", "#8B95A1", "#FF7A1A"];
 function renderCommon() {
   const K = D.common;
   const now = (b) => pRank(b, K, LAST), prev = (b) => (PREV ? pRank(b, K, PREV) : null);
@@ -415,7 +415,7 @@ function renderCommon() {
 
   $("#main").innerHTML = `
     <div class="head"><h1>대구전자담배 <small>지도 순위</small></h1><span class="when">${LAST ? `${md(LAST)} 9시 기준` : ""}${PREV ? ` · ${md(PREV)}과 비교` : ""}</span></div>
-    <div class="card rt"><div class="ct">8개 지점 순위<small>10위 안 ${inCnt}곳 · 10위 밖은 '밖' · 누르면 지점 화면</small></div><div class="list">${tableHtml}</div></div>
+    <div class="card rt"><div class="ct">${D.branches.length}개 지점 순위<small>10위 안 ${inCnt}곳 · 10위 밖은 '밖' · 누르면 지점 화면</small></div><div class="list">${tableHtml}</div></div>
     <div class="row64">
       <div class="card chartc" style="margin-bottom:0"><div class="ct">순위 흐름<small><span class="legend">${legend}</span></small></div>
         <div class="cs">10위 안에 든 적 있는 지점만 · 위로 갈수록 좋음</div>
