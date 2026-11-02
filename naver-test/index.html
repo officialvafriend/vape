@@ -521,14 +521,14 @@ function chgList(br, chs) {
 // ── 주간 분석 (기존 '플레이스 순위변화 분석' 탭들을 옮긴 것) ──
 // 최근 1주만 펼치고 지난 주차는 한 줄로 접어 둠 (누르면 펼침)
 // 분석 문장: 숫자만 검정 굵게
-const hl = (t) => esc(t).replace(/[+-]?d[d,.]*(%|원|건|회|위|일|명)?/g, (m) => `<b class="num">${m}</b>`);
+const hl = (t) => esc(t).replace(/[+-]?\d[\d,.]*(%|원|건|회|위|일|명)?/g, (m) => `<b class="num">${m}</b>`);
 const SECS = ["상승", "집중 관리", "공통", "다음 주 할 일", "종합 판단", "주의점"];
 // 주간통계 탭과 같은 이름으로: 기간(10.26~11.01)에서 주차 번호를 계산 (1주차 = 2026-07-27 시작)
 const WK1 = Date.UTC(2026, 6, 27);
-const perStart = (per) => { const m = String(per || "").match(/(d{1,2})[./](d{1,2})/); if (!m) return null; let y = 2026; if (+m[1] < 7) y = 2027; return Date.UTC(y, +m[1] - 1, +m[2]); };
+const perStart = (per) => { const m = String(per || "").match(/(\d{1,2})[./](\d{1,2})/); if (!m) return null; let y = 2026; if (+m[1] < 7) y = 2027; return Date.UTC(y, +m[1] - 1, +m[2]); };
 const wkNo = (per) => { const s = perStart(per); return s == null ? null : Math.floor((s - WK1) / 6048e5) + 1; };
 const wkLabel = (per, wk) => { const n = wkNo(per); return n != null && n >= 1 ? `${n}주차` : `${wk}`; };
-const fmtPer = (per) => String(per || "").replace(/(d{1,2}).(d{1,2})/g, (_, a, b) => `${+a}/${+b}`);
+const fmtPer = (per) => String(per || "").replace(/(\d{1,2})\.(\d{1,2})/g, (_, a, b) => `${+a}/${+b}`);
 const OPENW = new Set(); let initW = false;
 function renderAnalysis() {
   const A = analysis(), m = hide ? "mask" : "";
