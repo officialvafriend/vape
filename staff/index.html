@@ -285,7 +285,8 @@
 })();
 </script>
 <script>
-const VER = "10.30-1"; window.VER_ERR = VER;
+const VER = "11.02-1"; window.VER_ERR = VER;
+const GAME_LOCK = true; // 11/02 쉬는 시간 게임 잠금
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
 const BR = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍", "동성로2"];
@@ -2446,6 +2447,8 @@ const gMaxOf = (n, max) => (BOARD?.game?.limit || { 한섭이사: 10 })[n] || ma
 const gFree = () => false;
 const gLeft = (n, max) => Math.max(0, gMaxOf(n, max) - gUsed(n));
 function gameHtml() {
+  // 11/02 사장님 "쉬는시간 게임 잠궈줘": 다시 열 땐 GAME_LOCK = false
+  if (GAME_LOCK) return `<div class="cols one"><div><div class="card"><h2>🔒 쉬는 시간 게임</h2><div class="desc" style="padding-bottom:14px">지금은 게임이 잠겨 있어요.</div></div></div></div>`;
   const g = BOARD?.game || {}, max = g.max || 5, names = gameNames(), me = names.includes(GAME.who) ? GAME.who : names.length === 1 ? names[0] : null, left = me ? gLeft(me, max) : 0;
   const rank = (g.rank || []).map(([b, n, sc], i) => `<div class="crow" style="width:100%"><div style="display:flex;gap:10px;align-items:center;width:100%"><b style="width:28px;font-size:18px">${["🥇", "🥈", "🥉"][i] || i + 1}</b><b style="flex:1">${esc(ho(b))} ${esc(n)}</b><b style="font-variant-numeric:tabular-nums">${(+sc).toFixed(2)}초</b></div></div>`).join("");
   return `<div class="cols one"><div><div class="card"><h2>🎮 연기 피하기</h2>
@@ -2455,6 +2458,7 @@ function gameHtml() {
     <div class="card"><h2>🏆 이번 주 랭킹</h2>${rank || '<div class="desc" style="padding:4px 0 12px">아직 기록이 없어요. 첫 1등이 돼 보세요</div>'}${g.last ? `<div class="desc" style="padding:8px 0 12px">지난주 1등: ${esc(ho(g.last[0]))} ${esc(g.last[1])} ${(+g.last[2]).toFixed(2)}초</div>` : '<div style="height:10px"></div>'}</div></div></div>`;
 }
 function gameOpen() {
+  if (GAME_LOCK) return;
   const names = gameNames(), me = names.includes(GAME.who) ? GAME.who : names.length === 1 ? names[0] : null;
   if (!me || gUsed(me) >= gMaxOf(me, BOARD?.game?.max || 5)) return;
   GAME.me = me; let L = $("#gameLayer");
