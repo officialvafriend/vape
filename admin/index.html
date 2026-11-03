@@ -85,6 +85,9 @@
   .okline{color:var(--green);font-weight:700;margin-top:14px;font-size:15px}
   .pchead{margin-bottom:14px}.pchead h1{font-size:22px;font-weight:800;letter-spacing:-.6px;line-height:1.3}.pchead .caption{margin:4px 0 0}
   .av svg{width:22px;height:22px}
+  @media (max-width:899px){.pchead{display:block}.sec{flex-wrap:wrap}}
+  @media (min-width:900px){.chips.hs{flex-wrap:wrap;overflow:visible;margin:0;padding:0}}
+  @media (min-width:900px) and (max-width:1199px){.clgrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
   @media (min-width:900px){
     .wrap{max-width:none;padding:0}
     .nav{display:none!important}
@@ -264,7 +267,7 @@ async function sendOp(op, data) {
 const isPC = () => matchMedia("(min-width:900px)").matches;
 let panelKeep = ""; // PC 홈의 오른쪽 상세 패널 내용 (다시 그릴 때 유지)
 const usePanel = () => isPC() && tab === "home" && $("#panel");
-const openSheet = (h) => { if (usePanel()) { panelKeep = h; $("#panel").innerHTML = h; $("#panel").scrollTop = 0; return; } $("#sheet").innerHTML = h; $("#dim").classList.add("on"); };
+const openSheet = (h) => { if (usePanel()) { panelKeep = h; $("#panel").innerHTML = h; $("#panel").scrollTop = 0; return; } $("#sheet").innerHTML = h; $("#dim").classList.add("on"); $("#sheet").scrollTop = 0; };
 const closeSheet = () => { $("#dim").classList.remove("on"); if (usePanel()) { panelKeep = ""; $("#panel").innerHTML = panelDefault(); bindSparks(); } };
 
 function renderLogin(msg) {
@@ -454,7 +457,7 @@ function noteHtml() {
     ${x.cmts.length ? `<div style="background:var(--bg,#f2f4f6);border-radius:10px;padding:8px 12px;margin:6px 0">${x.cmts.map((c) => `<div style="font-size:14px;padding:2px 0"><b>${c.adm ? "👔 " : ""}${esc(c.by)}</b> ${esc(c.text)}</div>`).join("")}</div>` : ""}
     <div style="display:flex;gap:8px;align-items:center;margin-top:6px"><button class="chip ${me && x.likes.includes(me) ? "on" : ""}" data-notelike="${esc(x.id)}">👍 ${x.likes.length || ""}</button><button class="chip" data-notecmt="${esc(x.id)}">💬 댓글</button><small class="t-sub">${esc(x.likes.join(", "))}</small></div></div>`;
   return `<div class="pchead"><h1>매장 노트</h1><div class="caption">직원들이 남긴 특이건, 최근 60일. 👍와 댓글은 직원웹에 바로 보여요</div></div>
-    <div class="chips" style="margin-bottom:6px">${brs}</div><div class="chips" style="margin-bottom:10px">${cats}</div>
+    <div class="chips hs" style="margin-bottom:8px">${brs}</div><div class="chips" style="margin-bottom:10px">${cats}</div>
     <div class="list">${N.map(card).join("") || '<div class="item">아직 노트가 없어요</div>'}</div>`;
 }
 // 10/28 사장님: 관리자 이름은 이 넷만(보혜 빼고). 저장된 이름이 목록에 없으면(예전 보혜) 고른 적 없는 걸로 봄
@@ -464,7 +467,7 @@ let ASKR = null;
 function askOpen(html) { if (ASKR) ASKR(null); const sh = $("#sheet"), was = $("#dim").classList.contains("on"), prev = sh.innerHTML; sh.innerHTML = html; $("#dim").classList.add("on"); sh.scrollTop = 0; return { was, prev }; }
 function askClose(st) { if (st.was) $("#sheet").innerHTML = st.prev; else $("#dim").classList.remove("on"); }
 function askConfirm(title, caption, okLabel = "네", red = false) { return new Promise((res) => { const st = askOpen(`<h3>${esc(title)}</h3>${caption ? `<div class="caption">${esc(caption)}</div>` : ""}<div class="btns"><button class="btn gray" data-ask="0">아니요</button><button class="btn ${red ? "red" : ""}" data-ask="1">${esc(okLabel)}</button></div>`); ASKR = (v) => { ASKR = null; askClose(st); res(v === "1"); }; }); }
-function askText(title, caption, ph, def = "", okLabel = "확인") { return new Promise((res) => { const st = askOpen(`<h3>${esc(title)}</h3>${caption ? `<div class="caption">${esc(caption)}</div>` : ""}<input class="in" id="askIn" maxlength="200" placeholder="${esc(ph)}" value="${esc(def)}" style="margin-top:14px"><div class="btns"><button class="btn gray" data-ask="0" style="flex:0 0 96px">닫기</button><button class="btn" data-ask="in">${esc(okLabel)}</button></div>`); setTimeout(() => $("#askIn")?.focus(), 50); ASKR = (v) => { const val = v === "in" ? ($("#askIn")?.value || "").trim() : null; ASKR = null; askClose(st); res(val); }; }); }
+function askText(title, caption, ph, def = "", okLabel = "확인") { return new Promise((res) => { const st = askOpen(`<h3>${esc(title)}</h3>${caption ? `<div class="caption">${esc(caption)}</div>` : ""}<input class="in" id="askIn" maxlength="200" placeholder="${esc(ph)}" value="${esc(def)}" style="margin-top:14px"><div class="btns"><button class="btn gray" data-ask="0" style="flex:0 0 96px">닫기</button><button class="btn" data-ask="in">${esc(okLabel)}</button></div>`); setTimeout(() => $("#askIn")?.focus({ preventScroll: true }), 50); ASKR = (v) => { const val = v === "in" ? ($("#askIn")?.value || "").trim() : null; ASKR = null; askClose(st); res(val); }; }); }
 function askName(title = "누구로 남길까요") { return new Promise((res) => { const last = ls.get("vf-admin-name") || ""; let by = ADMIN_NAMES.includes(last) ? last : ""; const st = askOpen(`<h3>${esc(title)}</h3><div class="chips" style="margin-top:14px">${ADMIN_NAMES.map((n) => `<button class="chip ${by === n ? "on" : ""}" data-askname="${n}">${n}</button>`).join("")}</div><div class="btns"><button class="btn gray" data-ask="0" style="flex:0 0 96px">닫기</button><button class="btn" data-ask="name">이 이름으로</button></div>`); const fin = (v) => { if (v === "name" && !by) return toast("이름을 골라 주세요"); ASKR = null; askClose(st); res(v === "name" ? by : null); }; fin.pick = (n) => { by = n; document.querySelectorAll("[data-askname]").forEach((x) => x.classList.toggle("on", x.dataset.askname === n)); }; ASKR = fin; }); }
 async function adminName() { let n = ls.get("vf-admin-name") || ""; if (ADMIN_NAMES.includes(n)) return n; n = await askName(); if (!n) return ""; ls.set("vf-admin-name", n); return n; }
 // 10/28 사장님 "댓글 적을 때 누군지 고를 수 있게, 지금 다 보혜라서": 한 PC를 여러 명이 써서 처음 적은 이름이 계속 붙음 → 매장 노트 위에 이름 칩, 고른 이름으로 댓글과 👍
@@ -478,7 +481,7 @@ function noteAct(id, like) {
     ${like ? "" : `<input class="in" id="naText" maxlength="300" placeholder="댓글, 직원웹에 바로 보여요">`}
     <div class="lbl" style="margin-top:14px">누구로 남길까요</div><div class="chips">${ADMIN_NAMES.map((n) => `<button class="chip ${NA.by === n ? "on" : ""}" data-naby="${n}">${n}</button>`).join("")}</div>
     <div class="btns"><button class="btn gray" data-x>닫기</button><button class="btn" data-act="naok">${like ? "👍 남기기" : "댓글 남기기"}</button></div>`);
-  if (!like) setTimeout(() => $("#naText")?.focus(), 50);
+  if (!like) setTimeout(() => $("#naText")?.focus({ preventScroll: true }), 50);
 }
 async function noteActGo() {
   if (!NA) return; const { id, like } = NA, by = NA.by;
@@ -808,7 +811,7 @@ let clB = ls.get("vf-admin-clb") || "전체";
 function closingAllHtml() {
   const all = D.closings || [];
   const chips = ["전체", ...BR].map((b, i) => `<button class="chip ${clB === b ? "on" : ""}" data-clb="${b}">${b === "전체" ? "전 지점" : i + "호 " + b}</button>`).join("");
-  return `<div class="pchead"><h1>마감 보고</h1><div class="caption">지점별 최근 마감, 누르면 보고문 전체</div></div><div class="chips" style="margin-bottom:12px">${chips}</div>${all.length ? (clB === "전체" ? closingByBranchHtml() : closingBranchListHtml(clB)) : '<div class="empty">아직 마감 보고가 없어요</div>'}`;
+  return `<div class="pchead"><h1>마감 보고</h1><div class="caption">지점별 최근 마감, 누르면 보고문 전체</div></div><div class="chips hs" style="margin-bottom:12px">${chips}</div>${all.length ? (clB === "전체" ? closingByBranchHtml() : closingBranchListHtml(clB)) : '<div class="empty">아직 마감 보고가 없어요</div>'}`;
 }
 const clRow = (c, i) => { const w = warnsOf(c).length; return `<button class="clrow" data-cl="${i}"><b class="${w ? "t-bad" : ""}">${c.date.slice(5).replace("-", "/")}</b><span class="m">${c.status === "done" ? `총 ${won(c.nums.총)}<small>시재 ${won(c.sijae)}</small>` : c.status === "error" ? `<span class="t-bad">${esc(c.err || "실패")}</span>` : "만드는 중"}</span><small>${esc(c.by)}</small>${w ? `<span class="t-bad">⚠️${w}</span>` : ""}<span class="chev">›</span></button>`; };
 function closingByBranchHtml() {
@@ -1041,7 +1044,7 @@ function sheetNotice() {
     <div class="lbl">어느 지점</div><div class="chips"><button class="chip ${NTBR.size === BR.length ? "on" : ""}" data-ntall>전체</button>${BR.map((b) => `<button class="chip ${NTBR.has(b) ? "on" : ""}" data-ntb="${b}">${esc(b)}</button>`).join("")}</div>
     <div class="lbl">보이는 기간</div><div class="chips">${[[1, "오늘만"], [3, "3일"], [7, "1주"], [14, "2주"], [0, "내릴 때까지"]].map(([v, l]) => `<button class="chip ${NTUNTIL === v ? "on" : ""}" data-ntu="${v}">${l}</button>`).join("")}</div>
     <div class="btns"><button class="btn gray" data-x style="flex:0 0 96px">닫기</button><button class="btn" data-act="ntsend">공지 올리기</button></div>`);
-  $("#ntTitle").focus();
+  $("#ntTitle").focus({ preventScroll: true });
 }
 function sheetTask() {
   const t = editTask;
