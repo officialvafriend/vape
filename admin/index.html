@@ -9,8 +9,8 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <style>
   /* 토스 스타일 (10/6 사용자 요청): 회색 바탕 + 흰 카드, 큰 글씨 한 문장, 목록 + 아래에서 올라오는 창, 아래 탭바 */
-  :root{--bg:#f2f4f6;--card:#fff;--ink:#191f28;--ink2:#4e5968;--sub:#8b95a1;--line:#f2f4f6;--line2:#e5e8eb;--blue:#3182f6;--blue-soft:#e8f3ff;
-    --green:#03b26c;--green-soft:#e5f8ef;--red:#f04452;--red-soft:#fdecee;--amber:#b77700;--amber-soft:#fff4dc;--press:#f9fafb;color-scheme:light}
+  :root{--bg:#f2f4f6;--card:#fff;--ink:#191f28;--ink2:#4e5968;--sub:#66717f;--line:#f2f4f6;--line2:#e5e8eb;--blue:#1b64da;--blue-soft:#e8f3ff;
+    --green:#037a4a;--green-soft:#e5f8ef;--red:#dc2633;--red-soft:#fdecee;--amber:#8a5a00;--amber-soft:#fff4dc;--press:#f9fafb;color-scheme:light}
   @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#17171c;--card:#202027;--ink:#f9fafb;--ink2:#c3c9d1;--sub:#8b95a1;--line:#2c2c35;--line2:#33333d;--blue:#4593fc;--blue-soft:#1f2b3e;
     --green:#15c47e;--green-soft:#183027;--red:#ff5b68;--red-soft:#3a2023;--amber:#ffb331;--amber-soft:#3a3020;--press:#26262e;color-scheme:dark}}
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -20,7 +20,7 @@
   .top{display:flex;align-items:center;padding:8px 4px 18px}
   .top .logo{font-weight:800;font-size:17px} .top .logo b{color:var(--blue)}
   .top .r{margin-left:auto;display:flex;gap:4px}
-  .ic{height:34px;padding:0 12px;border-radius:10px;font-size:13px;font-weight:600;color:var(--ink2)}
+  .ic{height:40px;padding:0 12px;border-radius:10px;font-size:13px;font-weight:600;color:var(--ink2)}
   .ic:active{background:var(--line2)}
   .card{background:var(--card);border-radius:22px;padding:22px 20px;margin-bottom:12px}
   .eyebrow{font-size:14px;font-weight:600;color:var(--sub);margin-bottom:8px}
@@ -47,7 +47,7 @@
   /* 아래 탭바 */
   .nav{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line2);display:flex;justify-content:center;padding:6px 0 calc(6px + env(safe-area-inset-bottom));z-index:20}
   .nav div{display:flex;width:100%;max-width:560px}
-  .nav button{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 0;font-size:11px;font-weight:600;color:var(--sub)}
+  .nav button{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 0;font-size:12px;font-weight:600;color:var(--sub)}
   .nav button svg{width:24px;height:24px} .nav button.on{color:var(--ink)}
   /* 아래에서 올라오는 창 */
   .dim{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:flex-end;justify-content:center;z-index:50}
@@ -83,6 +83,8 @@
   /* ── PC 배치 (10/12, 900px 이상): 폰 화면은 그대로, 넓은 화면에서는 왼쪽 메뉴 + 요약 + 두 열 ── */
   .warn{color:var(--red);font-weight:600;background:var(--red-soft);border-radius:12px;padding:10px 14px;margin-top:8px;font-size:14px;line-height:1.5}
   .okline{color:var(--green);font-weight:700;margin-top:14px;font-size:15px}
+  .pchead{margin-bottom:14px}.pchead h1{font-size:22px;font-weight:800;letter-spacing:-.6px;line-height:1.3}.pchead .caption{margin:4px 0 0}
+  .av svg{width:22px;height:22px}
   @media (min-width:900px){
     .wrap{max-width:none;padding:0}
     .nav{display:none!important}
@@ -110,21 +112,21 @@
     .sticky{left:236px;bottom:28px} .sticky .btn{max-width:480px}
     .toast{bottom:40px}
   }
-/* 10/19 네이버, 직원앱을 안에 띄우기: PC는 오른쪽 전체, 폰은 위 막대와 아래 메뉴 사이 전체 */
+/* 10/19 네이버, 직원웹을 안에 띄우기: PC는 오른쪽 전체, 폰은 위 막대와 아래 메뉴 사이 전체 */
 .main.embm{padding:0;max-width:none;height:100vh;display:flex;flex-direction:column}
 .emb{flex:1;width:100%;border:0;display:block;min-height:0;height:calc(100vh - 128px)}
 .main.embm .emb{height:auto}
 .embar{display:flex;gap:6px;overflow-x:auto;padding:10px 14px;background:var(--card);border-bottom:1px solid var(--line2);flex:none}
-.embar .chip{flex:none;padding:8px 12px;border-radius:10px;background:var(--bg);font-weight:600;font-size:14px;color:var(--ink2)}
+.embar .chip{flex:none;padding:10px 12px;border-radius:10px;background:var(--bg);font-weight:600;font-size:14px;color:var(--ink2)}
 .embar .chip.on{background:var(--blue);color:#fff}
 .ops td small{display:block;font-size:11px;font-weight:600}
 /* 10/19 KPI: 버튼 36px 14px, 숫자 24px, 표 14px 40px, 홈 상위/하위 두 칸 */
 .kbar{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px}
-.subnav{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 16px}.subnav button{height:38px;padding:0 14px;border-radius:12px;background:var(--card);font-weight:700;font-size:15px;color:var(--ink2);border:1px solid var(--line2)}.subnav button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.subnav{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 16px}.subnav button{height:40px;padding:0 14px;border-radius:12px;background:var(--card);font-weight:700;font-size:15px;color:var(--ink2);border:1px solid var(--line2)}.subnav button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
 .hstat{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:10px;margin:0 0 18px}.hstat div{background:var(--card);border-radius:18px;padding:16px 18px}.hstat span{display:block;font-size:13px;font-weight:700;color:var(--sub);white-space:nowrap}.hstat b{display:block;font-size:24px;font-weight:800;letter-spacing:-.6px;margin-top:6px;white-space:nowrap}
 @media (max-width:700px){.hstat{grid-template-columns:1fr 1fr}.hstat b{font-size:22px}}
-.botwarn{display:block;width:100%;text-align:left;background:#fdecee;color:#d22030;font-weight:700;font-size:14px;border-radius:12px;padding:10px 14px;margin:0 0 14px}
-.kbar .chip{height:36px;padding:0 12px;border-radius:10px;background:var(--card);font-weight:600;font-size:14px;color:var(--ink2);border:1px solid var(--line2)}
+.botwarn{display:block;width:100%;text-align:left;background:var(--red-soft);color:var(--red);font-weight:700;font-size:14px;border-radius:12px;padding:10px 14px;margin:0 0 14px}
+.kbar .chip{height:40px;padding:0 12px;border-radius:10px;background:var(--card);font-weight:600;font-size:14px;color:var(--ink2);border:1px solid var(--line2)}
 .kbar .chip.on{background:var(--blue);color:#fff;border-color:var(--blue)}
 .ops.kt td{padding-top:9px;padding-bottom:9px}
 .ops.kt{min-width:0}.ops.kt td.g{color:var(--green);font-weight:800}.ops.kt td.r{color:var(--red);font-weight:800}
@@ -148,13 +150,14 @@
 @media (min-width:900px){.sec.svsec{margin-top:22px}.cols.sv+.sec.svsec{margin-top:22px}.cols.sv .sec.svsec{margin-top:0}.cols.sv{margin-bottom:8px}.ops.sv td,.ops.sv th{padding-left:14px;padding-right:14px}.ops.sv td{height:48px}}
 /* 폰: 표 대신 지점마다 카드 (지점 이름 한 줄 + 칸 3열) */
 @media (max-width:899px){
-  .ops{min-width:0;display:block}.ops thead{display:none}.ops tbody{display:block}
-  .ops tr{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px 10px;padding:12px 16px;border-bottom:1px solid var(--line)}
-  .ops td{border:0;padding:0;text-align:left;white-space:normal}.ops td:first-child{grid-column:1/-1;font-size:15px}
-  .ops td:empty{display:none}
-  .ops td:nth-child(n+2)::before{display:block;font-size:11px;color:var(--sub);font-weight:500}
-  .ops td:nth-child(2)::before{content:"오픈"}.ops td:nth-child(3)::before{content:"마감"}.ops td:nth-child(4)::before{content:"총매출"}
-  .ops td:nth-child(5)::before{content:"현금 차액"}.ops td:nth-child(6)::before{content:"객수"}.ops td:nth-child(7)::before{content:"지정판매율"}.ops td:nth-child(8)::before{content:"리뷰"}
+  .ops.br,.ops.sv{min-width:0;display:block}.ops.br thead,.ops.sv thead{display:none}.ops.br tbody,.ops.sv tbody{display:block}
+  .ops.br tr,.ops.sv tr{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px 10px;padding:12px 16px;border-bottom:1px solid var(--line)}
+  .ops.br td,.ops.sv td{border:0;padding:0;text-align:left;white-space:normal}.ops.br td:first-child,.ops.sv td:first-child{grid-column:1/-1;font-size:15px}
+  .ops.br td:empty,.ops.sv td:empty{display:none}
+  .ops.br td:nth-child(n+2)::before,.ops.sv td:nth-child(n+2)::before{display:block;font-size:11px;color:var(--sub);font-weight:500}
+  .ops.br td:nth-child(2)::before{content:"오픈"}.ops.br td:nth-child(3)::before{content:"마감"}.ops.br td:nth-child(4)::before{content:"총매출"}
+  .ops.br td:nth-child(5)::before{content:"현금 차액"}.ops.br td:nth-child(6)::before{content:"객수"}.ops.br td:nth-child(7)::before{content:"지정판매율"}.ops.br td:nth-child(8)::before{content:"리뷰"}
+  .ops.kt{font-size:13px}.ops.kt th,.ops.kt td{padding-left:8px;padding-right:8px}
 }
 /* 10/19 지점 한눈에: 8지점 × 7칸 표, 안 한 것 회색 / 늦음, 차액 빨강 / 정상 초록 */
 .opsw{background:var(--card);border-radius:20px;padding:6px 0;overflow-x:auto;margin-bottom:12px}
@@ -191,7 +194,7 @@
 .srt .sum{font-weight:800;background:var(--bg)}.srt td.z{color:var(--red);font-weight:700}.srt td.na,.srt th.na{color:var(--sub);opacity:.55}
 .srt tbody tr:hover td{background:var(--press)}
 .srt tr.tot td{border-top:1px solid var(--line2);border-bottom:0;background:var(--bg);font-weight:800;position:sticky;bottom:0;z-index:1}.srt tr.tot td:first-child{z-index:2}
-.srchips{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}.srchips .chip{height:34px;padding:0 12px;font-size:13px}
+.srchips{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}.srchips .chip{height:40px;padding:0 12px;font-size:13px}
 @media (max-width:899px){.srt{font-size:13px}.srt th,.srt td{padding:8px 9px}.srt th:first-child,.srt td:first-child{min-width:112px;max-width:150px;font-size:13px}.srw{max-height:calc(100vh - 230px)}}
 /* 10/25 그룹관리, 추가 필수: PC는 왼쪽 조작, 오른쪽 목록 여러 칸 (사장님 "여백 활용") */
 .gwrap{display:grid;gap:12px}
@@ -202,7 +205,7 @@
 .gpill{display:inline-block;font-size:12px;font-weight:700;padding:2px 8px;border-radius:999px;background:var(--bg);color:var(--sub);white-space:nowrap}
 .gsel{width:128px;height:38px;font-size:14px;padding:0 8px;flex-shrink:0}.gmemo{height:34px;font-size:13px;margin-top:8px}
 .mwrap{display:grid;gap:12px}
-.gbr{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px}.gtag{height:28px;padding:0 9px;border-radius:999px;font-size:12px;font-weight:700;background:var(--card);color:var(--sub);border:1px solid var(--line)}.gtag.on{background:var(--blue);color:#fff;border-color:var(--blue)}.gtag.all{background:none;border-style:dashed}
+.gbr{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px}.gtag{height:36px;padding:0 11px;border-radius:999px;font-size:12px;font-weight:700;background:var(--card);color:var(--sub);border:1px solid var(--line)}.gtag.on{background:var(--blue);color:#fff;border-color:var(--blue)}.gtag.all{background:none;border-style:dashed}
 .gside,.mside,.gmain{min-width:0}.gside .chips,.mside .chips{flex-wrap:wrap;overflow:visible;margin-left:0;margin-right:0;padding:0}.mside .card{min-width:0}
 @media(min-width:900px){.gwrap,.mwrap{grid-template-columns:360px minmax(0,1fr);align-items:start;gap:20px}.gside,.mside{position:sticky;top:20px;display:grid;gap:12px}.glist{grid-template-columns:repeat(auto-fill,minmax(320px,1fr))}.mwrap .list{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:0 16px}}
 </style>
@@ -213,12 +216,8 @@
   <button data-g="home" data-tab="home">홈</button>
   <button data-g="tasks" data-tab="tasks">업무</button>
   <button data-g="close" data-tab="close">마감</button>
-  <button data-g="kpi" data-tab="kpi">KPI</button>
   <button data-g="goods" data-tab="order">상품</button>
-  <button data-g="note" data-tab="note">노트</button>
-  <button data-g="office" data-tab="office">사무실</button>
-  <button data-g="staff" data-tab="staff">직원앱</button>
-  <button data-g="naver" data-tab="naver">네이버</button>
+  <button data-g="more" data-act="more">더보기</button>
 </div></nav>
 <div class="dim" id="dim"><div class="sheet" id="sheet"></div></div>
 <div class="tip" id="tip"></div>
@@ -242,8 +241,8 @@ const ST = (r) => r == null ? null : r <= 5 ? { k: "good", t: "좋아요" } : r 
 let RAW = null, KEY = null, D = null, tab = ls.get("vf-admin-tab") || "home", mustB = ls.get("vf-admin-mustb") || "본점", mustCat = "", mustQ = "", draft = null, editTask = null;
 
 async function fetchEnc() {
-  try { const r = await fetch(SRC[0] + "?t=" + Date.now(), { headers: { Accept: "application/vnd.github.raw" }, cache: "no-store" }); if (r.ok) return await r.json(); } catch {}
-  return (await fetch(SRC[1] + "?t=" + Date.now(), { cache: "no-store" })).json();
+  try { const r = await fetch(SRC[1] + "?t=" + Date.now(), { cache: "no-store" }); if (r.ok) return await r.json(); } catch {}
+  const r = await fetch(SRC[0] + "?t=" + Date.now(), { headers: { Accept: "application/vnd.github.raw" }, cache: "no-store" }); if (!r.ok) throw new Error("응답 " + r.status); return r.json();
 }
 async function deriveKey(pw, salt, iter) {
   const base = await crypto.subtle.importKey("raw", new TextEncoder().encode(pw), "PBKDF2", false, ["deriveBits"]);
@@ -270,14 +269,14 @@ const closeSheet = () => { $("#dim").classList.remove("on"); if (usePanel()) { p
 
 function renderLogin(msg) {
   $("#nav").style.display = "none";
-  $("#app").innerHTML = `<div class="login"><div class="headline">베이프렌드 관리자<br><span style="color:var(--sub);font-size:18px;font-weight:600">${msg || "비밀번호를 넣어 주세요"}</span></div>
-    <input class="in" id="pw" type="password" autocomplete="current-password" placeholder="비밀번호">
-    <label style="display:flex;gap:8px;align-items:center;margin:16px 4px;font-size:15px;color:var(--ink2)"><input type="checkbox" id="remember" checked style="width:18px;height:18px;accent-color:var(--blue)"> 이 기기에서 기억하기</label>
+  $("#app").innerHTML = `<div class="login"><div class="headline">베이프렌드 관리자<br><span id="loginmsg" style="color:var(--sub);font-size:18px;font-weight:600">${msg || "비밀번호를 넣어 주세요"}</span></div>
+    <label class="lbl" for="pw" style="display:block;margin:0 0 8px">비밀번호</label><input class="in" id="pw" type="password" autocomplete="current-password" placeholder="비밀번호">
+    <label style="display:flex;gap:8px;align-items:center;margin:16px 4px;font-size:15px;color:var(--ink2)"><input type="checkbox" id="remember" style="width:18px;height:18px;accent-color:var(--blue)"> 이 기기에서 기억하기</label>
     <button class="btn" id="go">열기</button></div>`;
   $("#pw").focus();
 }
 async function tryLogin() {
-  const pw = $("#pw").value.trim(); if (!pw) return;
+  const pw = $("#pw").value.trim(); if (!pw) { $("#pw").focus(); return toast("비밀번호를 넣어 주세요"); }
   $("#go").disabled = true; $("#go").textContent = "여는 중…";
   try {
     RAW = RAW || await fetchEnc();
@@ -285,7 +284,7 @@ async function tryLogin() {
     D = await decrypt(RAW, key); KEY = key;
     if ($("#remember").checked) ls.set("vf-admin-key", b64.to(key));
     render();
-  } catch (e) { renderLogin(e?.name === "OperationError" ? "비밀번호가 맞지 않아요" : "불러오지 못했어요. 인터넷을 확인해 주세요"); }
+  } catch (e) { const m = e?.name === "OperationError" ? "비밀번호가 맞지 않아요" : "불러오지 못했어요. 인터넷을 확인해 주세요"; if ($("#loginmsg")) { $("#loginmsg").textContent = m; $("#go").disabled = false; $("#go").textContent = "열기"; $("#pw").value = ""; $("#pw").focus(); } else renderLogin(m); }
 }
 async function reload(quiet) {
   try { RAW = await fetchEnc(); D = await decrypt(RAW, KEY); if (!draft && !$("#dim").classList.contains("on")) render(); if (!quiet) toast("새로 불러왔어요"); }
@@ -306,11 +305,15 @@ const ICON = {
   naver: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h5.2l5.6 8.1V4H20v16h-5.2l-5.6-8.1V20H4z"/></svg>',
   staff: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zm-8 8c0-3.3 3.6-6 8-6s8 2.7 8 6v1H4z"/></svg>',
   office: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 21V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v4h2a2 2 0 0 1 2 2v10h-6v-4h-4v4zm4-14v2h2V7zm4 0v2h2V7zm-4 4v2h2v-2zm4 0v2h2v-2zm5 2v2h2v-2z"/></svg>',
+  more: '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2.3"/><circle cx="12" cy="12" r="2.3"/><circle cx="19" cy="12" r="2.3"/></svg>',
 };
-// 10/19 사장님 "다 따로 들어가기 불편해": 네이버 앱, 직원앱을 관리자 안 메뉴로 (같은 사이트라 안에 띄움, 네이버 열쇠, 직원앱 지점은 각 앱이 이 기기에 기억)
+/* 11/3 점검: 폰 아래 메뉴는 5개까지. KPI, 매장 노트, 사무실, 직원웹, 네이버는 '더보기' 창에서 고른다 */
+const MORE = ["kpi", "note", "office", "staff", "naver"];
+function moreSheetHtml() { const nm = { kpi: "KPI", note: "매장 노트", office: "사무실", staff: "직원웹", naver: "네이버" }; return `<h3>더보기</h3><div class="list" style="margin-top:12px">${MORE.map((k) => `<button class="item" data-tab="${k}"><div class="av ${grpOf(tab)[0] === k ? "blue" : ""}">${ICON[k]}</div><div class="tx"><b>${nm[k]}${k === "office" && botBad() ? ' <span class="t-bad">●</span>' : ""}</b></div><span class="chev">›</span></button>`).join("")}</div><div class="btns"><button class="btn gray" data-x>닫기</button></div>`; }
+// 10/19 사장님 "다 따로 들어가기 불편해": 네이버 앱, 직원웹을 관리자 안 메뉴로 (같은 사이트라 안에 띄움, 네이버 열쇠, 직원웹 지점은 각 앱이 이 기기에 기억)
 // 10/26 사장님 "홈이 가득가득, 업무 안에 블로그도": 메뉴 12개 → 7개 묶음, 묶음 안은 위쪽 작은 탭
-const GROUPS = [["home", "홈", ["home"]], ["tasks", "업무", ["tasks"]], ["close", "마감", ["close"]], ["kpi", "KPI", ["kpi"]], ["goods", "상품", ["order", "bunbae", "stockrep", "group", "must"]], ["note", "매장 노트", ["note"]], ["office", "사무실", ["office"]], ["staff", "직원앱", ["staff"]], ["naver", "네이버", ["naver"]]];
-const SUBNM = { bunbae: "분배 넣기", tasks: "업무", blog: "블로그 발행", order: "주문요청", stockrep: "재고보고", survey: "재고조사", group: "그룹관리", must: "추가 필수", office: "봇 상태", staff: "직원앱", naver: "네이버" };
+const GROUPS = [["home", "홈", ["home"]], ["tasks", "업무", ["tasks"]], ["close", "마감", ["close"]], ["kpi", "KPI", ["kpi"]], ["goods", "상품", ["order", "bunbae", "stockrep", "survey", "group", "must"]], ["note", "매장 노트", ["note"]], ["office", "사무실", ["office"]], ["staff", "직원웹", ["staff"]], ["naver", "네이버", ["naver"]]];
+const SUBNM = { bunbae: "분배 넣기", tasks: "업무", blog: "블로그 발행", order: "주문요청", stockrep: "재고보고", survey: "재고조사", group: "그룹관리", must: "추가 필수", office: "봇 상태", staff: "직원웹", naver: "네이버" };
 const grpOf = (t) => GROUPS.find((g) => g[2].includes(t === "blog" ? "tasks" : t)) || GROUPS[0];
 const grpTab = (g) => { const last = ls.get("vf-admin-sub-" + g[0]); return g[2].includes(last) ? last : g[2][0]; };
 const subnavHtml = () => { const g = grpOf(tab); return g[2].length > 1 ? `<div class="subnav">${g[2].map((k) => `<button class="${k === tab ? "on" : ""}" data-tab="${k}">${SUBNM[k]}</button>`).join("")}</div>` : ""; };
@@ -318,14 +321,14 @@ const EMBED = { naver: () => "../naver/", staff: () => `../staff/?branch=${encod
 let staffB = ls.get("vf-admin-staffb") || "본점";
 function embedHtml() {
   const chips = tab === "staff" ? `<div class="embar">${BR.map((b, i) => `<button class="chip ${b === staffB ? "on" : ""}" data-staffb="${b}">${i + 1} ${b}</button>`).join("")}</div>` : "";
-  return `${chips}<iframe class="emb" src="${EMBED[tab]()}" title="${tab === "naver" ? "네이버" : "직원앱"}"></iframe>`;
+  return `${chips}<iframe class="emb" src="${EMBED[tab]()}" title="${tab === "naver" ? "네이버" : "직원웹"}"></iframe>`;
 }
 function render() {
   if (!D) return;
   const pc = isPC();
   $("#nav").style.display = pc ? "none" : "";
   ls.set("vf-admin-sub-" + grpOf(tab)[0], tab);
-  document.querySelectorAll("#nav button").forEach((b) => { const g = GROUPS.find((x) => x[0] === b.dataset.g); if (g) { b.dataset.tab = grpTab(g); b.classList.toggle("on", grpOf(tab) === g); if (!b.dataset.ic) { b.dataset.ic = 1; b.innerHTML = (g[0] === "goods" ? ICON.survey : ICON[g[0]]) + (g[0] === "note" ? "노트" : g[1]); } } });
+  document.querySelectorAll("#nav button").forEach((b) => { if (b.dataset.g === "more") { b.classList.toggle("on", MORE.includes(grpOf(tab)[0])); if (!b.dataset.ic) { b.dataset.ic = 1; b.innerHTML = ICON.more + "더보기"; } return; } const g = GROUPS.find((x) => x[0] === b.dataset.g); if (g) { b.dataset.tab = grpTab(g); b.classList.toggle("on", grpOf(tab) === g); if (!b.dataset.ic) { b.dataset.ic = 1; b.innerHTML = (g[0] === "goods" ? ICON.survey : ICON[g[0]]) + (g[0] === "note" ? "노트" : g[1]); } } });
   const [, hh, mm] = D.at.match(/(\d{2}):(\d{2})$/) || [];
   if (EMBED[tab] && $("#app .emb") && $("#app .emb").dataset.k === tab + staffB) return; // 자동 새로고침 때 안에 띄운 앱이 처음으로 돌아가지 않게
   const body0 = EMBED[tab] ? embedHtml() : tab === "home" ? (pc ? homePC() : homeHtml()) : tab === "kpi" ? kpiHtml() : tab === "close" ? closingAllHtml() : tab === "survey" ? surveyHtml() : tab === "tasks" ? tasksHtml() : tab === "note" ? noteHtml() : tab === "order" ? orderHtml() : tab === "office" ? officeHtml() : tab === "group" ? groupHtml() : tab === "stockrep" ? stockTblHtml() : tab === "bunbae" ? bunbaeHtml() : tab === "blog" ? (blogAdmHtml() || '<div class="empty">올라온 블로그 지시문이 없어요</div>') : mustHtml();
@@ -339,7 +342,7 @@ function render() {
   markEmb();
   if (tab === "home") { $("#panel").innerHTML = panelKeep || panelDefault(); bindSparks(); }
 }
-// ── KPI (10/19) ── 데이터: 운영봇 kpiData() (노션 근무자별 ~10/13 + 직원앱 마감 보고 10/20~). 비율 식은 부록C
+// ── KPI (10/19) ── 데이터: 운영봇 kpiData() (노션 근무자별 ~10/13 + 직원웹 마감 보고 10/20~). 비율 식은 부록C
 let kpiB = ls.get("vf-admin-kpib") || "전체", kpiP = ls.get("vf-admin-kpip") || "week", kpiM = ls.get("vf-admin-kpim") || "staff", kpiS = ls.get("vf-admin-kpis") || "last30";
 const pct = (a, b) => (b ? (Math.round((a / b) * 1000) / 10).toFixed(1) + "%" : "-");
 const man = (n) => (n == null ? "-" : n >= 10000 ? (Math.round(n / 1000) / 10).toFixed(1) + "만" : won(n));
@@ -357,7 +360,7 @@ function kRow(label, g, hl = {}) {
   return `<tr><td><b>${label}</b></td><td>${g.days}</td><td>${m1(g.sales)}</td><td${c("avg")}>${m1(v.avg)}</td><td>${g.bills.toLocaleString()}</td><td${c("ticket")}>${v.ticket == null ? "-" : (v.ticket / 10000).toFixed(1) + "만"}</td><td${c("des")}>${pct(g.des, g.prem)}</td><td${c("disp")}>${pct(g.disp, g.bills)}</td><td${c("valm")}>${pct(g.valm, g.dev)}</td><td${c("rev")}>${pct(g.rev, g.bills)}</td></tr>`;
 }
 const kHL = (list) => { const o = {}; for (const k of ["avg", "ticket", "des", "disp", "valm", "rev"]) { const xs = list.map((g) => kVals(g)[k]).filter((x) => x != null); if (xs.length > 1) o[k] = { max: Math.max(...xs), min: Math.min(...xs) }; } return o; };
-const kHead = (first) => `<thead><tr><th>${first}</th><th>영업일</th><th>매출(원)</th><th>하루 평균</th><th>객수</th><th>객단가</th><th>지정판매율</th><th>일회용판매율</th><th>발맥프로율</th><th>리뷰율</th></tr></thead>`;
+const kHead = (first) => `<thead><tr><th>${first}</th><th>영업일</th><th>매출(만원)</th><th>하루 평균(만원)</th><th>객수</th><th>객단가</th><th>지정판매율</th><th>일회용판매율</th><th>발맥프로율</th><th>리뷰율</th></tr></thead>`;
 function kpiHtml() {
   const K = D.kpi; if (!K) return '<div class="empty">KPI 기록을 아직 못 불러왔어요</div>';
   if (kpiM === "staff") return kpiRankHtml() + kpiHtml0(K);
@@ -386,7 +389,7 @@ function branchKpiHtml(K) {
     tiles = kTiles(L.at(-1), L.at(-2));
     table = `<div class="sec">${kpiP === "week" ? "주별" : "월별"} 기록 <small>최근 ${Math.min(12, L.length)}개</small></div><div class="opsw"><table class="ops kt">${kHead(kpiP === "week" ? "주" : "월")}<tbody>${(() => { const LL = L.slice(-12).reverse(), hl = kHL(LL); return LL.map((g) => kRow(kLabel(g), g, hl)).join(""); })()}</tbody></table></div>`;
   }
-  return `<div class="pchead"><h1>KPI</h1><div class="caption">${esc(K.lastDate)}까지 기록, 노션 기록(10/13까지) + 직원앱 마감 보고</div></div>${bar}${tiles}${table}
+  return `<div class="pchead"><h1>KPI</h1><div class="caption">${esc(K.lastDate)}까지 기록, 노션 기록(10/13까지) + 직원웹 마감 보고</div></div>${bar}${tiles}${table}
     <div class="caption" style="margin-top:10px">객단가 = 매출 ÷ 객수, 지정판매율 = 지정 ÷ 프리미엄, 일회용판매율 = 일회용 ÷ 객수, 발맥프로율 = 발맥 ÷ 입호흡, 리뷰율 = 리뷰 ÷ 객수. 5월부터 프리미엄 병수 세는 기준이 바뀐 것으로 보여 그 전후 지정판매율은 비교가 어려워요.</div>`;
 }
 function kTiles(c, p) {
@@ -419,23 +422,23 @@ function orderHtml0() {
   const F = { "확인 전": (o) => o.ost === "요청" && open(o), "결제 기다림": (o) => o.ost === "확인" && o.pay !== "결제완료" && open(o), "주문할 것": (o) => o.ost === "확인" && o.pay === "결제완료" && open(o), "입고 기다림": (o) => on(o) && !o.bb, "분배에 붙음": (o) => on(o) && !!o.bb, 입고됨: (o) => !!o.arrived && open(o), 불가: (o) => o.ost === "불가" && open(o), 끝남: (o) => !open(o) };
   const NEW = "신규 입고 검토", NL = D.ordNew || [];
   const L = orderF === NEW ? [] : L0.filter(F[orderF]);
-  const chips = Object.keys(F).map((k) => `<button class="chip ${orderF === k ? "on" : ""}" data-orderf="${k}">${k} ${L0.filter(F[k]).length}</button>`).join("") + `<button class="chip ${orderF === NEW ? "on" : ""}" data-orderf="${NEW}">🆕 ${NEW} ${NL.length}</button>`;
+  const chips = Object.keys(F).filter((k) => k === orderF || k === "확인 전" || L0.filter(F[k]).length).map((k) => `<button class="chip ${orderF === k ? "on" : ""}" data-orderf="${k}">${k} ${L0.filter(F[k]).length}</button>`).join("") + `<button class="chip ${orderF === NEW ? "on" : ""}" data-orderf="${NEW}">🆕 ${NEW} ${NL.length}</button>`;
   // 10/27 우리 포스에 없어서 주문 불가로 정한 상품을 몇 번 찾았는지 (이사님 입고 판단용)
   if (orderF === NEW) return `<div class="pchead"><h1>주문요청</h1><div class="caption">우리 매장에 없어서 주문 불가로 정한 상품, 최근 60일 동안 손님이 찾은 횟수예요. 새로 들일지 볼 때 참고하세요</div></div>
     <div class="chips" style="margin-bottom:10px">${chips}</div><div class="list">${NL.map((x) => `<div class="item" style="display:block"><div style="display:flex;gap:8px;align-items:center"><b style="font-size:17px">${x.test ? "🧪 " : ""}${esc(x.items)}</b><span style="margin-left:auto" class="t-bad"><b>${x.n}번</b></span></div><div class="caption">${Object.entries(x.br).map(([b, n]) => `${BR.indexOf(b) + 1}호 ${esc(b)} ${n}`).join(", ")}, 마지막 ${esc(x.last.slice(5).replace("-", "/"))}${x.why ? `, 사유: ${esc(x.why)}` : ""}</div></div>`).join("") || '<div class="item">아직 없어요</div>'}</div>`;
-  const tag = (o) => !open(o) ? `<b class="t-sub">${o.step === "done" ? "전달 끝" : "취소"}</b>` : o.arrived ? '<b class="t-good">입고됨</b>' : o.ost === "주문함" ? `<b class="t-good">${o.bb ? "분배에 붙음" : "주문함"}</b>` : o.ost === "확인" ? `<b style="color:#1b64da">${o.pay === "결제완료" ? "주문 가능, 결제 받음" : "주문 가능, 결제 기다림"}</b>` : o.ost === "불가" ? '<b class="t-bad">주문 불가</b>' : '<b class="t-bad">확인 전</b>';
+  const tag = (o) => !open(o) ? `<b class="t-sub">${o.step === "done" ? "전달 끝" : "취소"}</b>` : o.arrived ? '<b class="t-good">입고됨</b>' : o.ost === "주문함" ? `<b class="t-good">${o.bb ? "분배에 붙음" : "주문했어요"}</b>` : o.ost === "확인" ? `<b style="color:var(--blue)">${o.pay === "결제완료" ? "주문 가능, 결제 받음" : "주문 가능, 결제 기다림"}</b>` : o.ost === "불가" ? '<b class="t-bad">주문 불가</b>' : '<b class="t-bad">확인 전</b>';
   const card = (o) => `<div class="item" style="display:block"><div style="display:flex;gap:8px;align-items:center"><span class="caption">${o.test ? "🧪 시험, " : ""}${BR.indexOf(o.b) + 1}호 ${esc(o.b)}, ${esc(o.d.slice(5).replace("-", "/"))} ${esc(o.t)}, ${esc(o.by)}</span><span style="margin-left:auto">${tag(o)}</span></div>
     <div style="font-size:17px;font-weight:800;margin:6px 0">${esc(o.items)}</div>
     ${o.auto ? `<div class="caption" style="margin-bottom:4px">${o.auto.lines.map(([n, v, w]) => `${v === "가능" ? "✅" : v === "불가" ? "🚫" : "❓"} ${esc(n)}: ${esc(w)}`).join("<br>")}${o.auto.alt?.length ? `<br>🔁 다른 지점 재고: ${o.auto.alt.map(([b, n, q]) => `${esc(b)} ${q}개`).join(", ")}` : ""}</div>` : ""}
     <div class="caption">손님 ${esc(o.name || "")} ${esc(o.phone || "")}, ${esc(o.how)}, ${o.pay === "결제완료" ? "결제완료" : "결제 전"}${o.arrived ? ", 입고됨" : o.bb ? `, 📦 ${+o.bb.d.slice(5, 7)}/${+o.bb.d.slice(8)} 분배에 붙음${o.bb.packed ? ", 본점 챙김 끝" : ""}` : o.ost === "주문함" ? ", 분배 기다림" : ""}${o.memo ? ", 메모: " + esc(o.memo) : ""}${o.ostBy ? `, ${esc({ 요청: "되돌림", 확인: "주문 가능", 불가: "주문 불가" }[o.ost] || o.ost)}: ${esc(o.ostBy)} ${esc(o.ostAt.slice(5))}` : ""}${o.nogo ? `, 사유: ${esc(o.nogo)}` : ""}</div>
-    <div style="display:flex;gap:8px;margin-top:8px">${!open(o) || o.arrived ? "" : o.ost === "요청" ? `<button class="chip on" data-ordst="확인" data-oid="${esc(o.id)}">주문 가능</button><button class="chip" data-ordst="불가" data-oid="${esc(o.id)}">주문 불가</button>` : o.ost === "확인" ? `${o.pay === "결제완료" ? `<button class="chip on" data-ordst="주문함" data-oid="${esc(o.id)}">주문함</button>` : '<span class="caption" style="align-self:center">지점이 결제 받으면 [주문함]이 열려요</span>'}<button class="chip" data-ordst="요청" data-oid="${esc(o.id)}">되돌리기</button>` : `<button class="chip" data-ordst="${o.ost === "주문함" ? "확인" : "요청"}" data-oid="${esc(o.id)}">되돌리기</button>`}</div></div>`;
-  return `<div class="pchead"><h1>주문요청</h1><div class="caption">전 지점 고객 주문요청. 주문 가능한지 보고 [주문 가능] 또는 [주문 불가], 결제 받은 건은 주문하고 [주문함]</div></div>
+    <div style="display:flex;gap:8px;margin-top:8px">${!open(o) || o.arrived ? "" : o.ost === "요청" ? `<button class="chip on" data-ordst="확인" data-oid="${esc(o.id)}">주문 가능</button><button class="chip" data-ordst="불가" data-oid="${esc(o.id)}">주문 불가</button>` : o.ost === "확인" ? `${o.pay === "결제완료" ? `<button class="chip on" data-ordst="주문함" data-oid="${esc(o.id)}">주문했어요</button>` : '<span class="caption" style="align-self:center">지점이 결제 받으면 [주문했어요]가 열려요</span>'}<button class="chip" data-ordst="요청" data-oid="${esc(o.id)}">되돌리기</button>` : `<button class="chip" data-ordst="${o.ost === "주문함" ? "확인" : "요청"}" data-oid="${esc(o.id)}">되돌리기</button>`}</div></div>`;
+  return `<div class="pchead"><h1>주문요청</h1><div class="caption">전 지점 고객 주문요청. 주문 가능한지 보고 [주문 가능] 또는 [주문 불가], 결제 받은 건은 주문하고 [주문했어요]</div></div>
     <div class="chips" style="margin-bottom:10px">${chips}</div><div class="list">${L.map(card).join("") || '<div class="item">해당하는 주문요청이 없어요</div>'}</div>`;
 }
 async function orderStep(id, st) {
-  const by = adminName(); if (!by) return;
-  let why = ""; if (st === "불가") { why = prompt("주문 불가 사유 (지점 직원웹에 보여요). 예: 단종, 도매처 품절", "") ; if (why === null) return; why = why.trim(); }
-  try { await sendOp("orderStep", { id, st, by, why }); const o = (D.orders || []).find((y) => y.id === id); if (o) Object.assign(o, { ost: st, nogo: why, ostBy: by, ostAt: new Date().toISOString().slice(0, 16).replace("T", " ") }); render(); toast({ 주문함: "주문함으로 바꿨어요", 확인: "주문 가능으로 바꿨어요", 불가: "주문 불가로 바꿨어요. 지점에 손님 안내 줄이 떠요", 요청: "되돌렸어요" }[st]); } catch (e) { toast("실패: " + e.message); }
+  const by = await adminName(); if (!by) return;
+  let why = ""; if (st === "불가") { why = await askText("주문 불가 사유", "지점 직원웹에 손님 안내 줄로 보여요", "예: 단종, 도매처 품절", "", "주문 불가로 바꾸기"); if (why === null) return; }
+  try { await sendOp("orderStep", { id, st, by, why }); const o = (D.orders || []).find((y) => y.id === id); if (o) Object.assign(o, { ost: st, nogo: why, ostBy: by, ostAt: new Date().toISOString().slice(0, 16).replace("T", " ") }); render(); toast({ 주문함: "주문한 것으로 표시했어요", 확인: "주문 가능으로 바꿨어요", 불가: "주문 불가로 바꿨어요. 지점에 손님 안내 줄이 떠요", 요청: "되돌렸어요" }[st]); } catch (e) { toast("실패: " + e.message); }
 }
 // ── 매장 노트 (10/20) ── 직원들이 남긴 특이건. 👍와 댓글은 운영봇으로(서명), 이름은 이 기기에 기억
 let noteF = "전체", noteB = "전체";
@@ -456,7 +459,14 @@ function noteHtml() {
 }
 // 10/28 사장님: 관리자 이름은 이 넷만(보혜 빼고). 저장된 이름이 목록에 없으면(예전 보혜) 고른 적 없는 걸로 봄
 const ADMIN_NAMES = ["한섭이사", "민혁팀장", "동재팀장", "관리자"];
-function adminName() { let n = ls.get("vf-admin-name") || ""; if (ADMIN_NAMES.includes(n)) return n; n = (prompt("누구로 남길까요? 하나를 그대로 적어 주세요: " + ADMIN_NAMES.join(", ")) || "").trim(); if (!ADMIN_NAMES.includes(n)) { if (n) toast("목록에 있는 이름만 돼요"); return ""; } ls.set("vf-admin-name", n); return n; }
+/* 11/3 점검: 브라우저 기본 prompt, confirm 창 대신 아래에서 올라오는 창. 열려 있던 창은 취소하면 되돌려 둔다 */
+let ASKR = null;
+function askOpen(html) { if (ASKR) ASKR(null); const sh = $("#sheet"), was = $("#dim").classList.contains("on"), prev = sh.innerHTML; sh.innerHTML = html; $("#dim").classList.add("on"); sh.scrollTop = 0; return { was, prev }; }
+function askClose(st) { if (st.was) $("#sheet").innerHTML = st.prev; else $("#dim").classList.remove("on"); }
+function askConfirm(title, caption, okLabel = "네", red = false) { return new Promise((res) => { const st = askOpen(`<h3>${esc(title)}</h3>${caption ? `<div class="caption">${esc(caption)}</div>` : ""}<div class="btns"><button class="btn gray" data-ask="0">아니요</button><button class="btn ${red ? "red" : ""}" data-ask="1">${esc(okLabel)}</button></div>`); ASKR = (v) => { ASKR = null; askClose(st); res(v === "1"); }; }); }
+function askText(title, caption, ph, def = "", okLabel = "확인") { return new Promise((res) => { const st = askOpen(`<h3>${esc(title)}</h3>${caption ? `<div class="caption">${esc(caption)}</div>` : ""}<input class="in" id="askIn" maxlength="200" placeholder="${esc(ph)}" value="${esc(def)}" style="margin-top:14px"><div class="btns"><button class="btn gray" data-ask="0" style="flex:0 0 96px">닫기</button><button class="btn" data-ask="in">${esc(okLabel)}</button></div>`); setTimeout(() => $("#askIn")?.focus(), 50); ASKR = (v) => { const val = v === "in" ? ($("#askIn")?.value || "").trim() : null; ASKR = null; askClose(st); res(val); }; }); }
+function askName(title = "누구로 남길까요") { return new Promise((res) => { const last = ls.get("vf-admin-name") || ""; let by = ADMIN_NAMES.includes(last) ? last : ""; const st = askOpen(`<h3>${esc(title)}</h3><div class="chips" style="margin-top:14px">${ADMIN_NAMES.map((n) => `<button class="chip ${by === n ? "on" : ""}" data-askname="${n}">${n}</button>`).join("")}</div><div class="btns"><button class="btn gray" data-ask="0" style="flex:0 0 96px">닫기</button><button class="btn" data-ask="name">이 이름으로</button></div>`); const fin = (v) => { if (v === "name" && !by) return toast("이름을 골라 주세요"); ASKR = null; askClose(st); res(v === "name" ? by : null); }; fin.pick = (n) => { by = n; document.querySelectorAll("[data-askname]").forEach((x) => x.classList.toggle("on", x.dataset.askname === n)); }; ASKR = fin; }); }
+async function adminName() { let n = ls.get("vf-admin-name") || ""; if (ADMIN_NAMES.includes(n)) return n; n = await askName(); if (!n) return ""; ls.set("vf-admin-name", n); return n; }
 // 10/28 사장님 "댓글 적을 때 누군지 고를 수 있게, 지금 다 보혜라서": 한 PC를 여러 명이 써서 처음 적은 이름이 계속 붙음 → 매장 노트 위에 이름 칩, 고른 이름으로 댓글과 👍
 // 10/28 사장님 "댓글 남기는 사람이 고를 수 있도록": 댓글, 👍 누를 때 창에서 이름(넷 중 하나)을 고르고 남김. 마지막으로 고른 이름이 미리 켜져 있음
 let NA = null;
@@ -464,7 +474,7 @@ function noteAct(id, like) {
   const x = (D.notes || []).find((y) => y.id === id); if (!x) return;
   const last = ls.get("vf-admin-name") || "";
   NA = { id, like, by: ADMIN_NAMES.includes(last) ? last : null };
-  openSheet(`<h2>${like ? "👍 좋아요" : "💬 댓글"}</h2><div class="caption" style="white-space:pre-wrap;margin:8px 0 12px">${esc(x.text).slice(0, 160)}</div>
+  openSheet(`<h3>${like ? "👍 좋아요" : "💬 댓글"}</h3><div class="caption" style="white-space:pre-wrap;margin:8px 0 12px">${esc(x.text).slice(0, 160)}</div>
     ${like ? "" : `<input class="in" id="naText" maxlength="300" placeholder="댓글, 직원웹에 바로 보여요">`}
     <div class="lbl" style="margin-top:14px">누구로 남길까요</div><div class="chips">${ADMIN_NAMES.map((n) => `<button class="chip ${NA.by === n ? "on" : ""}" data-naby="${n}">${n}</button>`).join("")}</div>
     <div class="btns"><button class="btn gray" data-x>닫기</button><button class="btn" data-act="naok">${like ? "👍 남기기" : "댓글 남기기"}</button></div>`);
@@ -547,11 +557,11 @@ function bunbaeHtml() {
   const cards = (D.bunbae || []).filter((c) => !c.arrived || c.arrived.d >= D.d).slice().reverse();
   const cuN = (c) => c.items.reduce((a, y) => a + (y.cust || []).length, 0);
   const st = (c) => { const no = c.items.filter((y) => y.got != null && y.got < y.q).length; return (cuN(c) ? `<span class="t-bad">🧾 고객요청 ${cuN(c)}</span>, ` : "") + c.arrived ? `<span class="t-good">도착 ${esc(c.arrived.t)}, ${esc(c.arrived.by)}</span>` : c.packed ? `챙김 끝 ${esc(c.packed.t)}${no ? `, <span class="t-bad">못 보냄 ${no}</span>` : ""}, 도착 전` : `챙김 전 (${c.items.filter((y) => y.got != null).length}/${c.items.length})`; };
-  const list = cards.length ? `<div class="sec">진행 중인 분배</div><div class="list">${cards.map((c) => `<div class="item"><div class="tx"><b>${BR.indexOf(c.b) + 1} ${esc(c.b)} ${+c.d.slice(5, 7)}/${+c.d.slice(8)} ${c.items.length}종</b><span>${st(c)}</span></div><button class="btn gray" style="flex:0 0 60px;height:36px" data-bbprint="${c.id}|${c.b}">인쇄</button>${c.packed ? "" : `<button class="btn gray" style="flex:0 0 60px;height:36px;margin-left:6px" data-bbdel="${c.id}|${c.b}">지우기</button>`}</div>`).join("")}</div>` : "";
+  const list = cards.length ? `<div class="sec">진행 중인 분배</div><div class="list">${cards.map((c) => `<div class="item"><div class="tx"><b>${BR.indexOf(c.b) + 1} ${esc(c.b)} ${+c.d.slice(5, 7)}/${+c.d.slice(8)} ${c.items.length}종</b><span>${st(c)}</span></div><button class="btn gray" style="flex:0 0 64px;height:44px" data-bbprint="${c.id}|${c.b}">인쇄</button>${c.packed ? "" : `<button class="btn gray" style="flex:0 0 68px;height:44px;margin-left:6px" data-bbdel="${c.id}|${c.b}">지우기</button>`}</div>`).join("")}</div>` : "";
   const sh = bbShorts();
-  const short = sh.length ? `<div class="sec">못 보낸 것 <small>${sh.length}건, 다음 분배 때 같이 보낼 수 있어요</small></div><div class="list">${sh.map((x) => `<div class="item"><div class="tx"><b>${esc(x.y.n)} ${x.y.q - x.y.got}개</b><span>${BR.indexOf(x.c.b) + 1} ${esc(x.c.b)}, ${+x.c.d.slice(5, 7)}/${+x.c.d.slice(8)} 분배</span></div><button class="btn gray" style="flex:0 0 70px;height:36px" data-bbok="${x.c.id}|${x.c.b}|${x.i}">해결</button></div>`).join("")}</div>` : "";
+  const short = sh.length ? `<div class="sec">못 보낸 것 <small>${sh.length}건, 다음 분배 때 같이 보낼 수 있어요</small></div><div class="list">${sh.map((x) => `<div class="item"><div class="tx"><b>${esc(x.y.n)} ${x.y.q - x.y.got}개</b><span>${BR.indexOf(x.c.b) + 1} ${esc(x.c.b)}, ${+x.c.d.slice(5, 7)}/${+x.c.d.slice(8)} 분배</span></div><button class="btn gray" style="flex:0 0 70px;height:44px" data-bbok="${x.c.id}|${x.c.b}|${x.i}">해결</button></div>`).join("")}</div>` : "";
   return `<div class="pchead"><h1>분배 넣기</h1><div class="caption">이사님 분배표를 엑셀에서 복사해 붙여넣거나 파일을 올리면 지점별 분배 카드가 생겨요</div></div>
-    <div class="card"><textarea class="in" id="bbText" rows="7" style="width:100%;height:auto;padding:12px;font-size:14px" placeholder="엑셀에서 표를 드래그해서 복사(Ctrl+C)한 뒤 여기에 붙여넣기(Ctrl+V)&#10;첫 줄: 상품명 | 중구점 (또는 상품명 | 동성로 | 수성 …)"></textarea>
+    <div class="card"><div class="lbl" style="margin:0 0 8px">분배표 붙여넣기</div><textarea class="in" id="bbText" rows="7" style="width:100%;height:auto;padding:12px;font-size:14px" placeholder="엑셀에서 표를 드래그해서 복사(Ctrl+C)한 뒤 여기에 붙여넣기(Ctrl+V)&#10;첫 줄: 상품명 | 중구점 (또는 상품명 | 동성로 | 수성 …)"></textarea>
       <div class="btns"><label class="btn gray" style="display:flex;align-items:center;justify-content:center;cursor:pointer">엑셀 파일 올리기<input type="file" id="bbFile" accept=".xlsx,.xls,.csv" style="display:none"></label><button class="btn" data-act="bbprev">미리보기</button></div></div>
     ${prev}${list}${short}`;
 }
@@ -572,7 +582,7 @@ async function bbSend() {
   if (!BBP) return;
   const id = Date.now().toString(36), sh = BBSHORT ? bbShorts() : [];
   const bs = Object.keys(BBP); let n = 0;
-  if (!confirm(`${bs.map((b) => b).join(", ")} 지점에 분배 카드를 보낼까요?`)) return;
+  if (!(await askConfirm(`${bs.join(", ")} 지점에 분배 카드를 보낼까요?`, BBTEST ? "시험으로 보내요. 직원웹 시험 모드에서만 보여요" : "직원웹에 1~2분 뒤에 떠요", "보내기"))) return;
   try {
     for (const b of bs) {
       const items = [...Object.entries(BBP[b]), ...sh.filter((x) => x.c.b === b).map((x) => [x.y.n, x.y.q - x.y.got])];
@@ -602,7 +612,7 @@ function opsHtml() {
   }).join("");
   const done = D.ops.filter((o) => o.close), num = (o) => o.close ? [+o.close.총 || 0, +o.close.bills || 0] : o.live ? [o.live.sales, o.live.bills] : [0, 0], sum = D.ops.reduce((a, o) => a + num(o)[0], 0), bills = D.ops.reduce((a, o) => a + num(o)[1], 0);
   const total = `<tr class="tot"><td><b>합계</b><small>${done.length}/${D.ops.length}곳 보고</small></td><td></td><td></td><td><b>${won(sum)}</b></td><td></td><td><b>${bills}</b></td><td></td><td></td></tr>`;
-  return `<div class="sec">지점 한눈에 <small>오늘, 마감 전은 포스 지금까지 숫자(30분마다), 줄을 누르면 상세</small></div><div class="opsw"><table class="ops"><thead><tr><th>지점</th><th>오픈</th><th>마감 보고</th><th>총매출</th><th>현금 차액</th><th>객수</th><th>지정판매율</th><th>리뷰</th></tr></thead><tbody>${rows}${total}</tbody></table></div>`;
+  return `<div class="sec">지점 한눈에 <small>오늘, 마감 전은 포스 지금까지 숫자(30분마다), 줄을 누르면 상세</small></div><div class="opsw"><table class="ops br"><thead><tr><th>지점</th><th>오픈</th><th>마감 보고</th><th>총매출</th><th>현금 차액</th><th>객수</th><th>지정판매율</th><th>리뷰</th></tr></thead><tbody>${rows}${total}</tbody></table></div>`;
 }
 // 10/19 홈 정리 (사장님 "홈 화면이 개복잡함"): 홈 = ① 확인할 것(문제만) ② 지점 한눈에 표. 품절은 재고조사, 할 일은 업무, 지난 마감은 마감 메뉴로
 function issues() {
@@ -632,7 +642,7 @@ const issDone = () => { try { return new Set(JSON.parse(localStorage.getItem("vf
 const issDoneSave = (s) => { try { localStorage.setItem("vf-admin-issok-" + D.d, JSON.stringify([...s])); } catch {} };
 function issuesHtml() {
   const all = issues(), done = issDone(), L = all.filter((x) => !done.has(issKey(x))), hid = all.length - L.length;
-  return `<div class="sec" style="margin-top:0">확인할 것 <small>${L.length ? L.length + "건" : ""}</small>${hid ? `<button class="issundo" data-issundo="1" style="margin-left:auto;font-size:13px;color:var(--sub);background:none">숨긴 것 ${hid}건 되돌리기</button>` : ""}</div><div class="list">${L.length ? L.map((x) => `<div style="display:flex;align-items:center"><button class="item iss" style="flex:1;min-width:0" ${x.b ? `data-brpc="${esc(x.b)}"` : `data-tab="${x.go}"`}><i class="dot"></i><div class="tx"><b>${esc(x.t)}</b><span>${esc(x.d)}</span></div><span class="chev">›</span></button><button class="issok" data-issok="${esc(issKey(x))}" title="확인했어요" style="flex:0 0 auto;margin:0 12px 0 4px;height:28px;padding:0 10px;border-radius:8px;background:var(--line2);color:var(--sub);font-size:13px;font-weight:600">확인</button></div>`).join("") : '<div class="item"><i class="dot ok"></i><div class="tx"><b>오늘은 확인할 게 없어요</b></div></div>'}</div>`;
+  return `<div class="sec" style="margin-top:0">확인할 것 <small>${L.length ? L.length + "건" : ""}</small>${hid ? `<button class="issundo" data-issundo="1" style="margin-left:auto;font-size:13px;color:var(--sub);background:none">숨긴 것 ${hid}건 되돌리기</button>` : ""}</div><div class="list">${L.length ? L.map((x) => `<div style="display:flex;align-items:center"><button class="item iss" style="flex:1;min-width:0" ${x.b ? `data-brpc="${esc(x.b)}"` : `data-tab="${x.go}"`}><i class="dot"></i><div class="tx"><b>${esc(x.t)}</b><span>${esc(x.d)}</span></div><span class="chev">›</span></button><button class="issok" data-issok="${esc(issKey(x))}" title="확인했어요" style="flex:0 0 auto;margin:0 12px 0 4px;height:40px;padding:0 14px;border-radius:10px;background:var(--line2);color:var(--ink2);font-size:14px;font-weight:600">확인</button></div>`).join("") : '<div class="item"><i class="dot ok"></i><div class="tx"><b>오늘은 확인할 게 없어요</b></div></div>'}</div>`;
 }
 const homeHead = () => `<div class="pchead"><h1>오늘 한눈에</h1><div class="caption">${esc(D.d)}, ${esc(D.at.slice(-5))} 기준</div></div>`;
 function botBad() { if (!BOT) return false; const m = BOT.master || {}; return agoMin(BOT.at) > 10 || BOT.ops.s === "에러" || !(m.ok && m.login) || (BOT.adj && !(BOT.adj.ok && Object.values(BOT.adj.br || {}).every((v) => v.login))); }
@@ -649,12 +659,12 @@ function panelDefault() { return `<div class="eyebrow">지점 상세</div><h3>�
 // 지점 상세 패널: 오늘 마감 보고(경고 포함) + 품절
 function panelBranch(b, g) {
   const c = closingOf(b), n = c?.nums || {};
-  const cl = !c ? `<div class="eyebrow">${esc(ho(b))}, 오늘 마감</div><h3>아직 마감 보고가 없어요</h3><div class="caption">직원앱에서 마감 보고를 보내면 여기에 바로 떠요</div>`
+  const cl = !c ? `<div class="eyebrow">${esc(ho(b))}, 오늘 마감</div><h3>아직 마감 보고가 없어요</h3><div class="caption">직원웹에서 마감 보고를 보내면 여기에 바로 떠요</div>`
     : c.status !== "done" ? `<div class="eyebrow">${esc(ho(b))}, ${esc(c.at)} 보냄</div><h3>${c.status === "error" ? "보고문을 못 만들었어요" : "보고문 만드는 중"}</h3><div class="caption">${esc(c.err || "1~2분 뒤 다시 열어 주세요")}</div>`
     : `<div class="eyebrow">${esc(ho(b))}, ${esc(c.at)} 보냄, ${esc(c.by)}</div><h3>총매출 ${won(n.총)}원 ${warnsOf(c).length ? '<span class="t-bad">,  확인 필요</span>' : '<span class="t-good">,  이상 없음</span>'}</h3>
       <div class="caption">현금 ${won(n.현)}, 카드 ${won(n.카)}, 이체 ${won(n.입)}, 시재 ${won(c.sijae)}${c.drawer != null ? `, 돈통 ${won(c.drawer)}` : ""}, 영수 ${n.영수객수}건</div>
       ${warnsOf(c).length ? warnsOf(c).map((w) => `<div class="warn">⚠️ ${esc(w)}</div>`).join("") : '<div class="okline">✅ 돈통 차액 없음</div>'}
-      <div class="btns" style="margin-top:14px"><button class="btn gray" data-clb="${esc(b)}" style="height:46px;font-size:15px">보고문 전체 보기</button></div>`;
+      <div class="btns" style="margin-top:14px"><button class="btn gray" data-cltoday="${esc(b)}" style="height:46px;font-size:15px">보고문 전체 보기</button></div>`;
   openSheet(cl + `<div style="height:1px;background:var(--line2);margin:22px -28px 8px"></div>` + branchHtml(b, g || "프리미엄 A"));
   bindSparks();
 }
@@ -686,7 +696,7 @@ function groupCardHtml() {
 let NTBR = new Set(BR), NTUNTIL = 7; // 10/29 공지 기간(일), 0 = 내릴 때까지
 function noticeAdmHtml() {
   const L = (D.notices || []).slice().reverse();
-  const row = (n) => { const ok = n.br.filter((b) => n.ok?.[b]); return `<div class="item" style="align-items:flex-start"><div class="tx"><b>${n.off ? '<span class="t-sub">(내림)</span> ' : ""}${esc(n.title)}</b><span>${+n.d.slice(5, 7)}/${+n.d.slice(8)} ${esc(n.t)}, 확인 ${ok.length}/${n.br.length}곳${n.br.length - ok.length ? `, 아직: ${n.br.filter((b) => !n.ok?.[b]).map((b) => BR.indexOf(b) + 1 + " " + b).join(", ")}` : ""}</span></div>${n.off ? "" : `<button class="btn gray" style="flex:0 0 64px;height:36px" data-ntoff="${n.id}">내리기</button>`}</div>`; };
+  const row = (n) => { const ok = n.br.filter((b) => n.ok?.[b]); return `<div class="item" style="align-items:flex-start"><div class="tx"><b>${n.off ? '<span class="t-sub">(내림)</span> ' : ""}${esc(n.title)}</b><span>${+n.d.slice(5, 7)}/${+n.d.slice(8)} ${esc(n.t)}, 확인 ${ok.length}/${n.br.length}곳${n.br.length - ok.length ? `, 아직: ${n.br.filter((b) => !n.ok?.[b]).map((b) => BR.indexOf(b) + 1 + " " + b).join(", ")}` : ""}</span></div>${n.off ? "" : `<button class="btn gray" style="flex:0 0 68px;height:44px" data-ntoff="${n.id}">내리기</button>`}</div>`; };
   return `<div class="card" style="margin-top:12px"><div class="eyebrow">📢 직원웹 공지</div>
     <input class="in" id="ntTitle" maxlength="60" placeholder="제목 (예: 블로그 단톡방 정리 안내)" style="margin-top:6px">
     <textarea class="in" id="ntBody" rows="6" maxlength="1200" placeholder="내용" style="width:100%;height:auto;padding:12px;margin-top:8px"></textarea>
@@ -711,7 +721,7 @@ async function loadBot() {
 }
 const agoMin = (iso) => Math.round((Date.now() - Date.parse(iso)) / 60e3);
 const agoTxt = (m) => m < 1 ? "방금" : m < 60 ? m + "분 전" : m < 1440 ? Math.floor(m / 60) + "시간 전" : Math.floor(m / 1440) + "일 전";
-// 10/25 오늘 직원앱 접속(지점이 앱을 열었는지): 첫 접속~마지막, 횟수(같은 기기 30분에 한 번), 폰으로 연 적 있으면 표시
+// 10/25 오늘 직원웹 접속(지점이 앱을 열었는지): 첫 접속~마지막, 횟수(같은 기기 30분에 한 번), 폰으로 연 적 있으면 표시
 function visitsHtml() {
   if (!BOT || !BOT.visits) return "";
   const chips = BR.map((b) => {
@@ -719,7 +729,7 @@ function visitsHtml() {
     const txt = on ? `${v.first}${v.last !== v.first ? "~" + v.last : ""} (${v.n}회${v.phone ? ", 폰" : ""})` : "안 열림";
     return `<span class="chip" style="display:inline-flex;align-items:center;gap:5px;height:34px;padding:0 12px;font-size:14px;${on ? "background:var(--green-soft);color:var(--green)" : ""}">${BR.indexOf(b) + 1}호 ${b} <small>${txt}</small></span>`;
   }).join("");
-  return `<div style="padding:12px 0;border-top:1px solid var(--line2)"><div class="eyebrow" style="margin-bottom:6px">오늘 직원앱 접속 <span class="t-sub" style="font-weight:500">같은 기기는 30분에 한 번 셈</span></div><div style="display:flex;flex-wrap:wrap;gap:6px">${chips}</div></div>`;
+  return `<div style="padding:12px 0;border-top:1px solid var(--line2)"><div class="eyebrow" style="margin-bottom:6px">오늘 직원웹 접속 <span class="t-sub" style="font-weight:500">같은 기기는 30분에 한 번 셈</span></div><div style="display:flex;flex-wrap:wrap;gap:6px">${chips}</div></div>`;
 }
 function botHtml() {
   if (!BOT) return `<div class="card" id="botcard"><div class="eyebrow">봇 상태</div><div class="t-sub">${BOT_ERR ? "불러오지 못했어요" : "불러오는 중"}</div></div>`;
@@ -743,12 +753,11 @@ function botHtml() {
     ${row("마스터봇", masterBad, masterTxt, rb("마스터봇"))}
     ${(() => { const ad = BOT.adj; if (!ad) return ""; const brs = Object.entries(ad.br || {}), bad = brs.filter(([, v]) => !v.login); const txt = dead ? "확인 안 됨" : !ad.ok ? (ad.err || "꺼져 있음") : bad.length ? "로그인 필요: " + bad.map(([b]) => b).join(", ") : brs.length + "개 지점 로그인 됨"; return row("조정봇", dead || !ad.ok || bad.length > 0, txt, "") + (ad.ok ? `<div style="display:flex;flex-wrap:wrap;gap:6px;padding:0 0 10px">${brs.map(([b, v]) => `<span class="chip" style="display:inline-flex;align-items:center;height:30px;padding:0 10px;font-size:13px;${v.login ? "background:var(--green-soft);color:var(--green)" : "background:var(--red-soft);color:var(--red)"}">${BR.indexOf(b) + 1}호 ${b} ${v.login ? "로그인" : "로그인 필요"}</span>`).join("")}</div>` : ""); })()}
     ${BOT.bsQ ? `<div class="t-bad" style="padding:8px 0;font-weight:700">⚠️ 시트에 못 들어간 기록 ${BOT.bsQ}건 (다시 보내는 중)</div>` : ""}
-    ${BOT.bigWait ? `<div class="t-warn" style="padding:8px 0;font-weight:700">💰 지점 확인 기다리는 큰 입금 ${BOT.bigWait}건</div>` : ""}
     ${visitsHtml()}
-    <div style="padding-top:12px;border-top:1px solid var(--line2)"><div class="eyebrow" style="margin-bottom:6px">지점 폰 은행알림 <span class="t-sub" style="font-weight:500">포스에 이체가 찍혔는데 30분 넘게 알림이 없으면 빨간색</span></div><div style="display:flex;flex-wrap:wrap;gap:6px">${bank}</div></div></div>`;
+    <div style="padding-top:12px;border-top:1px solid var(--line2)"><div class="eyebrow" style="margin-bottom:6px">지점 폰 은행알림 <span class="t-sub" style="font-weight:500">지점 폰 알림 앱 상태, 끊기면 빨간색</span></div><div style="display:flex;flex-wrap:wrap;gap:6px">${bank}</div></div></div>`;
 }
 // 10/25 사장님: 봇 상태 자세히는 '사무실' 메뉴로, 홈에는 신호등처럼 작게(누르면 사무실)
-function officeHtml() { return `<div class="pchead"><h1>사무실</h1><div class="caption">봇 상태, 포스 조정 로그인, 지점 직원앱 접속, 은행 알림</div></div>${charsHtml()}${botHtml()}`; }
+function officeHtml() { return `<div class="pchead"><h1>사무실</h1><div class="caption">봇 상태, 포스 조정 로그인, 지점 직원웹 접속, 은행 알림</div></div>${charsHtml()}${botHtml()}`; }
 // 10/25 사장님 "바탕화면 위젯이 자꾸 사라져서 슬퍼": 우사기(운영봇), 쿠리만쥬(마스터봇)를 사무실에. 바탕화면 위젯과 같은 표정 묶음, 15초마다 그 안에서 바뀜
 const CHAR_POSE = {
   usagi: { 업무중: ["work", "check", "base", "talk", "ship"], 휴식: ["rest", "snack", "peek"], 에러: ["error", "hurry"] },
@@ -772,7 +781,7 @@ function charsHtml() {
   const st = charState();
   const one = (k, name, i) => {
     const s = st ? st[k] : { s: "휴식", line: "불러오는 중" };
-    const col = s.s === "에러" ? "var(--red)" : s.s === "휴식" ? "#8b95a1" : "var(--green)";
+    const col = s.s === "에러" ? "var(--red)" : s.s === "휴식" ? "var(--sub)" : "var(--green)";
     const label = name + " " + s.s;
     const mode = s.s === "에러" ? "stop" : s.s === "휴식" ? "rest" : "walk";
     return `<div class="walker ${mode}" style="left:${[10, 42, 72][i]}%;bottom:${[14, 8, 12][i]}%"><div class="hop"><img data-char="${k}" data-st="${s.s}" src="img/${k}_${pick(CHAR_POSE[k][s.s])}.png" alt="${name}"></div>
@@ -791,7 +800,7 @@ function botMiniHtml() {
   return `<button id="botmini" data-tab="office" title="사무실에서 자세히" style="display:inline-flex;gap:14px;align-items:center;font-size:13px;font-weight:600;color:var(--sub);background:none;padding:2px 0 10px">${dot(ops)} 운영봇 ${dot(mas)} 마스터봇${BOT.adj ? ` ${dot(!dead && BOT.adj.ok && Object.values(BOT.adj.br || {}).every((v) => v.login))} 조정봇` : ""}${BOT.bsQ ? ` <span class="t-bad">시트 밀림 ${BOT.bsQ}</span>` : ""}</button>`;
 }
 function homeHtml() { return `<div style="padding-top:6px">${botWarn()}${statHtml()}${issuesHtml()}${opsMobileHtml()}</div>`; }
-// ── 마감 보고 (직원앱 시재 + 포스 숫자) ──
+// ── 마감 보고 (직원웹 시재 + 포스 숫자) ──
 const todayMD = () => { const d = new Date(Date.now() + 9 * 3600e3); return String(d.getUTCMonth() + 1).padStart(2, "0") + "/" + String(d.getUTCDate()).padStart(2, "0"); };
 const won = (n) => Math.round(+n || 0).toLocaleString("ko-KR");
 // 10/28 사장님 "세로로 쌓이기보다 지점별로": 전체 = 지점 카드 9개(지점마다 최근 마감 7건), 지점 칩을 누르면 그 지점만 길게
@@ -881,7 +890,7 @@ function bindSparks() {
   });
 }
 const REP_TXT = (t) => !t ? "" : t.rep === "once" ? `${t.date.slice(5).replace("-", "/")} 한 번` : t.rep === "daily" ? "매일" : t.rep === "weekly" ? `매주 ${(t.dow || []).slice().sort((a, b) => ((a + 6) % 7) - ((b + 6) % 7)).map((d) => WD[d]).join(", ")}` : `매월 ${t.dom}일`;
-// ── 재고조사 (직원앱에서 센 수량 ↔ 포스 수량). [승인](포스 반영)은 아직 꺼 둠 ──
+// ── 재고조사 (직원웹에서 센 수량 ↔ 포스 수량). [승인](포스 반영)은 아직 꺼 둠 ──
 const SVST = { wait: ["승인 대기", "blue"], reject: ["반려", "gray"], done: ["반영 완료", "good"] };
 // 10/27 사장님 "보기 불편": 재고조사 탭 = 왼쪽 A그룹 카드(품절/있음을 글자로) + 지점당 한 줄(A그룹 품절, 오늘 재고보고와 조정 결과). 표와 %는 뺌(지점 상세에서), 승인형 재고조사 카드도 뺌(기록 있을 때만 아래)
 // 10/28 사장님 "재고보고 오면 관리자웹에서 노션처럼 몇 개인지 확인": 상품 > 재고보고. 노션 코일표 순서(운영봇 stockTbl.items) × 지점(본점 먼저). 오늘 보고만 숫자, 안 온 지점은 '–'.
@@ -980,7 +989,7 @@ function tasksHtml() {
   const row = (it) => {
     if (it.k === "task") return taskRow(it.t);
     if (it.k === "hist") return `<div class="item"><div class="av good">✓</div><div class="tx"><b>${esc(it.h.title)}</b><span>${dLabel(it.d)}, ${it.h.done.length}곳 완료</span></div></div>`;
-    if (it.k === "notice") { const n = it.n, ok = n.br.filter((b) => n.ok?.[b]), no = n.br.filter((b) => !n.ok?.[b]); const per = n.until ? `${dLabel(n.until)}까지` : "내릴 때까지", whom = n.br.length === BR.length ? "전 지점" : n.br.map(nm).join(", "); return `<div class="item" style="align-items:flex-start"><div class="av ${it.live ? "blue" : "good"}">${it.live ? "📢" : "✓"}</div><div class="tx"><b>${esc(n.title)}</b><span style="white-space:normal">${whom}, ${dLabel(n.d)} ${esc(n.t)} 올림, ${it.live ? per : n.off ? "내림" : "기간 끝"}<br>확인 ${ok.length}/${n.br.length}곳${no.length ? `, 아직: ${no.map(nm).join(", ")}` : ""}</span></div>${it.live ? `<button class="btn gray" style="flex:0 0 64px;height:36px" data-ntoff="${n.id}">내리기</button>` : ""}</div>`; }
+    if (it.k === "notice") { const n = it.n, ok = n.br.filter((b) => n.ok?.[b]), no = n.br.filter((b) => !n.ok?.[b]); const per = n.until ? `${dLabel(n.until)}까지` : "내릴 때까지", whom = n.br.length === BR.length ? "전 지점" : n.br.map(nm).join(", "); return `<div class="item" style="align-items:flex-start"><div class="av ${it.live ? "blue" : "good"}">${it.live ? "📢" : "✓"}</div><div class="tx"><b>${esc(n.title)}</b><span style="white-space:normal">${whom}, ${dLabel(n.d)} ${esc(n.t)} 올림, ${it.live ? per : n.off ? "내림" : "기간 끝"}<br>확인 ${ok.length}/${n.br.length}곳${no.length ? `, 아직: ${no.map(nm).join(", ")}` : ""}</span></div>${it.live ? `<button class="btn gray" style="flex:0 0 68px;height:44px" data-ntoff="${n.id}">내리기</button>` : ""}</div>`; }
     if (it.k === "blogNext") return `<div class="item"><div class="av blue">📝</div><div class="tx"><b>다음 블로그 발행 ${dLabel(it.d)}</b><span>${it.xs.length}곳 지시문 올라가 있어요</span></div></div>`;
     const ok = it.xs.filter((x) => x.done), no = it.xs.filter((x) => !x.done);
     return `<div class="item" style="align-items:flex-start"><div class="av ${no.length ? "blue" : "good"}">${no.length ? "📝" : "✓"}</div><div class="tx"><b>블로그 발행 ${dLabel(it.d)}</b><span style="white-space:normal">${it.xs.length}곳 중 ${ok.length}곳 올림${no.length ? `, 아직: ${no.map((x) => nm(x.b)).join(", ")}` : ""}${ok.length ? `<br>올림: ${ok.map((x) => `<a href="${esc(x.done.link)}" target="_blank" rel="noopener" style="color:var(--blue);font-weight:700">${nm(x.b)}</a>`).join(", ")}` : ""}</span></div></div>`;
@@ -1045,7 +1054,7 @@ function sheetTask() {
       : t.rep === "weekly" ? `<div class="chips">${[1, 2, 3, 4, 5, 6, 0].map((d) => `<button class="chip ${t.dow.includes(d) ? "on" : ""}" data-tdow="${d}">${WD[d]}</button>`).join("")}</div>`
       : t.rep === "monthly" ? `<div style="display:flex;align-items:center;gap:10px"><input class="in" type="number" id="tDom" min="1" max="31" value="${t.dom}" style="max-width:120px"><span style="font-size:17px">일마다</span></div>` : ""}</div>
     <div class="lbl">시각 <span style="font-weight:500">(선택)</span></div><input class="in" type="time" id="tTime" value="${esc(t.time)}">
-    <div class="btns">${t.id && D.tasks.some((x) => x.id === t.id) ? `<button class="btn red" data-act="tdel" style="flex:0 0 96px">삭제</button>` : `<button class="btn gray" data-x style="flex:0 0 96px">닫기</button>`}<button class="btn" data-act="tsave">저장</button></div>`);
+    <div class="btns">${t.id && D.tasks.some((x) => x.id === t.id) ? `<button class="btn red" data-act="tdel" style="flex:0 0 76px">삭제</button>` : ""}<button class="btn gray" data-x style="flex:0 0 76px">닫기</button><button class="btn" data-act="tsave">저장</button></div>`);
 }
 function mustHtml() {
   const prods = D.products[mustB] || [];
@@ -1145,13 +1154,16 @@ async function saveTask() {
   if (!t.title) return toast("무엇을 할지 적어 주세요"); if (!t.br.length) return toast("지점을 골라 주세요");
   if (t.rep === "weekly" && !t.dow.length) return toast("요일을 골라 주세요");
   t.id ||= Date.now().toString(36);
-  try { await sendOp("task", t); const i = D.tasks.findIndex((x) => x.id === t.id); i >= 0 ? (D.tasks[i] = { ...t }) : D.tasks.push({ ...t }); editTask = null; closeSheet(); render(); toast("저장했어요. 직원앱에는 1~2분 뒤에 떠요"); setTimeout(() => reload(true), 90e3); }
+  try { await sendOp("task", t); const i = D.tasks.findIndex((x) => x.id === t.id); i >= 0 ? (D.tasks[i] = { ...t }) : D.tasks.push({ ...t }); editTask = null; closeSheet(); render(); toast("저장했어요. 직원웹에는 1~2분 뒤에 떠요"); setTimeout(() => reload(true), 90e3); }
   catch (e) { toast("저장하지 못했어요. 다시 눌러 주세요"); }
 }
 document.addEventListener("change", async (e) => { if (e.target.id === "bbFile" && e.target.files[0]) { try { const txt = await bbFileRead(e.target.files[0]); BBP = bbParse(txt); BBSHORT = true; render(); } catch (er) { toast("파일을 못 읽었어요"); } } });
 document.addEventListener("click", async (e) => {
-  if (e.target.id === "dim") return closeSheet();
+  if (e.target.id === "dim") { if (ASKR) return ASKR(null); return closeSheet(); }
   const t = e.target.closest("button,tr[data-brpc]"); if (!t) return;
+  if (t.dataset.ask !== undefined) { if (ASKR) ASKR(t.dataset.ask === "0" ? null : t.dataset.ask); return; }
+  if (t.dataset.askname) { if (ASKR && ASKR.pick) ASKR.pick(t.dataset.askname); return; }
+  if (t.dataset.act === "more") return openSheet(moreSheetHtml());
   if (t.tagName === "TR") return isPC() ? panelBranch(t.dataset.brpc, "프리미엄 A") : sheetBranch(t.dataset.brpc, "프리미엄 A");
   if (t.id === "go") return tryLogin();
   if (t.dataset.tktab) { tkTab = t.dataset.tktab; ls.set("vf-admin-tktab", tkTab); return render(); }
@@ -1165,16 +1177,16 @@ document.addEventListener("click", async (e) => {
   if (t.dataset.act === "bbprint" && BBP) { BBSHORT = !!$("#bbShort")?.checked; const sh = BBSHORT ? bbShorts() : []; return bbPrint(Object.keys(BBP).map((b) => [b, [...Object.entries(BBP[b]), ...sh.filter((x) => x.c.b === b).map((x) => [x.y.n, x.y.q - x.y.got])]])); }
   if (t.dataset.bbprint) { const [id, b] = t.dataset.bbprint.split("|"); const c = (D.bunbae || []).find((x) => x.id === id && x.b === b); if (c) bbPrint([[b, c.items.map((y) => [y.n, y.q, (y.cust || []).map((u) => [u.nm, u.q])])]]); return; }
   if (t.dataset.act === "bbsend") { BBSHORT = !!$("#bbShort")?.checked; BBTEST = !!$("#bbTest")?.checked; return bbSend(); }
-  if (t.dataset.bbdel) { const [id, b] = t.dataset.bbdel.split("|"); if (!confirm(b + " 분배 카드를 지울까요?")) return; try { await sendOp("bbDel", { id, b }); D.bunbae = (D.bunbae || []).filter((c) => !(c.id === id && c.b === b)); render(); toast("지웠어요"); } catch (e) { toast("못 지웠어요"); } return; }
+  if (t.dataset.bbdel) { const [id, b] = t.dataset.bbdel.split("|"); if (!(await askConfirm(b + " 분배 카드를 지울까요?", "직원웹에서도 사라져요", "지우기", true))) return; try { await sendOp("bbDel", { id, b }); D.bunbae = (D.bunbae || []).filter((c) => !(c.id === id && c.b === b)); render(); toast("지웠어요"); } catch (e) { toast("못 지웠어요"); } return; }
   if (t.dataset.bbok) { const [id, b, i] = t.dataset.bbok.split("|"); try { await sendOp("bbShortOk", { id, b, i: +i }); const c = (D.bunbae || []).find((x) => x.id === id && x.b === b); if (c) c.items[+i].shortOk = true; render(); toast("해결로 뺐어요"); } catch { toast("못 보냈어요"); } return; }
-  if (t.dataset.ntall !== undefined) { NTBR = NTBR.size === BR.length ? new Set() : new Set(BR); document.querySelectorAll("[data-ntb]").forEach((x) => x.classList.toggle("on", NTBR.has(x.dataset.ntb))); t.classList.toggle("on", NTBR.size === 8); return; }
+  if (t.dataset.ntall !== undefined) { NTBR = NTBR.size === BR.length ? new Set() : new Set(BR); document.querySelectorAll("[data-ntb]").forEach((x) => x.classList.toggle("on", NTBR.has(x.dataset.ntb))); t.classList.toggle("on", NTBR.size === BR.length); return; }
   if (t.dataset.ntu !== undefined) { NTUNTIL = +t.dataset.ntu; document.querySelectorAll("[data-ntu]").forEach((x) => x.classList.toggle("on", x === t)); return; }
-  if (t.dataset.ntb) { NTBR.has(t.dataset.ntb) ? NTBR.delete(t.dataset.ntb) : NTBR.add(t.dataset.ntb); t.classList.toggle("on", NTBR.has(t.dataset.ntb)); document.querySelector("[data-ntall]")?.classList.toggle("on", NTBR.size === 8); return; }
-  if (t.dataset.act === "ntsend") { const title = $("#ntTitle").value.trim(), body = $("#ntBody").value.trim(); if (!title) return toast("제목을 넣어 주세요"); if (!NTBR.size) return toast("지점을 골라 주세요"); if (!confirm(`${NTBR.size === BR.length ? "전 지점" : [...NTBR].join(", ")}에 공지를 띄울까요?`)) return; const n = { id: Date.now().toString(36), title, body, br: BR.filter((b) => NTBR.has(b)), until: NTUNTIL ? addDays(D.d, NTUNTIL - 1) : "" }; try { await sendOp("notice", n); (D.notices ||= []).push({ ...n, d: D.d, t: new Date().toTimeString().slice(0, 5), off: false, ok: {} }); closeSheet(); render(); toast("올렸어요. 직원웹에는 1~2분 뒤에 떠요"); } catch (e) { toast("못 올렸어요: " + e.message); } return; }
-  if (t.dataset.ntoff) { if (!confirm("이 공지를 내릴까요? 직원웹에서 사라져요")) return; try { await sendOp("noticeOff", { id: t.dataset.ntoff }); const n = (D.notices || []).find((x) => x.id === t.dataset.ntoff); if (n) n.off = true; render(); toast("내렸어요"); } catch { toast("못 보냈어요"); } return; }
-  if (t.dataset.issok) { const s = issDone(); s.add(t.dataset.issok); issDoneSave(s); render(); return toast("확인 완료"); }
+  if (t.dataset.ntb) { NTBR.has(t.dataset.ntb) ? NTBR.delete(t.dataset.ntb) : NTBR.add(t.dataset.ntb); t.classList.toggle("on", NTBR.has(t.dataset.ntb)); document.querySelector("[data-ntall]")?.classList.toggle("on", NTBR.size === BR.length); return; }
+  if (t.dataset.act === "ntsend") { const title = $("#ntTitle").value.trim(), body = $("#ntBody").value.trim(); if (!title) return toast("제목을 넣어 주세요"); if (!NTBR.size) return toast("지점을 골라 주세요"); if (!(await askConfirm(`${NTBR.size === BR.length ? "전 지점" : [...NTBR].join(", ")}에 공지를 띄울까요?`, "직원웹에 팝업으로 떠요", "공지 올리기"))) return; const n = { id: Date.now().toString(36), title, body, br: BR.filter((b) => NTBR.has(b)), until: NTUNTIL ? addDays(D.d, NTUNTIL - 1) : "" }; try { await sendOp("notice", n); (D.notices ||= []).push({ ...n, d: D.d, t: new Date().toTimeString().slice(0, 5), off: false, ok: {} }); closeSheet(); render(); toast("올렸어요. 직원웹에는 1~2분 뒤에 떠요"); } catch (e) { toast("못 올렸어요: " + e.message); } return; }
+  if (t.dataset.ntoff) { if (!(await askConfirm("이 공지를 내릴까요?", "직원웹에서 사라져요", "내리기", true))) return; try { await sendOp("noticeOff", { id: t.dataset.ntoff }); const n = (D.notices || []).find((x) => x.id === t.dataset.ntoff); if (n) n.off = true; render(); toast("내렸어요"); } catch { toast("못 보냈어요"); } return; }
+  if (t.dataset.issok) { const s = issDone(); s.add(t.dataset.issok); issDoneSave(s); render(); return toast("확인했어요"); }
   if (t.dataset.issundo) { issDoneSave(new Set()); render(); return; }
-  if (t.dataset.restart) { const bot = t.dataset.restart; if (!confirm(bot + "을 다시 켤까요? 1분쯤 걸려요" + (bot === "운영봇" ? ". 그동안 온 신호는 다시 켜진 뒤 처리돼요" : ""))) return; t.disabled = true; t.textContent = "보냈어요"; try { await sendOp("restart", { bot }); toast(bot + " 다시 켜는 중이에요. 3분 안에 상태가 바뀌어요"); setTimeout(loadBot, 90e3); setTimeout(loadBot, 200e3); } catch (err) { toast("못 보냈어요: " + err.message); t.disabled = false; t.textContent = "다시 켜기"; } return; }
+  if (t.dataset.restart) { const bot = t.dataset.restart; if (!(await askConfirm(bot + "을 다시 켤까요?", "1분쯤 걸려요" + (bot === "운영봇" ? ". 그동안 온 신호는 다시 켜진 뒤 처리돼요" : ""), "다시 켜기"))) return; t.disabled = true; t.textContent = "보냈어요"; try { await sendOp("restart", { bot }); toast(bot + " 다시 켜는 중이에요. 3분 안에 상태가 바뀌어요"); setTimeout(loadBot, 90e3); setTimeout(loadBot, 200e3); } catch (err) { toast("못 보냈어요: " + err.message); t.disabled = false; t.textContent = "다시 켜기"; } return; }
   if (t.dataset.x !== undefined) return closeSheet();
   if (t.dataset.kpib) { kpiB = t.dataset.kpib; ls.set("vf-admin-kpib", kpiB); return render(); }
   if (t.dataset.kpim) { kpiM = t.dataset.kpim; ls.set("vf-admin-kpim", kpiM); return render(); }
@@ -1196,19 +1208,17 @@ document.addEventListener("click", async (e) => {
   if (a === "reload") return reload();
   if (a === "logout") { ls.set("vf-admin-key", null); KEY = D = null; return renderLogin("잠갔어요"); }
   if (t.dataset.brpc) return panelBranch(t.dataset.brpc, "프리미엄 A");
-  if (t.dataset.clb) { const i = (D.closings || []).findIndex((c) => c.b === t.dataset.clb && c.date === D.d); if (i >= 0) return sheetClosing(i); }
+  if (t.dataset.cltoday) { const i = (D.closings || []).findIndex((c) => c.b === t.dataset.cltoday && c.date === D.d); if (i >= 0) return sheetClosing(i); return toast("오늘 마감 보고가 아직 없어요"); }
   if (t.dataset.brg) return usePanel() && panelKeep.includes("data-brpc") === false && panelKeep.includes("오늘 마감") ? panelBranch(t.dataset.b, t.dataset.brg) : sheetBranch(t.dataset.b, t.dataset.brg);
   if (t.dataset.br) return sheetBranch(t.dataset.br, "프리미엄 A");
-  if (t.dataset.srb) return sheetStockRep(t.dataset.srb);
   if (t.dataset.svbr) return sheetSurveyBranch(t.dataset.svbr);
-  if (t.dataset.brpc) return sheetBranch(t.dataset.brpc, "프리미엄 A");
   if (t.dataset.sv) return sheetSurvey(t.dataset.sv);
   if (t.dataset.cl !== undefined) return sheetClosing(+t.dataset.cl);
   if (a === "naok") return noteActGo();
   if (a === "copyrpt") { try { await navigator.clipboard.writeText($("#rpt").textContent); toast("복사했어요, 카톡에 붙여 넣으면 돼요"); } catch { toast("복사하지 못했어요, 길게 눌러 복사해 주세요"); } return; }
-  if (t.dataset.svrej) { const why = prompt("반려 이유 (직원앱에 보여요, 비워도 돼요)", "다시 세 주세요"); if (why === null) return; try { await sendOp("surveyReject", { id: t.dataset.svrej, why }); const v = D.surveys.find((x) => x.id === t.dataset.svrej); v.status = "reject"; v.why = why; closeSheet(); render(); toast("반려했어요"); } catch { toast("반려하지 못했어요"); } return; }
+  if (t.dataset.svrej) { const why = await askText("반려 이유", "직원웹에 보여요, 비워도 돼요", "이유", "다시 세 주세요", "반려하기"); if (why === null) return; try { await sendOp("surveyReject", { id: t.dataset.svrej, why }); const v = D.surveys.find((x) => x.id === t.dataset.svrej); v.status = "reject"; v.why = why; closeSheet(); render(); toast("반려했어요"); } catch { toast("반려하지 못했어요"); } return; }
   if (t.dataset.tk) return sheetTaskStatus(t.dataset.tk);
-  if (t.dataset.tdelid) { const id = t.dataset.tdelid, def = D.tasks.find((x) => x.id === id); if (!def || !confirm(`'${def.title}' 업무를 지울까요? 직원앱 오늘 할 일에서도 빠져요.`)) return; t.disabled = true; try { await sendOp("taskdel", { id }); D.tasks = D.tasks.filter((x) => x.id !== id); D.matrix = D.matrix.filter((x) => x.id !== id); closeSheet(); render(); toast("지웠어요. 직원앱에는 1~2분 뒤에 빠져요"); } catch (err) { t.disabled = false; toast("못 지웠어요: " + err.message); } return; }
+  if (t.dataset.tdelid) { const id = t.dataset.tdelid, def = D.tasks.find((x) => x.id === id); if (!def || !(await askConfirm(`'${def.title}' 업무를 지울까요?`, "직원웹 오늘 할 일에서도 빠져요", "지우기", true))) return; t.disabled = true; try { await sendOp("taskdel", { id }); D.tasks = D.tasks.filter((x) => x.id !== id); D.matrix = D.matrix.filter((x) => x.id !== id); closeSheet(); render(); toast("지웠어요. 직원웹에는 1~2분 뒤에 빠져요"); } catch (err) { t.disabled = false; toast("못 지웠어요: " + err.message); } return; }
   if (t.dataset.mustgo) { mustB = t.dataset.mustgo; tab = "must"; draft = null; closeSheet(); render(); return scrollTo(0, 0); }
   // 업무
   if (a === "svnew") { svNew = { g: "", br: [...BR], date: D.d, time: "" }; return sheetSurveyNew(); }
@@ -1224,7 +1234,7 @@ document.addEventListener("click", async (e) => {
   if (t.dataset.trep) { readTaskForm(); editTask.rep = t.dataset.trep; return sheetTask(); }
   if (t.dataset.tdow) { readTaskForm(); const d = +t.dataset.tdow, s = new Set(editTask.dow); s.has(d) ? s.delete(d) : s.add(d); editTask.dow = [...s]; return sheetTask(); }
   if (a === "tsave") return saveTask();
-  if (a === "tdel") { if (!confirm(`'${editTask.title}' 업무를 지울까요?`)) return; try { await sendOp("taskdel", { id: editTask.id }); D.tasks = D.tasks.filter((x) => x.id !== editTask.id); D.matrix = D.matrix.filter((x) => x.id !== editTask.id); editTask = null; closeSheet(); render(); toast("지웠어요"); } catch { toast("지우지 못했어요"); } return; }
+  if (a === "tdel") { if (!(await askConfirm(`'${editTask.title}' 업무를 지울까요?`, "직원웹 오늘 할 일에서도 빠져요", "지우기", true))) return; try { await sendOp("taskdel", { id: editTask.id }); D.tasks = D.tasks.filter((x) => x.id !== editTask.id); D.matrix = D.matrix.filter((x) => x.id !== editTask.id); editTask = null; closeSheet(); render(); toast("지웠어요"); } catch { toast("지우지 못했어요"); } return; }
   // 필수 상품
   if (t.dataset.mb) { mustB = t.dataset.mb; ls.set("vf-admin-mustb", mustB); mustCat = ""; mustQ = ""; draft = null; return render(); }
   if (t.dataset.mc !== undefined) { mustCat = t.dataset.mc; return render(); }
