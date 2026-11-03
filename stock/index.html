@@ -129,9 +129,9 @@ function rowHtml(it, i) {
   const diff = has ? v - p : 0;
   const big = has && p > 0 && Math.abs(diff) > Math.max(10, p * 0.5); // 지난번보다 크게 다르면 표시
   const g = grpOf(i);
-  if (g) return `<div class="it ${has ? "done" : ""}" id="r${i}"><div class="nm"><b>${esc(it.n)}</b><span>포스 합계 ${g.q} · 세서 입력</span></div>
+  if (g) return `<div class="it ${has ? "done" : ""}" id="r${i}"><div class="nm"><b>${esc(it.n)}</b><span>포스 합계 ${g.q}, 세서 입력</span></div>
     <div class="ctl"><button data-m="${i}">−</button><input inputmode="numeric" data-i="${i}" value="${has ? v : ""}" placeholder="세기"><button data-p="${i}">+</button></div></div>`;
-  return `<div class="it ${has ? "done" : ""} ${big ? "warn" : ""}" id="r${i}"><div class="nm"><b>${esc(it.n)}</b><span>${posOf(i) != null ? "포스 " : "지난 보고 "}${p}${has && diff ? ` · <em class="${diff > 0 ? "up" : "dn"}">${diff > 0 ? "+" : ""}${diff}</em>` : ""}${big ? " · 숫자 다시 확인" : ""}</span></div>
+  return `<div class="it ${has ? "done" : ""} ${big ? "warn" : ""}" id="r${i}"><div class="nm"><b>${esc(it.n)}</b><span>${posOf(i) != null ? "포스 " : "지난 보고 "}${p}${has && diff ? `, <em class="${diff > 0 ? "up" : "dn"}">${diff > 0 ? "+" : ""}${diff}</em>` : ""}${big ? ", 숫자 다시 확인" : ""}</span></div>
     <div class="ctl"><button data-m="${i}">−</button><input inputmode="numeric" data-i="${i}" value="${has ? v : ""}" placeholder="${p}"><button data-p="${i}">+</button></div>
     ${has ? "" : `<button class="same" data-same="${i}">${posOf(i) != null ? "포스와 같음" : "그대로"}</button>`}</div>`;
 }
@@ -143,7 +143,7 @@ function render() {
   <div class="card"><div class="h">보고하는 사람</div><div class="who"><input id="who" placeholder="이름 (출근한 근무자)" value="${esc(who)}"></div>
     <div class="prog"><div class="bar"><i style="width:${(done / ITEMS.length) * 100}%"></i></div><span>${done} / ${ITEMS.length}</span></div>
     <div class="s">${POSV ? `포스 재고(${esc(POSV.t)} 기준)를 미리 보여드려요. 실제와 같으면 [포스와 같음], 다르면 센 개수를 넣어 주세요.` : "실제로 센 개수를 넣어 주세요. 지난 보고와 같으면 [그대로]를 누르면 돼요. 크게 다르면 빨간 테두리가 생겨요."}</div>${POSV ? `<button class="same" data-allpos style="margin-top:10px;width:100%;height:46px">포스 숫자로 한 번에 채우기 (${ITEMS.filter((_, i) => posOf(i) != null).length}개)</button>` : ""}</div>
-  <div class="grp">팟 · 코일 · 공팟</div>${ITEMS.map((it, i) => (isDevice(it.n) ? "" : rowHtml(it, i))).join("")}
+  <div class="grp">팟, 코일, 공팟</div>${ITEMS.map((it, i) => (isDevice(it.n) ? "" : rowHtml(it, i))).join("")}
   <div class="grp">기기</div>${ITEMS.map((it, i) => (isDevice(it.n) ? rowHtml(it, i) : "")).join("")}
   <div class="note">버전 ${VER}<br>지난 보고 숫자는 처음엔 노션(10/1) 값, 한 번 보내면 이 기기에서 보낸 값이에요.</div>`;
   $("#send").disabled = done < ITEMS.length;
@@ -190,10 +190,10 @@ $("#send").addEventListener("click", async () => {
     if (false && pinOf()) { try { const sr = await fetch(SHEET_API, { method: "POST", body: JSON.stringify({ pin: pinOf(), action: "stockAdd", branch: B, by: who, items: body.items, test: !!TEST }) }); const sj = await sr.json(); sheetMsg = sj.ok ? "지점 시트 '재고보고' 탭과 디스코드에 기록됐어요." : "디스코드엔 올라갔고, 시트 기록은 실패했어요(" + sj.error + ")"; } catch (e) { sheetMsg = "디스코드엔 올라갔고, 시트 기록은 실패했어요(인터넷)"; } }
     else sheetMsg = "디스코드와 지점 시트에 기록돼요."; // 10/19 지점 시트는 운영봇이 기록
     ls.set(KEY + (TEST ? "-testlast" : "-last"), { v, at: Date.now(), by: who }); cur = {}; ls.set(KEY + "-draft", {}); touch = {}; ls.set(KEY + "-touch", {}); // 10/19 시험이면 따로 저장(직원앱 시험 모드가 완료로 봄)
-    $("#app").innerHTML = `<div class="card done-view"><div class="big">✅</div><b>${HO[B]}호 ${esc(B)} 재고보고 ${TEST ? "시험 " : ""}완료</b><div class="s">${esc(who)} · ${new Date().toTimeString().slice(0, 5)}<br>${esc(sheetMsg)}</div><a class="send" style="display:grid;place-items:center;text-decoration:none;margin-top:22px" href="${backUrl()}">← 직원앱으로 돌아가기</a><div class="s" style="margin-top:8px">3초 뒤 자동으로 돌아가요</div></div>`;
+    $("#app").innerHTML = `<div class="card done-view"><div class="big">✅</div><b>${HO[B]}호 ${esc(B)} 재고보고 ${TEST ? "시험 " : ""}완료</b><div class="s">${esc(who)}, ${new Date().toTimeString().slice(0, 5)}<br>${esc(sheetMsg)}</div><a class="send" style="display:grid;place-items:center;text-decoration:none;margin-top:22px" href="${backUrl()}">← 직원웹으로 돌아가기</a><div class="s" style="margin-top:8px">1~2분 뒤 직원웹에 포스 조정 결과가 떠요</div></div>`;
     setTimeout(() => { location.href = backUrl(); }, 3000);
     $("#foot").style.display = "none";
-  } catch (err) { toast(`못 보냈어요 (${navigator.onLine ? err.message : "인터넷 끊김"}) · 입력한 숫자는 그대로 있어요`); render(); }
+  } catch (err) { toast(`못 보냈어요 (${navigator.onLine ? "연결이 잠깐 끊김" : "인터넷 끊김"}), 입력한 숫자는 그대로 있어요`); render(); }
 });
 render();
 </script>
