@@ -237,7 +237,8 @@ body.land .grid{grid-template-columns:repeat(5,1fr)}
 body.land .hero{display:grid;grid-template-columns:1.1fr 1fr;gap:24px;align-items:center}body.land .hero .row{display:block;margin-top:0}body.land .hero .ph{height:420px}
 body.land .askchip{left:24px;bottom:24px}
 body.land .toast{left:calc((100% - 380px) / 2)}
-button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--red);outline-offset:2px}
+button:focus,button:focus-visible{outline:none} /* 11/3: 빨간 표시는 방향키 커서(.kf) 하나만. 브라우저 표시가 마지막에 누른 버튼에 남아 두 군데 뜨던 것 */
+input:focus-visible,select:focus-visible{outline:3px solid var(--red);outline-offset:2px}
 /* 커서(방향키)와 손가락, 마우스로 가리킨 칸: 살짝 커짐 */
 .kf{position:relative;z-index:4;transform:scale(1.06)!important;box-shadow:0 0 0 3px var(--red),0 14px 34px rgba(0,0,0,.22)!important;transition:transform .18s cubic-bezier(.3,1.5,.5,1),box-shadow .18s}
 .it,.go3 button,.thumbs button,.chips button,.combo button,.opt2 button,.pk button,.sr,.poster,.scan,.upsell{transition:transform .18s cubic-bezier(.3,1.5,.5,1),box-shadow .18s}
@@ -430,7 +431,7 @@ body[data-theme=dark] .scan svg{background:#fff;border-radius:8px}
 <body data-v="home"><script>vfFit()</script>
 <div class="app">
   <div class="top">
-    <div class="logo" id="logo" onclick="logoPlay()"><span class="v r">V</span><span class="m x" style="--i:0;--j:5">A</span><span class="m r" style="--i:1">F</span><span class="m x" style="--i:2;--j:4">R</span><span class="m x" style="--i:3;--j:3">I</span><span class="m x" style="--i:4;--j:2">E</span><span class="m x" style="--i:5;--j:1">N</span><span class="d x" style="--j:0">D</span></div>
+    <div class="logo" id="logo" onclick="logoHome()" style="cursor:pointer"><span class="v r">V</span><span class="m x" style="--i:0;--j:5">A</span><span class="m r" style="--i:1">F</span><span class="m x" style="--i:2;--j:4">R</span><span class="m x" style="--i:3;--j:3">I</span><span class="m x" style="--i:4;--j:2">E</span><span class="m x" style="--i:5;--j:1">N</span><span class="d x" style="--j:0">D</span></div>
     <label class="srch">🔍<input id="q" placeholder="맛, 브랜드, 기기 이름 (초성도 돼요)" autocomplete="off" enterkeyhint="search"><button id="qx" aria-label="지우기">✕</button></label>
     <button class="home-btn inst" id="instBtn" hidden>⬇ 앱 설치</button>
     <button class="home-btn" id="themeBtn" aria-label="낮 밤 모드"></button>
@@ -533,6 +534,9 @@ function logoPlay(){ const l = $('logo'); clearTimeout(lgT); l.classList.add('no
   void l.offsetWidth; l.classList.remove('noT'); l.classList.add('play');
   lgT = setTimeout(() => { l.classList.remove('play'); l.classList.add('mini'); }, 2700); }
 logoPlay();
+// 11/3: 로고 누르면 처음 화면으로 (열린 창, 검색 닫고)
+function logoHome(){ if (typeof closeEv === "function") closeEv(); document.body.classList.remove('spon', 'askon', 'open');
+  if ($('q').value) { $('q').value = ""; drawSearch(); } go('home'); logoPlay(); }
 function go(v){ if (v === 'home' && document.body.dataset.v !== 'home') logoPlay(); document.body.dataset.v = v; $('body').scrollTop = 0;
   document.querySelectorAll('#seg button').forEach(b => b.classList.toggle('on', b.dataset.v === v)); }
 
@@ -1373,7 +1377,7 @@ document.addEventListener('keydown', (e) => {
 });
 // ── 방향키 커서 (10/27 사장님 "방향키로 커서 움직이는 것처럼"): 지금 보이는 층(구매 창 > 재고 창 > 담은 상품 > 화면)에서
 // 가리킨 칸이 커지고 빨간 테두리, Enter = 누르기. 첫 화면 포스터를 가리킨 상태에선 ←→ = 포스터 넘기기
-const NAV = ".qzc, .rkr, #rkTab button, .qz-pk button, [data-hq], .qz-a button, .qz-btns button, .qz-top button, .specb, .dmh, .flc, .ev105, #podSub button, #podDev button, .poster, .go3 button, #seg button, .chips button, .it, .sr, .thumbs button, .colors button, .pk button, .pkb, #devAdd, .combo button, .opt2 button, #evGo, .evh button, .shbtn button, .scan, .upsell, .engr button, .mem button, .qb button, .askrow button, [data-asksend], .home-btn, .srch";
+const NAV = ".cta, .qzc, .rkr, #rkTab button, .qz-pk button, [data-hq], .qz-a button, .qz-btns button, .qz-top button, .specb, .dmh, .flc, .ev105, #podSub button, #podDev button, .poster, .go3 button, #seg button, .chips button, .it, .sr, .thumbs button, .colors button, .pk button, .pkb, #devAdd, .combo button, .opt2 button, #evGo, .evh button, .shbtn button, .scan, .upsell, .engr button, .mem button, .qb button, .askrow button, [data-asksend], .home-btn, .srch";
 let kf = null;
 function navLayer() { const b = document.body.classList;
   if (b.contains('spon')) return $('sp');
@@ -1385,7 +1389,8 @@ function navList() { const L = navLayer(), out = [];
     if (L === document && (el.closest('.evs') || el.closest('.asks') || (el.closest('.sheet') && !document.body.classList.contains('land')))) continue;
     if (el.closest('.view') && !el.closest('.view').offsetParent) continue; out.push(el); }
   return out; }
-function navSet(el) { if (kf) kf.classList.remove('kf'); kf = el; if (!el) return; el.classList.add('kf'); el.scrollIntoView({ block: "nearest", inline: "nearest", behavior: "smooth" }); }
+function navSet(el) { if (kf) kf.classList.remove('kf'); kf = el; if (!el) return;
+  const ae = document.activeElement; if (ae && ae !== document.body && !/^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName)) ae.blur(); /* 전에 누른 버튼의 브라우저 표시 지우기 */ el.classList.add('kf'); el.scrollIntoView({ block: "nearest", inline: "nearest", behavior: "smooth" }); }
 function navMove(dir) {
   if (kf && kf.matches('.poster') && document.contains(kf) && (dir === "left" || dir === "right")) return showP(pi + (dir === "right" ? 1 : -1));
   const list = navList(); if (!list.length) return;
