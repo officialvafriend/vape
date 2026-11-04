@@ -259,6 +259,18 @@
   .btn.sm{flex:none;height:44px;padding:0 16px;font-size:15px;margin-top:10px}
   .btn:disabled{opacity:.45}
 .midhide{display:none!important}
+  /* 11/04 액상덕후 "마감 보고 누르는 느낌 좋게, 시험 모드에서만": html.feel(시험 모드)일 때만 켜짐 */
+  .feel .sheet .btn,.feel .sheet .check,.feel .hero .hbtn,.feel .step .act{transition:transform .12s cubic-bezier(.2,0,0,1),background-color .15s ease-out,color .15s ease-out}
+  .feel .sheet .btn:active:not(:disabled),.feel .hero .hbtn:active,.feel .step .act:active{transform:scale(.96)}
+  .feel .sheet .check:active{transform:scale(.98)}
+  .feel .check i{transition:background-color .15s ease-out,border-color .15s ease-out,transform .15s cubic-bezier(.2,0,0,1)}.feel .check.on i{transform:scale(1.08)}
+  .feel .dim.on .sheet{animation:feelUp .22s cubic-bezier(.2,0,0,1)}
+  @keyframes feelUp{from{transform:translateY(16px);opacity:0}to{transform:none;opacity:1}}
+  .feel .cashsum,.feel .sheet input[inputmode=numeric]{font-variant-numeric:tabular-nums}
+  .feel .sheet .btn.primary:disabled{opacity:1;background:#c9cdd2;color:#fff}
+  @media (prefers-reduced-motion:reduce){.feel .dim.on .sheet{animation:none}.feel .sheet .btn:active:not(:disabled){transform:none}}
+  .dcrow{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 2px;border-bottom:1px solid var(--line);font-size:15px}.dcrow b{font-weight:600;min-width:0}.dcrow em{flex:none;font-style:normal;font-size:13px;font-weight:700;padding:4px 10px;border-radius:10px}
+  .dcb{border-top:1px solid var(--line)}.dcb summary{display:flex;justify-content:space-between;align-items:center;min-height:44px;cursor:pointer;list-style:none;font-size:15px}.dcb summary::-webkit-details-marker{display:none}.dcb summary span{color:var(--sub);font-size:14px}.dcb div{padding:0 2px 12px;font-size:14px;line-height:1.9;color:var(--ink2)}
 </style>
 </head>
 <body>
@@ -287,7 +299,7 @@
 })();
 </script>
 <script>
-const VER = "11.03-1"; window.VER_ERR = VER;
+const VER = "11.04-2"; window.VER_ERR = VER;
 const GAME_LOCK = true; // 11/02 쉬는 시간 게임 잠금
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
@@ -326,6 +338,9 @@ function toast(m) { const t = $("#toast"); t.textContent = m; t.classList.add("o
 const qs = new URLSearchParams(location.search);
 // 10/19 시험 모드(?test=1): 신호에 test 표시 → 봇이 시험_ 탭에만 기록, 디스코드 알림 없음. 이 기기 기록도 따로
 const TEST = qs.get("test") === "1";
+if (TEST) document.documentElement.classList.add("feel"); // 11/04 누르는 느낌(시험 모드만)
+// 시험 모드에서 마감 보고 창의 확인, 보내기 버튼은 짧게 진동(안드로이드만, 아이폰은 무시됨)
+if (TEST) document.addEventListener("click", (e) => { if (e.target.closest?.("#sheet .check, #okClose, #okClose2") && !e.target.closest("button:disabled")) try { navigator.vibrate?.(8); } catch {} }, true);
 const UI2 = TEST; if (UI2) document.body.classList.add("ui2");
 const PICK = true; // 10/27 사장님 "정식 화면에도 상품 고르기": 퀵, 택배, 전달은 상품을 목록에서 골라야 봇이 포스 재고를 맞춤 // 10/26 새 화면(노란 줄 순서, 플로팅 뱃지, 바로 복사 한 줄)은 시험 모드 먼저. 정식에 켜려면 true
 const LEADER = qs.get("leader") === "1"; // 10/20 팀장 화면: 전 지점 넘어온 고객요청, 인수인계
@@ -1194,6 +1209,55 @@ function replyQuickHtml() {
   if (UI2) return `<div class="card rqcard one"><div class="rqrow rqone"><span class="rqlb" title="누르면 바로 복사">💬</span>${tiles}${links}<button class="rqk rqmore2" data-view="reply">전체 →</button></div></div>`;
   return `<div class="card rqcard"><div class="rqhead"><b>💬 바로 복사</b><button class="rqmore" data-view="reply">응대 모음 전체 →</button></div><div class="rqrow">${tiles}</div><div class="rqrow">${links}</div></div>`;
 }
+// ── 11/04 액상덕후 "단종 리스트 보기 편하게": [응대] 맨 위 단종 찾기 ──
+// 자료는 단종목록_만들기.cjs 가 베프 지식.md 에서 뽑은 staff/dancheong.json (베프와 같은 원본)
+// 판매 중 / 무니코틴으로 바뀜 / 단종 / 그 밖은 "우리 매장에서 안 파는 상품"
+let DC = null, DCQ = "", DCC = "액상", DCOPEN = new Set();
+async function loadDc() {
+  if (DC && !DC.err) return;
+  DC = { loading: 1 };
+  for (const u of ["dancheong.json", "단종목록.json"]) { try { const r = await fetch(`${u}?t=${Date.now()}`, { cache: "no-store" }); if (r.ok) { DC = await r.json(); break; } } catch {} }
+  if (DC.loading) DC = { err: 1 };
+  if (VIEW === "reply") { dcResDraw(); dcListDraw(); }
+}
+const dcNorm = (x) => String(x || "").replace(/\(무\)|\s/g, "").toLowerCase();
+const DC_ST = { sale: ["판매 중", "var(--green-soft)", "var(--green)"], mu: ["무니코틴으로 바뀜", "var(--blue-soft)", "var(--blue)"], gone: ["단종", "var(--red-soft)", "var(--red)"] };
+const dcIsMu = (n) => (DC?.mu || []).some((m) => dcNorm(n).startsWith(dcNorm(m)));
+function dcFind(q) {
+  const k = dcNorm(q); if (k.length < 2 || !DC?.sale) return [];
+  const seen = new Set(), out = [];
+  const add = (n, st) => { const kk = dcNorm(n); if (seen.has(kk)) return; seen.add(kk); out.push([n, dcIsMu(n) ? "mu" : st]); };
+  DC.sale.filter((n) => dcNorm(n).includes(k)).forEach((n) => add(n, "sale"));
+  DC.gone.filter((x) => dcNorm(x.n).includes(k)).forEach((x) => add(x.n, "gone"));
+  return out.sort((a, b) => (a[1] === "sale") - (b[1] === "sale")).slice(0, 8);
+}
+function dcResHtml() {
+  if (!DCQ.trim()) return "";
+  if (!DC?.sale) return `<div class="desc" style="padding:8px 2px">${DC?.err ? "단종 목록을 못 불러왔어요. 잠시 뒤 다시 열어 주세요" : "불러오는 중…"}</div>`;
+  if (dcNorm(DCQ).length < 2) return `<div class="desc" style="padding:8px 2px">두 글자 이상 쳐 주세요</div>`;
+  const R = dcFind(DCQ);
+  if (!R.length) return `<div class="dcrow"><b>${esc(DCQ.trim())}</b><em style="background:#f2f4f6;color:var(--ink2)">우리 매장에서 안 파는 상품이에요</em></div>`;
+  return R.map(([n, st]) => `<div class="dcrow"><b>${esc(n)}</b><em style="background:${DC_ST[st][1]};color:${DC_ST[st][2]}">${DC_ST[st][0]}</em></div>`).join("") + (R.some(([, st]) => st === "mu") ? '<div class="desc" style="padding:8px 2px 0;font-size:13px">무니코틴으로 바뀜: 니코틴은 끝, 같은 맛이 무니코틴으로 들어와요</div>' : "");
+}
+function dcListHtml() {
+  if (!DC?.gone) return "";
+  const G = {}; DC.gone.filter((x) => x.c === DCC && !dcIsMu(x.n)).forEach((x) => (G[x.b] ||= []).push(x.n));
+  const mu = DCC === "액상" ? (DC.mu || []).map((m) => `<div class="dcrow"><b>${esc(m)} 전체</b><em style="background:var(--blue-soft);color:var(--blue)">무니코틴으로 바뀜</em></div>`).join("") : "";
+  return mu + Object.keys(G).sort((a, b) => a.localeCompare(b, "ko")).map((b) => `<details class="dcb" data-dcb="${esc(b)}"${DCOPEN.has(b) ? " open" : ""}><summary><b>${esc(b)}</b><span>${G[b].length}개 ▾</span></summary><div>${G[b].map(esc).join("<br>")}</div></details>`).join("");
+}
+const dcResDraw = () => { const el = $("#dcRes"); if (el) el.innerHTML = dcResHtml(); };
+const dcListDraw = () => { const el = $("#dcList"); if (el) el.innerHTML = dcListHtml(); };
+function dcHtml() {
+  loadDc();
+  return `<div class="card"><h2 style="margin:6px 0 2px">🚫 단종 찾기</h2><div class="desc" style="margin:0 0 8px">손님이 찾는 이름을 쳐 보세요</div>
+    <input class="input" id="dcQ" placeholder="🔍 예: 오구오구, 팔콘" value="${esc(DCQ)}" autocomplete="off" style="margin:0">
+    <div id="dcRes" style="margin-top:6px">${dcResHtml()}</div>
+    <div class="chips" style="margin:12px 0 6px">${["액상", "기기", "코일, 팟"].map((c) => `<button class="chip ${DCC === c ? "on" : ""}" data-dcc="${c}">${c}</button>`).join("")}</div>
+    <div id="dcList" style="padding-bottom:12px">${dcListHtml()}</div></div>`;
+}
+document.addEventListener("input", (e) => { if (e.target?.id === "dcQ") { DCQ = e.target.value; dcResDraw(); } });
+document.addEventListener("click", (e) => { const c = e.target.closest?.("[data-dcc]"); if (!c) return; DCC = c.dataset.dcc; document.querySelectorAll("[data-dcc]").forEach((x) => x.classList.toggle("on", x === c)); dcListDraw(); });
+document.addEventListener("toggle", (e) => { const d = e.target; if (d?.dataset?.dcb == null) return; d.open ? DCOPEN.add(d.dataset.dcb) : DCOPEN.delete(d.dataset.dcb); }, true);
 function replyHtml() {
   if (typeof BOARD?.acct === "string" && !DEC.acct) decOne(BOARD.acct).then((a) => { if (a) { DEC.acct = a; if (VIEW === "reply" && !$("#dim").classList.contains("on")) render(); } });
   const q = RQ.trim();
@@ -1202,7 +1266,7 @@ function replyHtml() {
   const tiles = (RF === "전체" ? L : L.filter(([x]) => x.c === RF)).map(([x, i]) => `<div class="rtile"><button class="rtb" data-rq="${i}"><i>${x.k}</i><b>${esc(x.t)}</b><span>${esc(x.s || "")}</span></button><button class="rteye" data-rv="${i}" aria-label="내용 보기">👁</button></div>`).join("");
   const chip = ([n, u]) => `<span class="rlink"><button data-rlk="${RLINK.findIndex((y) => y[1] === u)}">${n}</button><a href="${esc(u)}" target="_blank" rel="noopener" aria-label="열기">↗</a></span>`;
   const lk = (g) => RLINK.filter(([n, u, gg]) => gg === g && (!q || n.includes(q))).map(chip).join("");
-  return `<div class="card"><h2 style="margin:6px 0 2px">💬 응대 모음</h2>${!bKey() ? `<button class="keybar" data-go="keyin">🔑 손님 이름, 번호를 보려면 눌러서 매장 코드 4자리를 넣어 주세요</button>` : ""}<div class="desc" style="margin:0 0 8px">누르면 바로 복사돼요. 👁는 내용 보기.</div>
+  return `${dcHtml()}<div class="card"><h2 style="margin:6px 0 2px">💬 응대 모음</h2>${!bKey() ? `<button class="keybar" data-go="keyin">🔑 손님 이름, 번호를 보려면 눌러서 매장 코드 4자리를 넣어 주세요</button>` : ""}<div class="desc" style="margin:0 0 8px">누르면 바로 복사돼요. 👁는 내용 보기.</div>
     <input class="input" id="rplQ" placeholder="🔍 멘트, 링크 찾기" value="${esc(RQ)}" style="margin:0 0 10px">
     ${cats.length > 1 ? `<div class="chips" style="margin-bottom:8px">${["전체", ...cats].map((c) => `<button class="chip ${RF === c ? "on" : ""}" data-rf="${c}">${c}</button>`).join("")}</div>` : ""}
     <div class="rtiles">${tiles || '<div class="desc">찾는 멘트가 없어요</div>'}</div>
