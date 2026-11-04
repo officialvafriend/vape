@@ -141,7 +141,8 @@
 .cols.home{grid-template-columns:minmax(0,1fr) 320px}
 @media (max-width:1400px){.cols.home .ops th,.cols.home .ops td{padding-left:8px;padding-right:8px}.cols.home .ops{min-width:560px}}
 .dot{width:10px;height:10px;border-radius:50%;background:var(--red);flex:none;margin:0 4px}
-.dot.ok{background:var(--green)}
+.dot.ok{background:var(--green)}.dot.lv2{background:var(--amber)}.dot.lv3{background:var(--sub)}
+.item.iss .tx b{white-space:normal;line-height:1.35}.item.iss .tx span{white-space:normal}div.item.iss{cursor:default}div.item.iss:hover{background:none}
 .ops tr.tot td{border-top:1px solid var(--line2);background:var(--press)}
 /* 10/27 재고조사 탭: 지점×그룹 표 모바일 라벨, 재고보고 카드(모바일 2열), PC 표 제목 */
 @media (max-width:899px){.ops.sv td:nth-child(2)::before{content:"A그룹"}.ops.sv td:nth-child(3)::before{content:"B그룹"}.ops.sv td:nth-child(4)::before{content:"일회용"}.ops.sv td:nth-child(5)::before{content:"기기 A"}
@@ -343,7 +344,7 @@ function render() {
       <div class="foot"><button class="navb" data-act="reload">↻ ${hh ? `${hh}:${mm} 기준` : "새로고침"}</button><button class="navb" data-act="logout">🔒 잠그기</button></div></aside>
     <main class="main ${EMBED[tab] ? "embm" : ""}">${tab === "home" || tab === "kpi" || tab === "survey" || tab === "group" || tab === "must" || tab === "stockrep" || tab === "close" || EMBED[tab] ? body : `<div class="narrow">${body}</div>`}</main></div>`;
   markEmb();
-  if (tab === "home") { $("#panel").innerHTML = panelKeep || panelDefault(); bindSparks(); }
+  if (tab === "home") { if (panelKeep) $("#panel").innerHTML = panelKeep; else { const top = issuesLeft()[0]; if (top && top.b) { panelBranch(top.b, "프리미엄 A"); panelKeep = ""; } else $("#panel").innerHTML = top && top.go === "survey" ? `<div class="eyebrow">제일 급한 것</div>${heroHtml()}` : panelDefault(); } bindSparks(); }
 }
 // ── KPI (10/19) ── 데이터: 운영봇 kpiData() (노션 근무자별 ~10/13 + 직원웹 마감 보고 10/20~). 비율 식은 부록C
 let kpiB = ls.get("vf-admin-kpib") || "전체", kpiP = ls.get("vf-admin-kpip") || "week", kpiM = ls.get("vf-admin-kpim") || "staff", kpiS = ls.get("vf-admin-kpis") || "last30";
@@ -618,34 +619,43 @@ function opsHtml() {
   return `<div class="sec">지점 한눈에 <small>오늘, 마감 전은 포스 지금까지 숫자(30분마다), 줄을 누르면 상세</small></div><div class="opsw"><table class="ops br"><thead><tr><th>지점</th><th>오픈</th><th>마감 보고</th><th>총매출</th><th>현금 차액</th><th>객수</th><th>지정판매율</th><th>리뷰</th></tr></thead><tbody>${rows}${total}</tbody></table></div>`;
 }
 // 10/19 홈 정리 (사장님 "홈 화면이 개복잡함"): 홈 = ① 확인할 것(문제만) ② 지점 한눈에 표. 품절은 재고조사, 할 일은 업무, 지난 마감은 마감 메뉴로
+/* 11/4 계획_홈확인할것: 제목에 문제를 쓰고, lv 1 돈(마감 경고, 준비금) / 2 재고와 주문 / 3 운영(늦은 오픈, 미보고) 순으로. 같은 종류는 한 줄로 묶는다 */
 function issues() {
-  const L = [], late = new Date().getHours() >= 22;
+  const L = [], late = new Date().getHours() >= 22, lateOpen = [];
   for (const o of D.ops || []) {
     const n = BR.indexOf(o.b) + 1, c = closingOf(o.b);
-    if (c) warnsOf(c).forEach((w) => L.push({ b: o.b, t: `${n}호 ${o.b} 마감`, d: w }));
-    else if (late) L.push({ b: o.b, t: `${n}호 ${o.b} 마감`, d: "아직 마감 보고가 없어요" });
-    if (o.late) L.push({ b: o.b, t: `${n}호 ${o.b} 오픈`, d: `평소보다 ${o.late}분 늦게 오픈 (${o.open}, 평소 ${o.avgOpen})` });
-    if (o.prepDiff) L.push({ b: o.b, t: `${n}호 ${o.b} 오픈`, d: `돈통 준비금이 어제보다 ${o.prepDiff > 0 ? "+" : ""}${won(o.prepDiff)}원` });
+    if (c) { const w = (c.warn && c.warn.length ? c.warn : warnsOf(c)), full = warnsOf(c); if (w.length) L.push({ lv: 1, b: o.b, t: w.length === 1 ? `${n}호 ${o.b} 마감, ${w[0]}` : `${n}호 ${o.b} 마감, 확인 ${w.length}건: ${w.join(", ")}`, d: full.join(" / ") }); }
+    else if (late) L.push({ lv: 3, b: o.b, t: `${n}호 ${o.b}, 마감 보고 아직`, d: "22시가 지났는데 마감 보고가 없어요" });
+    if (o.prepDiff) L.push({ lv: 1, b: o.b, t: `${n}호 ${o.b}, 준비금 ${o.prepDiff > 0 ? "+" : ""}${won(o.prepDiff)}원`, d: `돈통 준비금이 어제보다 ${o.prepDiff > 0 ? "+" : ""}${won(o.prepDiff)}원` });
+    if (o.late) lateOpen.push(o);
   }
-  const con = D.branches.filter((x) => x.connected), aOut = [...new Set(con.flatMap((x) => G(x, "프리미엄 A").out.map((o) => o.n)))];
-  if (aOut.length) L.push({ go: "survey", t: "A그룹 품절", d: `${aOut.length}종, ${aOut.slice(0, 3).join(", ")}${aOut.length > 3 ? " 외" : ""}` });
-  const ow = (D.orders || []).filter((o) => !o.test && o.ost === "요청" && !["done", "cancel"].includes(o.step));
-  if (ow.length) L.push({ go: "order", t: "주문요청", d: `주문 가능한지 확인 전 ${ow.length}건` });
-  const obuy = (D.orders || []).filter((o) => !o.test && o.ost === "확인" && o.pay === "결제완료" && !o.arrived && !["done", "cancel"].includes(o.step));
-  if (obuy.length) L.push({ go: "order", t: "주문요청", d: `결제 받음, 주문할 것 ${obuy.length}건` });
+  if (lateOpen.length === 1) { const o = lateOpen[0]; L.push({ lv: 3, b: o.b, t: `${BR.indexOf(o.b) + 1}호 ${o.b}, ${o.late}분 늦게 오픈`, d: `${o.open} 오픈, 평소 ${o.avgOpen}` }); }
+  else if (lateOpen.length) L.push({ lv: 3, t: `늦게 오픈 ${lateOpen.length}곳: ${lateOpen.map((o) => `${o.b} ${o.late}분`).join(", ")}`, d: lateOpen.map((o) => `${o.b} ${o.open} (평소 ${o.avgOpen})`).join(", ") });
+  const con = D.branches.filter((x) => x.connected), aMap = {};
+  for (const x of con) for (const o of G(x, "프리미엄 A").out) (aMap[o.n] ||= []).push(x.b);
+  const aOut = Object.keys(aMap);
+  if (aOut.length) L.push({ lv: 2, go: "survey", t: `A그룹 품절 ${aOut.length}종: ${aOut.slice(0, 3).join(", ")}${aOut.length > 3 ? " 외" : ""}`, d: aOut.map((nm) => `${nm}: ${aMap[nm].join(", ")}`).join(" / ") });
+  const openO = (o) => !o.test && !["done", "cancel"].includes(o.step), items = (xs) => xs.slice(0, 3).map((o) => o.items).join(", ") + (xs.length > 3 ? " 외" : "");
+  const ow = (D.orders || []).filter((o) => openO(o) && o.ost === "요청");
+  if (ow.length) L.push({ lv: 2, go: "order", t: `주문요청 확인 전 ${ow.length}건`, d: items(ow) });
+  const obuy = (D.orders || []).filter((o) => openO(o) && o.ost === "확인" && o.pay === "결제완료" && !o.arrived);
+  if (obuy.length) L.push({ lv: 2, go: "order", t: `결제 받음, 주문할 것 ${obuy.length}건`, d: items(obuy) });
   const sw = (D.surveys || []).filter((v) => v.status === "wait");
-  if (sw.length) L.push({ go: "survey", t: "재고조사", d: `승인 기다리는 ${sw.length}건` });
-  // 10/26 사장님 "포스엔 있는데 없음이라 한 건은 관리자에게": 운영봇 refuse(최근 3일)
-  for (const x of D.refuse || []) L.push({ b: x.b, t: `${BR.indexOf(x.b) + 1}호 ${x.b} ${x.kind} 거절`, d: `포스엔 ${x.items} ${x.pos}개 있는데 없음${x.why ? ` (${x.why})` : ""}, ${BR.indexOf(x.from) + 1}호 ${x.from} 문의 ${x.d.slice(5).replace("-", "/")} ${x.t} ${x.by}` });
-  return L;
+  if (sw.length) L.push({ lv: 2, go: "survey", t: `재고조사 승인 기다림 ${sw.length}건`, d: "승인하거나 반려해 주세요" });
+  /* 10/26 사장님 "포스엔 있는데 없음이라 한 건은 관리자에게": 운영봇 refuse(최근 3일) */
+  for (const x of D.refuse || []) L.push({ lv: 2, b: x.b, t: `${BR.indexOf(x.b) + 1}호 ${x.b}, ${x.kind} 거절 (포스엔 ${x.pos}개)`, d: `${x.items} 없음${x.why ? ` (${x.why})` : ""}, ${BR.indexOf(x.from) + 1}호 ${x.from} 문의 ${x.d.slice(5).replace("-", "/")} ${x.t} ${x.by}` });
+  return L.sort((a, b) => a.lv - b.lv);
 }
 // 10/25 사장님 "확인한 건 옆에 체크 버튼으로 지우게": 이 기기에 날짜별로 기억(다른 기기엔 그대로 보임), [숨긴 것 되돌리기]로 다시 보기
 const issKey = (x) => `${x.t}|${x.d}`;
 const issDone = () => { try { return new Set(JSON.parse(localStorage.getItem("vf-admin-issok-" + D.d) || "[]")); } catch { return new Set(); } };
 const issDoneSave = (s) => { try { localStorage.setItem("vf-admin-issok-" + D.d, JSON.stringify([...s])); } catch {} };
+const issuesLeft = () => { const done = issDone(); return issues().filter((x) => !done.has(issKey(x))); };
 function issuesHtml() {
-  const all = issues(), done = issDone(), L = all.filter((x) => !done.has(issKey(x))), hid = all.length - L.length;
-  return `<div class="sec" style="margin-top:0">확인할 것 <small>${L.length ? L.length + "건" : ""}</small>${hid ? `<button class="issundo" data-issundo="1" style="margin-left:auto;font-size:13px;color:var(--sub);background:none">숨긴 것 ${hid}건 되돌리기</button>` : ""}</div><div class="list">${L.length ? L.map((x) => `<div style="display:flex;align-items:center"><button class="item iss" style="flex:1;min-width:0" ${x.b ? `data-brpc="${esc(x.b)}"` : `data-tab="${x.go}"`}><i class="dot"></i><div class="tx"><b>${esc(x.t)}</b><span>${esc(x.d)}</span></div><span class="chev">›</span></button><button class="issok" data-issok="${esc(issKey(x))}" title="확인했어요" style="flex:0 0 auto;margin:0 12px 0 4px;height:40px;padding:0 14px;border-radius:10px;background:var(--line2);color:var(--ink2);font-size:14px;font-weight:600">확인</button></div>`).join("") : '<div class="item"><i class="dot ok"></i><div class="tx"><b>오늘은 확인할 게 없어요</b></div></div>'}</div>`;
+  const all = issues(), L = issuesLeft(), hid = all.length - L.length;
+  const row = (x) => { const go = x.b ? `data-brpc="${esc(x.b)}"` : x.go ? `data-tab="${x.go}"` : "", tag = go ? "button" : "div";
+    return `<div style="display:flex;align-items:center"><${tag} class="item iss" style="flex:1;min-width:0" ${go}><i class="dot lv${x.lv}"></i><div class="tx"><b>${esc(x.t)}</b><span>${esc(x.d)}</span></div>${go ? '<span class="chev">›</span>' : ""}</${tag}><button class="issok" data-issok="${esc(issKey(x))}" title="확인했어요" style="flex:0 0 auto;margin:0 12px 0 4px;height:40px;padding:0 14px;border-radius:10px;background:var(--line2);color:var(--ink2);font-size:14px;font-weight:600">확인</button></div>`; };
+  return `<div class="sec" style="margin-top:0">확인할 것 <small>${L.length ? L.length + "건" : ""}</small>${hid ? `<button class="issundo" data-issundo="1" style="margin-left:auto;font-size:13px;color:var(--sub);background:none">숨긴 것 ${hid}건 되돌리기</button>` : ""}</div><div class="list">${L.length ? L.map(row).join("") : '<div class="item"><i class="dot ok"></i><div class="tx"><b>오늘은 확인할 게 없어요</b></div></div>'}</div>`;
 }
 const homeHead = () => `<div class="pchead"><h1>오늘 한눈에</h1><div class="caption">${esc(D.d)}, ${esc(D.at.slice(-5))} 기준</div></div>`;
 function botBad() { if (!BOT) return false; const m = BOT.master || {}; return agoMin(BOT.at) > 10 || BOT.ops.s === "에러" || !(m.ok && m.login) || (BOT.adj && !(BOT.adj.ok && Object.values(BOT.adj.br || {}).every((v) => v.login))); }
@@ -656,7 +666,7 @@ function statHtml() {
   return `<div class="hstat"><div><span>총매출</span><b>${m1(t.s)}</b></div><div><span>객수</span><b>${t.n}</b></div><div><span>리뷰</span><b>${t.r}</b></div><div><span>마감 보고</span><b>${done}/${ops.length}곳</b></div></div>`;
 }
 function homePC() {
-  return `${homeHead()}<div class="cols home"><div>${botWarn()}${statHtml()}${issuesHtml()}${opsHtml()}</div><div class="sheet panel" id="panel"></div></div>`;
+  return `${homeHead()}<div class="cols home"><div>${botWarn()}${issuesHtml()}${statHtml()}${opsHtml()}</div><div class="sheet panel" id="panel"></div></div>`;
 }
 function panelDefault() { return `<div class="eyebrow">지점 상세</div><h3>왼쪽에서 지점이나<br>확인할 것을 누르세요</h3><div class="caption">그날 마감 보고, 차액, 품절이 여기에 떠요</div>`; }
 // 지점 상세 패널: 오늘 마감 보고(경고 포함) + 품절
@@ -802,7 +812,7 @@ function botMiniHtml() {
   const dot = (ok) => `<span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${ok ? "var(--green)" : "var(--red)"}"></span>`;
   return `<button id="botmini" data-tab="office" title="사무실에서 자세히" style="display:inline-flex;gap:14px;align-items:center;font-size:13px;font-weight:600;color:var(--sub);background:none;padding:2px 0 10px">${dot(ops)} 운영봇 ${dot(mas)} 마스터봇${BOT.adj ? ` ${dot(!dead && BOT.adj.ok && Object.values(BOT.adj.br || {}).every((v) => v.login))} 조정봇` : ""}${BOT.bsQ ? ` <span class="t-bad">시트 밀림 ${BOT.bsQ}</span>` : ""}</button>`;
 }
-function homeHtml() { return `<div style="padding-top:6px">${botWarn()}${statHtml()}${issuesHtml()}${opsMobileHtml()}</div>`; }
+function homeHtml() { return `<div style="padding-top:6px">${botWarn()}${issuesHtml()}${statHtml()}${opsMobileHtml()}</div>`; }
 // ── 마감 보고 (직원웹 시재 + 포스 숫자) ──
 const todayMD = () => { const d = new Date(Date.now() + 9 * 3600e3); return String(d.getUTCMonth() + 1).padStart(2, "0") + "/" + String(d.getUTCDate()).padStart(2, "0"); };
 const won = (n) => Math.round(+n || 0).toLocaleString("ko-KR");
