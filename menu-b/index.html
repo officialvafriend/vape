@@ -103,6 +103,7 @@ body[data-v=qz] .tabs,body[data-v=rk] .tabs{display:none}
 .pv.go .bg{animation:pvBg 1.4s cubic-bezier(.2,.8,.2,1) both}
 .pv.go .eye,.pv.go .ti,.pv.go .sub,.pv.go .r1,.pv.go .pb{animation:pvUp .6s cubic-bezier(.2,.8,.2,1) both}
 .pv.go .ti{animation-delay:.06s}.pv.go .sub{animation-delay:.14s}.pv.go .r1{animation-delay:.2s}.pv.go .pb{animation-delay:.26s}
+.pv.sl.go .eye{animation-delay:.3s}.pv.sl.go .ti{animation-delay:.36s}.pv.sl.go .sub{animation-delay:.44s}.pv.sl.go .r1{animation-delay:.5s}.pv.sl.go .pb{animation-delay:.56s} /* 11/4 밀고 들어온 장: 자리 잡은 뒤 글씨 */
 @media (prefers-reduced-motion:reduce){.pv.go *{animation:none!important}}
 .dots{position:absolute;left:0;right:0;bottom:16px;display:flex;justify-content:center;gap:8px}
 .dots i{width:8px;height:8px;border-radius:4px;background:rgba(255,255,255,.5)}
@@ -557,36 +558,60 @@ const PTX = {
 };
 // 그림마다 제목 정렬, 흰 글자 (그림 밝기 보고 정함): c = 가운데, w = 어두운 그림
 const POPT = { H1: "", H2: "c", H3: "c", H4: "", H5: "c", B1: "c", B2: "c w", B3: "c w", B4: "c w", B5: "c w", D1: "c", D2: "c", D3: "c", D4: "c" };
-let pvK = 1, pvX = 0, pvY = 0; const pvT = (dx = 0) => `translate(${pvX + dx}px,${pvY}px) scale(${pvK})`; const pvFit = () => { const pv = $('pv'), P = $('poster'), W = P.clientWidth, H = P.clientHeight; // 11/3: 칸을 꽉 채우게 (가로에만 맞추면 아래 회색 띠가 남음)
-  pvK = Math.max(W / 1080, H / 1350); pvX = (W - 1080 * pvK) / 2; pvY = (H - 1350 * pvK) / 2; pv.style.transform = pvT(); };
-new ResizeObserver(pvFit).observe($('poster'));
-let pi = 0;
-function showP(i){ pi = (i + PST.length) % PST.length; const id = PID[pi], pv = $('pv');
-  if (!id) { pv.className = "pv"; pv.innerHTML = `<img class="bg" src="${PST[pi]}" alt="">`; }
+// 11/4 포스터 넘김 부드럽게: 두 장을 겹쳐 놓고 밀어서 바꿈 (전엔 그림이 툭 바뀜)
+// 자동, 점 누름 = 다음 장이 오른쪽에서 밀고 들어오고 지금 장은 30%만 빠지며 흐려짐 (0.6초, 가운데 빠른 곡선)
+// 손으로 밀기 = 옆 장이 손가락 옆에 붙어서 따라옴, 놓으면 0.32초 미끄러져 들어가고 덜 밀면 0.24초에 제자리
+// 만지는 동안 자동 넘김 멈춤, 손이나 점으로 넘긴 뒤 8초 쉼. 동작 줄이기 켠 기기는 0.2초 겹쳐 바뀌기만
+const PV_MOVE = "cubic-bezier(0.77, 0, 0.175, 1)", PV_OUT = "cubic-bezier(0.23, 1, 0.32, 1)", pvReduce = matchMedia("(prefers-reduced-motion: reduce)");
+let pvK = 1, pvX = 0, pvY = 0, pvBusy = false, pvHold = 0;
+const pvT = (dx = 0) => `translate(${pvX + dx}px,${pvY}px) scale(${pvK})`;
+const pvFit = () => { const P = $('poster'), W = P.clientWidth, H = P.clientHeight;
+  pvK = Math.max(W / 1080, H / 1350); pvX = (W - 1080 * pvK) / 2; pvY = (H - 1350 * pvK) / 2;
+  if (!pvBusy && !drag) $('pv').style.transform = pvT(); };
+let pi = 0, drag = null, pMoved = false;
+const pvIdx = (i) => (i + PST.length) % PST.length;
+function pvMake(k) { const id = PID[k], el = document.createElement('div'); el.className = "pv";
+  if (!id) el.innerHTML = `<img class="bg" src="${PST[k]}" alt="">`;
   else { const tx = PTX[id[0]], o = POPT[id] || "c";
-    pv.className = "pv " + tx.cls + (o.includes("w") ? " dk" : "");
-    pv.innerHTML = `<img class="bg" src="pst_c_${id}.jpg" alt=""><div class="t ${o.includes("c") ? "c" : ""}">${tx.top}</div><div class="p">${tx.pr}</div>`; }
-  void pv.offsetWidth; pv.classList.add("go"); pvFit();
-  $('dots').innerHTML = PST.map((_, k) => `<i class="${k === pi ? 'on' : ''}"></i>`).join(''); }
-showP(0); setInterval(() => { if (document.body.dataset.v === 'home') showP(pi + 1); }, 5000);
+    el.className = "pv " + tx.cls + (o.includes("w") ? " dk" : "");
+    el.innerHTML = `<img class="bg" src="pst_c_${id}.jpg" alt=""><div class="t ${o.includes("c") ? "c" : ""}">${tx.top}</div><div class="p">${tx.pr}</div>`; }
+  return el; }
+const pvDots = () => { $('dots').innerHTML = PST.map((_, k) => `<i class="${k === pi ? 'on' : ''}"></i>`).join(''); };
+const pvPut = (el) => $('poster').insertBefore(el, $('dots'));
+function pvDone(old, nx, ms) { setTimeout(() => { old.remove(); nx.id = "pv"; nx.style.transition = "none"; nx.style.opacity = ""; pvBusy = false; pvFit(); }, ms + 30); }
+function showP(i, dir = 1) {
+  const k = pvIdx(i), old = $('pv');
+  if (!old.innerHTML) { pi = k; pvDots(); const nx = pvMake(k); old.className = nx.className; old.innerHTML = nx.innerHTML; old.classList.add("go"); pvFit(); return; }
+  if (pvBusy || k === pi) return;
+  const nx = pvMake(k), W = $('poster').clientWidth, rm = pvReduce.matches; pi = k; pvDots(); pvBusy = true;
+  nx.classList.add("go", "sl"); nx.style.transform = rm ? pvT() : pvT(dir * W); if (rm) nx.style.opacity = "0";
+  pvPut(nx); void nx.offsetWidth;
+  const tr = rm ? "opacity .2s ease" : `transform .6s ${PV_MOVE}, opacity .6s ${PV_MOVE}`;
+  nx.style.transition = tr; old.style.transition = tr;
+  if (rm) { nx.style.opacity = "1"; old.style.opacity = "0"; }
+  else { nx.style.transform = pvT(); old.style.transform = pvT(-dir * W * 0.3); old.style.opacity = "0.6"; }
+  pvDone(old, nx, rm ? 200 : 600); }
+new ResizeObserver(pvFit).observe($('poster'));
+showP(0);
+setInterval(() => { if (document.body.dataset.v === 'home' && !drag && !pvBusy && Date.now() > pvHold) showP(pi + 1, 1); }, 5000);
 const PST_K = Object.keys(PB); // PST 순서 = 이벤트 키 (H 하복2, B 대량, D 일회용)
-$('poster').onclick = (e) => { if (pMoved) { pMoved = false; return; } if (e.target.closest('#dots')) return showP(pi + 1); openEv(PST_K[pi]); };
-$('dots').onclick = (e) => { e.stopPropagation(); showP(pi + 1); };
-// 손가락으로 밀어 넘기기
-// 포스터 손으로 넘기기 (10/27 사장님 "가로 화면도 포스터는 손으로 넘겨도 되잖아"): 세로, 가로 둘 다
-// 손가락(마우스)을 따라 끌리고, 놓을 때 화면 폭 15% 넘게 밀었거나 빨리 튕기면 다음/이전, 아니면 제자리로. 끌고 난 뒤엔 구매 창 안 열림
-let drag = null, pMoved = false;
-$('poster').addEventListener('pointerdown', (e) => { if (e.target.closest('#dots')) return; drag = { x: e.clientX, y: e.clientY, t: Date.now(), dx: 0, id: e.pointerId }; $('pv').style.transition = "none"; });
+$('poster').onclick = (e) => { if (pMoved) { pMoved = false; return; } if (e.target.closest('#dots')) { pvHold = Date.now() + 8000; return showP(pi + 1, 1); } openEv(PST_K[pi]); };
+$('dots').onclick = (e) => { e.stopPropagation(); pvHold = Date.now() + 8000; showP(pi + 1, 1); };
+// 손가락(마우스)으로 밀기 (10/27 "가로 화면도 포스터는 손으로 넘겨도 되잖아"): 화면 폭 15% 넘게 밀었거나 빨리 튕기면 넘김, 끌고 난 뒤엔 구매 창 안 열림
+$('poster').addEventListener('pointerdown', (e) => { if (e.target.closest('#dots') || pvBusy || drag) return; drag = { x: e.clientX, y: e.clientY, t: Date.now(), dx: 0, id: e.pointerId }; $('pv').style.transition = "none"; });
 $('poster').addEventListener('pointermove', (e) => { if (!drag || e.pointerId !== drag.id) return; const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
   if (!drag.on) { if (Math.abs(dx) < 8 || Math.abs(dx) < Math.abs(dy)) return; drag.on = true; try { $('poster').setPointerCapture(e.pointerId); } catch (er) {} }
-  drag.dx = dx; $('pv').style.transform = pvT(dx); });
-const dragEnd = () => { if (!drag) return; const d = drag; drag = null; const pv = $('pv'), w = $('poster').clientWidth;
-  if (!d.on) return; pMoved = true; setTimeout(() => (pMoved = false), 350);
-  const fast = Math.abs(d.dx) / Math.max(1, Date.now() - d.t) > 0.5, go = Math.abs(d.dx) > w * 0.15 || (fast && Math.abs(d.dx) > 30);
-  pv.style.transition = "transform .28s cubic-bezier(.22,1,.36,1)";
-  if (!go) { pv.style.transform = pvT(); return; }
-  const dir = d.dx < 0 ? 1 : -1; pv.style.transform = pvT(-dir * w);
-  setTimeout(() => { pv.style.transition = "none"; showP(pi + dir); }, 230); };
+  const W = $('poster').clientWidth, side = dx < 0 ? 1 : -1;
+  if (!drag.nb || drag.side !== side) { if (drag.nb) drag.nb.remove(); drag.nb = pvMake(pvIdx(pi + side)); drag.side = side; drag.nb.style.transition = "none"; pvPut(drag.nb); }
+  drag.dx = dx; $('pv').style.transform = pvT(dx); drag.nb.style.transform = pvT(dx + side * W); });
+const dragEnd = (e) => { if (!drag || (e && e.pointerId !== drag.id)) return; const d = drag; drag = null; const cur = $('pv'), W = $('poster').clientWidth;
+  if (!d.on) { if (d.nb) d.nb.remove(); return; }
+  pMoved = true; setTimeout(() => (pMoved = false), 350); pvHold = Date.now() + 8000; pvBusy = true;
+  const fast = Math.abs(d.dx) / Math.max(1, Date.now() - d.t) > 0.5, go = Math.abs(d.dx) > W * 0.15 || (fast && Math.abs(d.dx) > 30), nb = d.nb;
+  if (!go) { const tr = `transform .24s ${PV_OUT}`; cur.style.transition = tr; nb.style.transition = tr; cur.style.transform = pvT(); nb.style.transform = pvT(d.side * W);
+    setTimeout(() => { nb.remove(); cur.style.transition = "none"; pvBusy = false; pvFit(); }, 270); return; }
+  const tr = `transform .32s ${PV_OUT}`; cur.style.transition = tr; nb.style.transition = tr; cur.style.transform = pvT(-d.side * W); nb.style.transform = pvT();
+  pi = pvIdx(pi + d.side); pvDots(); pvDone(cur, nb, 320); };
 $('poster').addEventListener('pointerup', dragEnd); $('poster').addEventListener('pointercancel', dragEnd);
 
 // 낮, 밤 모드 (이 기기에 기억)
@@ -1400,7 +1425,7 @@ function navList() { const L = navLayer(), out = [];
 function navSet(el) { if (kf) kf.classList.remove('kf'); kf = el; if (!el) return;
   const ae = document.activeElement; if (ae && ae !== document.body && !/^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName)) ae.blur(); /* 전에 누른 버튼의 브라우저 표시 지우기 */ el.classList.add('kf'); el.scrollIntoView({ block: "nearest", inline: "nearest", behavior: "smooth" }); }
 function navMove(dir) {
-  if (kf && kf.matches('.poster') && document.contains(kf) && (dir === "left" || dir === "right")) return showP(pi + (dir === "right" ? 1 : -1));
+  if (kf && kf.matches('.poster') && document.contains(kf) && (dir === "left" || dir === "right")) return showP(pi + (dir === "right" ? 1 : -1), dir === "right" ? 1 : -1);
   const list = navList(); if (!list.length) return;
   if (!kf || !document.contains(kf) || !list.includes(kf)) return navSet(list.find((el) => !el.closest(".top")) || list[0]); // 처음엔 위 줄 말고 화면 첫 칸부터
   const a = kf.getBoundingClientRect(), ax = a.left + a.width / 2, ay = a.top + a.height / 2; let best = null, bd = 1e9;
