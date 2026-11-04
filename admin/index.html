@@ -269,7 +269,7 @@ const isPC = () => matchMedia("(min-width:900px)").matches;
 let panelKeep = "", panelOffKey = ""; /* PC 홈의 오른쪽 상세 패널 내용 (다시 그릴 때 유지), 닫은 자동 패널의 항목 키(그 항목이 바뀔 때까지 다시 안 펼침) */
 const usePanel = () => isPC() && tab === "home" && $("#panel");
 const openSheet = (h) => { if (usePanel()) { panelKeep = h; $("#panel").innerHTML = h; $("#panel").scrollTop = 0; return; } $("#sheet").innerHTML = h; $("#dim").classList.add("on"); $("#sheet").scrollTop = 0; };
-const closeSheet = () => { $("#dim").classList.remove("on"); if (usePanel()) { const top = issuesLeft()[0]; panelOffKey = top ? issKey(top) : ""; panelKeep = ""; $("#panel").innerHTML = panelDefault(); bindSparks(); } };
+const closeSheet = (nav) => { $("#dim").classList.remove("on"); if (usePanel()) { if (!nav) { const top = issuesLeft()[0]; panelOffKey = top ? issKey(top) : ""; } panelKeep = ""; $("#panel").innerHTML = panelDefault(); bindSparks(); } };
 
 function renderLogin(msg) {
   $("#nav").style.display = "none";
@@ -1216,7 +1216,7 @@ document.addEventListener("click", async (e) => {
   if (t.dataset.srb != null) { srB = t.dataset.srb; ls.set("vf-admin-srb", srB); return render(); }
   if (t.dataset.clb) { clB = t.dataset.clb; ls.set("vf-admin-clb", clB); return render(); }
   if (t.dataset.srcopy) { const b = t.dataset.srcopy, r = D.stockTbl?.br?.[b]; if (!r) return; const txt = D.stockTbl.items.map((n) => r.q[n] == null ? "" : r.q[n]).join("\n"); try { await navigator.clipboard.writeText(txt); toast(`${b} 숫자 ${D.stockTbl.items.length}개 복사했어요, 노션 ${b} 칸 첫 줄에 붙여 넣으면 돼요`); } catch { toast("복사하지 못했어요"); } return; }
-  if (t.dataset.tab) { tab = t.dataset.tab; ls.set("vf-admin-tab", tab); closeSheet(); render(); return scrollTo(0, 0); }
+  if (t.dataset.tab) { tab = t.dataset.tab; ls.set("vf-admin-tab", tab); closeSheet(true); render(); return scrollTo(0, 0); }
   const a = t.dataset.act;
   if (a === "reload") return reload();
   if (a === "logout") { ls.set("vf-admin-key", null); KEY = D = null; return renderLogin("잠갔어요"); }
