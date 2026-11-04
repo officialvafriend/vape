@@ -142,7 +142,7 @@
 @media (max-width:1400px){.cols.home .ops th,.cols.home .ops td{padding-left:8px;padding-right:8px}.cols.home .ops{min-width:560px}}
 .dot{width:10px;height:10px;border-radius:50%;background:var(--red);flex:none;margin:0 4px}
 .dot.ok{background:var(--green)}.dot.lv2{background:var(--amber)}.dot.lv3{background:var(--sub)}
-.item.iss .tx b{white-space:normal;line-height:1.35}.item.iss .tx span{white-space:normal}div.item.iss{cursor:default}div.item.iss:hover{background:none}
+.item.iss .tx b{white-space:normal;line-height:1.35}.item.iss .tx span{white-space:normal}div.item.iss{cursor:default}div.item.iss:hover,div.item.iss:active{background:none}
 .ops tr.tot td{border-top:1px solid var(--line2);background:var(--press)}
 /* 10/27 재고조사 탭: 지점×그룹 표 모바일 라벨, 재고보고 카드(모바일 2열), PC 표 제목 */
 @media (max-width:899px){.ops.sv td:nth-child(2)::before{content:"A그룹"}.ops.sv td:nth-child(3)::before{content:"B그룹"}.ops.sv td:nth-child(4)::before{content:"일회용"}.ops.sv td:nth-child(5)::before{content:"기기 A"}
@@ -266,10 +266,10 @@ async function sendOp(op, data) {
   if (!r.ok) throw new Error("응답 " + r.status);
 }
 const isPC = () => matchMedia("(min-width:900px)").matches;
-let panelKeep = ""; // PC 홈의 오른쪽 상세 패널 내용 (다시 그릴 때 유지)
+let panelKeep = "", panelOffKey = ""; /* PC 홈의 오른쪽 상세 패널 내용 (다시 그릴 때 유지), 닫은 자동 패널의 항목 키(그 항목이 바뀔 때까지 다시 안 펼침) */
 const usePanel = () => isPC() && tab === "home" && $("#panel");
 const openSheet = (h) => { if (usePanel()) { panelKeep = h; $("#panel").innerHTML = h; $("#panel").scrollTop = 0; return; } $("#sheet").innerHTML = h; $("#dim").classList.add("on"); $("#sheet").scrollTop = 0; };
-const closeSheet = () => { $("#dim").classList.remove("on"); if (usePanel()) { panelKeep = ""; $("#panel").innerHTML = panelDefault(); bindSparks(); } };
+const closeSheet = () => { $("#dim").classList.remove("on"); if (usePanel()) { const top = issuesLeft()[0]; panelOffKey = top ? issKey(top) : ""; panelKeep = ""; $("#panel").innerHTML = panelDefault(); bindSparks(); } };
 
 function renderLogin(msg) {
   $("#nav").style.display = "none";
@@ -344,7 +344,7 @@ function render() {
       <div class="foot"><button class="navb" data-act="reload">↻ ${hh ? `${hh}:${mm} 기준` : "새로고침"}</button><button class="navb" data-act="logout">🔒 잠그기</button></div></aside>
     <main class="main ${EMBED[tab] ? "embm" : ""}">${tab === "home" || tab === "kpi" || tab === "survey" || tab === "group" || tab === "must" || tab === "stockrep" || tab === "close" || EMBED[tab] ? body : `<div class="narrow">${body}</div>`}</main></div>`;
   markEmb();
-  if (tab === "home") { if (panelKeep) $("#panel").innerHTML = panelKeep; else { const top = issuesLeft()[0]; if (top && top.b) { panelBranch(top.b, "프리미엄 A"); panelKeep = ""; } else $("#panel").innerHTML = top && top.go === "survey" ? `<div class="eyebrow">제일 급한 것</div>${heroHtml()}` : panelDefault(); } bindSparks(); }
+  if (tab === "home") { if (panelKeep) { $("#panel").innerHTML = panelKeep; bindSparks(); } else { const top = issuesLeft()[0], fresh = top && issKey(top) !== panelOffKey; if (fresh && top.b && D.branches.some((y) => y.b === top.b)) { panelBranch(top.b, "프리미엄 A"); panelKeep = ""; } else { $("#panel").innerHTML = fresh && top.kind === "aout" ? `<div class="eyebrow">제일 급한 것</div>${heroHtml()}` : panelDefault(); bindSparks(); } } }
 }
 // ── KPI (10/19) ── 데이터: 운영봇 kpiData() (노션 근무자별 ~10/13 + 직원웹 마감 보고 10/20~). 비율 식은 부록C
 let kpiB = ls.get("vf-admin-kpib") || "전체", kpiP = ls.get("vf-admin-kpip") || "week", kpiM = ls.get("vf-admin-kpim") || "staff", kpiS = ls.get("vf-admin-kpis") || "last30";
@@ -624,7 +624,7 @@ function issues() {
   const L = [], late = new Date().getHours() >= 22, lateOpen = [];
   for (const o of D.ops || []) {
     const n = BR.indexOf(o.b) + 1, c = closingOf(o.b);
-    if (c) { const w = (c.warn && c.warn.length ? c.warn : warnsOf(c)), full = warnsOf(c); if (w.length) L.push({ lv: 1, b: o.b, t: w.length === 1 ? `${n}호 ${o.b} 마감, ${w[0]}` : `${n}호 ${o.b} 마감, 확인 ${w.length}건: ${w.join(", ")}`, d: full.join(" / ") }); }
+    if (c) { const w = (c.warn && c.warn.length ? c.warn : warnsOf(c)), full = warnsOf(c); if (w.length) L.push({ lv: 1, b: o.b, t: w.length === 1 ? `${n}호 ${o.b} 마감, ${w[0]}` : `${n}호 ${o.b} 마감, 확인 ${w.length}건: ${w.join(", ")}`, d: full.join(" | ") }); }
     else if (late) L.push({ lv: 3, b: o.b, t: `${n}호 ${o.b}, 마감 보고 아직`, d: "22시가 지났는데 마감 보고가 없어요" });
     if (o.prepDiff) L.push({ lv: 1, b: o.b, t: `${n}호 ${o.b}, 준비금 ${o.prepDiff > 0 ? "+" : ""}${won(o.prepDiff)}원`, d: `돈통 준비금이 어제보다 ${o.prepDiff > 0 ? "+" : ""}${won(o.prepDiff)}원` });
     if (o.late) lateOpen.push(o);
@@ -634,7 +634,7 @@ function issues() {
   const con = D.branches.filter((x) => x.connected), aMap = {};
   for (const x of con) for (const o of G(x, "프리미엄 A").out) (aMap[o.n] ||= []).push(x.b);
   const aOut = Object.keys(aMap);
-  if (aOut.length) L.push({ lv: 2, go: "survey", t: `A그룹 품절 ${aOut.length}종: ${aOut.slice(0, 3).join(", ")}${aOut.length > 3 ? " 외" : ""}`, d: aOut.map((nm) => `${nm}: ${aMap[nm].join(", ")}`).join(" / ") });
+  if (aOut.length) L.push({ lv: 2, go: "survey", kind: "aout", t: `A그룹 품절 ${aOut.length}종: ${aOut.slice(0, 3).join(", ")}${aOut.length > 3 ? " 외" : ""}`, d: aOut.map((nm) => `${nm}: ${aMap[nm].join(", ")}`).join(" / ") });
   const openO = (o) => !o.test && !["done", "cancel"].includes(o.step), items = (xs) => xs.slice(0, 3).map((o) => o.items).join(", ") + (xs.length > 3 ? " 외" : "");
   const ow = (D.orders || []).filter((o) => openO(o) && o.ost === "요청");
   if (ow.length) L.push({ lv: 2, go: "order", t: `주문요청 확인 전 ${ow.length}건`, d: items(ow) });
@@ -1222,7 +1222,7 @@ document.addEventListener("click", async (e) => {
   if (a === "logout") { ls.set("vf-admin-key", null); KEY = D = null; return renderLogin("잠갔어요"); }
   if (t.dataset.brpc) return panelBranch(t.dataset.brpc, "프리미엄 A");
   if (t.dataset.cltoday) { const i = (D.closings || []).findIndex((c) => c.b === t.dataset.cltoday && c.date === D.d); if (i >= 0) return sheetClosing(i); return toast("오늘 마감 보고가 아직 없어요"); }
-  if (t.dataset.brg) return usePanel() && panelKeep.includes("data-brpc") === false && panelKeep.includes("오늘 마감") ? panelBranch(t.dataset.b, t.dataset.brg) : sheetBranch(t.dataset.b, t.dataset.brg);
+  if (t.dataset.brg) return usePanel() && !$("#panel").innerHTML.includes("data-brpc") && $("#panel").innerHTML.includes("오늘 마감") ? panelBranch(t.dataset.b, t.dataset.brg) : sheetBranch(t.dataset.b, t.dataset.brg);
   if (t.dataset.br) return sheetBranch(t.dataset.br, "프리미엄 A");
   if (t.dataset.svbr) return sheetSurveyBranch(t.dataset.svbr);
   if (t.dataset.sv) return sheetSurvey(t.dataset.sv);
