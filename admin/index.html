@@ -764,7 +764,7 @@ function blogBoardHtml() {
     const nm = (x, cls, attr, tag = "button") => `<${tag} class="bdn ${cls}" ${attr}>${esc(x.b)}</${tag}>`;
     const grp = (t, xs, f, extra = "") => (xs.length ? `<div class="bdgp"><div class="gt">${t} <b>${xs.length}곳</b></div><div class="gc">${xs.map(f).join("")}</div>${extra}</div>` : "");
     const pk = (b) => (NV ? nvStats(dow === 3 ? "대구 전체" : b).pick : null);
-    return `<div class="card anim" style="--i:${i++}"><div class="eyebrow">${dLabel(d)} 글, ${bdLeft(d)}일 뒤</div>
+    return `<div class="card"><div class="eyebrow">${dLabel(d)} 글, ${bdLeft(d)}일 뒤</div>
       <div class="headline" style="font-size:20px">${up.length === S.length ? "<em>모두 올렸어요</em>" : `${S.length}곳 중 <em>${ready}곳</em> 준비됐어요`}</div>
       <div class="bar" style="margin-top:12px"><i style="width:${Math.round((ready / S.length) * 100)}%"></i></div>
       ${grp("올릴 차례", done, (x) => nm(x, "act", `data-bdview="${esc(x.r.id)}"`))}
