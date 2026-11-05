@@ -589,7 +589,6 @@ function bdTodo() {
     if (r.needShoot && !r.shoot) L.push({ lv: n <= 2 ? 1 : 2, t: `${tag}, 촬영 요청 ${n <= 2 ? "지금 해야 해요" : bdMd(addDays(r.date, -2)) + "까지"}`, d: "사진은 늦어도 발행 2일 전에 요청해요", id: r.id });
     else if (r.shoot && !r.shoot.n) L.push({ lv: n <= 1 ? 1 : 3, t: `${tag}, 사진 기다리는 중`, d: "촬영 업무를 요청해 뒀어요", id: r.id });
     if (r.st === "done") L.push({ lv: n <= 2 ? 1 : 2, t: `${tag}, 직원웹에 올릴 차례`, d: r.shoot && r.shoot.n ? `사진 ${r.shoot.n}장 도착` : "초안 완성", id: r.id }); }
-  if (typeof bdTodo === "function" && D.blogDrafts) { const T = bdTodo(); if (T.length) L.push({ lv: T[0].lv === 1 ? 2 : 3, go: "blog", t: `블로그 할 일 ${T.length}건: ${T[0].t}`, d: T.length > 1 ? `그 밖에 ${T.length - 1}건` : T[0].d }); }
   return L.sort((a, b) => a.lv - b.lv);
 }
 function bdTodoHtml() {
