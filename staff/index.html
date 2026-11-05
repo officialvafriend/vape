@@ -299,7 +299,7 @@
 })();
 </script>
 <script>
-const VER = "11.04-4"; window.VER_ERR = VER;
+const VER = "11.05-1"; window.VER_ERR = VER;
 const GAME_LOCK = true; // 11/02 쉬는 시간 게임 잠금
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
@@ -605,7 +605,7 @@ function render() {
   const heroAs = AH.length ? `<div class="hil"><p class="hk" style="color:#9bd0ff">🔧 AS 지점 도착, 손님께 연락할 것 ${AH.length}개</p>${AH.slice(0, 3).map((x) => `<div class="hrow"><div class="ht"><b>${esc(as2Title(x))}</b><span>${esc(as2Name(x) || "손님")}, 접수 ${x.d.slice(5).replace("-", "/")} ${esc(x.by)}${x.loan && !x.loanBack ? ", 📱 대여 중: " + esc((x.loan === "대여 있음" ? "기기명 없음" : x.loan)) : ""}</span></div><div class="hbs"><button class="ok" data-a2sms="${x.id}">📩 문자</button><button data-a2go="5" data-id="${x.id}">전달 완료</button></div></div>`).join("")}${AH.length > 3 ? `<p style="margin-top:8px"><button data-view="as2" style="color:#9bd0ff;font-weight:800">외 ${AH.length - 3}개는 AS관리에서 →</button></p>` : ""}</div>` : "";
   const heroIl = TD.length ? `<div class="hil"><p class="hk">📅 오늘 일정 ${TD.length}개, 처리 못 하면 다음 근무자에게 넘어가요</p>${TD.map((it) => `<div class="hrow"><div class="ht"><b>${it.ic} ${esc(it.title)}</b><span>${esc(it.sub)}</span></div><div class="hbs">${ilBtns(it, true)}</div></div>`).join("")}</div>` : "";
   const heroPill = bbPills() + snPills() + pcPills() + blogDue().map((x) => hp(`data-view="blog"`, "📝", "블로그", `${esc(x.kw)}${x.date < todayKey() ? ` (${sd(x.date)}분)` : ""}${blogCnt(x) ? `, ${blogCnt(x)}` : ""}`, `블로그 발행: ${esc(x.kw)}${x.date < todayKey() ? ` (${sd(x.date)}분)` : ""}${blogCnt(x) ? ` <span style="color:#c2344d">${blogCnt(x)}</span>` : ""}`, "하기")).join("")
-    + (BOARD?.tasks || []).filter((t) => !t.done && !TASK_DONE[t.id]).map((t) => t.kind === "survey" ? hp(`data-tsv="${t.id}"`, "📦", "재고조사", `${esc(t.title)}${cntTxt(t) ? `, ${cntTxt(t)}` : ""}`, `재고조사: ${esc(t.title)}`, "세기") : hp(`data-tdone="${t.id}"`, "🔔", "할 일", `${esc(t.title)}${t.time ? ` (${esc(t.time)})` : ""}${cntTxt(t) ? `, ${cntTxt(t)}` : ""}`, `할 일: ${esc(t.title)}${t.time ? ` (${esc(t.time)})` : ""}${cntTxt(t) ? ` <span style="color:#c2344d">${cntTxt(t)}</span>` : ""}`, "완료")).join("");
+    + (BOARD?.tasks || []).filter((t) => !t.done && !TASK_DONE[t.id]).map((t) => t.kind === "photo" ? hp(`data-tphoto="${t.id}"`, "📷", "촬영", `${esc(t.title)}${phN(t) ? `, 사진 ${phN(t)}장 올림` : ""}`, `촬영: ${esc(t.title)}`, "사진 올리기") : t.kind === "survey" ? hp(`data-tsv="${t.id}"`, "📦", "재고조사", `${esc(t.title)}${cntTxt(t) ? `, ${cntTxt(t)}` : ""}`, `재고조사: ${esc(t.title)}`, "세기") : hp(`data-tdone="${t.id}"`, "🔔", "할 일", `${esc(t.title)}${t.time ? ` (${esc(t.time)})` : ""}${cntTxt(t) ? `, ${cntTxt(t)}` : ""}`, `할 일: ${esc(t.title)}${t.time ? ` (${esc(t.time)})` : ""}${cntTxt(t) ? ` <span style="color:#c2344d">${cntTxt(t)}</span>` : ""}`, "완료")).join("");
   // 10/26 사장님 "오후 내내 '지금 할 일, 마감'이 웃김": 오픈 끝 ~ 마감 1시간 전은 '영업 중' 카드(요청 버튼). 우선 시험 모드에서만
   const cAt = closeAtOf(B, d), nowM = d.getHours() * 60 + d.getMinutes(), cAtM = (([h, m]) => +h * 60 + +m)(cAt.split(":"));
   const biz = done === N && !cSteps[0] && d.getHours() >= 5 && nowM < cAtM - 60;
@@ -2125,12 +2125,32 @@ function taskCardHtml() {
   const list = (BOARD?.tasks || []).map((t) => ({ ...t, done: t.done || TASK_DONE[t.id] || null }));
   if (!list.length) return "";
   const left = list.filter((t) => !t.done).length;
-  return `<div class="card"><h2>✅ 오늘 할 일, ${left ? `남은 것 ${left}개` : "모두 완료"}</h2>${list.map((t) => `<div class="crow"><div><b style="${t.done ? "color:var(--sub);text-decoration:line-through" : ""}">${esc(t.title)}</b><span>${t.time ? esc(t.time) + ", " : ""}${esc(t.note || "")}${t.done ? `, ✓ ${esc(t.done.by)} ${esc(t.done.t)}` : ""}</span></div>${t.done ? "" : t.kind === "survey" ? `<button class="act" data-tsv="${t.id}">세기</button>` : `<button class="act" data-tdone="${t.id}">완료</button>`}</div>`).join("")}</div>`;
+  return `<div class="card"><h2>✅ 오늘 할 일, ${left ? `남은 것 ${left}개` : "모두 완료"}</h2>${list.map((t) => `<div class="crow"${t.kind === "photo" ? ' style="flex-wrap:wrap"' : ""}><div${t.kind === "photo" ? ' style="flex:1 1 100%"' : ""}><b style="${t.done ? "color:var(--sub);text-decoration:line-through" : ""}">${esc(t.title)}</b><span${t.kind === "photo" ? ' style="white-space:pre-line;line-height:1.7"' : ""}>${t.time ? esc(t.time) + ", " : ""}${esc(t.note || "")}${t.done ? `, ✓ ${esc(t.done.by)} ${esc(t.done.t)}` : ""}</span>${t.kind === "photo" && phN(t) ? `<em>📷 사진 ${phN(t)}장 올렸어요</em>` : ""}</div>${t.done ? "" : t.kind === "photo" ? `<button class="act" data-tphoto="${t.id}">📷 사진 올리기</button><button class="act gray" data-tdone="${t.id}">완료</button>` : t.kind === "survey" ? `<button class="act" data-tsv="${t.id}">세기</button>` : `<button class="act" data-tdone="${t.id}">완료</button>`}</div>`).join("")}</div>`;
 }
 async function doTaskDone(id) {
   const by = working().join(", "); if (!by) return needIn(() => doTaskDone(id));
   const tk = (BOARD?.tasks || []).find((t) => t.id === id);
   try { await send({ type: "taskdone", id, date: todayKey(), by }); TASK_DONE[id] = { by, t: now() }; render(); cheer(tk, "할 일"); } catch (e) { fail(e); }
+}
+// 11/5 블로그 사진 촬영 업무: 사진을 여러 장 고르면 1280px로 줄여서 4장씩 나눠 보냄(taskphoto). 운영봇이 PC 폴더에 모음. 압축은 필요 없음
+const TASK_PH = {};
+const phN = (t) => Math.max(+t.photos || 0, TASK_PH[t.id] || 0);
+async function sendPhotos(body, files) {
+  const fd = new FormData(); fd.append("payload_json", JSON.stringify({ content: await signed({ ...body, branch: B, ver: VER, ...(TEST ? { test: true } : {}) }), allowed_mentions: { parse: [] } }));
+  let i = 0; for (const f of files) { fd.append(`files[${i}]`, await shrinkPhoto(f), `p${i + 1}.jpg`); i++; }
+  const r = await fetch(HOOK, { method: "POST", body: fd }); if (!r.ok) throw new Error("응답 " + r.status);
+}
+async function upTaskPhotos(id, files, by) {
+  let done = 0; const base = phN((BOARD?.tasks || []).find((t) => t.id === id) || { id });
+  try { for (let i = 0; i < files.length; i += 4) { toast(`사진 올리는 중 ${done}/${files.length}`); const part = files.slice(i, i + 4); await sendPhotos({ type: "taskphoto", id, date: todayKey(), by }, part); done += part.length; TASK_PH[id] = base + done; if (i + 4 < files.length) await new Promise((r) => setTimeout(r, 900)); }
+    render(); toast(`사진 ${done}장 올렸어요. 다 올렸으면 [완료]를 눌러 주세요`); }
+  catch (e) { render(); fail(e); }
+}
+function pickTaskPhotos(id) {
+  const by = working().join(", "); if (!by) return needIn(() => pickTaskPhotos(id));
+  const inp = document.createElement("input"); inp.type = "file"; inp.accept = "image/*"; inp.multiple = true;
+  inp.onchange = () => { const files = [...inp.files]; if (files.length) upTaskPhotos(id, files, by); };
+  inp.click();
 }
 // ── 재고조사 (10/6): 카테고리 골라서 센 수량만 넣고 전송 → 관리자 페이지에서 포스와 비교, 승인 ──
 // 포스 수량은 일부러 안 보여줌(공개 주소 + 미리 채우면 대충 넘기기 쉬움). 빈칸 = 안 센 상품(보내지 않음)
@@ -2864,6 +2884,7 @@ document.addEventListener("click", (e) => {
   if (go === "branch") { B = null; return render(); }
   if (go === "branchask") { if (confirm(`지금 ${ho(B)}이에요. 다른 지점으로 바꿀까요?`)) { B = null; return render(); } return; }
   if (t.dataset.honame) return doHandoff(t.dataset.honame);
+  if (t.dataset.tphoto) return pickTaskPhotos(t.dataset.tphoto);
   if (t.dataset.tdone) return doTaskDone(t.dataset.tdone);
   if (t.dataset.blogdone) return sheetBlogDone(t.dataset.blogdone);
   if (t.dataset.bbpack) return sheetBbPack(t.dataset.bbpack);
