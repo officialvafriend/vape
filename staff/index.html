@@ -271,6 +271,14 @@
   @media (prefers-reduced-motion:reduce){.feel .dim.on .sheet{animation:none}.feel .sheet .btn:active:not(:disabled){transform:none}}
   .dcrow{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 2px;border-bottom:1px solid var(--line);font-size:15px}.dcrow b{font-weight:600;min-width:0}.dcrow em{flex:none;font-style:normal;font-size:13px;font-weight:700;padding:4px 10px;border-radius:10px}
   .dcb{border-top:1px solid var(--line)}.dcb summary{display:flex;justify-content:space-between;align-items:center;min-height:44px;cursor:pointer;list-style:none;font-size:15px}.dcb summary::-webkit-details-marker{display:none}.dcb summary span{color:var(--sub);font-size:14px}.dcb div{padding:0 2px 12px;font-size:14px;line-height:1.9;color:var(--ink2)}
+  /* 11/05 점검: 폰에서 빨리 누르기 */
+  html{touch-action:manipulation;-webkit-tap-highlight-color:rgba(0,0,0,.06)}
+  .sheet,#askBox{overscroll-behavior:contain}.faqrow::-webkit-scrollbar{display:none}
+  .btn.primary.wait{background:#c9cdd2;color:#fff}.input.need{border-color:var(--red)}
+  .sheet .grp{margin-top:14px;padding-top:12px}.cash.big .input{height:52px;font-size:20px}.cash span{margin-top:8px}.cashsum{margin-top:10px;padding:10px 12px}.sheet .check{padding:11px 0}
+  /* 11/05 점검: 마감 보고 뒤 버튼 3개에 글자 칸이 0이 되어 차액 경고가 안 보이던 것 → 버튼이 2개 이상이면 아랫줄로 */
+  .step:has(.act ~ .act){flex-wrap:wrap}.step:has(.act ~ .act) .tx{flex:1 1 calc(100% - 50px);min-width:0}.step:has(.act ~ .act) .act{margin-top:2px}
+  @media (max-width:899px){.store{min-height:40px}.chip{min-height:40px}.rlink button,.rlink a{min-height:42px;display:inline-flex;align-items:center}.rteye::after{content:"";position:absolute;inset:-9px}}
 </style>
 </head>
 <body>
@@ -299,7 +307,7 @@
 })();
 </script>
 <script>
-const VER = "11.05-1"; window.VER_ERR = VER;
+const VER = "11.05-2"; window.VER_ERR = VER;
 const GAME_LOCK = true; // 11/02 쉬는 시간 게임 잠금
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
@@ -489,7 +497,7 @@ function askHtml() {
   return `<div class="cols one"><div><div class="card" style="padding:0;display:flex;flex-direction:column;height:calc(100vh - 190px);min-height:420px;overflow:hidden">
     <div style="padding:14px 16px;border-bottom:1px solid var(--line);font-weight:800">💛 베프 <small style="color:var(--sub);font-weight:500">오늘 대화만 보여요</small></div>
     <div id="askBox" style="flex:1;overflow-y:auto;padding:6px 14px">${hi}${msgs}</div>
-    ${faq.length ? `<div style="display:flex;flex-wrap:wrap;gap:6px;padding:10px 12px 0;border-top:1px solid var(--line)">${faq.map((x, i) => `<button data-askfaq="${i}" style="background:#f2f4f6;color:var(--ink2);border:0;border-radius:14px;padding:6px 10px;font-size:13px;font-weight:700">${esc(x.q)}</button>`).join("")}</div>` : ""}
+    ${faq.length ? `<div class="faqrow" style="display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:10px 12px 0;border-top:1px solid var(--line)">${faq.map((x, i) => `<button data-askfaq="${i}" style="flex:none;min-height:40px;background:#f2f4f6;color:var(--ink2);border:0;border-radius:14px;padding:6px 12px;font-size:14px;font-weight:700">${esc(x.q)}</button>`).join("")}</div>` : ""}
     <div style="display:flex;gap:8px;align-items:flex-end;padding:10px 12px;${faq.length ? "" : "border-top:1px solid var(--line);"}background:#fff">
       <textarea id="askQ" rows="1" maxlength="1500" placeholder="상품, 상황까지 한 번에 적어 주세요" style="flex:1;resize:none;border:1px solid var(--line);border-radius:20px;padding:10px 14px;font:inherit;font-size:15px;max-height:120px;outline:none;background:#f9fafb">${esc(ASK.draft)}</textarea>
       <button id="askGo" ${wait ? "disabled" : ""} style="background:${wait ? "#c9cdd2" : "var(--blue)"};color:#fff;border:0;border-radius:20px;padding:10px 16px;font-weight:800;flex:none">${wait ? "답 기다리는 중" : "보내기"}</button>
@@ -582,7 +590,7 @@ function render() {
     ${kpi("talk", "인수인계, 고객요청", memoN + creqN + "건", `인수인계 ${memoN}, 고객요청 ${creqN}`)}
   </div>`;
   const body = {
-    home: ONLY_OPEN_CLOSE ? `${noticeCardHtml()}${bigDepCardHtml()}${sentCardHtml()}${replyQuickHtml()}<div class="cols"><div>${openCard}</div><div>${closeCard}</div></div>` : `${bigDepCardHtml()}<div class="cols"><div>${done < N ? openCard : closeCard}${taskCardHtml()}</div><div>${memoCardHtml()}${asPin() ? asCardHtml() : ""}</div></div>`,
+    home: ONLY_OPEN_CLOSE ? `${noticeCardHtml()}${bigDepCardHtml()}${sentCardHtml()}${replyQuickHtml()}<div class="cols">${done === N && now() >= "17:00" ? `<div>${closeCard}</div><div>${openCard}</div>` : `<div>${openCard}</div><div>${closeCard}</div>`}</div>` : `${bigDepCardHtml()}<div class="cols"><div>${done < N ? openCard : closeCard}${taskCardHtml()}</div><div>${memoCardHtml()}${asPin() ? asCardHtml() : ""}</div></div>`,
     work: `<div class="cols"><div>${openCard}</div><div>${closeCard}</div></div>`,
     stock: `<div class="cols one"><div>${surveyCardHtml()}</div></div>`,
     talk: ONLY_OPEN_CLOSE ? talkHtml() : `<div class="cols"><div>${memoCardHtml()}${creqCardHtml()}</div><div>${reqCard}${myQuicksCard()}</div></div>`,
@@ -2290,7 +2298,7 @@ async function sheetReport() {
   const c = TEST ? BOARD?.closingTest : BOARD?.closing;
   if (!c || !c.rep) { openSheet(`<h2>📋 마감보고</h2><div class="desc">봇이 포스 숫자로 마감보고를 만드는 중이에요. 1분쯤 뒤에 다시 눌러 주세요.</div><div class="btns"><button class="btn" data-x>닫기</button></div>`); loadBoard(); return; }
   const d = await decOne(c.rep);
-  if (!d) return openSheet(`<h2>📋 마감보고</h2><div class="desc">이 기기에서는 마감보고를 열 수 없어요. 매장 전용 주소로 한 번 열어 둔 기기에서 열어 주세요.</div><div class="btns"><button class="btn" data-x>닫기</button></div>`);
+  if (!d) return openSheet(`<h2>📋 마감보고</h2><div class="desc">${bKey() ? "마감보고를 못 불러왔어요. 잠시 뒤 다시 열어 주세요." : "매장 코드를 넣으면 마감보고가 보여요."}</div><div class="btns"><button class="btn" data-x>닫기</button>${bKey() ? "" : '<button class="btn primary" data-go="keyin">🔑 코드 넣기</button>'}</div>`);
   const f = c.full ? await decOne(c.full) : null, W = (f?.w?.length ? f.w : c.warn) || [];
   const fullBox = f ? `<details ${W.length ? "open" : ""} style="margin-top:12px"><summary style="font-weight:800;cursor:pointer">📄 마감 결과 전체 보기</summary><pre style="white-space:pre-wrap;font-family:inherit;font-size:14px;line-height:1.55;background:#f9fafb;border-radius:12px;padding:12px;margin-top:8px">${esc(f.t)}</pre></details>` : "";
   if (W.length) return openSheet(`<h2>⚠️ 안 맞는 게 있어요</h2><div class="desc">다 맞아야 매출보고방 보고문이 나와요. 아래를 확인하고 고친 뒤 마감 보고를 다시 보내 주세요.</div>
@@ -2308,8 +2316,10 @@ function closeRowHtml(stepRow) {
   const bcx = TEST ? BOARD?.closingTest : bc;
   if (CLOSEPEND && bcx && bcx.date === CLOSEPEND.date && bcx.at >= CLOSEPEND.t && bcx.full) { CLOSEPEND = null; pendSave(); }
   if (CLOSEPEND) return stepRow("💰", false, "마감 보고", { t: `${PEND_TXT} ${esc(CLOSEPEND.t)} 보냄, 포스와 맞춰보고 보고문 만드는 중 (1~2분)` }, '<button class="act gray" disabled>처리 중</button>');
-  const c = CLOSE_SENT && CLOSE_SENT.date === closeDay() && (!bc || CLOSE_SENT.at >= bc.at) ? CLOSE_SENT : bc;
-  const info = !c ? { t: "아직 안 함, 포스 일마감 숫자와 돈통" } : c.status === "done" ? ((c.warn || []).length ? { t: `${c.at} 보고됨, 확인 필요: ` + c.warn.join(" / "), w: 1 } : { t: `${c.at} 보고 완료, ${c.by}, 돈통 차액 없음` }) : c.status === "error" ? { t: `못 보냈어요: ${c.err || ""}`, w: 1 } : { t: "보내는 중…" };
+  // 11/05 점검: 봇이 계산한 결과가 있으면 그걸 먼저 씀. 같은 분이면 이 기기 값이 이겨서 차액이 있어도 "차액 없음"이 떴음
+  const cBase = TEST ? (BOARD?.closingTest?.date === closeDay() ? BOARD.closingTest : null) : bc;
+  const c = CLOSE_SENT && CLOSE_SENT.date === closeDay() && (!cBase || CLOSE_SENT.at > cBase.at) ? CLOSE_SENT : cBase;
+  const info = !c ? { t: "아직 안 함" } : c.status === "done" ? ((c.warn || []).length ? { t: `${c.at} 보고됨, 확인 필요: ` + c.warn.join(" / "), w: 1 } : { t: `${c.at} 보고 완료, ${c.by}${c.known === false ? "" : ", 돈통 차액 없음"}` }) : c.status === "error" ? { t: `못 보냈어요: ${c.err || ""}`, w: 1 } : { t: "보내는 중…" };
   return stepRow("💰", c?.status === "done", "마감 보고", info, `<button class="act gray" data-go="expnow" style="margin-right:6px">💸 지출${expList().length ? ` ${expList().length}` : ""}</button>${c?.status === "done" ? '<button class="act" data-go="report" style="margin-right:6px">📋 마감 결과</button>' : ""}<button class="act ${c?.status === "done" ? "gray" : ""}" data-go="closing">${c ? "다시" : "보고"}</button>`);
 }
 // 입력 칸: [id, 이름, 필수]
@@ -2326,7 +2336,7 @@ function sheetClosing(mid) {
   const prep = todayPrep();
   // 10/19 저녁 사장님 "개복잡": 기본 화면은 돈통, 리뷰/각인, 확인 2개, 지출 버튼만. 포스 숫자를 고칠 때만 아래 '직접 입력'을 펼침
   openSheet(`${MIDMODE ? '<h2>🔎 중간 체크</h2><div class="desc">마감할 때처럼 <b>돈통을 장수대로 세고</b> 리뷰, 지출까지 넣어 주세요. 포스와 다 맞으면 ✅가 떠요. 마감 기록은 안 남아요.</div>' : '<h2>💰 마감 보고</h2><div class="desc"><b>돈통만 세면 돼요.</b> 포스 일마감은 보고를 보낸 뒤에 해요.</div>'}${!MIDMODE && todoItems().length ? `<div class="desc" style="color:var(--amber);font-weight:700;display:flex;align-items:center;gap:8px;margin-top:8px">남은 일정 ${todoItems().length}건은 다음 근무자에게 그대로 넘어가요<button class="act gray" data-go="ilgate" style="margin-left:auto">보기</button></div>` : ""}
-    <div class="grp">돈통 <small>장수, 개수</small></div>
+    <div class="grp">돈통 <small>장수, 개수, 없으면 0</small></div>
     <div class="cash big">${CASH.slice(0, 2).map(([id, label, unit]) => `<label><span>${label}</span><input class="input" id="${id}" inputmode="numeric" placeholder="${unit}"></label>`).join("")}</div>
     <div class="cash coins">${CASH.slice(2).map(([id, label, unit]) => `<label><span>${label}</span><input class="input" id="${id}" inputmode="numeric" placeholder="${unit}"></label>`).join("")}</div>
     <div class="cashsum" id="cSij"></div>
@@ -2396,12 +2406,16 @@ function closeCalc() {
   const b = numv("kBills"), pr = (a, c) => (c ? Math.round((a / c) * 1000) / 10 + "%" : "-");
   $("#cKpi").innerHTML = [["객단가", b ? Math.round(sales / b).toLocaleString() + "원" : "-"], ["객당 프리미엄", b ? (Math.round((numv("kPrem") / b) * 10) / 10) + "병" : "-"], ["지정판매율", pr(numv("kDes"), numv("kPrem"))],
     ["일회용판매율", pr(numv("kDisp"), b)], ["발맥프로율", pr(numv("kValm"), numv("kDev"))], ["리뷰율", pr(numv("cRev"), b)]].map(([k, v]) => `<div><span>${k}</span><b>${v}</b></div>`).join("");
-  const left = [...SALES, ...KPI_IN].filter(([id, , r]) => r && !has(id)).length + (drawer ? 0 : 1) + (diff && !($("#cWhy").value || "").trim() ? 1 : 0);
-  const okb = $("#okClose"); if (okb) { okb.disabled = !!left; okb.textContent = left ? `${left}칸 남음` : MIDMODE ? "중간 체크 보내기" : "보고 보내기"; }
+  // 11/05 점검: 돈통 칸을 비우면 0으로 계산돼 잘못 보낼 수 있어 다 채우게 함(없으면 0, 기타는 선택). 어느 칸이 남았는지 버튼에 쓰고 누르면 그 칸으로 감
+  const miss = [...CASH.slice(0, -1).filter(([id]) => !has(id)).map(([id, n]) => [id, n]), ...[...SALES, ...KPI_IN].filter(([id, , r]) => r && !has(id)).map(([id, n]) => [id, n])];
+  if (!miss.length && !drawer) miss.push(["c50", "돈통"]);
+  if (diff && !($("#cWhy").value || "").trim()) miss.push(["cWhy", "차액 이유"]);
+  const okb = $("#okClose"); if (okb) { okb.dataset.miss = miss.length ? miss[0][0] : ""; okb.classList.toggle("wait", !!miss.length); okb.textContent = miss.length ? `${miss[0][1]}${miss.length > 1 ? ` 외 ${miss.length - 1}칸` : " 칸"} 남음` : MIDMODE ? "중간 체크 보내기" : "보고 보내기"; }
   return { sales, drawer, sij, exp, diff };
 }
 function closeConfirm() {
-  const k = closeCalc(); if ($("#okClose").disabled) return;
+  const k = closeCalc(), mid = $("#okClose").dataset.miss;
+  if (mid) { const el = $("#" + mid); if (el) { el.classList.add("need"); el.scrollIntoView({ block: "center" }); el.focus(); } return toast(mid === "cWhy" ? "차액이 난 이유를 적어 주세요" : "남은 칸을 넣어 주세요. 없으면 0"); }
   const v = (id) => ($("#" + id).value || "").replace(/\D/g, "");
   const hn = $('[data-cck="hn"]').classList.contains("on"), vm = $('[data-cck="vm"]').classList.contains("on");
   const sh = $("#sheet"), w = (n) => (+n || 0).toLocaleString() + "원";
@@ -2439,7 +2453,7 @@ async function doClosing() {
     let sheetOk = "";
     if (asPin() && !TEST) { try { await asApi({ action: "closeAdd", date: cDay, branch: B, by, cash, rev: v("cRev"), eng: v("cEng"), hn, vm, ua: navigator.userAgent.slice(0, 60), sales: { 현금: numv("pCash"), 카드: numv("pCard"), 이체: numv("pTr"), 기타: numv("pEtc") }, exp: k.exp, diff: k.diff, bills: kpi.bills }); sheetOk = ", 지점 시트에도 기록"; } catch (e2) { sheetOk = ", 지점 시트 기록 실패(" + e2.message + ")"; } }
     ls.set(nextKey(), { d: cDay, v: k.drawer - k.sij });
-    if (cDay === closeDay()) CLOSE_SENT = { date: cDay, status: "done", at: now(), by, warn: k.diff ? [`돈통 차액 ${(k.diff > 0 ? "+" : "") + k.diff.toLocaleString()}원`] : [] };
+    if (cDay === closeDay()) CLOSE_SENT = { date: cDay, status: "done", at: now(), by, known: k.diff != null, warn: k.diff ? [`돈통 차액 ${(k.diff > 0 ? "+" : "") + k.diff.toLocaleString()}원`] : [] };
     closeSheet(); render(); toast(`${cDay === todayKey() ? "" : cDay.slice(5).replace("-", "/") + " "}마감 보고를 보냈어요, 1~2분 뒤에 결과가 떠요`);
     // 10/21: 결과가 오면 바로 결과 창(다 맞으면 보고문, 안 맞으면 확인할 것)
     const sentAt = now(); CLOSEPEND = { t: sentAt, date: cDay }; pendSave(); render(); let rn = 0; const ri = setInterval(async () => { await loadBoard(); const bc = TEST ? BOARD?.closingTest : BOARD?.closing; if (bc && bc.date === cDay && bc.at >= sentAt && bc.full) { clearInterval(ri); CLOSEPEND = null; pendSave(); render(); if (!$("#dim").classList.contains("on")) sheetReport(); return; } if (++rn >= 36) { clearInterval(ri); CLOSEPEND = null; pendSave(); render(); toast("마감 결과가 아직 안 왔어요, 잠시 뒤 새로고침해 주세요"); } }, 10e3);
@@ -2668,6 +2682,9 @@ async function doHandoff(name) {
 }
 
 function openSheet(html) { $("#sheet").innerHTML = html; $("#dim").classList.add("on"); }
+// 11/05 점검: 창 바깥을 잘못 눌러 세어 넣은 숫자가 사라지던 것 → 입력이 있으면 바깥 눌러도 안 닫힘
+const sheetDirty = () => [...document.querySelectorAll("#sheet input, #sheet textarea")].some((i) => !["hidden", "checkbox", "radio", "file"].includes(i.type) && i.value !== i.defaultValue);
+document.addEventListener("input", (e) => e.target.classList?.remove("need"));
 const closeSheet = () => { $("#dim").classList.remove("on"); if (typeof pcCamStop === "function") pcCamStop(); };
 
 // 지금 근무 중인 사람이 없으면 출근 창부터 → 출근하면 하려던 일을 이어서
@@ -2859,7 +2876,7 @@ async function doAsAdd(t) {
 
 document.addEventListener("click", (e) => {
   const t = e.target.closest("button,[data-x]");
-  if (!t) { const a2 = e.target.closest("[data-a2d]"); if (a2) return sheetAs2Detail(a2.dataset.a2d); const rw = e.target.closest("[data-crd],[data-mmd]"); if (rw) return rw.dataset.crd ? sheetCreqDetail(rw.dataset.crd) : sheetMemoDetail(rw.dataset.mmd); if (e.target.id === "dim") closeSheet(); return; }
+  if (!t) { const a2 = e.target.closest("[data-a2d]"); if (a2) return sheetAs2Detail(a2.dataset.a2d); const rw = e.target.closest("[data-crd],[data-mmd]"); if (rw) return rw.dataset.crd ? sheetCreqDetail(rw.dataset.crd) : sheetMemoDetail(rw.dataset.mmd); if (e.target.id === "dim") { if (sheetDirty()) return toast("입력한 내용이 있어요. 닫으려면 [취소]를 눌러 주세요"); closeSheet(); } return; }
   if (t.dataset.talk) { TALK = t.dataset.talk; ls.set("vf-app-talk", TALK); return render(); }
   if (t.dataset.crf) { CRF = t.dataset.crf; return render(); }
   if (t.dataset.b) { B = t.dataset.b; ls.set("vf-app-branch", B); return render(); }
