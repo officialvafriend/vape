@@ -91,6 +91,11 @@
   .okline{color:var(--green);font-weight:700;margin-top:14px;font-size:15px}
   .pchead{margin-bottom:14px}.pchead h1{font-size:22px;font-weight:800;letter-spacing:-.6px;line-height:1.3}.pchead .caption{margin:4px 0 0}
   .av svg{width:22px;height:22px}
+  .bdgp{margin-top:16px}.bdgp .gt{font-size:14px;font-weight:600;color:var(--sub);margin-bottom:8px}.bdgp .gt b{color:var(--ink);font-weight:700}.bdgp .gc{display:flex;flex-wrap:wrap;gap:8px}
+  .bdn{display:inline-flex;align-items:center;height:42px;padding:0 15px;border-radius:12px;font-size:15px;font-weight:700;text-decoration:none;transition:transform .12s var(--ease-out)}.bdn:active{transform:scale(.97)}.bdn.act{background:var(--blue-soft);color:var(--blue)}.bdn.no{box-shadow:inset 0 0 0 1.5px var(--line2);color:var(--ink2)}.bdn.ok{background:var(--green-soft);color:var(--green)}.bdn.wt{background:var(--bg);color:var(--sub)}.bdn.hot{background:var(--red-soft);color:var(--red)}@media (hover:hover) and (pointer:fine){.bdn{cursor:pointer}.bdn:hover{filter:brightness(.97)}}
+  .bdg{display:grid;grid-template-columns:minmax(58px,120px) minmax(0,1fr) minmax(0,1fr);gap:8px;align-items:stretch}.bdg .hd{font-size:14px;font-weight:700;text-align:center;padding:0 0 2px}.bdg .hd small{display:block;font-size:12px;font-weight:600;color:var(--sub)}.bdg .br{display:flex;align-items:center;padding-left:6px;font-size:15px;font-weight:700;min-width:0}
+  .bdc{display:block;width:100%;min-width:0;min-height:56px;padding:9px 11px;border-radius:12px;text-align:left;text-decoration:none;background:var(--bg);transition:transform .12s var(--ease-out)}.bdc:active{transform:scale(.97)}.bdc b,.bdc span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.bdc b{font-size:14px;font-weight:700}.bdc span{font-size:12px;font-weight:600;margin-top:2px}
+  .bdc.no{background:none;box-shadow:inset 0 0 0 1.5px var(--line2)}.bdc.ok{background:var(--green-soft)}.bdc.act{background:var(--blue-soft)}.bdc.hot{background:var(--red-soft)}@media (hover:hover) and (pointer:fine){.bdc{cursor:pointer}.bdc:hover{filter:brightness(.97)}}
   .nbadge{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--red);color:#fff;font-size:11px;font-weight:800;margin-left:6px;line-height:1}.nav button{position:relative}.nav .nbadge{position:absolute;top:1px;left:calc(50% + 6px);margin:0}.subnav .nbadge{vertical-align:1px}
   /* 11/5 블로그 탭: 점유 막대, 줄 등장, 버튼 눌림. 움직임 줄이기 설정이면 옮기는 움직임은 뺀다 */
   .sbar{height:8px;border-radius:99px;background:var(--line2);overflow:hidden;margin-top:8px}.sbar i{display:block;height:100%;border-radius:99px;background:var(--blue)}.sbar i.pk{background:var(--blue)}
@@ -99,7 +104,7 @@
   .btn,.chip,.subnav button{transition:transform .12s var(--ease-out)}.btn:active,.chip:active,.subnav button:active{transform:scale(.97)}
   @keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}@keyframes fadein{from{opacity:0}to{opacity:1}}@keyframes reveal{from{clip-path:inset(0 100% 0 0 round 99px)}to{clip-path:inset(0 0 0 0 round 99px)}}
   .enter .anim{animation:rise .24s var(--ease-out) both;animation-delay:calc(var(--i,0)*40ms)}.enter .sbar i{animation:reveal .3s var(--ease-out) both;animation-delay:calc(var(--i,0)*40ms + 80ms)}
-  @media (prefers-reduced-motion:reduce){.enter .anim{animation:fadein .2s ease both}.enter .sbar i{animation:none}.btn:active,.chip:active,.subnav button:active{transform:none}.sheet{animation:fadein .2s ease}}
+  @media (prefers-reduced-motion:reduce){.enter .anim{animation:fadein .2s ease both}.enter .sbar i{animation:none}.btn:active,.chip:active,.subnav button:active,.bdc:active,.bdn:active{transform:none}.sheet{animation:fadein .2s ease}}
   @media (max-width:899px){.pchead{display:block}.sec{flex-wrap:wrap}}
   @media (min-width:900px){.chips.hs{flex-wrap:wrap;overflow:visible;margin:0;padding:0}}
   @media (min-width:900px) and (max-width:1199px){.clgrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
@@ -227,6 +232,145 @@
 .gbr{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px}.gtag{height:36px;padding:0 11px;border-radius:999px;font-size:12px;font-weight:700;background:var(--card);color:var(--sub);border:1px solid var(--line)}.gtag.on{background:var(--blue);color:#fff;border-color:var(--blue)}.gtag.all{background:none;border-style:dashed}
 .gside,.mside,.gmain{min-width:0}.gside .chips,.mside .chips{flex-wrap:wrap;overflow:visible;margin-left:0;margin-right:0;padding:0}.mside .card{min-width:0}
 @media(min-width:900px){.gwrap,.mwrap{grid-template-columns:360px minmax(0,1fr);align-items:start;gap:20px}.gside,.mside{position:sticky;top:20px;display:grid;gap:12px}.glist{grid-template-columns:repeat(auto-fill,minmax(320px,1fr))}.mwrap .list{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:0 16px}}
+/* ── 11/5 공용 부품 (사장님 "세그먼트, 모달, 스켈레톤, 진행 바, 아코디언, 데이트피커, 체크박스, 라디오, 토글, 슬라이더, 탭, 스테퍼, 칩 4종이 없어서 불편") ──
+   체크박스 = 여러 개 고르기 / 라디오 = 하나만 / 토글 = 바로 켜고 끄기 / 슬라이더 = 범위 값 / 탭 = 화면 안 내용 바꾸기 / 스테퍼 = 한 칸씩 늘리고 줄이기
+   선택칩 = 고른 값 / 필터칩 = 목록 거르기 / 액션칩 = 그 자리에서 할 일 / 입력칩 = 넣은 값을 X로 빼기 */
+.u-tabs{display:flex;gap:4px;border-bottom:1px solid var(--line2);margin:0 0 4px;overflow-x:auto;scrollbar-width:none}.u-tabs::-webkit-scrollbar{display:none}
+.u-tabs button{position:relative;flex:none;height:46px;padding:0 14px;font-size:15px;font-weight:700;color:var(--sub);white-space:nowrap}
+.u-tabs button.on{color:var(--ink)}.u-tabs button.on::after{content:"";position:absolute;left:10px;right:10px;bottom:-1px;height:3px;border-radius:3px;background:var(--ink)}
+.u-tabs button small{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 6px;border-radius:10px;background:var(--line);font-size:12px;font-weight:800;margin-left:6px;color:var(--ink2)}.u-tabs button.on small{background:var(--ink);color:var(--card)}
+.u-cbg{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}@media(min-width:900px){.u-cbg{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.u-cb,.u-rd{display:flex;align-items:center;gap:10px;min-height:46px;padding:0 12px;border-radius:12px;background:var(--line);font-size:15px;font-weight:600;color:var(--ink);text-align:left;width:100%}
+.u-cb i,.u-rd i{width:22px;height:22px;flex:none;border:2px solid var(--line2);background:var(--card);display:grid;place-items:center;transition:background .15s,border-color .15s}
+.u-cb i{border-radius:7px}.u-rd i{border-radius:50%}
+.u-cb[aria-checked=true],.u-rd[aria-checked=true]{background:var(--blue-soft);color:var(--blue)}
+.u-cb[aria-checked=true] i{background:var(--blue);border-color:var(--blue)}.u-cb[aria-checked=true] i::after{content:"";width:6px;height:11px;border:solid #fff;border-width:0 2.5px 2.5px 0;transform:translateY(-1px) rotate(45deg)}
+.u-cb[aria-checked=mixed] i{background:var(--blue);border-color:var(--blue)}.u-cb[aria-checked=mixed] i::after{content:"";width:10px;height:2.5px;background:#fff;border-radius:2px}
+.u-rd[aria-checked=true] i{border-color:var(--blue)}.u-rd[aria-checked=true] i::after{content:"";width:10px;height:10px;border-radius:50%;background:var(--blue)}
+.u-rdg{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:6px}
+.u-swrow{display:flex;align-items:center;gap:12px;width:100%;min-height:52px;text-align:left;margin-top:14px}.u-swrow .tx{flex:1;font-size:15px;font-weight:600}.u-swrow .tx small{display:block;font-size:13px;font-weight:500;color:var(--sub);margin-top:2px}
+.u-range{width:100%;accent-color:var(--blue);height:28px}.u-rangev{display:flex;justify-content:space-between;font-size:12px;color:var(--sub);font-weight:600}
+.u-step{display:inline-flex;align-items:center;background:var(--line);border-radius:12px;height:46px}.u-step button{width:46px;height:46px;font-size:22px;font-weight:700;color:var(--ink2);border-radius:12px}.u-step button:disabled{opacity:.3}.u-step b{min-width:52px;text-align:center;font-size:17px;font-variant-numeric:tabular-nums}
+.u-chips{display:flex;flex-wrap:wrap;gap:6px}
+.u-fchip{display:inline-flex;align-items:center;gap:5px;height:36px;padding:0 13px;border-radius:18px;background:var(--card);box-shadow:inset 0 0 0 1px var(--line2);font-size:14px;font-weight:600;color:var(--ink2)}
+.u-fchip[aria-pressed=true]{background:var(--ink);color:var(--card);box-shadow:none}.u-fchip[aria-pressed=true]::before{content:"✓";font-size:12px}
+.u-schip{height:36px;padding:0 13px;border-radius:10px;background:var(--line);font-size:14px;font-weight:600;color:var(--ink2)}.u-schip.on{background:var(--blue);color:#fff}
+.u-achip{display:inline-flex;align-items:center;gap:4px;height:34px;padding:0 12px;border-radius:10px;background:var(--card);box-shadow:inset 0 0 0 1px var(--line2);font-size:13px;font-weight:700;color:var(--ink2)}.u-achip:hover{background:var(--press)}.u-achip.red{color:var(--red)}.u-achip.blue{color:var(--blue)}
+.u-ichip{display:inline-flex;align-items:center;gap:2px;height:32px;padding:0 4px 0 11px;border-radius:16px;background:var(--blue-soft);color:var(--blue);font-size:13px;font-weight:700}.u-ichip button{width:24px;height:24px;border-radius:50%;font-size:15px;color:var(--blue);line-height:1}.u-ichip button:hover{background:rgba(27,100,218,.12)}
+.u-stchip{display:inline-flex;align-items:center;gap:4px;height:30px;padding:0 10px;border-radius:8px;font-size:13px;font-weight:600;background:var(--line);color:var(--sub);text-decoration:none}.u-stchip.ok{background:var(--green-soft);color:var(--green)}.u-stchip small{font-weight:500;opacity:.85}
+.u-acc{background:var(--card);border-radius:16px;margin-top:8px;border:1px solid var(--line);overflow:hidden}
+.u-acch{display:flex;align-items:center;gap:12px;width:100%;padding:13px 16px;text-align:left}.u-acch:hover{background:var(--press)}
+.u-acch .tx{flex:1;min-width:0}.u-acch .tx b{display:block;font-size:15px;font-weight:700;line-height:1.35;overflow-wrap:anywhere}.u-acch .tx span{display:block;font-size:13px;color:var(--sub);margin-top:3px}
+.u-acch .cv{flex:none;color:var(--sub);transition:transform .2s var(--ease-out);font-size:14px}.u-acc.open .cv{transform:rotate(180deg)}
+.u-accb{display:none;padding:2px 16px 14px 70px}.u-acc.open .u-accb{display:block}@media(max-width:600px){.u-accb{padding-left:16px}}
+.u-accb .row{display:flex;flex-wrap:wrap;gap:6px}.u-accb .row+.row{margin-top:10px}.u-accb .note{font-size:13px;color:var(--ink2);line-height:1.5;margin-bottom:10px;white-space:pre-wrap}
+.u-ico{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;font-size:19px;flex:none;background:var(--line)}
+.u-ico.task{background:var(--blue-soft)}.u-ico.notice{background:var(--amber-soft)}.u-ico.blog{background:#efe9fd}.u-ico.survey{background:var(--green-soft)}.u-ico.ok{background:var(--green-soft);color:var(--green);font-weight:800}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .u-ico.blog{background:#2b2540}}
+.u-acch .tx span.u-badge,.u-badge{display:inline-block;margin-top:0;font-size:11px;font-weight:800;padding:2px 7px;border-radius:6px;margin-right:6px;vertical-align:1px}
+.u-badge.task{background:var(--blue-soft);color:var(--blue)}.u-badge.notice{background:var(--amber-soft);color:var(--amber)}.u-badge.blog{background:#efe9fd;color:#6b3fd4}.u-badge.survey{background:var(--green-soft);color:var(--green)}
+.u-prog{flex:none;width:76px;text-align:right;font-size:13px;font-weight:700;font-variant-numeric:tabular-nums}.u-prog i{display:block;height:6px;border-radius:3px;background:var(--line2);margin-top:5px;overflow:hidden}.u-prog i b{display:block;height:100%;background:var(--blue);border-radius:3px}.u-prog.ok{color:var(--green)}.u-prog.ok i b{background:var(--green)}
+.u-day{font-size:13px;font-weight:700;color:var(--sub);margin:18px 4px 0}.u-day:first-child{margin-top:10px}
+.u-sk{border-radius:8px;height:14px;background:linear-gradient(90deg,var(--line) 0,var(--line2) 50%,var(--line) 100%);background-size:200% 100%;animation:sk 1.3s linear infinite}@keyframes sk{to{background-position:-200% 0}}
+@media (prefers-reduced-motion:reduce){.u-sk{animation:none}}
+.u-head{display:flex;align-items:flex-start;gap:12px}.u-head>div{flex:1;min-width:0}
+.u-btn{height:44px;padding:0 16px;border-radius:12px;font-size:15px;font-weight:700;background:var(--blue);color:#fff;flex:none;white-space:nowrap}
+.u-date{display:flex;flex-wrap:wrap;gap:6px;align-items:center}.u-date .in{flex:1 1 170px;height:46px;font-size:16px}
+.u-empty{text-align:center;padding:34px 16px;color:var(--sub);font-size:14px}.u-empty b{display:block;font-size:16px;color:var(--ink);margin-bottom:4px}
+/* 11/5 업무 탭 v2: 왼쪽 요청하기 + 오른쪽 지점 현황표 */
+.tkw{display:grid;gap:12px;grid-template-columns:minmax(0,1fr)}.tkw>div{min-width:0}
+@media(max-width:899px){.tkb{min-width:0;width:auto}.tkb th.c,.tkb td.c{min-width:38px}.tkb td.tt,.tkb th.tt{width:150px}.tkb td.tt,.tkb th.tt{position:sticky;left:0;background:var(--card);z-index:1;max-width:150px;min-width:132px;box-shadow:1px 0 0 var(--line)}.tkb td.tt b{white-space:normal!important;font-size:14px!important;overflow-wrap:anywhere}}
+@media(min-width:900px){.tkw{grid-template-columns:400px minmax(0,1fr);gap:20px;align-items:start}.mkc{position:sticky;top:20px;max-height:calc(100vh - 40px);overflow:auto}}
+.mkc{margin-bottom:0}.mkh{display:flex;align-items:baseline;gap:8px;margin-bottom:12px}.mkh b{font-size:20px;font-weight:800;letter-spacing:-.4px}.mkh span{font-size:13px;color:var(--sub)}.mkh .u-achip{margin-left:auto}
+.mkseg button{font-size:13px;padding:0 2px}.mkt{height:56px;font-size:17px;margin-top:14px}
+.mkc .lbl{margin:18px 0 8px}.mkc .u-cbg{grid-template-columns:repeat(3,minmax(0,1fr))}.mkc .u-cb,.mkc .u-rd{min-height:42px;font-size:14px;padding:0 10px;gap:8px}.mkc .u-cb i,.mkc .u-rd i{width:20px;height:20px}
+.mkc .u-rdg{grid-template-columns:repeat(auto-fill,minmax(82px,1fr))}.mkgo{margin-top:20px;height:54px}
+.tkhd{display:flex;align-items:flex-end;gap:12px}.tkhd>div:first-child{flex:1;min-width:0}.tkbig{font-size:20px;font-weight:800;letter-spacing:-.4px}.tkpct{font-size:28px;font-weight:800;color:var(--blue);font-variant-numeric:tabular-nums;line-height:1}
+.tkbw{overflow-x:auto;margin:16px -20px 0;padding:0 20px}
+.tkb{width:100%;border-collapse:collapse;font-size:14px;min-width:560px}
+.tkb th{font-size:12px;font-weight:700;color:var(--ink2);padding:8px 2px;border-bottom:1px solid var(--line2);white-space:nowrap;text-align:center}.tkb th small{display:block;font-size:11px;font-weight:600;color:var(--sub)}
+.tkb th.tt{text-align:left;padding-left:0;vertical-align:bottom;color:var(--ink);font-size:13px}
+.tkb td{border-bottom:1px solid var(--line);padding:0 2px;height:58px;text-align:center}.tkb tr:last-child td{border-bottom:0}
+.tkb td.tt{text-align:left;padding:0;max-width:240px}.tkb td.tt button{display:block;width:100%;text-align:left;padding:8px 10px 8px 0}.tkb td.tt b{display:block;font-size:15px;font-weight:700;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.tkb td.tt span{display:block;font-size:12px;color:var(--sub);margin-top:2px}
+@media (hover:hover){.tkb td.tt button:hover b{color:var(--blue)}}
+.tkb .pg{font-weight:800;font-variant-numeric:tabular-nums;color:var(--ink2);width:52px}.tkb td.pg.ok{color:var(--green)}
+.dt{display:inline-block;width:14px;height:14px;border-radius:50%;vertical-align:middle}.dt.ok{background:var(--green)}.dt.no{box-shadow:inset 0 0 0 2px var(--line2)}.dt.na{width:10px;height:2px;border-radius:1px;background:var(--line2)}
+.tklg{display:flex;flex-wrap:wrap;gap:14px;font-size:12px;color:var(--sub);margin-top:12px}.tklg span{display:inline-flex;align-items:center;gap:6px}.tklg span:last-child{margin-left:auto}
+.tkempty{margin-top:16px;padding:22px;border-radius:14px;background:var(--bg);color:var(--sub);font-size:14px;text-align:center}
+.u-acch .tx span.tkn,.tkn{display:inline;margin-top:0;font-size:13px;color:var(--sub);font-weight:700;margin-left:4px}.tkr{margin-bottom:0}
+.tkl{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--line)}.tkl:first-child{border-top:0}.tkl .d{flex:0 0 76px;font-size:13px;font-weight:700;color:var(--sub)}.tkl .tx{flex:1;min-width:0}.tkl .tx b{display:block;font-size:14px;font-weight:700}.tkl .tx span{display:block;font-size:12px;color:var(--sub)}
+.tksec{margin:26px 4px 10px}.main:has(.tkw){max-width:1560px}.u-accb .sec:first-child{display:none}.u-accb>.list{margin:0 -16px;background:none}
+@media(min-width:900px){
+  .tkw{grid-template-columns:440px minmax(0,1fr);gap:24px}
+  .mkh b{font-size:23px}.mkh span{font-size:14px}.mkc .caption{font-size:15px}.mkseg button{font-size:15px;height:42px}
+  .mkc .lbl{font-size:15px;color:var(--ink2);margin:20px 0 9px}.mkc .u-cb,.mkc .u-rd{min-height:48px;font-size:15px}.mkc .u-cb i,.mkc .u-rd i{width:22px;height:22px}
+  .mkt{height:60px;font-size:18px}.mkc #tNote{height:50px!important;font-size:16px!important}.u-schip,.u-achip{height:40px;font-size:15px;padding:0 14px}.u-date .in{height:48px;font-size:16px}
+  .u-swrow .tx{font-size:16px}.u-swrow .tx small{font-size:14px}.mkgo{height:58px;font-size:18px}
+  .tkhd .eyebrow{font-size:15px}.tkbig{font-size:25px}.tkpct{font-size:36px}
+  .tkb{font-size:15px}.tkb th{font-size:13px;padding:10px 4px}.tkb th small{font-size:12px}.tkb th.tt{font-size:15px}
+  .tkb td{height:68px}.tkb td.tt{max-width:320px}.tkb td.tt b{font-size:17px}.tkb td.tt span{font-size:14px;margin-top:3px}.tkb .pg{font-size:16px;width:60px}
+  .dt{width:17px;height:17px}.dt.na{width:12px;height:2px}.tklg{font-size:14px}
+  .u-acch{padding:16px 20px}.u-acch .tx b{font-size:17px}.tkn{font-size:15px!important}.u-accb{padding:4px 20px 18px!important}
+  .tkl{padding:12px 0}.tkl .d{font-size:14px;flex-basis:88px}.tkl .tx b{font-size:16px}.tkl .tx span{font-size:13px}
+  .tksec{font-size:20px}.tksec small{font-size:14px}
+  #tkblog~.list .item .tx b{font-size:16px}.bdg .hd{font-size:15px}.bdg .br{font-size:16px}.bdc b{font-size:15px}.bdc span{font-size:13px}.bdc{min-height:62px}
+}
+/* 11/5 v3 간격 정리: 진행 카드 중심, 접는 칸 4개, 폰은 표 대신 카드 */
+.tkfolds{display:grid;gap:10px;margin-top:12px}.tkfolds .u-acc{margin-top:0}
+.tksub{font-size:13px;font-weight:800;color:var(--sub);margin:14px 0 4px}.tksub:first-child{margin-top:4px}
+.u-accb .card{background:none;padding:6px 0 0;margin:0}.u-accb .sec{display:none}
+.tkm{display:none}
+@media(max-width:899px){
+  .tkbw{display:none}.tkm{display:grid;gap:8px;margin-top:14px}
+  .tkmi{display:block;width:100%;text-align:left;background:var(--bg);border-radius:14px;padding:12px 14px}
+  .tkmh{display:flex;align-items:flex-start;gap:10px}.tkmh .tx{flex:1;min-width:0}.tkmh .tx b{display:block;font-size:15px;font-weight:700;line-height:1.35}.tkmh .tx span{display:block;font-size:12px;color:var(--sub);margin-top:2px}
+  .tkmh .pg{font-size:15px;font-weight:800;color:var(--ink2);font-variant-numeric:tabular-nums}.tkmh .pg.ok{color:var(--green)}
+  .tkmd{display:flex;flex-wrap:wrap;gap:6px 12px;margin-top:10px}.tkmd span{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:700;color:var(--sub)}.tkmd span.ok{color:var(--green)}
+  .tkmno{font-size:12px;color:var(--ink2);margin-top:8px;font-weight:600}
+  .tklg span:last-child{display:none}
+  .mkh{flex-wrap:wrap}.mkt{font-size:16px}
+  .bdc span{white-space:normal}
+}
+@media(min-width:900px){.tkfolds{gap:12px}.tksub{font-size:14px;margin:18px 0 6px}}
+/* 11/5 토스식 업무 탭 + 단계 창 */
+.tsw{display:grid;gap:4px;grid-template-columns:minmax(0,1fr)}.tsw>div{min-width:0}
+@media(min-width:900px){.tsw{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:28px;align-items:start}.main:has(.tsw){max-width:1240px}.tsw>div>.card:first-child{margin-top:0}.tsw #tkblog>.sec:first-child{margin-top:0}}
+.tsact .item,.tsw .list .item{min-height:72px}.tsw .item .tx b{font-size:17px}.tsw .item .tx span{font-size:14px;white-space:normal;line-height:1.4}
+.tsav svg{width:22px;height:22px}.av.tscnt{font-size:14px;font-weight:800;letter-spacing:-.3px}
+.tsm .sec{display:none}.tsm{margin-top:14px}.tsm>.list{margin:0 -22px}
+.fntop{display:flex;align-items:center;gap:6px;margin:-10px 0 10px -8px}.fnback{width:44px;height:44px;border-radius:12px;font-size:26px;line-height:1;color:var(--ink2)}.fnback:active{background:var(--line)}.fntop span{font-size:14px;font-weight:700;color:var(--sub)}
+.fnbar{height:4px;background:var(--line2);border-radius:2px;overflow:hidden;margin-bottom:24px}.fnbar i{display:block;height:100%;background:var(--blue);border-radius:2px;transition:width .3s var(--ease-out)}
+.sheet h3.fnq{font-size:26px;line-height:1.35}.fnbody{margin-top:20px}.fnbody .in+.in{margin-top:10px}.fnin{height:62px!important;font-size:20px!important}
+.fnlist{margin:0 -22px}
+.fnrow,.fnnav,.fnsum{display:flex;align-items:center;gap:12px;width:100%;min-height:60px;padding:10px 22px;text-align:left}.fnrow:active,.fnnav:active,.fnsum:active{background:var(--press)}
+@media (hover:hover){.fnrow:hover,.fnnav:hover,.fnsum:hover{background:var(--press)}}
+.fnrow .tx,.fnnav .tx{flex:1;min-width:0}.fnrow b,.fnnav b{display:block;font-size:17px;font-weight:600}.fnrow .tx span,.fnnav .tx span{display:block;font-size:14px;color:var(--sub);margin-top:2px}
+.fnck{width:26px;height:26px;flex:none;border-radius:50%;box-shadow:inset 0 0 0 2px var(--line2);display:grid;place-items:center;transition:background .15s,box-shadow .15s}
+.fnrow[aria-checked=true] .fnck{background:var(--blue);box-shadow:none}.fnrow[aria-checked=true] .fnck::after{content:"";width:6px;height:11px;border:solid #fff;border-width:0 2.5px 2.5px 0;transform:translateY(-1px) rotate(45deg)}
+.fnrow[aria-checked=true] .fnck.rd{background:none;box-shadow:inset 0 0 0 8px var(--blue)}.fnrow[aria-checked=true] .fnck.rd::after{display:none}
+.fnsubin{padding:2px 22px 14px}.fnsubin .in{height:52px}
+.fnsum span{flex:0 0 60px;font-size:15px;color:var(--sub);font-weight:600}.fnsum b{flex:1;min-width:0;font-size:17px;font-weight:600;text-align:right;overflow-wrap:anywhere}.fnsum i{font-style:normal;color:var(--sub);font-size:20px;opacity:.5}
+.fnnav i{font-style:normal;color:var(--sub);font-size:20px;opacity:.5}.fnnav em{font-style:normal;font-size:14px;font-weight:700;color:var(--blue);background:var(--blue-soft);padding:7px 12px;border-radius:10px;flex:none}.fnnav[disabled]{cursor:default}.fnnav[disabled] b{color:var(--sub)}
+.fnbody .u-swrow{margin-top:18px}
+/* 11/5 PC 업무 탭: 넓게, 크게 (사장님 "PC도 좀 편하게") */
+@media(min-width:900px){
+  .main:has(.tsw){max-width:1480px}
+  .tsw{grid-template-columns:minmax(0,5fr) minmax(0,6fr);gap:32px}
+  .tsw .card{padding:30px 30px 28px;border-radius:26px}.tsw .card .eyebrow{font-size:16px}.tsw .card .headline{font-size:32px;letter-spacing:-.9px}.tsw .card .bar{height:12px;margin-top:22px}
+  .tsw .sec{font-size:21px;margin:30px 6px 12px}.tsw .sec small{font-size:15px}
+  .tsw .list{border-radius:26px;padding:8px 0}.tsw .list .item{min-height:84px;padding:16px 26px;gap:18px}
+  .tsw .item .tx b{font-size:19px}.tsw .item .tx span{font-size:15px;margin-top:4px}.tsw .item .val b{font-size:16px!important}
+  .tsw .av{width:50px;height:50px;border-radius:16px}.tsav svg{width:26px;height:26px}.av.tscnt{font-size:16px}
+  .tsw .chev{font-size:22px;color:var(--sub);opacity:.5}
+  .tsw .item:hover{background:var(--press)}.tsw .item:hover .chev{opacity:1;transform:translateX(2px);transition:transform .15s}
+  #tkblog .bdg{grid-template-columns:110px minmax(0,1fr) minmax(0,1fr);gap:10px}#tkblog .bdg .hd{font-size:16px}#tkblog .bdg .hd small{font-size:13px}#tkblog .bdg .br{font-size:17px}
+  #tkblog .bdc{min-height:66px;padding:11px 14px;border-radius:14px}#tkblog .bdc b{font-size:16px}#tkblog .bdc span{font-size:14px}
+  #tkblog .card{padding:20px 18px 16px}
+  .sheet:has(.fnq){width:min(640px,100%);padding:32px 36px 32px;min-height:520px;display:flex;flex-direction:column}
+  .sheet:has(.fnq) .fnbody{flex:1}.sheet:has(.fnq) .fnlist{margin:0 -36px}.sheet:has(.fnq) :is(.fnrow,.fnnav,.fnsum){padding:12px 36px;min-height:64px}.sheet:has(.fnq) .fnsubin{padding:2px 36px 14px}
+  .sheet h3.fnq{font-size:30px}.sheet:has(.fnq) .caption{font-size:16px}.fnrow b,.fnnav b,.fnsum b{font-size:18px!important}.fnrow .tx span,.fnnav .tx span{font-size:15px!important}.fnsum span{font-size:16px;flex-basis:70px}
+  .fnck{width:28px;height:28px}.sheet:has(.fnq) .btn{height:60px;font-size:18px}.fntop span{font-size:15px}
+}
 </style>
 </head>
 <body>
@@ -331,7 +475,7 @@ const MORE = ["kpi", "note", "office", "staff", "naver"];
 function moreSheetHtml() { const nm = { kpi: "KPI", note: "매장 노트", office: "사무실", staff: "직원웹", naver: "네이버" }; return `<h3>더보기</h3><div class="list" style="margin-top:12px">${MORE.map((k) => `<button class="item" data-tab="${k}"><div class="av ${grpOf(tab)[0] === k ? "blue" : ""}">${ICON[k]}</div><div class="tx"><b>${nm[k]}${k === "office" && botBad() ? ' <span class="t-bad">●</span>' : ""}</b></div><span class="chev">›</span></button>`).join("")}</div><div class="btns"><button class="btn gray" data-x>닫기</button></div>`; }
 // 10/19 사장님 "다 따로 들어가기 불편해": 네이버 앱, 직원웹을 관리자 안 메뉴로 (같은 사이트라 안에 띄움, 네이버 열쇠, 직원웹 지점은 각 앱이 이 기기에 기억)
 // 10/26 사장님 "홈이 가득가득, 업무 안에 블로그도": 메뉴 12개 → 7개 묶음, 묶음 안은 위쪽 작은 탭
-const GROUPS = [["home", "홈", ["home"]], ["tasks", "업무", ["tasks", "blog"]], ["close", "마감", ["close"]], ["kpi", "KPI", ["kpi"]], ["goods", "상품", ["order", "bunbae", "stockrep", "survey", "group", "must"]], ["note", "매장 노트", ["note"]], ["office", "사무실", ["office"]], ["staff", "직원웹", ["staff"]], ["naver", "네이버", ["naver"]]];
+const GROUPS = [["home", "홈", ["home"]], ["tasks", "업무", ["tasks"]], ["close", "마감", ["close"]], ["kpi", "KPI", ["kpi"]], ["goods", "상품", ["order", "bunbae", "stockrep", "survey", "group", "must"]], ["note", "매장 노트", ["note"]], ["office", "사무실", ["office"]], ["staff", "직원웹", ["staff"]], ["naver", "네이버", ["naver"]]];
 const SUBNM = { bunbae: "분배 넣기", tasks: "업무", blog: "블로그", order: "주문요청", stockrep: "재고보고", survey: "재고조사", group: "그룹관리", must: "추가 필수", office: "봇 상태", staff: "직원웹", naver: "네이버" };
 const grpOf = (t) => GROUPS.find((g) => g[2].includes(t === "blog" ? "tasks" : t)) || GROUPS[0];
 const grpTab = (g) => { const last = ls.get("vf-admin-sub-" + g[0]); return g[2].includes(last) ? last : g[2][0]; };
@@ -344,6 +488,7 @@ function embedHtml() {
 }
 function render() {
   if (!D) return;
+  if (tab === "blog") tab = "tasks"; // 블로그는 업무 안으로 합침
   $("#app").classList.toggle("enter", enterOnce); enterOnce = false;
   const pc = isPC(), tn = bdTodoN();
   $("#nav").style.display = pc ? "none" : "";
@@ -358,7 +503,7 @@ function render() {
   $("#app").innerHTML = `<div class="shell"><aside class="side"><div class="logo">VAFRIEND <b>관리자</b></div>
       ${GROUPS.map((g) => `<button class="navb ${grpOf(tab) === g ? "on" : ""}" data-tab="${grpTab(g)}">${ICG[g[0]] || ICON[g[0]]}${g[1]}${g[0] === "tasks" && tn ? `<span class="nbadge">${tn}</span>` : ""}${g[0] === "office" && botBad() ? ' <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--red);margin-left:4px"></span>' : ""}</button>`).join("")}
       <div class="foot"><button class="navb" data-act="reload">↻ ${hh ? `${hh}:${mm} 기준` : "새로고침"}</button><button class="navb" data-act="logout">🔒 잠그기</button></div></aside>
-    <main class="main ${EMBED[tab] ? "embm" : ""}">${tab === "home" || tab === "kpi" || tab === "survey" || tab === "group" || tab === "must" || tab === "stockrep" || tab === "close" || EMBED[tab] ? body : `<div class="narrow">${body}</div>`}</main></div>`;
+    <main class="main ${EMBED[tab] ? "embm" : ""}">${tab === "home" || tab === "tasks" || tab === "kpi" || tab === "survey" || tab === "group" || tab === "must" || tab === "stockrep" || tab === "close" || EMBED[tab] ? body : `<div class="narrow">${body}</div>`}</main></div>`;
   markEmb();
   if (tab === "home") { if (panelKeep) { $("#panel").innerHTML = panelKeep; bindSparks(); } else { const top = issuesLeft()[0], fresh = top && issKey(top) !== panelOffKey; if (fresh && top.b && D.branches.some((y) => y.b === top.b)) { panelBranch(top.b, "프리미엄 A"); panelKeep = ""; } else { $("#panel").innerHTML = fresh && top.kind === "aout" ? `<div class="eyebrow">제일 급한 것</div>${heroHtml()}` : panelDefault(); bindSparks(); } } }
 }
@@ -525,7 +670,7 @@ const warnsOf = (c) => c?.warnFull || c?.warn || [];
 // 10/26 블로그 발행: 지시문 날짜별로 8지점 발행 여부, 누르면 글 열기
 /* 11/5 블로그 탭: 네이버 대시보드 기록(순위감지봇, ../naver/data.json)으로 지점별 추천 키워드. 점유 = 블로그 상위 30개 중 우리 글 수 */
 let NV = null, NV_AT = 0, NV_ERR = false, nvB = ls.get("vf-admin-nvb") || "전체", enterOnce = false;
-async function loadNaver(quiet) { try { const r = await fetch("../naver/data.json?t=" + Date.now(), { cache: "no-store" }); if (!r.ok) throw 0; NV = await r.json(); NV_AT = Date.now(); NV_ERR = false; } catch { NV_ERR = true; NV_AT = Date.now(); } if (!quiet && tab === "blog" && !$("#dim").classList.contains("on")) { enterOnce = true; render(); } }
+async function loadNaver(quiet) { try { const r = await fetch("../naver/data.json?t=" + Date.now(), { cache: "no-store" }); if (!r.ok) throw 0; NV = await r.json(); NV_AT = Date.now(); NV_ERR = false; } catch { NV_ERR = true; NV_AT = Date.now(); } if (!quiet && (tab === "blog" || tab === "tasks") && !$("#dim").classList.contains("on")) { enterOnce = true; render(); } }
 const nvPct = (n) => Math.round((n / 30) * 100);
 const nvRank = (r) => (r == null ? "" : r > 100 ? "지도 순위 밖" : `지도 ${r}위`);
 const nvRankIs = (r) => (r > 100 ? "지도 순위 밖이에요" : `지도 ${r}위예요`);
@@ -564,14 +709,20 @@ function nvGuideHtml() {
     + g("기록", "네이버 대시보드와 같은 기록이에요. 순위감지봇이 하루 한 번 남겨요.")
     + `<div class="btns"><button class="btn gray" data-x>닫기</button></div>`;
 }
+let bgV = ls.get("vf-admin-bgv") === "kw" ? "kw" : "plan", NV_LD = false;
 function blogTabHtml() {
   if (!BLOGLIST) loadBlogList();
-  const head = (cap) => `<div class="pchead" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><h1>블로그</h1><div class="caption" style="flex:1;min-width:150px;margin:0">${cap}</div><button class="chip" data-act="nvguide">보는 법</button></div>`;
-  if (!NV) { if (!NV_ERR) loadNaver(); return head("지점별 추천 키워드") + blogAdmHtml() + (NV_ERR ? '<div class="card" style="margin-top:12px"><div class="caption" style="margin:0">네이버 대시보드 기록을 못 불러왔어요</div><div class="btns"><button class="btn gray" data-act="nvreload">다시 불러오기</button></div></div>' : '<div class="empty">추천 키워드 불러오는 중…</div>'); }
-  if (Date.now() - NV_AT > 10 * 60e3) { NV_AT = Date.now(); loadNaver(true); }
-  const d = nvStats("대구 전체").d, md = d ? `${+d.slice(5, 7)}/${+d.slice(8)}` : "";
-  const chips = `<div class="chips hs" style="margin-top:12px;margin-bottom:12px">${["전체", ...BR].map((b, i) => `<button class="chip ${nvB === b ? "on" : ""}" data-nvb="${b}">${b === "전체" ? "전 지점" : i + "호 " + b}</button>`).join("")}</div>`;
-  return head(`지점별 추천 키워드, 네이버 대시보드 ${md} 기록`) + blogAdmHtml() + bdTodoHtml() + blogDraftsHtml() + chips + (nvB === "전체" ? nvAllHtml() : nvBranchHtml(nvB));
+  if (!NV && !NV_ERR && !NV_LD) { NV_LD = true; loadNaver().finally(() => (NV_LD = false)); }
+  else if (NV && Date.now() - NV_AT > 10 * 60e3) { NV_AT = Date.now(); loadNaver(true); }
+  const d = NV ? nvStats("대구 전체").d : "", md = d ? `${+d.slice(5, 7)}/${+d.slice(8)}` : "", tn = bdTodoN();
+  const head = `<div class="pchead" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><h1>블로그</h1><div class="caption" style="flex:1;min-width:150px;margin:0">${bgV === "kw" ? `지점별 추천 키워드${md ? `, 네이버 대시보드 ${md} 기록` : ""}` : "다음 월요일, 수요일 발행 준비"}</div><button class="chip" data-act="nvguide">보는 법</button></div>`;
+  const seg = `<div class="chips" style="margin-top:12px;margin-bottom:12px"><button class="chip ${bgV === "plan" ? "on" : ""}" data-bgv="plan">발행 준비${tn ? `<span class="nbadge">${tn}</span>` : ""}</button><button class="chip ${bgV === "kw" ? "on" : ""}" data-bgv="kw">키워드 점유</button></div>`;
+  if (bgV === "kw") {
+    if (!NV) return head + seg + (NV_ERR ? '<div class="card"><div class="caption" style="margin:0">네이버 대시보드 기록을 못 불러왔어요</div><div class="btns"><button class="btn gray" data-act="nvreload">다시 불러오기</button></div></div>' : '<div class="card" aria-busy="true" aria-label="추천 키워드 불러오는 중"><div class="u-sk" style="width:38%"></div><div class="u-sk" style="width:86%;margin-top:14px"></div><div class="u-sk" style="width:64%;margin-top:10px"></div></div><div class="card" aria-hidden="true"><div class="u-sk" style="width:46%"></div><div class="u-sk" style="width:78%;margin-top:14px"></div></div>');
+    const chips = `<div class="chips hs" style="margin-bottom:12px">${["전체", ...BR].map((b, i) => `<button class="chip ${nvB === b ? "on" : ""}" data-nvb="${b}">${b === "전체" ? "전 지점" : i + "호 " + b}</button>`).join("")}</div>`;
+    return head + seg + chips + (nvB === "전체" ? nvAllHtml() : nvBranchHtml(nvB));
+  }
+  return head + seg + blogAdmHtml() + blogBoardHtml() + blogDraftsHtml(true);
 }
 /* 11/5 지시문 초안: [지시문 만들기] → 운영봇이 소넷으로 초안(1~2분) → 여기서 보고 고치기, 촬영 업무 요청, 직원웹에 올리기 */
 const BD_BR = BR.filter((b) => b !== "동성로2"); /* 동성로2는 예전 지시문이 없어 틀을 못 만든다 */
@@ -589,8 +740,8 @@ function bdTodo() {
   for (const dow of [1, 3]) { const d = nextDow(dow), n = bdLeft(d), have = new Set([...rows.filter((x) => x.date === d && !x.test).map((x) => x.b), ...drafts.filter((r) => r.date === d).map((r) => r.b)]), no = BD_BR.filter((b) => !have.has(b));
     if (no.length) L.push({ lv: n <= 3 ? 1 : 2, t: `${bdMd(d)}(${"일월화수목금토"[dow]}) 지시문이 없는 지점 ${no.length}곳`, d: no.join(", "), nvb: no[0] }); }
   for (const r of drafts) { if (r.st === "wait" || !r.titles || r.date < D.d) continue; const n = bdLeft(r.date), tag = `${jm(r.b)} ${bdMd(r.date)} 발행`;
-    if (r.needShoot && !r.shoot) L.push({ lv: n <= 2 ? 1 : 2, t: `${tag}, 촬영 요청 ${n <= 2 ? "지금 해야 해요" : bdMd(addDays(r.date, -2)) + "까지"}`, d: "사진은 늦어도 발행 2일 전에 요청해요", id: r.id });
-    else if (r.shoot && !r.shoot.n) L.push({ lv: n <= 1 ? 1 : 3, t: `${tag}, 사진 기다리는 중`, d: "촬영 업무를 요청해 뒀어요", id: r.id });
+    if (false) L.push({ lv: n <= 2 ? 1 : 2, t: `${tag}, 촬영 요청 ${n <= 2 ? "지금 해야 해요" : bdMd(addDays(r.date, -2)) + "까지"}`, d: "사진은 늦어도 발행 2일 전에 요청해요", id: r.id });
+    else if (false) L.push({ lv: n <= 1 ? 1 : 3, t: `${tag}, 사진 기다리는 중`, d: "촬영 업무를 요청해 뒀어요", id: r.id });
     if (r.st === "done") L.push({ lv: n <= 2 ? 1 : 2, t: `${tag}, 직원웹에 올릴 차례`, d: r.shoot && r.shoot.n ? `사진 ${r.shoot.n}장 도착` : "초안 완성", id: r.id }); }
   return L.sort((a, b) => a.lv - b.lv);
 }
@@ -599,14 +750,52 @@ function bdTodoHtml() {
   const L = bdTodo(); if (!L.length) return "";
   return `<div class="sec">블로그 할 일 <small>${L.length}건</small></div><div class="list">${L.map((x, i) => `<button class="item iss anim" style="--i:${i}" ${x.id ? `data-bdview="${esc(x.id)}"` : `data-nvb="${esc(x.nvb)}"`}><i class="dot lv${x.lv}"></i><div class="tx"><b>${esc(x.t)}</b><span>${esc(x.d)}</span></div><span class="chev">›</span></button>`).join("")}</div>`;
 }
-function blogDraftsHtml() {
-  const all = bdList().slice().reverse(), L = nvB === "전체" ? all : all.filter((r) => r.b === nvB); if (!L.length) return all.length && nvB !== "전체" ? `<div class="sec">지시문 초안 <small>${esc(jm(nvB))} 초안은 아직 없어요. 다른 지점 ${all.length}개는 [전 지점]에서 봐요</small></div>` : "";
+/* 발행표: 지점 x 다음 월요일, 수요일. 칸 = 지금 상태 + 다음에 할 일. 없으면 누르면 추천 키워드로 만들기, 있으면 내용 */
+/* 그날 지점별 상태: done 초안 완성, no 아직 없음, wait 만드는 중, err 못 만듦, pub 올림(초안), row 올림(직원웹 목록) */
+function bdDayState(d) {
+  const drafts = bdList(), rows = BLOGLIST || D.blogs || [], rank = { pub: 4, done: 3, wait: 2, error: 1 };
+  return BD_BR.map((b) => { const r = drafts.filter((x) => x.b === b && x.date === d).sort((x, y) => (rank[y.st] || 0) - (rank[x.st] || 0))[0], row = rows.find((x) => x.b === b && x.date === d && !x.test);
+    return { b, r, row, st: r && r.st === "pub" ? "pub" : r && r.st === "wait" ? "wait" : r && r.titles ? "done" : row ? "row" : r ? "err" : "no" }; });
+}
+const bdLt = (k) => { const s = String(k || ""), p = s.indexOf(" "); return p > 0 ? s.slice(p + 1) : s; };
+function blogBoardHtml() {
+  let i = 0;
+  const card = (dow) => { const d = nextDow(dow), S = bdDayState(d), of = (...k) => S.filter((x) => k.includes(x.st)), done = of("done"), no = of("no"), wait = of("wait"), err = of("err"), up = of("pub", "row"), ready = done.length + up.length;
+    const nm = (x, cls, attr, tag = "button") => `<${tag} class="bdn ${cls}" ${attr}>${esc(x.b)}</${tag}>`;
+    const grp = (t, xs, f, extra = "") => (xs.length ? `<div class="bdgp"><div class="gt">${t} <b>${xs.length}곳</b></div><div class="gc">${xs.map(f).join("")}</div>${extra}</div>` : "");
+    const pk = (b) => (NV ? nvStats(dow === 3 ? "대구 전체" : b).pick : null);
+    return `<div class="card anim" style="--i:${i++}"><div class="eyebrow">${dLabel(d)} 글, ${bdLeft(d)}일 뒤</div>
+      <div class="headline" style="font-size:20px">${up.length === S.length ? "<em>모두 올렸어요</em>" : `${S.length}곳 중 <em>${ready}곳</em> 준비됐어요`}</div>
+      <div class="bar" style="margin-top:12px"><i style="width:${Math.round((ready / S.length) * 100)}%"></i></div>
+      ${grp("올릴 차례", done, (x) => nm(x, "act", `data-bdview="${esc(x.r.id)}"`))}
+      ${grp("아직 없음", no, (x) => { const p = pk(x.b); return nm(x, "no", `data-bdnew="${esc(x.b)}|${esc(p ? p.k : "")}|${dow}"`); }, NV && no.length > 1 ? `<button class="btn sec2" style="height:48px;font-size:16px;margin-top:10px" data-bdbulk="${dow}">${no.length}곳 추천 키워드로 한 번에 만들기</button>` : "")}
+      ${grp("만드는 중", wait, (x) => nm(x, "wt", `data-bdview="${esc(x.r.id)}"`))}
+      ${grp("못 만들었어요", err, (x) => nm(x, "hot", `data-bdview="${esc(x.r.id)}"`))}
+      ${grp("올렸어요", up, (x) => (x.st === "pub" ? nm(x, "ok", `data-bdview="${esc(x.r.id)}"`) : nm(x, "ok", `href="../blog/${esc(x.row.file)}?t=${Date.now()}" target="_blank" rel="noopener"`, "a")))}</div>`; };
+  return `<div class="sec"><span style="white-space:nowrap">블로그 발행 준비</span> <small>이름을 누르면 열려요</small></div>${card(1)}${card(3)}`;
+}
+/* 빈 지점을 추천 키워드로 한 번에: 지점마다 초안 요청을 차례로 보냄(운영봇이 한 편씩 만듦) */
+async function bdBulk(dow) {
+  const d = nextDow(dow), no = bdDayState(d).filter((x) => x.st === "no");
+  if (!no.length) return; if (!NV) return toast("추천 키워드를 아직 못 불러왔어요. 잠시 뒤에 다시 눌러 주세요");
+  const plan = no.map((x) => { const p = nvStats(dow === 3 ? "대구 전체" : x.b).pick; return p ? { b: x.b, ...bdSplit(x.b, p.k, dow) } : null; }).filter(Boolean);
+  if (!plan.length) return toast("추천 키워드가 없어요");
+  const same = plan.every((x) => x.lt === plan[0].lt && x.kw === plan[0].kw);
+  if (!(await askConfirm(`${dLabel(d)} 글, ${plan.length}곳 초안을 만들까요?`, (same ? `모두 "${plan[0].kw}${plan[0].lt ? " " + plan[0].lt : ""}"로 만들어요` : plan.map((x) => `${x.b} ${x.lt || x.kw}`).join(", ")) + ". 한 편에 1~2분, 약 0.2달러씩 들어요", "만들기"))) return;
+  const by = await adminName(); if (!by) return;
+  let n = 0;
+  try { for (const [k, x] of plan.entries()) { const r = { id: Date.now().toString(36) + k, b: x.b, date: d, kw: x.kw, topic: x.lt ? `롱테일 ${x.lt}` : "", memo: "", by }; await sendOp("blogDraft", r); BDL.push({ ...r, st: "wait", at: "", _t: Date.now() }); n++; await new Promise((w) => setTimeout(w, 800)); } }
+  catch (e) { toast(`${n}곳 보내고 멈췄어요: ${e.message}`, 5000); }
+  enterOnce = true; render(); if (n) { toast(`${n}곳 초안을 만들고 있어요. 한 곳씩 차례로 떠요`, 4000); bdWatch(); }
+}
+function blogDraftsHtml(allB) {
+  const sel = allB ? "전체" : nvB, all = bdList().slice().reverse(), L = sel === "전체" ? all : all.filter((r) => r.b === sel); if (!L.length) return all.length && sel !== "전체" ? `<div class="sec">지시문 초안 <small>${esc(jm(nvB))} 초안은 아직 없어요. 다른 지점 ${all.length}개는 [전 지점]에서 봐요</small></div>` : "";
   const st = (r) => { const [c, t] = r.st === "wait" ? ["var(--sub)", "만드는 중…"] : r.st === "error" ? ["var(--red)", "못 만들었어요"] : r.st === "pub" ? ["var(--green)", "직원웹에 올림"] : ["var(--blue)", "초안 완성"]; return `<i style="display:block;font-style:normal;font-size:13px;font-weight:700;margin-top:4px;color:${c}">${t}</i>`; };
-  return `<div class="sec">지시문 초안 <small>${nvB === "전체" ? "전 지점" : esc(jm(nvB))} ${L.length}개, 누르면 내용, 오른쪽은 지우기</small></div><div class="list">${L.map((r, i) => `<div class="item kwrow anim" style="--i:${i};padding:0;gap:0"><button data-bdview="${esc(r.id)}" style="flex:1;min-width:0;display:flex;align-items:center;gap:14px;padding:14px 8px 14px 20px;text-align:left"><div class="av blue">${BR.indexOf(r.b) + 1}</div><div class="tx"><b style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${esc(r.titles?.[0] || r.topic || r.kw)}</b><span>${esc(r.b)}, ${dLabel(r.date)} 발행, ${esc(r.kw)}${r.shoot ? `, 촬영 요청함, 사진 ${r.shoot.n}장` : ""}</span>${st(r)}</div></button><button class="chip" data-bddel="${esc(r.id)}" aria-label="${esc(r.titles?.[0] || r.kw)} 지우기" style="flex:none;align-self:center;height:44px;padding:0 12px;margin-right:12px;font-size:13px;color:var(--red)">지우기</button></div>`).join("")}</div>`;
+  return `<div class="sec">만든 초안 <small>${sel === "전체" ? "" : esc(jm(sel)) + " "}${L.length}개, 누르면 내용, 오른쪽은 지우기</small></div><div class="list">${L.map((r, i) => `<div class="item kwrow anim" style="--i:${i};padding:0;gap:0"><button data-bdview="${esc(r.id)}" style="flex:1;min-width:0;display:flex;align-items:center;gap:14px;padding:14px 8px 14px 20px;text-align:left"><div class="av blue">${BR.indexOf(r.b) + 1}</div><div class="tx"><b style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${esc(r.titles?.[0] || r.topic || r.kw)}</b><span>${esc(r.b)}, ${dLabel(r.date)} 발행, ${esc(r.kw)}${r.shoot ? `, 촬영 요청함, 사진 ${r.shoot.n}장` : ""}</span>${st(r)}</div></button><button class="chip" data-bddel="${esc(r.id)}" aria-label="${esc(r.titles?.[0] || r.kw)} 지우기" style="flex:none;align-self:center;height:44px;padding:0 12px;margin-right:12px;font-size:13px;color:var(--red)">지우기</button></div>`).join("")}</div>`;
 }
 const BD_LT = [["제품", ["하복2", "발라리안맥스프로", "말론바", "엘프바", "팜팜바", "모스바", "빌런", "릭", "디오", "아이스샷", "토바코샷"]], ["기기", ["입호흡 기기", "폐호흡 기기", "일회용", "팟 교체", "코일"]], ["고민", ["누수", "탄맛", "연무 약할 때", "충전 안 될 때", "맛이 흐려질 때", "액상 고르기"]], ["상황", ["처음 방문", "KTX 타기 전", "비행기 타기 전", "선물", "주차", "쌀쌀한 날 관리", "퇴근길", "일회용과 기기 비교", "캠핑과 나들이"]]];
 let BLOGLIST = null, BLL = false;
-async function loadBlogList() { if (BLL) return; BLL = true; try { const r = await fetch("../blog/list.json?t=" + Date.now(), { cache: "no-store" }); if (r.ok) BLOGLIST = await r.json(); } catch {} if (BLOGLIST && tab === "blog" && !$("#dim").classList.contains("on")) render();
+async function loadBlogList() { if (BLL) return; BLL = true; try { const r = await fetch("../blog/list.json?t=" + Date.now(), { cache: "no-store" }); if (r.ok) BLOGLIST = await r.json(); } catch {} if (BLOGLIST && (tab === "blog" || tab === "tasks") && !$("#dim").classList.contains("on")) render();
   if (BLOGLIST && BD && $("#bdKw")) { readBdForm(); BD.ltPick = null; const y = $("#sheet").scrollTop; sheetBlogDraft(); $("#sheet").scrollTop = y; } }
 function bdPick() { const from = addDays(D.d, -28), txt = [...(BLOGLIST || D.blogs || []).filter((x) => x.b === BD.b && x.date >= from).map((x) => `${x.kw} ${x.topic}`), ...bdList().filter((r) => r.b === BD.b).map((r) => `${r.topic} ${r.titles?.[0] || ""}`)].join(" ").replace(/s/g, ""), used = (w) => txt.includes(w.replace(/s/g, "")); BD.ltPick = BD_LT.map(([g, xs]) => { const fresh = xs.filter((x) => !used(x)), pool = fresh.length ? fresh : xs; return [g, pool.slice().sort(() => Math.random() - 0.5).slice(0, 4)]; }); }
 const readBdForm = () => { if (!BD || !$("#bdKw")) return; BD.kw = $("#bdKw").value.trim(); BD.lt = $("#bdLt").value.trim(); BD.date = $("#bdDate").value || BD.date; BD.topic = $("#bdTopic").value.trim(); BD.memo = $("#bdMemo").value.trim(); };
@@ -1146,53 +1335,188 @@ function sheetSurvey(id) {
       <div class="caption" style="text-align:center">포스 반영은 시험이 끝나면 켜져요, 지금은 눌러도 반영되지 않아요</div>`
       : `<div class="caption" style="margin-top:16px">${SVST[v.status]?.[0] || ""}${v.why ? ", " + esc(v.why) : ""}${v.doneAt ? ", " + esc(v.doneAt) : ""}</div><div class="btns"><button class="btn gray" data-x>닫기</button></div>`}`);
 }
-// 10/27 사장님 "이 모든 걸 하나의 칸으로": 업무 탭 = 카드 하나, 위쪽 탭 나눠 주기 / 진행 중 / 완료. 공지 입력은 버튼 뒤(아래에서 올라오는 창), 블로그 발행과 공지도 진행 중, 완료에 같이. 완료는 최근 7일(운영봇 taskHist)
-let tkTab = ls.get("vf-admin-tktab") || "run";
+// 11/5 사장님 "너무 복잡해. 업무를 요청하거나 블로그 지시문을 작성하기에 편하게, 손이 안 가, PC 빈 공간, 목록만 길다, 촌스럽다"
+// 업무 탭 = 왼쪽 요청하기(항상 열린 칸, 업무/공지/재고조사/블로그 지시문) + 오른쪽 지점 현황표(일 x 8지점 점). 예정, 완료, 반복 업무는 표 아래 접는 칸
+let tkTab = "run", mkKind = ls.get("vf-admin-mk") || "task", NTF = { title: "", body: "" };
+const accOpen = new Set();
 const dLabel = (d) => `${+d.slice(5, 7)}/${+d.slice(8)}(${"일월화수목금토"[new Date(d + "T00:00:00Z").getUTCDay()]})`;
+const KINDN = { task: "업무", notice: "공지", blog: "블로그", survey: "재고조사" };
+const CHEV = `<svg class="cv" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>`;
+const bnm = (b) => `${BR.indexOf(b) + 1} ${esc(b)}`;
+function tkItems() {
+  const bl = (D.blogs || []).filter((x) => x.date >= addDays(D.d, -7)), L = [];
+  for (const t of D.matrix || []) { const due = Object.entries(t.br).filter(([, v]) => v !== null && v !== undefined); if (!due.length) continue; const def = D.tasks.find((y) => y.id === t.id) || {}, dn = due.filter(([, v]) => v).length;
+    L.push({ k: "task", key: "t:" + t.id, kind: def.kind === "survey" ? "survey" : "task", st: dn === due.length ? "done" : "run", d: D.d, t, def, dn, n: due.length, title: t.title, sub: `${def.id ? REP_TXT(def) : "오늘"}${t.time ? " " + t.time : ""}`, cell: (b) => { const v = t.br[b]; return v === null || v === undefined ? ["na"] : v ? ["ok", `${v.t || ""} ${String(v.by || "").split(",")[0]}`] : ["no"]; } }); }
+  for (const t of D.tasks || []) if (t.rep === "once" && t.date > D.d) L.push({ k: "tfut", key: "f:" + t.id, kind: t.kind === "survey" ? "survey" : "task", st: "next", d: t.date, def: t, title: t.title, sub: `${t.br.length === BR.length ? "전 지점" : t.br.length + "곳"}${t.time ? ", " + t.time : ""}` });
+  for (const n of D.notices || []) { const live = !n.off && (!n.until || n.until >= D.d); if (!live && n.d < addDays(D.d, -14)) continue; const ok = n.br.filter((b) => n.ok?.[b]).length;
+    L.push({ k: "notice", key: "n:" + n.id, kind: "notice", st: live ? "run" : "done", d: n.d, n, live, dn: ok, n2: n.br.length, title: n.title, sub: live ? (n.until ? `${dLabel(n.until)}까지` : "내릴 때까지") : n.off ? "내림" : "기간 끝", cell: (b) => !n.br.includes(b) ? ["na"] : n.ok?.[b] ? ["ok", "확인"] : ["no"] }); }
+  for (const d of [...new Set(bl.map((x) => x.date))]) { const xs = bl.filter((x) => x.date === d), ok = xs.filter((x) => x.done).length;
+    L.push({ k: "blog", key: "b:" + d, kind: "blog", st: d > D.d ? "next" : ok === xs.length ? "done" : "run", d, xs, dn: ok, n2: xs.length, title: `블로그 발행 ${dLabel(d)}`, sub: `${xs.length}곳`, cell: (b) => { const x = xs.find((y) => y.b === b); return !x ? ["na"] : x.done ? ["ok", "올림", x.done.link] : ["no"]; } }); }
+  for (const h of D.taskHist || []) if (h.done.length >= h.n) L.push({ k: "hist", key: "h:" + h.d + h.title, kind: "task", st: "done", d: h.d, h, title: h.title, sub: `${h.done.length}곳` });
+  return L;
+}
+// 오른쪽 현황표: 줄 = 진행 중인 일, 칸 = 지점. 초록 점 = 끝, 빈 동그라미 = 아직, 짧은 줄 = 대상 아님
+function tkBoardHtml(L) {
+  const run = L.filter((x) => x.st === "run").sort((a, b) => a.d.localeCompare(b.d));
+  if (!run.length) return `<div class="tkempty">지금 진행 중인 일이 없어요. 왼쪽에서 요청하면 여기에 지점별로 떠요</div>`;
+  const row = (it) => { const n = it.k === "task" ? it.n : it.n2, a = it.dn;
+    return `<tr><td class="tt"><button data-tkopen="${esc(it.key)}"><b>${esc(it.title)}</b><span>${KINDN[it.kind]}, ${esc(it.sub)}</span></button></td>${BR.map((b) => { const [s, tip, link] = it.cell(b); const dot = `<i class="dt ${s}"></i>`; return `<td class="c" title="${esc(b)}${tip ? ", " + esc(tip) : s === "no" ? ", 아직" : ""}">${link ? `<a href="${esc(link)}" target="_blank" rel="noopener" aria-label="${esc(b)} 글 보기">${dot}</a>` : dot}</td>`; }).join("")}<td class="pg ${a === n ? "ok" : ""}">${a}/${n}</td></tr>`; };
+  return `<div class="tkbw"><table class="tkb"><thead><tr><th class="tt">진행 중 ${run.length}</th>${BR.map((b, i) => `<th class="c"><small>${i + 1}</small>${esc(b)}</th>`).join("")}<th class="pg">완료</th></tr></thead><tbody>${run.map(row).join("")}</tbody></table></div>`;
+}
+function tkMobHtml(L) {
+  const run = L.filter((x) => x.st === "run").sort((a, b) => a.d.localeCompare(b.d)); if (!run.length) return "";
+  return `<div class="tkm">${run.map((it) => { const n = it.k === "task" ? it.n : it.n2, cs = BR.map((b, i) => [i + 1, it.cell(b)[0]]).filter(([, s]) => s !== "na"), no = BR.filter((b) => it.cell(b)[0] === "no");
+    return `<button class="tkmi" data-tkopen="${esc(it.key)}"><div class="tkmh"><div class="tx"><b>${esc(it.title)}</b><span>${KINDN[it.kind]}, ${esc(it.sub)}</span></div><b class="pg ${it.dn === n ? "ok" : ""}">${it.dn}/${n}</b></div>
+      <div class="tkmd">${cs.map(([i, s]) => `<span class="${s}"><i class="dt ${s}"></i>${i} ${esc(BR[i - 1])}</span>`).join("")}</div>${no.length && no.length <= 4 ? `<div class="tkmno">아직: ${no.map(esc).join(", ")}</div>` : ""}</button>`; }).join("")}</div>`;
+}
+const tkFold = (key, title, n, inner) => { const open = accOpen.has(key); return `<div class="u-acc ${open ? "open" : ""}"><button class="u-acch" data-acc="${key}" aria-expanded="${open}"><div class="tx"><b>${title} <span class="tkn">${n}</span></b></div>${CHEV}</button><div class="u-accb" style="padding-left:16px">${inner}</div></div>`; };
+const tkLine = (it, right) => `<div class="tkl"><span class="d">${dLabel(it.d)}</span><div class="tx"><b>${esc(it.title)}</b><span>${KINDN[it.kind]}, ${esc(it.sub)}</span></div>${right || ""}</div>`;
+function tkKwHtml() {
+  if (!NV) return NV_ERR ? '<div class="caption" style="margin:0">네이버 대시보드 기록을 못 불러왔어요</div><div class="btns"><button class="btn gray" data-act="nvreload">다시 불러오기</button></div>' : '<div class="u-sk" style="width:40%"></div><div class="u-sk" style="width:85%;margin-top:12px"></div><div class="u-sk" style="width:62%;margin-top:10px"></div>';
+  const chips = `<div class="chips" style="margin-bottom:12px;flex-wrap:wrap">${["전체", ...BR].map((b, i) => `<button class="chip ${nvB === b ? "on" : ""}" data-nvb="${b}">${b === "전체" ? "전 지점" : i + "호 " + b}</button>`).join("")}</div>`;
+  return chips + (nvB === "전체" ? nvAllHtml() : nvBranchHtml(nvB));
+}
+// 11/5 사장님 "토스가 참 편하게 잘 되어 있지": 업무 첫 화면 = 큰 문장 + 할 일 4줄 + 진행 중 목록. 누르면 한 화면에 한 질문씩 묻는 단계 창(토스식)
+const TSV = (p) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
+const TSI = { task: TSV('<path d="M9 3h6v4H9z"/><path d="M8 5H6v16h12V5h-2"/><path d="m9 14 2 2 4-4"/>'), blog: TSV('<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="m13 7 4 4"/>'), notice: TSV('<path d="M4 10v4h3l7 5V5l-7 5z"/><path d="M18 9a4 4 0 0 1 0 6"/>'), survey: TSV('<path d="M4 8l8-4 8 4v8l-8 4-8-4z"/><path d="m4 8 8 4 8-4M12 12v8"/>') };
+const bdMiss = (dow) => { const d = nextDow(dow), drafts = bdList(), rows = BLOGLIST || D.blogs || []; return BD_BR.filter((b) => !(rows.some((x) => x.b === b && x.date === d && !x.test) || drafts.some((r) => r.b === b && r.date === d))); };
+function tkLists(L) {
+  return { next: L.filter((x) => x.st === "next").sort((a, b) => a.d.localeCompare(b.d)), done: L.filter((x) => x.st === "done").sort((a, b) => b.d.localeCompare(a.d)).slice(0, 60), regs: D.tasks.filter((t) => t.rep !== "once") };
+}
 function tasksHtml() {
-  const bl = (D.blogs || []).filter((x) => x.date >= addDays(D.d, -7)), blToday = bl.filter((x) => x.date === D.d);
+  if (!BLOGLIST) loadBlogList();
+  if (!NV && !NV_ERR && !NV_LD) { NV_LD = true; loadNaver().finally(() => (NV_LD = false)); } else if (NV && Date.now() - NV_AT > 10 * 60e3) { NV_AT = Date.now(); loadNaver(true); }
+  const L = tkItems(), { next, done, regs } = tkLists(L), blToday = (D.blogs || []).filter((x) => x.date === D.d);
   const tDone = D.branches.reduce((a, x) => a + (x.tasks?.done || 0), 0) + blToday.filter((x) => x.done).length, tAll = D.branches.reduce((a, x) => a + (x.tasks?.total || 0), 0) + blToday.length, pct = tAll ? Math.round((tDone / tAll) * 100) : 0;
-  const run = [], done = [];
-  for (const t of D.matrix || []) { const due = Object.entries(t.br).filter(([, v]) => v !== null && v !== undefined); if (!due.length) continue; const dn = due.filter(([, v]) => v); (dn.length === due.length ? done : run).push({ k: "task", d: D.d, t }); }
-  // 10/29 사장님 "진행 중인 공지 확인, 내리기": 직원웹에 떠 있는 공지는 확인을 다 했어도 진행 중(내리기 버튼), 내렸거나 기간 끝난 건 완료
-  for (const n of D.notices || []) { const live = !n.off && (!n.until || n.until >= D.d); if (!live && n.d < addDays(D.d, -14)) continue; (live ? run : done).push({ k: "notice", d: n.d, n, live }); }
-  for (const d of [...new Set(bl.map((x) => x.date))]) { const xs = bl.filter((x) => x.date === d), ok = xs.filter((x) => x.done); if (d > D.d) run.push({ k: "blogNext", d, xs }); else if (ok.length === xs.length) done.push({ k: "blog", d, xs }); else run.push({ k: "blog", d, xs }); }
-  for (const h of D.taskHist || []) if (h.done.length >= h.n) done.push({ k: "hist", d: h.d, h });
-  run.sort((a, b2) => a.d.localeCompare(b2.d)); done.sort((a, b2) => b2.d.localeCompare(a.d));
-  const nm = (b) => `${BR.indexOf(b) + 1} ${esc(b)}`;
-  const row = (it) => {
-    if (it.k === "task") return taskRow(it.t);
-    if (it.k === "hist") return `<div class="item"><div class="av good">✓</div><div class="tx"><b>${esc(it.h.title)}</b><span>${dLabel(it.d)}, ${it.h.done.length}곳 완료</span></div></div>`;
-    if (it.k === "notice") { const n = it.n, ok = n.br.filter((b) => n.ok?.[b]), no = n.br.filter((b) => !n.ok?.[b]); const per = n.until ? `${dLabel(n.until)}까지` : "내릴 때까지", whom = n.br.length === BR.length ? "전 지점" : n.br.map(nm).join(", "); return `<div class="item" style="align-items:flex-start"><div class="av ${it.live ? "blue" : "good"}">${it.live ? "📢" : "✓"}</div><div class="tx"><b>${esc(n.title)}</b><span style="white-space:normal">${whom}, ${dLabel(n.d)} ${esc(n.t)} 올림, ${it.live ? per : n.off ? "내림" : "기간 끝"}<br>확인 ${ok.length}/${n.br.length}곳${no.length ? `, 아직: ${no.map(nm).join(", ")}` : ""}</span></div>${it.live ? `<button class="btn gray" style="flex:0 0 68px;height:44px" data-ntoff="${n.id}">내리기</button>` : ""}</div>`; }
-    if (it.k === "blogNext") return `<div class="item"><div class="av blue">📝</div><div class="tx"><b>다음 블로그 발행 ${dLabel(it.d)}</b><span>${it.xs.length}곳 지시문 올라가 있어요</span></div></div>`;
-    const ok = it.xs.filter((x) => x.done), no = it.xs.filter((x) => !x.done);
-    return `<div class="item" style="align-items:flex-start"><div class="av ${no.length ? "blue" : "good"}">${no.length ? "📝" : "✓"}</div><div class="tx"><b>블로그 발행 ${dLabel(it.d)}</b><span style="white-space:normal">${it.xs.length}곳 중 ${ok.length}곳 올림${no.length ? `, 아직: ${no.map((x) => nm(x.b)).join(", ")}` : ""}${ok.length ? `<br>올림: ${ok.map((x) => `<a href="${esc(x.done.link)}" target="_blank" rel="noopener" style="color:var(--blue);font-weight:700">${nm(x.b)}</a>`).join(", ")}` : ""}</span></div></div>`;
-  };
-  const give = `<div class="btns" style="margin-top:14px"><button class="btn" data-act="tnew" style="height:50px;font-size:16px">＋ 새 업무</button><button class="btn sec2" data-act="ntnew" style="height:50px;font-size:16px">＋ 공지</button><button class="btn sec2" data-act="svnew" style="height:50px;font-size:16px">＋ 재고조사</button></div>
-    <div class="lbl" style="margin:18px 0 6px">등록된 업무 <span style="font-weight:500">${D.tasks.length}개, 누르면 고치기</span></div>
-    <div class="list" style="margin:0 -20px -8px;background:none">${D.tasks.length ? D.tasks.map((t) => `<button class="item" data-tedit="${t.id}"><div class="av blue">${t.kind === "photo" ? "📷" : t.kind === "survey" ? "📦" : t.rep === "daily" ? "매일" : t.rep === "weekly" ? "주" : t.rep === "monthly" ? "월" : "1"}</div>
-      <div class="tx"><b>${esc(t.title)}</b><span>${esc(REP_TXT(t))}${t.time ? ", " + esc(t.time) : ""}, ${t.br.length === BR.length ? "전 지점" : t.br.map(esc).join(", ")}</span></div><span class="chev">›</span></button>`).join("") : '<div class="empty">아직 없어요</div>'}</div>`;
-  const runL = run.length ? `<div class="list" style="margin:8px -20px -8px;background:none">${run.map(row).join("")}</div>` : '<div class="empty" style="padding:16px 0 4px">진행 중인 게 없어요</div>';
-  const doneL = done.length ? `<div class="list" style="margin:8px -20px -8px;background:none">${done.slice(0, 80).map(row).join("")}</div>` : '<div class="empty" style="padding:16px 0 4px">최근 7일에 끝난 게 없어요</div>';
-  return `<div class="card"><div class="eyebrow">업무</div>
-    <div class="headline">${tAll ? (tDone === tAll ? `오늘 할 일 <em>모두 끝났어요</em>` : `오늘 할 일 ${tAll}개 중 <em>${tDone}개</em> 끝났어요`) : "오늘 예정된 일이 없어요"}</div>
-    ${tAll ? `<div class="bar"><i style="width:${pct}%"></i></div>` : ""}
-    <div class="seg" style="margin-top:18px"><button class="${tkTab === "give" ? "on" : ""}" data-tktab="give">나눠 주기</button><button class="${tkTab === "run" ? "on" : ""}" data-tktab="run">진행 중${run.length ? ` ${run.length}` : ""}</button><button class="${tkTab === "done" ? "on" : ""}" data-tktab="done">완료${done.length ? ` ${done.length}` : ""}</button></div>
-    ${tkTab === "give" ? give : tkTab === "run" ? runL : doneL}</div>`;
+  const run = L.filter((x) => x.st === "run").sort((a, b) => a.d.localeCompare(b.d)), m1 = bdMiss(1).length, m3 = bdMiss(3).length;
+  const head = `<div class="card"><div class="eyebrow">업무, ${dLabel(D.d)}</div><div class="headline">${tAll ? (tDone === tAll ? "오늘 할 일을<br><em>모두 끝냈어요</em>" : `오늘 할 일 ${tAll}개 중<br><em>${tDone}개</em> 끝났어요`) : "오늘 정해진<br>할 일이 없어요"}</div>${tAll ? `<div class="bar"><i style="width:${pct}%"></i></div>` : ""}</div>`;
+  const act = (k, t, s) => `<button class="item" data-fn="${k}"><div class="av blue tsav">${TSI[k]}</div><div class="tx"><b>${t}</b><span>${s}</span></div><span class="chev">›</span></button>`;
+  const acts = `<div class="sec">무엇을 할까요</div><div class="list tsact">${act("task", "업무 요청하기", "지점에 할 일 보내기")}${act("blog", "블로그 지시문 쓰기", m1 || m3 ? `${dLabel(nextDow(1))} ${m1}곳, ${dLabel(nextDow(3))} ${m3}곳 비어 있어요` : "다음 발행 지시문이 다 있어요")}${act("notice", "공지 올리기", "직원웹에 팝업으로 띄우기")}${act("survey", "재고조사 시키기", "그룹별로 세서 포스 맞추기")}</div>`;
+  const runRow = (it) => { const n = it.k === "task" ? it.n : it.n2, no = BR.filter((b) => it.cell(b)[0] === "no"), all = it.dn === n;
+    return `<button class="item" data-tkopen="${esc(it.key)}"><div class="av ${all ? "good" : "blue"} tscnt">${it.dn}/${n}</div><div class="tx"><b>${esc(it.title)}</b><span>${KINDN[it.kind]}, ${all ? "모두 끝났어요" : no.length <= 3 ? "아직: " + no.map(esc).join(", ") : `아직 ${no.length}곳`}</span></div><span class="chev">›</span></button>`; };
+  const runs = `<div class="sec">진행 중 <small>${run.length}개</small></div><div class="list">${run.map(runRow).join("") || '<div class="empty">진행 중인 일이 없어요</div>'}</div>`;
+  const more = `<div class="sec">더 보기</div><div class="list">${[["next", "예정", next.length], ["reg", "반복 업무", regs.length], ["bdtodo", "블로그 할 일", bdTodoN()], ["drafts", "만든 블로그 초안", bdList().length], ["kw", "블로그 키워드 점유", ""], ["done", "최근 끝난 일", done.length]].map(([k, t, n]) => `<button class="item" data-more="${k}"><div class="tx"><b>${t}</b></div>${n === "" ? "" : `<div class="val"><b class="t-sub" style="font-weight:600;font-size:15px">${n}개</b></div>`}<span class="chev">›</span></button>`).join("")}</div>`;
+  return `<div class="tsw"><div>${head}${acts}${runs}</div><div id="tkblog">${blogBoardHtml()}${more}</div></div>`;
+}
+function sheetMore(k) {
+  const { next, done, regs } = tkLists(tkItems());
+  const T = { next: "예정", reg: "반복 업무", bdtodo: "블로그 할 일", drafts: "만든 블로그 초안", kw: "블로그 키워드 점유", done: "최근 끝난 일" }[k];
+  const body = k === "next" ? next.map((it) => tkLine(it, it.k === "tfut" ? `<button class="u-achip" data-tedit="${it.def.id}">고치기</button>` : "")).join("")
+    : k === "reg" ? regs.map((t) => `<div class="tkl"><span class="d">${esc(REP_TXT(t))}</span><div class="tx"><b>${esc(t.title)}</b><span>${t.br.length === BR.length ? "전 지점" : t.br.map(esc).join(", ")}${t.time ? ", " + esc(t.time) : ""}</span></div><button class="u-achip" data-tedit="${t.id}">고치기</button><button class="u-achip red" data-tdelid="${t.id}">삭제</button></div>`).join("")
+    : k === "bdtodo" ? bdTodoHtml() : k === "drafts" ? blogDraftsHtml(true) : k === "kw" ? `<div style="margin:-4px 0 12px"><button class="u-achip" data-act="nvguide">키워드 보는 법</button></div>${tkKwHtml()}` : done.map((it) => tkLine(it)).join("");
+  openSheet(`<h3>${T}</h3><div class="tsm">${body || '<div class="caption">아직 없어요</div>'}</div><div class="btns"><button class="btn gray" data-x>닫기</button></div>`);
+}
+// ── 단계 창 ── 업무: 할 일 → 지점 → 언제 → 확인 / 공지: 내용 → 지점 → 기간 → 확인 / 재고조사: 그룹 → 지점 → 날짜 → 확인 / 블로그: 발행일 → 지점 → 지시문 창
+let FN = null;
+const FNK = { task: "업무 요청", notice: "공지", survey: "재고조사", blog: "블로그 지시문" };
+const fnObj = () => (FN.k === "survey" ? svNew : editTask);
+const fnSel = () => (FN.k === "notice" ? BR.filter((b) => NTBR.has(b)) : fnObj().br);
+const fnSetSel = (arr) => { if (FN.k === "notice") NTBR = new Set(arr); else fnObj().br = BR.filter((b) => arr.includes(b)); };
+const fnRow = (attr, on, label, sub, kind = "cb") => `<button class="fnrow" ${attr} role="${kind === "cb" ? "checkbox" : "radio"}" aria-checked="${on}"><div class="tx"><b>${label}</b>${sub ? `<span>${sub}</span>` : ""}</div><i class="fnck ${kind}"></i></button>`;
+const fnBrTxt = (sel) => (sel.length === BR.length ? `전 지점 ${BR.length}곳` : sel.length ? sel.map(esc).join(", ") : "고르지 않음");
+function fnBrHtml() { const sel = fnSel(); return `<div class="fnlist">${fnRow("data-fnball", sel.length === BR.length, "전체 지점", `${BR.length}곳`)}${BR.map((b, i) => fnRow(`data-fnb="${b}"`, sel.includes(b), `${i + 1} ${esc(b)}`, "")).join("")}</div>`; }
+function fnBrSync() { const sel = new Set(fnSel()); document.querySelectorAll("[data-fnb]").forEach((x) => x.setAttribute("aria-checked", sel.has(x.dataset.fnb))); document.querySelector("[data-fnball]")?.setAttribute("aria-checked", sel.size === BR.length); const c = $("#fncnt"); if (c) c.textContent = sel.size ? `${sel.size}곳 골랐어요` : "지점을 골라 주세요"; }
+function fnWhenHtml(withRep) {
+  const o = fnObj(), d = o.date, rep = FN.k === "task" ? o.rep : "once", isT = rep === "once" && d === D.d, isM = rep === "once" && d === addDays(D.d, 1), isP = rep === "once" && !isT && !isM;
+  let h = fnRow('data-fnw="today"', isT, "오늘", dLabel(D.d), "rd") + fnRow('data-fnw="tomorrow"', isM, "내일", dLabel(addDays(D.d, 1)), "rd") + fnRow('data-fnw="pick"', isP, "날짜 고르기", isP ? dLabel(d) : "", "rd");
+  if (isP) h += `<div class="fnsubin"><input class="in" type="date" id="fnDate" value="${esc(d)}" min="${D.d}"></div>`;
+  if (withRep) {
+    h += fnRow('data-fnw="daily"', rep === "daily", "매일", "", "rd") + fnRow('data-fnw="weekly"', rep === "weekly", "매주", rep === "weekly" && o.dow.length ? o.dow.slice().sort((a, b) => ((a + 6) % 7) - ((b + 6) % 7)).map((x) => WD[x]).join(", ") : "", "rd");
+    if (rep === "weekly") h += `<div class="fnsubin u-chips">${[1, 2, 3, 4, 5, 6, 0].map((x) => `<button class="u-schip ${o.dow.includes(x) ? "on" : ""}" data-fndow="${x}">${WD[x]}</button>`).join("")}</div>`;
+    h += fnRow('data-fnw="monthly"', rep === "monthly", "매월", rep === "monthly" ? `${o.dom}일마다` : "", "rd");
+    if (rep === "monthly") h += `<div class="fnsubin"><div class="u-step"><button data-fndom="-1" aria-label="하루 앞으로" ${o.dom <= 1 ? "disabled" : ""}>−</button><b>${o.dom}일</b><button data-fndom="1" aria-label="하루 뒤로" ${o.dom >= 31 ? "disabled" : ""}>＋</button></div></div>`;
+  }
+  return `<div class="fnlist">${h}</div>`;
+}
+const fnWhenTxt = (o) => (o.rep && o.rep !== "once" ? REP_TXT(o) : d0(o.date));
+const d0 = (d) => (d === D.d ? `오늘 ${dLabel(d)}` : d === addDays(D.d, 1) ? `내일 ${dLabel(d)}` : dLabel(d));
+const fnSum = (n, label, val) => `<button class="fnsum" data-fngo="${n}"><span>${label}</span><b>${val}</b><i>›</i></button>`;
+const fnTime = (o) => swRow("data-fnt", FN.tOn, "시각 정하기", FN.tOn ? "" : "끄면 그날 아무 때나 해요") + (FN.tOn ? `<input class="in" type="time" id="fnTime" value="${esc(o.time || "")}" style="margin-top:6px">` : "");
+function fnSteps() {
+  const k = FN.k;
+  if (k === "task") { const t = editTask; return [
+    ["무엇을 시킬까요?", `<input class="in fnin" id="fnTitle" maxlength="60" placeholder="예) 진열장 유리 닦기" value="${esc(t.title)}"><input class="in" id="fnNote" maxlength="200" placeholder="메모 (선택) 예) 끝나면 사진 찍어 두기" value="${esc(t.note)}">`],
+    ["어느 지점에 보낼까요?", fnBrHtml(), `<span id="fncnt">${t.br.length ? t.br.length + "곳 골랐어요" : "지점을 골라 주세요"}</span>`],
+    ["언제 할까요?", fnWhenHtml(true)],
+    ["이렇게 보낼게요", `<div class="fnlist">${fnSum(1, "할 일", esc(t.title))}${t.note ? fnSum(1, "메모", esc(t.note)) : ""}${fnSum(2, "지점", fnBrTxt(t.br))}${fnSum(3, "언제", fnWhenTxt(t))}</div>${fnTime(t)}`, "줄을 누르면 고칠 수 있어요"]]; }
+  if (k === "notice") return [
+    ["어떤 공지를 올릴까요?", `<input class="in fnin" id="fnNtTitle" maxlength="60" placeholder="제목 예) 블로그 단톡방 정리 안내" value="${esc(NTF.title)}"><textarea class="in" id="fnNtBody" rows="5" maxlength="1200" placeholder="내용" style="height:auto;padding:12px 16px">${esc(NTF.body)}</textarea>`],
+    ["어느 지점에 띄울까요?", fnBrHtml(), `<span id="fncnt">${NTBR.size ? NTBR.size + "곳 골랐어요" : "지점을 골라 주세요"}</span>`],
+    ["얼마나 띄워 둘까요?", `${swRow("data-ntforever", NTUNTIL === 0, "내릴 때까지 띄우기", "켜 두면 직접 내릴 때까지 떠 있어요")}<div id="ntRangeW" style="margin-top:14px;${NTUNTIL === 0 ? "display:none" : ""}"><div style="display:flex;justify-content:space-between;align-items:baseline"><span class="caption" style="margin:0">며칠 동안</span><b id="ntuv" style="font-size:18px">${ntuLabel(NTUNTIL || 7)}</b></div><input type="range" class="u-range" id="ntRange" min="1" max="14" step="1" value="${NTUNTIL || 7}" aria-label="공지 보이는 날 수"><div class="u-rangev"><span>오늘만</span><span>1주</span><span>2주</span></div></div>`],
+    ["이렇게 올릴게요", `<div class="fnlist">${fnSum(1, "제목", esc(NTF.title))}${NTF.body ? fnSum(1, "내용", esc(NTF.body.length > 40 ? NTF.body.slice(0, 40) + "…" : NTF.body)) : ""}${fnSum(2, "지점", fnBrTxt(BR.filter((b) => NTBR.has(b))))}${fnSum(3, "기간", NTUNTIL ? ntuLabel(NTUNTIL) : "내릴 때까지")}</div>`, "줄을 누르면 고칠 수 있어요"]];
+  if (k === "survey") { const v = svNew; return [
+    ["어느 그룹을 셀까요?", `<div class="fnlist">${SV_GROUPS.map((g) => fnRow(`data-fnsg="${g}"`, v.g === g, esc(g), "", "rd")).join("")}</div>`],
+    ["어느 지점에서 셀까요?", fnBrHtml(), `<span id="fncnt">${v.br.length ? v.br.length + "곳 골랐어요" : "지점을 골라 주세요"}</span>`],
+    ["언제 셀까요?", fnWhenHtml(false)],
+    ["이렇게 시킬게요", `<div class="fnlist">${fnSum(1, "그룹", esc(v.g))}${fnSum(2, "지점", fnBrTxt(v.br))}${fnSum(3, "언제", d0(v.date))}</div>${fnTime(v)}`, "직원이 센 숫자로 그 순간 포스 재고를 맞춰요"]]; }
+  const nav = (attr, t, s, tag) => `<button class="fnnav" ${attr}><div class="tx"><b>${t}</b>${s ? `<span>${s}</span>` : ""}</div>${tag || '<i>›</i>'}</button>`;
+  if (FN.s === 1) return [["어느 날 글이에요?", `<div class="fnlist">${[1, 3].map((dow) => { const m = bdMiss(dow).length; return nav(`data-fnbd="${dow}"`, `${dLabel(nextDow(dow))} ${dow === 1 ? "월요일 글" : "수요일 글"}`, `${dow === 1 ? "지역 키워드" : "대구전자담배"}, ${m ? `${m}곳 비어 있어요` : "모두 있어요"}`); }).join("")}${nav('data-bdnew="||1"', "다른 날짜로 직접 만들기", "")}</div>`], ["", ""]];
+  const dow = FN.bd, d = nextDow(dow), miss = new Set(bdMiss(dow)), drafts = bdList();
+  return [["", ""], [`${dLabel(d)} 글, 어느 지점이요?`, `<div class="fnlist">${BD_BR.map((b, i) => { const p = NV ? (nvStats(dow === 3 ? "대구 전체" : b).pick || {}).k || "" : "", r = drafts.find((x) => x.b === b && x.date === d);
+      return miss.has(b) ? nav(`data-bdnew="${esc(b)}|${esc(p)}|${dow}"`, `${i + 1} ${esc(b)}`, p ? `추천 ${esc(p)}` : "키워드 직접 넣기", '<em>만들기</em>') : nav(r ? `data-bdview="${esc(r.id)}"` : "disabled", `${i + 1} ${esc(b)}`, r ? (r.st === "pub" ? "직원웹에 올림" : r.st === "wait" ? "만드는 중" : "초안 있어요") : "지시문 있어요", r ? '<i>›</i>' : ""); }).join("")}</div>`, "지점을 고르면 추천 키워드로 채운 지시문 창이 열려요"]];
+}
+function fnRender() {
+  const S = fnSteps(), n = S.length, s = FN.s, [q, body, cap] = S[s - 1], last = FN.k !== "blog" && s === n, editing = FN.k === "task" && editTask.id && D.tasks.some((x) => x.id === editTask.id);
+  const btn = FN.k === "blog" ? "" : last ? `<div class="btns">${editing ? '<button class="btn red" data-act="tdel" style="flex:0 0 80px">삭제</button>' : ""}<button class="btn" data-fnsend>${editing ? "저장하기" : FN.k === "notice" ? "공지 올리기" : FN.k === "survey" ? "재고조사 시키기" : "직원웹에 보내기"}</button></div>` : '<div class="btns"><button class="btn" data-fnnext>다음</button></div>';
+  openSheet(`<div class="fntop"><button class="fnback" data-fnback aria-label="${s > 1 ? "이전" : "닫기"}">${s > 1 ? "‹" : "✕"}</button><span>${FNK[FN.k]}${FN.k === "blog" ? "" : ` ${s}/${n}`}</span></div><div class="fnbar"><i style="width:${Math.round((s / n) * 100)}%"></i></div><h3 class="fnq">${q}</h3>${cap ? `<div class="caption">${cap}</div>` : ""}<div class="fnbody">${body}</div>${btn}`);
+  const f = $("#fnTitle") || $("#fnNtTitle"); if (f && !f.value) f.focus({ preventScroll: true });
+}
+function fnRead() {
+  if (!FN) return; const o = FN.k === "notice" ? null : fnObj();
+  if ($("#fnTitle")) { editTask.title = $("#fnTitle").value.trim(); editTask.note = $("#fnNote").value.trim(); }
+  if ($("#fnNtTitle")) { NTF.title = $("#fnNtTitle").value; NTF.body = $("#fnNtBody").value; }
+  if (o && $("#fnDate")) o.date = $("#fnDate").value || o.date;
+  if (o && $("#fnTime")) o.time = $("#fnTime").value;
+}
+function fnCheck() {
+  const k = FN.k, s = FN.s;
+  if (s === 1 && k === "task" && !editTask.title) return "무엇을 시킬지 적어 주세요";
+  if (s === 1 && k === "notice" && !NTF.title.trim()) return "제목을 넣어 주세요";
+  if (s === 1 && k === "survey" && !svNew.g) return "그룹을 골라 주세요";
+  if (s === 2 && !fnSel().length) return "지점을 골라 주세요";
+  if (s === 3 && k === "task" && editTask.rep === "weekly" && !editTask.dow.length) return "요일을 골라 주세요";
+  return "";
+}
+async function fnSend() {
+  fnRead();
+  if (FN.k === "task") { editTask.time = FN.tOn ? editTask.time : ""; return saveTask(); }
+  if (FN.k === "survey") { svNew.time = FN.tOn ? svNew.time : ""; return saveSurveyTask(); }
+  const title = NTF.title.trim(), body = NTF.body.trim(); if (!title) return toast("제목을 넣어 주세요"); if (!NTBR.size) return toast("지점을 골라 주세요");
+  const n = { id: Date.now().toString(36), title, body, br: BR.filter((b) => NTBR.has(b)), until: NTUNTIL ? addDays(D.d, NTUNTIL - 1) : "" };
+  try { await sendOp("notice", n); (D.notices ||= []).push({ ...n, d: D.d, t: new Date().toTimeString().slice(0, 5), off: false, ok: {} }); NTF = { title: "", body: "" }; closeSheet(); render(); toast("올렸어요. 직원웹에는 1~2분 뒤에 떠요"); }
+  catch (e) { toast("못 올렸어요: " + e.message); }
 }
 const addDays = (d, n) => { const x = new Date(d + "T00:00:00Z"); x.setUTCDate(x.getUTCDate() + n); return x.toISOString().slice(0, 10); };
 // 10/27 사장님 "재고조사 시키는 거 그룹별로": 업무의 한 종류. 그룹, 지점, 날짜 → 운영봇 task(kind survey) → 직원웹 할 일 [세기] → 센 숫자로 포스 조정(운영봇 surveyAdjust)
 const SV_GROUPS = ["프리미엄 A", "프리미엄 B", "프리미엄 C", "기기 A", "기기 B", "기기 C", "일회용"];
 let svNew = null;
 const readSvForm = () => { if (!svNew) return; svNew.date = $("#svDate")?.value || svNew.date; svNew.time = $("#svTime")?.value || ""; };
-function sheetSurveyNew() {
-  const v = svNew;
-  openSheet(`<h3>재고조사 시키기</h3><div class="caption">지점 직원웹 오늘 할 일에 "그룹 재고조사"로 뜨고, 직원이 센 숫자로 그 순간 포스 재고를 맞춰요. 결과는 진행 중, 완료에서 봐요</div>
-    <div class="lbl">어느 그룹</div><div class="chips">${SV_GROUPS.map((g) => `<button class="chip ${v.g === g ? "on" : ""}" data-svg="${g}">${g}</button>`).join("")}</div>
-    <div class="lbl">어느 지점</div><div class="chips"><button class="chip ${v.br.length === BR.length ? "on" : ""}" data-svball>전체</button>${BR.map((b) => `<button class="chip ${v.br.includes(b) ? "on" : ""}" data-svb="${b}">${esc(b)}</button>`).join("")}</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><div><div class="lbl">언제</div><input class="in" type="date" id="svDate" value="${esc(v.date)}"></div><div><div class="lbl">시각 <span style="font-weight:500">(선택)</span></div><input class="in" type="time" id="svTime" value="${esc(v.time)}"></div></div>
-    <div class="btns"><button class="btn gray" data-x style="flex:0 0 96px">닫기</button><button class="btn" data-act="svsave">시키기</button></div>`);
+// 11/5 요청하기 칸: 업무 탭에서는 왼쪽 칸 안에 그대로 그림(창 안 띄움), 다른 탭에서는 아래에서 올라오는 창
+const mkSeg = (k) => `<div class="seg mkseg">${[["task", "업무"], ["notice", "공지"], ["survey", "재고조사"], ["blog", "블로그"]].map(([x, n]) => `<button class="${x === k ? "on" : ""}" data-mk="${x}">${n}</button>`).join("")}</div>`;
+const mkOpen = (h) => { const m = $("#mk"); if (m && tab === "tasks") { m.innerHTML = h; if (innerWidth < 900) m.scrollIntoView({ block: "start", behavior: "smooth" }); } else openSheet(h); };
+const mkHead = (k, edit) => edit ? `<div class="mkh"><b>업무 고치기</b><button class="u-achip" data-mkcancel>새로 쓰기</button></div>` : `<div class="mkh"><b>요청하기</b><span>직원웹 오늘 할 일로 바로 가요</span></div>${mkSeg(k)}`;
+const qDate = (id, v) => `<div class="u-date">${[[0, "오늘"], [1, "내일"], [2, "모레"]].map(([n, l]) => `<button class="u-schip ${v === addDays(D.d, n) ? "on" : ""}" data-qd="${id}|${n}">${l}</button>`).join("")}<input class="in" type="date" id="${id}" value="${esc(v)}" min="${D.d}"></div>`;
+const brCb = (sel, allAttr, oneAttr) => `<div class="u-cbg"><button class="u-cb" role="checkbox" aria-checked="${sel.length === BR.length ? "true" : sel.length ? "mixed" : "false"}" ${allAttr}><i></i>전체</button>${BR.map((b, i) => `<button class="u-cb" role="checkbox" aria-checked="${sel.includes(b)}" ${oneAttr}="${b}"><i></i>${i + 1} ${esc(b)}</button>`).join("")}</div>`;
+const cbSync = (oneAttr, set, allSel) => { document.querySelectorAll(`[${oneAttr}]`).forEach((x) => x.setAttribute("aria-checked", set.has(x.getAttribute(oneAttr)))); const a = document.querySelector(allSel); if (a) a.setAttribute("aria-checked", set.size === BR.length ? "true" : set.size ? "mixed" : "false"); };
+const swRow = (attr, on, label, sub) => `<button class="u-swrow" role="switch" aria-checked="${on}" ${attr}><div class="tx">${label}${sub ? `<small>${sub}</small>` : ""}</div><div class="sw ${on ? "on" : ""}"></div></button>`;
+const ntuLabel = (n) => n === 1 ? "오늘만" : `${n}일, ${dLabel(addDays(D.d, n - 1))}까지`;
+const newTask = () => ({ id: "", title: "", note: "", time: "", br: [...BR], rep: "once", date: D.d, dow: [], dom: 1 });
+function mkHtml() {
+  if (mkKind === "notice") return noticeFormHtml();
+  if (mkKind === "survey") { svNew ||= { g: "", br: [...BR], date: D.d, time: "" }; return surveyFormHtml(); }
+  if (mkKind === "blog") return blogPickHtml();
+  editTask ||= newTask(); return taskFormHtml();
 }
+function surveyFormHtml() {
+  const v = svNew; if (v.tOn === undefined) v.tOn = !!v.time;
+  return `${mkHead("survey")}<div class="caption">직원이 센 숫자로 그 순간 포스 재고를 맞춰요</div>
+    <div class="lbl">어느 그룹</div><div class="u-rdg">${SV_GROUPS.map((g) => `<button class="u-rd" role="radio" aria-checked="${v.g === g}" data-svg="${g}"><i></i>${g}</button>`).join("")}</div>
+    <div class="lbl">어느 지점</div>${brCb(v.br, "data-svball", "data-svb")}
+    <div class="lbl">언제</div>${qDate("svDate", v.date)}
+    ${swRow("data-svton", v.tOn, "시각 정하기", v.tOn ? "" : "끄면 그날 아무 때나 세요")}${v.tOn ? `<input class="in" type="time" id="svTime" value="${esc(v.time)}" style="margin-top:6px">` : ""}
+    <button class="btn mkgo" data-act="svsave">재고조사 시키기</button>`;
+}
+function sheetSurveyNew() { svNew ||= { g: "", br: [...BR], date: D.d, time: "" }; FN = { k: "survey", s: 1, tOn: !!svNew.time }; fnRender(); }
 async function saveSurveyTask() {
   readSvForm(); const v = svNew;
   if (!v.g) return toast("그룹을 골라 주세요"); if (!v.br.length) return toast("지점을 골라 주세요"); if (!v.date) return toast("날짜를 골라 주세요");
@@ -1208,28 +1532,52 @@ function svRowsBlock(id) {
   if (!vs.length) return "";
   return vs.map((v) => `<div class="lbl">${esc(v.branch)}, 바뀐 상품 ${v.adj.rows.filter((r) => r.d).length}개</div><div class="list" style="margin-top:0">${v.adj.rows.filter((r) => r.d).map((r) => `<div class="item" style="padding-top:9px;padding-bottom:9px"><div class="tx"><b style="font-size:15px">${esc(r.n)}</b><span>포스 ${r.cur} → 센 수량 ${r.cnt}</span></div><div class="val"><b class="${r.d < 0 ? "t-bad" : "t-good"}">${r.d > 0 ? "+" : ""}${r.d}</b></div></div>`).join("")}</div>`).join("");
 }
-function sheetNotice() {
-  openSheet(`<h3>직원웹 공지</h3><div class="caption">지점 직원웹에 팝업으로 뜨고, 지점이 [확인했어요]를 누르면 진행 중에서 완료로 넘어가요</div>
-    <div class="lbl">제목</div><input class="in" id="ntTitle" maxlength="60" placeholder="예: 블로그 단톡방 정리 안내">
-    <div class="lbl">내용</div><textarea class="in" id="ntBody" rows="6" maxlength="1200" placeholder="내용" style="width:100%;height:auto;padding:12px"></textarea>
-    <div class="lbl">어느 지점</div><div class="chips"><button class="chip ${NTBR.size === BR.length ? "on" : ""}" data-ntall>전체</button>${BR.map((b) => `<button class="chip ${NTBR.has(b) ? "on" : ""}" data-ntb="${b}">${esc(b)}</button>`).join("")}</div>
-    <div class="lbl">보이는 기간</div><div class="chips">${[[1, "오늘만"], [3, "3일"], [7, "1주"], [14, "2주"], [0, "내릴 때까지"]].map(([v, l]) => `<button class="chip ${NTUNTIL === v ? "on" : ""}" data-ntu="${v}">${l}</button>`).join("")}</div>
-    <div class="btns"><button class="btn gray" data-x style="flex:0 0 96px">닫기</button><button class="btn" data-act="ntsend">공지 올리기</button></div>`);
-  $("#ntTitle").focus({ preventScroll: true });
+function noticeFormHtml() {
+  const u = NTUNTIL || 7;
+  return `${mkHead("notice")}<div class="caption">직원웹에 팝업으로 뜨고, 지점이 확인하면 오른쪽 표에 초록 점이 찍혀요</div>
+    <div class="lbl">제목</div><input class="in" id="ntTitle" maxlength="60" placeholder="예: 블로그 단톡방 정리 안내" value="${esc(NTF.title)}">
+    <div class="lbl">내용</div><textarea class="in" id="ntBody" rows="4" maxlength="1200" placeholder="내용" style="width:100%;height:auto;padding:12px">${esc(NTF.body)}</textarea>
+    <div class="lbl">어느 지점</div>${brCb(BR.filter((b) => NTBR.has(b)), "data-ntall", "data-ntb")}
+    <div class="lbl" style="margin-bottom:0">보이는 기간</div>${swRow("data-ntforever", NTUNTIL === 0, "내릴 때까지 띄우기", "켜 두면 직접 내릴 때까지 떠 있어요")}
+    <div id="ntRangeW" style="margin-top:10px;${NTUNTIL === 0 ? "display:none" : ""}"><div style="display:flex;justify-content:space-between;align-items:baseline"><span class="caption" style="margin:0">며칠 동안</span><b id="ntuv" style="font-size:15px">${ntuLabel(u)}</b></div>
+      <input type="range" class="u-range" id="ntRange" min="1" max="14" step="1" value="${u}" aria-label="공지 보이는 날 수"><div class="u-rangev"><span>오늘만</span><span>1주</span><span>2주</span></div></div>
+    <button class="btn mkgo" data-act="ntsend">공지 올리기</button>`;
 }
-function sheetTask() {
-  const t = editTask;
-  openSheet(`<h3>${t.id && D.tasks.some((x) => x.id === t.id) ? "업무 고치기" : "새 업무"}</h3>
-    <div class="lbl">무엇을 할까요</div><input class="in" id="tTitle" maxlength="60" placeholder="예) 진열장 유리 닦기" value="${esc(t.title)}">
-    <div class="lbl">메모 <span style="font-weight:500">(선택)</span></div><input class="in" id="tNote" maxlength="200" placeholder="예) 끝나면 사진 찍어 두기" value="${esc(t.note)}">
-    <div class="lbl">어느 지점</div><div class="chips"><button class="chip ${t.br.length === BR.length ? "on" : ""}" data-tball>전체</button>${BR.map((b) => `<button class="chip ${t.br.includes(b) ? "on" : ""}" data-tb="${b}">${esc(b)}</button>`).join("")}</div>
-    <div class="lbl">언제</div><div class="seg">${[["once", "한 번"], ["daily", "매일"], ["weekly", "매주"], ["monthly", "매월"]].map(([k, n]) => `<button class="${t.rep === k ? "on" : ""}" data-trep="${k}">${n}</button>`).join("")}</div>
-    <div style="margin-top:12px">${t.rep === "once" ? `<input class="in" type="date" id="tDate" value="${esc(t.date)}">`
-      : t.rep === "weekly" ? `<div class="chips">${[1, 2, 3, 4, 5, 6, 0].map((d) => `<button class="chip ${t.dow.includes(d) ? "on" : ""}" data-tdow="${d}">${WD[d]}</button>`).join("")}</div>`
-      : t.rep === "monthly" ? `<div style="display:flex;align-items:center;gap:10px"><input class="in" type="number" id="tDom" min="1" max="31" value="${t.dom}" style="max-width:120px"><span style="font-size:17px">일마다</span></div>` : ""}</div>
-    <div class="lbl">시각 <span style="font-weight:500">(선택)</span></div><input class="in" type="time" id="tTime" value="${esc(t.time)}">
-    <div class="btns">${t.id && D.tasks.some((x) => x.id === t.id) ? `<button class="btn red" data-act="tdel" style="flex:0 0 76px">삭제</button>` : ""}<button class="btn gray" data-x style="flex:0 0 76px">닫기</button><button class="btn" data-act="tsave">저장</button></div>`);
+function sheetNotice() { FN = { k: "notice", s: 1 }; fnRender(); }
+function taskFormHtml() {
+  const t = editTask, isEdit = !!(t.id && D.tasks.some((x) => x.id === t.id)); if (t._tOn === undefined) t._tOn = !!t.time;
+  const when = t.rep === "once" ? qDate("tDate", t.date)
+    : t.rep === "weekly" ? `<div class="u-chips">${[1, 2, 3, 4, 5, 6, 0].map((d) => `<button class="u-schip ${t.dow.includes(d) ? "on" : ""}" data-tdow="${d}" aria-pressed="${t.dow.includes(d)}">${WD[d]}</button>`).join("")}</div>`
+    : t.rep === "monthly" ? `<div style="display:flex;align-items:center;gap:12px"><div class="u-step"><button data-tdom="-1" aria-label="하루 앞으로" ${t.dom <= 1 ? "disabled" : ""}>−</button><b>${t.dom}일</b><button data-tdom="1" aria-label="하루 뒤로" ${t.dom >= 31 ? "disabled" : ""}>＋</button></div><span class="caption" style="margin:0">매월 ${t.dom}일마다</span></div>`
+    : `<div class="caption" style="margin:0">매일 오늘 할 일에 떠요</div>`;
+  return `${mkHead("task", isEdit)}
+    <input class="in mkt" id="tTitle" maxlength="60" placeholder="무엇을 시킬까요? 예) 진열장 유리 닦기" value="${esc(t.title)}">
+    <input class="in" id="tNote" maxlength="200" placeholder="메모 (선택) 예) 끝나면 사진 찍어 두기" value="${esc(t.note)}" style="margin-top:8px;height:46px;font-size:15px">
+    <div class="lbl">어느 지점</div>${brCb(t.br, "data-tball", "data-tb")}
+    <div class="lbl">언제</div><div class="u-rdg" style="margin-bottom:10px">${[["once", "한 번"], ["daily", "매일"], ["weekly", "매주"], ["monthly", "매월"]].map(([k, n]) => `<button class="u-rd" role="radio" aria-checked="${t.rep === k}" data-trep="${k}"><i></i>${n}</button>`).join("")}</div>${when}
+    ${swRow("data-tton", t._tOn, "시각 정하기", t._tOn ? "" : "끄면 하루 중 아무 때나")}${t._tOn ? `<input class="in" type="time" id="tTime" value="${esc(t.time)}" style="margin-top:6px">` : ""}
+    ${isEdit ? `<div class="btns"><button class="btn red" data-act="tdel" style="flex:0 0 80px">삭제</button><button class="btn" data-act="tsave">저장</button></div>` : `<button class="btn mkgo" data-act="tsave">직원웹에 보내기</button>`}`;
 }
+function sheetTask() { editTask ||= newTask(); const ed = !!(editTask.id && D.tasks.some((x) => x.id === editTask.id)); FN = { k: "task", s: ed ? 4 : 1, tOn: !!editTask.time }; fnRender(); }
+// 블로그 지시문: 다음 월, 수요일에 지시문이 없는 지점을 바로 누르면 만들기 창. 있는 지점은 상태만
+function blogPickHtml() {
+  const drafts = bdList(), rows = BLOGLIST || D.blogs || [];
+  const col = (dow) => { const d = nextDow(dow), have = (b) => rows.some((x) => x.b === b && x.date === d && !x.test) || drafts.some((r) => r.b === b && r.date === d), no = BD_BR.filter((b) => !have(b));
+    const p = (b) => NV ? (nvStats(dow === 3 ? "대구 전체" : b).pick || {}).k || "" : "";
+    return `<div class="lbl">${dLabel(d)} ${dow === 1 ? "월요일 글, 지역 키워드" : "수요일 글, 대구전자담배"} <span style="font-weight:500">${bdLeft(d)}일 뒤</span></div>
+      ${no.length ? `<div class="u-chips">${no.map((b) => `<button class="u-achip blue" data-bdnew="${esc(b)}|${esc(p(b))}|${dow}">＋ ${bnm(b)}</button>`).join("")}</div>` : `<div class="caption" style="margin:0">모든 지점 지시문이 있어요</div>`}
+      ${no.length < BD_BR.length ? `<div class="caption" style="margin:6px 0 0">있음: ${BD_BR.filter(have).map(esc).join(", ")}</div>` : ""}`; };
+  if (!BLOGLIST) loadBlogList();
+  return `${mkHead("blog")}<div class="caption">지점을 누르면 추천 키워드로 채운 지시문 창이 열려요. 초안은 운영봇이 1~2분 안에 써요</div>${col(1)}${col(3)}
+    <div class="u-chips" style="margin-top:16px"><button class="u-achip" data-bdnew="||1">다른 날짜로 직접 만들기</button><button class="u-achip" data-act="tkblog">발행표 보기</button></div>`;
+}
+function sheetNoticeView(id) {
+  const n = (D.notices || []).find((x) => x.id === id); if (!n) return; const live = !n.off && (!n.until || n.until >= D.d);
+  openSheet(`<div class="eyebrow">공지, ${dLabel(n.d)} ${esc(n.t || "")} 올림, ${live ? (n.until ? dLabel(n.until) + "까지" : "내릴 때까지") : n.off ? "내림" : "기간 끝"}</div><h3>${esc(n.title)}</h3>${n.body ? `<div class="report">${esc(n.body)}</div>` : ""}
+    <div class="list">${n.br.map((b) => `<div class="item"><div class="av ${n.ok?.[b] ? "good" : ""}">${n.ok?.[b] ? "✓" : BR.indexOf(b) + 1}</div><div class="tx"><b>${esc(b)}</b><span>${n.ok?.[b] ? "확인했어요" : "아직 확인 안 했어요"}</span></div></div>`).join("")}</div>
+    <div class="btns">${live ? `<button class="btn red" data-ntoff="${n.id}" style="flex:0 0 110px">공지 내리기</button>` : ""}<button class="btn gray" data-x>닫기</button></div>`);
+}
+function sheetTaskStatusSafe(id) { if (D.tasks.some((y) => y.id === id)) return sheetTaskStatus(id); toast("이 업무는 지워졌어요"); }
 function mustHtml() {
   const prods = D.products[mustB] || [];
   if (!draft || draft.b !== mustB) draft = { b: mustB, set: new Set(D.must[mustB] || []) };
@@ -1319,8 +1667,8 @@ async function saveMust() {
   } catch (e) { btn.disabled = false; btn.textContent = "다시 저장하기"; toast("저장하지 못했어요. 다시 눌러 주세요"); }
 }
 function readTaskForm() {
-  const t = editTask; if (!$("#tTitle")) return;
-  t.title = $("#tTitle").value.trim(); t.note = $("#tNote").value.trim(); t.time = $("#tTime").value;
+  const t = editTask; if (!t || !$("#tTitle")) return;
+  t.title = $("#tTitle").value.trim(); t.note = $("#tNote").value.trim(); t.time = $("#tTime") ? $("#tTime").value : "";
   if ($("#tDate")) t.date = $("#tDate").value; if ($("#tDom")) t.dom = +$("#tDom").value || 1;
 }
 async function saveTask() {
@@ -1331,6 +1679,7 @@ async function saveTask() {
   try { await sendOp("task", t); const i = D.tasks.findIndex((x) => x.id === t.id); i >= 0 ? (D.tasks[i] = { ...t }) : D.tasks.push({ ...t }); editTask = null; closeSheet(); render(); toast("저장했어요. 직원웹에는 1~2분 뒤에 떠요"); setTimeout(() => reload(true), 90e3); }
   catch (e) { toast("저장하지 못했어요. 다시 눌러 주세요"); }
 }
+document.addEventListener("input", (e) => { if (e.target.id === "ntRange") { NTUNTIL = +e.target.value; $("#ntuv").textContent = ntuLabel(NTUNTIL); } });
 document.addEventListener("change", async (e) => { if (e.target.id === "bbFile" && e.target.files[0]) { try { const txt = await bbFileRead(e.target.files[0]); BBP = bbParse(txt); BBSHORT = true; render(); } catch (er) { toast("파일을 못 읽었어요"); } } });
 document.addEventListener("click", async (e) => {
   if (e.target.id === "dim") { if (ASKR) return ASKR(null); return closeSheet(); }
@@ -1338,12 +1687,14 @@ document.addEventListener("click", async (e) => {
   if (t.dataset.ask !== undefined) { if (ASKR) ASKR(t.dataset.ask === "0" ? null : t.dataset.ask); return; }
   if (t.dataset.askname) { if (ASKR && ASKR.pick) ASKR.pick(t.dataset.askname); return; }
   if (t.dataset.act === "more") return openSheet(moreSheetHtml());
-  if (t.dataset.nvb) { nvB = t.dataset.nvb; ls.set("vf-admin-nvb", nvB); enterOnce = true; render(); return scrollTo(0, 0); }
+  if (t.dataset.bgv) { bgV = t.dataset.bgv; ls.set("vf-admin-bgv", bgV); enterOnce = true; render(); return; }
+  if (t.dataset.nvb) { nvB = t.dataset.nvb; ls.set("vf-admin-nvb", nvB); if (tab === "tasks") return sheetMore("kw"); enterOnce = true; render(); return scrollTo(0, 0); }
   if (t.dataset.act === "nvguide") return openSheet(nvGuideHtml());
   if (t.dataset.bdnew !== undefined) { const [b, kw, dow] = t.dataset.bdnew.split("|"); const bb = BD_BR.includes(b) ? b : ""; BD = { b: bb, ...bdSplit(bb, kw, +dow || 1), dow: +dow || 1, rec: kw, date: nextDow(+dow || 1), topic: "", memo: "" }; return sheetBlogDraft(); }
   if (t.dataset.act === "bdltmore") { readBdForm(); BD.ltPick = null; const y = $("#sheet").scrollTop; sheetBlogDraft(); $("#sheet").scrollTop = y; return; }
   if (t.dataset.bdb) { readBdForm(); BD.b = t.dataset.bdb; BD.ltPick = null; if (BD.dow !== 3 && BD_BASE[BD.b]) BD.kw = BD_BASE[BD.b]; return sheetBlogDraft(); }
   if (t.dataset.bdlt) { readBdForm(); BD.lt = BD.lt === t.dataset.bdlt ? "" : t.dataset.bdlt; const y = $("#sheet").scrollTop; sheetBlogDraft(); $("#sheet").scrollTop = y; return; }
+  if (t.dataset.bdbulk) return bdBulk(+t.dataset.bdbulk);
   if (t.dataset.act === "bdsend") return bdSend();
   if (t.dataset.bdview) return sheetBlogDraftView(t.dataset.bdview);
   if (t.dataset.bdedit) return bdAct("edit", t.dataset.bdedit);
@@ -1353,6 +1704,30 @@ document.addEventListener("click", async (e) => {
   if (t.dataset.act === "nvreload") { NV = null; NV_ERR = false; return render(); }
   if (t.tagName === "TR") return isPC() ? panelBranch(t.dataset.brpc, "프리미엄 A") : sheetBranch(t.dataset.brpc, "프리미엄 A");
   if (t.id === "go") return tryLogin();
+  if (t.dataset.acc) { const k = t.dataset.acc, box = t.parentElement, on = !box.classList.contains("open"); box.classList.toggle("open", on); t.setAttribute("aria-expanded", on); on ? accOpen.add(k) : accOpen.delete(k); return; }
+  if (t.dataset.mk) { mkKind = t.dataset.mk; ls.set("vf-admin-mk", mkKind); if (mkKind === "task" && (!editTask || editTask.id)) editTask = newTask(); return mkOpen(mkHtml()); }
+  if (t.dataset.mkcancel !== undefined) { editTask = newTask(); return sheetTask(); }
+  if (t.dataset.tkopen) { const k = t.dataset.tkopen, id = k.slice(2); if (k[0] === "t") return sheetTaskStatusSafe(id); if (k[0] === "n") return sheetNoticeView(id); return $("#tkblog")?.scrollIntoView({ block: "start", behavior: "smooth" }); }
+  if (t.dataset.act === "tkblog") return $("#tkblog")?.scrollIntoView({ block: "start", behavior: "smooth" });
+  if (t.dataset.qd) { const [id, n] = t.dataset.qd.split("|"), inp = $("#" + id); if (inp) inp.value = addDays(D.d, +n); t.parentElement.querySelectorAll("[data-qd]").forEach((x) => x.classList.toggle("on", x === t)); return; }
+  if (t.dataset.tton !== undefined) { readTaskForm(); editTask._tOn = !editTask._tOn; if (!editTask._tOn) editTask.time = ""; return sheetTask(); }
+  if (t.dataset.tdom) { readTaskForm(); editTask.dom = Math.min(31, Math.max(1, (+editTask.dom || 1) + +t.dataset.tdom)); return sheetTask(); }
+  if (t.dataset.svton !== undefined) { readSvForm(); svNew.tOn = !svNew.tOn; if (!svNew.tOn) svNew.time = ""; return sheetSurveyNew(); }
+  if (t.dataset.ntforever !== undefined) { NTUNTIL = NTUNTIL ? 0 : +($("#ntRange")?.value || 7); const on = NTUNTIL === 0; t.setAttribute("aria-checked", on); t.querySelector(".sw").classList.toggle("on", on); $("#ntRangeW").style.display = on ? "none" : ""; return; }
+  if (t.dataset.fn) { const k = t.dataset.fn; FN = { k, s: 1, tOn: false }; if (k === "task") editTask = newTask(); if (k === "survey") svNew = { g: "", br: [...BR], date: D.d, time: "" }; if (k === "notice") { NTF = { title: "", body: "" }; NTBR = new Set(BR); NTUNTIL = 7; } return fnRender(); }
+  if (t.dataset.fnnext !== undefined) { fnRead(); const er = fnCheck(); if (er) return toast(er); FN.s++; return fnRender(); }
+  if (t.dataset.fnback !== undefined) { fnRead(); if (FN.s <= 1) return closeSheet(); FN.s--; return fnRender(); }
+  if (t.dataset.fngo) { fnRead(); FN.s = +t.dataset.fngo; return fnRender(); }
+  if (t.dataset.fnball !== undefined) { fnSetSel(fnSel().length === BR.length ? [] : [...BR]); return fnBrSync(); }
+  if (t.dataset.fnb) { const s = new Set(fnSel()); s.has(t.dataset.fnb) ? s.delete(t.dataset.fnb) : s.add(t.dataset.fnb); fnSetSel([...s]); return fnBrSync(); }
+  if (t.dataset.fnw) { fnRead(); const w = t.dataset.fnw, o = fnObj(); if (["today", "tomorrow", "pick"].includes(w)) { if (FN.k === "task") o.rep = "once"; if (w !== "pick") o.date = addDays(D.d, w === "tomorrow" ? 1 : 0); else if (o.date <= addDays(D.d, 1)) o.date = addDays(D.d, 2); } else o.rep = w; return fnRender(); }
+  if (t.dataset.fndow) { const d = +t.dataset.fndow, s = new Set(editTask.dow); s.has(d) ? s.delete(d) : s.add(d); editTask.dow = [...s]; return fnRender(); }
+  if (t.dataset.fndom) { editTask.dom = Math.min(31, Math.max(1, (+editTask.dom || 1) + +t.dataset.fndom)); return fnRender(); }
+  if (t.dataset.fnsg) { svNew.g = t.dataset.fnsg; return fnRender(); }
+  if (t.dataset.fnt !== undefined) { fnRead(); FN.tOn = !FN.tOn; return fnRender(); }
+  if (t.dataset.fnbd) { FN.bd = +t.dataset.fnbd; FN.s = 2; return fnRender(); }
+  if (t.dataset.fnsend !== undefined) return fnSend();
+  if (t.dataset.more) return sheetMore(t.dataset.more);
   if (t.dataset.tktab) { tkTab = t.dataset.tktab; ls.set("vf-admin-tktab", tkTab); return render(); }
   if (t.dataset.gf) { grpF = t.dataset.gf; return render(); }
   if (t.dataset.gbr !== undefined || t.dataset.gbrall !== undefined) { const n = t.dataset.gbr ?? t.dataset.gbrall, ed = grpEd(); if (!ed[n]) return; const cur = gBr(ed[n]); ed[n].br = t.dataset.gbrall !== undefined ? (cur.length === BR.length ? [] : [...BR]) : (cur.includes(t.dataset.b) ? cur.filter((x) => x !== t.dataset.b) : BR.filter((x) => cur.includes(x) || x === t.dataset.b)); grpSave(ed); const y = scrollY; render(); scrollTo(0, y); return; }
@@ -1366,11 +1741,11 @@ document.addEventListener("click", async (e) => {
   if (t.dataset.act === "bbsend") { BBSHORT = !!$("#bbShort")?.checked; BBTEST = !!$("#bbTest")?.checked; return bbSend(); }
   if (t.dataset.bbdel) { const [id, b] = t.dataset.bbdel.split("|"); if (!(await askConfirm(b + " 분배 카드를 지울까요?", "직원웹에서도 사라져요", "지우기", true))) return; try { await sendOp("bbDel", { id, b }); D.bunbae = (D.bunbae || []).filter((c) => !(c.id === id && c.b === b)); render(); toast("지웠어요"); } catch (e) { toast("못 지웠어요"); } return; }
   if (t.dataset.bbok) { const [id, b, i] = t.dataset.bbok.split("|"); try { await sendOp("bbShortOk", { id, b, i: +i }); const c = (D.bunbae || []).find((x) => x.id === id && x.b === b); if (c) c.items[+i].shortOk = true; render(); toast("해결로 뺐어요"); } catch { toast("못 보냈어요"); } return; }
-  if (t.dataset.ntall !== undefined) { NTBR = NTBR.size === BR.length ? new Set() : new Set(BR); document.querySelectorAll("[data-ntb]").forEach((x) => x.classList.toggle("on", NTBR.has(x.dataset.ntb))); t.classList.toggle("on", NTBR.size === BR.length); return; }
+  if (t.dataset.ntall !== undefined) { NTBR = NTBR.size === BR.length ? new Set() : new Set(BR); cbSync("data-ntb", NTBR, "[data-ntall]"); return; }
   if (t.dataset.ntu !== undefined) { NTUNTIL = +t.dataset.ntu; document.querySelectorAll("[data-ntu]").forEach((x) => x.classList.toggle("on", x === t)); return; }
-  if (t.dataset.ntb) { NTBR.has(t.dataset.ntb) ? NTBR.delete(t.dataset.ntb) : NTBR.add(t.dataset.ntb); t.classList.toggle("on", NTBR.has(t.dataset.ntb)); document.querySelector("[data-ntall]")?.classList.toggle("on", NTBR.size === BR.length); return; }
-  if (t.dataset.act === "ntsend") { const title = $("#ntTitle").value.trim(), body = $("#ntBody").value.trim(); if (!title) return toast("제목을 넣어 주세요"); if (!NTBR.size) return toast("지점을 골라 주세요"); if (!(await askConfirm(`${NTBR.size === BR.length ? "전 지점" : [...NTBR].join(", ")}에 공지를 띄울까요?`, "직원웹에 팝업으로 떠요", "공지 올리기"))) return; const n = { id: Date.now().toString(36), title, body, br: BR.filter((b) => NTBR.has(b)), until: NTUNTIL ? addDays(D.d, NTUNTIL - 1) : "" }; try { await sendOp("notice", n); (D.notices ||= []).push({ ...n, d: D.d, t: new Date().toTimeString().slice(0, 5), off: false, ok: {} }); closeSheet(); render(); toast("올렸어요. 직원웹에는 1~2분 뒤에 떠요"); } catch (e) { toast("못 올렸어요: " + e.message); } return; }
-  if (t.dataset.ntoff) { if (!(await askConfirm("이 공지를 내릴까요?", "직원웹에서 사라져요", "내리기", true))) return; try { await sendOp("noticeOff", { id: t.dataset.ntoff }); const n = (D.notices || []).find((x) => x.id === t.dataset.ntoff); if (n) n.off = true; render(); toast("내렸어요"); } catch { toast("못 보냈어요"); } return; }
+  if (t.dataset.ntb) { NTBR.has(t.dataset.ntb) ? NTBR.delete(t.dataset.ntb) : NTBR.add(t.dataset.ntb); cbSync("data-ntb", NTBR, "[data-ntall]"); return; }
+  if (t.dataset.act === "ntsend") { const title = $("#ntTitle").value.trim(), body = $("#ntBody").value.trim(); if (!title) return toast("제목을 넣어 주세요"); if (!NTBR.size) return toast("지점을 골라 주세요"); if (!(await askConfirm(`${NTBR.size === BR.length ? "전 지점" : [...NTBR].join(", ")}에 공지를 띄울까요?`, "직원웹에 팝업으로 떠요", "공지 올리기"))) return; const n = { id: Date.now().toString(36), title, body, br: BR.filter((b) => NTBR.has(b)), until: NTUNTIL ? addDays(D.d, NTUNTIL - 1) : "" }; try { await sendOp("notice", n); (D.notices ||= []).push({ ...n, d: D.d, t: new Date().toTimeString().slice(0, 5), off: false, ok: {} }); NTF = { title: "", body: "" }; $("#ntTitle").value = ""; $("#ntBody").value = ""; closeSheet(); render(); toast("올렸어요. 직원웹에는 1~2분 뒤에 떠요"); } catch (e) { toast("못 올렸어요: " + e.message); } return; }
+  if (t.dataset.ntoff) { if (!(await askConfirm("이 공지를 내릴까요?", "직원웹에서 사라져요", "내리기", true))) return; try { await sendOp("noticeOff", { id: t.dataset.ntoff }); const n = (D.notices || []).find((x) => x.id === t.dataset.ntoff); if (n) n.off = true; closeSheet(); render(); toast("내렸어요"); } catch { toast("못 보냈어요"); } return; }
   if (t.dataset.issok) { const s = issDone(); s.add(t.dataset.issok); issDoneSave(s); render(); return toast("확인했어요"); }
   if (t.dataset.issundo) { issDoneSave(new Set()); render(); return; }
   if (t.dataset.restart) { const bot = t.dataset.restart; if (!(await askConfirm(bot + "을 다시 켤까요?", "1분쯤 걸려요" + (bot === "운영봇" ? ". 그동안 온 신호는 다시 켜진 뒤 처리돼요" : ""), "다시 켜기"))) return; t.disabled = true; t.textContent = "보냈어요"; try { await sendOp("restart", { bot }); toast(bot + " 다시 켜는 중이에요. 3분 안에 상태가 바뀌어요"); setTimeout(loadBot, 90e3); setTimeout(loadBot, 200e3); } catch (err) { toast("못 보냈어요: " + err.message); t.disabled = false; t.textContent = "다시 켜기"; } return; }
@@ -1415,7 +1790,7 @@ document.addEventListener("click", async (e) => {
   if (a === "svsave") return saveSurveyTask();
   if (a === "ntnew") return sheetNotice();
   if (a === "tnew") { editTask = { id: "", title: "", note: "", time: "", br: [], rep: "once", date: D.d, dow: [], dom: 1 }; return sheetTask(); }
-  if (t.dataset.tedit) { editTask = JSON.parse(JSON.stringify(D.tasks.find((x) => x.id === t.dataset.tedit))); editTask.dow ||= []; return sheetTask(); }
+  if (t.dataset.tedit) { editTask = JSON.parse(JSON.stringify(D.tasks.find((x) => x.id === t.dataset.tedit))); editTask.dow ||= []; if (tab === "tasks") $("#dim").classList.remove("on"); sheetTask(); if (tab === "tasks") $("#mk")?.scrollIntoView({ block: "start", behavior: "smooth" }); return; }
   if (t.dataset.tball !== undefined) { readTaskForm(); editTask.br = editTask.br.length === BR.length ? [] : [...BR]; return sheetTask(); }
   if (t.dataset.tb) { readTaskForm(); const b = t.dataset.tb, s = new Set(editTask.br); s.has(b) ? s.delete(b) : s.add(b); editTask.br = BR.filter((x) => s.has(x)); return sheetTask(); }
   if (t.dataset.trep) { readTaskForm(); editTask.rep = t.dataset.trep; return sheetTask(); }
