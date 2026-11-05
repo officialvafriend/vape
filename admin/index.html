@@ -537,18 +537,18 @@ function nvStats(b) {
 }
 const nvOf30 = (n) => `<b>${n}<small style="font-size:12px;color:var(--sub);font-weight:600"> / 30</small></b>`;
 const nvRow = (x, i, pick) => `<div class="item kwrow anim" style="--i:${i}"><div class="tx"><b>${esc(x.k)}<span class="tag gray" style="margin:0 0 0 6px">${esc(x.t)}</span>${pick && pick.k === x.k ? '<span class="tag" style="margin:0 0 0 4px;background:var(--amber-soft);color:var(--amber)">추천</span>' : ""}</b><div class="sbar"><i class="${pick && pick.k === x.k ? "pk" : ""}" style="width:${nvPct(x.n)}%;--i:${i}"></i></div>${x.pr != null ? `<span>${nvRank(x.pr)}</span>` : ""}</div><div class="val">${nvOf30(x.n)}${x.dn ? `<span class="${x.dn > 0 ? "t-good" : "t-bad"}" style="display:block">7일 전보다 ${x.dn > 0 ? "+" : ""}${x.dn}</span>` : ""}</div></div>`;
-const nvRec = (i, title, p, why) => (p ? `<div class="card anim" style="--i:${i}"><div class="eyebrow">${title}</div><div class="headline" style="font-size:22px"><em>${esc(p.k)}</em></div><div class="sbar"><i class="pk" style="width:${nvPct(p.n)}%;--i:${i}"></i></div><div class="caption">블로그 상위 30개 중 ${p.n}개(${nvPct(p.n)}%)예요. ${why}</div></div>` : "");
+const nvRec = (i, title, p, why, b = "", dow = 1) => (p ? `<div class="card anim" style="--i:${i}"><div class="eyebrow">${title}</div><div class="headline" style="font-size:22px"><em>${esc(p.k)}</em></div><div class="sbar"><i class="pk" style="width:${nvPct(p.n)}%;--i:${i}"></i></div><div class="caption">블로그 상위 30개 중 ${p.n}개(${nvPct(p.n)}%)예요. ${why}</div><div class="btns" style="margin-top:14px"><button class="btn sec2" style="height:48px;font-size:16px" data-bdnew="${esc(b)}|${esc(p.k)}|${dow}">이 키워드로 지시문 만들기</button></div></div>` : "");
 function nvBranchHtml(b) {
   const s = nvStats(b), c = nvStats("대구 전체"), pr = (NV.place || []).filter((r) => r.b === b && r.k === NV.common).sort((a, z) => a.d.localeCompare(z.d)).at(-1);
-  return nvRec(0, "월요일 글, 자기 지역 키워드", s.pick, `${esc(b)} 키워드 중 가장 비어 있어서 이 키워드를 추천해요!`)
-    + nvRec(1, "수요일 글, 대구전자담배", c.pick, `대구전자담배 묶음 중 가장 비어 있어요.${pr ? ` ${esc(b)}의 대구전자담배는 ${nvRankIs(pr.r)}.` : ""}`)
+  return nvRec(0, "월요일 글, 자기 지역 키워드", s.pick, `${esc(b)} 키워드 중 가장 비어 있어서 이 키워드를 추천해요!`, b, 1)
+    + nvRec(1, "수요일 글, 대구전자담배", c.pick, `대구전자담배 묶음 중 가장 비어 있어요.${pr ? ` ${esc(b)}의 대구전자담배는 ${nvRankIs(pr.r)}.` : ""}`, b, 3)
     + `<div class="sec">이 지점 키워드 <small>${s.list.length}개, 막대는 30개 중 우리 글</small></div><div class="list">${s.list.map((x, i) => nvRow(x, i + 2, s.pick)).join("") || '<div class="empty">기록이 없어요</div>'}</div>`
     + `<div class="sec">대구전자담배 묶음 <small>수요일 글</small></div><div class="list">${c.list.map((x, i) => nvRow(x, i + 2 + s.list.length, c.pick)).join("") || '<div class="empty">기록이 없어요</div>'}</div>`;
 }
 function nvAllHtml() {
   const c = nvStats("대구 전체");
   const rows = BR.map((b, i) => { const p = nvStats(b).pick; return `<button class="item kwrow anim" style="--i:${i + 1}" data-nvb="${b}"><div class="av ${p ? "warn" : ""}">${i + 1}</div><div class="tx"><b>${esc(b)}</b><span>${p ? `추천: ${esc(p.k)}` : "기록이 없어요"}</span>${p ? `<div class="sbar"><i class="pk" style="width:${nvPct(p.n)}%;--i:${i + 1}"></i></div>` : ""}</div><div class="val">${p ? nvOf30(p.n) : ""}</div><span class="chev">›</span></button>`; }).join("");
-  return nvRec(0, "수요일 글, 전 지점 공통", c.pick, "대구전자담배 묶음 중 가장 비어 있어서 이 키워드를 추천해요!") + `<div class="sec">지점별 월요일 추천 <small>점유가 가장 낮은 키워드, 누르면 그 지점 전체</small></div><div class="list">${rows}</div>`;
+  return nvRec(0, "수요일 글, 전 지점 공통", c.pick, "대구전자담배 묶음 중 가장 비어 있어서 이 키워드를 추천해요!", "", 3) + `<div class="sec">지점별 월요일 추천 <small>점유가 가장 낮은 키워드, 누르면 그 지점 전체</small></div><div class="list">${rows}</div>`;
 }
 function nvGuideHtml() {
   const g = (t, d) => `<div class="lbl" style="margin:18px 0 6px;color:var(--ink);font-size:16px;font-weight:700">${t}</div><div class="caption" style="margin:0;font-size:15px;line-height:1.65;color:var(--ink2)">${d}</div>`;
@@ -567,7 +567,74 @@ function blogTabHtml() {
   if (Date.now() - NV_AT > 10 * 60e3) { NV_AT = Date.now(); loadNaver(true); }
   const d = nvStats("대구 전체").d, md = d ? `${+d.slice(5, 7)}/${+d.slice(8)}` : "";
   const chips = `<div class="chips hs" style="margin-top:12px;margin-bottom:12px">${["전체", ...BR].map((b, i) => `<button class="chip ${nvB === b ? "on" : ""}" data-nvb="${b}">${b === "전체" ? "전 지점" : i + "호 " + b}</button>`).join("")}</div>`;
-  return head(`지점별 추천 키워드, 네이버 대시보드 ${md} 기록`) + blogAdmHtml() + chips + (nvB === "전체" ? nvAllHtml() : nvBranchHtml(nvB));
+  return head(`지점별 추천 키워드, 네이버 대시보드 ${md} 기록`) + blogAdmHtml() + blogDraftsHtml() + chips + (nvB === "전체" ? nvAllHtml() : nvBranchHtml(nvB));
+}
+/* 11/5 지시문 초안: [지시문 만들기] → 운영봇이 소넷으로 초안(1~2분) → 여기서 보고 고치기, 촬영 업무 요청, 직원웹에 올리기 */
+const BD_BR = BR.filter((b) => b !== "동성로2"); /* 동성로2는 예전 지시문이 없어 틀을 못 만든다 */
+let BD = null, BDL = [], bdT = null;
+const nextDow = (dow) => { let d = D.d; for (let i = 0; i < 8; i++) { d = addDays(d, 1); if (new Date(d + "T00:00:00Z").getUTCDay() === dow) return d; } return d; };
+function bdList() { const L = (D.blogDrafts ||= []); BDL = BDL.filter((r) => Date.now() - r._t < 10 * 60e3 && !L.some((y) => y.id === r.id && y.st !== "wait")); for (const r of BDL) if (!L.some((y) => y.id === r.id)) L.push(r); return L; }
+function bdWatch() { clearInterval(bdT); let k = 0; bdT = setInterval(() => { if (++k > 12 || !bdList().some((r) => r.st === "wait")) return clearInterval(bdT); reload(true); }, 40e3); }
+function blogDraftsHtml() {
+  const L = bdList().slice().reverse(); if (!L.length) return "";
+  const st = (r) => (r.st === "wait" ? '<span class="t-sub">만드는 중…</span>' : r.st === "error" ? '<span class="t-bad">못 만들었어요</span>' : r.st === "pub" ? '<span class="t-good">직원웹에 올림</span>' : '<span style="color:var(--blue)">초안 완성</span>');
+  return `<div class="sec">지시문 초안 <small>${L.length}개, 누르면 내용</small></div><div class="list">${L.map((r, i) => `<button class="item kwrow anim" style="--i:${i}" data-bdview="${esc(r.id)}"><div class="av blue">${BR.indexOf(r.b) + 1}</div><div class="tx"><b>${esc(r.titles?.[0] || r.topic || r.kw)}</b><span>${esc(r.b)}, ${dLabel(r.date)} 발행, ${esc(r.kw)}${r.shoot ? `, 촬영 요청함, 사진 ${r.shoot.n}장` : ""}</span></div><div class="val"><span style="font-size:13px;font-weight:700">${st(r)}</span></div><span class="chev">›</span></button>`).join("")}</div>`;
+}
+const readBdForm = () => { if (!BD || !$("#bdKw")) return; BD.kw = $("#bdKw").value.trim(); BD.date = $("#bdDate").value || BD.date; BD.topic = $("#bdTopic").value.trim(); BD.memo = $("#bdMemo").value.trim(); };
+function sheetBlogDraft() {
+  const v = BD;
+  openSheet(`<h3>지시문 만들기</h3><div class="caption">운영봇이 지금 지시문 규칙대로 초안을 써요. 1~2분 걸려요</div>
+    <div class="lbl">어느 지점</div><div class="chips">${BD_BR.map((b) => `<button class="chip ${v.b === b ? "on" : ""}" data-bdb="${b}">${BR.indexOf(b) + 1} ${esc(b)}</button>`).join("")}</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><div><div class="lbl">발행일</div><input class="in" type="date" id="bdDate" value="${esc(v.date)}"></div><div><div class="lbl">대표 키워드</div><input class="in" id="bdKw" maxlength="40" value="${esc(v.kw)}"></div></div>
+    <div class="lbl">제품이나 주제</div><input class="in" id="bdTopic" maxlength="120" placeholder="예: 하복2, 쌀쌀한 날 기기 관리" value="${esc(v.topic)}"><div class="caption">제품은 여기 적은 것만 써요. 비우면 매장, 상황, 고민으로 써요</div>
+    <div class="lbl">메모 <span style="font-weight:500">(선택)</span></div><input class="in" id="bdMemo" maxlength="300" placeholder="꼭 넣을 말이 있으면" value="${esc(v.memo)}">
+    <div class="btns"><button class="btn gray" data-x style="flex:0 0 96px">닫기</button><button class="btn" data-act="bdsend">초안 만들기</button></div>`);
+}
+async function bdSend() {
+  readBdForm(); const v = BD;
+  if (!v.b) return toast("지점을 골라 주세요"); if (!v.kw) return toast("대표 키워드를 넣어 주세요"); if (!v.date) return toast("발행일을 골라 주세요");
+  const by = await adminName(); if (!by) return;
+  const r = { id: Date.now().toString(36), b: v.b, date: v.date, kw: v.kw, topic: v.topic, memo: v.memo, by };
+  try { await sendOp("blogDraft", r); BDL.push({ ...r, st: "wait", at: "", _t: Date.now() }); BD = null; closeSheet(); enterOnce = true; render(); toast("초안을 만들고 있어요. 1~2분 뒤에 떠요", 4000); bdWatch(); }
+  catch (e) { toast("못 보냈어요: " + e.message); }
+}
+function sheetBlogDraftView(id) {
+  const r = bdList().find((y) => y.id === id); if (!r) return;
+  const head = `<div class="eyebrow">${esc(ho(r.b))}, ${dLabel(r.date)} 발행, ${esc(r.kw)}</div>`;
+  if (r.st === "wait") return openSheet(head + `<h3>만드는 중이에요</h3><div class="caption">1~2분 걸려요. 다 되면 목록에 "초안 완성"으로 바뀌어요</div><div class="btns"><button class="btn gray" data-x>닫기</button></div>`);
+  if (!r.titles) return openSheet(head + `<h3>초안을 못 만들었어요</h3><div class="warn">${esc(r.err || "알 수 없는 오류")}</div><div class="btns"><button class="btn red" data-bddel="${esc(r.id)}" style="flex:0 0 96px">지우기</button><button class="btn gray" data-x>닫기</button></div>`);
+  const s = r.stats || {}, w = (bad, t) => `<span class="${bad ? "t-bad" : ""}" style="font-weight:${bad ? 700 : 500}">${t}</span>`;
+  const stat = r.stats ? `<div class="caption">${w(s.kw > 6, `대표 키워드 ${s.kw}번${s.kw > 6 ? "(기준 6번)" : ""}`)}, ${w(s.chars < 1000 || s.chars > 1200, `본문 ${s.chars}자${s.chars < 1000 || s.chars > 1200 ? "(기준 1,000~1,200자)" : ""}`)}, ${w(s.photos !== 12, `사진 ${s.photos}장`)}${(s.bad || []).length ? ", " + w(true, "들어가면 안 되는 말: " + s.bad.join(", ")) : ""}</div>` : "";
+  const shoot = r.shoot ? `<div class="okline" style="margin-top:10px">📷 ${esc(r.b)}점에 촬영 업무를 요청했어요. 사진 ${r.shoot.n}장 도착</div>` : r.needShoot ? `<div style="background:var(--blue-soft);border-radius:14px;padding:14px 16px;margin-top:12px"><b style="font-size:15px">이 주제는 매장 사진이 필요해요!</b><div class="caption" style="margin-top:4px">${esc(r.shootWhy || "")}</div><div class="btns" style="margin-top:12px"><button class="btn" style="height:48px;font-size:16px" data-bdshoot="${esc(r.id)}">${esc(r.b)}점에 촬영 업무 요청하기</button></div></div>` : "";
+  openSheet(head + `<h3>${esc(r.titles[0])}</h3>${r.titleWhy ? `<div class="caption">${esc(r.titleWhy)}</div>` : ""}${stat}
+    ${r.err ? `<div class="warn">고치기를 못 했어요: ${esc(r.err)}</div>` : ""}${r.st === "pub" ? `<div class="okline">✅ 직원웹에 올렸어요 ${esc(String(r.pubAt || "").slice(5))}</div>` : ""}
+    ${(r.check || []).length ? `<div class="lbl">발행 전에 확인할 것</div>${r.check.map((c) => `<div class="warn" style="color:var(--amber);background:var(--amber-soft)">${esc(c)}</div>`).join("")}` : ""}
+    <div class="lbl">첫 문단</div><div class="caption" style="margin:0;font-size:15px;line-height:1.65;color:var(--ink2)">${esc(r.first || "")}</div>
+    <div class="lbl">소제목</div><div class="caption" style="margin:0;font-size:15px;line-height:1.8;color:var(--ink2)">${(r.heads || []).map(esc).join("<br>")}</div>
+    <div class="lbl">찍을 사진 ${(r.shots || []).length}장</div><div class="caption" style="margin:0;font-size:14px;line-height:1.75;color:var(--ink2)">${(r.shots || []).map((x, i) => `${i + 1}. ${esc(x)}`).join("<br>")}</div>
+    ${shoot}
+    <div class="btns"><a class="btn gray" style="display:flex;align-items:center;justify-content:center;text-decoration:none;height:48px;font-size:15px" href="../blog/${esc(r.file)}?t=${Date.now()}" target="_blank" rel="noopener">전체 보기</a><button class="btn gray" style="height:48px;font-size:15px" data-bdedit="${esc(r.id)}">고쳐 달라고 하기</button></div>
+    <div class="btns" style="margin-top:8px"><button class="btn red" data-bddel="${esc(r.id)}" style="flex:0 0 80px">지우기</button><button class="btn gray" data-x style="flex:0 0 80px">닫기</button><button class="btn" data-bdpub="${esc(r.id)}">${r.st === "pub" ? "다시 올리기" : "직원웹에 올리기"}</button></div>`);
+}
+async function bdAct(kind, id) {
+  const r = bdList().find((y) => y.id === id); if (!r) return;
+  try {
+    if (kind === "edit") {
+      const ask = await askText("어떻게 고칠까요", "한 줄로 적어 주세요. 고칠 곳만 바뀌어요", "예: 첫 문단을 퇴근길 손님 이야기로", "", "고쳐 달라고 하기"); if (!ask) return;
+      await sendOp("blogDraftEdit", { id, ask }); r.st = "wait"; r.err = ""; closeSheet(); render(); toast("고치는 중이에요. 1~2분 뒤에 바뀌어요", 4000); bdWatch();
+    } else if (kind === "shoot") {
+      if (!(await askConfirm(`${r.b}점에 촬영 업무를 요청할까요?`, "직원웹 오늘 할 일에 찍을 사진 목록이 떠요. 직원은 그 자리에서 사진을 올려요", "요청하기"))) return;
+      const t = { id: Date.now().toString(36), title: `블로그 사진 촬영 (${+r.date.slice(5, 7)}/${+r.date.slice(8)} 발행)`, note: (r.shots || []).map((x, i) => `${i + 1}. ${x}`).join("\n").slice(0, 880), time: "", br: [r.b], rep: "once", date: D.d, dow: [], dom: 1, kind: "photo", draft: id };
+      await sendOp("task", t); D.tasks.push({ ...t }); r.shoot = { id: t.id, n: 0 }; closeSheet(); render(); toast(`${r.b}점에 촬영 업무를 보냈어요. 직원웹에는 1~2분 뒤에 떠요`, 4000); setTimeout(() => reload(true), 90e3);
+    } else if (kind === "pub") {
+      if (!(await askConfirm("직원웹에 올릴까요?", `${r.b}점 ${dLabel(r.date)} 블로그 지시문으로 떠요. 같은 날 지시문이 이미 있으면 이걸로 바뀌어요`, "올리기"))) return;
+      const by = await adminName(); if (!by) return;
+      await sendOp("blogDraftPub", { id, by }); r.st = "pub"; r.pubAt = ""; closeSheet(); render(); toast("올렸어요. 직원웹에는 1~2분 뒤에 떠요", 4000); setTimeout(() => reload(true), 90e3);
+    } else if (kind === "del") {
+      if (!(await askConfirm("이 초안을 지울까요?", r.st === "pub" ? "직원웹에 올린 지시문은 그대로 남아요" : "", "지우기", true))) return;
+      await sendOp("blogDraftDel", { id }); D.blogDrafts = bdList().filter((y) => y.id !== id); BDL = BDL.filter((y) => y.id !== id); closeSheet(); render(); toast("지웠어요");
+    }
+  } catch (e) { toast("못 보냈어요: " + e.message); }
 }
 function blogTodayHtml(xs) {
   // 오늘 할 일 카드 안 블로그 줄: 몇 곳 올렸는지, 안 올린 지점, 올린 지점(눌러서 글)
@@ -1071,7 +1138,7 @@ function tasksHtml() {
   };
   const give = `<div class="btns" style="margin-top:14px"><button class="btn" data-act="tnew" style="height:50px;font-size:16px">＋ 새 업무</button><button class="btn sec2" data-act="ntnew" style="height:50px;font-size:16px">＋ 공지</button><button class="btn sec2" data-act="svnew" style="height:50px;font-size:16px">＋ 재고조사</button></div>
     <div class="lbl" style="margin:18px 0 6px">등록된 업무 <span style="font-weight:500">${D.tasks.length}개, 누르면 고치기</span></div>
-    <div class="list" style="margin:0 -20px -8px;background:none">${D.tasks.length ? D.tasks.map((t) => `<button class="item" data-tedit="${t.id}"><div class="av blue">${t.kind === "survey" ? "📦" : t.rep === "daily" ? "매일" : t.rep === "weekly" ? "주" : t.rep === "monthly" ? "월" : "1"}</div>
+    <div class="list" style="margin:0 -20px -8px;background:none">${D.tasks.length ? D.tasks.map((t) => `<button class="item" data-tedit="${t.id}"><div class="av blue">${t.kind === "photo" ? "📷" : t.kind === "survey" ? "📦" : t.rep === "daily" ? "매일" : t.rep === "weekly" ? "주" : t.rep === "monthly" ? "월" : "1"}</div>
       <div class="tx"><b>${esc(t.title)}</b><span>${esc(REP_TXT(t))}${t.time ? ", " + esc(t.time) : ""}, ${t.br.length === BR.length ? "전 지점" : t.br.map(esc).join(", ")}</span></div><span class="chev">›</span></button>`).join("") : '<div class="empty">아직 없어요</div>'}</div>`;
   const runL = run.length ? `<div class="list" style="margin:8px -20px -8px;background:none">${run.map(row).join("")}</div>` : '<div class="empty" style="padding:16px 0 4px">진행 중인 게 없어요</div>';
   const doneL = done.length ? `<div class="list" style="margin:8px -20px -8px;background:none">${done.slice(0, 80).map(row).join("")}</div>` : '<div class="empty" style="padding:16px 0 4px">최근 7일에 끝난 게 없어요</div>';
@@ -1241,6 +1308,14 @@ document.addEventListener("click", async (e) => {
   if (t.dataset.act === "more") return openSheet(moreSheetHtml());
   if (t.dataset.nvb) { nvB = t.dataset.nvb; ls.set("vf-admin-nvb", nvB); enterOnce = true; render(); return scrollTo(0, 0); }
   if (t.dataset.act === "nvguide") return openSheet(nvGuideHtml());
+  if (t.dataset.bdnew !== undefined) { const [b, kw, dow] = t.dataset.bdnew.split("|"); BD = { b: BD_BR.includes(b) ? b : "", kw, date: nextDow(+dow || 1), topic: "", memo: "" }; return sheetBlogDraft(); }
+  if (t.dataset.bdb) { readBdForm(); BD.b = t.dataset.bdb; return sheetBlogDraft(); }
+  if (t.dataset.act === "bdsend") return bdSend();
+  if (t.dataset.bdview) return sheetBlogDraftView(t.dataset.bdview);
+  if (t.dataset.bdedit) return bdAct("edit", t.dataset.bdedit);
+  if (t.dataset.bdshoot) return bdAct("shoot", t.dataset.bdshoot);
+  if (t.dataset.bdpub) return bdAct("pub", t.dataset.bdpub);
+  if (t.dataset.bddel) return bdAct("del", t.dataset.bddel);
   if (t.dataset.act === "nvreload") { NV = null; NV_ERR = false; return render(); }
   if (t.tagName === "TR") return isPC() ? panelBranch(t.dataset.brpc, "프리미엄 A") : sheetBranch(t.dataset.brpc, "프리미엄 A");
   if (t.id === "go") return tryLogin();
