@@ -825,7 +825,7 @@ function sheetBlogDraftView(id) {
   if (!r.titles) return openSheet(head + `<h3>초안을 못 만들었어요</h3><div class="warn">${esc(r.err || "알 수 없는 오류")}</div><div class="btns"><button class="btn red" data-bddel="${esc(r.id)}" style="flex:0 0 96px">지우기</button><button class="btn gray" data-x>닫기</button></div>`);
   const s = r.stats || {}, w = (bad, t) => `<span class="${bad ? "t-bad" : ""}" style="font-weight:${bad ? 700 : 500}">${t}</span>`;
   const stat = r.stats ? `<div class="caption">${w(s.kw > 6, `대표 키워드 ${s.kw}번${s.kw > 6 ? "(기준 6번)" : ""}`)}, ${w(s.chars < 1000 || s.chars > 1200, `본문 ${s.chars}자${s.chars < 1000 || s.chars > 1200 ? "(기준 1,000~1,200자)" : ""}`)}, ${w(s.photos !== 12, `사진 ${s.photos}장`)}${(s.bad || []).length ? ", " + w(true, "들어가면 안 되는 말: " + s.bad.join(", ")) : ""}</div>` : "";
-  const shoot = r.shoot ? `<div class="okline" style="margin-top:10px">📷 ${esc(jm(r.b))}에 촬영 업무를 요청했어요. 사진 ${r.shoot.n}장 도착</div>` : r.needShoot ? `<div style="background:var(--blue-soft);border-radius:14px;padding:14px 16px;margin-top:12px"><b style="font-size:15px">이 주제는 매장 사진이 필요해요!</b><div class="caption" style="margin-top:4px;font-weight:700;color:var(--blue)">촬영 요청은 늦어도 발행 2일 전(${bdMd(addDays(r.date, -2))})까지 해 주세요</div><div class="caption" style="margin-top:4px">${esc(r.shootWhy || "")}</div><div class="btns" style="margin-top:12px"><button class="btn" style="height:48px;font-size:16px" data-bdshoot="${esc(r.id)}">${esc(jm(r.b))}에 촬영 업무 요청하기</button></div></div>` : "";
+  const shoot = r.shoot ? `<div class="okline" style="margin-top:10px">📷 ${esc(jm(r.shoot.b || r.b))}에 사진을 요청했어요. 사진 ${r.shoot.n}장 도착</div>` : "";
   openSheet(head + `<h3>${esc(r.titles[0])}</h3>${r.titleWhy ? `<div class="caption">${esc(r.titleWhy)}</div>` : ""}${stat}
     ${r.err ? `<div class="warn">고치기를 못 했어요: ${esc(r.err)}</div>` : ""}${r.st === "pub" ? `<div class="okline">✅ 직원웹에 올렸어요 ${esc(String(r.pubAt || "").slice(5))}</div>` : ""}
     <div class="lbl">첫 문단</div><div class="caption" style="margin:0;font-size:15px;line-height:1.65;color:var(--ink2)">${esc(r.first || "")}</div>
@@ -833,19 +833,20 @@ function sheetBlogDraftView(id) {
     <div class="lbl">찍을 사진 ${(r.shots || []).length}장</div><div class="caption" style="margin:0;font-size:14px;line-height:1.75;color:var(--ink2)">${(r.shots || []).map((x, i) => `${i + 1}. ${esc(x)}`).join("<br>")}</div>
     ${shoot}
     <div class="btns"><a class="btn gray" style="display:flex;align-items:center;justify-content:center;text-decoration:none;height:48px;font-size:15px" href="../blog/${esc(r.file)}?t=${Date.now()}" target="_blank" rel="noopener">전체 보기</a><button class="btn gray" style="height:48px;font-size:15px" data-bdedit="${esc(r.id)}">고쳐 달라고 하기</button></div>
-    <div class="btns" style="margin-top:8px"><button class="btn red" data-bddel="${esc(r.id)}" style="flex:0 0 80px">지우기</button><button class="btn gray" data-x style="flex:0 0 80px">닫기</button><button class="btn" data-bdpub="${esc(r.id)}">${r.st === "pub" ? "다시 올리기" : "직원웹에 올리기"}</button></div>`);
+    <div class="btns" style="margin-top:8px"><button class="btn red" data-bddel="${esc(r.id)}" style="flex:0 0 80px">지우기</button><button class="btn gray" data-x style="flex:0 0 80px">닫기</button><button class="btn" data-bdpub="${esc(r.id)}">${r.st === "pub" ? "다시 올리기" : "직원웹에 올리기"}</button></div>${r.shoot ? "" : `<button class="chip" data-bdshoot="${esc(r.id)}" style="margin-top:14px;height:40px;font-size:14px">다른 지점 사진이 필요하면 요청하기</button>`}`);
 }
-async function bdAct(kind, id) {
+async function bdAct(kind, id, arg) {
   const r = bdList().find((y) => y.id === id); if (!r) return;
   try {
     if (kind === "edit") {
       const ask = await askText("어떻게 고칠까요", "한 줄로 적어 주세요. 고칠 곳만 바뀌어요", "예: 첫 문단을 퇴근길 손님 이야기로", "", "고쳐 달라고 하기"); if (!ask) return;
       await sendOp("blogDraftEdit", { id, ask }); r.st = "wait"; r.err = ""; closeSheet(); render(); toast("고치는 중이에요. 1~2분 뒤에 바뀌어요", 4000); bdWatch();
     } else if (kind === "shoot") {
+      const to = BR.includes(arg) ? arg : ""; if (!to) return openSheet(`<h3>어느 지점에 사진을 요청할까요?</h3><div class="caption">다른 지점 사진이 필요할 때만 써요. 예: 율하점 글을 전 지점이 쓸 때 율하에 요청해요</div><div class="chips" style="margin-top:14px">${BR.map((b, i) => `<button class="chip" data-bdshootb="${esc(id)}|${b}">${i + 1} ${esc(b)}</button>`).join("")}</div><div class="btns"><button class="btn gray" data-bdview="${esc(id)}">뒤로</button></div>`);
       const nL = bdLeft(r.date), dl = addDays(r.date, -2);
-      if (!(await askConfirm(`${jm(r.b)}에 촬영 업무를 요청할까요?`, `직원웹 오늘 할 일에 찍을 사진 목록이 떠요. ${nL <= 2 ? `발행까지 ${nL}일 남아서 촬영이 빠듯해요` : `발행 ${bdMd(r.date)}, 사진은 ${bdMd(dl)}까지 받으면 돼요`}`, "요청하기"))) return;
-      const t = { id: Date.now().toString(36), title: `블로그 사진 촬영 (${bdMd(r.date)} 발행, ${nL <= 2 ? "오늘" : bdMd(dl)}까지)`, note: (r.shots || []).map((x, i) => `${i + 1}. ${x}`).join("\n").slice(0, 880), time: "", br: [r.b], rep: "once", date: D.d, dow: [], dom: 1, kind: "photo", draft: id };
-      await sendOp("task", t); D.tasks.push({ ...t }); r.shoot = { id: t.id, n: 0 }; closeSheet(); render(); toast(`${jm(r.b)}에 촬영 업무를 보냈어요. 직원웹에는 1~2분 뒤에 떠요`, 4000); setTimeout(() => reload(true), 90e3);
+      if (!(await askConfirm(`${jm(to)}에 사진을 요청할까요?`, `직원웹 오늘 할 일에 찍을 사진 목록이 떠요. ${nL <= 2 ? `발행까지 ${nL}일 남아서 촬영이 빠듯해요` : `발행 ${bdMd(r.date)}, 사진은 ${bdMd(dl)}까지 받으면 돼요`}`, "요청하기"))) return;
+      const t = { id: Date.now().toString(36), title: `블로그 사진 촬영 (${jm(r.b)} ${bdMd(r.date)} 글, ${nL <= 2 ? "오늘" : bdMd(dl)}까지)`, note: (r.shots || []).map((x, i) => `${i + 1}. ${x}`).join("\n").slice(0, 880), time: "", br: [to], rep: "once", date: D.d, dow: [], dom: 1, kind: "photo", draft: id };
+      await sendOp("task", t); D.tasks.push({ ...t }); r.shoot = { id: t.id, n: 0, b: to }; closeSheet(); render(); toast(`${jm(to)}에 촬영 업무를 보냈어요. 직원웹에는 1~2분 뒤에 떠요`, 4000); setTimeout(() => reload(true), 90e3);
     } else if (kind === "pub") {
       if (!(await askConfirm("직원웹에 올릴까요?", `${jm(r.b)} ${dLabel(r.date)} 블로그 지시문으로 떠요. 같은 날 지시문이 이미 있으면 이걸로 바뀌어요`, "올리기"))) return;
       const by = await adminName(); if (!by) return;
@@ -1698,6 +1699,7 @@ document.addEventListener("click", async (e) => {
   if (t.dataset.act === "bdsend") return bdSend();
   if (t.dataset.bdview) return sheetBlogDraftView(t.dataset.bdview);
   if (t.dataset.bdedit) return bdAct("edit", t.dataset.bdedit);
+  if (t.dataset.bdshootb) { const [sid, sb] = t.dataset.bdshootb.split("|"); return bdAct("shoot", sid, sb); }
   if (t.dataset.bdshoot) return bdAct("shoot", t.dataset.bdshoot);
   if (t.dataset.bdpub) return bdAct("pub", t.dataset.bdpub);
   if (t.dataset.bddel) return bdAct("del", t.dataset.bddel);
@@ -1790,7 +1792,7 @@ document.addEventListener("click", async (e) => {
   if (a === "svsave") return saveSurveyTask();
   if (a === "ntnew") return sheetNotice();
   if (a === "tnew") { editTask = { id: "", title: "", note: "", time: "", br: [], rep: "once", date: D.d, dow: [], dom: 1 }; return sheetTask(); }
-  if (t.dataset.tedit) { editTask = JSON.parse(JSON.stringify(D.tasks.find((x) => x.id === t.dataset.tedit))); editTask.dow ||= []; if (tab === "tasks") $("#dim").classList.remove("on"); sheetTask(); if (tab === "tasks") $("#mk")?.scrollIntoView({ block: "start", behavior: "smooth" }); return; }
+  if (t.dataset.tedit) { const te = D.tasks.find((x) => x.id === t.dataset.tedit); if (!te) return toast("아직 자료에 안 들어왔어요. 1~2분 뒤에 다시 눌러 주세요", 4000); editTask = JSON.parse(JSON.stringify(te)); editTask.dow ||= []; if (tab === "tasks") $("#dim").classList.remove("on"); sheetTask(); if (tab === "tasks") $("#mk")?.scrollIntoView({ block: "start", behavior: "smooth" }); return; }
   if (t.dataset.tball !== undefined) { readTaskForm(); editTask.br = editTask.br.length === BR.length ? [] : [...BR]; return sheetTask(); }
   if (t.dataset.tb) { readTaskForm(); const b = t.dataset.tb, s = new Set(editTask.br); s.has(b) ? s.delete(b) : s.add(b); editTask.br = BR.filter((x) => s.has(x)); return sheetTask(); }
   if (t.dataset.trep) { readTaskForm(); editTask.rep = t.dataset.trep; return sheetTask(); }
