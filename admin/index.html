@@ -539,17 +539,19 @@ function nvStats(b) {
 const nvOf30 = (n) => `<b>${n}<small style="font-size:12px;color:var(--sub);font-weight:600"> / 30</small></b>`;
 const nvRow = (x, i, pick) => `<div class="item kwrow anim" style="--i:${i}"><div class="tx"><b>${esc(x.k)}<span class="tag gray" style="margin:0 0 0 6px">${esc(x.t)}</span>${pick && pick.k === x.k ? '<span class="tag" style="margin:0 0 0 4px;background:var(--amber-soft);color:var(--amber)">추천</span>' : ""}</b><div class="sbar"><i class="${pick && pick.k === x.k ? "pk" : ""}" style="width:${nvPct(x.n)}%;--i:${i}"></i></div>${x.pr != null ? `<span>${nvRank(x.pr)}</span>` : ""}</div><div class="val">${nvOf30(x.n)}${x.dn ? `<span class="${x.dn > 0 ? "t-good" : "t-bad"}" style="display:block">7일 전보다 ${x.dn > 0 ? "+" : ""}${x.dn}</span>` : ""}</div></div>`;
 const nvRec = (i, title, p, why, b = "", dow = 1) => (p ? `<div class="card anim" style="--i:${i}"><div class="eyebrow">${title}</div><div class="headline" style="font-size:22px"><em>${esc(p.k)}</em></div><div class="sbar"><i class="pk" style="width:${nvPct(p.n)}%;--i:${i}"></i></div><div class="caption">블로그 상위 30개 중 ${p.n}개(${nvPct(p.n)}%)예요. ${why}</div><div class="btns" style="margin-top:14px"><button class="btn sec2" style="height:48px;font-size:16px" data-bdnew="${esc(b)}|${esc(p.k)}|${dow}">이 키워드로 지시문 만들기</button></div></div>` : "");
+const nvFree = (i, b, dow) => `<div class="list" style="margin-top:12px"><button class="item anim" style="--i:${i}" data-bdnew="${esc(b)}||${dow}"><div class="tx"><b>다른 키워드로 직접 만들기</b><span>추천 말고 원하는 키워드와 주제를 적어서 만들어요</span></div><span class="chev">›</span></button></div>`;
 function nvBranchHtml(b) {
   const s = nvStats(b), c = nvStats("대구 전체"), pr = (NV.place || []).filter((r) => r.b === b && r.k === NV.common).sort((a, z) => a.d.localeCompare(z.d)).at(-1);
   return nvRec(0, "월요일 글, 자기 지역 키워드", s.pick, `${esc(b)} 키워드 중 가장 비어 있어서 이 키워드를 추천해요!`, b, 1)
     + nvRec(1, "수요일 글, 대구전자담배", c.pick, `대구전자담배 묶음 중 가장 비어 있어요.${pr ? ` ${esc(b)}의 대구전자담배는 ${nvRankIs(pr.r)}.` : ""}`, b, 3)
+    + nvFree(2, b, 1)
     + `<div class="sec">이 지점 키워드 <small>${s.list.length}개, 막대는 30개 중 우리 글</small></div><div class="list">${s.list.map((x, i) => nvRow(x, i + 2, s.pick)).join("") || '<div class="empty">기록이 없어요</div>'}</div>`
     + `<div class="sec">대구전자담배 묶음 <small>수요일 글</small></div><div class="list">${c.list.map((x, i) => nvRow(x, i + 2 + s.list.length, c.pick)).join("") || '<div class="empty">기록이 없어요</div>'}</div>`;
 }
 function nvAllHtml() {
   const c = nvStats("대구 전체");
   const rows = BR.map((b, i) => { const p = nvStats(b).pick; return `<button class="item kwrow anim" style="--i:${i + 1}" data-nvb="${b}"><div class="av ${p ? "warn" : ""}">${i + 1}</div><div class="tx"><b>${esc(b)}</b><span>${p ? `추천: ${esc(p.k)}` : "기록이 없어요"}</span>${p ? `<div class="sbar"><i class="pk" style="width:${nvPct(p.n)}%;--i:${i + 1}"></i></div>` : ""}</div><div class="val">${p ? nvOf30(p.n) : ""}</div><span class="chev">›</span></button>`; }).join("");
-  return nvRec(0, "수요일 글, 전 지점 공통", c.pick, "대구전자담배 묶음 중 가장 비어 있어서 이 키워드를 추천해요!", "", 3) + `<div class="sec">지점별 월요일 추천 <small>점유가 가장 낮은 키워드, 누르면 그 지점 전체</small></div><div class="list">${rows}</div>`;
+  return nvRec(0, "수요일 글, 전 지점 공통", c.pick, "대구전자담배 묶음 중 가장 비어 있어서 이 키워드를 추천해요!", "", 3) + nvFree(1, "", 3) + `<div class="sec">지점별 월요일 추천 <small>점유가 가장 낮은 키워드, 누르면 그 지점 전체</small></div><div class="list">${rows}</div>`;
 }
 function nvGuideHtml() {
   const g = (t, d) => `<div class="lbl" style="margin:18px 0 6px;color:var(--ink);font-size:16px;font-weight:700">${t}</div><div class="caption" style="margin:0;font-size:15px;line-height:1.65;color:var(--ink2)">${d}</div>`;
@@ -610,12 +612,12 @@ function bdPick() { const from = addDays(D.d, -28), txt = [...(BLOGLIST || D.blo
 const readBdForm = () => { if (!BD || !$("#bdKw")) return; BD.kw = $("#bdKw").value.trim(); BD.lt = $("#bdLt").value.trim(); BD.date = $("#bdDate").value || BD.date; BD.topic = $("#bdTopic").value.trim(); BD.memo = $("#bdMemo").value.trim(); };
 function sheetBlogDraft() {
   const v = BD; if (!BLOGLIST) loadBlogList(); if (!v.ltPick) bdPick();
-  openSheet(`<h3>지시문 만들기</h3><div class="caption">운영봇이 지금 지시문 규칙대로 초안을 써요. 1~2분 걸려요</div>
+  openSheet(`<h3>지시문 만들기</h3><div class="caption">운영봇이 지금 지시문 규칙대로 초안을 써요. 1~2분 걸려요</div><div style="background:var(--blue-soft);border-radius:12px;padding:10px 14px;margin-top:10px;font-size:14px;font-weight:600;line-height:1.5;color:var(--blue)">${v.rec ? "추천 키워드로 채워 뒀어요. " : ""}키워드, 롱테일, 주제 모두 고쳐 써도 돼요</div>
     <div class="lbl">어느 지점</div><div class="chips">${BD_BR.map((b) => `<button class="chip ${v.b === b ? "on" : ""}" data-bdb="${b}">${BR.indexOf(b) + 1} ${esc(b)}</button>`).join("")}</div>
     <div class="lbl">발행일</div><input class="in" type="date" id="bdDate" value="${esc(v.date)}">
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><div><div class="lbl">대표 키워드</div><input class="in" id="bdKw" maxlength="40" value="${esc(v.kw)}"></div><div><div class="lbl">롱테일</div><input class="in" id="bdLt" maxlength="40" placeholder="예: 일회용" value="${esc(v.lt || "")}"></div></div>
     <div class="lbl" style="display:flex;align-items:center;gap:8px">롱테일 추천 <button class="chip" style="height:32px;padding:0 10px;font-size:13px;margin-left:auto" data-act="bdltmore">다른 추천 보기</button></div><div class="caption" style="margin:0 0 4px">${v.b ? esc(jm(v.b)) + "이 " : ""}최근 4주에 안 쓴 것 중에서 골라 보여 줘요. 직접 적어도 돼요</div>${v.ltPick.map(([g, xs]) => `<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:6px"><span style="flex:0 0 34px;font-size:13px;font-weight:700;color:var(--sub)">${g}</span>${xs.map((x) => `<button class="chip ${v.lt === x ? "on" : ""}" style="height:36px;padding:0 12px;font-size:14px" data-bdlt="${esc(x)}">${esc(x)}</button>`).join("")}</div>`).join("")}
-    <div class="lbl">제품이나 주제</div><input class="in" id="bdTopic" maxlength="120" placeholder="예: 하복2, 쌀쌀한 날 기기 관리" value="${esc(v.topic)}"><div class="caption">제품은 여기 적은 것만 써요. 비우면 매장, 상황, 고민으로 써요</div>
+    <div class="lbl">제품이나 주제 <span style="font-weight:500">(선택)</span></div><input class="in" id="bdTopic" maxlength="120" placeholder="예: 하복2, 쌀쌀한 날 기기 관리" value="${esc(v.topic)}"><div class="caption">제품은 여기 적은 것만 써요. 비우면 운영봇이 주제를 정해요. 제목은 운영봇이 지어요</div>
     <div class="lbl">메모 <span style="font-weight:500">(선택)</span></div><input class="in" id="bdMemo" maxlength="300" placeholder="꼭 넣을 말이 있으면" value="${esc(v.memo)}">
     <div class="btns"><button class="btn gray" data-x style="flex:0 0 96px">닫기</button><button class="btn" data-act="bdsend">초안 만들기</button></div>`);
 }
