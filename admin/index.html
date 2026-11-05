@@ -92,7 +92,8 @@
   .pchead{margin-bottom:14px}.pchead h1{font-size:22px;font-weight:800;letter-spacing:-.6px;line-height:1.3}.pchead .caption{margin:4px 0 0}
   .av svg{width:22px;height:22px}
   /* 11/5 블로그 탭: 점유 막대, 줄 등장, 버튼 눌림. 움직임 줄이기 설정이면 옮기는 움직임은 뺀다 */
-  .sbar{height:8px;border-radius:99px;background:var(--line2);overflow:hidden;margin-top:8px}.sbar i{display:block;height:100%;border-radius:99px;background:var(--blue)}.sbar i.pk{background:var(--amber)}
+  .sbar{height:8px;border-radius:99px;background:var(--line2);overflow:hidden;margin-top:8px}.sbar i{display:block;height:100%;border-radius:99px;background:var(--blue)}.sbar i.pk{background:var(--blue)}
+  :is(.wrap,.main,.narrow)>.chips{gap:8px}:is(.wrap,.main,.narrow)>.chips .chip:not(.on){background:var(--card);box-shadow:inset 0 0 0 1px var(--line2);color:var(--ink)}:is(.wrap,.main,.narrow)>.chips .chip.on{box-shadow:0 2px 8px rgba(27,100,218,.28)}
   .kwrow .tx b{white-space:normal;line-height:1.35}.kwrow{align-items:flex-start}
   .btn,.chip,.subnav button{transition:transform .12s var(--ease-out)}.btn:active,.chip:active,.subnav button:active{transform:scale(.97)}
   @keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}@keyframes fadein{from{opacity:0}to{opacity:1}}@keyframes reveal{from{clip-path:inset(0 100% 0 0 round 99px)}to{clip-path:inset(0 0 0 0 round 99px)}}
@@ -526,6 +527,7 @@ let NV = null, NV_AT = 0, NV_ERR = false, nvB = ls.get("vf-admin-nvb") || "전�
 async function loadNaver(quiet) { try { const r = await fetch("../naver/data.json?t=" + Date.now(), { cache: "no-store" }); if (!r.ok) throw 0; NV = await r.json(); NV_AT = Date.now(); NV_ERR = false; } catch { NV_ERR = true; NV_AT = Date.now(); } if (!quiet && tab === "blog" && !$("#dim").classList.contains("on")) { enterOnce = true; render(); } }
 const nvPct = (n) => Math.round((n / 30) * 100);
 const nvRank = (r) => (r == null ? "" : r > 100 ? "지도 순위 밖" : `지도 ${r}위`);
+const nvRankIs = (r) => (r > 100 ? "지도 순위 밖이에요" : `지도 ${r}위예요`);
 function nvStats(b) {
   const rows = (NV.blog || []).filter((r) => r.b === b), ds = [...new Set(rows.map((r) => r.d))].sort(), last = ds.at(-1) || "", prevD = last ? ds.filter((d) => d <= addDays(last, -7)).at(-1) : null;
   const pl = (NV.place || []).filter((r) => r.b === b), pd = pl.map((r) => r.d).sort().at(-1);
@@ -539,7 +541,7 @@ const nvRec = (i, title, p, why) => (p ? `<div class="card anim" style="--i:${i}
 function nvBranchHtml(b) {
   const s = nvStats(b), c = nvStats("대구 전체"), pr = (NV.place || []).filter((r) => r.b === b && r.k === NV.common).sort((a, z) => a.d.localeCompare(z.d)).at(-1);
   return nvRec(0, "월요일 글, 자기 지역 키워드", s.pick, `${esc(b)} 키워드 중 가장 비어 있어서 이 키워드를 추천해요!`)
-    + nvRec(1, "수요일 글, 대구전자담배", c.pick, `대구전자담배 묶음 중 가장 비어 있어요.${pr ? ` ${esc(b)}의 대구전자담배는 ${nvRank(pr.r)}예요.` : ""}`)
+    + nvRec(1, "수요일 글, 대구전자담배", c.pick, `대구전자담배 묶음 중 가장 비어 있어요.${pr ? ` ${esc(b)}의 대구전자담배는 ${nvRankIs(pr.r)}.` : ""}`)
     + `<div class="sec">이 지점 키워드 <small>${s.list.length}개, 막대는 30개 중 우리 글</small></div><div class="list">${s.list.map((x, i) => nvRow(x, i + 2, s.pick)).join("") || '<div class="empty">기록이 없어요</div>'}</div>`
     + `<div class="sec">대구전자담배 묶음 <small>수요일 글</small></div><div class="list">${c.list.map((x, i) => nvRow(x, i + 2 + s.list.length, c.pick)).join("") || '<div class="empty">기록이 없어요</div>'}</div>`;
 }
