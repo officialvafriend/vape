@@ -578,10 +578,11 @@ const nextDow = (dow) => { let d = D.d; for (let i = 0; i < 8; i++) { d = addDay
 function bdList() { const L = (D.blogDrafts ||= []); BDL = BDL.filter((r) => Date.now() - r._t < 10 * 60e3 && !L.some((y) => y.id === r.id && y.st !== "wait")); for (const r of BDL) if (!L.some((y) => y.id === r.id)) L.push(r); return L; }
 function bdWatch() { clearInterval(bdT); let k = 0; bdT = setInterval(() => { if (++k > 12 || !bdList().some((r) => r.st === "wait")) return clearInterval(bdT); reload(true); }, 40e3); }
 function blogDraftsHtml() {
-  const L = bdList().slice().reverse(); if (!L.length) return "";
+  const all = bdList().slice().reverse(), L = nvB === "전체" ? all : all.filter((r) => r.b === nvB); if (!L.length) return all.length && nvB !== "전체" ? `<div class="sec">지시문 초안 <small>${esc(nvB)}점 초안은 아직 없어요. 다른 지점 ${all.length}개는 [전 지점]에서 봐요</small></div>` : "";
   const st = (r) => (r.st === "wait" ? '<span class="t-sub">만드는 중…</span>' : r.st === "error" ? '<span class="t-bad">못 만들었어요</span>' : r.st === "pub" ? '<span class="t-good">직원웹에 올림</span>' : '<span style="color:var(--blue)">초안 완성</span>');
-  return `<div class="sec">지시문 초안 <small>${L.length}개, 누르면 내용</small></div><div class="list">${L.map((r, i) => `<button class="item kwrow anim" style="--i:${i}" data-bdview="${esc(r.id)}"><div class="av blue">${BR.indexOf(r.b) + 1}</div><div class="tx"><b>${esc(r.titles?.[0] || r.topic || r.kw)}</b><span>${esc(r.b)}, ${dLabel(r.date)} 발행, ${esc(r.kw)}${r.shoot ? `, 촬영 요청함, 사진 ${r.shoot.n}장` : ""}</span></div><div class="val"><span style="font-size:13px;font-weight:700">${st(r)}</span></div><span class="chev">›</span></button>`).join("")}</div>`;
+  return `<div class="sec">지시문 초안 <small>${nvB === "전체" ? "전 지점" : esc(nvB) + "점"} ${L.length}개, 누르면 내용</small></div><div class="list">${L.map((r, i) => `<button class="item kwrow anim" style="--i:${i}" data-bdview="${esc(r.id)}"><div class="av blue">${BR.indexOf(r.b) + 1}</div><div class="tx"><b>${esc(r.titles?.[0] || r.topic || r.kw)}</b><span>${esc(r.b)}, ${dLabel(r.date)} 발행, ${esc(r.kw)}${r.shoot ? `, 촬영 요청함, 사진 ${r.shoot.n}장` : ""}</span></div><div class="val"><span style="font-size:13px;font-weight:700">${st(r)}</span></div><span class="chev">›</span></button>`).join("")}</div>`;
 }
+const BD_LT = [["제품", ["하복2", "발라리안맥스프로", "말론바", "엘프바", "빌런", "디오"]], ["기기", ["입호흡 기기", "폐호흡 기기", "일회용"]], ["고민", ["누수", "탄맛", "연무 약할 때", "충전 안 될 때"]], ["상황", ["처음 방문", "KTX 타기 전", "선물", "주차", "쌀쌀한 날 관리"]]];
 const readBdForm = () => { if (!BD || !$("#bdKw")) return; BD.kw = $("#bdKw").value.trim(); BD.lt = $("#bdLt").value.trim(); BD.date = $("#bdDate").value || BD.date; BD.topic = $("#bdTopic").value.trim(); BD.memo = $("#bdMemo").value.trim(); };
 function sheetBlogDraft() {
   const v = BD;
@@ -589,6 +590,7 @@ function sheetBlogDraft() {
     <div class="lbl">어느 지점</div><div class="chips">${BD_BR.map((b) => `<button class="chip ${v.b === b ? "on" : ""}" data-bdb="${b}">${BR.indexOf(b) + 1} ${esc(b)}</button>`).join("")}</div>
     <div class="lbl">발행일</div><input class="in" type="date" id="bdDate" value="${esc(v.date)}">
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><div><div class="lbl">대표 키워드</div><input class="in" id="bdKw" maxlength="40" value="${esc(v.kw)}"></div><div><div class="lbl">롱테일</div><input class="in" id="bdLt" maxlength="40" placeholder="예: 일회용" value="${esc(v.lt || "")}"></div></div>
+    <div class="lbl">롱테일 고르기 <span style="font-weight:500">(눌러서 넣기, 직접 적어도 돼요)</span></div>${BD_LT.map(([g, xs]) => `<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:6px"><span style="flex:0 0 34px;font-size:13px;font-weight:700;color:var(--sub)">${g}</span>${xs.map((x) => `<button class="chip ${v.lt === x ? "on" : ""}" style="height:36px;padding:0 12px;font-size:14px" data-bdlt="${esc(x)}">${esc(x)}</button>`).join("")}</div>`).join("")}
     <div class="lbl">제품이나 주제</div><input class="in" id="bdTopic" maxlength="120" placeholder="예: 하복2, 쌀쌀한 날 기기 관리" value="${esc(v.topic)}"><div class="caption">제품은 여기 적은 것만 써요. 비우면 매장, 상황, 고민으로 써요</div>
     <div class="lbl">메모 <span style="font-weight:500">(선택)</span></div><input class="in" id="bdMemo" maxlength="300" placeholder="꼭 넣을 말이 있으면" value="${esc(v.memo)}">
     <div class="btns"><button class="btn gray" data-x style="flex:0 0 96px">닫기</button><button class="btn" data-act="bdsend">초안 만들기</button></div>`);
@@ -1313,6 +1315,7 @@ document.addEventListener("click", async (e) => {
   if (t.dataset.act === "nvguide") return openSheet(nvGuideHtml());
   if (t.dataset.bdnew !== undefined) { const [b, kw, dow] = t.dataset.bdnew.split("|"); const bb = BD_BR.includes(b) ? b : ""; BD = { b: bb, ...bdSplit(bb, kw, +dow || 1), dow: +dow || 1, rec: kw, date: nextDow(+dow || 1), topic: "", memo: "" }; return sheetBlogDraft(); }
   if (t.dataset.bdb) { readBdForm(); BD.b = t.dataset.bdb; if (BD.dow !== 3 && BD_BASE[BD.b]) BD.kw = BD_BASE[BD.b]; return sheetBlogDraft(); }
+  if (t.dataset.bdlt) { readBdForm(); BD.lt = BD.lt === t.dataset.bdlt ? "" : t.dataset.bdlt; const y = $("#sheet").scrollTop; sheetBlogDraft(); $("#sheet").scrollTop = y; return; }
   if (t.dataset.act === "bdsend") return bdSend();
   if (t.dataset.bdview) return sheetBlogDraftView(t.dataset.bdview);
   if (t.dataset.bdedit) return bdAct("edit", t.dataset.bdedit);
