@@ -299,7 +299,7 @@
 })();
 </script>
 <script>
-const VER = "11.04-3"; window.VER_ERR = VER;
+const VER = "11.04-4"; window.VER_ERR = VER;
 const GAME_LOCK = true; // 11/02 쉬는 시간 게임 잠금
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
@@ -2305,7 +2305,7 @@ function sheetClosing(mid) {
   MIDMODE = !!mid; CX = expList().map((x) => ({ n: x.n, a: x.a })); // 10/28 💸 지출로 낮에 적은 것
   const prep = todayPrep();
   // 10/19 저녁 사장님 "개복잡": 기본 화면은 돈통, 리뷰/각인, 확인 2개, 지출 버튼만. 포스 숫자를 고칠 때만 아래 '직접 입력'을 펼침
-  openSheet(`${MIDMODE ? '<h2>🔎 중간 체크</h2><div class="desc">마감할 때처럼 <b>돈통을 장수대로 세고</b> 리뷰, 지출까지 넣어 주세요. 포스와 다 맞으면 ✅가 떠요. 마감 기록은 안 남아요.</div>' : '<h2>💰 마감 보고</h2><div class="desc">포스 일마감을 먼저 하고, <b>돈통만 세면 돼요.</b></div>'}${!MIDMODE && todoItems().length ? `<div class="desc" style="color:var(--amber);font-weight:700;display:flex;align-items:center;gap:8px;margin-top:8px">남은 일정 ${todoItems().length}건은 다음 근무자에게 그대로 넘어가요<button class="act gray" data-go="ilgate" style="margin-left:auto">보기</button></div>` : ""}
+  openSheet(`${MIDMODE ? '<h2>🔎 중간 체크</h2><div class="desc">마감할 때처럼 <b>돈통을 장수대로 세고</b> 리뷰, 지출까지 넣어 주세요. 포스와 다 맞으면 ✅가 떠요. 마감 기록은 안 남아요.</div>' : '<h2>💰 마감 보고</h2><div class="desc"><b>돈통만 세면 돼요.</b> 포스 일마감은 보고를 보낸 뒤에 해요.</div>'}${!MIDMODE && todoItems().length ? `<div class="desc" style="color:var(--amber);font-weight:700;display:flex;align-items:center;gap:8px;margin-top:8px">남은 일정 ${todoItems().length}건은 다음 근무자에게 그대로 넘어가요<button class="act gray" data-go="ilgate" style="margin-left:auto">보기</button></div>` : ""}
     <div class="grp">돈통 <small>장수, 개수</small></div>
     <div class="cash big">${CASH.slice(0, 2).map(([id, label, unit]) => `<label><span>${label}</span><input class="input" id="${id}" inputmode="numeric" placeholder="${unit}"></label>`).join("")}</div>
     <div class="cash coins">${CASH.slice(2).map(([id, label, unit]) => `<label><span>${label}</span><input class="input" id="${id}" inputmode="numeric" placeholder="${unit}"></label>`).join("")}</div>
