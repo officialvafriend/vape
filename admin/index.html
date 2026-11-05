@@ -15,7 +15,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <style>
   /* 토스 스타일 (10/6 사용자 요청): 회색 바탕 + 흰 카드, 큰 글씨 한 문장, 목록 + 아래에서 올라오는 창, 아래 탭바 */
-  :root{--bg:#f2f4f6;--card:#fff;--ink:#191f28;--ink2:#4e5968;--sub:#66717f;--line:#f2f4f6;--line2:#e5e8eb;--blue:#1b64da;--blue-soft:#e8f3ff;
+  :root{--ease-out:cubic-bezier(0.23,1,0.32,1);--bg:#f2f4f6;--card:#fff;--ink:#191f28;--ink2:#4e5968;--sub:#66717f;--line:#f2f4f6;--line2:#e5e8eb;--blue:#1b64da;--blue-soft:#e8f3ff;
     --green:#037a4a;--green-soft:#e5f8ef;--red:#dc2633;--red-soft:#fdecee;--amber:#8a5a00;--amber-soft:#fff4dc;--press:#f9fafb;color-scheme:light}
   @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#17171c;--card:#202027;--ink:#f9fafb;--ink2:#c3c9d1;--sub:#8b95a1;--line:#2c2c35;--line2:#33333d;--blue:#4593fc;--blue-soft:#1f2b3e;
     --green:#15c47e;--green-soft:#183027;--red:#ff5b68;--red-soft:#3a2023;--amber:#ffb331;--amber-soft:#3a3020;--press:#26262e;color-scheme:dark}}
@@ -58,7 +58,7 @@
   /* 아래에서 올라오는 창 */
   .dim{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:flex-end;justify-content:center;z-index:50}
   .dim.on{display:flex}
-  .sheet{background:var(--card);width:min(560px,100%);border-radius:26px 26px 0 0;padding:26px 22px calc(22px + env(safe-area-inset-bottom));max-height:90vh;overflow:auto;animation:up .22s ease}
+  .sheet{background:var(--card);width:min(560px,100%);border-radius:26px 26px 0 0;padding:26px 22px calc(22px + env(safe-area-inset-bottom));max-height:90vh;overflow:auto;animation:up .28s cubic-bezier(0.32,0.72,0,1)}
   @keyframes up{from{transform:translateY(40px);opacity:.6}to{transform:none;opacity:1}}
   .sheet h3{font-size:22px;font-weight:700;letter-spacing:-.5px;line-height:1.35} .sheet .caption{margin-top:6px}
   .sheet .list{background:none;padding:0;margin:14px -22px 0} .sheet .item{padding:13px 22px}
@@ -91,6 +91,13 @@
   .okline{color:var(--green);font-weight:700;margin-top:14px;font-size:15px}
   .pchead{margin-bottom:14px}.pchead h1{font-size:22px;font-weight:800;letter-spacing:-.6px;line-height:1.3}.pchead .caption{margin:4px 0 0}
   .av svg{width:22px;height:22px}
+  /* 11/5 블로그 탭: 점유 막대, 줄 등장, 버튼 눌림. 움직임 줄이기 설정이면 옮기는 움직임은 뺀다 */
+  .sbar{height:8px;border-radius:99px;background:var(--line2);overflow:hidden;margin-top:8px}.sbar i{display:block;height:100%;border-radius:99px;background:var(--blue)}.sbar i.pk{background:var(--amber)}
+  .kwrow .tx b{white-space:normal;line-height:1.35}.kwrow{align-items:flex-start}
+  .btn,.chip,.subnav button{transition:transform .12s var(--ease-out)}.btn:active,.chip:active,.subnav button:active{transform:scale(.97)}
+  @keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}@keyframes fadein{from{opacity:0}to{opacity:1}}@keyframes reveal{from{clip-path:inset(0 100% 0 0 round 99px)}to{clip-path:inset(0 0 0 0 round 99px)}}
+  .enter .anim{animation:rise .24s var(--ease-out) both;animation-delay:calc(var(--i,0)*40ms)}.enter .sbar i{animation:reveal .3s var(--ease-out) both;animation-delay:calc(var(--i,0)*40ms + 80ms)}
+  @media (prefers-reduced-motion:reduce){.enter .anim{animation:fadein .2s ease both}.enter .sbar i{animation:none}.btn:active,.chip:active,.subnav button:active{transform:none}.sheet{animation:fadein .2s ease}}
   @media (max-width:899px){.pchead{display:block}.sec{flex-wrap:wrap}}
   @media (min-width:900px){.chips.hs{flex-wrap:wrap;overflow:visible;margin:0;padding:0}}
   @media (min-width:900px) and (max-width:1199px){.clgrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
@@ -322,8 +329,8 @@ const MORE = ["kpi", "note", "office", "staff", "naver"];
 function moreSheetHtml() { const nm = { kpi: "KPI", note: "매장 노트", office: "사무실", staff: "직원웹", naver: "네이버" }; return `<h3>더보기</h3><div class="list" style="margin-top:12px">${MORE.map((k) => `<button class="item" data-tab="${k}"><div class="av ${grpOf(tab)[0] === k ? "blue" : ""}">${ICON[k]}</div><div class="tx"><b>${nm[k]}${k === "office" && botBad() ? ' <span class="t-bad">●</span>' : ""}</b></div><span class="chev">›</span></button>`).join("")}</div><div class="btns"><button class="btn gray" data-x>닫기</button></div>`; }
 // 10/19 사장님 "다 따로 들어가기 불편해": 네이버 앱, 직원웹을 관리자 안 메뉴로 (같은 사이트라 안에 띄움, 네이버 열쇠, 직원웹 지점은 각 앱이 이 기기에 기억)
 // 10/26 사장님 "홈이 가득가득, 업무 안에 블로그도": 메뉴 12개 → 7개 묶음, 묶음 안은 위쪽 작은 탭
-const GROUPS = [["home", "홈", ["home"]], ["tasks", "업무", ["tasks"]], ["close", "마감", ["close"]], ["kpi", "KPI", ["kpi"]], ["goods", "상품", ["order", "bunbae", "stockrep", "survey", "group", "must"]], ["note", "매장 노트", ["note"]], ["office", "사무실", ["office"]], ["staff", "직원웹", ["staff"]], ["naver", "네이버", ["naver"]]];
-const SUBNM = { bunbae: "분배 넣기", tasks: "업무", blog: "블로그 발행", order: "주문요청", stockrep: "재고보고", survey: "재고조사", group: "그룹관리", must: "추가 필수", office: "봇 상태", staff: "직원웹", naver: "네이버" };
+const GROUPS = [["home", "홈", ["home"]], ["tasks", "업무", ["tasks", "blog"]], ["close", "마감", ["close"]], ["kpi", "KPI", ["kpi"]], ["goods", "상품", ["order", "bunbae", "stockrep", "survey", "group", "must"]], ["note", "매장 노트", ["note"]], ["office", "사무실", ["office"]], ["staff", "직원웹", ["staff"]], ["naver", "네이버", ["naver"]]];
+const SUBNM = { bunbae: "분배 넣기", tasks: "업무", blog: "블로그", order: "주문요청", stockrep: "재고보고", survey: "재고조사", group: "그룹관리", must: "추가 필수", office: "봇 상태", staff: "직원웹", naver: "네이버" };
 const grpOf = (t) => GROUPS.find((g) => g[2].includes(t === "blog" ? "tasks" : t)) || GROUPS[0];
 const grpTab = (g) => { const last = ls.get("vf-admin-sub-" + g[0]); return g[2].includes(last) ? last : g[2][0]; };
 const subnavHtml = () => { const g = grpOf(tab); return g[2].length > 1 ? `<div class="subnav">${g[2].map((k) => `<button class="${k === tab ? "on" : ""}" data-tab="${k}">${SUBNM[k]}</button>`).join("")}</div>` : ""; };
@@ -335,13 +342,14 @@ function embedHtml() {
 }
 function render() {
   if (!D) return;
+  $("#app").classList.toggle("enter", enterOnce); enterOnce = false;
   const pc = isPC();
   $("#nav").style.display = pc ? "none" : "";
   ls.set("vf-admin-sub-" + grpOf(tab)[0], tab);
   document.querySelectorAll("#nav button").forEach((b) => { if (b.dataset.g === "more") { b.classList.toggle("on", MORE.includes(grpOf(tab)[0])); if (!b.dataset.ic) { b.dataset.ic = 1; b.innerHTML = ICON.more + "더보기"; } return; } const g = GROUPS.find((x) => x[0] === b.dataset.g); if (g) { b.dataset.tab = grpTab(g); b.classList.toggle("on", grpOf(tab) === g); if (!b.dataset.ic) { b.dataset.ic = 1; b.innerHTML = (g[0] === "goods" ? ICON.survey : ICON[g[0]]) + (g[0] === "note" ? "노트" : g[1]); } } });
   const [, hh, mm] = D.at.match(/(\d{2}):(\d{2})$/) || [];
   if (EMBED[tab] && $("#app .emb") && $("#app .emb").dataset.k === tab + staffB) return; // 자동 새로고침 때 안에 띄운 앱이 처음으로 돌아가지 않게
-  const body0 = EMBED[tab] ? embedHtml() : tab === "home" ? (pc ? homePC() : homeHtml()) : tab === "kpi" ? kpiHtml() : tab === "close" ? closingAllHtml() : tab === "survey" ? surveyHtml() : tab === "tasks" ? tasksHtml() : tab === "note" ? noteHtml() : tab === "order" ? orderHtml() : tab === "office" ? officeHtml() : tab === "group" ? groupHtml() : tab === "stockrep" ? stockTblHtml() : tab === "bunbae" ? bunbaeHtml() : tab === "blog" ? (blogAdmHtml() || '<div class="empty">올라온 블로그 지시문이 없어요</div>') : mustHtml();
+  const body0 = EMBED[tab] ? embedHtml() : tab === "home" ? (pc ? homePC() : homeHtml()) : tab === "kpi" ? kpiHtml() : tab === "close" ? closingAllHtml() : tab === "survey" ? surveyHtml() : tab === "tasks" ? tasksHtml() : tab === "note" ? noteHtml() : tab === "order" ? orderHtml() : tab === "office" ? officeHtml() : tab === "group" ? groupHtml() : tab === "stockrep" ? stockTblHtml() : tab === "bunbae" ? bunbaeHtml() : tab === "blog" ? blogTabHtml() : mustHtml();
   const body = subnavHtml() + body0;
   if (!pc) { $("#app").innerHTML = `<div class="top"><div class="logo">VAFRIEND <b>관리자</b></div><div class="r"><button class="ic" data-act="reload">${hh ? `${hh}:${mm} 기준 ↻` : "새로고침"}</button><button class="ic" data-act="logout">잠그기</button></div></div>${body}`; markEmb(); return; }
   const ICG = { goods: ICON.order };
@@ -513,6 +521,52 @@ function markEmb() { const f = $("#app .emb"); if (f) f.dataset.k = tab + staffB
 const closingOf = (b) => (D.closings || []).find((c) => c.b === b && c.date === D.d);
 const warnsOf = (c) => c?.warnFull || c?.warn || [];
 // 10/26 블로그 발행: 지시문 날짜별로 8지점 발행 여부, 누르면 글 열기
+/* 11/5 블로그 탭: 네이버 대시보드 기록(순위감지봇, ../naver/data.json)으로 지점별 추천 키워드. 점유 = 블로그 상위 30개 중 우리 글 수 */
+let NV = null, NV_AT = 0, NV_ERR = false, nvB = ls.get("vf-admin-nvb") || "전체", enterOnce = false;
+async function loadNaver(quiet) { try { const r = await fetch("../naver/data.json?t=" + Date.now(), { cache: "no-store" }); if (!r.ok) throw 0; NV = await r.json(); NV_AT = Date.now(); NV_ERR = false; } catch { NV_ERR = true; NV_AT = Date.now(); } if (!quiet && tab === "blog" && !$("#dim").classList.contains("on")) { enterOnce = true; render(); } }
+const nvPct = (n) => Math.round((n / 30) * 100);
+const nvRank = (r) => (r == null ? "" : r > 100 ? "지도 순위 밖" : `지도 ${r}위`);
+function nvStats(b) {
+  const rows = (NV.blog || []).filter((r) => r.b === b), ds = [...new Set(rows.map((r) => r.d))].sort(), last = ds.at(-1) || "", prevD = last ? ds.filter((d) => d <= addDays(last, -7)).at(-1) : null;
+  const pl = (NV.place || []).filter((r) => r.b === b), pd = pl.map((r) => r.d).sort().at(-1);
+  const list = rows.filter((r) => r.d === last).map((r) => { const p = prevD ? rows.find((x) => x.d === prevD && x.k === r.k) : null, pr = pl.find((x) => x.d === pd && x.k === r.k); return { k: r.k, t: r.t, n: +r.n || 0, dn: p ? (+r.n || 0) - (+p.n || 0) : null, pr: pr ? pr.r : null }; });
+  const pick = list.filter((x) => x.n < 30).slice().sort((a, c) => a.n - c.n)[0] || null; /* 추천 = 점유가 가장 낮은 키워드 */
+  return { d: last, list, pick };
+}
+const nvOf30 = (n) => `<b>${n}<small style="font-size:12px;color:var(--sub);font-weight:600"> / 30</small></b>`;
+const nvRow = (x, i, pick) => `<div class="item kwrow anim" style="--i:${i}"><div class="tx"><b>${esc(x.k)}<span class="tag gray" style="margin:0 0 0 6px">${esc(x.t)}</span>${pick && pick.k === x.k ? '<span class="tag" style="margin:0 0 0 4px;background:var(--amber-soft);color:var(--amber)">추천</span>' : ""}</b><div class="sbar"><i class="${pick && pick.k === x.k ? "pk" : ""}" style="width:${nvPct(x.n)}%;--i:${i}"></i></div>${x.pr != null ? `<span>${nvRank(x.pr)}</span>` : ""}</div><div class="val">${nvOf30(x.n)}${x.dn ? `<span class="${x.dn > 0 ? "t-good" : "t-bad"}" style="display:block">7일 전보다 ${x.dn > 0 ? "+" : ""}${x.dn}</span>` : ""}</div></div>`;
+const nvRec = (i, title, p, why) => (p ? `<div class="card anim" style="--i:${i}"><div class="eyebrow">${title}</div><div class="headline" style="font-size:22px"><em>${esc(p.k)}</em></div><div class="sbar"><i class="pk" style="width:${nvPct(p.n)}%;--i:${i}"></i></div><div class="caption">블로그 상위 30개 중 ${p.n}개(${nvPct(p.n)}%)예요. ${why}</div></div>` : "");
+function nvBranchHtml(b) {
+  const s = nvStats(b), c = nvStats("대구 전체"), pr = (NV.place || []).filter((r) => r.b === b && r.k === NV.common).sort((a, z) => a.d.localeCompare(z.d)).at(-1);
+  return nvRec(0, "월요일 글, 자기 지역 키워드", s.pick, `${esc(b)} 키워드 중 가장 비어 있어서 이 키워드를 추천해요!`)
+    + nvRec(1, "수요일 글, 대구전자담배", c.pick, `대구전자담배 묶음 중 가장 비어 있어요.${pr ? ` ${esc(b)}의 대구전자담배는 ${nvRank(pr.r)}예요.` : ""}`)
+    + `<div class="sec">이 지점 키워드 <small>${s.list.length}개, 막대는 30개 중 우리 글</small></div><div class="list">${s.list.map((x, i) => nvRow(x, i + 2, s.pick)).join("") || '<div class="empty">기록이 없어요</div>'}</div>`
+    + `<div class="sec">대구전자담배 묶음 <small>수요일 글</small></div><div class="list">${c.list.map((x, i) => nvRow(x, i + 2 + s.list.length, c.pick)).join("") || '<div class="empty">기록이 없어요</div>'}</div>`;
+}
+function nvAllHtml() {
+  const c = nvStats("대구 전체");
+  const rows = BR.map((b, i) => { const p = nvStats(b).pick; return `<button class="item kwrow anim" style="--i:${i + 1}" data-nvb="${b}"><div class="av ${p ? "warn" : ""}">${i + 1}</div><div class="tx"><b>${esc(b)}</b><span>${p ? `추천: ${esc(p.k)}` : "기록이 없어요"}</span>${p ? `<div class="sbar"><i class="pk" style="width:${nvPct(p.n)}%;--i:${i + 1}"></i></div>` : ""}</div><div class="val">${p ? nvOf30(p.n) : ""}</div><span class="chev">›</span></button>`; }).join("");
+  return nvRec(0, "수요일 글, 전 지점 공통", c.pick, "대구전자담배 묶음 중 가장 비어 있어서 이 키워드를 추천해요!") + `<div class="sec">지점별 월요일 추천 <small>점유가 가장 낮은 키워드, 누르면 그 지점 전체</small></div><div class="list">${rows}</div>`;
+}
+function nvGuideHtml() {
+  const g = (t, d) => `<div class="lbl" style="margin:18px 0 6px;color:var(--ink);font-size:16px;font-weight:700">${t}</div><div class="caption" style="margin:0;font-size:15px;line-height:1.65;color:var(--ink2)">${d}</div>`;
+  return `<h3>키워드 보는 법</h3>`
+    + g("점유", "그 키워드로 검색했을 때 블로그 상위 30개 중 우리 글이 몇 개인지예요.<br>30개 중 9개면 30%예요. 많을수록 우리 글이 많이 보여요.")
+    + g("지도 순위", "네이버 지도(플레이스)에서 우리 매장이 몇 번째인지예요.<br>'순위 밖'은 목록에 안 보인다는 뜻이에요.")
+    + g("롱테일 키워드", "'율하전자담배 발라리안맥스프로'처럼 지역에 제품이나 고민을 붙인 긴 검색어예요.<br>10/19에 확인한 것: 지역+제품 검색어는 네이버 AI 브리핑이 떠요.")
+    + g("요일 규칙", "월요일은 자기 지역 키워드 + 롱테일이에요.<br>수요일은 대구전자담배 + 롱테일이에요.<br>글은 항상 자기 매장 이야기로 써요.")
+    + g("추천 기준", "점유가 가장 낮은 키워드를 먼저 추천해요.<br>비어 있는 자리부터 채우는 거예요.")
+    + g("기록", "네이버 대시보드와 같은 기록이에요. 순위감지봇이 하루 한 번 남겨요.")
+    + `<div class="btns"><button class="btn gray" data-x>닫기</button></div>`;
+}
+function blogTabHtml() {
+  const head = (cap) => `<div class="pchead" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><h1>블로그</h1><div class="caption" style="flex:1;min-width:150px;margin:0">${cap}</div><button class="chip" data-act="nvguide">보는 법</button></div>`;
+  if (!NV) { if (!NV_ERR) loadNaver(); return head("지점별 추천 키워드") + blogAdmHtml() + (NV_ERR ? '<div class="card" style="margin-top:12px"><div class="caption" style="margin:0">네이버 대시보드 기록을 못 불러왔어요</div><div class="btns"><button class="btn gray" data-act="nvreload">다시 불러오기</button></div></div>' : '<div class="empty">추천 키워드 불러오는 중…</div>'); }
+  if (Date.now() - NV_AT > 10 * 60e3) { NV_AT = Date.now(); loadNaver(true); }
+  const d = nvStats("대구 전체").d, md = d ? `${+d.slice(5, 7)}/${+d.slice(8)}` : "";
+  const chips = `<div class="chips hs" style="margin-top:12px;margin-bottom:12px">${["전체", ...BR].map((b, i) => `<button class="chip ${nvB === b ? "on" : ""}" data-nvb="${b}">${b === "전체" ? "전 지점" : i + "호 " + b}</button>`).join("")}</div>`;
+  return head(`지점별 추천 키워드, 네이버 대시보드 ${md} 기록`) + blogAdmHtml() + chips + (nvB === "전체" ? nvAllHtml() : nvBranchHtml(nvB));
+}
 function blogTodayHtml(xs) {
   // 오늘 할 일 카드 안 블로그 줄: 몇 곳 올렸는지, 안 올린 지점, 올린 지점(눌러서 글)
   if (!xs.length) return "";
@@ -1183,6 +1237,9 @@ document.addEventListener("click", async (e) => {
   if (t.dataset.ask !== undefined) { if (ASKR) ASKR(t.dataset.ask === "0" ? null : t.dataset.ask); return; }
   if (t.dataset.askname) { if (ASKR && ASKR.pick) ASKR.pick(t.dataset.askname); return; }
   if (t.dataset.act === "more") return openSheet(moreSheetHtml());
+  if (t.dataset.nvb) { nvB = t.dataset.nvb; ls.set("vf-admin-nvb", nvB); enterOnce = true; render(); return scrollTo(0, 0); }
+  if (t.dataset.act === "nvguide") return openSheet(nvGuideHtml());
+  if (t.dataset.act === "nvreload") { NV = null; NV_ERR = false; return render(); }
   if (t.tagName === "TR") return isPC() ? panelBranch(t.dataset.brpc, "프리미엄 A") : sheetBranch(t.dataset.brpc, "프리미엄 A");
   if (t.id === "go") return tryLogin();
   if (t.dataset.tktab) { tkTab = t.dataset.tktab; ls.set("vf-admin-tktab", tkTab); return render(); }
@@ -1222,7 +1279,7 @@ document.addEventListener("click", async (e) => {
   if (t.dataset.srb != null) { srB = t.dataset.srb; ls.set("vf-admin-srb", srB); return render(); }
   if (t.dataset.clb) { clB = t.dataset.clb; ls.set("vf-admin-clb", clB); return render(); }
   if (t.dataset.srcopy) { const b = t.dataset.srcopy, r = D.stockTbl?.br?.[b]; if (!r) return; const txt = D.stockTbl.items.map((n) => r.q[n] == null ? "" : r.q[n]).join("\n"); try { await navigator.clipboard.writeText(txt); toast(`${b} 숫자 ${D.stockTbl.items.length}개 복사했어요, 노션 ${b} 칸 첫 줄에 붙여 넣으면 돼요`); } catch { toast("복사하지 못했어요"); } return; }
-  if (t.dataset.tab) { tab = t.dataset.tab; ls.set("vf-admin-tab", tab); closeSheet(true); render(); return scrollTo(0, 0); }
+  if (t.dataset.tab) { tab = t.dataset.tab; ls.set("vf-admin-tab", tab); closeSheet(true); enterOnce = true; render(); return scrollTo(0, 0); }
   const a = t.dataset.act;
   if (a === "reload") return reload();
   if (a === "logout") { ls.set("vf-admin-key", null); KEY = D = null; return renderLogin("잠갔어요"); }
