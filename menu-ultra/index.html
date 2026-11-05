@@ -280,7 +280,17 @@ body{word-break:keep-all;overflow-wrap:break-word}
 .home-btn.inst{background:var(--red);color:#fff}
 /* 일회용 목록 */
 .card.ev105{display:flex;width:100%;text-align:left;align-items:center;gap:12px;background:var(--ink);color:var(--card);padding:18px 20px}.ev105 b{color:var(--card)}.ev105 span{color:rgba(255,255,255,.75);flex:1}.ev105 i{font-style:normal;font-size:22px}
-.dsec{margin-top:18px}.rib2{font-family:var(--num);font-size:10px;color:var(--red);border:1.5px solid var(--red);border-radius:6px;padding:1px 6px;vertical-align:3px}
+.dsec{margin-top:26px}.dsec:first-child{margin-top:4px}
+.dhead{display:flex;justify-content:space-between;align-items:center;gap:12px}.dhead h3{margin:0;font-size:24px;font-weight:800;letter-spacing:-.02em}
+.dgo{flex:none;min-height:56px;padding:0 22px;border-radius:28px;background:var(--card);font-size:18px;font-weight:800;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.dsub{margin:4px 0 12px;font-size:15px;line-height:1.45;color:var(--grey)}
+.dgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.dgrid.big{grid-template-columns:repeat(2,1fr)}body.land .dgrid{grid-template-columns:repeat(4,1fr)}body.land .dgrid.big{grid-template-columns:repeat(3,1fr)}
+.dcard{display:flex;flex-direction:column;align-items:flex-start;gap:3px;padding:12px;border-radius:20px;background:var(--card);text-align:left;box-shadow:0 1px 6px rgba(0,0,0,.06)}
+.dcard .im{position:relative;width:100%;aspect-ratio:1;border-radius:14px;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden;font-size:40px;margin-bottom:8px}.dcard .im img{width:100%;height:100%;object-fit:contain}
+.dgrid.big .dcard .im{aspect-ratio:16/9}.dgrid.big .dcard:only-child{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;grid-auto-rows:min-content;column-gap:16px;align-content:center}.dgrid.big .dcard:only-child .im{grid-row:1/span 5;margin:0}
+.dcard b{font-size:18px;font-weight:800}.dcard small{font-size:14px;line-height:1.35;color:var(--grey)}.dcard small.need{color:#8a4b00;font-weight:700}.dcard .price{margin-top:auto;padding-top:6px;font-size:20px;font-weight:800;color:var(--red)}
+.dcard .hi{font-style:normal;font-size:12px;color:#fff;background:#8a4b00;border-radius:6px;padding:1px 6px;vertical-align:2px}.dcard .got{position:absolute;right:8px;top:8px;min-width:28px;height:28px;border-radius:14px;background:var(--red);color:#fff;font-style:normal;font-size:15px;font-weight:800;display:flex;align-items:center;justify-content:center}.dcard.sold .im,.dcard.sold b{opacity:.45}
+.dfl{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.dflc{display:flex;align-items:center;gap:12px;min-height:76px;padding:8px 18px;border-radius:16px;background:var(--card);text-align:left;font-size:20px;font-weight:700}.dflc img{width:60px;height:60px;object-fit:contain;flex:none}.dflc span{flex:1;min-width:0}.dflc b{flex:none;min-width:32px;height:32px;border-radius:16px;background:var(--red);color:#fff;font-size:17px;display:flex;align-items:center;justify-content:center}.dflc.on{box-shadow:inset 0 0 0 2px var(--ink)}.dflc.sold{opacity:.5}.rib2{font-family:var(--num);font-size:10px;color:var(--red);border:1.5px solid var(--red);border-radius:6px;padding:1px 6px;vertical-align:3px}
 .dm{background:var(--card);border-radius:16px;margin-bottom:8px;overflow:hidden}.dm.on{box-shadow:inset 0 0 0 2px var(--ink)}
 .dmh{display:flex;align-items:center;gap:12px;width:100%;padding:10px 14px;text-align:left}.dmh .im{width:56px;height:56px;border-radius:12px;background:#f4f4f6;display:flex;align-items:center;justify-content:center;overflow:hidden;flex:none;font-size:24px}.dmh .im img{width:100%;height:100%;object-fit:contain}
 .ltile{font-family:var(--num);font-size:22px;color:rgba(21,18,15,.55);letter-spacing:-.02em;text-align:center;padding:0 8px;line-height:1.1}
@@ -432,6 +442,7 @@ body[data-theme=dark] .scan svg{background:#fff;border-radius:8px}
 </style>
 </head>
 <body data-v="home"><script>vfFit()</script>
+<script>/* 11/5 내 컴퓨터 미리보기에선 사용 기록, 재고 요청이 디스코드로 안 나감 */ if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) { const of = window.fetch; window.fetch = function (u, o) { if (/discord/.test(String(u && u.url || u))) return Promise.resolve(new Response("{}")); return of.apply(this, arguments); }; }</script>
 <div class="app">
   <div class="top">
     <div class="logo" id="logo" onclick="logoHome()" style="cursor:pointer"><span class="v r">V</span><span class="m x" style="--i:0;--j:5">A</span><span class="m r" style="--i:1">F</span><span class="m x" style="--i:2;--j:4">R</span><span class="m x" style="--i:3;--j:3">I</span><span class="m x" style="--i:4;--j:2">E</span><span class="m x" style="--i:5;--j:1">N</span><span class="d x" style="--j:0">D</span></div>
@@ -1195,7 +1206,7 @@ async function loadAskAns() { askChip(); if (!askList().length) return;
   askChip(); for (const [n, v] of Object.entries(next)) if (v.yes.length) toast(n.replace(/^VF /, "") + ", " + v.yes.join(", ") + "에 있대요");
   if (document.body.classList.contains('askon')) drawAsk(); }
 setInterval(loadAskAns, 15e3); loadAskAns();
-document.addEventListener('click', (e) => { const a = e.target.closest('[data-ask]'); if (a && !e.target.closest('#askB')) { e.stopPropagation(); askOpen(a.dataset.ask); } }, true);
+document.addEventListener('click', (e) => { const a = e.target.closest('[data-ask]'); if (a && !e.target.closest('#askB')) { e.stopPropagation(); document.body.classList.remove('spon'); askOpen(a.dataset.ask); } }, true);
 
 // ── 실재고 불러오기 ──
 async function loadStock() {
@@ -1219,12 +1230,12 @@ const DSPINFO = {
   "엘프바25000": { name: "엘프바 1%", img: "엘프바1_15.png", d: "약 2만 5천 모금, 멘솔 5단계 조절" },
   "(50)엘프바": { name: "엘프바 5%", img: "엘프바5_16.png", d: "약 2만 5천 모금, 고농도 5%", hi: true },
   "엘프바": { name: "엘프바", img: "엘프바1_15.png", d: "" },
-  "네스티원": { name: "네스티원 팟", img: "dsp_nasty.png", hero: "dsp_nasty_all.png", d: "40,000펌프", w: "네스티원 배터리가 있어야 써요" },
-  "립클링": { name: "립클링 1%", img: "dsp_lip.jpg", d: "20,000펌프", w: "립클링 배터리가 있어야 써요" },
+  "네스티원": { name: "네스티원 팟", img: "dsp_nasty.png", hero: "dsp_nasty_all.png", d: "약 4만 모금", w: "네스티원 배터리가 있어야 써요" },
+  "립클링": { name: "립클링 1%", img: "dsp_lip.jpg", d: "약 2만 모금", w: "립클링 배터리가 있어야 써요" },
   "(고)립클링": { name: "립클링 2%", img: "dsp_lip.jpg", d: "약 2만 모금, 고농도 2%", w: "립클링 배터리가 있어야 써요", hi: true },
   "립클링배터리": { name: "립클링 배터리", img: "", d: "립클링 팟과 함께 써요" },
   "(무) 말론바": { name: "말론바 무니코틴", img: "product_13_13.png", d: "약 3만 5천 모금, 무니코틴" },
-  "에어릭스": { name: "에어릭스 팟", img: "", d: "고농도 2%, 하카 기기 호환", w: "에어릭스 기기나 하카 기기가 있어야 써요", hi: true },
+  "에어릭스": { name: "에어릭스 팟", img: "dsp_airx.jpg", d: "고농도 2%, 하카 기기 호환", w: "에어릭스 기기나 하카 기기가 있어야 써요", hi: true },
   "인피": { name: "인피", img: "dsp_infy.jpg", d: "" },
 };
 const DSP_POS = { "DSP-3+1|팜팜바": "팜팜바 74,700원(3+1)", "DSP-3+1|모스바": "모스바 75,000원(3+1)", "DSP-AIRX": "에어릭스 75,000원 (10+2)" };
@@ -1320,33 +1331,48 @@ const ADD_L3 = ADD.lung3 = 40000;
 
 // ── 일회용 화면: 이벤트별 묶음, 제품마다 맛 칩 ──
 let dspOpen = "";
+// 11/5 일회용 페이지: 글씨 줄 → 큰 사진 카드, 카드를 누르면 아래서 창이 올라와 맛을 고름. 묶음 안 순서는 이 지점 판매순(랭킹 자료)
+const DSP_ORDER = ["DSP-3+1", "DSP-AIRX", "DSP-5+1", ""];
+const dspSales = () => { const m = {}; try { const rows = (RK && RK.branches && RK.branches[BRANCH] && RK.branches[BRANCH].dsp) || [];
+  for (const [n, q] of rows) { const g = GDS.find((y) => y.c === "dsp" && y.n === n); if (g) m[g.model] = (m[g.model] || 0) + (q || 0); } } catch (e) {} return m; };
+let dspRkTried = false;
+function dspNudge(g) { const gp = goodsPlan();
+  if (g.ev && g.ev !== DB.ev) { const n = gp.cnt[g.ev] || 0, [buy, free] = EVN[g.ev], r = n % (buy + free);
+    if (g.ev === "DSP-AIRX" && n >= 10) return airxPick(n);
+    if (n && r) return `<div class="nudge"><b>${r >= buy ? `지금 ${buy + free - r}개 더 고르면 무료` : `${buy - r}개 더 담으면 ${free}개 무료`}</b><span>지금 ${n}개, 같은 이벤트끼리 맛 섞어도 돼요</span></div>`; }
+  if (g.ev === DB.ev) { const n = gp.bulkN, r = n % DB.n; if (n) return `<div class="nudge"><b>${gp.bulkK ? `10+5 적용 중 (${gp.bulkK}묶음)` : ""}${r ? `${gp.bulkK ? ", " : ""}${DB.n - r}개 더 담으면 10+5` : ""}</b><span>지금 팜팜바, 모스바 ${n}개, 3개마다 1개는 지금도 무료 (3+1)</span><div class="bar2"><i style="width:${Math.round(r / DB.n * 100)}%"></i></div></div>`; }
+  return ""; }
 function drawDspList() {
   const all = GDS.filter((g) => g.c === "dsp"); if (!all.length) { $('dspList').innerHTML = '<div class="evtip">이 지점 일회용 재고 자료가 없어요</div>'; return; }
-  const gp = goodsPlan(); let h = "";
-  h += `<button class="card evbar ev105" data-dev105="1"><b>10개 사면 5개 더</b><span>팜팜바, 모스바 원하는 맛으로 15개, 최대 33% 할인</span><i>→</i></button>`;
-  for (const g of DSPEV) {
+  if (!dspRkTried) { dspRkTried = true; setTimeout(async () => { try { if (!RK) await rkLoad(); drawDspList(); } catch (e) {} }, 0); }
+  const sales = dspSales(); let h = "";
+  for (const ev of DSP_ORDER) { const g = DSPEV.find((x) => x.ev === ev); if (!g) continue;
     const items = all.filter((x) => g.ev ? x.ev === g.ev : !x.ev); if (!items.length) continue;
-    const models = [...new Set(items.map((x) => x.model))];
-    h += `<div class="dsec"><div class="evsec">${esc(g.t)}${g.badge ? ` <span class="rib2">${g.badge}</span>` : ""}</div><div class="evtip">${esc(g.s)}</div>`;
-    for (const m of models) { const fl = items.filter((x) => x.model === m), info = dInfo(m), img = info.img ? dsrc(info.img) : "", got = fl.reduce((a, x) => a + ((cart.get(x.id) || {}).qty || 0), 0);
-      h += `<div class="dm ${dspOpen === m ? "on" : ""}"><button class="dmh" data-dm="${esc(m)}"><span class="im">${img ? `<img src="${img}" alt="" loading="lazy" onerror="this.replaceWith('🚬')">` : "🚬"}</span><span class="n"><b>${esc(info.name)}${info.hi ? ' <em class="hi">고농도</em>' : ""}</b><small>${esc(info.d || "")}${info.w ? ", " + esc(info.w) : ""}</small></span><span class="price">${won(Math.min(...fl.map((x) => x.price)))}</span>${got ? `<span class="got">${got}</span>` : ""}<i>${dspOpen === m ? "−" : "+"}</i></button>`;
-      if (dspOpen === m) h += `<div class="fl2">${fl.map((x) => { const q = (cart.get(x.id) || {}).qty || 0, out2 = outOf(x.n); return `<button class="flc ${q ? "on" : ""} ${out2 ? "sold" : ""}" ${out2 ? `data-ask="${esc(x.n)}"` : `data-dg="${x.id}"`}>${esc(x.opt || x.n.replace(m, "").trim() || x.n)}${q ? ` <b>${q}</b>` : ""}${out2 ? ", 품절" : ""}</button>`; }).join("")}</div>`;
-      h += "</div>"; }
-    // 안내: 몇 개 더 담으면 무료
-    if (g.ev && g.ev !== DB.ev) { const n = gp.cnt[g.ev] || 0, [buy, free] = EVN[g.ev], r = n % (buy + free);
-      if (g.ev === "DSP-AIRX" && n >= 10) h += airxPick(n);
-      else if (n && r) h += `<div class="nudge"><b>${r >= buy ? `지금 ${buy + free - r}개 더 고르면 무료` : `${buy - r}개 더 담으면 ${free}개 무료`}</b><span>지금 ${n}개, 같은 이벤트끼리 맛 섞어도 돼요</span></div>`; }
-    if (g.ev === DB.ev) { const n = gp.bulkN, r = n % DB.n; if (n) h += `<div class="nudge"><b>${gp.bulkK ? `10+5 적용 중 (${gp.bulkK}묶음)` : ""}${r ? `${gp.bulkK ? ", " : ""}${DB.n - r}개 더 담으면 10+5` : ""}</b><span>지금 팜팜바, 모스바 ${n}개, 3개마다 1개는 지금도 무료 (3+1)</span><div class="bar2"><i style="width:${Math.round(r / DB.n * 100)}%"></i></div></div>`; }
-    h += "</div>";
-  }
+    const models = [...new Set(items.map((x) => x.model))].sort((a, b) => { const so = (m) => items.filter((x) => x.model === m).every((x) => outOf(x.n)) ? 1 : 0; return so(a) - so(b) || (sales[b] || 0) - (sales[a] || 0); });
+    h += `<div class="dsec"><div class="dhead"><h3>${esc(g.t)}</h3>${g.ev === DB.ev ? '<button class="dgo" data-dev105="1">15개 한 번에 고르기 ›</button>' : ""}</div><p class="dsub">${esc(g.s)}</p>`;
+    h += `<div class="dgrid ${g.ev === DB.ev || g.ev === "DSP-AIRX" ? "big" : ""}">`;
+    for (const m of models) { const fl = items.filter((x) => x.model === m), info = dInfo(m), img = info.hero || info.img, got = fl.reduce((a, x) => a + ((cart.get(x.id) || {}).qty || 0), 0), allOut = fl.every((x) => outOf(x.n)), lo = Math.min(...fl.map((x) => x.price));
+      const nm = !g.ev && !/배터리/.test(info.name) ? info.name + " 배터리" : info.name;
+      h += `<button class="dcard ${allOut ? "sold" : ""}" data-dm="${esc(m)}" data-de="${esc(g.ev)}"><span class="im">${img ? `<img src="${dsrc(img)}" alt="" loading="lazy" onerror="this.replaceWith('🚬')">` : "🚬"}${got ? `<em class="got">${got}</em>` : ""}</span><b>${esc(nm)}${info.hi ? ' <em class="hi">고농도</em>' : ""}</b><small>${allOut ? "품절" : esc(info.d || "")}</small>${info.w ? `<small class="need">${/배터리/.test(info.w) ? "배터리 필요" : "기기 필요"}</small>` : ""}<span class="price">${won(lo)}${fl.some((x) => x.price !== lo) ? "부터" : ""}</span></button>`; }
+    h += `</div>${dspNudge(g)}</div>`; }
   $('dspList').innerHTML = h;
+  if (document.body.classList.contains('spon') && dspOpen) dspDraw();
 }
+function dspDraw() { const m = dspOpen, all = GDS.filter((g) => g.c === "dsp" && g.model === m && (g.ev || "") === dspEv), info = dInfo(m), g = DSPEV.find((x) => x.ev === dspEv), got = all.reduce((a, x) => a + ((cart.get(x.id) || {}).qty || 0), 0);
+  $('spTi').textContent = !dspEv && !/배터리/.test(info.name) ? info.name + " 배터리" : info.name;
+  $('spB').innerHTML = `${info.d ? `<p class="dsub">${esc(info.d)}</p>` : ""}${info.w ? `<div class="evtip">${esc(info.w)}</div>` : ""}<div class="dfl">${all.map((x) => { const q = (cart.get(x.id) || {}).qty || 0, out2 = outOf(x.n), pic = DSPF_IMG[x.n]; return `<button class="dflc ${q ? "on" : ""} ${out2 ? "sold" : ""}" ${out2 ? `data-ask="${esc(x.n)}"` : `data-dg="${x.id}"`}>${pic ? `<img src="${pic}" alt="" loading="lazy">` : ""}<span>${esc(x.opt || x.n.replace(m, "").trim() || x.n)}${out2 ? ", 품절" : ""}</span>${q ? `<b>${q}</b>` : ""}</button>`; }).join("")}</div>${g ? dspNudge(g) : ""}<button class="cta" data-dspx="1" style="margin-top:14px">${got ? `${got}개 담았어요, 닫기` : "닫기"}</button>`; }
+let dspEv = "";
+const dspPick = (m, ev) => { dspOpen = m; dspEv = ev || ""; const lab = $('spTi').previousElementSibling; if (lab) lab.textContent = "맛 고르기"; dspDraw(); document.body.classList.add('spon'); };
+$('spB').addEventListener('click', (e) => { const t = e.target, a = t.closest('[data-dg]'), x = t.closest('[data-airx]');
+  if (t.closest('[data-dspx]')) { dspOpen = ""; return document.body.classList.remove('spon'); }
+  if (a) { addGoods(GDS.find((y) => y.id === a.dataset.dg)); return drawDspList(); }
+  if (x) { airxGift = x.dataset.airx; drawCart(); return drawDspList(); } });
 const airxPick = (n) => { const k = Math.floor(n / 10);
   return `<div class="nudge"><b>에어릭스 팟 ${n}개, 혜택 하나 골라 주세요</b><div class="opt2" style="margin-top:8px"><button class="${airxGift === "pod" ? "on" : ""}" data-airx="pod"><b style="font-size:16px">팟 2개 더</b><span>10개 값으로 12개</span></button><button class="${airxGift === "dev" ? "on" : ""}" data-airx="dev"><b style="font-size:16px">기기 ${k > 1 ? k + "대 " : ""}증정</b><span>${won(k * AIRX_DEV)} 상당</span></button></div></div>`; };
 $('dspList').onclick = (e) => { const t = e.target;
   const m = t.closest('[data-dm]'), a = t.closest('[data-dg]'), x = t.closest('[data-airx]'), b = t.closest('[data-dev105]');
   if (b) return openEv("D");
-  if (m) { dspOpen = dspOpen === m.dataset.dm ? "" : m.dataset.dm; return drawDspList(); }
+  if (m) return dspPick(m.dataset.dm, m.dataset.de);
   if (a) { addGoods(GDS.find((y) => y.id === a.dataset.dg)); return drawDspList(); }
   if (x) { airxGift = x.dataset.airx; drawCart(); return drawDspList(); } };
 
@@ -1410,7 +1436,7 @@ document.addEventListener('keydown', (e) => {
 });
 // ── 방향키 커서 (10/27 사장님 "방향키로 커서 움직이는 것처럼"): 지금 보이는 층(구매 창 > 재고 창 > 담은 상품 > 화면)에서
 // 가리킨 칸이 커지고 빨간 테두리, Enter = 누르기. 첫 화면 포스터를 가리킨 상태에선 ←→ = 포스터 넘기기
-const NAV = ".cta, .qzc, .rkr, #rkTab button, .qz-pk button, [data-hq], .qz-a button, .qz-btns button, .qz-top button, .specb, .dmh, .flc, .ev105, #podSub button, #podDev button, .poster, .go3 button, #seg button, .chips button, .it, .sr, .thumbs button, .colors button, .pk button, .pkb, #devAdd, .combo button, .opt2 button, #evGo, .evh button, .shbtn button, .scan, .upsell, .engr button, .mem button, .qb button, .askrow button, [data-asksend], .home-btn, .srch";
+const NAV = ".cta, .qzc, .rkr, #rkTab button, .qz-pk button, [data-hq], .qz-a button, .qz-btns button, .qz-top button, .specb, .dcard, .dgo, .dflc, .ev105, #podSub button, #podDev button, .poster, .go3 button, #seg button, .chips button, .it, .sr, .thumbs button, .colors button, .pk button, .pkb, #devAdd, .combo button, .opt2 button, #evGo, .evh button, .shbtn button, .scan, .upsell, .engr button, .mem button, .qb button, .askrow button, [data-asksend], .home-btn, .srch";
 let kf = null;
 function navLayer() { const b = document.body.classList;
   if (b.contains('spon')) return $('sp');
@@ -1481,7 +1507,7 @@ function specOpen(model, color) {
   if (model === "하복2") { rows = MAIN_SPEC; two = [["가격", won(cur ? cur.price : MAIN_PRICE), "레이저 각인 무료"], ["호흡 방식", "입호흡 + 폐호흡", "팟만 바꿔 끼우면 돼요"]]; }
   else { rows = [d && d.b && ["배터리", d.b], d && d.f && ["팟, 용량", d.f], d && d.o && ["저항(옴)", d.o], d && d.cp && ["소모품", d.cp], sz && sz.w && ["무게", sz.w + "g", feelW(sz.w)], sz && sz.h && ["크기", sz.size || "높이 " + sz.h + "mm", feelH(sz.h)], ["AS 보증", "6개월", "베이프렌드 매장 AS, 모든 기기 동일"]].filter(Boolean);
     two = [["가격", cur ? won(cur.price) : "-", "레이저 각인 무료"], ["호흡 방식", DEV_SUB[model] || "입호흡", ""]]; }
-  $('spTi').textContent = model;
+  dspOpen = ""; { const lab = $('spTi').previousElementSibling; if (lab) lab.textContent = "전자담배 기기"; } $('spTi').textContent = model;
   $('spB').innerHTML = `<div class="sp-hero" style="background:${HEX[c] ? HEX[c] + "22" : "var(--card)"}"><img src="${img}" alt=""><span>${esc(c || "")}</span></div>
     <div class="sp-two">${two.map(([k, v, u]) => `<div><b>${k}</b><strong>${esc(v)}</strong>${u ? `<span>${esc(u)}</span>` : ""}</div>`).join("")}</div>
     ${d && d.desc && model !== "하복2" ? `<div class="sp-desc">${esc(d.desc)}</div>` : ""}
