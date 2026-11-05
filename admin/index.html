@@ -572,6 +572,8 @@ function blogTabHtml() {
 /* 11/5 지시문 초안: [지시문 만들기] → 운영봇이 소넷으로 초안(1~2분) → 여기서 보고 고치기, 촬영 업무 요청, 직원웹에 올리기 */
 const BD_BR = BR.filter((b) => b !== "동성로2"); /* 동성로2는 예전 지시문이 없어 틀을 못 만든다 */
 let BD = null, BDL = [], bdT = null;
+const BD_BASE = { 동성로: "대구동성로전자담배", 수성: "대구수성전자담배", 본점: "동대구전자담배", 율하: "대구율하전자담배", 반월당: "대구반월당전자담배", 상인: "대구상인동전자담배", 광장코아: "대구광장코아전자담배", 현풍: "대구현풍전자담배" }; /* 02_지점블로그_지시문.md 월요일 키워드 */
+const bdSplit = (b, k, dow) => { const sp = String(k).indexOf(" "), lt = sp > 0 ? k.slice(sp + 1).trim() : ""; return { kw: dow === 3 ? "대구전자담배" : BD_BASE[b] || (sp > 0 ? k.slice(0, sp) : k), lt }; };
 const nextDow = (dow) => { let d = D.d; for (let i = 0; i < 8; i++) { d = addDays(d, 1); if (new Date(d + "T00:00:00Z").getUTCDay() === dow) return d; } return d; };
 function bdList() { const L = (D.blogDrafts ||= []); BDL = BDL.filter((r) => Date.now() - r._t < 10 * 60e3 && !L.some((y) => y.id === r.id && y.st !== "wait")); for (const r of BDL) if (!L.some((y) => y.id === r.id)) L.push(r); return L; }
 function bdWatch() { clearInterval(bdT); let k = 0; bdT = setInterval(() => { if (++k > 12 || !bdList().some((r) => r.st === "wait")) return clearInterval(bdT); reload(true); }, 40e3); }
@@ -580,12 +582,13 @@ function blogDraftsHtml() {
   const st = (r) => (r.st === "wait" ? '<span class="t-sub">만드는 중…</span>' : r.st === "error" ? '<span class="t-bad">못 만들었어요</span>' : r.st === "pub" ? '<span class="t-good">직원웹에 올림</span>' : '<span style="color:var(--blue)">초안 완성</span>');
   return `<div class="sec">지시문 초안 <small>${L.length}개, 누르면 내용</small></div><div class="list">${L.map((r, i) => `<button class="item kwrow anim" style="--i:${i}" data-bdview="${esc(r.id)}"><div class="av blue">${BR.indexOf(r.b) + 1}</div><div class="tx"><b>${esc(r.titles?.[0] || r.topic || r.kw)}</b><span>${esc(r.b)}, ${dLabel(r.date)} 발행, ${esc(r.kw)}${r.shoot ? `, 촬영 요청함, 사진 ${r.shoot.n}장` : ""}</span></div><div class="val"><span style="font-size:13px;font-weight:700">${st(r)}</span></div><span class="chev">›</span></button>`).join("")}</div>`;
 }
-const readBdForm = () => { if (!BD || !$("#bdKw")) return; BD.kw = $("#bdKw").value.trim(); BD.date = $("#bdDate").value || BD.date; BD.topic = $("#bdTopic").value.trim(); BD.memo = $("#bdMemo").value.trim(); };
+const readBdForm = () => { if (!BD || !$("#bdKw")) return; BD.kw = $("#bdKw").value.trim(); BD.lt = $("#bdLt").value.trim(); BD.date = $("#bdDate").value || BD.date; BD.topic = $("#bdTopic").value.trim(); BD.memo = $("#bdMemo").value.trim(); };
 function sheetBlogDraft() {
   const v = BD;
   openSheet(`<h3>지시문 만들기</h3><div class="caption">운영봇이 지금 지시문 규칙대로 초안을 써요. 1~2분 걸려요</div>
     <div class="lbl">어느 지점</div><div class="chips">${BD_BR.map((b) => `<button class="chip ${v.b === b ? "on" : ""}" data-bdb="${b}">${BR.indexOf(b) + 1} ${esc(b)}</button>`).join("")}</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><div><div class="lbl">발행일</div><input class="in" type="date" id="bdDate" value="${esc(v.date)}"></div><div><div class="lbl">대표 키워드</div><input class="in" id="bdKw" maxlength="40" value="${esc(v.kw)}"></div></div>
+    <div class="lbl">발행일</div><input class="in" type="date" id="bdDate" value="${esc(v.date)}">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><div><div class="lbl">대표 키워드</div><input class="in" id="bdKw" maxlength="40" value="${esc(v.kw)}"></div><div><div class="lbl">롱테일</div><input class="in" id="bdLt" maxlength="40" placeholder="예: 일회용" value="${esc(v.lt || "")}"></div></div>
     <div class="lbl">제품이나 주제</div><input class="in" id="bdTopic" maxlength="120" placeholder="예: 하복2, 쌀쌀한 날 기기 관리" value="${esc(v.topic)}"><div class="caption">제품은 여기 적은 것만 써요. 비우면 매장, 상황, 고민으로 써요</div>
     <div class="lbl">메모 <span style="font-weight:500">(선택)</span></div><input class="in" id="bdMemo" maxlength="300" placeholder="꼭 넣을 말이 있으면" value="${esc(v.memo)}">
     <div class="btns"><button class="btn gray" data-x style="flex:0 0 96px">닫기</button><button class="btn" data-act="bdsend">초안 만들기</button></div>`);
@@ -594,7 +597,7 @@ async function bdSend() {
   readBdForm(); const v = BD;
   if (!v.b) return toast("지점을 골라 주세요"); if (!v.kw) return toast("대표 키워드를 넣어 주세요"); if (!v.date) return toast("발행일을 골라 주세요");
   const by = await adminName(); if (!by) return;
-  const r = { id: Date.now().toString(36), b: v.b, date: v.date, kw: v.kw, topic: v.topic, memo: v.memo, by };
+  const r = { id: Date.now().toString(36), b: v.b, date: v.date, kw: v.kw, topic: `${v.lt ? `롱테일 ${v.lt}` : ""}${v.lt && v.topic ? ", " : ""}${v.topic}`, memo: v.memo, by };
   try { await sendOp("blogDraft", r); BDL.push({ ...r, st: "wait", at: "", _t: Date.now() }); BD = null; closeSheet(); enterOnce = true; render(); toast("초안을 만들고 있어요. 1~2분 뒤에 떠요", 4000); bdWatch(); }
   catch (e) { toast("못 보냈어요: " + e.message); }
 }
@@ -1308,8 +1311,8 @@ document.addEventListener("click", async (e) => {
   if (t.dataset.act === "more") return openSheet(moreSheetHtml());
   if (t.dataset.nvb) { nvB = t.dataset.nvb; ls.set("vf-admin-nvb", nvB); enterOnce = true; render(); return scrollTo(0, 0); }
   if (t.dataset.act === "nvguide") return openSheet(nvGuideHtml());
-  if (t.dataset.bdnew !== undefined) { const [b, kw, dow] = t.dataset.bdnew.split("|"); BD = { b: BD_BR.includes(b) ? b : "", kw, date: nextDow(+dow || 1), topic: "", memo: "" }; return sheetBlogDraft(); }
-  if (t.dataset.bdb) { readBdForm(); BD.b = t.dataset.bdb; return sheetBlogDraft(); }
+  if (t.dataset.bdnew !== undefined) { const [b, kw, dow] = t.dataset.bdnew.split("|"); const bb = BD_BR.includes(b) ? b : ""; BD = { b: bb, ...bdSplit(bb, kw, +dow || 1), dow: +dow || 1, rec: kw, date: nextDow(+dow || 1), topic: "", memo: "" }; return sheetBlogDraft(); }
+  if (t.dataset.bdb) { readBdForm(); BD.b = t.dataset.bdb; if (BD.dow !== 3 && BD_BASE[BD.b]) BD.kw = BD_BASE[BD.b]; return sheetBlogDraft(); }
   if (t.dataset.act === "bdsend") return bdSend();
   if (t.dataset.bdview) return sheetBlogDraftView(t.dataset.bdview);
   if (t.dataset.bdedit) return bdAct("edit", t.dataset.bdedit);
