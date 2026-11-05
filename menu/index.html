@@ -1283,7 +1283,7 @@ const LUNG_BEST = [/보석바/, /오니/, /홀리/, /샤크/, /소다레몬|레�
 const LUNG = ((window.LUNG || {})[BRANCH] || []).map(([n, price], i) => ({ id: "gL" + i, c: "lung", n, price }));
 POS_BUNDLE.l3 = ["폐 프리미엄 40,000원(3병)"];
 // 일회용 맛별 사진 (10/28 이사님 썸네일 원본, 원본사진추가_1028.py). 없으면 모델 사진
-const DSPF_IMG = {"팜팜바 그린애플":"dsp_f00.jpg","팜팜바 딸기":"dsp_f01.jpg","팜팜바 라임":"dsp_f02.jpg","팜팜바 레몬":"dsp_f03.jpg","팜팜바 배":"dsp_f04.jpg","팜팜바 샤인":"dsp_f05.jpg","팜팜바 알로에":"dsp_f06.jpg","팜팜바 자두":"dsp_f07.jpg","팜팜바 체리콜라":"dsp_f08.jpg","팜팜바 피치":"dsp_f09.jpg"};
+const DSPF_IMG = {"모스바 워터멜론체리":"dsp_m0.jpg","모스바 파인애플":"dsp_m1.jpg","모스바 알로에그레이프":"dsp_m2.jpg","모스바 망고":"dsp_m3.jpg","모스바 멘솔":"dsp_m4.jpg","모스바 마르키사":"dsp_m5.jpg","팜팜바 그린애플":"dsp_f00.jpg","팜팜바 딸기":"dsp_f01.jpg","팜팜바 라임":"dsp_f02.jpg","팜팜바 레몬":"dsp_f03.jpg","팜팜바 배":"dsp_f04.jpg","팜팜바 샤인":"dsp_f05.jpg","팜팜바 알로에":"dsp_f06.jpg","팜팜바 자두":"dsp_f07.jpg","팜팜바 체리콜라":"dsp_f08.jpg","팜팜바 피치":"dsp_f09.jpg"};
 const gImg2 = (g) => g.c === "dsp" ? DSPF_IMG[g.n] || (dInfo(g.model).img ? dsrc(dInfo(g.model).img) : "") : gImg(g);
 function addGoods(g, q = 1) {
   if (g.c === "dsp") addItem(g.id, { k: "dsp1", n: g.n, label: g.n, img: gImg2(g), unit: g.price, ev: g.ev || "", model: g.model, hi: isHi(g) }, q);
