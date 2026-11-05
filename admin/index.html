@@ -970,37 +970,40 @@ function opsHtml() {
 }
 // 10/19 홈 정리 (사장님 "홈 화면이 개복잡함"): 홈 = ① 확인할 것(문제만) ② 지점 한눈에 표. 품절은 재고조사, 할 일은 업무, 지난 마감은 마감 메뉴로
 /* 11/4 계획_홈확인할것: 제목에 문제를 쓰고, lv 1 돈(마감 경고, 준비금) / 2 재고와 주문 / 3 운영(늦은 오픈, 미보고) 순으로. 같은 종류는 한 줄로 묶는다 */
-function issues() {
-  const L = [], late = new Date().getHours() >= 22, lateOpen = [];
+function issues(done) {
+  const L = [], late = new Date().getHours() >= 22, lateOpen = [], seen = (id) => !!done && done.has(id);
   for (const o of D.ops || []) {
     const n = BR.indexOf(o.b) + 1, c = closingOf(o.b);
-    if (c) { const w = (c.warn && c.warn.length ? c.warn : warnsOf(c)), full = warnsOf(c); if (w.length) L.push({ lv: 1, b: o.b, t: w.length === 1 ? `${n}호 ${o.b} 마감, ${w[0]}` : `${n}호 ${o.b} 마감, 확인 ${w.length}건: ${w.join(", ")}`, d: full.join(" | ") }); }
-    else if (late) L.push({ lv: 3, b: o.b, t: `${n}호 ${o.b}, 마감 보고 아직`, d: "22시가 지났는데 마감 보고가 없어요" });
-    if (o.prepDiff) L.push({ lv: 1, b: o.b, t: `${n}호 ${o.b}, 준비금 ${o.prepDiff > 0 ? "+" : ""}${won(o.prepDiff)}원`, d: `돈통 준비금이 어제보다 ${o.prepDiff > 0 ? "+" : ""}${won(o.prepDiff)}원` });
-    if (o.late) lateOpen.push(o);
+    if (c) { const w = (c.warn && c.warn.length ? c.warn : warnsOf(c)), full = warnsOf(c); if (w.length) L.push({ ids: [`close|${o.b}|${c.at || ""}`], lv: 1, b: o.b, t: w.length === 1 ? `${n}호 ${o.b} 마감, ${w[0]}` : `${n}호 ${o.b} 마감, 확인 ${w.length}건: ${w.join(", ")}`, d: full.join(" | ") }); }
+    else if (late) L.push({ ids: [`noclose|${o.b}`], lv: 3, b: o.b, t: `${n}호 ${o.b}, 마감 보고 아직`, d: "22시가 지났는데 마감 보고가 없어요" });
+    if (o.prepDiff) L.push({ ids: [`prep|${o.b}|${o.prepDiff}`], lv: 1, b: o.b, t: `${n}호 ${o.b}, 준비금 ${o.prepDiff > 0 ? "+" : ""}${won(o.prepDiff)}원`, d: `돈통 준비금이 어제보다 ${o.prepDiff > 0 ? "+" : ""}${won(o.prepDiff)}원` });
+    if (o.late && !seen(`lateopen|${o.b}`)) lateOpen.push(o);
   }
-  if (lateOpen.length === 1) { const o = lateOpen[0]; L.push({ lv: 3, b: o.b, t: `${BR.indexOf(o.b) + 1}호 ${o.b}, ${o.late}분 늦게 오픈`, d: `${o.open} 오픈, 평소 ${o.avgOpen}` }); }
-  else if (lateOpen.length) L.push({ lv: 3, t: `늦게 오픈 ${lateOpen.length}곳: ${lateOpen.map((o) => `${o.b} ${o.late}분`).join(", ")}`, d: lateOpen.map((o) => `${o.b} ${o.open} (평소 ${o.avgOpen})`).join(", ") });
+  if (lateOpen.length === 1) { const o = lateOpen[0]; L.push({ ids: [`lateopen|${o.b}`], lv: 3, b: o.b, t: `${BR.indexOf(o.b) + 1}호 ${o.b}, ${o.late}분 늦게 오픈`, d: `${o.open} 오픈, 평소 ${o.avgOpen}` }); }
+  else if (lateOpen.length) L.push({ ids: lateOpen.map((o) => `lateopen|${o.b}`), lv: 3, t: `늦게 오픈 ${lateOpen.length}곳: ${lateOpen.map((o) => `${o.b} ${o.late}분`).join(", ")}`, d: lateOpen.map((o) => `${o.b} ${o.open} (평소 ${o.avgOpen})`).join(", ") });
   const con = D.branches.filter((x) => x.connected), aMap = {};
   for (const x of con) for (const o of G(x, "프리미엄 A").out) (aMap[o.n] ||= []).push(x.b);
-  const aOut = Object.keys(aMap);
-  if (aOut.length) L.push({ lv: 2, go: "survey", kind: "aout", t: `A그룹 품절 ${aOut.length}종: ${aOut.slice(0, 3).join(", ")}${aOut.length > 3 ? " 외" : ""}`, d: aOut.map((nm) => `${nm}: ${aMap[nm].join(", ")}`).join(" / ") });
+  const aOut = Object.keys(aMap).filter((nm) => !seen(`aout|${nm}`));
+  if (aOut.length) L.push({ ids: aOut.map((nm) => `aout|${nm}`), lv: 2, go: "survey", kind: "aout", t: `A그룹 품절 ${aOut.length}종: ${aOut.slice(0, 3).join(", ")}${aOut.length > 3 ? " 외" : ""}`, d: aOut.map((nm) => `${nm}: ${aMap[nm].join(", ")}`).join(" / ") });
   const openO = (o) => !o.test && !["done", "cancel"].includes(o.step), items = (xs) => xs.slice(0, 3).map((o) => o.items).join(", ") + (xs.length > 3 ? " 외" : "");
   const ow = (D.orders || []).filter((o) => openO(o) && o.ost === "요청");
-  if (ow.length) L.push({ lv: 2, go: "order", t: `주문요청 확인 전 ${ow.length}건`, d: items(ow) });
+  if (ow.length) L.push({ ids: ow.map((o) => `ow|${o.id || o.items}`), lv: 2, go: "order", t: `주문요청 확인 전 ${ow.length}건`, d: items(ow) });
   const obuy = (D.orders || []).filter((o) => openO(o) && o.ost === "확인" && o.pay === "결제완료" && !o.arrived);
-  if (obuy.length) L.push({ lv: 2, go: "order", t: `결제 받음, 주문할 것 ${obuy.length}건`, d: items(obuy) });
+  if (obuy.length) L.push({ ids: obuy.map((o) => `obuy|${o.id || o.items}`), lv: 2, go: "order", t: `결제 받음, 주문할 것 ${obuy.length}건`, d: items(obuy) });
   const sw = (D.surveys || []).filter((v) => v.status === "wait");
-  if (sw.length) L.push({ lv: 2, go: "survey", t: `재고조사 승인 기다림 ${sw.length}건`, d: "승인하거나 반려해 주세요" });
+  if (sw.length) L.push({ ids: sw.map((v) => `sv|${v.id}`), lv: 2, go: "survey", t: `재고조사 승인 기다림 ${sw.length}건`, d: "승인하거나 반려해 주세요" });
   /* 10/26 사장님 "포스엔 있는데 없음이라 한 건은 관리자에게": 운영봇 refuse(최근 3일) */
-  for (const x of D.refuse || []) L.push({ lv: 2, b: x.b, t: `${BR.indexOf(x.b) + 1}호 ${x.b}, ${x.kind} 거절 (포스엔 ${x.pos}개)`, d: `${x.items} 없음${x.why ? ` (${x.why})` : ""}, ${BR.indexOf(x.from) + 1}호 ${x.from} 문의 ${x.d.slice(5).replace("-", "/")} ${x.t} ${x.by}` });
+  for (const x of D.refuse || []) L.push({ ids: [`refuse|${x.b}|${x.d}|${x.t}|${x.items}`], lv: 2, b: x.b, t: `${BR.indexOf(x.b) + 1}호 ${x.b}, ${x.kind} 거절 (포스엔 ${x.pos}개)`, d: `${x.items} 없음${x.why ? ` (${x.why})` : ""}, ${BR.indexOf(x.from) + 1}호 ${x.from} 문의 ${x.d.slice(5).replace("-", "/")} ${x.t} ${x.by}` });
   return L.sort((a, b) => a.lv - b.lv);
 }
 // 10/25 사장님 "확인한 건 옆에 체크 버튼으로 지우게": 이 기기에 날짜별로 기억(다른 기기엔 그대로 보임), [숨긴 것 되돌리기]로 다시 보기
-const issKey = (x) => `${x.t}|${x.d}`;
-const issDone = () => { try { return new Set(JSON.parse(localStorage.getItem("vf-admin-issok-" + D.d) || "[]")); } catch { return new Set(); } };
+/* 11/5 "확인 눌렀는데 왜 자꾸 뜨냐": 글자 대신 안 바뀌는 이름표(ids)로 기억. 이 기기 기록 + 운영봇에 남긴 내 이름 기록(D.issOk)을 합쳐서 봄 */
+const issIds = (x) => (x.ids && x.ids.length ? x.ids : [`${x.t}|${x.d}`]);
+const issKey = (x) => issIds(x).join("¦");
+const issLocal = () => { try { return new Set(JSON.parse(localStorage.getItem("vf-admin-issok-" + D.d) || "[]")); } catch { return new Set(); } };
+const issDone = () => { const s = issLocal(); for (const k of (D.issOk && D.issOk[ls.get("vf-admin-name") || ""]) || []) s.add(k); return s; };
 const issDoneSave = (s) => { try { localStorage.setItem("vf-admin-issok-" + D.d, JSON.stringify([...s])); } catch {} };
-const issuesLeft = () => { const done = issDone(); return issues().filter((x) => !done.has(issKey(x))); };
+const issuesLeft = () => { const done = issDone(); return issues(done).filter((x) => !issIds(x).every((id) => done.has(id)) && !done.has(`${x.t}|${x.d}`)); };
 function issuesHtml() {
   const all = issues(), L = issuesLeft(), hid = all.length - L.length;
   const row = (x) => { const go = x.b ? `data-brpc="${esc(x.b)}"` : x.go ? `data-tab="${x.go}"` : "", tag = go ? "button" : "div";
@@ -1747,8 +1750,8 @@ document.addEventListener("click", async (e) => {
   if (t.dataset.ntb) { NTBR.has(t.dataset.ntb) ? NTBR.delete(t.dataset.ntb) : NTBR.add(t.dataset.ntb); cbSync("data-ntb", NTBR, "[data-ntall]"); return; }
   if (t.dataset.act === "ntsend") { const title = $("#ntTitle").value.trim(), body = $("#ntBody").value.trim(); if (!title) return toast("제목을 넣어 주세요"); if (!NTBR.size) return toast("지점을 골라 주세요"); if (!(await askConfirm(`${NTBR.size === BR.length ? "전 지점" : [...NTBR].join(", ")}에 공지를 띄울까요?`, "직원웹에 팝업으로 떠요", "공지 올리기"))) return; const n = { id: Date.now().toString(36), title, body, br: BR.filter((b) => NTBR.has(b)), until: NTUNTIL ? addDays(D.d, NTUNTIL - 1) : "" }; try { await sendOp("notice", n); (D.notices ||= []).push({ ...n, d: D.d, t: new Date().toTimeString().slice(0, 5), off: false, ok: {} }); NTF = { title: "", body: "" }; $("#ntTitle").value = ""; $("#ntBody").value = ""; closeSheet(); render(); toast("올렸어요. 직원웹에는 1~2분 뒤에 떠요"); } catch (e) { toast("못 올렸어요: " + e.message); } return; }
   if (t.dataset.ntoff) { if (!(await askConfirm("이 공지를 내릴까요?", "직원웹에서 사라져요", "내리기", true))) return; try { await sendOp("noticeOff", { id: t.dataset.ntoff }); const n = (D.notices || []).find((x) => x.id === t.dataset.ntoff); if (n) n.off = true; closeSheet(); render(); toast("내렸어요"); } catch { toast("못 보냈어요"); } return; }
-  if (t.dataset.issok) { const s = issDone(); s.add(t.dataset.issok); issDoneSave(s); render(); return toast("확인했어요"); }
-  if (t.dataset.issundo) { issDoneSave(new Set()); render(); return; }
+  if (t.dataset.issok) { const ids = t.dataset.issok.split("¦"), s = issLocal(), me = ls.get("vf-admin-name") || ""; ids.forEach((k) => s.add(k)); issDoneSave(s); if (ADMIN_NAMES.includes(me)) { ((D.issOk ||= {})[me] ||= []).push(...ids); sendOp("issOk", { ids, by: me, d: D.d }).catch(() => {}); } render(); return toast("확인했어요"); }
+  if (t.dataset.issundo) { const me = ls.get("vf-admin-name") || ""; issDoneSave(new Set()); if (D.issOk && D.issOk[me]) { delete D.issOk[me]; sendOp("issOk", { undo: true, by: me, d: D.d }).catch(() => {}); } render(); return; }
   if (t.dataset.restart) { const bot = t.dataset.restart; if (!(await askConfirm(bot + "을 다시 켤까요?", "1분쯤 걸려요" + (bot === "운영봇" ? ". 그동안 온 신호는 다시 켜진 뒤 처리돼요" : ""), "다시 켜기"))) return; t.disabled = true; t.textContent = "보냈어요"; try { await sendOp("restart", { bot }); toast(bot + " 다시 켜는 중이에요. 3분 안에 상태가 바뀌어요"); setTimeout(loadBot, 90e3); setTimeout(loadBot, 200e3); } catch (err) { toast("못 보냈어요: " + err.message); t.disabled = false; t.textContent = "다시 켜기"; } return; }
   if (t.dataset.x !== undefined) return closeSheet();
   if (t.dataset.kpib) { kpiB = t.dataset.kpib; ls.set("vf-admin-kpib", kpiB); return render(); }
