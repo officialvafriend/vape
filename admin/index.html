@@ -91,6 +91,7 @@
   .okline{color:var(--green);font-weight:700;margin-top:14px;font-size:15px}
   .pchead{margin-bottom:14px}.pchead h1{font-size:22px;font-weight:800;letter-spacing:-.6px;line-height:1.3}.pchead .caption{margin:4px 0 0}
   .av svg{width:22px;height:22px}
+  .stk{--pb:calc(22px + env(safe-area-inset-bottom));position:sticky;bottom:calc(0px - var(--pb));z-index:2;margin:16px -22px calc(0px - var(--pb));padding:12px 22px var(--pb);background:var(--card);box-shadow:0 -1px 0 var(--line2)}@media (min-width:900px){.stk{--pb:26px}}.panel .stk{--pb:28px;margin-left:-28px;margin-right:-28px;padding-left:28px;padding-right:28px}
   .bdgp{margin-top:16px}.bdgp .gt{font-size:14px;font-weight:600;color:var(--sub);margin-bottom:8px}.bdgp .gt b{color:var(--ink);font-weight:700}.bdgp .gc{display:flex;flex-wrap:wrap;gap:8px}
   .bdn{display:inline-flex;align-items:center;height:42px;padding:0 15px;border-radius:12px;font-size:15px;font-weight:700;text-decoration:none;transition:transform .12s var(--ease-out)}.bdn:active{transform:scale(.97)}.bdn.act{background:var(--blue-soft);color:var(--blue)}.bdn.no{box-shadow:inset 0 0 0 1.5px var(--line2);color:var(--ink2)}.bdn.ok{background:var(--green-soft);color:var(--green)}.bdn.wt{background:var(--bg);color:var(--sub)}.bdn.hot{background:var(--red-soft);color:var(--red)}@media (hover:hover) and (pointer:fine){.bdn{cursor:pointer}.bdn:hover{filter:brightness(.97)}}
   .bdg{display:grid;grid-template-columns:minmax(58px,120px) minmax(0,1fr) minmax(0,1fr);gap:8px;align-items:stretch}.bdg .hd{font-size:14px;font-weight:700;text-align:center;padding:0 0 2px}.bdg .hd small{display:block;font-size:12px;font-weight:600;color:var(--sub)}.bdg .br{display:flex;align-items:center;padding-left:6px;font-size:15px;font-weight:700;min-width:0}
@@ -808,7 +809,7 @@ function sheetBlogDraft() {
     <div class="lbl" style="display:flex;align-items:center;gap:8px">롱테일 추천 <button class="chip" style="height:32px;padding:0 10px;font-size:13px;margin-left:auto" data-act="bdltmore">다른 추천 보기</button></div><div class="caption" style="margin:0 0 4px">${v.b ? esc(jm(v.b)) + "이 " : ""}최근 4주에 안 쓴 것 중에서 골라 보여 줘요. 직접 적어도 돼요</div>${v.ltPick.map(([g, xs]) => `<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:6px"><span style="flex:0 0 34px;font-size:13px;font-weight:700;color:var(--sub)">${g}</span>${xs.map((x) => `<button class="chip ${v.lt === x ? "on" : ""}" style="height:36px;padding:0 12px;font-size:14px" data-bdlt="${esc(x)}">${esc(x)}</button>`).join("")}</div>`).join("")}
     <div class="lbl">제품이나 주제 <span style="font-weight:500">(선택)</span></div><input class="in" id="bdTopic" maxlength="120" placeholder="예: 하복2, 쌀쌀한 날 기기 관리" value="${esc(v.topic)}"><div class="caption">제품은 여기 적은 것만 써요. 비우면 운영봇이 주제를 정해요. 제목은 운영봇이 지어요</div>
     <div class="lbl">메모 <span style="font-weight:500">(선택)</span></div><input class="in" id="bdMemo" maxlength="300" placeholder="꼭 넣을 말이 있으면" value="${esc(v.memo)}">
-    <div class="btns"><button class="btn gray" data-x style="flex:0 0 96px">닫기</button><button class="btn" data-act="bdsend">초안 만들기</button></div>`);
+    <div class="stk"><div class="btns" style="margin-top:0"><button class="btn gray" data-x style="flex:0 0 96px">닫기</button><button class="btn" data-act="bdsend">초안 만들기</button></div></div>`);
 }
 async function bdSend() {
   readBdForm(); const v = BD;
@@ -826,14 +827,12 @@ function sheetBlogDraftView(id) {
   const s = r.stats || {}, w = (bad, t) => `<span class="${bad ? "t-bad" : ""}" style="font-weight:${bad ? 700 : 500}">${t}</span>`;
   const stat = r.stats ? `<div class="caption">${w(s.kw > 6, `대표 키워드 ${s.kw}번${s.kw > 6 ? "(기준 6번)" : ""}`)}, ${w(s.chars < 1000 || s.chars > 1200, `본문 ${s.chars}자${s.chars < 1000 || s.chars > 1200 ? "(기준 1,000~1,200자)" : ""}`)}, ${w(s.photos !== 12, `사진 ${s.photos}장`)}${(s.bad || []).length ? ", " + w(true, "들어가면 안 되는 말: " + s.bad.join(", ")) : ""}</div>` : "";
   const shoot = r.shoot ? `<div class="okline" style="margin-top:10px">📷 ${esc(jm(r.shoot.b || r.b))}에 사진을 요청했어요. 사진 ${r.shoot.n}장 도착</div>` : "";
-  openSheet(head + `<h3>${esc(r.titles[0])}</h3>${r.titleWhy ? `<div class="caption">${esc(r.titleWhy)}</div>` : ""}${stat}
+  openSheet(head + `<h3>${esc(r.titles[0])}</h3>${stat}
     ${r.err ? `<div class="warn">고치기를 못 했어요: ${esc(r.err)}</div>` : ""}${r.st === "pub" ? `<div class="okline">✅ 직원웹에 올렸어요 ${esc(String(r.pubAt || "").slice(5))}</div>` : ""}
-    <div class="lbl">첫 문단</div><div class="caption" style="margin:0;font-size:15px;line-height:1.65;color:var(--ink2)">${esc(r.first || "")}</div>
-    <div class="lbl">소제목</div><div class="caption" style="margin:0;font-size:15px;line-height:1.8;color:var(--ink2)">${(r.heads || []).map(esc).join("<br>")}</div>
-    <div class="lbl">찍을 사진 ${(r.shots || []).length}장</div><div class="caption" style="margin:0;font-size:14px;line-height:1.75;color:var(--ink2)">${(r.shots || []).map((x, i) => `${i + 1}. ${esc(x)}`).join("<br>")}</div>
     ${shoot}
     <div class="btns"><a class="btn gray" style="display:flex;align-items:center;justify-content:center;text-decoration:none;height:48px;font-size:15px" href="../blog/${esc(r.file)}?t=${Date.now()}" target="_blank" rel="noopener">전체 보기</a><button class="btn gray" style="height:48px;font-size:15px" data-bdedit="${esc(r.id)}">고쳐 달라고 하기</button></div>
-    <div class="btns" style="margin-top:8px"><button class="btn red" data-bddel="${esc(r.id)}" style="flex:0 0 80px">지우기</button><button class="btn gray" data-x style="flex:0 0 80px">닫기</button><button class="btn" data-bdpub="${esc(r.id)}">${r.st === "pub" ? "다시 올리기" : "직원웹에 올리기"}</button></div>${r.shoot ? "" : `<button class="chip" data-bdshoot="${esc(r.id)}" style="margin-top:14px;height:40px;font-size:14px">다른 지점 사진이 필요하면 요청하기</button>`}`);
+    ${r.shoot ? "" : `<button class="chip" data-bdshoot="${esc(r.id)}" style="margin-top:10px;height:40px;font-size:14px">다른 지점 사진이 필요하면 요청하기</button>`}
+    <div class="stk"><div class="btns" style="margin-top:0"><button class="btn red" data-bddel="${esc(r.id)}" style="flex:0 0 80px">지우기</button><button class="btn gray" data-x style="flex:0 0 80px">닫기</button><button class="btn" data-bdpub="${esc(r.id)}">${r.st === "pub" ? "다시 올리기" : "직원웹에 올리기"}</button></div></div>`);
 }
 async function bdAct(kind, id, arg) {
   const r = bdList().find((y) => y.id === id); if (!r) return;
