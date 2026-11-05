@@ -91,6 +91,7 @@
   .okline{color:var(--green);font-weight:700;margin-top:14px;font-size:15px}
   .pchead{margin-bottom:14px}.pchead h1{font-size:22px;font-weight:800;letter-spacing:-.6px;line-height:1.3}.pchead .caption{margin:4px 0 0}
   .av svg{width:22px;height:22px}
+  .nbadge{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--red);color:#fff;font-size:11px;font-weight:800;margin-left:6px;line-height:1}.nav button{position:relative}.nav .nbadge{position:absolute;top:1px;left:calc(50% + 6px);margin:0}.subnav .nbadge{vertical-align:1px}
   /* 11/5 블로그 탭: 점유 막대, 줄 등장, 버튼 눌림. 움직임 줄이기 설정이면 옮기는 움직임은 뺀다 */
   .sbar{height:8px;border-radius:99px;background:var(--line2);overflow:hidden;margin-top:8px}.sbar i{display:block;height:100%;border-radius:99px;background:var(--blue)}.sbar i.pk{background:var(--blue)}
   :is(.wrap,.main,.narrow)>.chips{gap:8px}:is(.wrap,.main,.narrow)>.chips .chip:not(.on){background:var(--card);box-shadow:inset 0 0 0 1px var(--line2);color:var(--ink)}:is(.wrap,.main,.narrow)>.chips .chip.on{box-shadow:0 2px 8px rgba(27,100,218,.28)}
@@ -334,7 +335,7 @@ const GROUPS = [["home", "홈", ["home"]], ["tasks", "업무", ["tasks", "blog"]
 const SUBNM = { bunbae: "분배 넣기", tasks: "업무", blog: "블로그", order: "주문요청", stockrep: "재고보고", survey: "재고조사", group: "그룹관리", must: "추가 필수", office: "봇 상태", staff: "직원웹", naver: "네이버" };
 const grpOf = (t) => GROUPS.find((g) => g[2].includes(t === "blog" ? "tasks" : t)) || GROUPS[0];
 const grpTab = (g) => { const last = ls.get("vf-admin-sub-" + g[0]); return g[2].includes(last) ? last : g[2][0]; };
-const subnavHtml = () => { const g = grpOf(tab); return g[2].length > 1 ? `<div class="subnav">${g[2].map((k) => `<button class="${k === tab ? "on" : ""}" data-tab="${k}">${SUBNM[k]}</button>`).join("")}</div>` : ""; };
+const subnavHtml = () => { const g = grpOf(tab); return g[2].length > 1 ? `<div class="subnav">${g[2].map((k) => `<button class="${k === tab ? "on" : ""}" data-tab="${k}">${SUBNM[k]}${k === "blog" && bdTodoN() ? `<span class="nbadge">${bdTodoN()}</span>` : ""}</button>`).join("")}</div>` : ""; };
 const EMBED = { naver: () => "../naver/", staff: () => `../staff/?branch=${encodeURIComponent(staffB)}` };
 let staffB = ls.get("vf-admin-staffb") || "본점";
 function embedHtml() {
@@ -344,10 +345,10 @@ function embedHtml() {
 function render() {
   if (!D) return;
   $("#app").classList.toggle("enter", enterOnce); enterOnce = false;
-  const pc = isPC();
+  const pc = isPC(), tn = bdTodoN();
   $("#nav").style.display = pc ? "none" : "";
   ls.set("vf-admin-sub-" + grpOf(tab)[0], tab);
-  document.querySelectorAll("#nav button").forEach((b) => { if (b.dataset.g === "more") { b.classList.toggle("on", MORE.includes(grpOf(tab)[0])); if (!b.dataset.ic) { b.dataset.ic = 1; b.innerHTML = ICON.more + "더보기"; } return; } const g = GROUPS.find((x) => x[0] === b.dataset.g); if (g) { b.dataset.tab = grpTab(g); b.classList.toggle("on", grpOf(tab) === g); if (!b.dataset.ic) { b.dataset.ic = 1; b.innerHTML = (g[0] === "goods" ? ICON.survey : ICON[g[0]]) + (g[0] === "note" ? "노트" : g[1]); } } });
+  document.querySelectorAll("#nav button").forEach((b) => { if (b.dataset.g === "more") { b.classList.toggle("on", MORE.includes(grpOf(tab)[0])); if (!b.dataset.ic) { b.dataset.ic = 1; b.innerHTML = ICON.more + "더보기"; } return; } const g = GROUPS.find((x) => x[0] === b.dataset.g); if (g) { b.dataset.tab = grpTab(g); b.classList.toggle("on", grpOf(tab) === g); if (!b.dataset.ic) { b.dataset.ic = 1; b.innerHTML = (g[0] === "goods" ? ICON.survey : ICON[g[0]]) + (g[0] === "note" ? "노트" : g[1]); } if (g[0] === "tasks") { b.querySelector(".nbadge")?.remove(); if (tn) b.insertAdjacentHTML("beforeend", `<span class="nbadge">${tn}</span>`); } } });
   const [, hh, mm] = D.at.match(/(\d{2}):(\d{2})$/) || [];
   if (EMBED[tab] && $("#app .emb") && $("#app .emb").dataset.k === tab + staffB) return; // 자동 새로고침 때 안에 띄운 앱이 처음으로 돌아가지 않게
   const body0 = EMBED[tab] ? embedHtml() : tab === "home" ? (pc ? homePC() : homeHtml()) : tab === "kpi" ? kpiHtml() : tab === "close" ? closingAllHtml() : tab === "survey" ? surveyHtml() : tab === "tasks" ? tasksHtml() : tab === "note" ? noteHtml() : tab === "order" ? orderHtml() : tab === "office" ? officeHtml() : tab === "group" ? groupHtml() : tab === "stockrep" ? stockTblHtml() : tab === "bunbae" ? bunbaeHtml() : tab === "blog" ? blogTabHtml() : mustHtml();
@@ -355,7 +356,7 @@ function render() {
   if (!pc) { $("#app").innerHTML = `<div class="top"><div class="logo">VAFRIEND <b>관리자</b></div><div class="r"><button class="ic" data-act="reload">${hh ? `${hh}:${mm} 기준 ↻` : "새로고침"}</button><button class="ic" data-act="logout">잠그기</button></div></div>${body}`; markEmb(); return; }
   const ICG = { goods: ICON.order };
   $("#app").innerHTML = `<div class="shell"><aside class="side"><div class="logo">VAFRIEND <b>관리자</b></div>
-      ${GROUPS.map((g) => `<button class="navb ${grpOf(tab) === g ? "on" : ""}" data-tab="${grpTab(g)}">${ICG[g[0]] || ICON[g[0]]}${g[1]}${g[0] === "office" && botBad() ? ' <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--red);margin-left:4px"></span>' : ""}</button>`).join("")}
+      ${GROUPS.map((g) => `<button class="navb ${grpOf(tab) === g ? "on" : ""}" data-tab="${grpTab(g)}">${ICG[g[0]] || ICON[g[0]]}${g[1]}${g[0] === "tasks" && tn ? `<span class="nbadge">${tn}</span>` : ""}${g[0] === "office" && botBad() ? ' <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--red);margin-left:4px"></span>' : ""}</button>`).join("")}
       <div class="foot"><button class="navb" data-act="reload">↻ ${hh ? `${hh}:${mm} 기준` : "새로고침"}</button><button class="navb" data-act="logout">🔒 잠그기</button></div></aside>
     <main class="main ${EMBED[tab] ? "embm" : ""}">${tab === "home" || tab === "kpi" || tab === "survey" || tab === "group" || tab === "must" || tab === "stockrep" || tab === "close" || EMBED[tab] ? body : `<div class="narrow">${body}</div>`}</main></div>`;
   markEmb();
@@ -591,6 +592,7 @@ function bdTodo() {
     if (r.st === "done") L.push({ lv: n <= 2 ? 1 : 2, t: `${tag}, 직원웹에 올릴 차례`, d: r.shoot && r.shoot.n ? `사진 ${r.shoot.n}장 도착` : "초안 완성", id: r.id }); }
   return L.sort((a, b) => a.lv - b.lv);
 }
+const bdTodoN = () => { try { return D && D.blogDrafts ? bdTodo().length : 0; } catch { return 0; } };
 function bdTodoHtml() {
   const L = bdTodo(); if (!L.length) return "";
   return `<div class="sec">블로그 할 일 <small>${L.length}건</small></div><div class="list">${L.map((x, i) => `<button class="item iss anim" style="--i:${i}" ${x.id ? `data-bdview="${esc(x.id)}"` : `data-nvb="${esc(x.nvb)}"`}><i class="dot lv${x.lv}"></i><div class="tx"><b>${esc(x.t)}</b><span>${esc(x.d)}</span></div><span class="chev">›</span></button>`).join("")}</div>`;
