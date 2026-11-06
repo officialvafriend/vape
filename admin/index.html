@@ -567,8 +567,11 @@ function kTiles(c, p) {
 const fP = (v) => (v == null ? "-" : (v * 100).toFixed(1) + "%");
 const fD = (v, unit = "%") => (v == null ? "" : `<small class="${v >= 0 ? "t-good" : "t-bad"}">${v >= 0 ? "+" : ""}${(v * 100).toFixed(1)}${unit}</small>`);
 const SP = { last30: "최근 30일", month: "이번 달", prevMonth: "지난달" };
+// 11/6 액상덕후: 직원 KPI에서 김진, 김시원, 보혜는 뺀다(순위 계산에서도 제외)
+const KPI_HIDE = ["김진", "김시원", "보혜", "안보혜"];
+const kpiClean = (S) => (S ? { ...S, rows: S.rows.filter((r) => !KPI_HIDE.includes(String(r.n).trim())) } : S);
 function staffKpiHtml(K) {
-  const S = K.staff?.[kpiS]; if (!S) return '<div class="empty">직원 KPI 기록이 없어요</div>';
+  const S = kpiClean(K.staff?.[kpiS]); if (!S) return '<div class="empty">직원 KPI 기록이 없어요</div>';
   const bar = `<div class="kbar">${Object.entries(SP).map(([k, n]) => `<button class="chip ${kpiS === k ? "on" : ""}" data-kpis="${k}">${n}</button>`).join("")}<span style="flex:1"></span>${["전체", ...BR].map((b, i) => `<button class="chip ${kpiB === b ? "on" : ""}" data-kpib="${b}">${b === "전체" ? "전체" : i + " " + b}</button>`).join("")}</div>`;
   const rows = S.rows.filter((r) => kpiB === "전체" || r.b === kpiB);
   const tr = (r) => `<tr><td><b>${r.score != null ? S.rows.filter((x) => x.score != null).indexOf(r) + 1 + ". " : ""}${esc(r.n)}</b><small>${esc(r.b)}</small></td><td>${r.days}<small>혼자 ${r.solo}</small></td><td>${fD(r.vs).replace("<small", "<b").replace("</small>", "</b>") || "-"}</td><td>${r.ticket ? won(Math.round(r.ticket)) : "-"}${fD(r.ticketVs)}</td><td>${fP(r.des)}${fD(r.desVs, "%p")}</td><td>${fP(r.disp)}</td><td>${fP(r.revRate)}${fD(r.revVs, "%p")}</td><td>${r.score ?? "<small>근무 5일 미만</small>"}</td></tr>`;
@@ -658,7 +661,7 @@ function engHtml() {
   return `<div class="sec">이번 달 각인 <small>${esc(E.ym.slice(5))}월, 각인 요청을 맡은 매장 기준</small></div><div class="opsw"><table class="ops kt"><thead><tr><th>매장</th><th>맡은 건</th><th>직접 고른 건</th><th>진행 중</th></tr></thead><tbody>${E.rows.map((r) => `<tr><td><b>${esc(r.b)}</b></td><td>${r.n}</td><td>${r.manual}</td><td>${r.open}</td></tr>`).join("")}</tbody></table></div>`;
 }
 function kpiRankHtml() {
-  const S = D.kpi?.staff?.last30; if (!S) return "";
+  const S = kpiClean(D.kpi?.staff?.last30); if (!S) return "";
   const ok = S.rows.filter((r) => r.score != null); if (ok.length < 2) return "";
   const line = (x) => `<div class="item"><div class="av ${ok.indexOf(x) < 3 ? "good" : "bad"}">${ok.indexOf(x) + 1}</div><div class="tx"><b>${esc(x.n)} <small class="t-sub" style="font-weight:600">${esc(x.b)}, 점수 ${x.score}</small></b><span>매출 ${x.vs == null ? "-" : (x.vs >= 0 ? "+" : "") + (x.vs * 100).toFixed(1) + "%"}, 지정 ${fP(x.des)}, 객단가 ${man(x.ticket && Math.round(x.ticket))}, 리뷰 ${fP(x.revRate)}, 근무 ${x.days}일</span></div></div>`;
   return `<div class="sec">직원 KPI 순위 <small>${S.from.slice(5).replace("-", "/")}~${S.to.slice(5).replace("-", "/")}, 근무 지점 평균 대비 4가지 순위 합</small></div>
