@@ -447,8 +447,8 @@ async function tryLogin() {
     const key = await deriveKey(pw, RAW.salt, RAW.iter);
     D = await decrypt(RAW, key); KEY = key;
     if ($("#remember").checked) ls.set("vf-admin-key", b64.to(key));
-    render();
-  } catch (e) { const m = e?.name === "OperationError" ? "비밀번호가 맞지 않아요" : "불러오지 못했어요. 인터넷을 확인해 주세요"; if ($("#loginmsg")) { $("#loginmsg").textContent = m; $("#go").disabled = false; $("#go").textContent = "열기"; $("#pw").value = ""; $("#pw").focus(); } else renderLogin(m); }
+  } catch (e) { const m = e?.name === "OperationError" ? "비밀번호가 맞지 않아요" : "불러오지 못했어요. 인터넷을 확인해 주세요"; if ($("#loginmsg")) { $("#loginmsg").textContent = m; $("#go").disabled = false; $("#go").textContent = "열기"; $("#pw").value = ""; $("#pw").focus(); } else renderLogin(m); return; }
+  BOOTING = false; safeRender();
 }
 async function reload(quiet) {
   try { const before = D && D.at; RAW = await fetchEnc(); D = await decrypt(RAW, KEY); if (!draft && !$("#dim").classList.contains("on")) render(); if (!quiet) { const hm = String(D.at || "").slice(-5), age = Math.round((Date.now() - Date.parse(`${D.d}T${hm}:00+09:00`)) / 60e3); if (D.at !== before) toast(`새로 불러왔어요 (${hm} 자료)`); else if (age > 45) toast(`${hm} 뒤로 새 자료가 없어요. 더보기 > 사무실에서 봇 상태를 봐 주세요`, 6000); else toast(`아직 새 자료가 없어요, 마지막은 ${hm}. 매출은 30분마다, 보고는 오면 바로 바뀌어요`, 6000); } }
@@ -1772,6 +1772,7 @@ document.addEventListener("click", async (e) => {
   if (t.dataset.tab) { tab = t.dataset.tab; ls.set("vf-admin-tab", tab); closeSheet(true); enterOnce = true; render(); return scrollTo(0, 0); }
   const a = t.dataset.act;
   if (a === "reload") return reload();
+  if (a === "hardreload") return location.reload();
   if (a === "logout") { ls.set("vf-admin-key", null); KEY = D = null; return renderLogin("잠갔어요"); }
   if (t.dataset.brpc) return panelBranch(t.dataset.brpc, "프리미엄 A");
   if (t.dataset.cltoday) { const i = (D.closings || []).findIndex((c) => c.b === t.dataset.cltoday && c.date === D.d); if (i >= 0) return sheetClosing(i); return toast("오늘 마감 보고가 아직 없어요"); }
@@ -1816,12 +1817,33 @@ document.addEventListener("change", (e) => {
 let qT; document.addEventListener("input", (e) => { if (e.target.id === "gq") { clearTimeout(qT); qT = setTimeout(() => { grpQ = e.target.value.trim(); const pos = e.target.selectionStart; render(); const el = $("#gq"); el.focus(); el.setSelectionRange(pos, pos); }, 250); return; } if (e.target.id === "mq") { clearTimeout(qT); qT = setTimeout(() => { mustQ = e.target.value.trim(); const pos = e.target.selectionStart; render(); const el = $("#mq"); el.focus(); el.setSelectionRange(pos, pos); }, 250); } });
 document.addEventListener("keydown", (e) => { if (e.key === "Enter" && e.target.id === "pw") tryLogin(); });
 
-(async () => {
+/* 화면 그리기: 오류가 나면 홈으로 한 번 돌려 보고, 그래도 안 되면 오류를 보여 줌(로그인은 그대로) */
+function safeRender() {
+  try { render(); } catch (e) { console.error("화면 오류", e);
+    try { tab = "home"; ls.set("vf-admin-tab", tab); render(); toast("그 화면을 여는 중 오류가 나서 홈으로 왔어요", 5000); }
+    catch (e2) { console.error("홈 화면 오류", e2); $("#nav").style.display = "none"; $("#app").innerHTML = `<div class="login"><div class="headline">화면을 여는 중 오류가 났어요</div><div class="caption" style="margin-top:8px">${esc(String(e2.message || e2).slice(0, 140))}</div><div class="btns"><button class="btn" data-act="hardreload">다시 열기</button></div></div>`; } }
+}
+let BOOTING = false;
+async function boot() {
   const saved = ls.get("vf-admin-key");
   if (!saved) return renderLogin();
-  try { KEY = b64.from(saved); RAW = await fetchEnc(); D = await decrypt(RAW, KEY); render(); }
-  catch { ls.set("vf-admin-key", null); KEY = null; renderLogin(); }
-})();
+  try { KEY = b64.from(saved); } catch { ls.set("vf-admin-key", null); KEY = null; return renderLogin(); }
+  BOOTING = true;
+  for (let n = 0; BOOTING; n++) { /* 자료를 못 받으면 열쇠는 그대로 두고 다시 시도 */
+    try { RAW = await fetchEnc(); break; }
+    catch { if (n === 0) { $("#nav").style.display = "none"; $("#app").innerHTML = '<div class="login"><div class="headline">베이프렌드 관리자<br><span style="color:var(--sub);font-size:18px;font-weight:600">자료를 불러오는 중이에요</span></div><div class="caption" style="margin-top:8px">인터넷이 잠깐 끊겼을 수 있어요. 자동으로 다시 시도해요</div></div>'; }
+      await new Promise((r) => setTimeout(r, Math.min(15000, 3000 * (n + 1)))); }
+  }
+  if (!BOOTING) return; BOOTING = false;
+  try { D = await decrypt(RAW, KEY); }
+  catch (e) { /* 열쇠가 안 맞을 때만 지움 */
+    if (e?.name === "OperationError") { ls.set("vf-admin-key", null); KEY = null; return renderLogin("비밀번호가 바뀌었어요. 다시 넣어 주세요"); }
+    console.error("자료 풀기 오류", e); KEY = null; return renderLogin("불러오지 못했어요. 새로고침해 주세요");
+  }
+  safeRender();
+}
+boot();
+
 setInterval(() => KEY && reload(true), 3 * 60e3);
 setInterval(() => KEY && loadBot(), 60e3); setTimeout(loadBot, 1500);
 matchMedia("(min-width:900px)").addEventListener("change", () => { panelKeep = ""; if (D) render(); });
