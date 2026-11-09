@@ -308,7 +308,7 @@
 })();
 </script>
 <script>
-const VER = "11.09-3"; window.VER_ERR = VER;
+const VER = "11.09-5"; window.VER_ERR = VER;
 const GAME_LOCK = true; // 11/02 쉬는 시간 게임 잠금
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
@@ -398,6 +398,56 @@ document.addEventListener("click", async (e) => {
     const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([txt], { type: "text/x-vcard;charset=utf-8" })); a.download = "오늘쿠폰손님.vcf"; document.body.appendChild(a); a.click(); a.remove();
     toast("받은 파일을 열어서 연락처에 저장해 주세요");
   }
+});
+/* 11/9 쉬운 화면(시험 모드 전용): 큰 버튼, 한 번에 질문 하나. 기존 기능을 그대로 부른다 */
+const EZ = { s: "home", classic: false, q: "", p: null, n: 1 };
+setTimeout(() => { if (TEST && !document.getElementById("ezCss")) { const st = document.createElement("style"); st.id = "ezCss"; st.textContent = ".ezb{display:flex;align-items:center;gap:14px;width:100%;box-sizing:border-box;background:#fff;border:1px solid #d1d6db;border-radius:16px;padding:18px;margin-top:12px;min-height:84px;font:inherit;font-size:24px;font-weight:700;color:var(--ink);text-align:left}.ezb.alert{background:var(--blue);border-color:var(--blue);color:#fff}.ezb small{margin-left:auto;font-size:18px;font-weight:500;color:var(--sub)}.ezb.small{font-size:20px;min-height:64px}.ezh{font-size:30px;font-weight:800;margin:8px 0 4px}.ezd{font-size:20px;color:var(--ink2);margin:6px 0}.ezback{display:block;width:100%;background:none;border:0;padding:18px;font:inherit;font-size:20px;color:var(--sub);margin-top:6px}.ezi{width:100%;box-sizing:border-box;height:64px;border:1px solid #d1d6db;border-radius:16px;padding:0 16px;font:inherit;font-size:22px;margin-top:10px}html.ez .hero,html.ez .bnav,html.ez .navb{display:none}"; document.head.appendChild(st); } }, 0);
+const ezB = (attr, t, cls, sm) => `<button class="ezb ${cls || ""}" ${attr}>${t}${sm ? `<small>${sm}</small>` : ""}</button>`;
+const ezBack = '<button class="ezback" data-ez="home">처음으로</button>';
+const ezRecent = () => { try { return JSON.parse(localStorage.getItem("vf-ez-recent") || "[]"); } catch { return []; } };
+const ezRow = (r) => `<button class="ezb small" data-snopen="${r.id}" style="display:block"><div>${esc(r.items)}</div><div style="font-size:18px;font-weight:500;margin-top:4px;color:${snMine(r) ? "var(--red)" : "var(--sub)"}">${esc(toTxt(r))}, ${snMine(r) ? "우리 차례" : esc(STXT[r.st] || r.st)}</div></button>`;
+function ezHits() { const k = pkNorm(EZ.q); if (!k) return ezRecent().map((p, i) => ezB(`data-ezr="${i}"`, esc(p[0]), "small")).join(""); return (PRODS || []).filter(([n]) => pkNorm(n).includes(k)).slice(0, 6).map((p) => ezB(`data-ezp="${esc(p[0])}"`, esc(p[0]), "small")).join("") || '<div class="ezd">찾는 상품이 없어요</div>'; }
+function ezHtml() {
+  const h = (t) => `<div class="ezh">${t}</div>`, mine = snList().filter(snMine);
+  const v = EZ.s;
+  if (v === "send") return h("보내기") + ezB('data-ez="q1"', "🛵 퀵") + ezB('data-req="parcel"', "📦 택배") + ezB('data-snew="jeon"', "🔁 다른 지점에 전달") + ezBack;
+  if (v === "ask") return h("요청하기") + ezB('data-req="branch"', "📦 재고 요청") + ezB('data-req="ask"', "🔍 재고 있나 묻기") + ezB('data-req="supply"', "🧺 비품") + ezB('data-req="break"', "🔧 수리") + ezBack;
+  if (v === "cust") return h("손님") + ezB('data-view="talk"', "🧾 고객요청") + ezB('data-view="as2"', "🔧 AS") + (B === "본점" ? ezB('data-ez="coupon"', "🎟 쿠폰 보내기") : "") + ezBack;
+  if (v === "coupon") return custCardHtml() + ezBack;
+  if (v === "rep") return h("보고하기") + ezB('data-ez="classic"', "🙋 출근, 오픈, 마감") + ezB('data-view="note"', "🗒 노트") + ezBack;
+  if (v === "todo") return h("할 일") + (mine.map(ezRow).join("") || '<div class="ezd">할 일이 없어요</div>') + ezBack;
+  if (v === "find") { const k = pkNorm(EZ.q), L = snList().filter((r) => !k || pkNorm(r.items + toTxt(r)).includes(k)).slice(0, 30); return h("찾아보기") + `<input class="ezi" id="ezF" placeholder="상품이나 지점" value="${esc(EZ.q)}">` + (L.map(ezRow).join("") || '<div class="ezd">내역이 없어요</div>') + ezBack; }
+  if (v === "q1") return h("뭘 보낼까요?") + `<input class="ezi" id="ezQ" placeholder="상품 이름" value="${esc(EZ.q)}" autocomplete="off"><div id="ezR">${ezHits()}</div>` + ezBack;
+  if (v === "q2") return h("몇 개요?") + `<div class="ezd">${esc(EZ.p[0])}</div>` + [1, 2, 3, 5, 10].map((n) => ezB(`data-ezn="${n}"`, n + "개", "small")).join("") + ezBack;
+  if (v === "q3") { const L = BR.filter((b) => b !== B && !NO_QUICK.includes(b)).map((b) => [b, pstOf(EZ.p[0], b)]).sort((x, y) => (y[1] ?? -1) - (x[1] ?? -1)); return h("어디서 받을까요?") + (PST ? "" : '<div class="ezd">재고는 매장 코드를 넣으면 보여요</div>') + L.map(([b, c]) => ezB(`data-ezt="${b}"`, esc(ho(b)), "small", c == null ? "" : c + "개")).join("") + ezBack; }
+  if (v === "q4") return h("이렇게 보낼까요?") + `<div class="ezd" style="font-size:24px;font-weight:700;color:var(--ink)">${esc(EZ.p[0])} ${EZ.n}개</div><div class="ezd">${esc(ho(EZ.to))}에서 받아요</div>` + ezB('data-ez="go"', "네, 보내요", "alert") + ezBack;
+  return h("뭐 할까요?") + (mine.length ? ezB('data-ez="todo"', "🔔 할 일 " + mine.length + "개", "alert") : "") + ezB('data-ez="send"', "📤 보내기") + ezB('data-ez="ask"', "🙋 요청하기") + ezB('data-ez="cust"', "🧑 손님") + ezB('data-ez="rep"', "✏️ 보고하기") + ezB('data-ez="find"', "🔍 찾아보기");
+}
+document.addEventListener("input", (e) => {
+  if (e.target.id === "ezQ") { EZ.q = e.target.value; const r = $("#ezR"); if (r) r.innerHTML = ezHits(); }
+  if (e.target.id === "ezF") EZ.q = e.target.value;
+});
+document.addEventListener("click", async (e) => {
+  const c = e.target.closest?.("[data-ez],[data-ezp],[data-ezr],[data-ezn],[data-ezt]"); if (!c) return;
+  const go = (x) => { EZ.s = x; render(); window.scrollTo(0, 0); };
+  const pick = (p) => { EZ.p = p; try { const L = [p, ...ezRecent().filter((x) => x[0] !== p[0])].slice(0, 5); localStorage.setItem("vf-ez-recent", JSON.stringify(L)); } catch {} go("q2"); };
+  if (c.dataset.ezp) return pick(PRODS.find((p) => p[0] === c.dataset.ezp));
+  if (c.dataset.ezr) return pick(ezRecent()[+c.dataset.ezr]);
+  if (c.dataset.ezn) { EZ.n = +c.dataset.ezn; loadPst().then(() => { if (EZ.s === "q3") render(); }); return go("q3"); }
+  if (c.dataset.ezt) { EZ.to = c.dataset.ezt; return go("q4"); }
+  const k = c.dataset.ez;
+  if (k === "classic") { EZ.classic = true; document.documentElement.classList.remove("ez"); return render(); }
+  if (k === "home") { EZ.classic = false; EZ.q = ""; return go("home"); }
+  if (k === "q1") { EZ.q = ""; await loadProds(); return go("q1"); }
+  if (k === "find") { EZ.q = ""; return go("find"); }
+  if (k === "go") {
+    if (quickClosed()) { const p = EZ.p, n = EZ.n, to = EZ.to; sheetSnNew("quick"); PK.list = [[p[0], n, p[1]]]; pkRedraw(); document.querySelector(`[data-snto="${to}"]`)?.click(); return toast("오늘 퀵 시간이 지나 오픈퀵으로 접수해요"); }
+    const by = working().join(", "); if (!by) return needIn(() => {});
+    c.disabled = true;
+    try { await send({ type: "snew", id: Date.now().toString(36) + Math.random().toString(36).slice(2, 5), kind: "quick", to: EZ.to, items: `${EZ.p[0]} ${EZ.n}개`, prods: [[EZ.p[0], EZ.n, EZ.p[1] || null]], memo: "", name: "", phone: "", addr: "", by }); toast(ho(EZ.to) + "에 보냈어요"); EZ.q = ""; go("home"); } catch (err) { c.disabled = false; fail(err); }
+    return;
+  }
+  go(k);
 });
 function toast(m) { const t = $("#toast"); t.textContent = m; t.classList.add("on"); clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove("on"), 2600); }
 
@@ -537,7 +587,7 @@ const ASK = { prev: "", draft: "", focus: false };
 // 10/29 액상덕후 "베프로 하자", "자주묻는질문은 미리 준비(API 비용)", "질문 정리 잘해서 올리라고": 자주 묻는 질문 버튼은 바로 답(봇은 기록만), 너무 짧은 질문은 한 번 더 적게
 function askHtml() {
   const srv = (BOARD?.qa || []).filter((x) => !x.test === !TEST);
-  ASK.local = (ASK.local || []).filter((x) => !srv.some((y) => y.id === x.id && (y.a || !x.a)) && Date.now() - x.ms < 5 * 60e3);
+  ASK.local = (ASK.local || []).filter((x) => !srv.some((y) => y.id === x.id && (y.a || !x.a)) && Date.now() - x.ms < (x.card ? 30 : 5) * 60e3);
   const L = [...srv, ...ASK.local];
   const wait = L.some((x) => !x.a);
   ASK.focus = document.activeElement?.id === "askQ"; // 다시 그리기 전에 입력 중이었는지
@@ -550,7 +600,7 @@ function askHtml() {
   const leadLine = (x) => { if (x.lead == null || !x.leadName) return ""; const c = ASK.leads?.[x.lead]; return `\n\n📞 ${esc(x.leadName)} 팀장님 ${c ? `<a href="tel:${esc(c[1])}" style="color:var(--blue);font-weight:800">${esc(c[1])}</a>` : '<span style="color:var(--sub)">(매장 코드를 넣으면 번호가 보여요)</span>'}`; };
   // 10/29 액상덕후 "답변이 도움이 되었나요? 버튼 만들어서 민심 수집": 답마다 👍 👎 한 번. 👎 받은 답은 봇이 다시 안 씀
   const fbHtml = (x) => { const v = x.fb || ASK.fb?.[x.id]; return `<div style="margin:-4px 0 8px 38px;font-size:12px;color:var(--sub);display:flex;gap:6px;align-items:center">${v ? (v > 0 ? "👍 고마워요!" : "👎 알려 줘서 고마워요. 고칠게요") : `도움이 됐나요? <button data-befb="${esc(x.id)}|1" style="background:#f2f4f6;border:0;border-radius:12px;padding:4px 10px;font-size:14px">👍</button><button data-befb="${esc(x.id)}|-1" style="background:#f2f4f6;border:0;border-radius:12px;padding:4px 10px;font-size:14px">👎</button>`}</div>`; };
-  const msgs = L.map((x) => me(x) + (x.a ? bot(esc(x.at || ""), esc(x.a).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>") + leadLine(x)) + fbHtml(x) : bot("", `<span style="color:var(--sub)">${ASK_CLOSE(x.q) ? "포스랑 은행 기록을 보고 있어요. 1분쯤 걸려요" : "답 쓰는 중이에요"} <span class="bef-dots"><i>●</i><i>●</i><i>●</i></span></span>`))).join("");
+  const msgs = L.map((x) => me(x) + (x.card ? bot("", x.card) : x.a ? bot(esc(x.at || ""), esc(x.a).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>") + leadLine(x)) + fbHtml(x) : bot("", `<span style="color:var(--sub)">${ASK_CLOSE(x.q) ? "포스랑 은행 기록을 보고 있어요. 1분쯤 걸려요" : "답 쓰는 중이에요"} <span class="bef-dots"><i>●</i><i>●</i><i>●</i></span></span>`))).join("");
   setTimeout(() => { const box = $("#askBox"), q = $("#askQ"); if (box) box.scrollTop = box.scrollHeight; if (VIEW === "ask" && window.scrollY > 0) window.scrollTo(0, 0); /* 11/03: 답 오면 화면이 내려가 제목이 사라지던 것 */ if (q && ASK.focus) { q.focus(); q.setSelectionRange(q.value.length, q.value.length); } }, 0);
   return `<div class="cols one"><div><div class="card" style="padding:0;display:flex;flex-direction:column;height:calc(100vh - 190px);min-height:420px;overflow:hidden">
     <div style="padding:14px 16px;border-bottom:1px solid var(--line);font-weight:800">💛 베프 <small style="color:var(--sub);font-weight:500">오늘 대화만 보여요</small></div>
@@ -563,9 +613,52 @@ function askHtml() {
 }
 const ASK_CLOSE = (q) => /중간\s*체크|마감|돈통|시재|과부족|모자|남아/.test(q) && (/\d[\d,]{3,}\s*원?/.test(q) || q.length > 80);
 if (!document.getElementById("befDotsCss")) { const st = document.createElement("style"); st.id = "befDotsCss"; st.textContent = ".bef-dots i{font-style:normal;font-size:9px;opacity:.25;animation:befDot 1.2s infinite}.bef-dots i:nth-child(2){animation-delay:.2s}.bef-dots i:nth-child(3){animation-delay:.4s}@keyframes befDot{0%,60%,100%{opacity:.25}30%{opacity:1}}"; document.head.appendChild(st); }
+/* 11/9 시험 모드: 베프에 평소 말투로 쓰면 퀵 요청 카드. AI를 안 부르고 화면 안에서 처리. 실제 요청은 기존 보내기 창에서 직원이 확인 후 */
+const BEF_BR = [[/동성로\s*2(호점)?|9\s*호/, "동성로2"], [/동성로|1\s*호/, "동성로"], [/수성|2\s*호/, "수성"], [/본점|3\s*호/, "본점"], [/율하|4\s*호/, "율하"], [/반월당|5\s*호/, "반월당"], [/상인|6\s*호/, "상인"], [/광코|광장코아|7\s*호/, "광장코아"], [/현풍|8\s*호/, "현풍"]];
+const BEF_PICK = [];
+const befBtn = "background:#fff;border:1px solid var(--line);border-radius:12px;padding:8px 12px;font:inherit;font-size:14px;font-weight:700;color:var(--ink)";
+function befCardHtml(p, q, to) {
+  const list = BR.filter((b) => b !== B && !NO_QUICK.includes(b)).map((b) => [b, pstOf(p[0], b)]).filter(([b, h]) => b === to || h == null || h > 0).sort((x, y) => (y[0] === to) - (x[0] === to) || (y[1] ?? -1) - (x[1] ?? -1)).slice(0, 4);
+  const i = BEF_PICK.push({ p, q }) - 1;
+  const btns = list.map(([b, h]) => `<button data-befq="${i}|${b}" style="${befBtn}${b === to ? ";background:var(--blue);color:#fff;border-color:var(--blue)" : ""}">${esc(ho(b))}${h == null ? "" : " " + h + "개"}</button>`).join("");
+  return `<b>${esc(p[0])}</b> ${q}개\n${PST ? (list.length ? "어느 지점에 요청할까요?" : "다른 지점 재고가 없어요") : "지점 재고는 매장 코드를 넣은 기기에서 보여요"}<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;white-space:normal">${btns}</div>`;
+}
+async function befQuick(q) {
+  const quick = /퀵/.test(q), where = /어디|있어|있나|재고/.test(q);
+  if (!quick && !where) return false;
+  await loadProds(); await loadPst();
+  let t = " " + q + " ", to = null;
+  for (const [re, b] of BEF_BR) if (re.test(t)) { to = b; t = t.replace(re, " "); break; }
+  const m = t.match(/(\d+)\s*(개|병|팩|박스)/), n = m ? Math.max(1, Math.min(99, +m[1])) : 1;
+  if (m) t = t.replace(m[0], " ");
+  t = t.replace(/\?/g, " ").replace(/(퀵으로|퀵|보내\s*주세요|보내줘|보내|요청|부탁|주세요|어디에|어디|있어요|있어|있나요|있나|재고|찾아줘|좀)/g, " ").replace(/(^|\s)(에|로|으로|에서)(?=\s|$)/g, " ");
+  for (const [re, x] of ALIAS) t = t.replace(re, x);
+  const words = t.split(/\s+/).filter(Boolean).map(pkNorm);
+  if (!words.length) return false;
+  const all = (PRODS || []).filter(([x]) => words.every((w) => pkNorm(x).includes(w))), same = all.filter(([x]) => pkNorm(x) === words.join(""));
+  const hits = (same.length ? same : all).slice(0, 6);
+  if (!hits.length) return false;
+  const id = "c" + Date.now().toString(36), now0 = new Date().toTimeString().slice(0, 5);
+  let card;
+  if (hits.length === 1) card = befCardHtml(hits[0], n, to);
+  else { const i = BEF_PICK.push({ hits, q: n, to }) - 1; card = `어떤 상품이에요?<div style="display:flex;flex-direction:column;gap:6px;margin-top:8px;white-space:normal">${hits.map((h, k) => `<button data-befp="${i}|${k}" style="${befBtn};text-align:left">${esc(h[0])}</button>`).join("")}</div>`; }
+  if ($("#askQ")) $("#askQ").value = ""; ASK.draft = "";
+  (ASK.local ||= []).push({ id, q, a: "카드", card, at: now0, by: working().join(", "), t: now0, test: TEST, ms: Date.now() });
+  render();
+  return true;
+}
+document.addEventListener("click", (e) => {
+  const c = e.target.closest?.("[data-befp],[data-befq]"); if (!c) return;
+  if (c.dataset.befp) { const [i, k] = c.dataset.befp.split("|").map(Number), g = BEF_PICK[i], row = ASK.local.find((x) => x.card && x.card.includes(`data-befp="${i}|`)); if (row) { row.card = befCardHtml(g.hits[k], g.q, g.to); render(); } return; }
+  const [i, b] = c.dataset.befq.split("|"), g = BEF_PICK[+i];
+  sheetSnNew("quick");
+  PK.list = [[g.p[0], g.q, g.p[1]]]; pkRedraw();
+  document.querySelector(`[data-snto="${b}"]`)?.click();
+});
 async function askGo(text, faq) {
   const q = (text || $("#askQ")?.value || "").trim(); if (!q) return;
   if (!faq && (ASK.local || []).some((x) => !x.a) || (!faq && (BOARD?.qa || []).some((x) => !x.a && !x.test === !TEST))) return toast("앞 질문 답이 오고 있어요. 조금만 기다려 주세요");
+  if (TEST && !faq && await befQuick(q)) return;
   if (!faq && q.replace(/\s/g, "").length < 6) return toast("상품, 상황까지 한 번에 적어 주세요");
   const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 5), by = working().join(", "), t = new Date().toTimeString().slice(0, 5);
   if (!faq) { ASK.draft = ""; if ($("#askQ")) $("#askQ").value = ""; }
@@ -600,6 +693,7 @@ function alertCheck() {
   document.body.appendChild(box);
 }
 function render() {
+  if (typeof TEST !== "undefined" && TEST) document.documentElement.classList.toggle("ez", VIEW === "home" && !EZ.classic);
   if (LEADER) return renderLeader();
   if (!B) return renderPick();
   setTimeout(alertCheck, 300);
@@ -648,7 +742,7 @@ function render() {
     ${kpi("talk", "인수인계, 고객요청", memoN + creqN + "건", `인수인계 ${memoN}, 고객요청 ${creqN}`)}
   </div>`;
   const body = {
-    home: ONLY_OPEN_CLOSE ? `${noticeCardHtml()}${bigDepCardHtml()}${sentCardHtml()}${replyQuickHtml()}${custCardHtml()}<div class="cols">${done === N && now() >= "17:00" ? `<div>${closeCard}</div><div>${openCard}</div>` : `<div>${openCard}</div><div>${closeCard}</div>`}</div>` : `${bigDepCardHtml()}<div class="cols"><div>${done < N ? openCard : closeCard}${taskCardHtml()}</div><div>${memoCardHtml()}${asPin() ? asCardHtml() : ""}</div></div>`,
+    home: TEST && !EZ.classic ? ezHtml() : ONLY_OPEN_CLOSE ? `${TEST ? '<button class="ezb" data-ez="home" style="min-height:64px;font-size:20px;justify-content:center">쉬운 화면으로</button>' : ""}${noticeCardHtml()}${bigDepCardHtml()}${sentCardHtml()}${replyQuickHtml()}${custCardHtml()}<div class="cols">${done === N && now() >= "17:00" ? `<div>${closeCard}</div><div>${openCard}</div>` : `<div>${openCard}</div><div>${closeCard}</div>`}</div>` : `${bigDepCardHtml()}<div class="cols"><div>${done < N ? openCard : closeCard}${taskCardHtml()}</div><div>${memoCardHtml()}${asPin() ? asCardHtml() : ""}</div></div>`,
     work: `<div class="cols"><div>${openCard}</div><div>${closeCard}</div></div>`,
     stock: `<div class="cols one"><div>${surveyCardHtml()}</div></div>`,
     talk: ONLY_OPEN_CLOSE ? talkHtml() : `<div class="cols"><div>${memoCardHtml()}${creqCardHtml()}</div><div>${reqCard}${myQuicksCard()}</div></div>`,
