@@ -308,7 +308,7 @@
 })();
 </script>
 <script>
-const VER = "11.09-1"; window.VER_ERR = VER;
+const VER = "11.09-2"; window.VER_ERR = VER;
 const GAME_LOCK = true; // 11/02 쉬는 시간 게임 잠금
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
@@ -348,9 +348,9 @@ const CT_MSG = "안녕하세요 베이프렌드 본점입니다\n오늘도 베�
 function custCardHtml() {
   if (B !== "본점") return "";
   const x = BOARD?.custToday;
-  return `<div class="card"><h2>오늘 쿠폰 손님</h2><div class="desc">${esc(CT_STATE || (x?.enc ? x.at + " 기준 " + x.n + "명" : "버튼을 누르면 오늘 손님에게 쿠폰 문자를 보내요"))}</div><div class="reqs" style="margin-top:10px"><button data-ct="go"><b>오늘 쿠폰 보내기</b><span>${TEST ? "시험 번호로 1건" : "명단 읽고 바로 발송"}</span></button>${x?.enc ? '<button data-ct="vcf"><b>연락처 저장</b><span>파일로 받기</span></button>' : ""}</div></div>`;
+  return `<div class="card"><h2>오늘 쿠폰 손님</h2><div class="desc">${esc(CT_STATE || (x?.enc ? x.at + " 기준 " + x.n + "명" : "버튼을 누르면 오늘 손님에게 쿠폰 문자를 보내요"))}</div><div class="reqs" style="margin-top:10px"><button data-ct="go"><b>오늘 쿠폰 보내기</b><span>${TEST ? "시험 번호로 1건" : "명단 읽고 바로 발송"}</span></button><button data-ct="test"><b>시험 1건</b><span>시험 번호로만</span></button>${x?.enc ? '<button data-ct="vcf"><b>연락처 저장</b><span>파일로 받기</span></button>' : ""}</div></div>`;
 }
-let CT_STATE = "", CT_BUSY = false;
+let CT_STATE = "", CT_BUSY = false, CT_T = false;
 const CT_FILES = ["1.png", "2.png", "3.jpg", "4.png"];
 const ctSet = (t) => { CT_STATE = t; render(); };
 const ctList = async () => {
@@ -371,22 +371,23 @@ window.addEventListener("message", (e) => {
   if (!d.done) return ctSet(`보내는 중 ${d.i + 1}/${d.n}`);
   CT_BUSY = false;
   ctSet(d.why ? `${d.ok}명 보내고 멈췄어요: ${d.why}` : `${d.ok}명에게 보냈어요${d.skipped ? ", 한 달 안에 받은 " + d.skipped + "명 제외" : ""}`);
-  send({ type: "custsent", ok: d.ok, fail: d.fail || 0, skipped: d.skipped || 0, why: d.why || "" }).catch(() => {});
+  if (!CT_T) send({ type: "custsent", ok: d.ok, fail: d.fail || 0, skipped: d.skipped || 0, why: d.why || "" }).catch(() => {});
 });
 document.addEventListener("click", async (e) => {
   const c = e.target.closest?.("[data-ct]"); if (!c) return;
   const k = c.dataset.ct;
-  if (k === "go") {
+  if (k === "go" || k === "test") {
     if (CT_BUSY) return toast("보내는 중이에요");
     if (document.documentElement.dataset.vfHelper !== "1") return toast("이 컴퓨터 크롬에 쿠폰 도우미가 없어요");
     CT_BUSY = true;
     try {
-      let L = TEST ? [{ n: "시험", p: "01024192952" }] : null;
+      CT_T = TEST || k === "test";
+      let L = CT_T ? [{ n: "시험", p: "01024192952" }] : null;
       if (!L) { ctSet("포스에서 오늘 손님을 읽고 있어요"); L = await ctList(); }
       if (!L?.length) throw new Error("매장 전용 주소로 열어 주세요");
       if (!confirm(L.length + "명에게 쿠폰 문자를 보낼까요?")) { CT_BUSY = false; return ctSet(""); }
       ctSet("보내는 중");
-      window.postMessage({ vfCoupon: "start", list: L, text: CT_MSG, files: CT_FILES, test: TEST }, location.origin);
+      window.postMessage({ vfCoupon: "start", list: L, text: CT_MSG, files: CT_FILES, test: CT_T }, location.origin);
     } catch (err) { CT_BUSY = false; ctSet(err.message); }
     return;
   }
