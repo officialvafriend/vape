@@ -308,7 +308,7 @@
 })();
 </script>
 <script>
-const VER = "11.06-1"; window.VER_ERR = VER;
+const VER = "11.09-1"; window.VER_ERR = VER;
 const GAME_LOCK = true; // 11/02 쉬는 시간 게임 잠금
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
@@ -342,6 +342,62 @@ function undoBar(k, id, label) {
 // 10/26 사장님: 완료하면 "N번째로 완료했어요! 수고하셨습니다 :)" 같은 메시지. x = {n: 지점 수, k: 이미 완료한 지점 수}
 function cheer(x, what) { const n = x?.n > 1 ? x.k + 1 : 0; const el = document.createElement("div"); el.className = "cheer"; el.innerHTML = `<i>${n === 1 ? "🥇" : n === 2 ? "🥈" : n === 3 ? "🥉" : "🎉"}</i>${n ? `${n}번째로 완료했어요!` : `${what} 완료!`}<small>수고하셨습니다 :)</small>`; document.body.appendChild(el); requestAnimationFrame(() => el.classList.add("on")); setTimeout(() => { el.classList.remove("on"); setTimeout(() => el.remove(), 300); }, 2600); }
 const cntTxt = (x) => (x?.n > 1 && !x.done && x.k > 0 ? `${x.k}곳이 먼저 끝냈어요, 우리도 마무리해요!` : ""); // 10/26 사장님: 다른 지점은 다 했는데 우리만 안 한 걸 알게. 완료한 지점엔 안 띄움('안 한 지점에 뜨게')
+/* 11/9 오늘 쿠폰 손님: 본점 시험. 버튼 누를 때만 포스에서 읽고, 이름과 번호는 매장 열쇠로 풂 */
+
+const CT_MSG = "안녕하세요 베이프렌드 본점입니다\n오늘도 베이프렌드 본점을 찾아주셔서 감사합니다!\n\n\n감사한 마음을 담아 액상 및 일회용 쿠폰 4장을 보내드립니다.\n\n\n📌 쿠폰 사용 안내\n\n\n쿠폰은 문자 발송일로부터 1개월 이내 사용 가능합니다.\n액상 또는 일회용 50,000원 이상 구매시 쿠폰 사용이 가능하십니다.\n쿠폰 사용을 위해 매장 방문 / 퀵 / 택배 이용 시 쿠폰을 꼭 확인해주세요.\n쿠폰별 사용 조건이 다를 수 있으니 사용 전 쿠폰 내용을 확인 부탁드립니다.\n※ 쿠폰은 발송일로부터 1개월이 지나면 사용이 불가합니다.\n\n\n다음에도 편하게 찾아주세요:)";
+function custCardHtml() {
+  if (B !== "본점") return "";
+  const x = BOARD?.custToday;
+  return `<div class="card"><h2>오늘 쿠폰 손님</h2><div class="desc">${esc(CT_STATE || (x?.enc ? x.at + " 기준 " + x.n + "명" : "버튼을 누르면 오늘 손님에게 쿠폰 문자를 보내요"))}</div><div class="reqs" style="margin-top:10px"><button data-ct="go"><b>오늘 쿠폰 보내기</b><span>${TEST ? "시험 번호로 1건" : "명단 읽고 바로 발송"}</span></button>${x?.enc ? '<button data-ct="vcf"><b>연락처 저장</b><span>파일로 받기</span></button>' : ""}</div></div>`;
+}
+let CT_STATE = "", CT_BUSY = false;
+const CT_FILES = ["1.png", "2.png", "3.jpg", "4.png"];
+const ctSet = (t) => { CT_STATE = t; render(); };
+const ctList = async () => {
+  const from = new Date(Date.now() + 9 * 3600e3).toISOString().slice(11, 16);
+  await send({ type: "custtoday" });
+  for (let i = 0; i < 24; i++) {
+    await new Promise((r) => setTimeout(r, 5000));
+    await loadBoard();
+    const x = BOARD?.custToday;
+    if (x?.err && x.errAt >= from) throw new Error("명단을 못 읽었어요");
+    if (x?.enc && x.at >= from) return (await decOne(x.enc))?.L || null;
+  }
+  throw new Error("명단이 오지 않았어요");
+};
+window.addEventListener("message", (e) => {
+  if (e.source !== window || e.data?.vfCoupon !== "progress") return;
+  const d = e.data;
+  if (!d.done) return ctSet(`보내는 중 ${d.i + 1}/${d.n}`);
+  CT_BUSY = false;
+  ctSet(d.why ? `${d.ok}명 보내고 멈췄어요: ${d.why}` : `${d.ok}명에게 보냈어요${d.skipped ? ", 한 달 안에 받은 " + d.skipped + "명 제외" : ""}`);
+  send({ type: "custsent", ok: d.ok, fail: d.fail || 0, skipped: d.skipped || 0, why: d.why || "" }).catch(() => {});
+});
+document.addEventListener("click", async (e) => {
+  const c = e.target.closest?.("[data-ct]"); if (!c) return;
+  const k = c.dataset.ct;
+  if (k === "go") {
+    if (CT_BUSY) return toast("보내는 중이에요");
+    if (document.documentElement.dataset.vfHelper !== "1") return toast("이 컴퓨터 크롬에 쿠폰 도우미가 없어요");
+    CT_BUSY = true;
+    try {
+      let L = TEST ? [{ n: "시험", p: "01024192952" }] : null;
+      if (!L) { ctSet("포스에서 오늘 손님을 읽고 있어요"); L = await ctList(); }
+      if (!L?.length) throw new Error("매장 전용 주소로 열어 주세요");
+      if (!confirm(L.length + "명에게 쿠폰 문자를 보낼까요?")) { CT_BUSY = false; return ctSet(""); }
+      ctSet("보내는 중");
+      window.postMessage({ vfCoupon: "start", list: L, text: CT_MSG, files: CT_FILES, test: TEST }, location.origin);
+    } catch (err) { CT_BUSY = false; ctSet(err.message); }
+    return;
+  }
+  if (k === "vcf") {
+    const o = BOARD?.custToday?.enc ? await decOne(BOARD.custToday.enc) : null;
+    if (!o?.L?.length) return toast("매장 전용 주소로 연 기기에서 볼 수 있어요");
+    const txt = o.L.map((x) => ["BEGIN:VCARD", "VERSION:3.0", "FN:" + x.n, "N:" + x.n + ";;;;", "TEL;TYPE=CELL:" + x.p, "END:VCARD"].join("\r\n")).join("\r\n") + "\r\n";
+    const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([txt], { type: "text/x-vcard;charset=utf-8" })); a.download = "오늘쿠폰손님.vcf"; document.body.appendChild(a); a.click(); a.remove();
+    toast("받은 파일을 열어서 연락처에 저장해 주세요");
+  }
+});
 function toast(m) { const t = $("#toast"); t.textContent = m; t.classList.add("on"); clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove("on"), 2600); }
 
 const qs = new URLSearchParams(location.search);
@@ -568,7 +624,7 @@ function render() {
       ${CLOSE_OK.includes(B) ? closeRowHtml(stepRow) : ""}
       ${stepRow("👋", s.ins.length > 0 && !working.length, "퇴근", { t: working.length ? `근무 중: ${working.map((x) => esc(x.name)).join(", ")}` : s.ins.length ? "모두 퇴근" : "출근 기록 없음" }, working.length ? `<button class="act gray" data-go="out">퇴근</button>` : "")}
     </div>`;
-  const reqCard = `<div class="card"><h2>요청 보내기</h2>
+  const reqCard = `${custCardHtml()}<div class="card"><h2>요청 보내기</h2>
       <div class="reqs">
         <button data-req="parcel"><b>📦 고객 택배</b><span>택배로 보내기</span></button>
         <button data-req="qk"><b>🛵 퀵 요청</b><span>재고 문의 → 결제 → 출발</span></button>
