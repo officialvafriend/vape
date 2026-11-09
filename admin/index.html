@@ -644,7 +644,7 @@ function noteAct(id, like) {
   const last = ls.get("vf-admin-name") || "";
   NA = { id, like, by: ADMIN_NAMES.includes(last) ? last : null };
   openSheet(`<h3>${like ? "👍 좋아요" : "💬 댓글"}</h3><div class="caption" style="white-space:pre-wrap;margin:8px 0 12px">${esc(x.text).slice(0, 160)}</div>
-    ${like ? "" : `<input class="in" id="naText" maxlength="300" placeholder="댓글, 직원웹에 바로 보여요">`}
+    ${like ? "" : `<input class="in" id="naText" maxlength="300" aria-label="댓글" placeholder="댓글, 직원웹에 바로 보여요">`}
     <div class="lbl" style="margin-top:14px">누구로 남길까요</div><div class="chips">${ADMIN_NAMES.map((n) => `<button class="chip ${NA.by === n ? "on" : ""}" data-naby="${n}">${n}</button>`).join("")}</div>
     <div class="btns"><button class="btn gray" data-x>닫기</button><button class="btn" data-act="naok">${like ? "👍 남기기" : "댓글 남기기"}</button></div>`);
   if (!like) setTimeout(() => $("#naText")?.focus({ preventScroll: true }), 50);
@@ -1067,8 +1067,8 @@ function noticeAdmHtml() {
   const L = (D.notices || []).slice().reverse();
   const row = (n) => { const ok = n.br.filter((b) => n.ok?.[b]); return `<div class="item" style="align-items:flex-start"><div class="tx"><b>${n.off ? '<span class="t-sub">(내림)</span> ' : ""}${esc(n.title)}</b><span>${+n.d.slice(5, 7)}/${+n.d.slice(8)} ${esc(n.t)}, 확인 ${ok.length}/${n.br.length}곳${n.br.length - ok.length ? `, 아직: ${n.br.filter((b) => !n.ok?.[b]).map((b) => BR.indexOf(b) + 1 + " " + b).join(", ")}` : ""}</span></div>${n.off ? "" : `<button class="btn gray" style="flex:0 0 68px;height:44px" data-ntoff="${n.id}">내리기</button>`}</div>`; };
   return `<div class="card" style="margin-top:12px"><div class="eyebrow">📢 직원웹 공지</div>
-    <input class="in" id="ntTitle" maxlength="60" placeholder="제목 (예: 블로그 단톡방 정리 안내)" style="margin-top:6px">
-    <textarea class="in" id="ntBody" rows="6" maxlength="1200" placeholder="내용" style="width:100%;height:auto;padding:12px;margin-top:8px"></textarea>
+    <label class="lbl" for="ntTitle" style="display:block;margin:10px 0 6px">제목</label><input class="in" id="ntTitle" maxlength="60" placeholder="예: 블로그 단톡방 정리 안내">
+    <label class="lbl" for="ntBody" style="display:block;margin:12px 0 6px">내용</label><textarea class="in" id="ntBody" rows="6" maxlength="1200" style="width:100%;height:auto;padding:12px"></textarea>
     <div class="chips" style="margin-top:8px"><button class="chip ${NTBR.size === BR.length ? "on" : ""}" data-ntall>전체</button>${BR.map((b) => `<button class="chip ${NTBR.has(b) ? "on" : ""}" data-ntb="${b}">${esc(b)}</button>`).join("")}</div>
     <div class="btns"><button class="btn" data-act="ntsend">공지 올리기</button></div></div>
     ${L.length ? `<div class="sec">올린 공지</div><div class="list">${L.map(row).join("")}</div>` : ""}`;
@@ -1083,9 +1083,12 @@ function tasksCardHtml() {
 // 10/25 봇 상태: 운영봇이 3분마다 올림. 10분 넘게 안 바뀌면 이 PC나 운영봇이 꺼진 것
 let BOT = null, BOT_ERR = false;
 async function loadBot() {
-  // 깃허브 API는 시간당 60번 한도라(관리자 데이터도 씀) 페이지 주소로 읽음
-  try { const r = await fetch("botstatus.json?t=" + Date.now(), { cache: "no-store" }); if (!r.ok) throw 0; BOT = await r.json(); BOT_ERR = false; }
-  catch { BOT_ERR = true; }
+  // 깃허브 API는 시간당 60번 한도라(관리자 데이터도 씀) API는 안 씀
+  // 11/6 마감 시간에 올림이 몰리면 페이지 배포가 계속 취소돼 15분씩 밀림 → 봇은 멀쩡한데 "소식 없음"으로 보임. 저장소 원본과 페이지 주소를 다 읽어 더 최신 것을 씀
+  const read = (u) => fetch(u + "?t=" + Date.now(), { cache: "no-store" }).then((r) => { if (!r.ok) throw 0; return r.json(); });
+  const got = (await Promise.allSettled([read("https://raw.githubusercontent.com/officialvafriend/vape/main/admin/botstatus.json"), read("botstatus.json")])).filter((x) => x.status === "fulfilled" && x.value?.at).map((x) => x.value);
+  if (got.length) { BOT = got.sort((a, b) => Date.parse(b.at) - Date.parse(a.at))[0]; BOT_ERR = false; }
+  else BOT_ERR = true;
   if (!draft && !$("#dim").classList.contains("on")) { const el = $("#botcard"); if (el) el.outerHTML = botHtml(); const ch = $("#botchars"); if (ch && ch.dataset.k !== charKey()) ch.outerHTML = charsHtml(); else if (ch) { const nl = document.createElement("div"); nl.innerHTML = charsHtml(); ch.querySelector("#botlines").innerHTML = nl.querySelector("#botlines").innerHTML; } /* 상태가 바뀔 때만 다시 그림(걷던 자리가 튀지 않게) */ const mi = $("#botmini"); if (mi) mi.outerHTML = botMiniHtml(); }
 }
 const agoMin = (iso) => Math.round((Date.now() - Date.parse(iso)) / 60e3);
@@ -1557,8 +1560,8 @@ function taskFormHtml() {
     : t.rep === "monthly" ? `<div style="display:flex;align-items:center;gap:12px"><div class="u-step"><button data-tdom="-1" aria-label="하루 앞으로" ${t.dom <= 1 ? "disabled" : ""}>−</button><b>${t.dom}일</b><button data-tdom="1" aria-label="하루 뒤로" ${t.dom >= 31 ? "disabled" : ""}>＋</button></div><span class="caption" style="margin:0">매월 ${t.dom}일마다</span></div>`
     : `<div class="caption" style="margin:0">매일 오늘 할 일에 떠요</div>`;
   return `${mkHead("task", isEdit)}
-    <input class="in mkt" id="tTitle" maxlength="60" placeholder="무엇을 시킬까요? 예) 진열장 유리 닦기" value="${esc(t.title)}">
-    <input class="in" id="tNote" maxlength="200" placeholder="메모 (선택) 예) 끝나면 사진 찍어 두기" value="${esc(t.note)}" style="margin-top:8px;height:46px;font-size:15px">
+    <label class="lbl" for="tTitle" style="display:block">무엇을 시킬까요</label><input class="in mkt" id="tTitle" maxlength="60" placeholder="예) 진열장 유리 닦기" value="${esc(t.title)}" style="margin-top:0">
+    <label class="lbl" for="tNote" style="display:block">메모 <span style="font-weight:500">(선택)</span></label><input class="in" id="tNote" maxlength="200" placeholder="예) 끝나면 사진 찍어 두기" value="${esc(t.note)}" style="height:46px;font-size:15px">
     <div class="lbl">어느 지점</div>${brCb(t.br, "data-tball", "data-tb")}
     <div class="lbl">언제</div><div class="u-rdg" style="margin-bottom:10px">${[["once", "한 번"], ["daily", "매일"], ["weekly", "매주"], ["monthly", "매월"]].map(([k, n]) => `<button class="u-rd" role="radio" aria-checked="${t.rep === k}" data-trep="${k}"><i></i>${n}</button>`).join("")}</div>${when}
     ${swRow("data-tton", t._tOn, "시각 정하기", t._tOn ? "" : "끄면 하루 중 아무 때나")}${t._tOn ? `<input class="in" type="time" id="tTime" value="${esc(t.time)}" style="margin-top:6px">` : ""}
@@ -1597,7 +1600,7 @@ function mustHtml() {
       <div class="chips" style="margin-top:16px">${BR.map((b) => `<button class="chip ${mustB === b ? "on" : ""}" data-mb="${b}">${esc(b)}${(D.must[b] || []).length ? ` ${D.must[b].length}` : ""}</button>`).join("")}</div></div>
     ${!prods.length ? `<div class="card"><div class="caption" style="margin:0">${esc(mustB)}는 아직 포스가 연결되지 않아서 상품 목록이 없어요</div></div>` : `
     <div class="card" style="padding:16px">
-      <div class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input class="in" id="mq" placeholder="상품 찾기" value="${esc(mustQ)}"></div>
+      <div class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input class="in" id="mq" aria-label="상품 찾기" placeholder="상품 찾기" value="${esc(mustQ)}"></div>
       <div class="chips hs" style="margin-top:12px"><button class="chip ${!mustCat ? "on" : ""}" data-mc="">전체</button>${cats.map((c) => `<button class="chip ${c === mustCat ? "on" : ""}" data-mc="${esc(c)}">${esc(c)}</button>`).join("")}</div>
       <div style="display:flex;gap:8px;margin-top:12px"><button class="btn gray" style="height:44px;font-size:14px" data-act="mall">보이는 것 모두 고르기</button><button class="btn gray" style="height:44px;font-size:14px" data-act="mnone">모두 빼기</button></div>
       ${others.length ? `<div style="margin-top:8px"><select class="in" id="mcopy" style="height:44px;font-size:14px"><option value="">다른 지점 목록 그대로 가져오기</option>${others.map((b) => `<option value="${b}">${esc(b)} (${D.must[b].length}개)</option>`).join("")}</select></div>` : ""}
@@ -1638,11 +1641,11 @@ function groupHtml() {
       <div class="gstat"><div><b>${nChg}</b><span>바꾼 것</span></div><div><b>${nNew}</b><span>새 상품</span></div><div><b>${Object.keys(map).length}</b><span>그룹 상품</span></div></div>
       <div style="display:flex;gap:8px;margin-top:14px"><button class="btn" data-act="gexport" ${nChg ? "" : "disabled"}>엑셀 추출하기</button>${nChg ? '<button class="btn gray" style="flex:0 0 96px" data-act="gclear">비우기</button>' : ""}</div></div>
     <div class="card" style="padding:16px">
-      <div class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input class="in" id="gq" placeholder="상품 찾기 (본점 전체 상품)" value="${esc(grpQ)}"></div>
+      <div class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input class="in" id="gq" aria-label="상품 찾기" placeholder="상품 찾기 (본점 전체 상품)" value="${esc(grpQ)}"></div>
       <div class="chips" style="margin-top:12px;flex-wrap:wrap"><button class="chip ${grpF === "all" ? "on" : ""}" data-gf="all">전체</button><button class="chip ${grpF === "chg" ? "on" : ""}" data-gf="chg">바꾼 것 ${nChg || ""}</button>${GRPS.map((g) => `<button class="chip ${grpF === g ? "on" : ""}" data-gf="${g}">${g} ${cnt(g)}</button>`).join("")}</div></div>
     ${grpF !== "chg" && list.length && list.length <= 300 ? `<div class="card" style="padding:16px"><div class="eyebrow" style="margin-bottom:8px">보이는 ${list.length}개 한꺼번에</div><div style="display:flex;gap:8px"><select class="in" id="gbulk" style="flex:1">${[...GRPS, GOUT].map((g) => `<option>${g}</option>`).join("")}</select><button class="btn gray" style="flex:0 0 96px" data-act="gbulk">로 바꾸기</button></div><div class="caption" style="margin:8px 0 0">검색이나 그룹으로 먼저 좁혀 주세요. 지금 그룹과 같은 상품은 건너뛰어요.</div></div>` : ""}
     <div class="card" style="padding:16px"><div class="eyebrow" style="margin-bottom:8px">새 상품 넣기</div>
-      <input class="in" id="gnewn" placeholder="상품명 (포스 이름 그대로)"><div style="display:flex;gap:8px;margin-top:8px"><select class="in" id="gnewg" style="flex:1">${GRPS.map((g) => `<option>${g}</option>`).join("")}</select><button class="btn" style="flex:0 0 80px" data-act="gadd">넣기</button></div></div>
+      <label class="lbl" for="gnewn" style="display:block;margin:0 0 6px">상품명</label><input class="in" id="gnewn" placeholder="포스 이름 그대로"><div style="display:flex;gap:8px;margin-top:8px"><select class="in" id="gnewg" style="flex:1">${GRPS.map((g) => `<option>${g}</option>`).join("")}</select><button class="btn" style="flex:0 0 80px" data-act="gadd">넣기</button></div></div>
   </div><div class="gmain">
     <div class="glist">${list.slice(0, 700).map((n, i, a) => { const lab = (x) => map[x] || (ed[x]?.isNew ? "새 상품" : "그룹 없음"), g = grpF === "chg" ? "" : lab(n), pg = i ? lab(a[i - 1]) : null; return (grpF !== "chg" && g !== pg ? `<div class="gsec">${esc(g)} <small>${list.filter((x) => lab(x) === g).length}개</small></div>` : "") + row(n); }).join("") || `<div class="empty">${grpF === "chg" ? "아직 바꾼 상품이 없어요. 상품 오른쪽에서 바꿀 그룹을 고르면 여기에 모여요." : "찾는 상품이 없어요"}</div>`}</div>
     ${list.length > 700 ? `<div class="empty">${list.length - 700}개 더 있어요, 검색이나 그룹으로 좁혀 주세요</div>` : ""}
@@ -1818,7 +1821,7 @@ document.addEventListener("change", (e) => {
   if (e.target.id === "mcopy" && e.target.value) { const from = new Set(D.must[e.target.value] || []), names = new Set((D.products[mustB] || []).map(([n]) => n)); let k = 0; for (const n of from) if (names.has(n) && !draft.set.has(n)) { draft.set.add(n); k++; } render(); toast(`${k}개 더했어요. 저장을 눌러야 반영돼요`); }
 });
 let qT; document.addEventListener("input", (e) => { if (e.target.id === "gq") { clearTimeout(qT); qT = setTimeout(() => { grpQ = e.target.value.trim(); const pos = e.target.selectionStart; render(); const el = $("#gq"); el.focus(); el.setSelectionRange(pos, pos); }, 250); return; } if (e.target.id === "mq") { clearTimeout(qT); qT = setTimeout(() => { mustQ = e.target.value.trim(); const pos = e.target.selectionStart; render(); const el = $("#mq"); el.focus(); el.setSelectionRange(pos, pos); }, 250); } });
-document.addEventListener("keydown", (e) => { if (e.key === "Enter" && e.target.id === "pw") tryLogin(); });
+document.addEventListener("keydown", (e) => { if (e.key === "Enter" && e.target.id === "pw") tryLogin(); if (e.key === "Escape" && !e.isComposing && $("#dim").classList.contains("on")) { if (ASKR) return ASKR(null); closeSheet(); } });
 
 /* 화면 그리기: 오류가 나면 홈으로 한 번 돌려 보고, 그래도 안 되면 오류를 보여 줌(로그인은 그대로) */
 function safeRender() {
