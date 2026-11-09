@@ -308,7 +308,7 @@
 })();
 </script>
 <script>
-const VER = "11.09-5"; window.VER_ERR = VER;
+const VER = "11.09-6"; window.VER_ERR = VER;
 const GAME_LOCK = true; // 11/02 쉬는 시간 게임 잠금
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
@@ -400,7 +400,7 @@ document.addEventListener("click", async (e) => {
   }
 });
 /* 11/9 쉬운 화면(시험 모드 전용): 큰 버튼, 한 번에 질문 하나. 기존 기능을 그대로 부른다 */
-const EZ = { s: "home", classic: false, q: "", p: null, n: 1 };
+const EZ = { s: "home", classic: false, q: "", p: null, n: 1, cart: [] };
 setTimeout(() => { if (TEST && !document.getElementById("ezCss")) { const st = document.createElement("style"); st.id = "ezCss"; st.textContent = ".ezb{display:flex;align-items:center;gap:14px;width:100%;box-sizing:border-box;background:#fff;border:1px solid #d1d6db;border-radius:16px;padding:18px;margin-top:12px;min-height:84px;font:inherit;font-size:24px;font-weight:700;color:var(--ink);text-align:left}.ezb.alert{background:var(--blue);border-color:var(--blue);color:#fff}.ezb small{margin-left:auto;font-size:18px;font-weight:500;color:var(--sub)}.ezb.small{font-size:20px;min-height:64px}.ezh{font-size:30px;font-weight:800;margin:8px 0 4px}.ezd{font-size:20px;color:var(--ink2);margin:6px 0}.ezback{display:block;width:100%;background:none;border:0;padding:18px;font:inherit;font-size:20px;color:var(--sub);margin-top:6px}.ezi{width:100%;box-sizing:border-box;height:64px;border:1px solid #d1d6db;border-radius:16px;padding:0 16px;font:inherit;font-size:22px;margin-top:10px}html.ez .hero,html.ez .bnav,html.ez .navb{display:none}"; document.head.appendChild(st); } }, 0);
 const ezB = (attr, t, cls, sm) => `<button class="ezb ${cls || ""}" ${attr}>${t}${sm ? `<small>${sm}</small>` : ""}</button>`;
 const ezBack = '<button class="ezback" data-ez="home">처음으로</button>';
@@ -419,8 +419,9 @@ function ezHtml() {
   if (v === "find") { const k = pkNorm(EZ.q), L = snList().filter((r) => !k || pkNorm(r.items + toTxt(r)).includes(k)).slice(0, 30); return h("찾아보기") + `<input class="ezi" id="ezF" placeholder="상품이나 지점" value="${esc(EZ.q)}">` + (L.map(ezRow).join("") || '<div class="ezd">내역이 없어요</div>') + ezBack; }
   if (v === "q1") return h("뭘 보낼까요?") + `<input class="ezi" id="ezQ" placeholder="상품 이름" value="${esc(EZ.q)}" autocomplete="off"><div id="ezR">${ezHits()}</div>` + ezBack;
   if (v === "q2") return h("몇 개요?") + `<div class="ezd">${esc(EZ.p[0])}</div>` + [1, 2, 3, 5, 10].map((n) => ezB(`data-ezn="${n}"`, n + "개", "small")).join("") + ezBack;
-  if (v === "q3") { const L = BR.filter((b) => b !== B && !NO_QUICK.includes(b)).map((b) => [b, pstOf(EZ.p[0], b)]).sort((x, y) => (y[1] ?? -1) - (x[1] ?? -1)); return h("어디서 받을까요?") + (PST ? "" : '<div class="ezd">재고는 매장 코드를 넣으면 보여요</div>') + L.map(([b, c]) => ezB(`data-ezt="${b}"`, esc(ho(b)), "small", c == null ? "" : c + "개")).join("") + ezBack; }
-  if (v === "q4") return h("이렇게 보낼까요?") + `<div class="ezd" style="font-size:24px;font-weight:700;color:var(--ink)">${esc(EZ.p[0])} ${EZ.n}개</div><div class="ezd">${esc(ho(EZ.to))}에서 받아요</div>` + ezB('data-ez="go"', "네, 보내요", "alert") + ezBack;
+  if (v === "cart") return h("더 보낼 거 있어요?") + EZ.cart.map(([n, q], i) => `<div class="ezd" style="display:flex;align-items:center;gap:10px;background:#fff;border:1px solid #d1d6db;border-radius:14px;padding:14px;margin-top:10px;color:var(--ink);font-weight:700"><span style="flex:1">${esc(n)} ${q}개</span><button data-ezd="${i}" aria-label="빼기" style="border:0;background:#f2f4f6;border-radius:10px;width:48px;height:48px;font-size:20px">✕</button></div>`).join("") + ezB('data-ez="more"', "➕ 더 담기") + (EZ.cart.length ? ezB('data-ez="done"', "다 골랐어요", "alert") : "") + ezBack;
+  if (v === "q3") { const short = (b) => EZ.cart.reduce((a, [n, q]) => { const c = pstOf(n, b); return c == null ? a : a + Math.max(0, q - c); }, 0), L = BR.filter((b) => b !== B && !NO_QUICK.includes(b)).map((b) => [b, PST ? short(b) : null]).sort((x, y) => (x[1] ?? 9e9) - (y[1] ?? 9e9)); return h("어디서 받을까요?") + (PST ? "" : '<div class="ezd">재고는 매장 코드를 넣으면 보여요</div>') + L.map(([b, m]) => ezB(`data-ezt="${b}"`, esc(ho(b)), "small", m == null ? "" : m ? m + "개 부족" : "다 있음")).join("") + ezBack; }
+  if (v === "q4") return h("이렇게 보낼까요?") + EZ.cart.map(([n, q]) => `<div class="ezd" style="font-size:24px;font-weight:700;color:var(--ink)">${esc(n)} ${q}개</div>`).join("") + `<div class="ezd">${esc(ho(EZ.to))}에서 받아요</div>` + ezB('data-ez="go"', "네, 보내요", "alert") + ezBack;
   return h("뭐 할까요?") + (mine.length ? ezB('data-ez="todo"', "🔔 할 일 " + mine.length + "개", "alert") : "") + ezB('data-ez="send"', "📤 보내기") + ezB('data-ez="ask"', "🙋 요청하기") + ezB('data-ez="cust"', "🧑 손님") + ezB('data-ez="rep"', "✏️ 보고하기") + ezB('data-ez="find"', "🔍 찾아보기");
 }
 document.addEventListener("input", (e) => {
@@ -428,23 +429,26 @@ document.addEventListener("input", (e) => {
   if (e.target.id === "ezF") EZ.q = e.target.value;
 });
 document.addEventListener("click", async (e) => {
-  const c = e.target.closest?.("[data-ez],[data-ezp],[data-ezr],[data-ezn],[data-ezt]"); if (!c) return;
+  const c = e.target.closest?.("[data-ez],[data-ezp],[data-ezr],[data-ezn],[data-ezt],[data-ezd]"); if (!c) return;
   const go = (x) => { EZ.s = x; render(); window.scrollTo(0, 0); };
   const pick = (p) => { EZ.p = p; try { const L = [p, ...ezRecent().filter((x) => x[0] !== p[0])].slice(0, 5); localStorage.setItem("vf-ez-recent", JSON.stringify(L)); } catch {} go("q2"); };
   if (c.dataset.ezp) return pick(PRODS.find((p) => p[0] === c.dataset.ezp));
   if (c.dataset.ezr) return pick(ezRecent()[+c.dataset.ezr]);
-  if (c.dataset.ezn) { EZ.n = +c.dataset.ezn; loadPst().then(() => { if (EZ.s === "q3") render(); }); return go("q3"); }
+  if (c.dataset.ezn) { const i = EZ.cart.findIndex((x) => x[0] === EZ.p[0]); if (i >= 0) EZ.cart[i][1] += +c.dataset.ezn; else EZ.cart.push([EZ.p[0], +c.dataset.ezn, EZ.p[1] || null]); EZ.q = ""; return go("cart"); }
+  if (c.dataset.ezd) { EZ.cart.splice(+c.dataset.ezd, 1); return render(); }
   if (c.dataset.ezt) { EZ.to = c.dataset.ezt; return go("q4"); }
   const k = c.dataset.ez;
   if (k === "classic") { EZ.classic = true; document.documentElement.classList.remove("ez"); return render(); }
-  if (k === "home") { EZ.classic = false; EZ.q = ""; return go("home"); }
-  if (k === "q1") { EZ.q = ""; await loadProds(); return go("q1"); }
+  if (k === "home") { EZ.classic = false; EZ.q = ""; EZ.cart = []; return go("home"); }
+  if (k === "more") { EZ.q = ""; return go("q1"); }
+  if (k === "done") { loadPst().then(() => { if (EZ.s === "q3") render(); }); return go("q3"); }
+  if (k === "q1") { EZ.q = ""; EZ.cart = []; await loadProds(); return go("q1"); }
   if (k === "find") { EZ.q = ""; return go("find"); }
   if (k === "go") {
-    if (quickClosed()) { const p = EZ.p, n = EZ.n, to = EZ.to; sheetSnNew("quick"); PK.list = [[p[0], n, p[1]]]; pkRedraw(); document.querySelector(`[data-snto="${to}"]`)?.click(); return toast("오늘 퀵 시간이 지나 오픈퀵으로 접수해요"); }
+    if (quickClosed()) { const to = EZ.to; sheetSnNew("quick"); PK.list = EZ.cart.map((x) => [...x]); pkRedraw(); document.querySelector(`[data-snto="${to}"]`)?.click(); return toast("오늘 퀵 시간이 지나 오픈퀵으로 접수해요"); }
     const by = working().join(", "); if (!by) return needIn(() => {});
     c.disabled = true;
-    try { await send({ type: "snew", id: Date.now().toString(36) + Math.random().toString(36).slice(2, 5), kind: "quick", to: EZ.to, items: `${EZ.p[0]} ${EZ.n}개`, prods: [[EZ.p[0], EZ.n, EZ.p[1] || null]], memo: "", name: "", phone: "", addr: "", by }); toast(ho(EZ.to) + "에 보냈어요"); EZ.q = ""; go("home"); } catch (err) { c.disabled = false; fail(err); }
+    try { await send({ type: "snew", id: Date.now().toString(36) + Math.random().toString(36).slice(2, 5), kind: "quick", to: EZ.to, items: EZ.cart.map(([n, q]) => `${n} ${q}개`).join(", "), prods: EZ.cart.map((x) => [...x]), memo: "", name: "", phone: "", addr: "", by }); toast(ho(EZ.to) + "에 보냈어요"); EZ.q = ""; EZ.cart = []; go("home"); } catch (err) { c.disabled = false; fail(err); }
     return;
   }
   go(k);
