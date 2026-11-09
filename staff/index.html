@@ -308,7 +308,7 @@
 })();
 </script>
 <script>
-const VER = "11.09-8"; window.VER_ERR = VER;
+const VER = "11.09-9"; window.VER_ERR = VER;
 const GAME_LOCK = true; // 11/02 쉬는 시간 게임 잠금
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
@@ -404,7 +404,7 @@ const EZ = { s: "home", classic: false, q: "", p: null, n: 1, cart: [], kind: "q
 setTimeout(() => { if (TEST && !document.getElementById("ezCss")) { const st = document.createElement("style"); st.id = "ezCss"; st.textContent = ".ezb{display:flex;align-items:center;gap:14px;width:100%;box-sizing:border-box;background:#fff;border:1px solid #d1d6db;border-radius:16px;padding:18px;margin-top:12px;min-height:84px;font:inherit;font-size:24px;font-weight:700;color:var(--ink);text-align:left}.ezb.alert{background:var(--blue);border-color:var(--blue);color:#fff}.ezb small{margin-left:auto;font-size:18px;font-weight:500;color:var(--sub)}.ezb.small{font-size:20px;min-height:64px}.ezh{font-size:30px;font-weight:800;margin:8px 0 4px}.ezd{font-size:20px;color:var(--ink2);margin:6px 0}.ezback{display:block;width:100%;background:none;border:0;padding:18px;font:inherit;font-size:20px;color:var(--sub);margin-top:6px}.ezi{width:100%;box-sizing:border-box;height:64px;border:1px solid #d1d6db;border-radius:16px;padding:0 16px;font:inherit;font-size:22px;margin-top:10px}html.ez .hero,html.ez .bnav,html.ez .navb{display:none}"; document.head.appendChild(st); } }, 0);
 const ezB = (attr, t, cls, sm) => `<button class="ezb ${cls || ""}" ${attr}>${t}${sm ? `<small>${sm}</small>` : ""}</button>`;
 const ezBack = '<button class="ezback" data-ez="home">처음으로</button>';
-const ezRecent = () => { try { return JSON.parse(localStorage.getItem("vf-ez-recent") || "[]"); } catch { return []; } };
+
 const ezRow = (r) => `<button class="ezb small" data-snopen="${r.id}" style="display:block"><div>${esc(r.items)}</div><div style="font-size:18px;font-weight:500;margin-top:4px;color:${snMine(r) ? "var(--red)" : "var(--sub)"}">${esc(toTxt(r))}, ${snMine(r) ? "우리 차례" : esc(STXT[r.st] || r.st)}</div></button>`;
 const ezShort = (b) => EZ.cart.reduce((a, [n, q]) => { const c = pstOf(n, b); return c == null ? a : a + Math.max(0, q - c); }, 0);
 const EZPC = { pn: ["손님 이름이 뭐예요?", "name", "이름", "이름을 넣어 주세요", "pp", "text", 20, "cart"], pp: ["손님 전화번호는요?", "phone", "전화번호", "전화번호를 넣어 주세요", "pa", "tel", 20, "pn"], pa: ["어디로 보낼까요?", "addr", "받을 주소", "주소를 넣어 주세요", "q3", "text", 120, "pp"] };
@@ -412,7 +412,7 @@ const EZPCT = { ask: "재고 있나 답하기", req: "포장하기", packed: "�
 const ezPcRow = (r) => ezB('data-view="parcel"', "📦 " + esc(r.items), "small", EZPCT[r.st] || "");
 const ezPcTodo = () => pcList().filter((r) => (r.to === B && ["ask", "req", "packed"].includes(r.st)) || (r.from === B && ["okpay", "nostock", "shipped"].includes(r.st)));
 function ezFind() { const k = pkNorm(EZ.q), L = snList().filter((r) => !k || pkNorm(r.items + toTxt(r)).includes(k)).slice(0, 30), P = pcList().filter((r) => !k || pkNorm(r.items + ho(r.to) + ho(r.from)).includes(k)).slice(0, 30); return L.map(ezRow).join("") + P.map(ezPcRow).join("") || '<div class="ezd">내역이 없어요</div>'; }
-function ezHits() { const k = pkNorm(EZ.q); if (!k) return ezRecent().map((p, i) => ezB(`data-ezr="${i}"`, esc(p[0]), "small")).join(""); return (PRODS || []).filter(([n]) => pkNorm(n).includes(k)).slice(0, 6).map((p) => ezB(`data-ezp="${esc(p[0])}"`, esc(p[0]), "small")).join("") || '<div class="ezd">찾는 상품이 없어요</div>'; }
+function ezHits() { const k = pkNorm(EZ.q); if (!k) return ""; return (PRODS || []).filter(([n]) => pkNorm(n).includes(k)).slice(0, 6).map((p) => ezB(`data-ezp="${esc(p[0])}"`, esc(p[0]), "small")).join("") || '<div class="ezd">찾는 상품이 없어요</div>'; }
 function ezHtml() {
   const h = (t) => `<div class="ezh">${t}</div>`, mine = snList().filter(snMine), pcT = ezPcTodo();
   const v = EZ.s;
@@ -439,11 +439,11 @@ document.addEventListener("input", (e) => {
   if (e.target.id === "ezPc") EZ.pc[e.target.dataset.f] = e.target.value;
 });
 document.addEventListener("click", async (e) => {
-  const c = e.target.closest?.("[data-ez],[data-ezp],[data-ezr],[data-ezn],[data-ezt],[data-ezd]"); if (!c) return;
+  const c = e.target.closest?.("[data-ez],[data-ezp],[data-ezn],[data-ezt],[data-ezd]"); if (!c) return;
   const go = (x) => { document.activeElement?.blur?.(); EZ.s = x; render(); window.scrollTo(0, 0); setTimeout(() => $("#ezPc")?.focus(), 30); };
-  const pick = (p) => { EZ.p = p; try { const L = [p, ...ezRecent().filter((x) => x[0] !== p[0])].slice(0, 5); localStorage.setItem("vf-ez-recent", JSON.stringify(L)); } catch {} go("q2"); };
+  const pick = (p) => { EZ.p = p; go("q2"); };
   if (c.dataset.ezp) return pick(PRODS.find((p) => p[0] === c.dataset.ezp));
-  if (c.dataset.ezr) return pick(ezRecent()[+c.dataset.ezr]);
+
   if (c.dataset.ezn) { const i = EZ.cart.findIndex((x) => x[0] === EZ.p[0]); if (i >= 0) EZ.cart[i][1] += +c.dataset.ezn; else EZ.cart.push([EZ.p[0], +c.dataset.ezn, EZ.p[1] || null]); EZ.q = ""; return go("cart"); }
   if (c.dataset.ezd) { EZ.cart.splice(+c.dataset.ezd, 1); return render(); }
   if (c.dataset.ezt) { EZ.to = c.dataset.ezt; return go("q4"); }
