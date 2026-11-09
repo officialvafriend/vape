@@ -430,7 +430,11 @@ body[data-theme=dark] .shbtn .b1{background:#f1f1f3;color:#15120f}
 .mem .t{font-size:16px;font-weight:800;margin-bottom:10px;display:flex;justify-content:space-between}.mem .t button{font-size:13px;color:var(--grey);text-decoration:underline}
 .mem .pk2{display:block;width:100%;text-align:left;background:var(--card);border-radius:14px;padding:14px 16px;margin-bottom:8px}.mem .pk2 b{display:block;font-size:16px}.mem .pk2 span{font-size:13px;color:var(--grey)}
 .mem input[type=text],.mem input[type=tel]{width:100%;height:52px;border:1px solid var(--line);border-radius:12px;padding:0 14px;font-size:17px;margin-bottom:8px;background:var(--card);color:var(--ink)}
+.shclr{position:absolute;top:33px;right:24px;height:32px;padding:0 12px;border-radius:999px;background:var(--bg);color:var(--grey);font-size:13px;font-weight:700}.shclr::after{content:"";position:absolute;inset:-6px}.shclr.arm{background:var(--red);color:#fff}.shclr[hidden]{display:none}
 .mem label{display:flex;gap:8px;align-items:center;font-size:13.5px;color:var(--grey)}
+.memsx{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}.memsx button{height:48px;border-radius:12px;background:var(--card);border:1px solid var(--line);font-size:16px;font-weight:700;color:var(--ink)}.memsx button.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.memgo{display:block;width:100%;height:52px;margin-top:10px;border-radius:12px;background:var(--red);color:#fff;font-size:16px;font-weight:800}
+.memst{font-size:16px;font-weight:700;line-height:1.4}.memst.ok,.memst.dup{color:#1a7f4b}.memst.err,.memst.off,.memst.late{color:var(--red)}
 .memline{font-size:14px;margin-top:14px;padding:12px 14px;border-radius:12px;background:var(--bg)}
 .qrbox{background:#fff;border-radius:16px;padding:16px;text-align:center;color:#15120f}.qrbox svg{max-width:480px;width:100%;height:auto}
 .posw{font-size:13.5px;background:#fff4e5;color:#8a4b00;border-radius:12px;padding:10px 12px;margin-top:10px}
@@ -527,7 +531,7 @@ body[data-theme=dark] .scan svg{background:#fff;border-radius:8px}
   </div>
 </div>
 <div class="dim" onclick="document.body.classList.remove('open')"></div>
-<div class="sheet"><div class="grab"></div><div class="h" style="margin-top:0" id="shH">담은 상품</div><div class="lines" id="lines"></div>
+<div class="sheet"><div class="grab"></div><div class="h" style="margin-top:0" id="shH">담은 상품</div><button id="shClear" class="shclr" hidden>비우기</button><div class="lines" id="lines"></div>
   <div class="tot" id="tot"><span id="how">합계</span><b class="price" id="sum2">0원</b></div>
   <div class="shbtn" id="shBtns"></div></div>
 <!-- 포스터 누르면 올라오는 이벤트 구매 화면 (지금 판 #evp와 같은 역할) -->
@@ -632,6 +636,8 @@ $('themeBtn').onclick = () => setTheme(document.body.dataset.theme === "dark" ? 
 
 // ── 지점, 데이터 (지금 판 menu.html과 같은 방식) ──
 const BRANCH = (() => { const u = new URLSearchParams(location.search).get("branch"); try { if (u) localStorage.setItem("vf-menu-branch", u); return u || localStorage.getItem("vf-menu-branch") || "본점"; } catch (e) { return u || "본점"; } })();
+/* 11/9 온라인 주문: 주문서 링크(?order=)로 열면 담은 상품을 채우고 QR 화면을 바로 띄움, 사용 기록은 남기지 않음 */
+const ORDER_CODE = new URLSearchParams(location.search).get("order") || "";
 const POSB = (window.POS || {})[BRANCH] || {};
 const posOf = (n) => POSB[n];
 // 실재고 (10/27 사장님 "실재고 다 연동"): 운영봇이 매시간 지점별 재고 0 상품명을 menu/stock.json에 올림 → 여기서 읽어 품절 처리 (지금 판과 같은 파일)
@@ -724,7 +730,9 @@ function drawCart() {
   setFoot("cart");
 }
 $('lines').onclick = (e) => {
-  const mb = e.target.closest('[data-mem]'); if (mb) { member.type = mb.dataset.mem || null; drawCart(); return; }
+  const mg = e.target.closest('[data-memreg]'); if (mg) { memRegSend(); return; }
+  const sx = e.target.closest('[data-sex]'); if (sx) { member.sex = sx.dataset.sex; drawCart(); return; }
+  const mb = e.target.closest('[data-mem]'); if (mb) { member.type = mb.dataset.mem || null; member.reg = null; drawCart(); return; }
   const b = e.target.closest('button[data-m],button[data-p]'); if (!b) return; const k = b.dataset.m || b.dataset.p; if (!k || !cart.has(k)) return; addItem(k, cart.get(k), b.dataset.m ? -1 : 1); };
 // ── 혜택 안내 (지금 판 cartView의 nudge, 기기패키지 만들기, 일회용 증정, 레이저 각인과 같은 규칙) ──
 let engrave = null; // null = 안 함, 문자열 = 새길 문구
@@ -799,32 +807,58 @@ $('lines').addEventListener('input', (e) => { if (e.target.id === "engrText") en
 const extraLines = () => (engrave !== null ? `<div class="scan" data-n="1" data-free="1" data-code="" data-nm="레이저 각인"><div class="hd"><b>레이저 각인 (0원)</b><span>× 1</span></div><div class="s">문구: ${engrave ? esc(engrave) : "손님께 확인"}</div></div>` : "")
   + (giftBase() >= 100000 ? `<div class="scan" data-n="1" data-free="1" data-code="" data-nm="일회용 증정"><div class="hd"><b>🎁 일회용 기기 1개 증정</b><span>× 1</span></div><div class="s">액상, 팟 10만원 이상, 손님이 고른 일회용을 서비스(0원)로</div></div>` : "");
 // 회원 (지금 판 memberBox와 같은 흐름: 처음이에요 = 이름, 번호, 동의 / 회원이에요 = 번호만)
-const member = { type: null, name: "", phone: "", agree: false };
+const member = { type: null, name: "", phone: "", agree: false, sex: "", reg: null };
+/* 11/6 회원등록 시험: 패드 입력을 봇이 포스에 등록. 본점 menu-b 주소에서만 켜짐. 이름, 번호는 공개키로 잠가서 보냄 */
+const MEMREG_KEY = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA9uVKKI1z1Iyh3kGLkFnd/fMrBVT6hzfZTBe5ENYILIcIHSNMUM/vhDVBp4cr8Fm6USOMGrh5GCqPOBsNW0JCXIN6AIWy8QPAMuwn5G/Hasf3C8GXxRjrY+wnFx9PEuSXNb+OEC/kLMl3JuA7vCW0Rz10ilguPYyakwmjPgBqf+Ku9hIxeWgODYMYB9Ue7qdSU2bIs3sKgseehYahaJWHBovBdQaRSogNBPp+zbrjwCAt6LVEQNT+yRjMlzDEuQs0uHmxBPtm0ZW/BzLZUWdf10rHHoKXdDtjx0nby6oeFbpyC2slLUPn3Z2L3FVenhk/Ttp5vyLhBZiOC/ybattxWQIDAQAB", MEMREG_API = "https://api.github.com/repos/officialvafriend/vape/contents/menu-b/memreg.json?ref=main";
+const memregOn = () => BRANCH === "본점" && new URLSearchParams(location.search).get("memreg") === "1" && (/\/menu-b\//.test(location.pathname) || /^(localhost|127\.0\.0\.1)$/.test(location.hostname));
+async function memSeal(o) { const raw = Uint8Array.from(atob(MEMREG_KEY), (c) => c.charCodeAt(0)); const k = await crypto.subtle.importKey("spki", raw, { name: "RSA-OAEP", hash: "SHA-256" }, false, ["encrypt"]); const e = await crypto.subtle.encrypt({ name: "RSA-OAEP" }, k, new TextEncoder().encode(JSON.stringify(o))); return btoa(String.fromCharCode(...new Uint8Array(e))); }
+const memRedraw = () => { if (!staffOn) drawCart(); };
+async function memPoll(id, n = 0) { if (!member.reg || member.reg.id !== id) return;
+  let row = null; try { const r = await fetch(MEMREG_API, { cache: "no-store", headers: { Accept: "application/vnd.github.raw+json" } }); if (r.ok) row = (await r.json()).find((x) => x.id === id); } catch (e) {}
+  if (!member.reg || member.reg.id !== id) return;
+  if (row && row.s !== "wait") { member.reg.s = row.s; memRedraw(); return; }
+  if (n >= 30) { member.reg.s = "late"; memRedraw(); return; }
+  setTimeout(() => memPoll(id, n + 1), 6000); }
+async function memRegSend() {
+  if (member.name.trim().length < 1) return toast("이름을 넣어 주세요"); if (!/^01[016789]\d{7,8}$/.test(member.phone)) return toast("휴대폰 번호를 확인해 주세요");
+  if (!member.sex) return toast("성별을 골라 주세요"); if (!member.agree) return toast("동의에 체크해 주세요");
+  const id = Array.from(crypto.getRandomValues(new Uint8Array(8)), (b) => b.toString(36)).join("").slice(0, 16).padEnd(8, "0");
+  member.reg = { id, s: "send" }; memRedraw();
+  try { const enc = await memSeal({ name: member.name.trim(), phone: member.phone, sex: member.sex });
+    const r = await fetch(HOOK, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ content: JSON.stringify({ type: "memreg", branch: BRANCH, pad: PAD_NO, id, enc }), allowed_mentions: { parse: [] }, flags: 4096 }) });
+    if (!r.ok) throw new Error("응답 " + r.status); member.reg.s = "wait"; memRedraw(); setTimeout(() => memPoll(id), 8000);
+  } catch (e) { member.reg = null; memRedraw(); toast("보내지 못했어요, 다시 눌러 주세요"); } }
+const MEM_S = { send: "보내는 중이에요", wait: "등록하는 중이에요. 1분쯤 걸려요, 계속 고르셔도 돼요", ok: "회원등록 됐어요!", dup: "이미 회원이세요, 오늘 구매도 적립돼요", err: "등록이 안 됐어요, 직원에게 말씀해 주세요", off: "등록이 안 됐어요, 직원에게 말씀해 주세요", late: "확인이 늦어지고 있어요, 직원에게 말씀해 주세요" };
 function memberBox() {
   if (!member.type) return `<div class="mem"><div class="t">혹시 처음 오셨나요?</div>
     <button class="pk2" data-mem="new"><b>처음이에요, 회원등록하고 적립하기!</b><span>오늘 구매부터 바로 적립돼요</span></button>
     <button class="pk2" data-mem="old"><b>회원이에요, 회원정보 입력하기</b><span>휴대폰 번호만 입력하면 적립돼요</span></button></div>`;
+  if (member.reg) return `<div class="mem"><div class="t">회원등록</div><div class="memst ${member.reg.s}">${MEM_S[member.reg.s] || ""}</div>${/err|off|late/.test(member.reg.s) ? '<button class="memgo" data-mem="new">다시 입력하기</button>' : ""}</div>`;
   const back = `<button data-mem="">다시 고르기</button>`;
   if (member.type === "new") return `<div class="mem"><div class="t">회원등록 ${back}</div>
     <input type="text" id="memName" placeholder="이름" value="${esc(member.name)}"><input type="tel" id="memPhone" inputmode="numeric" placeholder="휴대폰 번호 (- 없이)" value="${esc(member.phone)}">
-    <label><input type="checkbox" id="memAgree" ${member.agree ? "checked" : ""}> 적립을 위한 개인정보(이름, 휴대폰 번호) 수집, 이용에 동의해요</label></div>`;
+    ${memregOn() ? `<div class="memsx"><button class="${member.sex === "F" ? "on" : ""}" data-sex="F">여</button><button class="${member.sex === "M" ? "on" : ""}" data-sex="M">남</button></div>` : ""}<label><input type="checkbox" id="memAgree" ${member.agree ? "checked" : ""}> 적립을 위한 개인정보(이름, 휴대폰 번호${memregOn() ? ", 성별" : ""}) 수집, 이용에 동의해요</label>${memregOn() ? `<button class="memgo" data-memreg="1">회원 등록하기</button>` : ""}</div>`;
   return `<div class="mem"><div class="t">회원정보 입력 ${back}</div><input type="tel" id="memPhone" inputmode="numeric" placeholder="가입하신 휴대폰 번호 (- 없이)" value="${esc(member.phone)}"></div>`;
 }
 $('lines').addEventListener('input', (e) => { const t = e.target;
   if (t.id === "memName") member.name = t.value; if (t.id === "memPhone") { t.value = t.value.replace(/\D/g, "").slice(0, 11); member.phone = t.value; } if (t.id === "memAgree") member.agree = t.checked; });
 $('lines').addEventListener('change', (e) => { if (e.target.id === "memAgree") member.agree = e.target.checked; });
-const memLine = () => member.type ? `<div class="memline"><b>${member.type === "new" ? "신규 회원등록" : "기존 회원 적립"}</b> ${esc([member.name, member.phone.replace(/(\d{3})(\d{3,4})(\d{4})/, "$1-$2-$3")].filter(Boolean).join(", ") || "정보 미입력")}${member.type === "new" && !member.agree ? ' <span style="color:var(--red)">(동의 안 함)</span>' : ""}</div>` : `<div class="memline"><b>회원 정보 없음</b> 적립 원하시는지 여쭤보고, 회원이면 포스에서 조회 먼저</div>`;
+const MEM_LINE = { ok: "패드로 등록됨, 포스에서 번호로 회원 조회", dup: "이미 회원, 포스에서 번호로 회원 조회", wait: "패드로 등록 중, 끝나면 포스에서 조회", send: "패드로 등록 중, 끝나면 포스에서 조회", err: "패드 등록 실패, 포스에서 직접 등록", off: "패드 등록 실패, 포스에서 직접 등록", late: "패드 등록 확인 안 됨, 포스에서 번호로 조회" };
+const memLine = () => member.type ? `<div class="memline"><b>${member.reg ? MEM_LINE[member.reg.s] : member.type === "new" ? "신규 회원등록" : "기존 회원 적립"}</b> ${esc([member.name, member.phone.replace(/(\d{3})(\d{3,4})(\d{4})/, "$1-$2-$3")].filter(Boolean).join(", ") || "정보 미입력")}${member.type === "new" && !member.agree ? ' <span style="color:var(--red)">(동의 안 함)</span>' : ""}</div>` : `<div class="memline"><b>회원 정보 없음</b> 적립 원하시는지 여쭤보고, 회원이면 포스에서 조회 먼저</div>`;
 // 아래 버튼: 담은 상품 → 직원 바코드 / QR → 완료
 function setFoot(mode) {
-  const has = cart.size > 0;
+  const has = cart.size > 0; $('shClear').hidden = !(mode === "cart" && has);
   $('shBtns').innerHTML = mode === "cart" ? `<button class="b2" data-f="qr" ${has ? "" : "disabled"}>QR 보기</button><button class="b1" data-f="staff" ${has ? "" : "disabled"}>직원에게 보여주기</button>`
     : mode === "staff" ? `<button class="b2" data-f="cart">← 수정</button><button class="b2" data-f="qr">QR 보기</button><button class="rd" data-f="done">결제 완료</button>`
     : `<button class="b2" data-f="staff">바코드로 보기</button><button class="rd" data-f="done">결제 완료</button>`;
 }
 $('shBtns').onclick = (e) => { const b = e.target.closest('[data-f]'); if (!b) return; const f = b.dataset.f;
   if (f === "cart") cartViewBack(); if (f === "staff") staffView(); if (f === "qr") qrView(); if (f === "done") doneSale(); };
+function resetSale() { cart.clear(); PERK = null; Object.assign(member, { type: null, name: "", phone: "", agree: false, sex: "", reg: null }); goalN = 0; engrave = null; scanDone.clear(); qz = { i: 0, ans: {} }; Object.assign(ledger, { name: "", gu: "", etc: "" }); airxGift = "pod"; }
+let shClrT = 0; const shClrOff = () => { clearTimeout(shClrT); $('shClear').classList.remove('arm'); $('shClear').textContent = "비우기"; };
+$('shClear').onclick = () => { const b = $('shClear'); if (!b.classList.contains('arm')) { b.classList.add('arm'); b.textContent = "한 번 더 누르면 비워요"; shClrT = setTimeout(shClrOff, 3000); return; } shClrOff(); resetSale(); cartViewBack(); drawLiq(); drawGoal(); if (typeof drawDspList === "function") { drawDspList(); drawPodView(); } toast("비웠어요"); };
 function doneSale() { if (!confirm("결제 완료하고 처음 화면으로 갈까요?")) return;
-  cart.clear(); PERK = null; Object.assign(member, { type: null, name: "", phone: "", agree: false }); goalN = 0; engrave = null; scanDone.clear(); qz = { i: 0, ans: {} }; Object.assign(ledger, { name: "", gu: "", etc: "" }); airxGift = "pod";
+  resetSale();
   document.body.classList.remove('open'); cartViewBack(); drawLiq(); drawGoal(); go('home'); toast("감사합니다! 처음 화면으로 왔어요"); }
 
 // ── 기기 화면 ──
@@ -963,7 +997,7 @@ function qrView() {
   const payQ = chunks(codes), svcQ = chunks(svcCodes);
   const part = (k, n) => n > 1 ? ` ${k + 1}/${n}` : "";
   $('shH').textContent = "QR로 한 번에 찍기";
-  $('lines').innerHTML = `<div style="font-size:14.5px;color:var(--grey);margin-bottom:10px">포스 판매 화면에서 스캐너로 위에서부터 차례로 찍으세요. (${esc(BRANCH)} 포스 기준)</div>
+  $('lines').innerHTML = `${orderBox()}<div style="font-size:14.5px;color:var(--grey);margin-bottom:10px">포스 판매 화면에서 스캐너로 위에서부터 차례로 찍으세요. (${esc(BRANCH)} 포스 기준)</div>
     ${unreg.length ? `<div class="posw">바코드가 없어서 QR에서 뺐어요. 포스에서 직접 찾아 넣어 주세요: ${unreg.map(esc).join(", ")}</div>` : ""}
     ${payQ.map((l, k) => `${stp(1, "결제 QR 찍기" + part(k, payQ.length), "기기, 묶음 상품, 정가 상품")}<div class="qrbox">${qr(l)}<div style="font-size:16px;font-weight:800;margin-top:8px">${l.length}개 찍힘${k === payQ.length - 1 ? `, 포스 금액 ${won(t)} 확인` : ""}</div></div>`).join("")}
     ${svcQ.map((l, k) => `${stp(2, "서비스 QR 찍기" + part(k, svcQ.length), "찍은 다음 새로 들어온 줄만 포스에서 서비스(0원) 처리해 주세요")}<div class="qrbox svq">${qr(l)}<div style="font-size:16px;font-weight:800;margin-top:8px">서비스 ${l.length}개 (금액 0원으로 처리)</div></div>`).join("")}
@@ -1688,6 +1722,7 @@ const EVQ_KEY = "vf-ev-b";
 const evq = (() => { try { return JSON.parse(localStorage.getItem(EVQ_KEY) || "[]"); } catch (e) { return []; } })();
 const evSave = () => { try { localStorage.setItem(EVQ_KEY, JSON.stringify(evq)); } catch (e) {} };
 function ev(k, n = "", x = "") {
+  if (ORDER_CODE) return;
   const t = Math.round(Date.now() / 1000), last = evq[evq.length - 1];
   if (last && last[1] === k && last[2] === String(n).slice(0, 40) && t - last[0] < 5) return; // 같은 동작 연타는 1번
   evq.push([t, k, String(n).slice(0, 40), String(x).slice(0, 20)]);
@@ -1724,6 +1759,27 @@ ev("o", BRANCH, PADV);
 
 document.addEventListener("input", (e) => { if (e.target.id !== "myDev") return; myDevQ = e.target.value; const box = e.target.closest(".md"); if (box) { const tmp = document.createElement("div"); tmp.innerHTML = myDevBox(); box.querySelector(".mdc").innerHTML = tmp.querySelector(".mdc").innerHTML; } });
 document.addEventListener("click", (e) => { const b = e.target.closest("[data-myd]"); if (!b) return; podSub = "팟·코일"; podDev = b.dataset.myd; go('pod'); drawPodView(); document.body.classList.remove('open'); });
+
+/* 11/9 온라인 주문서 불러오기: l=액상(id 끝 번호), m=폐호흡(포스 코드), g…=기기, 팟, 일회용. 형식 = 코드-수량, 밑줄로 이음 */
+const ADULT_TEXT = `비대면 구매는 미성년자 구매가 많아서, 번거로우시겠지만 1회 성인 인증 부탁드립니다!
+
+신분증을 들고 계신 셀카 한 장 보내 주시면 됩니다. 꼭 고객님 얼굴 전체와 신분증이 함께 나오도록 부탁드릴게요 😊
+
+신분증 따로, 얼굴 따로 X (주민번호 뒷자리는 가려 주세요)
+신분증을 들고 있는 얼굴 전체가 나오게 찍어 주세요!
+
+인증 후 보내 주신 사진은 삭제하셔도 됩니다!`;
+let orderMiss = [];
+function orderBox() { if (!ORDER_CODE) return "";
+  return `<div class="posw" style="margin-bottom:10px">${orderMiss.length ? `불러오지 못한 상품 ${orderMiss.length}개가 있어요. 주문서 글을 보고 직접 넣어 주세요.` : "온라인 주문서를 불러왔어요."}</div><button id="adultCopy" style="width:100%;height:52px;border-radius:12px;background:var(--ink);color:var(--bg);font-size:16px;font-weight:800;margin-bottom:12px">미등록 고객이면: 성인 인증 안내문 복사</button>`; }
+document.addEventListener("click", async (e) => { if (!e.target.closest("#adultCopy")) return; try { await navigator.clipboard.writeText(ADULT_TEXT); toast("안내문을 복사했어요. 대화창에 붙여넣어 주세요"); } catch (er) { toast("복사가 안 됐어요"); } });
+function loadOrder() { for (const t of ORDER_CODE.split("_")) { const [a, q0] = t.split("-"), q = +q0 || 1, h = a[0], v = a.slice(1);
+    if (h === "l") { const x = ALL_LQ.find((y) => y.id.split("_").pop() === v); if (!x) { orderMiss.push(t); continue; } addItem(x.id, { k: "liq", n: x.n, label: short(x.n), img: imgOf(x), unit: x.line === "프라임" ? 20000 : 15000, ...(x.line === "프라임" ? { prime: true } : {}) }, q); }
+    else if (h === "m") { const x = LUNG.find((y) => (posOf(y.n) || [])[0] === v); if (!x) { orderMiss.push(t); continue; } addGoods(x, q); }
+    else { const g = GDS.find((y) => y.id === a); if (!g) { orderMiss.push(t); continue; } addGoods(g, q); } }
+  if (!cart.size) { toast("주문서를 불러오지 못했어요"); return; }
+  document.body.classList.add('open'); qrView(); }
+if (ORDER_CODE) loadOrder();
 
 // 오프라인 저장 + 앱 설치 (sw-b.js)
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw-b.js").catch(() => {});
