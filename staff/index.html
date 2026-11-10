@@ -152,7 +152,8 @@
   .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
   .chip{padding:11px 15px;border-radius:12px;background:#f2f4f6;font-weight:600}
   .chip.on{background:var(--blue);color:#fff}
-  .chip-all{background:#e8f1ff;color:var(--blue)} /* 11/03: 인라인 색이 눌린 표시(.on)를 덮던 것 → 클래스로 */
+  .chip-all{background:#e8f1ff;color:var(--blue)}
+  .ui2 .chip-all:not(.on){background:#fff;color:var(--blue);box-shadow:inset 0 0 0 1.5px var(--blue)} /* 11/03: 인라인 색이 눌린 표시(.on)를 덮던 것 → 클래스로 */
   .input{margin-top:12px;width:100%;height:52px;border-radius:14px;border:1px solid var(--line);padding:0 16px;font:inherit;font-size:16px;outline:none}
   .input:focus{border-color:var(--blue)}
   .check{display:flex;align-items:center;gap:12px;padding:14px 0;border-top:1px solid var(--line);font-size:16px;width:100%;text-align:left}
@@ -160,6 +161,7 @@
   .check i{width:26px;height:26px;border-radius:8px;border:2px solid #d1d6db;display:grid;place-items:center;flex:none;font-style:normal;color:#fff;font-size:15px}
   .check.on i{background:var(--blue);border-color:var(--blue)}
   .btns{display:flex;gap:10px;margin-top:20px}
+  .ui2 .sheet>.btns:last-child{position:sticky;bottom:calc(-20px - env(safe-area-inset-bottom));z-index:3;background:#fff;margin:14px -20px calc(-20px - env(safe-area-inset-bottom));padding:12px 20px calc(20px + env(safe-area-inset-bottom));box-shadow:0 -1px 0 var(--line)}.ui2 .sheet>.btns:last-child .btn:first-child:not(:only-child){flex:0 0 92px}
   .btn{flex:1;height:54px;border-radius:14px;font-weight:700;font-size:16px;background:#f2f4f6}
   .btn.primary{background:var(--blue);color:#fff} .btn:disabled{opacity:.5}
   .toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(20px);background:var(--dark);color:#fff;padding:14px 20px;border-radius:14px;font-weight:600;opacity:0;transition:.25s;z-index:60;max-width:90vw;text-align:center;pointer-events:none} /* 10/25 안 보이는 토스트가 아래 메뉴(일정, AS관리, 매장 노트)를 덮어 눌림을 가로채던 문제 */
@@ -308,7 +310,7 @@
 })();
 </script>
 <script>
-const VER = "11.10-4"; window.VER_ERR = VER;
+const VER = "11.10-8"; window.VER_ERR = VER;
 const GAME_LOCK = true; // 11/02 쉬는 시간 게임 잠금
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
@@ -400,7 +402,7 @@ document.addEventListener("click", async (e) => {
   }
 });
 /* 11/9 쉬운 화면(시험 모드 전용): 큰 버튼, 한 번에 질문 하나. 기존 기능을 그대로 부른다 */
-const EZ = { s: "home", classic: false, q: "", p: null, n: 1, cart: [], kind: "quick", pc: {}, say: "", pend: [], miss: [], to0: null };
+const EZ = { s: "home", classic: !!ls.get("vf-ez-classic", 0), q: "", p: null, n: 1, cart: [], kind: "quick", pc: {}, say: "", pend: [], miss: [], to0: null };
 setTimeout(() => { if (TEST && !document.getElementById("ezCss")) { const st = document.createElement("style"); st.id = "ezCss"; st.textContent = ".ezb{display:flex;align-items:center;gap:14px;width:100%;box-sizing:border-box;background:#fff;border:1px solid #d1d6db;border-radius:16px;padding:18px;margin-top:12px;min-height:84px;font:inherit;font-size:24px;font-weight:700;color:var(--ink);text-align:left}.ezb.alert{background:var(--blue);border-color:var(--blue);color:#fff}.ezb small{margin-left:auto;font-size:18px;font-weight:500;color:var(--sub)}.ezb.small{font-size:20px;min-height:64px}.ezh{font-size:30px;font-weight:800;margin:8px 0 4px}.ezd{font-size:20px;color:var(--ink2);margin:6px 0}.ezback{display:block;width:100%;background:none;border:0;padding:18px;font:inherit;font-size:20px;color:var(--sub);margin-top:6px}.ezi{width:100%;box-sizing:border-box;height:64px;border:1px solid #d1d6db;border-radius:16px;padding:0 16px;font:inherit;font-size:22px;margin-top:10px}html.ez .hero,html.ez .bnav,html.ez .navb{display:none}.ezsay{display:flex;align-items:center;gap:10px;background:#fff;border:2px solid var(--blue);border-radius:18px;padding:10px 10px 10px 16px;margin-top:22px}.ezsay input{flex:1;min-width:0;height:60px;border:0;outline:0;background:none;font:inherit;font-size:22px}.ezsay button{flex:none;width:60px;height:60px;border:0;border-radius:14px;background:var(--blue);color:#fff;font-size:26px;font-weight:800}"; document.head.appendChild(st); } }, 0);
 const ezB = (attr, t, cls, sm) => `<button class="ezb ${cls || ""}" ${attr}>${t}${sm ? `<small>${sm}</small>` : ""}</button>`;
 const ezBack = '<button class="ezback" data-ez="home">처음으로</button>';
@@ -412,40 +414,129 @@ const EZPCT = { ask: "재고 있나 답하기", req: "포장하기", packed: "�
 const ezPcRow = (r) => ezB('data-view="parcel"', "📦 " + esc(r.items), "small", EZPCT[r.st] || "");
 const ezPcTodo = () => pcList().filter((r) => (r.to === B && ["ask", "req", "packed"].includes(r.st)) || (r.from === B && ["okpay", "nostock", "shipped"].includes(r.st)));
 function ezFind() { const k = pkNorm(EZ.q), L = snList().filter((r) => !k || pkNorm(r.items + toTxt(r)).includes(k)).slice(0, 30), P = pcList().filter((r) => !k || pkNorm(r.items + ho(r.to) + ho(r.from)).includes(k)).slice(0, 30); return L.map(ezRow).join("") + P.map(ezPcRow).join("") || '<div class="ezd">내역이 없어요</div>'; }
-const EZ_ASK = /\?|재고|어디|있어|있나|왜|뭐|어떻게|언제|알려|추천/;
+const EZ_ASK = /\?|재고|어디|있어|있나|왜|뭐|어떻게|언제|알려|추천|얼마|인가요|되나요|돼요|될까요|차이|달라/;
+const KNUM = { 한: 1, 하나: 1, 두: 2, 둘: 2, 세: 3, 셋: 3, 네: 4, 넷: 4, 다섯: 5, 여섯: 6, 일곱: 7, 여덟: 8, 아홉: 9, 열: 10, 열한: 11, 열두: 12, 열세: 13, 열네: 14, 열다섯: 15, 스무: 20, 서른: 30 };
+const ezJamo = (x) => [...pkNorm(x)].map((c) => { const k = c.charCodeAt(0) - 0xac00; return k < 0 || k > 11171 ? c : String.fromCharCode(0x1100 + Math.floor(k / 588), 0x1161 + Math.floor((k % 588) / 28), ...(k % 28 ? [0x11a7 + (k % 28)] : [])); }).join("");
+const ezBg = (x) => { const o = new Set(); for (let i = 0; i < x.length - 1; i++) o.add(x.slice(i, i + 2)); return o; };
+let PRODJ = null;
+/* 오타, 줄임말: 자모 단위로 70% 넘게 겹치는 상품 5개까지 */
+function ezFuzzy(w) { const a = ezBg(ezJamo(w)); if (a.size < 6) return []; PRODJ ||= (PRODS || []).map((p) => [p, ezBg(ezJamo(p[0]))]); return PRODJ.map(([p, b]) => { let n = 0; a.forEach((x) => { if (b.has(x)) n++; }); return [p, n / a.size]; }).filter((x) => x[1] >= 0.7).sort((x, y) => y[1] - x[1] || x[0][0].length - y[0][0].length).slice(0, 5).map((x) => x[0]); }
 function ezParse(q) {
   let t = " " + q + " ", to = null;
-  for (const [re, b] of BEF_BR) if (re.test(t)) { to = b; t = t.replace(re, " "); break; }
+  const ph = t.match(/01\d[-\s]?\d{3,4}[-\s]?\d{4}/); if (ph) t = t.replace(ph[0], " ");
+  for (const [re, b] of BEF_BR) if (re.test(t)) { to ||= b; t = t.replace(re, " "); }
   const kind = /택배/.test(t) ? "parcel" : /퀵/.test(t) ? "quick" : null;
-  t = t.replace(/(택배로|택배|퀵으로|퀵|보내\s*주세요|보내줘|보내요|보내기|보내|요청|부탁|주세요|해줘|좀|손님)/g, " ").replace(/(^|\s)(에서|으로|에|로)(?=\s|$)/g, " ");
+  t = t.replace(/[()\[\]"']/g, " ").replace(/[?!~]+/g, " ").replace(/\.+(?=\s|$)/g, " ");
+  t = t.replace(/(스무|서른|열다섯|열한|열두|열세|열네|다섯|여섯|일곱|여덟|아홉|한|두|세|네|열)\s*(개|병|팩|박스|통)/g, (m0, a, u) => KNUM[a] + (u === "통" ? "개" : u)).replace(/(^|\s)(하나|둘|셋|넷)(?=\s|,|$)/g, (m0, sp, a) => sp + KNUM[a] + "개");
+  t = t.replace(/(\d+)\s*(ea|통)(?=\s|,|$)/gi, "$1개").replace(/(^|\s)[xX*×]\s*(\d+)(?=\s|,|$)/g, "$1$2개").replace(/(\d+\s*(?:개|병|팩|박스))(만요|만|씩|요|쯤)(?=\s|,|$)/g, "$1");
+  const em = t.match(/각각\s*(\d+)\s*(?:개|병|팩|박스)?/), each = em ? Math.max(1, Math.min(99, +em[1])) : null; if (em) t = t.replace(em[0], " ");
+  t = t.replace(/(\d+\s*(?:개|병|팩|박스)?)\s*(이랑|랑|하고|그리고|와|과)(?=\s|$)/g, "$1, ").replace(/\s(그리고|하고)\s/g, ", ");
+  t = t.replace(/(택배로|택배|퀵서비스|퀵으로|퀵|보내고\s*싶어요|보내고\s*싶어|보내\s*주세요|보내줘요|보내줘|보내요|보내기|보내|받고\s*싶어요|받고\s*싶어|받을게요|받을게|받아\s*주세요|받기|받고|요청할게요|요청|부탁드립니다|부탁드려요|부탁해요|부탁|해\s*주세요|해줘요|해줘|할게요|할게|주세요|감사합니다|감사해요|급해요|급해|빨리요|빨리|말고|한테|에게|좀|손님|ㄱㄱ|ㅂㅌ|[ㅠㅜㅎㅋ]+)/g, " ").replace(/(^|\s)(에서|으로|에|로|요|점|점에서|ㄱ)(?=\s|$)/g, " ");
   for (const [re, x] of ALIAS) t = t.replace(re, x);
   const find = (ws) => { const all = (PRODS || []).filter(([x]) => ws.every((w) => pkNorm(x).includes(w))), same = all.filter(([x]) => pkNorm(x) === ws.join("")); return same.length ? same : all; };
-  const lines = []; let prev = null;
+  let lines = [], prev = null;
+  const tryLine = (name, n, cnt) => {
+    const raw = name.split(/\s+/).filter(Boolean), ws = raw.map(pkNorm); if (!ws.length) return;
+    let hits = find(ws), fz = false, w = name;
+    if (prev && hits.length !== 1) { const h2 = find([prev, ...ws]); if (h2.length) hits = h2; }
+    const wins = []; for (let len = ws.length - 1; len >= 1; len--) for (let i = 0; i + len <= ws.length; i++) if (!(len === 1 && ws[i].length < 2)) wins.push([i, len]);
+    /* 앞뒤에 붙은 말 떼기: 낱말 묶음을 줄여 가며 상품을 찾음 */
+    if (!hits.length && (kind || cnt)) { hits = ezFuzzy(ws.join("")); fz = hits.length > 0; }
+    if (!hits.length && (kind || cnt)) for (const [i, len] of wins) { let h = find(ws.slice(i, i + len)); if (!h.length && prev) h = find([prev, ...ws.slice(i, i + len)]); if (h.length) { hits = h; w = raw.slice(i, i + len).join(" "); break; } }
+    if (!hits.length && (kind || cnt)) { for (const [i, len] of wins) { const h = ezFuzzy(ws.slice(i, i + len).join("")); if (h.length) { hits = h; w = raw.slice(i, i + len).join(" "); break; } } fz = hits.length > 0; }
+    if (ws.length > 1) prev = ws[0];
+    lines.push({ w, n, hits, fz, cnt });
+  };
   for (const part of t.split(/[,，\n]+/).flatMap((x) => x.replace(/(\d+)\s*(개|병|팩|박스)?(?=\s|$)/g, "$1$2|").split("|"))) {
     const c = part.trim(); if (!c) continue;
     const m = c.match(/(\d+)(개|병|팩|박스)?$/), name = (m ? c.slice(0, m.index) : c).trim(); if (!name) continue;
-    const ws = name.split(/\s+/).map(pkNorm), n = m ? Math.max(1, Math.min(99, +m[1])) : 1;
-    let hits = find(ws);
-    if (prev && hits.length !== 1) { const h2 = find([prev, ...ws]); if (h2.length) hits = h2; }
-    if (ws.length > 1) prev = ws[0];
-    lines.push({ w: name, n, hits });
+    const n = each ?? (m ? Math.max(1, Math.min(99, +m[1])) : 1);
+    let segs = [name];
+    if (!find(name.split(/\s+/).map(pkNorm)).length) { const sp = name.split(/(?:이랑|랑|하고|와|과)\s+/).map((x) => x.trim()).filter(Boolean); if (sp.length > 1) segs = sp; }
+    segs.forEach((sg, i) => tryLine(sg, n, each != null || (!!m && i === segs.length - 1)));
   }
-  return { kind, to, lines };
+  /* 상품이 하나라도 잡혔으면, 개수도 없고 상품도 아닌 말은 버림 */
+  if (lines.some((l) => l.hits.length)) lines = lines.filter((l) => l.hits.length || l.cnt);
+  return { kind, to, lines, phone: ph ? ph[0] : "" };
 }
+/* 11/10 기존 화면의 베프: 글로 쓰면 기존 퀵, 택배 창을 채워서 열어 줌. 보내기는 직원이 창에서 직접 누름 */
+const BEF_GUIDE = [
+  [/(^|[^a-z])a\s*\/?\s*s([^a-z]|$)|에이에스/i, [['data-view="as2"', "AS 접수 열기"]]],
+  [/비품|쇼핑백|영수증\s*용지|봉투/, [['data-req="supply"', "비품 요청 열기"]]],
+  [/고장|망가|부서졌|안\s*켜져/, [['data-req="break"', "매장 물건 고장 알리기"], ['data-view="as2"', "손님 기기 AS 접수"]]],
+  [/시연/, [['data-req="demo"', "시연 교체 적기"]]],
+  [/고객\s*요청|손님\s*요청|입고\s*연락|예약/, [['data-view="talk"', "고객요청 열기"]]],
+  [/노트|건의/, [['data-view="note"', "노트 열기"]]],
+  [/출근/, [['data-go="in"', "출근 열기"]]],
+  [/퇴근/, [['data-go="out"', "퇴근 열기"]]],
+  [/마감/, [['data-go="close"', "마감 체크 열기"]]],
+];
+function befPend() {
+  const el = $("#pkR"); if (!el) return;
+  const l = (PK.pend || [])[0]; if (!l) { el.innerHTML = ""; return; }
+  el.innerHTML = `<div class="desc" style="margin:8px 2px 4px;font-weight:700;color:var(--ink)">"${esc(l.w)}" ${l.n}개, 어떤 거예요?</div>` + l.hits.slice(0, 6).map(([n, c, m], i) => `<button class="pkhit" data-pkpend="${i}">${esc(n)}<small>${esc(m || "")}</small></button>`).join("") + '<button class="pkhit" data-pkpend="x">여기 없어요</button>';
+}
+document.addEventListener("click", (e) => {
+  const c = e.target.closest?.("[data-pkpend]"); if (!c) return;
+  const l = PK.pend.shift(); if (c.dataset.pkpend !== "x") { const p = l.hits[+c.dataset.pkpend], i = PK.list.findIndex((x) => x[0] === p[0]); if (i >= 0) PK.list[i][1] += l.n; else PK.list.push([p[0], l.n, p[1] || null]); pkRedraw(); }
+  befPend();
+});
+function befOpen(r, kind) {
+  const ok = (l) => l.hits.length === 1 && !l.fz, miss = r.lines.filter((l) => !l.hits.length).map((l) => l.w);
+  if (kind === "parcel") sheetPcNew(); else sheetSnNew("quick");
+  const L = []; for (const l of r.lines.filter(ok)) { const p = l.hits[0], i = L.findIndex((x) => x[0] === p[0]); if (i >= 0) L[i][1] += l.n; else L.push([p[0], l.n, p[1] || null]); }
+  PK.list = L; PK.pend = r.lines.filter((l) => !ok(l) && l.hits.length); pkRedraw();
+  let say = "";
+  if (r.to && !(kind !== "parcel" && r.to === B)) {
+    const ch = document.querySelector(`#sheet [data-${kind === "parcel" ? "pcto" : "snto"}="${r.to}"]`);
+    if (kind === "parcel" && (pcDay()[r.to] || {}).none) say = `${ho(r.to)}은 택배를 안 해요. 다른 지점을 골라 주세요`;
+    else if (ch) ch.click(); else say = `${ho(r.to)}에서는 ${kind === "parcel" ? "택배" : "퀵"}을 못 받아요. 다른 지점을 골라 주세요`;
+  }
+  if (kind === "parcel" && r.phone && $("#pcPhone")) $("#pcPhone").value = r.phone;
+  befPend();
+  if (!PK.pend.length && miss.length) { const i = $("#pkQ"); if (i) { i.value = miss[0]; pkSearch(miss[0]); } say ||= `"${miss[0]}"는 못 찾았어요. 아래에서 찾아 주세요`; }
+  if (say) toast(say);
+}
+async function befDo(q) {
+  await loadProds();
+  const clr = () => { if ($("#askQ")) $("#askQ").value = ""; ASK.draft = ""; };
+  const card = (html) => { const now0 = new Date().toTimeString().slice(0, 5); clr(); (ASK.local ||= []).push({ id: "c" + Date.now().toString(36), q, a: "카드", card: html, at: now0, by: working().join(", "), t: now0, test: TEST, ms: Date.now() }); if (VIEW !== "ask") { VIEW = "ask"; ls.set("vf-app-view", VIEW); } render(); return true; };
+  const wrap = (t, btns) => `${t}<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;white-space:normal">${btns}</div>`, on = ";background:var(--blue);color:#fff;border-color:var(--blue)";
+  const r = ezParse(q), has = r.lines.some((l) => l.hits.length);
+  const g = BEF_GUIDE.filter(([re]) => re.test(q));
+  if (g.length && !r.kind && !has && (q.replace(/\s/g, "").length <= 14 || /어디서|어디에|어떻게\s*해|하고\s*싶|접수|요청|떨어졌|났어|바꿨|열어|할래|할게/.test(q))) {
+    const i = BEF_PICK.push({ q }) - 1, seen = new Set(), bs = g.flatMap((x) => x[1]).filter(([a]) => !seen.has(a) && seen.add(a));
+    return card(wrap("여기서 하면 돼요", bs.map(([a, n]) => `<button ${a} style="${befBtn}${on}">${n}</button>`).join("") + `<button data-befask="${i}" style="${befBtn}">베프에게 물어보기</button>`));
+  }
+  if (r.kind && (has || !r.lines.length || !EZ_ASK.test(q))) { clr(); befOpen(r, r.kind); return true; }
+  if (!r.kind && has && r.lines.every((l) => l.hits.length) && (r.lines.some((l) => l.cnt) || !EZ_ASK.test(q))) {
+    const i = BEF_PICK.push({ q, r }) - 1;
+    return card(wrap(esc(r.lines.map((l) => `${l.hits.length === 1 && !l.fz ? l.hits[0][0] : l.w} ${l.n}개`).join(", ")) + "\n어떻게 할까요?", `<button data-befopen="${i}|quick" style="${befBtn}${on}">퀵 요청 창 열기</button><button data-befopen="${i}|parcel" style="${befBtn}${on}">택배 요청 창 열기</button><button data-befask="${i}" style="${befBtn}">베프에게 물어보기</button>`));
+  }
+  return false;
+}
+document.addEventListener("click", (e) => {
+  const c = e.target.closest?.("[data-befask],[data-befopen]"); if (!c) return;
+  if (c.dataset.befask) return askGo(BEF_PICK[+c.dataset.befask].q, null, true);
+  const [i, k] = c.dataset.befopen.split("|"); befOpen(BEF_PICK[+i].r, k);
+});
+function befBoxHtml() { czCssOn(); return `<div class="desc" style="margin:14px 2px 6px;font-weight:700">💛 베프에게 글로 시키기</div><div class="czin" style="margin-bottom:12px"><input id="ezSay" placeholder="예: 빌런 자두 3개 택배" value="${esc(EZ.say)}" autocomplete="off" enterkeyhint="send" maxlength="300"><button data-ez="say" aria-label="보내기">↑</button></div>`; }
 const ezBk = "<button data-ez=\"back\" style=\"display:inline-flex;position:sticky;top:8px;z-index:6;align-items:center;gap:6px;height:56px;padding:0 22px 0 16px;margin:0 0 10px;border:0;border-radius:999px;background:#fff;color:var(--ink);font:inherit;font-size:20px;font-weight:800;box-shadow:0 2px 8px rgba(0,0,0,.08)\"><span style=\"font-size:26px;line-height:1\">‹</span>뒤로</button>";
 const ezGo = (x) => { if (x === "home") EZ.hist = []; else if (x !== EZ.s) (EZ.hist ||= []).push(EZ.s); document.activeElement?.blur?.(); EZ.s = x; render(); window.scrollTo(0, 0); setTimeout(() => $("#ezPc")?.focus(), 30); };
 const ezAdd = (p, n) => { const i = EZ.cart.findIndex((x) => x[0] === p[0]); if (i >= 0) EZ.cart[i][1] += n; else EZ.cart.push([p[0], n, p[1] || null]); };
 const ezNext = () => ezGo(EZ.pend.length ? "pick" : "cart");
 async function ezSayRun() {
-  const q = (EZ.say || "").trim(); if (!q) return toast("할 일을 적어 주세요");
+  const q = (EZ.say || $("#ezSay")?.value || "").trim(); if (!q) return toast("할 일을 적어 주세요");
   await loadProds();
-  const r = EZ_ASK.test(q) ? null : ezParse(q);
-  if (!r || (!r.kind && !r.lines.some((l) => l.hits.length))) { EZ.say = ""; const i = $("#ezSay"); if (i) i.value = ""; document.activeElement?.blur?.(); CZ.n = -1; (EZ.hist ||= []).push(EZ.s); EZ.s = "rec"; return askGo(q); }
+  const clr = () => { EZ.say = ""; const i = $("#ezSay"); if (i) i.value = ""; document.activeElement?.blur?.(); };
+  if (EZ.classic) { clr(); if (await befDo(q)) return; if (VIEW !== "ask") { VIEW = "ask"; ls.set("vf-app-view", VIEW); render(); window.scrollTo(0, 0); } return askGo(q, null, true); }
+  const r0 = ezParse(q), r = EZ_ASK.test(q) && !(r0.kind && r0.lines.some((l) => l.hits.length)) ? null : r0;
+  if (!r || (!r.kind && !r.lines.some((l) => l.hits.length))) { clr(); CZ.n = -1; (EZ.hist ||= []).push(EZ.s); EZ.s = "rec"; return askGo(q, null, true); }
   EZ.say = ""; EZ.cart = []; EZ.pend = []; EZ.miss = []; EZ.q = ""; EZ.pc = {};
   EZ.to0 = r.to && r.to !== B && !NO_QUICK.includes(r.to) ? r.to : null;
   EZ.kind = r.kind || "quick";
   if (r.kind && !r.lines.length) return ezGo("q1");
-  for (const l of r.lines) { if (l.hits.length === 1) ezAdd(l.hits[0], l.n); else if (l.hits.length) EZ.pend.push(l); else EZ.miss.push(l.w); }
+  for (const l of r.lines) { if (l.hits.length === 1 && !l.fz) ezAdd(l.hits[0], l.n); else if (l.hits.length) EZ.pend.push(l); else EZ.miss.push(l.w); }
   return r.kind ? ezNext() : ezGo("sk");
 }
 document.addEventListener("keydown", (e) => { if (e.target.id === "ezSay" && e.key === "Enter" && !e.isComposing) { e.preventDefault(); ezSayRun(); } });
@@ -483,8 +574,35 @@ function czLog() {
   [...srv, ...ASK.local].forEach((x) => { const k = czKey(x.t); L.push({ k, h: `<div class="czb me">${esc(x.q)}</div><div class="cztm me">${esc(x.t || "")} ${esc(x.by || "")}</div>` }); L.push({ k: k + 0.5, h: `<div class="czb you">${x.card ? x.card : x.a ? esc(x.a) : "베프가 답을 쓰고 있어요"}</div>` }); });
   return L.map((x, i) => ({ ...x, i })).sort((a, b) => a.k - b.k || a.i - b.i);
 }
-function czCssOn() { if ($("#czCss")) return; const stl = document.createElement("style"); stl.id = "czCss"; stl.textContent = "html.czhome .foot,html.czhome .keybar,html.czhome #fpill{display:none}html.czhome .mainv{padding-bottom:0}.cz{display:flex;flex-direction:column;min-height:calc(100dvh - var(--czoff,72px))}.cztop{position:sticky;top:0;z-index:5;background:var(--bg);padding:4px 0 10px}.cznow{display:flex;align-items:center;justify-content:space-between;width:100%;min-height:96px;padding:0 26px;border:0;border-radius:24px;background:var(--blue);color:#fff;font:inherit;font-size:30px;font-weight:800;text-decoration:none;box-shadow:0 6px 18px rgba(49,130,246,.28);transition:transform .12s}.cznow small{font-size:17px;font-weight:600;opacity:.85}.cznow:active,.czchip:active,.czc:active,.czin button:active{transform:scale(.97)}.czq{display:flex;align-items:center;gap:10px;font-size:15px;color:var(--sub);padding:10px 4px}.czq button{margin-left:auto;border:0;background:var(--red-soft);color:var(--red);font:inherit;font-size:14px;font-weight:800;border-radius:999px;padding:8px 14px}.czlog{flex:1;display:flex;flex-direction:column;justify-content:flex-end;gap:10px;padding:10px 0 18px}.czs{align-self:center;font-size:16px;color:var(--sub);padding:2px 0}.czday{align-self:center;font-size:16px;font-weight:700;color:var(--sub);margin-top:6px}.czb{max-width:88%;padding:14px 18px;font-size:20px;line-height:1.5;white-space:pre-wrap;word-break:break-word}.czb.me{align-self:flex-end;background:var(--blue);color:#fff;border-radius:20px 20px 6px 20px}.czb.you{align-self:flex-start;background:#fff;color:var(--ink);border-radius:20px 20px 20px 6px;box-shadow:0 1px 4px rgba(0,0,0,.07)}.czc{display:flex;flex-direction:column;gap:3px;width:min(92%,460px);text-align:left;border:0;background:#fff;border-radius:18px;padding:14px 16px;font:inherit;color:var(--ink);box-shadow:0 1px 4px rgba(0,0,0,.07);transition:transform .12s}.czc.me{align-self:flex-end}.czc.you{align-self:flex-start}.czc b{font-size:16px;color:var(--sub);font-weight:700;display:flex;align-items:center;gap:6px}.czc b i{width:8px;height:8px;border-radius:50%;background:var(--red)}.czc .it{font-size:21px;font-weight:700;line-height:1.4}.czc .st{font-size:18px;color:var(--ink2)}.czc .st.red{color:var(--red);font-weight:800}.czc em{font-style:normal;font-size:15px;color:var(--sub)}.cztm{font-size:15px;color:var(--sub);margin-top:-6px}.cztm.me{align-self:flex-end}.cztm.you{align-self:flex-start}.czlog .new{animation:czup .28s ease-out}@keyframes czup{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}.czbar{position:sticky;bottom:0;z-index:5;background:linear-gradient(rgba(242,244,246,0),var(--bg) 16px);padding:16px 0 calc(10px + env(safe-area-inset-bottom))}.czchips{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 10px;scrollbar-width:none}.czchips::-webkit-scrollbar{display:none}.czchip{flex:none;display:inline-flex;align-items:center;gap:6px;height:52px;padding:0 18px;border:0;border-radius:999px;background:#fff;color:var(--ink);font:inherit;font-size:16px;font-weight:700;text-decoration:none;box-shadow:0 1px 4px rgba(0,0,0,.08);transition:transform .12s}.czin{display:flex;align-items:center;gap:8px;background:#fff;border-radius:28px;padding:6px 6px 6px 20px;box-shadow:0 2px 14px rgba(0,0,0,.10)}.czin input{flex:1;min-width:0;height:56px;border:0;outline:0;background:none;font:inherit;font-size:22px;color:var(--ink)}.czin button{flex:none;width:56px;height:56px;border:0;border-radius:50%;background:var(--blue);color:#fff;font-size:22px;font-weight:800;transition:transform .12s}.czg{font-size:14px;font-weight:700;color:var(--sub);margin:20px 4px 2px}.czgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.czgrid .ezb{margin-top:10px;min-height:60px;font-size:18px;padding:14px;box-shadow:0 1px 4px rgba(0,0,0,.07);border:0}.cztiles{display:grid;grid-template-columns:1fr 1fr;gap:12px}.cztile{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:112px;border:0;border-radius:24px;background:#fff;color:var(--ink);font:inherit;font-size:24px;font-weight:800;text-decoration:none;box-shadow:0 2px 8px rgba(0,0,0,.07);transition:transform .12s}.cztile i{font-style:normal;font-size:34px;line-height:1}.cztile:active,.czwide:active{transform:scale(.97)}.czwide{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:76px;margin-top:12px;border:0;border-radius:24px;background:#fff;color:var(--ink);font:inherit;font-size:22px;font-weight:800;box-shadow:0 2px 8px rgba(0,0,0,.07);transition:transform .12s}.czwide.red{background:var(--red-soft);color:var(--red)}.czhint{font-size:17px;color:var(--sub);text-align:center;margin:0 0 8px}.cz,.czlog{letter-spacing:-.02em}.cznow{min-height:84px;border-radius:18px;font-size:24px;font-weight:700;padding:0 22px;box-shadow:none}.cznow small{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:500;opacity:.9}.cznow small::after{content:'';width:9px;height:9px;border-right:2px solid #fff;border-top:2px solid #fff;transform:rotate(45deg)}.cztiles{gap:10px}.cztile{align-items:flex-start;justify-content:space-between;min-height:104px;padding:16px 18px;border-radius:18px;font-size:20px;font-weight:700;box-shadow:0 1px 3px rgba(0,0,0,.05);text-align:left}.cztile svg{width:26px;height:26px;stroke:var(--blue);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.czrow{display:flex;align-items:center;gap:10px;width:100%;min-height:64px;margin-top:10px;padding:0 18px;border:0;border-radius:18px;background:#fff;color:var(--ink);font:inherit;font-size:19px;font-weight:600;text-align:left;box-shadow:0 1px 3px rgba(0,0,0,.05);transition:transform .12s}.czrow:active{transform:scale(.98)}.czrow::after{content:'';margin-left:auto;width:9px;height:9px;border-right:2px solid #b0b8c1;border-top:2px solid #b0b8c1;transform:rotate(45deg)}.czrow i{width:8px;height:8px;border-radius:50%;background:var(--red)}.czrow b{color:var(--red);font-weight:700}.czhint{font-size:15px;margin:0 0 8px}.czin{border-radius:18px;box-shadow:0 1px 3px rgba(0,0,0,.05),0 6px 20px rgba(0,0,0,.06)}.czin input{font-size:19px;height:52px}.czin button{width:48px;height:48px;border-radius:14px;font-size:20px}.czc{border-radius:16px;box-shadow:0 1px 3px rgba(0,0,0,.05)}.czb.me{border-radius:18px 18px 4px 18px}.czb.you{border-radius:18px 18px 18px 4px;box-shadow:0 1px 3px rgba(0,0,0,.05)}.czgrid .ezb{border-radius:16px;font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,.05)}"; document.head.appendChild(stl); }
+function czCssOn() { if ($("#czCss")) return; const stl = document.createElement("style"); stl.id = "czCss"; stl.textContent = "html.czhome .foot,html.czhome .keybar,html.czhome #fpill{display:none}html.czhome .mainv{padding-bottom:0}.cz{display:flex;flex-direction:column;min-height:calc(100dvh - var(--czoff,72px))}.cztop{position:sticky;top:0;z-index:5;background:var(--bg);padding:4px 0 10px}.cznow{display:flex;align-items:center;justify-content:space-between;width:100%;min-height:96px;padding:0 26px;border:0;border-radius:24px;background:var(--blue);color:#fff;font:inherit;font-size:30px;font-weight:800;text-decoration:none;box-shadow:0 6px 18px rgba(49,130,246,.28);transition:transform .12s}.cznow small{font-size:17px;font-weight:600;opacity:.85}.cznow:active,.czchip:active,.czc:active,.czin button:active{transform:scale(.97)}.czq{display:flex;align-items:center;gap:10px;font-size:15px;color:var(--sub);padding:10px 4px}.czq button{margin-left:auto;border:0;background:var(--red-soft);color:var(--red);font:inherit;font-size:14px;font-weight:800;border-radius:999px;padding:8px 14px}.czlog{flex:1;display:flex;flex-direction:column;justify-content:flex-end;gap:10px;padding:10px 0 18px}.czs{align-self:center;font-size:16px;color:var(--sub);padding:2px 0}.czday{align-self:center;font-size:16px;font-weight:700;color:var(--sub);margin-top:6px}.czb{max-width:88%;padding:14px 18px;font-size:20px;line-height:1.5;white-space:pre-wrap;word-break:break-word}.czb.me{align-self:flex-end;background:var(--blue);color:#fff;border-radius:20px 20px 6px 20px}.czb.you{align-self:flex-start;background:#fff;color:var(--ink);border-radius:20px 20px 20px 6px;box-shadow:0 1px 4px rgba(0,0,0,.07)}.czc{display:flex;flex-direction:column;gap:3px;width:min(92%,460px);text-align:left;border:0;background:#fff;border-radius:18px;padding:14px 16px;font:inherit;color:var(--ink);box-shadow:0 1px 4px rgba(0,0,0,.07);transition:transform .12s}.czc.me{align-self:flex-end}.czc.you{align-self:flex-start}.czc b{font-size:16px;color:var(--sub);font-weight:700;display:flex;align-items:center;gap:6px}.czc b i{width:8px;height:8px;border-radius:50%;background:var(--red)}.czc .it{font-size:21px;font-weight:700;line-height:1.4}.czc .st{font-size:18px;color:var(--ink2)}.czc .st.red{color:var(--red);font-weight:800}.czc em{font-style:normal;font-size:15px;color:var(--sub)}.cztm{font-size:15px;color:var(--sub);margin-top:-6px}.cztm.me{align-self:flex-end}.cztm.you{align-self:flex-start}.czlog .new{animation:czup .28s ease-out}@keyframes czup{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}.czbar{position:sticky;bottom:0;z-index:5;background:linear-gradient(rgba(242,244,246,0),var(--bg) 16px);padding:16px 0 calc(10px + env(safe-area-inset-bottom))}.czchips{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 10px;scrollbar-width:none}.czchips::-webkit-scrollbar{display:none}.czchip{flex:none;display:inline-flex;align-items:center;gap:6px;height:52px;padding:0 18px;border:0;border-radius:999px;background:#fff;color:var(--ink);font:inherit;font-size:16px;font-weight:700;text-decoration:none;box-shadow:0 1px 4px rgba(0,0,0,.08);transition:transform .12s}.czin{display:flex;align-items:center;gap:8px;background:#fff;border-radius:28px;padding:6px 6px 6px 20px;box-shadow:0 2px 14px rgba(0,0,0,.10)}.czin input{flex:1;min-width:0;height:56px;border:0;outline:0;background:none;font:inherit;font-size:22px;color:var(--ink)}.czin button{flex:none;width:56px;height:56px;border:0;border-radius:50%;background:var(--blue);color:#fff;font-size:22px;font-weight:800;transition:transform .12s}.czg{font-size:14px;font-weight:700;color:var(--sub);margin:20px 4px 2px}.czgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.czgrid .ezb{margin-top:10px;min-height:60px;font-size:18px;padding:14px;box-shadow:0 1px 4px rgba(0,0,0,.07);border:0}.cztiles{display:grid;grid-template-columns:1fr 1fr;gap:12px}.cztile{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:112px;border:0;border-radius:24px;background:#fff;color:var(--ink);font:inherit;font-size:24px;font-weight:800;text-decoration:none;box-shadow:0 2px 8px rgba(0,0,0,.07);transition:transform .12s}.cztile i{font-style:normal;font-size:34px;line-height:1}.cztile:active,.czwide:active{transform:scale(.97)}.czwide{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:76px;margin-top:12px;border:0;border-radius:24px;background:#fff;color:var(--ink);font:inherit;font-size:22px;font-weight:800;box-shadow:0 2px 8px rgba(0,0,0,.07);transition:transform .12s}.czwide.red{background:var(--red-soft);color:var(--red)}.czhint{font-size:17px;color:var(--sub);text-align:center;margin:0 0 8px}.cz,.czlog{letter-spacing:-.02em}.cznow{min-height:84px;border-radius:18px;font-size:24px;font-weight:700;padding:0 22px;box-shadow:none}.cznow small{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:500;opacity:.9}.cznow small::after{content:'';width:9px;height:9px;border-right:2px solid #fff;border-top:2px solid #fff;transform:rotate(45deg)}.cztiles{gap:10px}.cztile{align-items:flex-start;justify-content:space-between;min-height:104px;padding:16px 18px;border-radius:18px;font-size:20px;font-weight:700;box-shadow:0 1px 3px rgba(0,0,0,.05);text-align:left}.cztile svg{width:26px;height:26px;stroke:var(--blue);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.czrow{display:flex;align-items:center;gap:10px;width:100%;min-height:64px;margin-top:10px;padding:0 18px;border:0;border-radius:18px;background:#fff;color:var(--ink);font:inherit;font-size:19px;font-weight:600;text-align:left;box-shadow:0 1px 3px rgba(0,0,0,.05);transition:transform .12s}.czrow:active{transform:scale(.98)}.czrow::after{content:'';margin-left:auto;width:9px;height:9px;border-right:2px solid #b0b8c1;border-top:2px solid #b0b8c1;transform:rotate(45deg)}.czrow i{width:8px;height:8px;border-radius:50%;background:var(--red)}.czrow b{color:var(--red);font-weight:700}.czhint{font-size:15px;margin:0 0 8px}.czin{border-radius:18px;box-shadow:0 1px 3px rgba(0,0,0,.05),0 6px 20px rgba(0,0,0,.06)}.czin input{font-size:19px;height:52px}.czin button{width:48px;height:48px;border-radius:14px;font-size:20px}.czc{border-radius:16px;box-shadow:0 1px 3px rgba(0,0,0,.05)}.czb.me{border-radius:18px 18px 4px 18px}.czb.you{border-radius:18px 18px 18px 4px;box-shadow:0 1px 3px rgba(0,0,0,.05)}.czgrid .ezb{border-radius:16px;font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,.05)}.czsec{font-size:14px;font-weight:700;color:var(--sub);margin:18px 4px 0}.czrow.it{min-height:72px;padding:10px 18px}.czrow.it>span{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1}.czrow.it em{font-style:normal;font-size:18px;font-weight:700;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.czrow.it small{font-size:15px;color:var(--sub);font-weight:500}.czrow.it small.red{color:var(--red);font-weight:700}.czrow.it::after{flex:none}"; document.head.appendChild(stl); }
 const CZI = { in: '<path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="M10 17l5-5-5-5"/><path d="M15 12H3"/>', moon: '<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>', zap: '<path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/>', box: '<path d="M21 16V8a2 2 0 0 0-1-1.7l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.7l7 4a2 2 0 0 0 2 0l7-4a2 2 0 0 0 1-1.7z"/><path d="M3.3 7 12 12l8.7-5"/><path d="M12 22V12"/>', clip: '<path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/><path d="m9 14 2 2 4-4"/>', grid: '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>' };
+function czTurnItems() {
+  const who = (r) => (r.from === B ? (r.to ? ho(r.to) + "에 요청한 것" : "전 지점에 물어본 것") : ho(r.from) + " 요청");
+  const a = snList().map((r) => [r, snMine(r)]).filter((x) => x[1]).map(([r, t]) => ({ key: "s" + r.id + r.st, id: r.id, kind: "send", mine: r.from === B, title: r.items, sub: `${(SKIND[r.kind] || "보내기").replace(/^\S+ /, "")}, ${who(r)}`, act: t, attr: `data-snopen="${r.id}"` }));
+  const b = ezPcTodo().map((r) => ({ key: "p" + r.id + r.st, id: r.id, kind: "parcel", mine: r.from === B, title: r.items, sub: `택배, ${who(r)}`, act: EZPCT[r.st] || "", attr: 'data-view="parcel"' }));
+  return [...a, ...b];
+}
+function czWaitItems() {
+  const PT = { ask: "재고 확인 기다림", req: "포장 기다림", packed: "포장 완료, 송장 기다림" };
+  const a = snList().filter((r) => r.from === B && !snMine(r) && !["done", "cancel", "no"].includes(r.st)).map((r) => ({ title: r.items, sub: `${(SKIND[r.kind] || "보내기").replace(/^\S+ /, "")}, ${r.to ? ho(r.to) : "전 지점"}`, act: STXT[r.st] || r.st, attr: `data-snopen="${r.id}"` }));
+  const b = pcList().filter((r) => r.from === B && r.to !== B && PT[r.st]).map((r) => ({ title: r.items, sub: `택배, ${ho(r.to)}`, act: PT[r.st], attr: 'data-view="parcel"' }));
+  return [...a, ...b];
+}
+const czItRow = (x, red) => `<button class="czrow it" ${x.attr}>${red ? "<i></i>" : ""}<span><em>${esc(x.title)}</em><small class="${red ? "red" : ""}">${esc(x.sub)}, ${esc(x.act)}</small></span></button>`;
+/* 새로 우리 차례가 된 일은 화면 가운데 팝업 + 소리. 본 것은 기기에 기억 */
+let TURN_POP = false;
+function turnPop() {
+  if (!TEST || !B || TURN_POP || ALERT_OPEN || $("#dim")?.classList.contains("on")) return;
+  const K = `vf-turn-seen-${B}`, seen = ls.get(K, []), L = czTurnItems().filter((x) => !seen.includes(x.key));
+  if (!L.length) return;
+  const x = L[L.length - 1], more = L.length - 1; TURN_POP = true; beep();
+  ls.set(K, [...seen, ...L.map((y) => y.key)].slice(-300));
+  const box = document.createElement("div");
+  box.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:80;display:flex;align-items:center;justify-content:center;padding:16px";
+  box.innerHTML = `<div style="background:#fff;border-radius:20px;max-width:440px;width:100%;padding:24px;box-shadow:0 10px 40px rgba(0,0,0,.25)"><div style="font-size:15px;font-weight:700;color:var(--red)">${x.mine ? "보낸 요청에 답이 왔어요" : "새 요청이 왔어요"}</div><div style="font-size:22px;font-weight:800;line-height:1.4;margin:10px 0 6px">${esc(x.title)}</div><div style="font-size:16px;color:var(--ink2)">${esc(x.sub)}</div><div style="font-size:17px;font-weight:700;color:var(--red);margin-top:6px">할 일: ${esc(x.act)}</div>${more ? `<div style="font-size:14px;color:var(--sub);margin-top:8px">이것 말고 ${more}개 더 있어요</div>` : ""}<div class="btns"><button class="btn" data-tp="later">나중에</button><button class="btn primary" data-tp="go">지금 보기</button></div></div>`;
+  box.addEventListener("click", (e) => { const k = e.target.closest("[data-tp]")?.dataset.tp; if (!k) return; e.stopPropagation(); box.remove(); TURN_POP = false; if (k === "go") { if (x.kind === "send") sheetSnStep(x.id); else { VIEW = "parcel"; ls.set("vf-app-view", VIEW); render(); window.scrollTo(0, 0); } } else setTimeout(turnPop, 400); });
+  document.body.appendChild(box);
+}
 function czHtml() {
   czCssOn();
   const nx = czNext(), turnN = snList().filter(snMine).length + ezPcTodo().length;
@@ -492,7 +610,7 @@ function czHtml() {
   const ic = (k) => `<svg viewBox="0 0 24 24" aria-hidden="true">${CZI[k]}</svg>`;
   const tile = (attr, k, t) => `<button class="cztile" ${attr}>${ic(k)}<span>${t}</span></button>`;
   setTimeout(() => { const c = $(".cz"); if (c) document.documentElement.style.setProperty("--czoff", Math.round(c.getBoundingClientRect().top + window.scrollY) + 12 + "px"); }, 0);
-  return `<div class="cz"><div style="flex:1">${top}${turnN ? `<button class="czrow" data-ez="todo"><i></i><span>우리 차례인 일 <b>${turnN}개</b></span></button>` : ""}<div class="cztiles" style="margin-top:10px">${tile('data-go="in"', "in", "출근")}${tile('data-go="close"', "moon", "마감")}${tile('data-ez="q1"', "zap", "퀵")}${tile('data-ez="p1"', "box", "택배")}<a class="cztile" href="${czStockUrl()}">${ic("clip")}<span>재고조정</span></a>${tile('data-ez="all"', "grid", "전체 메뉴")}</div><button class="czrow" data-ez="rec"><span>오늘 한 일</span></button></div><div class="czbar"><div class="czin"><input id="ezSay" placeholder="글로 적어도 돼요" value="${esc(EZ.say)}" autocomplete="off" enterkeyhint="send" maxlength="300"><button data-ez="say" aria-label="보내기">↑</button></div></div></div>`;
+  return `<div class="cz"><div style="flex:1"><div style="display:flex;justify-content:flex-end;margin:-4px 0 8px"><button data-ez="classic" style="border:0;background:#fff;border-radius:999px;height:44px;padding:0 18px;font:inherit;font-size:16px;font-weight:700;color:var(--blue);box-shadow:0 1px 3px rgba(0,0,0,.06)">기존 화면으로 ›</button></div>${top}${(() => { const T = czTurnItems(), W = czWaitItems(); return (T.length ? `<div class="czsec" style="margin-top:4px;color:var(--red)">지금 해야 할 일 ${T.length}개</div>` + T.slice(0, 3).map((x) => czItRow(x, true)).join("") + (T.length > 3 ? `<button class="czrow" data-ez="todo"><span>${T.length - 3}개 더 보기</span></button>` : "") : "") + (W.length ? `<div class="czsec">답을 기다리는 요청 ${W.length}개</div>` + W.slice(0, 3).map((x) => czItRow(x, false)).join("") + (W.length > 3 ? `<button class="czrow" data-ez="rec"><span>${W.length - 3}개 더 보기</span></button>` : "") : "") + (T.length + W.length ? `<div class="czsec">할 수 있는 일</div>` : ""); })()}<div class="cztiles" style="margin-top:10px">${tile('data-go="in"', "in", "출근")}${tile('data-go="close"', "moon", "마감")}${tile('data-ez="q1"', "zap", "퀵")}${tile('data-ez="p1"', "box", "택배")}<a class="cztile" href="${czStockUrl()}">${ic("clip")}<span>재고조정</span></a>${tile('data-ez="all"', "grid", "전체 메뉴")}</div><button class="czrow" data-ez="rec"><span>오늘 한 일</span></button><button class="czrow" data-ez="classic"><span>기존 화면으로 돌아가기</span></button></div><div class="czbar"><div class="czin"><input id="ezSay" placeholder="글로 적어도 돼요" value="${esc(EZ.say)}" autocomplete="off" enterkeyhint="send" maxlength="300"><button data-ez="say" aria-label="보내기">↑</button></div></div></div>`;
 }
 function czRec() {
   czCssOn();
@@ -554,8 +672,8 @@ document.addEventListener("click", async (e) => {
   if (c.dataset.ezd) { EZ.cart.splice(+c.dataset.ezd, 1); return render(); }
   if (c.dataset.ezt) { EZ.to = c.dataset.ezt; return go("q4"); }
   const k = c.dataset.ez;
-  if (k === "classic") { EZ.classic = true; document.documentElement.classList.remove("ez", "czhome"); return render(); }
-  if (k === "home") { EZ.classic = false; EZ.q = ""; EZ.miss = []; EZ.pend = []; EZ.to0 = null; EZ.cart = []; return go("home"); }
+  if (k === "classic") { EZ.classic = true; ls.set("vf-ez-classic", 1); document.documentElement.classList.remove("ez", "czhome"); return render(); }
+  if (k === "home") { EZ.classic = false; ls.set("vf-ez-classic", 0); EZ.q = ""; EZ.miss = []; EZ.pend = []; EZ.to0 = null; EZ.cart = []; return go("home"); }
   if (k === "say") return ezSayRun();
   if (k === "back") { const H2 = EZ.hist || []; let p = H2.pop() || "home"; while (["pick", "sk"].includes(p) || (p === "q2" && EZ.s === "cart")) p = H2.pop() || "home"; if (p === "home") { EZ.q = ""; EZ.miss = []; EZ.pend = []; EZ.to0 = null; EZ.cart = []; } document.activeElement?.blur?.(); EZ.s = p; render(); window.scrollTo(0, 0); return; }
   if (k === "kq" || k === "kp") { EZ.kind = k === "kp" ? "parcel" : "quick"; return ezNext(); }
@@ -721,7 +839,7 @@ const ASK = { prev: "", draft: "", focus: false };
 function askHtml() {
   const srv = (BOARD?.qa || []).filter((x) => !x.test === !TEST);
   ASK.local = (ASK.local || []).filter((x) => !srv.some((y) => y.id === x.id && (y.a || !x.a)) && Date.now() - x.ms < (x.card ? 30 : 5) * 60e3);
-  const L = [...srv, ...ASK.local];
+  const L = TEST ? [...srv, ...ASK.local].map((x, i) => [x, i]).sort((a, b) => czKey(a[0].t) - czKey(b[0].t) || a[1] - b[1]).map((x) => x[0]) : [...srv, ...ASK.local];
   const wait = L.some((x) => !x.a);
   ASK.focus = document.activeElement?.id === "askQ"; // 다시 그리기 전에 입력 중이었는지
   const bot = (t, inner) => `<div style="display:flex;gap:8px;align-items:flex-end;margin:10px 0"><div style="width:30px;height:30px;border-radius:50%;background:var(--blue-soft);display:flex;align-items:center;justify-content:center;flex:none">💛</div><div style="max-width:78%"><div style="background:#f2f4f6;border-radius:18px 18px 18px 4px;padding:10px 14px;white-space:pre-wrap;line-height:1.6;font-size:15px">${inner}</div>${t ? `<div style="font-size:11px;color:var(--sub);margin:3px 0 0 6px">${t}</div>` : ""}</div></div>`;
@@ -788,9 +906,10 @@ document.addEventListener("click", (e) => {
   PK.list = [[g.p[0], g.q, g.p[1]]]; pkRedraw();
   document.querySelector(`[data-snto="${b}"]`)?.click();
 });
-async function askGo(text, faq) {
+async function askGo(text, faq, raw) {
   const q = (text || $("#askQ")?.value || "").trim(); if (!q) return;
   if (!faq && (ASK.local || []).some((x) => !x.a) || (!faq && (BOARD?.qa || []).some((x) => !x.a && !x.test === !TEST))) return toast("앞 질문 답이 오고 있어요. 조금만 기다려 주세요");
+  if (TEST && !faq && !raw && await befDo(q)) return;
   if (TEST && !faq && await befQuick(q)) return;
   if (!faq && q.replace(/\s/g, "").length < 6) return toast("상품, 상황까지 한 번에 적어 주세요");
   const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 5), by = working().join(", "), t = new Date().toTimeString().slice(0, 5);
@@ -826,10 +945,10 @@ function alertCheck() {
   document.body.appendChild(box);
 }
 function render() {
-  if (typeof TEST !== "undefined" && TEST) { if (VIEW !== "home" && EZ.s === "all") EZ.s = "home"; document.documentElement.classList.toggle("ez", VIEW === "home" && !EZ.classic); document.documentElement.classList.toggle("czhome", VIEW === "home" && !EZ.classic && EZ.s === "home"); if (VIEW === "home" && !EZ.classic && /^(ezQ|ezF|ezPc|ezSay)$/.test(document.activeElement?.id || "")) return; }
+  if (typeof TEST !== "undefined" && TEST) { if (VIEW !== "home" && EZ.s === "all") EZ.s = "home"; document.documentElement.classList.toggle("ez", VIEW === "home" && !EZ.classic); document.documentElement.classList.toggle("czhome", VIEW === "home" && !EZ.classic && EZ.s === "home"); if (VIEW === "home" && (document.activeElement?.id === "ezSay" || (!EZ.classic && /^(ezQ|ezF|ezPc)$/.test(document.activeElement?.id || "")))) return; }
   if (LEADER) return renderLeader();
   if (!B) return renderPick();
-  setTimeout(alertCheck, 300);
+  setTimeout(alertCheck, 300); setTimeout(turnPop, 600);
   const s = st(), stDone = stockDone() /* 10/29 본점 하얀 화면: 지역 변수 sd가 날짜 함수 sd()를 가려 블로그 밀린 날 홈이 죽었음 */, working = s.ins.filter((x) => !x.out);
   const d = new Date();
   const steps = [s.ins.length > 0, !!s.open, !!stDone], done = steps.filter(Boolean).length, N = steps.length; // 10/19 밤 사장님: 오픈 = 출근, 오픈 체크, 아침 재고보고(폰으로)
@@ -875,7 +994,7 @@ function render() {
     ${kpi("talk", "인수인계, 고객요청", memoN + creqN + "건", `인수인계 ${memoN}, 고객요청 ${creqN}`)}
   </div>`;
   const body = {
-    home: TEST && !EZ.classic ? ezHtml() : ONLY_OPEN_CLOSE ? `${TEST ? '<button class="ezb" data-ez="home" style="min-height:64px;font-size:20px;justify-content:center">쉬운 화면으로</button>' : ""}${noticeCardHtml()}${bigDepCardHtml()}${sentCardHtml()}${replyQuickHtml()}${custCardHtml()}<div class="cols">${done === N && now() >= "17:00" ? `<div>${closeCard}</div><div>${openCard}</div>` : `<div>${openCard}</div><div>${closeCard}</div>`}</div>` : `${bigDepCardHtml()}<div class="cols"><div>${done < N ? openCard : closeCard}${taskCardHtml()}</div><div>${memoCardHtml()}${asPin() ? asCardHtml() : ""}</div></div>`,
+    home: TEST && !EZ.classic ? ezHtml() : ONLY_OPEN_CLOSE ? `${TEST ? '<button class="ezb" data-ez="home" style="min-height:64px;font-size:20px;justify-content:center">쉬운 화면으로</button>' : ""}${TEST ? befBoxHtml() : ""}${noticeCardHtml()}${bigDepCardHtml()}${sentCardHtml()}${replyQuickHtml()}${custCardHtml()}<div class="cols">${done === N && now() >= "17:00" ? `<div>${closeCard}</div><div>${openCard}</div>` : `<div>${openCard}</div><div>${closeCard}</div>`}</div>` : `${bigDepCardHtml()}<div class="cols"><div>${done < N ? openCard : closeCard}${taskCardHtml()}</div><div>${memoCardHtml()}${asPin() ? asCardHtml() : ""}</div></div>`,
     work: `<div class="cols"><div>${openCard}</div><div>${closeCard}</div></div>`,
     stock: `<div class="cols one"><div>${surveyCardHtml()}</div></div>`,
     talk: ONLY_OPEN_CLOSE ? talkHtml() : `<div class="cols"><div>${memoCardHtml()}${creqCardHtml()}</div><div>${reqCard}${myQuicksCard()}</div></div>`,
@@ -905,7 +1024,7 @@ function render() {
   const HREQ = `<div class="hreq" style="margin-top:10px"><button data-snew="quick"><i>🛵</i>퀵</button><button data-go="pcnew"><i>📦</i>택배</button><button data-snew="jeon"><i>🔁</i>전달</button><button data-go="creq"><i>🧾</i>고객요청</button></div>`;
   const bizBody = heroPill + heroIl + heroAs + `<p class="hk">영업 중, 마감 ${cAt === "24:00" ? "자정" : cAt}</p>
     ${HREQ}
-    <p>근무 중 ${working.length}명${working.length ? `, ${working.map((x) => esc(x.name)).join(", ")}` : ""}</p>`;
+    <p>근무 중 ${working.length}명${working.length ? `, ${working.map((x) => esc(x.name)).join(", ")}` : ""}</p>${TEST ? `<div style="display:flex;gap:8px;margin-top:10px"><button class="hbtn" data-go="in">＋ 출근</button>${working.length ? '<button class="hbtn" data-go="out">퇴근</button>' : ""}</div>` : ""}`;
   const heroBody = biz ? bizBody : heroPill + heroIl + heroAs + `<p class="hk">${done < N ? `지금 할 일, 오픈 ${OPEN_AT[B]}` : "지금 할 일, 마감"}</p>
     ${nx ? `<div class="hnx"><h1>${nx[0]} ${nx[1]}</h1>${nx[3]}</div>` : `<h1 style="margin-top:6px">오늘 마감 완료! 수고하셨어요</h1>`}
     <div class="hdots">${phase.map((x) => `<span class="${x[2] ? "on" : ""}">${x[2] ? "●" : "○"} ${x[1]}</span>`).join("")}</div>
@@ -2086,7 +2205,7 @@ function sheetPcNew() {
     <input class="input" id="pcName" placeholder="손님 이름" maxlength="20"><input class="input" id="pcPhone" placeholder="손님 연락처" inputmode="tel" maxlength="20">
     <input class="input" id="pcAddr" placeholder="받을 주소" maxlength="120">
     <div class="desc" style="margin-top:12px">보낼 지점</div><div class="chips" id="pcTo">${chips(null)}</div>
-    <div class="btns"><button class="btn" data-x>취소</button><button class="btn primary" id="okPcNew">재고 물어보기</button></div>`);
+    <div class="btns"><button class="btn" data-x>취소</button><button class="btn primary" id="okPcNew">${TEST ? "택배 요청 보내기" : "재고 물어보기"}</button></div>`);
 }
 async function doPcNew(t) {
   const v = (id) => ($(id)?.value || "").trim();
@@ -2265,7 +2384,7 @@ const SHEAD = { ok: "가능", sent: "보냄", nostock: "재고 없음" }; // 우
 const snPills = () => snTellList().map((r) => hp(`data-sntell="${r.id}"`, "🛵", "퀵", `출발했어요, ${esc(r.items)}, ${esc(r.nm || "손님")}님께 문자`, `퀵 출발, ${esc(r.nm || "손님")}님께 문자`, "문자")).join("") + snList().filter((r) => snMine(r) && !(r.kind === "openquick" && r.st === "packed" && !st().open)).map((r) => hp(`data-snopen="${r.id}"`, SKIND[r.kind].split(" ")[0], SKIND[r.kind].split(" ")[1], `${snHead(r)}, ${esc(r.items)}${r.nm ? `, ${esc(r.nm)}님` : ""}${r.st === "packed" ? " (포장해 둠)" : ""}`, `${SKIND[r.kind].split(" ")[1]} ${r.from === B ? "→ " + esc(toTxt(r)) : esc(ho(r.from)) + " 요청"}: ${esc(r.items)}`, r.st === "poll" ? (r.from === B ? "고르기" : "답하기") : SACT[r.kind + "|" + r.st] || "보기")).join("");
 // 10/26 사장님 "내가 보낸 요청을 볼 수 있어야": 오늘 화면에 우리 지점이 보낸 퀵, 오픈퀵, 전달, 택배 중 안 끝난 것
 function sentCardHtml() {
-  const PST = { req: "포장 기다림", packed: "포장 완료, 송장 기다림", shipped: "송장 나옴, 손님께 보내기" };
+  const PST = { ask: "재고 확인 기다림", okpay: "재고 있음, 손님 결제 받기", nostock: "재고 없음", req: "포장 기다림", packed: "포장 완료, 송장 기다림", shipped: "송장 나옴, 손님께 보내기" };
   const a = snList().filter((r) => r.from === B && !["done", "cancel", "no"].includes(r.st)).map((r) => `<button class="crow" data-snopen="${r.id}" style="width:100%;text-align:left"><div><b>${SKIND[r.kind]} → ${esc(toTxt(r))}: ${esc(r.items)}</b><span style="${snMine(r) ? "color:var(--red);font-weight:700" : ""}">${snMine(r) ? "우리 차례: " : ""}${STXT[r.st] || r.st}</span></div></button>`);
   const p = pcList().filter((r) => r.from === B && r.to !== B && !["done", "cancel"].includes(r.st)).map((r) => `<button class="crow" data-view="parcel" style="width:100%;text-align:left"><div><b>📦 택배 → ${esc(ho(r.to))}: ${esc(r.items)}</b><span style="${r.st === "shipped" ? "color:var(--red);font-weight:700" : ""}">${PST[r.st] || r.st}</span></div></button>`);
   // 10/27 사장님 "주문 가능 여부 확인 볼 수 있는 칸": 우리 지점 주문요청 진행 상황 (관리자 확인 중도 보이게)
@@ -2285,12 +2404,12 @@ function sheetSnNew(kind) {
   SN.to = null; SN.kind = kind === "quick" && quickClosed() ? "openquick" : kind; PK = { list: [], res: [] }; if (PICK) { loadProds(); loadPst().then(pkStockDraw); }
   const k = SN.kind, list = BR.filter((b) => b !== B && !(k !== "jeon" && NO_QUICK.includes(b)));
   openSheet(`<h2>${SKIND[k]} 요청</h2>${k === "openquick" ? '<div class="desc" style="color:var(--red);font-weight:700">오늘 퀵은 마감됐어요. 오픈퀵으로 접수돼요 (보내는 매장이 바로 포장해 두고 내일 오픈하고 보내요)</div>' : ""}
-    <div class="desc">${k === "jeon" ? "어느 지점에 있는 걸 받을까요?" : "어느 매장에서 보낼까요?"}</div><div class="chips">${k !== "openquick" ? '<button class="chip chip-all" data-snto="all">📣 전 지점에 물어보기</button>' : ""}${list.map((b) => `<button class="chip" data-snto="${b}">${esc(ho(b))}</button>`).join("")}</div>
+    <div class="desc">${k === "jeon" ? "어느 지점에 있는 걸 받을까요?" : TEST ? "어느 매장에서 받을까요?" : "어느 매장에서 보낼까요?"}</div><div class="chips">${k !== "openquick" ? '<button class="chip chip-all" data-snto="all">📣 전 지점에 물어보기</button>' : ""}${list.map((b) => `<button class="chip" data-snto="${b}">${esc(ho(b))}</button>`).join("")}</div>
     ${PICK ? pkHtml() : '<input class="input" id="snItems" placeholder="상품, 수량 (예: 메가킥 망고 3병)" maxlength="160">'}
     ${k === "openquick" ? `<input class="input" id="snName" placeholder="손님 이름" maxlength="20"><input class="input" id="snPhone" placeholder="손님 연락처" inputmode="tel" maxlength="20"><input class="input" id="snAddr" placeholder="받을 주소" maxlength="120">
       <label style="display:flex;gap:8px;align-items:center;margin-top:10px;font-size:15px"><input type="checkbox" id="snPaid"> 포스에서 결제했어요</label>` : ""}
     <input class="input" id="snMemo" placeholder="메모 (선택, 예: 손님이 오후 3시 전 원함)" maxlength="120">
-    <div class="btns"><button class="btn" data-x>닫기</button><button class="btn primary" id="okSnNew">${k === "quick" ? "재고 물어보기" : k === "jeon" ? "전달 부탁하기" : "오픈퀵 접수"}</button></div>`);
+    <div class="btns"><button class="btn" data-x>닫기</button><button class="btn primary" id="okSnNew">${k === "quick" ? (TEST ? "요청 보내기" : "재고 물어보기") : k === "jeon" ? "전달 부탁하기" : "오픈퀵 접수"}</button></div>`);
 }
 async function doSnNew(t) {
   const v = (id) => ($(id)?.value || "").trim(), k = SN.kind;
@@ -3160,11 +3279,11 @@ async function doAsAdd(t) {
 
 document.addEventListener("click", (e) => {
   const t = e.target.closest("button,[data-x]");
-  if (!t) { const a2 = e.target.closest("[data-a2d]"); if (a2) return sheetAs2Detail(a2.dataset.a2d); const rw = e.target.closest("[data-crd],[data-mmd]"); if (rw) return rw.dataset.crd ? sheetCreqDetail(rw.dataset.crd) : sheetMemoDetail(rw.dataset.mmd); if (e.target.id === "dim") { if (sheetDirty()) return toast("입력한 내용이 있어요. 닫으려면 [취소]를 눌러 주세요"); closeSheet(); } return; }
+  if (!t) { const a2 = e.target.closest("[data-a2d]"); if (a2) return sheetAs2Detail(a2.dataset.a2d); const rw = e.target.closest("[data-crd],[data-mmd]"); if (rw) return rw.dataset.crd ? sheetCreqDetail(rw.dataset.crd) : sheetMemoDetail(rw.dataset.mmd); if (e.target.id === "dim") { if (sheetDirty() || (TEST && (((PK.list || []).length && $("#okSnNew,#okPcNew")) || ($("#okSnNew") && SN.to) || ($("#okPcNew") && PC.to)))) return toast(TEST ? "적은 내용이 있어요. 닫으려면 아래 버튼을 눌러 주세요" : "입력한 내용이 있어요. 닫으려면 [취소]를 눌러 주세요"); closeSheet(); } return; }
   if (t.dataset.talk) { TALK = t.dataset.talk; ls.set("vf-app-talk", TALK); return render(); }
   if (t.dataset.crf) { CRF = t.dataset.crf; return render(); }
   if (t.dataset.b) { B = t.dataset.b; ls.set("vf-app-branch", B); return render(); }
-  if (t.dataset.x !== undefined) return closeSheet();
+  if (t.dataset.x !== undefined) { if (TEST && $("#okSnNew,#okPcNew") && ((PK.list || []).length || ($("#okSnNew") && SN.to) || ($("#okPcNew") && PC.to) || [...document.querySelectorAll("#sheet input:not([type=checkbox]),#sheet textarea")].some((i) => i.id !== "pkQ" && (i.value || "").trim())) && !confirm("적은 내용이 사라져요. 닫을까요?")) return; return closeSheet(); }
   const go = t.dataset.go;
   if (t.dataset.view) { VIEW = t.dataset.view; ls.set("vf-app-view", VIEW); render(); window.scrollTo(0, 0); return; }
   if (go === "showall") { document.body.classList.add("showall"); return; }
@@ -3193,7 +3312,7 @@ document.addEventListener("click", (e) => {
   if (t.dataset.snew) return sheetSnNew(t.dataset.snew);
   if (t.dataset.ntopen) return noticeSheet(t.dataset.ntopen);
   if (t.id === "okNotice") return doNoticeOk(t);
-  if (t.dataset.snto) { SN.to = t.dataset.snto; document.querySelectorAll("[data-snto]").forEach((x) => x.classList.toggle("on", x === t)); return; }
+  if (t.dataset.snto) { const off = TEST && t.classList.contains("on"); SN.to = off ? null : t.dataset.snto; document.querySelectorAll("[data-snto]").forEach((x) => x.classList.toggle("on", !off && x === t)); if (off) { if (SN.kind === "quick" && $("#okSnNew")) $("#okSnNew").textContent = "요청 보내기"; return; } if (TEST && SN.kind === "quick" && $("#okSnNew")) $("#okSnNew").textContent = SN.to === "all" ? "전 지점에 물어보기" : `${ho(SN.to)}에 요청 보내기`; return; }
   if (t.id === "okSnNew") return doSnNew(t);
   if (t.dataset.snopen) return sheetSnStep(t.dataset.snopen);
   if (t.dataset.why) { const i = $("#snWhy"); if (i) i.value = t.dataset.why; document.querySelectorAll("[data-why]").forEach((x) => x.classList.toggle("on", x === t)); return; }
@@ -3210,7 +3329,7 @@ document.addEventListener("click", (e) => {
   if (t.dataset.pkdel !== undefined) { PK.list.splice(+t.dataset.pkdel, 1); pkRedraw(); return; }
   if (t.dataset.go === "pccam") return pcCamOpen();
   if (t.dataset.go === "pcshot") return pcCamShot();
-  if (t.dataset.pcto) { PC.to = t.dataset.pcto; document.querySelectorAll("[data-pcto]").forEach((x) => x.classList.toggle("on", x === t)); return; }
+  if (t.dataset.pcto) { if (TEST && (pcDay()[t.dataset.pcto] || {}).none) return toast(`${ho(t.dataset.pcto)}은 택배를 안 해요`); const off = TEST && t.classList.contains("on"); PC.to = off ? null : t.dataset.pcto; document.querySelectorAll("[data-pcto]").forEach((x) => x.classList.toggle("on", !off && x === t)); if (off) { if ($("#okPcNew")) $("#okPcNew").textContent = "택배 요청 보내기"; return; } if (TEST && $("#okPcNew")) $("#okPcNew").textContent = `${ho(PC.to)}에 요청 보내기`; return; }
   if (t.id === "okPcNew") return doPcNew(t);
   if (t.dataset.pcstep) return pcStep(t.dataset.id, t.dataset.pcstep);
   if (t.dataset.pcpack) return sheetPcPack(t.dataset.pcpack);
