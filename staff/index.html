@@ -405,6 +405,9 @@
   /* 11/11 신입 시험 작은 문제 (시험 모드) */
   html.feel .toast{top:calc(12px + env(safe-area-inset-top));bottom:auto;transform:translateX(-50%) translateY(-20px);font-size:18px;font-weight:800;padding:16px 22px;z-index:300;box-shadow:0 8px 24px rgba(0,0,0,.3);width:max-content;max-width:calc(100vw - 32px)}
   html.feel .toast.on{transform:translateX(-50%)}
+  /* 11/10 잔돈 추가 칩: 줄이 좁으면 버튼 줄로 내려감 */
+  .step:has([data-go="chgnow"]){flex-wrap:wrap;row-gap:8px}.step:has([data-go="chgnow"]) .tx{flex:1 1 55%}
+  .chgt{font-size:22px;font-weight:800;margin-top:12px;color:var(--ink)}
 </style>
 </head>
 <body>
@@ -433,7 +436,7 @@
 })();
 </script>
 <script>
-const VER = "11.10-27"; window.VER_ERR = VER;
+const VER = "11.10-28"; window.VER_ERR = VER;
 const GAME_LOCK = true; // 11/02 쉬는 시간 게임 잠금
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
@@ -874,7 +877,7 @@ function nhHtml() {
   const list = rest.map((y) => row(y)).join("") + (later.length ? fold("NH_LATER_OPEN", `나중 일 ${later.length}개`, later.map(lrow).join("")) : "") + (done.length ? fold("NH_DONE_OPEN", `끝난 일 ${done.length}개 ✓`, done.map(drow).join("")) : "");
   const wait = czWaitItems().length;
   return `<span class="nhtag">시험 모드, 진짜 기록에 안 섞여요</span>
-    <div class="nhone"><div class="nhtop">${befBoxHtml()}</div>${now}<button class="ordbtn" data-go="creq"><b>🧾 손님 주문</b><span>퀵, 택배, 방문수령, 다른 지점에서 가져오기</span></button>${list ? `<div class="olist">${list}</div>` : ""}${noticeCardHtml()}${bigDepCardHtml()}
+    <div class="nhone"><div class="nhtop">${befBoxHtml()}</div>${now}<button class="ordbtn" data-go="creq"><b>🧾 손님 주문</b><span>퀵, 택배, 방문수령, 다른 지점에서 가져오기</span></button><button class="nhlink" data-go="chgnow" style="margin:-4px 0 8px">잔돈 받았어요${chgList().length ? ` ${chgList().length}건` : ""}</button>${list ? `<div class="olist">${list}</div>` : ""}${noticeCardHtml()}${bigDepCardHtml()}
     ${wait ? `<button class="czrow nhsent1" data-view="parcel" data-td="wait"><span>내가 보낸 요청 ${wait}건</span></button>` : ""}
     <button class="nhlink" data-ez="home">쉬운 화면으로 보기</button>${(CLOSE_SENT && CLOSE_SENT.date === todayKey()) || ls.get(WR_K(todayKey()), null) ? '<button class="nhlink" data-wrap="t">오늘 정리 보기</button>' : ls.get(WR_K(wrYest()), null) ? '<button class="nhlink" data-wrap="y">어제 정리 보기</button>' : ""}</div>`;
 }
@@ -2418,7 +2421,7 @@ let BOARD = B ? cacheGet("board") : null, LEADS = [], OLDS = [], OLDF = "all", O
 // 10/27 보내기 중계(시험 모드 먼저): 보내기, 택배는 board.json(1~몇 분 늦음) 말고 Apps Script에서 5~15초마다 읽어 덮어씀. board.json이 더 새것이면 그것
 const RELAY_URL = "https://script.google.com/macros/s/AKfycbyQ5TQlIahbUQXr3FenYTGuQgyzgjYInrmZk7GBG7nzFh1a0XQlhYfZKYL0VxDa298uvA/exec", RELAY_ON = true; // 10/27 사장님 "공식으로": 정식 화면도
 let RELAY = null, BOARD_RAW = null, BOARD_AT = 0;
-const withRelay = (bd) => !RELAY || RELAY.at < BOARD_AT - 60e3 ? bd : { ...(bd || {}), sends: RELAY.v.sends || [], parcels: RELAY.v.parcels || [], creqs: relayCreqs(bd?.creqs || [], RELAY.v.ords || []), game: RELAY.v.game || bd?.game, exps: RELAY.v.exps || bd?.exps, alerts: RELAY.v.alerts || bd?.alerts, qa: RELAY.v.qa || bd?.qa };
+const withRelay = (bd) => !RELAY || RELAY.at < BOARD_AT - 60e3 ? bd : { ...(bd || {}), sends: RELAY.v.sends || [], parcels: RELAY.v.parcels || [], creqs: relayCreqs(bd?.creqs || [], RELAY.v.ords || []), game: RELAY.v.game || bd?.game, exps: RELAY.v.exps || bd?.exps, chgs: RELAY.v.chgs || bd?.chgs, alerts: RELAY.v.alerts || bd?.alerts, qa: RELAY.v.qa || bd?.qa };
 const relayCreqs = (old, ords) => { const m = new Map(ords.map((r) => [r.id, r])); return [...old.map((r) => m.get(r.id) || r), ...ords.filter((r) => !old.some((o) => o.id === r.id))]; }; // 깃허브 한도로 board.json을 못 읽어도 보내기는 뜨게
 async function loadRelay() {
   if (!RELAY_ON || !B || document.visibilityState !== "visible") return;
@@ -3112,7 +3115,7 @@ function closeRowHtml(stepRow) {
   const cBase = TEST ? (BOARD?.closingTest?.date === closeDay() ? BOARD.closingTest : null) : bc;
   const c = CLOSE_SENT && CLOSE_SENT.date === closeDay() && (!cBase || CLOSE_SENT.at > cBase.at) ? CLOSE_SENT : cBase;
   const info = !c ? { t: "아직 안 함" } : c.status === "done" ? ((c.warn || []).length ? { t: `${c.at} 보고됨, 확인 필요: ` + c.warn.join(" / "), w: 1 } : { t: `${c.at} 보고 완료, ${c.by}${c.known === false ? "" : ", 돈통 차액 없음"}` }) : c.status === "error" ? { t: `못 보냈어요: ${c.err || ""}`, w: 1 } : { t: "보내는 중…" };
-  return stepRow("💰", c?.status === "done", "마감 보고", info, `<button class="act gray" data-go="expnow" style="margin-right:6px">💸 지출${expList().length ? ` ${expList().length}` : ""}</button>${c?.status === "done" ? '<button class="act" data-go="report" style="margin-right:6px">📋 마감 결과</button>' : ""}<button class="act ${c?.status === "done" ? "gray" : ""}" data-go="closing">${c ? "다시" : "보고"}</button>`);
+  return stepRow("💰", c?.status === "done", "마감 보고", info, `<button class="act gray" data-go="expnow" style="margin-right:6px">💸 지출${expList().length ? ` ${expList().length}` : ""}</button>${CHG_ON() ? `<button class="act gray" data-go="chgnow" style="margin-right:6px">잔돈 추가${chgList().length ? ` ${chgList().length}` : ""}</button>` : ""}${c?.status === "done" ? '<button class="act" data-go="report" style="margin-right:6px">📋 마감 결과</button>' : ""}<button class="act ${c?.status === "done" ? "gray" : ""}" data-go="closing">${c ? "다시" : "보고"}</button>`);
 }
 // 입력 칸: [id, 이름, 필수]
 const SALES = [["pCash", "현금", 0], ["pCard", "카드", 0], ["pTr", "이체", 0], ["pEtc", "기타 (회원포인트 등)", 0]]; // 10/19 오후: 포스에서 자동(본사 계정), 직원 입력은 선택
@@ -3238,6 +3241,53 @@ function expList() {
   const L = expLocal(), bd = (BOARD?.exps || []).filter((x) => !x.test === !TEST), ids = new Set(bd.map((x) => x.id));
   return [...bd, ...L.add.filter((x) => !ids.has(x.id))].filter((x) => !L.del.includes(x.id));
 }
+/* 11/10 잔돈 추가: 본사에서 받은 잔돈을 지점이 적음. 봇이 그날 돈통 기대 금액에 더함. 봇 재시작 전(BOARD.chgOn 없음)에는 정식 화면에 칩이 안 보임 */
+const CHG_ON = () => TEST || !!BOARD?.chgOn;
+const CHG_F = [["c5", "5천원", "장", 5000], ["c1", "1천원", "장", 1000], ["c500", "500원", "개", 500], ["c100", "100원", "개", 100]];
+const chgSum = (x) => CHG_F.reduce((a, [k, , , w0]) => a + (+x[k] || 0) * w0, 0);
+const CHG_LS = () => `vf-chg-${B}-${todayKey()}${TEST ? "-t" : ""}`;
+const chgLocal = () => ls.get(CHG_LS(), { add: [], del: [], ed: {} });
+function chgList() {
+  const L = chgLocal(), bd = (BOARD?.chgs || []).filter((x) => !x.test === !TEST), ids = new Set(bd.map((x) => x.id));
+  return [...bd, ...L.add.filter((x) => !ids.has(x.id))].map((x) => (L.ed[x.id] ? { ...x, ...L.ed[x.id] } : x)).filter((x) => !L.del.includes(x.id));
+}
+const chgTotal = () => chgList().reduce((a, x) => a + chgSum(x), 0);
+const chgVals = () => Object.fromEntries(CHG_F.map(([k]) => [k, +($("#chg_" + k)?.value || "").replace(/\D/g, "") || 0]));
+let CHG_EDIT = null;
+function sheetChg(id) {
+  CHG_EDIT = id || null;
+  const L = chgList(), cur = id ? L.find((x) => x.id === id) : (BOARD?.chgPlan || [])[0] || null;
+  const v = (k) => (cur && +cur[k] ? cur[k] : "");
+  openSheet(`<h2>잔돈 받았어요</h2><div class="desc">본사에서 받은 잔돈을 적어 주세요</div><div class="chgt" id="chgT"></div>
+    <div class="cash">${CHG_F.map(([k, n, u]) => `<label><span>${n}</span><input class="input" id="chg_${k}" data-chgin inputmode="numeric" maxlength="4" placeholder="${u}" value="${v(k)}"></label>`).join("")}</div>
+    <div class="desc" style="font-weight:700;color:var(--ink);margin-top:10px">포스에도 잔돈 추가로 넣어 주세요</div>
+    ${L.length && !id ? `<div style="margin-top:10px">${L.map((x) => `<div class="exrow" style="align-items:center;grid-template-columns:1fr auto auto"><div><b>${(chgSum(x)).toLocaleString()}원</b> <small style="color:var(--sub)">${esc(x.t || "")} ${esc(x.by || "")}</small></div><button class="act gray" data-chgedit="${x.id}">고치기</button><button class="exdel" data-chgdel="${x.id}">지우기</button></div>`).join("")}</div>` : ""}
+    <div class="sv-bar"><div class="btns" style="margin:0"><button class="btn" data-x>닫기</button><button class="btn primary" id="chgOk">${id ? "고쳐서 저장" : "저장"}</button></div></div>`);
+  chgDraw();
+}
+const chgDraw = () => { const t = $("#chgT"); if (t) t.textContent = "합계 " + chgSum(chgVals()).toLocaleString() + "원"; };
+async function chgSave() {
+  const x = chgVals(), a = chgSum(x); if (!a) return toast("받은 잔돈을 적어 주세요");
+  const by = working().join(", "); if (!by) return needIn(() => sheetChg(CHG_EDIT));
+  const id = CHG_EDIT || Math.random().toString(36).slice(2, 8), op = CHG_EDIT ? "edit" : "add", L = chgLocal(), prev = JSON.stringify(L);
+  if (CHG_EDIT) L.ed[id] = x; else L.add.push({ id, ...x, by, t: now(), test: TEST });
+  ls.set(CHG_LS(), L);
+  try { await send({ type: "chg", op, id, ...x, by }); toast(`잔돈 ${a.toLocaleString()}원 적었어요`); } catch { ls.set(CHG_LS(), JSON.parse(prev)); toast("보내기 실패, 다시 눌러 주세요"); }
+  sheetChg(); render();
+}
+async function chgDel(id) {
+  if (!confirm("이 잔돈 기록을 지울까요?")) return;
+  const L = chgLocal(); L.del.push(id); ls.set(CHG_LS(), L);
+  try { await send({ type: "chg", op: "del", id, by: working().join(", ") }); } catch {}
+  sheetChg(); render();
+}
+document.addEventListener("input", (e) => { if (e.target?.dataset?.chgin !== undefined) chgDraw(); });
+document.addEventListener("click", (e) => {
+  if (e.target.id === "chgOk") return chgSave();
+  const c = e.target.closest?.("[data-chgedit],[data-chgdel]"); if (!c) return;
+  if (c.dataset.chgedit) return sheetChg(c.dataset.chgedit);
+  return chgDel(c.dataset.chgdel);
+});
 function sheetExp() {
   const L = expList(), w = (n) => (+n || 0).toLocaleString() + "원";
   openSheet(`<h2>💸 오늘 현금 지출</h2><div class="desc">돈통에서 돈을 낸 그 자리에서 적어 주세요. 마감 보고 지출에 자동으로 들어가요.</div>
@@ -3269,7 +3319,7 @@ function closeCalc() {
   const sales = numv("pCash") + numv("pCard") + numv("pTr") + numv("pEtc");
   $("#cSales").innerHTML = `<div class="hi"><span>총매출 (자동)</span><b>${sales.toLocaleString()}원</b></div>`;
   const drawer = cashTotal(), sij = sijae(), exp = expSum(), ok = has("cPrep") && drawer > 0 && has("pCash");
-  const diff = ok ? drawer - (numv("cPrep") + numv("pCash") - exp) : null;
+  const diff = ok ? drawer - (numv("cPrep") + numv("pCash") - exp + chgTotal()) : null;
   $("#cSij").innerHTML = `<div class="hi"><span>시재 (자동)</span><b>${sij.toLocaleString()}원</b></div><div><span>내일 준비금</span><b>${(drawer - sij).toLocaleString()}원</b></div><p>돈통 합계 ${drawer.toLocaleString()}원, 만원권 10장은 내일 준비금으로 남겨요</p>${diff != null ? `<div class="diff ${diff ? "bad" : "good"}"><span>현금 차액</span><b>${(diff > 0 ? "+" : "") + diff.toLocaleString()}원</b></div>` : ""}`;
   $("#cWhy").style.display = diff ? "" : "none";
   const b = numv("kBills"), pr = (a, c) => (c ? Math.round((a / c) * 1000) / 10 + "%" : "-");
@@ -3292,7 +3342,7 @@ function closeConfirm() {
   const box = document.createElement("div"); box.className = "cconf";
   box.innerHTML = `<h2>꼼꼼히 확인하셨나요?</h2><div class="desc">${MIDMODE ? "봇이 지금까지 포스 숫자와 맞춰 볼게요." : "보내면 팀장님께 바로 보고돼요. 포스 화면과 숫자가 같은지 한 번 더 봐 주세요."}</div>
     ${SALES.some(([id]) => has(id)) ? `<div class="cashsum" style="margin-top:14px">${SALES.filter(([id]) => has(id)).map(([id, l]) => `<div><span>${l} (직접 입력)</span><b>${w(numv(id))}</b></div>`).join("")}</div>` : ""}
-    <div class="cashsum" style="margin-top:10px"><div><span>오늘 준비금</span><b>${has("cPrep") ? w(numv("cPrep")) : "포스 자동"}</b></div><div><span>현금 지출 ${CX.filter((x) => x.a).length}건</span><b>${w(k.exp)}</b></div><div><span>돈통 합계</span><b>${w(k.drawer)}</b></div><div class="hi"><span>시재</span><b>${w(k.sij)}</b></div><div><span>내일 준비금</span><b>${w(k.drawer - k.sij)}</b></div>
+    <div class="cashsum" style="margin-top:10px"><div><span>오늘 준비금</span><b>${has("cPrep") ? w(numv("cPrep")) : "포스 자동"}</b></div>${chgTotal() ? `<div><span>잔돈 추가</span><b>${w(chgTotal())}</b></div>` : ""}<div><span>현금 지출 ${CX.filter((x) => x.a).length}건</span><b>${w(k.exp)}</b></div><div><span>돈통 합계</span><b>${w(k.drawer)}</b></div><div class="hi"><span>시재</span><b>${w(k.sij)}</b></div><div><span>내일 준비금</span><b>${w(k.drawer - k.sij)}</b></div>
       ${!MIDMODE && k.sij === 0 && cashN("c50") === 0 ? `<div style="margin:8px 0;color:var(--red);font-weight:800;font-size:14px">⚠️ 시재가 0원이에요. 시재(5만원권, 10장 넘는 1만원권)를 먼저 빼고 센 건 아닌가요? 뺀 돈까지 다시 넣어서 세 주세요</div>` : ""}
       <div class="diff ${k.diff == null ? "" : k.diff ? "bad" : "good"}"><span>현금 차액</span><b>${k.diff == null ? "보내면 포스 숫자로 계산돼요" : (k.diff > 0 ? "+" : "") + w(k.diff)}</b></div>${k.diff ? `<p>사유: ${esc($("#cWhy").value.trim())}</p>` : ""}</div>
     <div class="cashsum" style="margin-top:10px"><div><span>마감 날짜</span><b>${$("#cDate").value}${$("#cDate").value !== todayKey() ? " (나중 입력)" : ""}</b></div><div><span>은행 잔액</span><b>${has("bankBal") ? w(numv("bankBal")) + ", " + esc($("#bankName").value.trim()) : "-"}</b></div>
@@ -3861,6 +3911,7 @@ document.addEventListener("click", (e) => {
   if (t.dataset.cck) return t.classList.toggle("on");
   if (go === "cmore") { const m = $("#cMore"), on = m.style.display === "none"; m.style.display = on ? "" : "none"; t.textContent = on ? "직접 입력 접기" : "포스 숫자가 틀릴 때만 → 직접 입력"; return; }
   if (go === "expnow") return sheetExp();
+  if (go === "chgnow") return sheetChg();
   if (go === "expadd") { const eb = $("#expBtn"); if (eb) eb.textContent = "＋ 지출 하나 더"; }
   if (go === "expadd") { if (CX.length >= 8) return toast("지출은 8건까지 적을 수 있어요"); CX.push({ n: "", a: 0 }); expDraw(); const el = document.querySelector(`[data-exn="${CX.length - 1}"]`); if (el) el.focus(); return; }
   if (t.dataset.exdel) { CX.splice(+t.dataset.exdel, 1); expDraw(); return closeCalc(); }
