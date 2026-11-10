@@ -295,6 +295,12 @@
   html.feel .nhrow em{font-size:20px}html.feel .nhrow small{font-size:16px}html.feel .nhrow .tm{font-size:16px;width:52px}
   html.feel .nhrow .nhbtn{height:auto;min-height:64px;min-width:96px;font-size:18px}
   html.feel .nhrow.drop{flex-wrap:wrap}html.feel .nhrow.drop>.nhbtn{flex:1 0 100%}
+  /* 11/10 시험 모드 일과표: 시간 묶음, 끝난 일 접기, 시간 전 일은 줄 전체 누르기 */
+  html.feel .nhtg{font-size:16px;font-weight:800;color:var(--sub);padding:16px 0 2px;border-top:1px solid var(--line)}html.feel h2+.nhtg,html.feel .nhdone+.nhtg{border-top:0;padding-top:6px}
+  html.feel .nhrow>i.b{background:var(--blue)}html.feel .nhrow.dn{opacity:.55}
+  html.feel .nhtap{width:100%;min-height:64px;margin:0;background:none;border:0;border-top:1px solid var(--line);border-radius:0;font:inherit;text-align:left;color:inherit;text-decoration:none;cursor:pointer}html.feel .nhtap.f{border-top:0}html.feel .nhtap.drop{flex-wrap:nowrap}
+  html.feel .nhtap .gt,html.feel .nhdone .gt{flex:none;margin-left:auto;font-size:26px;font-weight:400;line-height:1;color:var(--sub);padding:0 4px}
+  html.feel .nhpage .nhdone>summary{display:flex;align-items:center;gap:8px;min-height:56px;font-size:18px;font-weight:700;color:var(--ink2);cursor:pointer;list-style:none}html.feel .nhdone>summary::-webkit-details-marker{display:none}html.feel .nhdone[open] .gt{transform:rotate(90deg)}html.feel .nhdone{border-bottom:1px solid var(--line);margin-bottom:2px}
   html.feel .nhpage .card>h2,html.feel .nhpage summary{font-size:20px;font-weight:800;color:var(--ink)}
   html.feel .nhpage .desc{font-size:16px}
   html.feel .store,html.feel .date,html.feel .phead span,html.feel .keybar,html.feel .foot button,html.feel .czhint,html.feel .czsec,html.feel .czrow small{font-size:16px}
@@ -392,7 +398,7 @@
 })();
 </script>
 <script>
-const VER = "11.10-18"; window.VER_ERR = VER;
+const VER = "11.10-19"; window.VER_ERR = VER;
 const GAME_LOCK = true; // 11/02 쉬는 시간 게임 잠금
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
@@ -758,7 +764,9 @@ function nhHtml() {
 function nhAllHtml(openCard, closeCard) {
   czCssOn(); nhDrop();
   const P = dayPlan(), T = nowItems().filter((x) => !P.some((p) => p.name === x.title)), W = czWaitItems(), day = todayKey();
-  const plan = P.map((p, i) => `<div class="nhrow ${i ? "" : "f"}"><span class="tm">${p.t}</span><i class="${p.done ? "ok" : p.late ? "r" : ""}"></i><span><em>${p.name}</em><small class="${p.late ? "red" : ""}">${p.done ? "했어요" + (p.doneTxt ? ", " + esc(p.doneTxt) : "") : p.late ? "아직 안 했어요, 늦었어요" : p.due ? "지금 할 시간이에요" : "아직 시간 전이에요"}</small></span>${p.done ? "" : p.href ? `<a class="nhbtn ${p.due ? "" : "gray"}" href="${p.href}">${p.act}</a>` : `<button class="nhbtn ${p.due ? "" : "gray"}" ${p.attr}>${p.act}</button>`}</div>`).join("");
+  const pRow = (p, i) => { const f = i ? "" : "f"; if (p.done) return `<div class="nhrow dn ${f}"><i class="ok"></i><span><em>${p.name}</em><small>했어요${p.doneTxt ? ", " + esc(p.doneTxt) : ""}</small></span></div>`; if (!p.due) { const inner = `<i></i><span><em>${p.name}</em>${p.hint ? `<small>${p.hint}</small>` : ""}</span><b class="gt">›</b>`; return p.href ? `<a class="nhrow nhtap ${f}" href="${p.href}">${inner}</a>` : `<button class="nhrow nhtap ${f}" ${p.attr}>${inner}</button>`; } return `<div class="nhrow ${f}"><i class="${p.late ? "r" : "b"}"></i><span><em>${p.name}</em><small class="${p.late ? "red" : ""}">${p.late ? "아직 안 했어요, 늦었어요" : "지금 할 시간이에요"}</small></span>${p.href ? `<a class="nhbtn" href="${p.href}">${p.act}</a>` : `<button class="nhbtn" ${p.attr}>${p.act}</button>`}</div>`; };
+  const pDone = P.filter((p) => p.done), pLeft = P.filter((p) => !p.done), pT = [...new Set(pLeft.map((p) => p.t))];
+  const plan = (pDone.length ? `<details class="nhdone" ${window.NH_DONE_OPEN ? "open" : ""} ontoggle="window.NH_DONE_OPEN=this.open"><summary>끝난 일 ${pDone.length}개 ✓<b class="gt">›</b></summary>${pDone.map(pRow).join("")}</details>` : "") + pT.map((t) => `<div class="nhtg">${t}</div>${pLeft.filter((p) => p.t === t).map(pRow).join("")}`).join("") + (pLeft.length ? "" : '<div class="desc" style="padding:6px 0 10px;font-size:16px">오늘 일과를 다 했어요</div>');
   const fin = [...snList().filter((r) => (r.from === B || r.to === B) && r.d === day && r.st === "done").map((r) => `${(SKIND[r.kind] || "보내기").replace(/^\S+ /, "")}, ${r.items}`), ...pcList().filter((r) => (r.from === B || r.to === B) && r.d === day && r.st === "done").map((r) => `택배, ${r.items}`)];
   return `<div class="nhgrid2"><div><div class="card"><h2>오늘 일과표</h2>${plan}</div></div><div>
     <div class="card"><h2>우리 매장이 할 일 <small style="font-weight:600">${T.length}개</small></h2>${T.length ? T.map(nhRow).join("") : '<div class="desc" style="padding:6px 0 10px;font-size:16px">없어요</div>'}</div>
