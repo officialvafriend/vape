@@ -404,7 +404,7 @@
 })();
 </script>
 <script>
-const VER = "11.10-21"; window.VER_ERR = VER;
+const VER = "11.10-22"; window.VER_ERR = VER;
 const GAME_LOCK = true; // 11/02 쉬는 시간 게임 잠금
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
@@ -719,7 +719,7 @@ function turnPop() {
   document.body.appendChild(box);
 }
 /* 11/10 하루 일과: 때가 되면 '지금 할 일'에 뜨고, 안 하면 남아 있음 (시험 모드) */
-const VM_BR = []; /* 11/10 액상덕후 "자판기는 이제 안 쓰나 봐": 시험 모드 자판기 보고 끔. 전에는 본점, 율하, 상인 */
+const VM_BR = ["본점", "율하"]; /* 11/10 액상덕후 "자판기는 율하 본점만 운영", "다시 켜": 자판기가 있는 지점은 이 목록 하나로. 상인은 뺌 */
 const VM_LOCAL = {};
 const vmDone = (slot) => VM_LOCAL[slot] || (BOARD?.vm || {})[slot + (TEST ? "T" : "")] || null;
 function dayPlan() {
