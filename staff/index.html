@@ -311,6 +311,8 @@
   html.feel .ordbtn{display:flex;flex-direction:column;align-items:flex-start;gap:4px;width:100%;min-height:76px;padding:14px 18px;margin:0 0 12px;border:0;border-radius:20px;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.06);font:inherit;text-align:left;cursor:pointer}html.feel .ordbtn b{font-size:22px;color:var(--ink)}html.feel .ordbtn span{font-size:16px;color:var(--sub)}
   html.feel #sheet.crq .crv{display:none}html.feel .chips.need2{outline:2px solid var(--red);outline-offset:4px;border-radius:12px}html.feel .chips.need2::before{content:"받는 방법을 골라 주세요";display:block;width:100%;color:var(--red);font-weight:800;font-size:16px}
   /* 11/10 액상덕후 "PC로 보는데도 불편, 버튼도 개크고, 베프 글 칸은 검색창처럼 제일 위" */
+  html.feel .bfbub,html.feel .bfme{word-break:keep-all;overflow-wrap:anywhere}html.feel .bfls{white-space:normal}html.feel .bfl+.bfl{margin-top:8px}
+  @media (max-width:899px){html.feel .bfb{flex-direction:column;align-items:stretch!important;gap:6px!important}html.feel .bfb>div:first-child{width:26px!important;height:26px!important;font-size:14px}html.feel .bfb>div:last-child{max-width:100%!important}html.feel .bfbub{font-size:18px!important;line-height:1.65!important;padding:14px 16px!important;border-radius:6px 18px 18px 18px!important}html.feel .bfme{font-size:18px!important;line-height:1.6!important}html.feel .bfb+div[style*="38px"]{margin-left:4px!important}}
   html.feel .nhone>.nhtop{order:-2}html.feel .nhtop .nhsay{position:static;margin-bottom:12px}html.feel .nhtop .nhsaylb{display:block;margin:0 2px 6px!important}
   @media (min-width:900px){
     html.feel .nhone{max-width:680px}html.feel .nhtag{font-size:13px}
@@ -428,7 +430,7 @@
 })();
 </script>
 <script>
-const VER = "11.10-25"; window.VER_ERR = VER;
+const VER = "11.10-26"; window.VER_ERR = VER;
 const GAME_LOCK = true; // 11/02 쉬는 시간 게임 잠금
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
@@ -1127,14 +1129,16 @@ function bgRender() { const w = 1200 - (Date.now() - TOUCH); if (w > 0) return v
 // 10/29 액상덕후 "인스타 DM처럼 주고받게": 대화창 모양, 아래 입력칸, 엔터로 보내기. 화면이 새로 그려져도 쓰던 글은 ASK.draft로 남김
 const ASK = { prev: "", draft: "", focus: false };
 // 10/29 액상덕후 "베프로 하자", "자주묻는질문은 미리 준비(API 비용)", "질문 정리 잘해서 올리라고": 자주 묻는 질문 버튼은 바로 답(봇은 기록만), 너무 짧은 질문은 한 번 더 적게
+/* 11/10 액상덕후 "모바일 베프 답장 가독성": 시험 모드는 답을 줄마다 나눠 간격을 줌 */
+const befLines = (h) => `<div class="bfls">${String(h).split("\n").map((l) => l.trim() ? `<div class="bfl">${l}</div>` : "").join("")}</div>`;
 function askHtml() {
   const srv = (BOARD?.qa || []).filter((x) => !x.test === !TEST);
   ASK.local = (ASK.local || []).filter((x) => !srv.some((y) => y.id === x.id && (y.a || !x.a)) && Date.now() - x.ms < (x.card ? 30 : 5) * 60e3);
   const L = TEST ? [...srv, ...ASK.local].map((x, i) => [x, i]).sort((a, b) => czKey(a[0].t) - czKey(b[0].t) || a[1] - b[1]).map((x) => x[0]) : [...srv, ...ASK.local];
   const wait = L.some((x) => !x.a);
   ASK.focus = document.activeElement?.id === "askQ"; // 다시 그리기 전에 입력 중이었는지
-  const bot = (t, inner) => `<div style="display:flex;gap:8px;align-items:flex-end;margin:10px 0"><div style="width:30px;height:30px;border-radius:50%;background:var(--blue-soft);display:flex;align-items:center;justify-content:center;flex:none">💛</div><div style="max-width:78%"><div style="background:#f2f4f6;border-radius:18px 18px 18px 4px;padding:10px 14px;white-space:pre-wrap;line-height:1.6;font-size:15px">${inner}</div>${t ? `<div style="font-size:11px;color:var(--sub);margin:3px 0 0 6px">${t}</div>` : ""}</div></div>`;
-  const me = (x) => `<div style="display:flex;justify-content:flex-end;margin:10px 0"><div style="max-width:78%;text-align:right"><div style="background:var(--blue);color:#fff;border-radius:18px 18px 4px 18px;padding:10px 14px;white-space:pre-wrap;line-height:1.6;font-size:15px;text-align:left">${esc(x.q)}</div><div style="font-size:11px;color:var(--sub);margin:3px 6px 0 0">${esc(x.by || "")} ${esc(x.t)}</div></div></div>`;
+  const bot = (t, inner) => `<div class="bfb" style="display:flex;gap:8px;align-items:flex-end;margin:10px 0"><div style="width:30px;height:30px;border-radius:50%;background:var(--blue-soft);display:flex;align-items:center;justify-content:center;flex:none">💛</div><div style="max-width:78%"><div class="bfbub" style="background:#f2f4f6;border-radius:18px 18px 18px 4px;padding:10px 14px;white-space:pre-wrap;line-height:1.6;font-size:15px">${inner}</div>${t ? `<div style="font-size:11px;color:var(--sub);margin:3px 0 0 6px">${t}</div>` : ""}</div></div>`;
+  const me = (x) => `<div style="display:flex;justify-content:flex-end;margin:10px 0"><div style="max-width:78%;text-align:right"><div class="bfme" style="background:var(--blue);color:#fff;border-radius:18px 18px 4px 18px;padding:10px 14px;white-space:pre-wrap;line-height:1.6;font-size:15px;text-align:left">${esc(x.q)}</div><div style="font-size:11px;color:var(--sub);margin:3px 6px 0 0">${esc(x.by || "")} ${esc(x.t)}</div></div></div>`;
   const hi = bot("", `안녕하세요, 베프예요! 상품, 교환, 가격, 응대 뭐든 물어보세요.\n궁금한 건 한 번에 다 적어서 보내 주세요.\n(어떤 상품인지, 손님이 뭐라고 했는지, 뭘 알고 싶은지)\n자주 묻는 건 아래 버튼을 누르면 바로 나와요.`);
   const faq = BOARD?.faq || [];
   // 10/29 액상덕후 "팀장님 연락처는 하나씩 순서대로": 봇이 고른 한 분만. 번호는 매장 코드 넣은 기기에서만(board.leads 잠금)
@@ -1142,7 +1146,7 @@ function askHtml() {
   const leadLine = (x) => { if (x.lead == null || !x.leadName) return ""; const c = ASK.leads?.[x.lead]; return `\n\n📞 ${esc(x.leadName)} 팀장님 ${c ? `<a href="tel:${esc(c[1])}" style="color:var(--blue);font-weight:800">${esc(c[1])}</a>` : '<span style="color:var(--sub)">(매장 코드를 넣으면 번호가 보여요)</span>'}`; };
   // 10/29 액상덕후 "답변이 도움이 되었나요? 버튼 만들어서 민심 수집": 답마다 👍 👎 한 번. 👎 받은 답은 봇이 다시 안 씀
   const fbHtml = (x) => { const v = x.fb || ASK.fb?.[x.id]; return `<div style="margin:-4px 0 8px 38px;font-size:12px;color:var(--sub);display:flex;gap:6px;align-items:center">${v ? (v > 0 ? "👍 고마워요!" : "👎 알려 줘서 고마워요. 고칠게요") : `도움이 됐나요? <button data-befb="${esc(x.id)}|1" style="background:#f2f4f6;border:0;border-radius:12px;padding:4px 10px;font-size:14px">👍</button><button data-befb="${esc(x.id)}|-1" style="background:#f2f4f6;border:0;border-radius:12px;padding:4px 10px;font-size:14px">👎</button>`}</div>`; };
-  const msgs = L.map((x) => me(x) + (x.card ? bot("", x.card) : x.a ? bot(esc(x.at || ""), esc(x.a).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>") + leadLine(x) + (TEST ? befJump(x.a) : "")) + fbHtml(x) : bot("", `<span style="color:var(--sub)">${ASK_CLOSE(x.q) ? "포스랑 은행 기록을 보고 있어요. 1분쯤 걸려요" : "답 쓰는 중이에요"} <span class="bef-dots"><i>●</i><i>●</i><i>●</i></span></span>`))).join("");
+  const msgs = L.map((x) => me(x) + (x.card ? bot("", x.card) : x.a ? bot(esc(x.at || ""), (TEST ? befLines : (h) => h)(esc(x.a).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>")) + leadLine(x) + (TEST ? befJump(x.a) : "")) + fbHtml(x) : bot("", `<span style="color:var(--sub)">${ASK_CLOSE(x.q) ? "포스랑 은행 기록을 보고 있어요. 1분쯤 걸려요" : "답 쓰는 중이에요"} <span class="bef-dots"><i>●</i><i>●</i><i>●</i></span></span>`))).join("");
   setTimeout(() => { const box = $("#askBox"), q = $("#askQ"); if (box) box.scrollTop = box.scrollHeight; if (VIEW === "ask" && window.scrollY > 0) window.scrollTo(0, 0); /* 11/03: 답 오면 화면이 내려가 제목이 사라지던 것 */ if (q && ASK.focus) { q.focus(); q.setSelectionRange(q.value.length, q.value.length); } }, 0);
   return `<div class="cols one"><div><div class="card" style="padding:0;display:flex;flex-direction:column;height:calc(100vh - 190px);min-height:420px;overflow:hidden">
     <div style="padding:14px 16px;border-bottom:1px solid var(--line);font-weight:800">💛 베프 <small style="color:var(--sub);font-weight:500">오늘 대화만 보여요</small></div>
@@ -1347,7 +1351,7 @@ function fpillSetup(html) {
   $("#fpill")?.remove(); FPO?.disconnect(); FPO = null;
   const n = (html.match(/class="hpill"/g) || []).length; if (!UI2 || !n) return;
   const ic = (html.match(/<button class="hpill"[^>]*>(\S+)/) || [])[1] || "🔔";
-  const el = document.createElement("button"); el.id = "fpill"; el.className = "fpill"; el.innerHTML = `${ic} 할 일 <b>${n}</b>`;
+  const el = document.createElement("button"); el.id = "fpill"; el.className = "fpill"; el.innerHTML = `${ic} ${TEST ? "오늘 할 일" : "할 일"} <b>${n}</b>`;
   el.addEventListener("click", () => { if (VIEW !== "home" && VIEW !== "work") { VIEW = "home"; ls.set("vf-app-view", VIEW); render(); } window.scrollTo({ top: 0, behavior: "smooth" }); });
   document.body.appendChild(el);
   const target = $(".hpill") || $(".hmini"); // 노란 줄 첫 줄이 안 보이면 뱃지 if (!target || !("IntersectionObserver" in window)) return el.classList.add("on");
