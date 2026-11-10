@@ -310,6 +310,18 @@
   html.feel .nhnow .nhk .otag{font-size:15px}
   html.feel .ordbtn{display:flex;flex-direction:column;align-items:flex-start;gap:4px;width:100%;min-height:76px;padding:14px 18px;margin:0 0 12px;border:0;border-radius:20px;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.06);font:inherit;text-align:left;cursor:pointer}html.feel .ordbtn b{font-size:22px;color:var(--ink)}html.feel .ordbtn span{font-size:16px;color:var(--sub)}
   html.feel #sheet.crq .crv{display:none}html.feel .chips.need2{outline:2px solid var(--red);outline-offset:4px;border-radius:12px}html.feel .chips.need2::before{content:"받는 방법을 골라 주세요";display:block;width:100%;color:var(--red);font-weight:800;font-size:16px}
+  /* 11/10 액상덕후 "PC로 보는데도 불편, 버튼도 개크고, 베프 글 칸은 검색창처럼 제일 위" */
+  html.feel .nhone>.nhtop{order:-2}html.feel .nhtop .nhsay{position:static;margin-bottom:12px}html.feel .nhtop .nhsaylb{display:block;margin:0 2px 6px!important}
+  @media (min-width:900px){
+    html.feel .nhone{max-width:680px}html.feel .nhtag{font-size:13px}
+    html.feel .nhnow{padding:16px 20px}html.feel .nhnow .nht{font-size:20px;margin-top:4px}html.feel .nhnow .nhs{font-size:15px}html.feel .nhnow .nhgo{display:inline-flex;width:auto;min-height:46px;padding:0 26px;font-size:17px;margin-top:10px}
+    html.feel .orow{min-height:50px;padding:8px 0}html.feel .otx em{font-size:17px}html.feel .otx small{font-size:14px}html.feel .otag{font-size:12px;min-width:54px;padding:3px 6px}html.feel .orow .gt,html.feel .ofold>summary .gt{font-size:20px}html.feel .ofold>summary{min-height:46px;font-size:15px}
+    html.feel .ordbtn{flex-direction:row;align-items:center;gap:12px;min-height:54px;padding:10px 18px}html.feel .ordbtn b{font-size:18px}html.feel .ordbtn span{font-size:14px}
+    html.feel .nhtop .czin input{font-size:17px}html.feel .nhsent1{min-height:48px;font-size:15px}
+    html.feel .nhrow em{font-size:17px}html.feel .nhrow small{font-size:14px}html.feel .nhrow .nhbtn{min-height:46px;font-size:16px}html.feel .nhtap{min-height:50px}
+    html.feel .btns .btn,html.feel [data-sc],html.feel [data-tp]{min-height:50px!important;font-size:17px!important}html.feel .sheet h2{font-size:22px}
+  }
+
 
   /* 11/10 시험 모드 신입 시험 고침: 닫기 묻기, 지점 안 고름, AS 탭 위 버튼 */
   html.feel .xask{position:sticky;bottom:0;z-index:3;background:#fff;border-top:2px solid var(--red);padding:14px 0 calc(10px + env(safe-area-inset-bottom));margin-top:8px}html.feel .xask b{display:block;font-size:20px;margin-bottom:10px;color:var(--ink)}
@@ -416,7 +428,7 @@
 })();
 </script>
 <script>
-const VER = "11.10-24"; window.VER_ERR = VER;
+const VER = "11.10-25"; window.VER_ERR = VER;
 const GAME_LOCK = true; // 11/02 쉬는 시간 게임 잠금
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
@@ -794,9 +806,8 @@ function nhHtml() {
   const list = rest.map((y) => row(y)).join("") + (later.length ? fold("NH_LATER_OPEN", `나중 일 ${later.length}개`, later.map(lrow).join("")) : "") + (done.length ? fold("NH_DONE_OPEN", `끝난 일 ${done.length}개 ✓`, done.map(drow).join("")) : "");
   const wait = czWaitItems().length;
   return `<span class="nhtag">시험 모드, 진짜 기록에 안 섞여요</span>
-    <div class="nhone">${now}${list ? `<div class="olist">${list}</div>` : ""}${noticeCardHtml()}${bigDepCardHtml()}
+    <div class="nhone"><div class="nhtop">${befBoxHtml()}</div>${now}${list ? `<div class="olist">${list}</div>` : ""}${noticeCardHtml()}${bigDepCardHtml()}
     <button class="ordbtn" data-go="creq"><b>🧾 손님 주문</b><span>퀵, 택배, 방문수령, 다른 지점에서 가져오기</span></button>
-    ${befBoxHtml()}
     ${wait ? `<button class="czrow nhsent1" data-view="parcel" data-td="wait"><span>내가 보낸 요청 ${wait}건</span></button>` : ""}
     <button class="nhlink" data-ez="home">쉬운 화면으로 보기</button></div>`;
 }
@@ -1053,11 +1064,15 @@ async function signed(obj) {
   return JSON.stringify({ ...o, sig: btoa(String.fromCharCode(...mac)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "").slice(0, 32) });
 }
 async function sendWithPhoto(body, file) {
+  await freshGuard(body);
   const fd = new FormData(); fd.append("payload_json", JSON.stringify({ content: await signed({ ...body, branch: B, ver: VER, ...(TEST ? { test: true } : {}) }), allowed_mentions: { parse: [] } }));
   fd.append("files[0]", await shrinkPhoto(file), "pack.jpg");
   const r = await fetch(HOOK, { method: "POST", body: fd }); if (!r.ok) throw new Error("응답 " + r.status);
 }
+/* 11/10 단계 신호는 보내기 직전에 최신 상태 확인(시험 모드). 개별 확인을 3초 안에 했으면 건너뜀 */
+async function freshGuard(body) { if (!TEST || !/^(sstep|parcel(ok|no|paid|pack|wb|told|cancel))$/.test(body.type || "") || Date.now() - (window.__freshAt || 0) < 3000) return; const L = body.type === "sstep" ? snList : pcList, r0 = L().find((x) => x.id === body.id); if (!r0) return; const st0 = r0.st; if (!(await freshCheck(L, body.id, (r2) => r2.st === st0 && !(body.type === "sstep" && r2.st === "poll" && !["pick", "cancel"].includes(body.k) && (r2.ans || {})[B])))) { const e = new Error("이미 처리된 건"); e.stale = 1; throw e; } }
 async function send(body) {
+  await freshGuard(body);
   const r = await fetch(HOOK, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ content: await signed({ ...body, branch: B, ver: VER, ...(TEST ? { test: true } : {}) }), allowed_mentions: { parse: [] } }) });
   if (!r.ok) throw new Error("응답 " + r.status);
   if (RELAY_ON) { setTimeout(loadRelay, 3000); setTimeout(loadRelay, 6500); } // 누른 결과가 몇 초 안에 돌아오게
@@ -1093,7 +1108,7 @@ function visitPing() {
 setTimeout(visitPing, 3000); setInterval(visitPing, 60e3);
 // 11/03 점검: "Failed to fetch" 같은 영어 오류문이 그대로 보이던 것 → 한글 이유만 보여 줌
 const failWhy = (e) => !navigator.onLine ? "인터넷 끊김" : /[가-힣]/.test(e?.message || "") ? e.message : /fetch|network|load/i.test(e?.message || "") ? "연결이 잠깐 끊김" : "잠깐 오류";
-const fail = (e) => toast(`못 보냈어요 (${failWhy(e)}), 다시 눌러 주세요`);
+const fail = (e) => e?.stale ? undefined : toast(`못 보냈어요 (${failWhy(e)}), 다시 눌러 주세요`);
 
 // ── 화면: 관리자 페이지 틀 (10/14) ── PC = 왼쪽 메뉴 + 위 요약 4칸 + 메뉴별 화면 / 폰 = 아래 메뉴 5개
 // 10/19 사장님: 본점 먼저 시행, 전 지점 오픈과 마감만 보이게(나머지 메뉴, 버튼 숨김). 다시 열려면 ONLY_OPEN_CLOSE = false
@@ -2557,10 +2572,12 @@ async function pcStep(id, type) {
   const by = working().join(", "); if (!by) return needIn(() => pcStep(id, type));
   if (type === "parcelpaid" && !confirm("손님 결제를 받았나요?")) return;
   const r = pcList().find((x) => x.id === id);
+  if (r) { const st0 = r.st; if (!(await freshCheck(pcList, id, (r2) => r2.st === st0))) return; }
   try { await send({ type, id, by }); if (r) r.st = { parcelok: "okpay", parcelno: "nostock", parcelpaid: "req" }[type]; render(); toast({ parcelok: "있다고 알렸어요", parcelno: "없다고 알렸어요", parcelpaid: "결제했다고 알렸어요, 포장 시작돼요" }[type]); setTimeout(loadBoard, 15000); } catch (e) { fail(e); }
 }
 async function doPcSend(t, type, ok) {
   const by = working().join(", "); if (!by) return needIn(() => {});
+  { const r0 = pcList().find((x) => x.id === t.dataset.id); if (r0) { const st0 = r0.st; if (!(await freshCheck(pcList, r0.id, (r2) => r2.st === st0))) return; } }
   try { await send({ type, id: t.dataset.id, by }); PC.done[t.dataset.id] = 1; closeSheet(); render(); toast(ok); } catch (e) { fail(e); }
 }
 // ── 공지 (10/26) ── 관리자앱 업무에서 올린 공지. 이 기기에서 안 본 새 공지는 팝업, [확인했어요] = 지점 확인(관리자앱에 표시)
@@ -2739,6 +2756,16 @@ async function sheetSnStep(id) {
     ${r.from === B && r.missProds?.length && !r.reask && !SN.done[r.id + "reask"] ? `<div class="desc" style="margin-top:10px;color:var(--red)">없어서 빠진 상품: ${esc(r.missProds.map(([n, q]) => `${n} ${q}개`).join(", "))}</div><div class="btns" style="margin-top:6px"><button class="btn primary" data-reask="${id}">📣 빠진 상품 ${r.missProds.length}개, 다른 지점에 다시 물어보기</button></div>` : r.reask ? '<div class="desc" style="margin-top:8px">빠진 상품은 다른 지점에 다시 물어봤어요</div>' : ""}
     <div class="btns" style="margin-top:6px"><button class="btn" data-x>닫기</button>${r.from === B && !["done", "cancel"].includes(r.st) && !(mine && body.includes('data-snk="cancel"')) ? `<button class="btn" data-snk="cancel" data-id="${id}">이 건 취소</button>` : ""}</div>`);
 }
+/* 11/10 액상덕후 "답하기 전에 처리 완료된건이면?": 누르기 직전에 최신 상태를 다시 읽고, 그새 바뀌었으면 보내지 않고 알림 (시험 모드) */
+async function freshCheck(list, id, same) {
+  if (!TEST) return true;
+  window.__freshAt = Date.now();
+  try { await loadRelay(); } catch {}
+  const r = list().find((x) => x.id === id); if (r && same(r)) return true;
+  closeSheet(); render();
+  openSheet(`<h2>이미 처리된 건이에요</h2><div class="desc" style="font-size:17px">그사이 다른 지점이나 다른 직원이 먼저 처리했어요.${r ? ` 지금 상태: ${esc((typeof STXT !== "undefined" && STXT[r.st]) || ({ okpay: "재고 있음, 결제 기다림", nostock: "재고 없음", req: "포장 기다림", packed: "포장 완료", shipped: "송장 나옴", done: "완료", cancel: "취소" })[r.st] || r.st)}` : " 이 건은 목록에서 빠졌어요."}</div><div class="btns"><button class="btn primary" data-x>확인</button></div>`);
+  return false;
+}
 async function doSnStep(t) {
   const id = t.dataset.id, r = snList().find((x) => x.id === id); let k = t.dataset.snk; if (!r) return closeSheet();
   if (k === "cancel" && !confirm("이 건을 취소할까요?")) return;
@@ -2753,6 +2780,7 @@ async function doSnStep(t) {
   const needPhoto = (r.kind === "quick" && k === "done") || (r.kind === "openquick" && k === "packed");
   if (needPhoto && !PC.photo) return toast("제품 사진을 찍어 주세요");
   const by = working().join(", "); if (!by) return needIn(() => sheetSnStep(id));
+  { const st0 = r.st; if (!(await freshCheck(snList, id, (r2) => r2.st === st0 && !(r2.st === "poll" && k !== "pick" && k !== "cancel" && (r2.ans || {})[B])))) return; }
   t.disabled = true;
   try { const body = { type: "sstep", id, k, by, ...extra }; needPhoto ? await sendWithPhoto(body, PC.photo) : await send(body); SN.done[id + r.st] = 1; closeSheet(); render(); toast("보냈어요"); } catch (e) { t.disabled = false; fail(e); }
 }
