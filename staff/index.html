@@ -286,8 +286,40 @@
   .nhgrid{display:flex;flex-direction:column}.nhl,.nhr{display:contents}.nhc{order:1}.nhr>*{order:2}.nhn{order:3}.nhr>.nhlink{order:4}
   html.feel .btns>[data-x]{order:-1}
   html.feel .nhrow em,html.feel .nhrow small{word-break:keep-all;overflow-wrap:anywhere}
+  /* 11/10 시험 모드 글자 대비(4.5:1 이상)와 크기. 정식 화면의 색 변수는 그대로 */
+  html.feel{--blue:#1b64da;--red:#d22030;--green:#03784f;--amber:#8f5d00}
+  html.feel .nhr>div>.nhbtn.gray{background:#eef1f5;border:1px solid #d1d6db;color:var(--ink);height:auto;min-height:56px;font-size:18px}
+  html.feel .nhtag{font-size:16px}
+  html.feel .nhlink{font-size:16px}
+  html.feel .nhq b{font-size:20px}html.feel .nhq span{font-size:16px;line-height:1.35}
+  html.feel .nhrow em{font-size:20px}html.feel .nhrow small{font-size:16px}html.feel .nhrow .tm{font-size:16px;width:52px}
+  html.feel .nhrow .nhbtn{height:auto;min-height:64px;min-width:96px;font-size:18px}
+  html.feel .nhrow.drop{flex-wrap:wrap}html.feel .nhrow.drop>.nhbtn{flex:1 0 100%}
+  html.feel .nhpage .card>h2,html.feel .nhpage summary{font-size:20px;font-weight:800;color:var(--ink)}
+  html.feel .nhpage .desc{font-size:16px}
+  html.feel .store,html.feel .date,html.feel .phead span,html.feel .keybar,html.feel .foot button,html.feel .czhint,html.feel .czsec,html.feel .czrow small{font-size:16px}
+  html.feel .nhpage :is(.act,.rqk,.wchip,.wchip small,.chip,.btn,.crow b,.crow span,.crow em,.step b,.step span,.step small,.desc span){font-size:16px}
+  html.feel .reqs button span{color:var(--sub);font-size:16px}
+  html.feel .nhpage .card b,html.feel .nhpage .card span{font-size:16px!important}
+  .nhnow{padding:14px 18px 18px!important}
+  .nhk{font-size:16px;font-weight:700;color:var(--sub)}
+  .nht{font-size:26px;font-weight:800;line-height:1.3;margin-top:6px;word-break:keep-all;overflow-wrap:anywhere;color:var(--ink)}
+  .nhs{font-size:18px;color:var(--ink2);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.nhs.red{color:var(--red);font-weight:700}
+  .nhgo{display:flex;align-items:center;justify-content:center;width:100%;min-height:76px;margin-top:14px;border:0;border-radius:16px;background:var(--blue);color:#fff;font:inherit;font-size:22px;font-weight:800;text-decoration:none}
+  .nhrest{background:var(--card);border-radius:16px;padding:2px 16px;margin-bottom:12px;order:1}
+  .nhline{display:flex;align-items:center;gap:10px;width:100%;min-height:68px;padding:8px 0;border:0;border-top:1px solid var(--line);background:none;font:inherit;text-align:left;color:var(--ink);text-decoration:none}.nhline:first-child{border-top:0}
+  .nhline>span{flex:1;min-width:0}.nhline b{display:block;font-size:20px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.nhline small{display:block;font-size:16px;color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.nhline small.red{color:var(--red);font-weight:700}.nhline::after{content:"›";flex:none;font-size:24px;color:var(--sub)}
+  .nhsent1{margin-top:0;font-size:20px;font-weight:700}
+  html.feel .sheet h2{font-size:26px;font-weight:800;line-height:1.3}
+  html.feel .sheet:has(#okSnNew,#okPcNew) .desc{font-size:20px;line-height:1.4}
+  html.feel .sheet:has(#okSnNew,#okPcNew) .chip{font-size:18px;min-height:56px}html.feel .sheet:has(#okSnNew,#okPcNew) .chip small{font-size:16px}
+  html.feel .sheet:has(#okSnNew,#okPcNew) .input{font-size:20px;height:60px}
+  html.feel .sheet:has(#okSnNew,#okPcNew) .pkrow{font-size:20px}
+  html.feel .sheet:has(#okSnNew,#okPcNew,#befAskYes) .btns,html.feel .sheet:has([data-vm]) .btns{gap:12px}
+  html.feel .sheet:has(#okSnNew,#okPcNew,#befAskYes) .btns .btn,html.feel .sheet:has([data-vm]) .btns .btn,html.feel [data-sc],html.feel [data-tp]{height:auto;min-height:76px;font-size:20px;font-weight:800}
+  html.feel .sheet:has(#okSnNew,#okPcNew) .pkrow span button{font-size:20px}
   html.feel .sheet{max-height:min(88vh,92%)}
-  .nhq span.s,html.feel .nhsent1{display:none}
+  .nhq span.s{display:none}
   @media (max-width:899px){
     html.feel .store,html.feel .hmini,html.feel .act,html.feel .rqk,html.feel .nhlink,html.feel .keybar,html.feel .keybar button,html.feel .chip,html.feel [data-ez="classic"]{min-height:48px}
     html.feel .chips{gap:8px}
@@ -307,14 +339,11 @@
     html.feel .side .store{min-height:40px;margin-bottom:16px}
     .nhgrid,.nhpage{max-width:720px}
     .nhpage .cols{grid-template-columns:minmax(0,1fr)}
-    html.feel .nhc{order:1;padding:8px 20px 10px;margin-bottom:14px;box-shadow:0 2px 14px rgba(0,0,0,.09)}
-    html.feel .nhc h2{font-size:22px;font-weight:800;color:var(--ink)}
+    html.feel .nhc{order:1;box-shadow:0 2px 14px rgba(0,0,0,.09)}
     html.feel .nhq{grid-template-columns:repeat(4,minmax(0,1fr));margin:0 0 12px}
     html.feel .nhq button{box-shadow:none;min-height:72px}
     html.feel .nhq span{white-space:nowrap}
     .nhq span.l{display:none}.nhq span.s{display:block}
-    html.feel .nhr>div>.nhbtn.gray{background:#eef1f5;border:1px solid #d1d6db}
-    .nhsent{display:none}html.feel .nhsent1{display:flex}
     html.feel .cztiles{grid-template-columns:repeat(3,minmax(0,1fr))}
     html.feel .cz{max-width:920px;margin-inline:auto}
   }
@@ -346,7 +375,7 @@
 })();
 </script>
 <script>
-const VER = "11.10-16"; window.VER_ERR = VER;
+const VER = "11.10-17"; window.VER_ERR = VER;
 const GAME_LOCK = true; // 11/02 쉬는 시간 게임 잠금
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
@@ -650,7 +679,7 @@ function turnPop() {
   const head = x.kind === "routine" ? (x.late ? "아직 안 했어요" : "지금 할 시간이에요") : x.mine ? "보낸 요청에 답이 왔어요" : "새 요청이 왔어요";
   const box = document.createElement("div");
   box.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:80;display:flex;align-items:center;justify-content:center;padding:16px";
-  box.innerHTML = `<div style="background:#fff;border-radius:20px;max-width:440px;width:100%;padding:24px;box-shadow:0 10px 40px rgba(0,0,0,.25)"><div style="font-size:15px;font-weight:700;color:var(--red)">${head}</div><div style="font-size:22px;font-weight:800;line-height:1.4;margin:10px 0 6px">${esc(x.title)}</div><div style="font-size:16px;color:var(--ink2)">${esc(x.sub)}</div><div style="font-size:17px;font-weight:700;color:var(--red);margin-top:6px">할 일: ${esc(x.act)}</div>${more ? `<div style="font-size:14px;color:var(--sub);margin-top:8px">이것 말고 ${more}개 더 있어요</div>` : ""}<div class="btns"><button class="btn" data-tp="later">나중에</button><button class="btn primary" data-tp="go">${x.kind === "routine" ? "지금 하기" : "지금 보기"}</button></div></div>`;
+  box.innerHTML = `<div style="background:#fff;border-radius:20px;max-width:440px;width:100%;padding:24px;box-shadow:0 10px 40px rgba(0,0,0,.25)"><div style="font-size:16px;font-weight:700;color:var(--red)">${head}</div><div style="font-size:26px;font-weight:800;line-height:1.3;margin:10px 0 6px">${esc(x.title)}</div><div style="font-size:20px;color:var(--ink2)">${esc(x.sub)}</div><div style="font-size:20px;font-weight:700;color:var(--red);margin-top:6px">할 일: ${esc(x.act)}</div>${more ? `<div style="font-size:16px;color:var(--sub);margin-top:8px">이것 말고 ${more}개 더 있어요</div>` : ""}<div class="btns"><button class="btn" data-tp="later">나중에</button><button class="btn primary" data-tp="go">${x.kind === "routine" ? "지금 하기" : "지금 보기"}</button></div></div>`;
   box.addEventListener("click", (e) => { const k = e.target.closest("[data-tp]")?.dataset.tp; if (!k) return; e.stopPropagation(); box.remove(); TURN_POP = false; if (k === "go") { if (x.kind === "routine") runAct(x.p); else if (x.kind === "send") sheetSnStep(x.id); else { VIEW = "parcel"; ls.set("vf-app-view", VIEW); render(); window.scrollTo(0, 0); } } else setTimeout(turnPop, 400); });
   document.body.appendChild(box);
 }
@@ -677,7 +706,7 @@ function dayPlan() {
 /* 지금 할 일: 늦은 일과 → 다른 지점이 기다리는 일 → 때가 된 일과 → 그 밖 */
 function nowItems() {
   const L = [], P = dayPlan().filter((p) => !p.done && p.due);
-  const rt = (p) => ({ title: p.name, sub: (p.hint ? p.hint + ", " : "") + (p.late ? `${p.t}에 할 일, 늦었어요` : `${p.t}에 할 일`), red: p.late, act: p.act, attr: p.attr, href: p.href });
+  const rt = (p) => ({ title: p.name, sub: (p.hint ? p.hint + ", " : "") + (p.late ? `${p.t}에 할 일, 늦었어요` : `${p.t}에 할 일`), one: (p.hint ? p.hint + ", " : "") + (p.late ? "늦었어요" : `${p.t}에 할 일`), st: p.late ? "늦었어요" : `${p.t}에 할 일`, red: p.late, act: p.act, attr: p.attr, href: p.href });
   P.filter((p) => p.late).forEach((p) => L.push(rt(p)));
   czTurnItems().forEach((x) => L.push({ title: x.title, sub: `${x.sub}, ${x.act}`, red: true, act: "열기", attr: x.attr }));
   P.filter((p) => !p.late).forEach((p) => L.push(rt(p)));
@@ -689,18 +718,28 @@ function nowItems() {
   return L;
 }
 const nhRow = (x, i) => `<div class="nhrow ${i ? "" : "f"}"><i class="${x.red ? "r" : ""}"></i><span><em>${esc(x.title)}</em><small class="${x.red ? "red" : ""}">${esc(x.sub)}</small></span>${x.href ? `<a class="nhbtn" href="${x.href}">${x.act}</a>` : `<button class="nhbtn" ${x.attr}>${x.act}</button>`}</div>`;
+/* 같은 제목, 같은 동작은 한 줄로 합침 */
+function nhMerge(L) { const out = []; L.forEach((x) => { const y = out.find((z) => z.title === x.title && z.act === x.act); if (y) y.n = (y.n || 1) + 1; else out.push({ ...x }); }); return out; }
+const nhTt = (x) => esc(x.title) + (x.n > 1 ? ` ${x.n}건` : "");
+const nhLine = (x) => { const inner = `<span><b>${nhTt(x)}</b><small class="${x.red ? "red" : ""}">${esc(x.st || x.sub)}</small></span>`; return x.href ? `<a class="nhline" href="${x.href}">${inner}</a>` : `<button class="nhline" ${x.attr}>${inner}</button>`; };
+/* 폰에서 글이 3줄을 넘으면 버튼을 글 아래로 */
+let NH_DROP_T = 0;
+function nhDrop() { clearTimeout(NH_DROP_T); NH_DROP_T = setTimeout(() => { const phone = innerWidth < 900; document.querySelectorAll(".nhrow").forEach((r) => { r.classList.remove("drop"); if (!phone) return; const lines = [...r.querySelectorAll("em,small")].reduce((a, e) => { const h = parseFloat(getComputedStyle(e).lineHeight) || parseFloat(getComputedStyle(e).fontSize) * 1.35; return a + Math.round(e.getBoundingClientRect().height / h); }, 0); if (lines > 3) r.classList.add("drop"); }); }, 0); }
+window.addEventListener("resize", () => { if (TEST) nhDrop(); });
 function nhHtml() {
   czCssOn();
-  const L = nowItems(), more = L.length - 5, w = working();
+  const L = nhMerge(nowItems()), x = L[0], rest = L.slice(1, 4), more = L.length - 4, w = working(), wait = czWaitItems().length;
+  const now = x ? `<div class="card nhc nhnow"><div class="nhk">지금 할 일</div><div class="nht">${nhTt(x)}</div><div class="nhs ${x.red ? "red" : ""}">${esc(x.one || x.sub)}</div>${x.href ? `<a class="nhgo" href="${x.href}">${x.act}</a>` : `<button class="nhgo" ${x.attr}>${x.act}</button>`}</div>` : '<div class="card nhc nhnow"><div class="nht" style="margin:0;font-size:22px">지금 할 일 없어요</div></div>';
+  const rs = rest.length ? `<div class="nhrest">${rest.map(nhLine).join("")}${more > 0 ? `<button class="nhlink" data-view="parcel">외 ${more}건 더 보기</button>` : ""}</div>` : "";
   return `<span class="nhtag">시험 모드, 진짜 기록에 안 섞여요</span>
-    <div class="nhgrid"><div class="nhl"><div class="card nhc"><h2>지금 할 일${L.length ? ` <small style="font-weight:600">${L.length}개</small>` : ""}</h2>${L.length ? L.slice(0, 5).map(nhRow).join("") : '<div class="desc" style="padding:6px 0 10px;font-size:16px">지금 할 일 없어요</div>'}${more > 0 ? `<button class="nhlink" data-view="parcel">외 ${more}건 더 보기</button>` : ""}</div><div class="nhn">${noticeCardHtml()}${bigDepCardHtml()}<div class="nhsent">${sentCardHtml()}</div>${(() => { const n = czWaitItems().length; return n ? `<button class="czrow nhsent1" data-view="parcel"><span>답 기다리는 요청 ${n}건</span></button>` : ""; })()}</div></div><div class="nhr">
+    <div class="nhgrid"><div class="nhl">${now}${rs}<div class="nhn">${noticeCardHtml()}${bigDepCardHtml()}${wait ? `<button class="czrow nhsent1" data-view="parcel"><span>답 기다리는 요청 ${wait}건</span></button>` : ""}</div></div><div class="nhr">
     <div class="nhq"><button data-snew="quick"><b>퀵</b><span class="l">다른 지점에서 급하게 받기</span><span class="s">급하게 받기</span></button><button data-go="pcnew"><b>택배</b><span class="l">손님 집으로 보내기</span><span class="s">손님 집으로</span></button><button data-snew="jeon"><b>전달</b><span class="l">지점끼리 물건 옮기기</span><span class="s">지점끼리 옮기기</span></button><button data-go="creq"><b>고객요청</b><span class="l">손님 부탁 적어 두기</span><span class="s">손님 부탁 적기</span></button></div>
-    <div style="display:flex;gap:8px;margin-bottom:4px"><button class="nhbtn gray" data-go="in" style="flex:1">출근</button>${w.length && w[0] !== "시험" ? '<button class="nhbtn gray" data-go="out" style="flex:1">퇴근</button>' : ""}<button class="nhbtn gray" data-view="parcel" style="flex:1">오늘 일과표</button></div>
+    <div style="display:flex;gap:12px;margin-bottom:12px"><button class="nhbtn gray" data-go="in" style="flex:1">출근</button>${w.length && w[0] !== "시험" ? '<button class="nhbtn gray" data-go="out" style="flex:1">퇴근</button>' : ""}<button class="nhbtn gray" data-view="parcel" style="flex:1">오늘 일과표</button></div>
     ${befBoxHtml()}
     <button class="nhlink" data-ez="home">쉬운 화면으로 보기</button></div></div>`;
 }
 function nhAllHtml(openCard, closeCard) {
-  czCssOn();
+  czCssOn(); nhDrop();
   const P = dayPlan(), T = nowItems().filter((x) => !P.some((p) => p.name === x.title)), W = czWaitItems(), day = todayKey();
   const plan = P.map((p, i) => `<div class="nhrow ${i ? "" : "f"}"><span class="tm">${p.t}</span><i class="${p.done ? "ok" : p.late ? "r" : ""}"></i><span><em>${p.name}</em><small class="${p.late ? "red" : ""}">${p.done ? "했어요" + (p.doneTxt ? ", " + esc(p.doneTxt) : "") : p.late ? "아직 안 했어요, 늦었어요" : p.due ? "지금 할 시간이에요" : "아직 시간 전이에요"}</small></span>${p.done ? "" : p.href ? `<a class="nhbtn ${p.due ? "" : "gray"}" href="${p.href}">${p.act}</a>` : `<button class="nhbtn ${p.due ? "" : "gray"}" ${p.attr}>${p.act}</button>`}</div>`).join("");
   const fin = [...snList().filter((r) => (r.from === B || r.to === B) && r.d === day && r.st === "done").map((r) => `${(SKIND[r.kind] || "보내기").replace(/^\S+ /, "")}, ${r.items}`), ...pcList().filter((r) => (r.from === B || r.to === B) && r.d === day && r.st === "done").map((r) => `택배, ${r.items}`)];
@@ -1191,7 +1230,7 @@ function render() {
       <main class="mainv">
         <div class="top mtop"><div class="logo">VAFRIEND <b>직원</b></div><button class="store" data-go="branchask" style="cursor:pointer;border:0" title="지점 바꾸기">${esc(ho(B))} ▾</button><div class="date">${d.getMonth() + 1}/${d.getDate()} (${"일월화수목금토"[d.getDay()]})</div></div>
         <div class="phead"><h1>${VIEWS.find((v) => v[0] === VIEW)[2]}</h1><span>${d.getMonth() + 1}월 ${d.getDate()}일 ${"일월화수목금토"[d.getDay()]}요일</span></div>
-        ${VIEW === "home" || VIEW === "work" ? `<div class="hero"${TEST ? ' style="background:#7a2e0e"' : ""}>${TEST ? '<p style="color:#ffd7a8;font-weight:800;margin-bottom:6px">🧪 시험 모드: 진짜 기록에 안 섞여요</p>' : ""}${heroBody}</div>` : `<button class="hmini" data-view="home"${TEST ? ' style="background:#7a2e0e"' : ""}>${TEST ? "🧪 <span style=\"color:#ffd7a8\">시험 모드</span> " : ""}${biz ? `<span>영업 중</span><b>마감 ${cAt === "24:00" ? "자정" : cAt}</b>` : `<span>지금 할 일</span><b>${nx ? nx[0] + " " + nx[1] : "오늘 마감 완료 🎉"}</b>`}${TD.length + AH.length ? `<em>할 일 ${TD.length + AH.length}개 더</em>` : ""}<i>오늘 화면 →</i></button>`}
+        ${VIEW === "home" || VIEW === "work" ? `<div class="hero"${TEST ? ' style="background:#7a2e0e"' : ""}>${TEST ? '<p style="color:#ffd7a8;font-weight:800;margin-bottom:6px">🧪 시험 모드: 진짜 기록에 안 섞여요</p>' : ""}${heroBody}</div>` : VIEW === "parcel" && TEST ? '<span class="nhtag">시험 모드, 진짜 기록에 안 섞여요</span>' : `<button class="hmini" data-view="home"${TEST ? ' style="background:#7a2e0e"' : ""}>${TEST ? "🧪 <span style=\"color:#ffd7a8\">시험 모드</span> " : ""}${biz ? `<span>영업 중</span><b>마감 ${cAt === "24:00" ? "자정" : cAt}</b>` : `<span>지금 할 일</span><b>${nx ? nx[0] + " " + nx[1] : "오늘 마감 완료 🎉"}</b>`}${TD.length + AH.length ? `<em>할 일 ${TD.length + AH.length}개 더</em>` : ""}<i>오늘 화면 →</i></button>`}
         ${ONLY_OPEN_CLOSE ? "" : VIEW === "home" ? kpis : `<div class="pconly">${kpis}</div>`}
         ${body}
         ${!bKey() && !ONLY_OPEN_CLOSE ? "" : !bKey() ? `<button class="keybar" data-go="keyin" style="margin-bottom:10px">🔑 손님 이름, 번호를 보려면 눌러서 매장 코드 4자리를 넣어 주세요</button>` : ""}
@@ -1211,7 +1250,7 @@ function fpillSetup(html) {
   el.addEventListener("click", () => { if (VIEW !== "home" && VIEW !== "work") { VIEW = "home"; ls.set("vf-app-view", VIEW); render(); } window.scrollTo({ top: 0, behavior: "smooth" }); });
   document.body.appendChild(el);
   const target = $(".hpill") || $(".hmini"); // 노란 줄 첫 줄이 안 보이면 뱃지 if (!target || !("IntersectionObserver" in window)) return el.classList.add("on");
-  FPO = new IntersectionObserver(([e]) => el.classList.toggle("on", !e.isIntersecting), { threshold: 0.05 }); FPO.observe(target);
+  FPO = new IntersectionObserver(([e]) => el.classList.toggle("on", !e.isIntersecting), { threshold: 0.05 }); if (target) FPO.observe(target);
 }
 
 // ── 팀장 화면 (10/20) ── 직원앱 주소 뒤에 ?leader=1. 전 지점에서 넘어온 고객요청, 인수인계만 모아 봄
@@ -2354,7 +2393,7 @@ function parcelHtml() {
 function sendCheck(t, items, lines, why) {
   const box = document.createElement("div");
   box.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;display:flex;align-items:center;justify-content:center;padding:16px";
-  box.innerHTML = `<div style="background:#fff;border-radius:20px;max-width:440px;width:100%;max-height:85vh;overflow:auto;padding:24px;box-sizing:border-box;box-shadow:0 10px 40px rgba(0,0,0,.25)"><div class="ezh" style="margin:0 0 10px;font-size:26px">이렇게 보낼까요?</div>${items.split(", ").map((x) => `<div class="ezd" style="font-size:22px;font-weight:700;color:var(--ink)">${esc(x)}</div>`).join("")}${lines.filter(Boolean).map((x) => `<div class="ezd" style="font-size:18px;word-break:keep-all">${esc(x)}</div>`).join("")}${why ? `<div class="ezd" style="font-size:17px;font-weight:700;color:var(--red)">${esc(why)}</div>` : ""}<div class="btns" style="position:static"><button class="btn" data-sc="back">고칠래요</button><button class="btn primary" data-sc="go">네, 보내요</button></div></div>`;
+  box.innerHTML = `<div style="background:#fff;border-radius:20px;max-width:440px;width:100%;max-height:85vh;overflow:auto;padding:24px;box-sizing:border-box;box-shadow:0 10px 40px rgba(0,0,0,.25)"><div class="ezh" style="margin:0 0 10px;font-size:28px">이렇게 보낼까요?</div>${items.split(", ").map((x) => `<div class="ezd" style="font-size:22px;font-weight:700;color:var(--ink)">${esc(x)}</div>`).join("")}${lines.filter(Boolean).map((x) => `<div class="ezd" style="font-size:20px;word-break:keep-all">${esc(x)}</div>`).join("")}${why ? `<div class="ezd" style="font-size:18px;font-weight:700;color:var(--red)">${esc(why)}</div>` : ""}<div class="btns" style="position:static"><button class="btn" data-sc="back">고칠래요</button><button class="btn primary" data-sc="go">네, 보내요</button></div></div>`;
   box.addEventListener("click", (e) => { const k = e.target.closest("[data-sc]")?.dataset.sc; if (!k) return; e.stopPropagation(); box.remove(); if (k === "go") { t.dataset.ok = "1"; t.click(); delete t.dataset.ok; } });
   document.body.appendChild(box);
 }
