@@ -278,6 +278,11 @@ body{word-break:keep-all;overflow-wrap:break-word}
 /* 바닥 시트, 어둡게 덮개가 카드 번호, BEST 표시보다 위에 오게 */
 .dim{z-index:9}.sheet{z-index:10}.cart{position:relative;z-index:8}
 .home-btn.inst{background:var(--red);color:#fff}
+.home-btn.brb{padding:0 14px;font-size:14px;color:var(--grey)}
+.brp{position:fixed;inset:0;z-index:200;display:none;align-items:center;justify-content:center;background:var(--bg);padding:24px}.brp.on{display:flex}
+.brc{position:relative;width:100%;max-width:620px}.brc>b{display:block;font-size:30px;font-weight:800;color:var(--ink)}.brc>span{display:block;font-size:16px;color:var(--grey);margin:8px 0 26px}
+.brg{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.brg button{height:88px;border-radius:18px;background:var(--card);color:var(--ink);font-size:20px;font-weight:800}.brg button small{display:block;font-size:13px;font-weight:600;color:var(--grey);margin-top:2px}.brg button.on{background:var(--ink);color:var(--bg)}.brg button:disabled{opacity:.45}
+.brx{position:absolute;top:0;right:0;height:44px;padding:0 16px;border-radius:22px;background:var(--card);color:var(--grey);font-size:15px;font-weight:700}
 /* 일회용 목록 */
 .card.ev105{display:flex;width:100%;text-align:left;align-items:center;gap:12px;background:var(--ink);color:var(--card);padding:18px 20px}.ev105 b{color:var(--card)}.ev105 span{color:rgba(255,255,255,.75);flex:1}.ev105 i{font-style:normal;font-size:22px}
 .dsec{margin-top:26px}.dsec:first-child{margin-top:4px}
@@ -452,6 +457,7 @@ body[data-theme=dark] .scan svg{background:#fff;border-radius:8px}
     <div class="logo" id="logo" onclick="logoHome()" style="cursor:pointer"><span class="v r">V</span><span class="m x" style="--i:0;--j:5">A</span><span class="m r" style="--i:1">F</span><span class="m x" style="--i:2;--j:4">R</span><span class="m x" style="--i:3;--j:3">I</span><span class="m x" style="--i:4;--j:2">E</span><span class="m x" style="--i:5;--j:1">N</span><span class="d x" style="--j:0">D</span></div>
     <label class="srch">🔍<input id="q" placeholder="맛, 브랜드, 기기 이름 (초성도 돼요)" autocomplete="off" enterkeyhint="search"><button id="qx" aria-label="지우기">✕</button></label>
     <button class="home-btn inst" id="instBtn" hidden>⬇ 앱 설치</button>
+    <button class="home-btn brb" id="brBtn" aria-label="지점 변경"></button>
     <button class="home-btn" id="themeBtn" aria-label="낮 밤 모드"></button>
     <button class="home-btn" onclick="go('home')">처음</button>
   </div>
@@ -470,7 +476,7 @@ body[data-theme=dark] .scan svg{background:#fff;border-radius:8px}
       <div class="go3 go5">
         <button class="g-rk" onclick="rkOpen()"><img src="pst_c_B2.jpg" alt="" style="object-position:50% 40%"><small>이번 주 우리 매장에서 많이 나간</small><b>랭킹</b></button>
         <button class="g-qz" onclick="qzStart()"><img src="pst_c_H5.jpg" alt="" style="object-position:50% 55%"><small>몇 가지만 고르면 1분이면 끝나요</small><b>나에게 맞는 전자담배 찾기</b></button>
-        <button onclick="go('liq')"><img src="pst_c_B1.jpg" alt="" style="object-position:50% 50%"><small>빌런, 릭, 디오</small><b>액상</b></button>
+        <button onclick="go('liq')"><img src="pst_c_B1.jpg" alt="" style="object-position:50% 50%"><small>빌런, 릭</small><b>액상</b></button>
         <button onclick="go('dsp')"><img src="pst_c_D1.jpg" alt="" style="object-position:45% 55%"><small>10개 사면 5개 더</small><b>일회용</b></button>
         <button onclick="go('dev')"><img src="pst_c_H2.jpg" alt="" style="object-position:50% 45%"><small>하복2, 발라맥스프로</small><b>기기</b></button>
       </div>
@@ -635,7 +641,9 @@ setTheme((() => { try { return localStorage.getItem("vf-b-theme") || "light"; } 
 $('themeBtn').onclick = () => setTheme(document.body.dataset.theme === "dark" ? "light" : "dark");
 
 // ── 지점, 데이터 (지금 판 menu.html과 같은 방식) ──
-const BRANCH = (() => { const u = new URLSearchParams(location.search).get("branch"); try { if (u) localStorage.setItem("vf-menu-branch", u); return u || localStorage.getItem("vf-menu-branch") || "본점"; } catch (e) { return u || "본점"; } })();
+/* 11/9 지점 고르기: 패드에서 직접 고른 지점(vf-menu-branch-set)은 앱 시작 주소의 ?branch= 보다 우선. 아무것도 없으면 처음 화면에서 고름 */
+const BRANCH = (() => { const u = new URLSearchParams(location.search).get("branch"); try { const saved = localStorage.getItem("vf-menu-branch"); if (localStorage.getItem("vf-menu-branch-set") && saved) return saved; if (u) localStorage.setItem("vf-menu-branch", u); return u || saved || "본점"; } catch (e) { return u || "본점"; } })();
+const NEED_BRANCH = (() => { try { return !new URLSearchParams(location.search).get("branch") && !localStorage.getItem("vf-menu-branch"); } catch (e) { return false; } })();
 /* 11/9 온라인 주문: 주문서 링크(?order=)로 열면 담은 상품을 채우고 QR 화면을 바로 띄움, 사용 기록은 남기지 않음 */
 const ORDER_CODE = new URLSearchParams(location.search).get("order") || "";
 const POSB = (window.POS || {})[BRANCH] || {};
@@ -672,10 +680,9 @@ const LABELNO = {"VF 빌런 보석바":1,"VF 빌런 청사과":2,"VF 빌런 석�
 const LABELCOL = {"VF 빌런 보석바":"w","VF 빌런 청사과":"w","VF 빌런 석류":"w","VF 빌런 레몬":"w","VF 빌런 청포도":"w","VF 빌런 레즈애플":"w","VF 빌런 파인애플":"w","VF 빌런 자두":"w","VF 빌런 바나나라무네":"w","베이퍼 시가812":"g","베이퍼 쿨멘솔":"o","VF 릭 청포도":"b","VF 릭 석류":"b","VF 릭 청사과":"b","VF 릭 파인애플":"b","VF 릭 소다":"b","VF 릭 자두":"b","VF 릭 적사과":"b","VF 릭 레몬":"b","VF 릭 바나나":"b","디오 레몬":"w","디오 샤인":"w","디오 블루마린":"w","디오 블랙티":"w","디오 알포":"w","디오 블루워터":"w","디오 로젤하트":"w","디오 멜론":"w","딸기 요거트":"y","피치 요거트":"y","환타지아":"w","크림타바코":"g","아쿠아":"w","스피아민트":"o","블루스위트":"w","백도우롱차":"w","땡모반":"w","말라이트":"g","카라망고":"w","콘치즈":"y","알로에포도":"w","스쿨사과":"w","고창수박":"w","메론바":"w","자두사탕":"w","에비앙":"o","알로에라임":"w","초코콕콕":"y","샤인머쓱캣":"w","얼음공주 자몽":"w","얼음공주 밀키소다":"w","느낌 무향":"b","(한) 와 블루레몬":"w","(한) 솔의눈":"w","(한) 레드포카리":"w","(한) 블루스카이":"w","(한) 뱅뱅":"w","(한) 아이스샷":"o","(한) 토바코샷":"g","제이코리아 블랙멘솔":"o","(한) 화이트 멘솔시가":"o","(한) 화이트 파인애플":"w","(한) 화이트 워터멜론":"w","(한) 화이트 화이트멜론":"w","(한) 화이트 블루레몬":"w","(한) 화이트 알로에베라":"w","(한) 화이트 크랜베리애플":"w","(한) 화이트 피치":"w","(한) 화이트 체리":"w","(한) 화이트 소다":"w","(한) 화이트 자몽":"w","(한) 화이트 라임":"w","(한) 마피아퀸":"w","(한) 사무라이퀸":"w","(한) 크루세이더퀸":"w","(한) 아마조네스퀸":"w","제로닉 석류":"gr","제로닉 거봉":"gr","제로닉 샤인머스캣":"gr","제로닉 콜라":"gr","제로닉 민트":"gr","제로닉 노멘솔 포도":"gr","제로닉 노멘솔 자몽":"gr","제로닉 노멘솔알로에":"gr","제로닉 노멘솔 체리":"gr","제로닉 아이스스노우":"gr","방그레 스피아민트":"gr","크래프트 포도":"gr","크래프트 자두":"gr","(한) 크래스프라이트":"gr","크래알포":"gr","크래망고":"gr","메가킥 마르키사":"gr","메가킥 딸기":"gr","메가킥 망고":"gr","메가킥 피치":"gr","메가킥 사과":"gr","메가킥 샤인":"gr","메가킥 소다":"gr","메가킥 수박":"gr","메가킥 자몽":"gr","메가킥 포도":"gr","메가킥 자두":"gr","메가킥 파인애플":"gr","스위든 멘솔마스터":"o","스위든 쿠반시가":"g","스위든 체어맨":"g","스위든 그린티":"b","스위든 아이스그린티":"w","스위든 선인장":"w","마샤 샤인":"w","마샤 블랙":"w","마샤 유자":"w","마샤 딸기":"w","마샤 더블샤인":"w","마르키사":"w","마르키사 라즈":"w","잽알베":"w","프라임 파워멘솔":"o","톡스 로젤하트":"w","슴오크쿠반":"g","파이 토트":"g","갱쥬스 알베":"w","컵콘":"y","더블슬블":"w","크오크":"g","용트림체리":"w","더블라임":"w","라임알로에":"w","모코 하와이":"w","모코 그레이프사워":"w","모코 더블망고":"w","모코 더블샤인":"w","설향 딸기":"w","설향 라임":"w","설향 자두":"w"};
 (window.LIQ || []).forEach((x) => { if (LABELNO[x.n]) { x.no = LABELNO[x.n]; x.lc = LABELCOL[x.n]; } });
 const noOf = (n) => LABELNO[n] || LABELNO["VF " + n] || 0, lcOf = (n) => LABELCOL[n] || LABELCOL["VF " + n] || "w";
-// 메인 추천 액상 = A그룹(빌런, 릭, 시가812, 쿨멘솔) + 디오(HOT, 10/27 사장님 "디오도 들어가야지"), 시연팟 번호 순
-const DIO = (window.LIQ || []).filter((x) => /^디오 /.test(x.n) && !/딸기망고|콜라/.test(x.n)).map((x) => x.n);
-const LQ = [...A_LIQ, ...DIO].map((n) => (window.LIQ || []).find((x) => x.n === n)).filter(Boolean).sort((a, b) => (a.no || 999) - (b.no || 999));
-const badgeOf = (n) => /^(VF )?(빌런|릭) |시가812|쿨멘솔/.test(n) ? "BEST" : /^디오 /.test(n) ? "HOT" : "";
+// 메인 추천 액상 = A그룹(빌런, 릭, 시가812, 쿨멘솔), 시연팟 번호 순. 디오는 A그룹에서 빠져 11/10 메인 제외, 검색으로는 계속 판매
+const LQ = A_LIQ.map((n) => (window.LIQ || []).find((x) => x.n === n)).filter(Boolean).sort((a, b) => (a.no || 999) - (b.no || 999));
+const badgeOf = (n) => /^(VF )?(빌런|릭) |시가812|쿨멘솔/.test(n) ? "BEST" : "";
 const tagHtml = (n) => { const b = badgeOf(n), no = noOf(n); return b ? `<span class="rib ${b === "HOT" ? "hot" : ""}">${b}</span>` : ""; };
 const noTag = (n) => noOf(n) ? `<i class="sno">${noOf(n)}</i>` : ""; // 시연팟 번호: 직원용이라 이름 끝에 작게
 const isVL = (x) => !!x.vl || /^VF (빌런|릭) /.test(x.n); // vl = 매장에서 고를 빌런, 릭 몫(5병 패키지)
@@ -890,8 +897,8 @@ $('devAdd').onclick = () => { const cur = devOpts(dm).find((o) => o.opt === dc);
 
 // ── 액상 화면: A그룹 20종 ──
 let lf = "전체";
-const BR_OF = (x) => /^VF 빌런/.test(x.n) ? "빌런" : /^VF 릭/.test(x.n) ? "릭" : /^디오/.test(x.n) ? "디오" : "베이퍼";
-$('chips').innerHTML = ["전체", "빌런", "디오", "릭", "베이퍼", "폐호흡"].map((t) => `<button data-f="${t}" class="${t === lf ? "on" : ""}">${t}</button>`).join("");
+const BR_OF = (x) => /^VF 빌런/.test(x.n) ? "빌런" : /^VF 릭/.test(x.n) ? "릭" : "베이퍼";
+$('chips').innerHTML = ["전체", "빌런", "릭", "베이퍼", "폐호흡"].map((t) => `<button data-f="${t}" class="${t === lf ? "on" : ""}">${t}</button>`).join("");
 $('chips').onclick = (e) => { const b = e.target.closest('button'); if (!b) return; lf = b.dataset.f; $('chips').querySelectorAll('button').forEach((x) => x.classList.toggle('on', x === b)); drawLiq(); };
 function drawLiq() {
   if (lf === "폐호흡") { // 프리미엄 폐호흡 (지점 포스 '폐호흡액상' 중 30,000원, lung.js), 3병 40,000원
@@ -1475,7 +1482,7 @@ document.addEventListener('keydown', (e) => {
 });
 // ── 방향키 커서 (10/27 사장님 "방향키로 커서 움직이는 것처럼"): 지금 보이는 층(구매 창 > 재고 창 > 담은 상품 > 화면)에서
 // 가리킨 칸이 커지고 빨간 테두리, Enter = 누르기. 첫 화면 포스터를 가리킨 상태에선 ←→ = 포스터 넘기기
-const NAV = ".cta, .qzc, .rkr, #rkTab button, .qz-pk button, [data-hq], .qz-a button, .qz-btns button, .qz-top button, .specb, .dcard, .dgo, .dflc, .ev105, #podSub button, #podDev button, .poster, .go3 button, #seg button, .chips button, .it, .sr, .thumbs button, .colors button, .pk button, .pkb, #devAdd, .combo button, .opt2 button, #evGo, .evh button, .shbtn button, .scan, .upsell, .engr button, .mem button, .qb button, .askrow button, [data-asksend], .home-btn, .srch";
+const NAV = ".brp button, .cta, .qzc, .rkr, #rkTab button, .qz-pk button, [data-hq], .qz-a button, .qz-btns button, .qz-top button, .specb, .dcard, .dgo, .dflc, .ev105, #podSub button, #podDev button, .poster, .go3 button, #seg button, .chips button, .it, .sr, .thumbs button, .colors button, .pk button, .pkb, #devAdd, .combo button, .opt2 button, #evGo, .evh button, .shbtn button, .scan, .upsell, .engr button, .mem button, .qb button, .askrow button, [data-asksend], .home-btn, .srch";
 let kf = null;
 function navLayer() { const b = document.body.classList;
   if (b.contains('spon')) return $('sp');
@@ -1755,7 +1762,18 @@ evWrap("askOpen", (n) => ev("k", n));
 evWrap("qzResult", (keep) => keep || ev("z", (qzRes && qzRes.title) || "", Object.values(qz.ans).flat().join("+").slice(0, 20)));
 evWrap("rkDraw", () => ev("r", rkTab));
 let evQT = 0; $('q').addEventListener('input', () => { clearTimeout(evQT); evQT = setTimeout(() => { const q = $('q').value.trim(); if (!q) return; const r = searchItems(q); ev("q", q, `${r.length}/${r.filter((o) => outOf(o.x.n)).length}`); }, 1500); });
-ev("o", BRANCH, PADV);
+/* 지점 고르는 화면. 포스 자료가 있는 지점만 고를 수 있음 */
+const BR_LIST = ["동성로", "수성", "본점", "율하", "반월당", "상인", "광장코아", "현풍", "동성로2"];
+const brEl = document.createElement("div"); brEl.className = "brp"; brEl.id = "brp"; document.body.appendChild(brEl);
+function brOpen() { const change = !NEED_BRANCH, ok = (b) => !!(window.POS || {})[b];
+  brEl.innerHTML = `<div class="brc">${change ? '<button class="brx" data-brx="1">닫기</button>' : ""}<b>${change ? "지점 변경" : "이 패드는 어느 지점인가요?"}</b><span>한 번 고르면 다음부터 이 지점으로 열려요${change && cart.size ? ", 담은 상품은 비워져요" : ""}</span><div class="brg">${BR_LIST.map((b) => `<button data-br="${b}" class="${change && b === BRANCH ? "on" : ""}" ${ok(b) ? "" : "disabled"}>${b}${ok(b) ? "" : "<small>준비 중</small>"}</button>`).join("")}</div></div>`;
+  brEl.classList.add("on"); }
+brEl.onclick = (e) => { if (e.target.closest("[data-brx]")) return brEl.classList.remove("on"); const b = e.target.closest("[data-br]"); if (!b || b.disabled) return; const v = b.dataset.br;
+  if (!NEED_BRANCH && v === BRANCH) return brEl.classList.remove("on");
+  try { localStorage.setItem("vf-menu-branch", v); localStorage.setItem("vf-menu-branch-set", "1"); } catch (er) { return toast("저장하지 못했어요, 다시 눌러 주세요"); }
+  location.reload(); };
+$('brBtn').textContent = BRANCH; $('brBtn').onclick = brOpen;
+if (NEED_BRANCH) brOpen(); else ev("o", BRANCH, PADV);
 
 document.addEventListener("input", (e) => { if (e.target.id !== "myDev") return; myDevQ = e.target.value; const box = e.target.closest(".md"); if (box) { const tmp = document.createElement("div"); tmp.innerHTML = myDevBox(); box.querySelector(".mdc").innerHTML = tmp.querySelector(".mdc").innerHTML; } });
 document.addEventListener("click", (e) => { const b = e.target.closest("[data-myd]"); if (!b) return; podSub = "팟·코일"; podDev = b.dataset.myd; go('pod'); drawPodView(); document.body.classList.remove('open'); });
