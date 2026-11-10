@@ -404,7 +404,7 @@
 })();
 </script>
 <script>
-const VER = "11.10-22"; window.VER_ERR = VER;
+const VER = "11.10-23"; window.VER_ERR = VER;
 const GAME_LOCK = true; // 11/02 쉬는 시간 게임 잠금
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
@@ -715,7 +715,7 @@ function turnPop() {
   const box = document.createElement("div");
   box.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:80;display:flex;align-items:center;justify-content:center;padding:16px";
   box.innerHTML = `<div style="background:#fff;border-radius:20px;max-width:440px;width:100%;padding:24px;box-shadow:0 10px 40px rgba(0,0,0,.25)"><div style="font-size:16px;font-weight:700;color:var(--red)">${head}</div><div style="font-size:26px;font-weight:800;line-height:1.3;margin:10px 0 6px">${esc(x.title)}</div><div style="font-size:20px;color:var(--ink2)">${esc(x.sub)}</div><div style="font-size:20px;font-weight:700;color:var(--red);margin-top:6px">할 일: ${esc(x.act)}</div>${more ? `<div style="font-size:16px;color:var(--sub);margin-top:8px">이것 말고 ${more}개 더 있어요</div>` : ""}<div class="btns"><button class="btn" data-tp="later">나중에</button><button class="btn primary" data-tp="go">${x.kind === "routine" ? "지금 하기" : "지금 보기"}</button></div></div>`;
-  box.addEventListener("click", (e) => { const k = e.target.closest("[data-tp]")?.dataset.tp; if (!k) return; e.stopPropagation(); box.remove(); TURN_POP = false; if (k === "go") { if (x.kind === "routine") runAct(x.p); else if (x.kind === "send") sheetSnStep(x.id); else { VIEW = "parcel"; ls.set("vf-app-view", VIEW); render(); window.scrollTo(0, 0); } } else setTimeout(turnPop, 400); });
+  box.addEventListener("click", (e) => { const k = e.target.closest("[data-tp]")?.dataset.tp; if (!k) return; e.stopPropagation(); box.remove(); TURN_POP = false; if (k === "go") { if (x.kind === "routine") runAct(x.p); else if (x.kind === "send") sheetSnStep(x.id); else if (TEST) tdOpen(x.kind === "parcel" ? "pc" : "todo"); else { VIEW = "parcel"; ls.set("vf-app-view", VIEW); render(); window.scrollTo(0, 0); } } else setTimeout(turnPop, 400); });
   document.body.appendChild(box);
 }
 /* 11/10 하루 일과: 때가 되면 '지금 할 일'에 뜨고, 안 하면 남아 있음 (시험 모드) */
@@ -765,20 +765,24 @@ function nhHtml() {
   czCssOn();
   const L = nhMerge(nowItems()), x = L[0], rest = L.slice(1, 4), more = L.length - 4, w = working(), wait = czWaitItems().length;
   const now = x ? `<div class="card nhc nhnow"><div class="nhk">지금 할 일</div><div class="nht">${nhTt(x)}</div><div class="nhs ${x.red ? "red" : ""}">${esc(x.one || x.sub)}</div>${x.href ? `<a class="nhgo" href="${x.href}">${x.act}</a>` : `<button class="nhgo" ${x.attr}>${x.act}</button>`}</div>` : '<div class="card nhc nhnow"><div class="nht" style="margin:0;font-size:22px">지금 할 일 없어요</div></div>';
-  const rs = rest.length ? `<div class="nhrest">${rest.map(nhLine).join("")}${more > 0 ? `<button class="nhlink" data-view="parcel">외 ${more}건 더 보기</button>` : ""}</div>` : "";
+  const rs = rest.length ? `<div class="nhrest">${rest.map(nhLine).join("")}${more > 0 ? `<button class="nhlink" data-view="parcel" data-td="todo">외 ${more}건 더 보기</button>` : ""}</div>` : "";
   return `<span class="nhtag">시험 모드, 진짜 기록에 안 섞여요</span>
-    <div class="nhgrid"><div class="nhl">${now}${rs}<div class="nhn">${noticeCardHtml()}${bigDepCardHtml()}${wait ? `<button class="czrow nhsent1" data-view="parcel"><span>답 기다리는 요청 ${wait}건</span></button>` : ""}</div></div><div class="nhr">
+    <div class="nhgrid"><div class="nhl">${now}${rs}<div class="nhn">${noticeCardHtml()}${bigDepCardHtml()}${wait ? `<button class="czrow nhsent1" data-view="parcel" data-td="wait"><span>답 기다리는 요청 ${wait}건</span></button>` : ""}</div></div><div class="nhr">
     <div class="nhq"><button data-snew="quick"><b>퀵</b><span class="l">다른 지점에서 급하게 받기</span><span class="s">급하게 받기</span></button><button data-go="pcnew"><b>택배</b><span class="l">손님 집으로 보내기</span><span class="s">손님 집으로</span></button><button data-snew="jeon"><b>전달</b><span class="l">지점끼리 물건 옮기기</span><span class="s">지점끼리 옮기기</span></button><button data-go="creq"><b>고객요청</b><span class="l">손님 부탁 적어 두기</span><span class="s">손님 부탁 적기</span></button></div>
-    <div style="display:flex;gap:12px;margin-bottom:12px"><button class="nhbtn gray" data-go="in" style="flex:1">출근</button>${w.length && w[0] !== "시험" ? '<button class="nhbtn gray" data-go="out" style="flex:1">퇴근</button>' : ""}<button class="nhbtn gray" data-view="parcel" style="flex:1">오늘 일과표</button></div>
+    <div style="display:flex;gap:12px;margin-bottom:12px"><button class="nhbtn gray" data-go="in" style="flex:1">출근</button>${w.length && w[0] !== "시험" ? '<button class="nhbtn gray" data-go="out" style="flex:1">퇴근</button>' : ""}<button class="nhbtn gray" data-view="parcel" data-td="plan" style="flex:1">오늘 일과표</button></div>
     ${befBoxHtml()}
     <button class="nhlink" data-ez="home">쉬운 화면으로 보기</button></div></div>`;
+}
+/* 11/10 오늘 일과표(할 일 화면이 없어져 창에서도 씀) */
+function nhPlanHtml(P) {
+  const pRow = (p, i) => { const f = i ? "" : "f"; if (p.done) return `<div class="nhrow dn ${f}"><i class="ok"></i><span><em>${p.name}</em><small>했어요${p.doneTxt ? ", " + esc(p.doneTxt) : ""}</small></span></div>`; if (!p.due) { const inner = `<i></i><span><em>${p.name}</em>${p.hint ? `<small>${p.hint}</small>` : ""}</span><b class="gt">›</b>`; return p.href ? `<a class="nhrow nhtap ${f}" href="${p.href}">${inner}</a>` : `<button class="nhrow nhtap ${f}" ${p.attr}>${inner}</button>`; } return `<div class="nhrow ${f}"><i class="${p.late ? "r" : "b"}"></i><span><em>${p.name}</em><small class="${p.late ? "red" : ""}">${p.late ? "아직 안 했어요, 늦었어요" : "지금 할 시간이에요"}</small></span>${p.href ? `<a class="nhbtn" href="${p.href}">${p.act}</a>` : `<button class="nhbtn" ${p.attr}>${p.act}</button>`}</div>`; };
+  const pDone = P.filter((p) => p.done), pLeft = P.filter((p) => !p.done), pT = [...new Set(pLeft.map((p) => p.t))];
+  return (pDone.length ? `<details class="nhdone" ${window.NH_DONE_OPEN ? "open" : ""} ontoggle="window.NH_DONE_OPEN=this.open"><summary>끝난 일 ${pDone.length}개 ✓<b class="gt">›</b></summary>${pDone.map(pRow).join("")}</details>` : "") + pT.map((t) => `<div class="nhtg">${t}</div>${pLeft.filter((p) => p.t === t).map(pRow).join("")}`).join("") + (pLeft.length ? "" : '<div class="desc" style="padding:6px 0 10px;font-size:16px">오늘 일과를 다 했어요</div>');
 }
 function nhAllHtml(openCard, closeCard) {
   czCssOn(); nhDrop();
   const P = dayPlan(), T = nowItems().filter((x) => !P.some((p) => p.name === x.title)), W = czWaitItems(), day = todayKey();
-  const pRow = (p, i) => { const f = i ? "" : "f"; if (p.done) return `<div class="nhrow dn ${f}"><i class="ok"></i><span><em>${p.name}</em><small>했어요${p.doneTxt ? ", " + esc(p.doneTxt) : ""}</small></span></div>`; if (!p.due) { const inner = `<i></i><span><em>${p.name}</em>${p.hint ? `<small>${p.hint}</small>` : ""}</span><b class="gt">›</b>`; return p.href ? `<a class="nhrow nhtap ${f}" href="${p.href}">${inner}</a>` : `<button class="nhrow nhtap ${f}" ${p.attr}>${inner}</button>`; } return `<div class="nhrow ${f}"><i class="${p.late ? "r" : "b"}"></i><span><em>${p.name}</em><small class="${p.late ? "red" : ""}">${p.late ? "아직 안 했어요, 늦었어요" : "지금 할 시간이에요"}</small></span>${p.href ? `<a class="nhbtn" href="${p.href}">${p.act}</a>` : `<button class="nhbtn" ${p.attr}>${p.act}</button>`}</div>`; };
-  const pDone = P.filter((p) => p.done), pLeft = P.filter((p) => !p.done), pT = [...new Set(pLeft.map((p) => p.t))];
-  const plan = (pDone.length ? `<details class="nhdone" ${window.NH_DONE_OPEN ? "open" : ""} ontoggle="window.NH_DONE_OPEN=this.open"><summary>끝난 일 ${pDone.length}개 ✓<b class="gt">›</b></summary>${pDone.map(pRow).join("")}</details>` : "") + pT.map((t) => `<div class="nhtg">${t}</div>${pLeft.filter((p) => p.t === t).map(pRow).join("")}`).join("") + (pLeft.length ? "" : '<div class="desc" style="padding:6px 0 10px;font-size:16px">오늘 일과를 다 했어요</div>');
+  const plan = nhPlanHtml(P);
   const fin = [...snList().filter((r) => (r.from === B || r.to === B) && r.d === day && r.st === "done").map((r) => `${(SKIND[r.kind] || "보내기").replace(/^\S+ /, "")}, ${r.items}`), ...pcList().filter((r) => (r.from === B || r.to === B) && r.d === day && r.st === "done").map((r) => `택배, ${r.items}`)];
   return `<div class="nhgrid2"><div><div class="card"><h2>오늘 일과표</h2>${plan}</div></div><div>
     <div class="card"><h2>우리 매장이 할 일 <small style="font-weight:600">${T.length}개</small></h2>${T.length ? T.map(nhRow).join("") : '<div class="desc" style="padding:6px 0 10px;font-size:16px">없어요</div>'}</div>
@@ -786,6 +790,18 @@ function nhAllHtml(openCard, closeCard) {
     <details class="card"><summary style="font-size:17px;font-weight:800;cursor:pointer">오늘 끝난 것 ${fin.length}개</summary>${fin.map((x) => `<div class="desc" style="padding:8px 0;font-size:15px">${esc(x)}</div>`).join("") || '<div class="desc" style="padding:8px 0">아직 없어요</div>'}</details>
     ${custCardHtml()}</div></div><div class="cols"><div>${openCard}</div><div>${closeCard}</div></div>${replyQuickHtml()}`;
 }
+/* 11/10 액상덕후 "할일칸 지워": 시험 모드는 할 일 화면 대신 창. plan 일과표, wait 답 기다림, todo 지금 할 일 전체, pc 택배와 보낸 요청 */
+let TD_OPEN = null;
+function tdInner(k) {
+  if (k === "plan") return `<h2>오늘 일과표</h2>${nhPlanHtml(dayPlan())}`;
+  if (k === "todo") { const L = nhMerge(nowItems()); return `<h2>지금 할 일 <small style="font-weight:600">${L.length}개</small></h2>${L.length ? L.map((x, i) => nhRow({ ...x, title: x.title + (x.n > 1 ? ` ${x.n}건` : "") }, i)).join("") : '<div class="desc" style="padding:6px 0 10px;font-size:16px">없어요</div>'}`; }
+  if (k === "wait") { const W = czWaitItems(), day = todayKey(), fin = [...snList().filter((r) => (r.from === B || r.to === B) && r.d === day && r.st === "done").map((r) => `${(SKIND[r.kind] || "보내기").replace(/^\S+ /, "")}, ${r.items}`), ...pcList().filter((r) => (r.from === B || r.to === B) && r.d === day && r.st === "done").map((r) => `택배, ${r.items}`)];
+    return `<h2>다른 지점 답 기다림 <small style="font-weight:600">${W.length}개</small></h2>${W.length ? W.map((x, i) => nhRow({ title: x.title, sub: `${x.sub}, ${x.act}`, act: "보기", attr: x.attr }, i)).join("") : '<div class="desc" style="padding:6px 0 10px;font-size:16px">없어요</div>'}<details class="nhdone" ${window.TD_FIN_OPEN ? "open" : ""} ontoggle="window.TD_FIN_OPEN=this.open"><summary>오늘 끝난 것 ${fin.length}개 ✓<b class="gt">›</b></summary>${fin.map((x) => `<div class="nhrow dn"><span><em>${esc(x)}</em></span></div>`).join("") || '<div class="desc" style="padding:8px 0">아직 없어요</div>'}</details>`; }
+  return `<h2>택배, 보낸 요청</h2>${parcelHtml()}`;
+}
+function tdOpen(k) { TD_OPEN = k; openSheet(`<div class="nhpage tdsheet" id="tdBody">${tdInner(k)}</div><div class="btns"><button class="btn" data-x>닫기</button></div>`); nhDrop(); }
+function tdRefresh() { const el = $("#tdBody"); if (!el || !TD_OPEN || el.contains(document.activeElement) && /INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)) return; el.innerHTML = tdInner(TD_OPEN); nhDrop(); }
+document.addEventListener("click", (e) => { if (!TEST) return; const t = e.target.closest?.('[data-view="parcel"]'); if (!t) return; e.preventDefault(); e.stopImmediatePropagation(); const k = t.dataset.td || "pc"; if (t.closest("#sheet")) closeSheet(); tdOpen(k); }, true);
 /* 버튼에 적힌 동작을 그대로 실행 (팝업의 '지금 하기'용) */
 function runAct(x) { if (x.href) { location.href = x.href; return; } const b = document.createElement("button"); b.style.display = "none"; for (const mm of String(x.attr || "").matchAll(/data-(\w+)="([^"]*)"/g)) b.dataset[mm[1]] = mm[2]; document.body.appendChild(b); b.click(); b.remove(); }
 /* 11/10 시험 모드: 적은 내용이 있는 창을 닫을 때 창 안에서 한 번 묻기(브라우저 확인창이 안 뜨는 기기 대비) */
@@ -1058,7 +1074,7 @@ const VIEWS_ALL = [["home", "🏠", "오늘"], ["work", "🕘", "출퇴근, 마�
 // 10/20 사장님: 오늘(오픈, 마감) + 요청(인수인계, 고객요청) 두 화면만
 // 10/23 재고조사 → 포스 바로 조정: 포스 조정이 연결된 지점만 메뉴 보임 (운영봇 ADJ_BRANCHES와 같게)
 const ADJ_BR = []; // 10/25 재고 조정은 아침 재고보고로 하기로 해서 재고조사 메뉴는 숨김(다시 열려면 지점 넣기)
-const VIEWS = ONLY_OPEN_CLOSE ? [["home", "🏠", "오늘"], ...(TEST ? [["parcel", "📋", "할 일"]] : []), ["talk", "📅", "일정"], ["ask", "💛", "베프"], ["blog", "📝", "블로그"], ...(TEST ? [] : [["parcel", "🛵", "보내기"]]), ...(ADJ_BR.includes(B) ? [["stock", "📦", "재고조사"]] : []), ["as2", "🔧", "AS"], ["note", "🗒️", "노트"], ["reply", "💬", "응대"], ...(GAME_LOCK ? [] : [["game", "🎮", "쉬는 시간"]])] : VIEWS_ALL; // 11/03 점검: 메뉴 글자 붙음 → 짧은 이름, 게임 잠금 중엔 탭 숨김, 노트 아이콘을 블로그와 다르게
+const VIEWS = ONLY_OPEN_CLOSE ? [["home", "🏠", "오늘"], ["talk", "📅", "일정"], ["ask", "💛", "베프"], ["blog", "📝", "블로그"], ...(TEST ? [] : [["parcel", "🛵", "보내기"]]), ...(ADJ_BR.includes(B) ? [["stock", "📦", "재고조사"]] : []), ["as2", "🔧", "AS"], ["note", "🗒️", "노트"], ["reply", "💬", "응대"], ...(GAME_LOCK ? [] : [["game", "🎮", "쉬는 시간"]])] : VIEWS_ALL; // 11/03 점검: 메뉴 글자 붙음 → 짧은 이름, 게임 잠금 중엔 탭 숨김, 노트 아이콘을 블로그와 다르게
 let VIEW = ls.get("vf-app-view", "home");
 if (!VIEWS.some((v) => v[0] === VIEW)) VIEW = "home";
 // 10/23 30초마다 화면을 다시 그리면 누르던 버튼이 바뀌어 안 눌림 → 손 댄 지 1.2초 안이면 조금 뒤에 그림
@@ -1176,7 +1192,10 @@ function alertCheck() {
   box.addEventListener("click", (e) => { const k = e.target.closest("[data-al]")?.dataset.al; if (!k) return; if (k === "go" && a.go) { VIEW = a.go; render(); } done(); });
   document.body.appendChild(box);
 }
-function render() {
+/* 11/10 시험 모드: 화면을 다시 그릴 때 열린 할 일 창도 같이 */
+function renderAll() { render0(); try { if (TEST) tdRefresh(); } catch {} }
+function render() { return renderAll(); }
+function render0() {
   if (typeof TEST !== "undefined" && TEST) { if (VIEW !== "home" && EZ.s === "all") EZ.s = "home"; document.documentElement.classList.toggle("ez", VIEW === "home" && !EZ.classic); document.documentElement.classList.toggle("nh", VIEW === "home" && EZ.classic); document.documentElement.classList.toggle("czhome", VIEW === "home" && !EZ.classic && EZ.s === "home"); if (VIEW === "home" && (document.activeElement?.id === "ezSay" || (!EZ.classic && /^(ezQ|ezF|ezPc)$/.test(document.activeElement?.id || "")))) return; }
   if (LEADER) return renderLeader();
   if (!B) return renderPick();
@@ -1239,7 +1258,7 @@ function render() {
     ask: askHtml(),
     parcel: TEST ? `<div class="nhpage">${nhAllHtml(openCard, closeCard)}${parcelHtml()}</div>` : parcelHtml(), // 10/27 사장님 '각이 안 맞음': 왼쪽에 퀵/전달 + 택배, 오른쪽에 오늘 지점별 택배
   }[VIEW];
-  const badge = (k) => { const n = k === "parcel" && TEST ? (() => { try { return nowItems().length; } catch { return 0; } })() : k === "home" && TEST ? 0 : k === "talk" ? talkCount() : k === "home" ? todoItems().length : k === "blog" ? blogDue().length : k === "as2" ? as2Items().filter((x) => (B === "본점" && (x.st === 0 || x.st === 1)) || (x.b === B && !a2Lead(x) && (x.st === 3 || (x.st === 4 && !x.contact)))).length : 0; return n ? `<em class="bd">${n}</em>` : ""; };
+  const badge = (k) => { const n = k === "parcel" && TEST ? (() => { try { return nowItems().length; } catch { return 0; } })() : k === "home" && TEST ? (() => { try { return nowItems().length; } catch { return 0; } })() : k === "talk" ? talkCount() : k === "home" ? todoItems().length : k === "blog" ? blogDue().length : k === "as2" ? as2Items().filter((x) => (B === "본점" && (x.st === 0 || x.st === 1)) || (x.b === B && !a2Lead(x) && (x.st === 3 || (x.st === 4 && !x.contact)))).length : 0; return n ? `<em class="bd">${n}</em>` : ""; };
   // 10/20 사장님 "여기 창이 별거 없네": 맨 위 칸 = 지금 할 일. 다음 단계 버튼을 바로 누르게, 진행 막대 대신 단계 점
   const stockUrl = `${SITE}stock/?branch=${encodeURIComponent(B)}${TEST ? "&test=1" : ""}&by=${encodeURIComponent(working.map((x) => x.name).join(", "))}&back=${encodeURIComponent(location.pathname)}`;
   const OP = [["🙋", "출근", steps[0], `<button class="hbtn" data-go="in">출근</button>`], ["✅", "오픈 체크", steps[1], `<button class="hbtn" data-go="open">체크</button>`], ["📦", "아침 재고보고", steps[2], `<a class="hbtn" href="${stockUrl}">하기</a>`]];
