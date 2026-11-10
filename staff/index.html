@@ -287,6 +287,7 @@
   html.feel .btns>[data-x]{order:-1}
   html.feel .nhrow em,html.feel .nhrow small{word-break:keep-all;overflow-wrap:anywhere}
   html.feel .sheet{max-height:min(88vh,92%)}
+  .nhq span.s,html.feel .nhsent1{display:none}
   @media (max-width:899px){
     html.feel .store,html.feel .hmini,html.feel .act,html.feel .rqk,html.feel .nhlink,html.feel .keybar,html.feel .keybar button,html.feel .chip,html.feel [data-ez="classic"]{min-height:48px}
     html.feel .chips{gap:8px}
@@ -304,9 +305,16 @@
   @media (min-width:900px){
     html.feel .dim{align-items:center}
     html.feel .side .store{min-height:40px;margin-bottom:16px}
-    .nhgrid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:16px;align-items:start}
-    .nhl,.nhr{display:block}
-    .nhgrid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start}
+    .nhgrid,.nhpage{max-width:720px}
+    .nhpage .cols{grid-template-columns:minmax(0,1fr)}
+    html.feel .nhc{order:1;padding:8px 20px 10px;margin-bottom:14px;box-shadow:0 2px 14px rgba(0,0,0,.09)}
+    html.feel .nhc h2{font-size:22px;font-weight:800;color:var(--ink)}
+    html.feel .nhq{grid-template-columns:repeat(4,minmax(0,1fr));margin:0 0 12px}
+    html.feel .nhq button{box-shadow:none;min-height:72px}
+    html.feel .nhq span{white-space:nowrap}
+    .nhq span.l{display:none}.nhq span.s{display:block}
+    html.feel .nhr>div>.nhbtn.gray{background:#eef1f5;border:1px solid #d1d6db}
+    .nhsent{display:none}html.feel .nhsent1{display:flex}
     html.feel .cztiles{grid-template-columns:repeat(3,minmax(0,1fr))}
     html.feel .cz{max-width:920px;margin-inline:auto}
   }
@@ -338,7 +346,7 @@
 })();
 </script>
 <script>
-const VER = "11.10-15"; window.VER_ERR = VER;
+const VER = "11.10-16"; window.VER_ERR = VER;
 const GAME_LOCK = true; // 11/02 쉬는 시간 게임 잠금
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
@@ -685,8 +693,8 @@ function nhHtml() {
   czCssOn();
   const L = nowItems(), more = L.length - 5, w = working();
   return `<span class="nhtag">시험 모드, 진짜 기록에 안 섞여요</span>
-    <div class="nhgrid"><div class="nhl"><div class="card nhc"><h2>지금 할 일${L.length ? ` <small style="font-weight:600">${L.length}개</small>` : ""}</h2>${L.length ? L.slice(0, 5).map(nhRow).join("") : '<div class="desc" style="padding:6px 0 10px;font-size:16px">지금 할 일 없어요</div>'}${more > 0 ? `<button class="nhlink" data-view="parcel">외 ${more}건 더 보기</button>` : ""}</div><div class="nhn">${noticeCardHtml()}${bigDepCardHtml()}${sentCardHtml()}</div></div><div class="nhr">
-    <div class="nhq"><button data-snew="quick"><b>퀵</b><span>다른 지점에서 급하게 받기</span></button><button data-go="pcnew"><b>택배</b><span>손님 집으로 보내기</span></button><button data-snew="jeon"><b>전달</b><span>지점끼리 물건 옮기기</span></button><button data-go="creq"><b>고객요청</b><span>손님 부탁 적어 두기</span></button></div>
+    <div class="nhgrid"><div class="nhl"><div class="card nhc"><h2>지금 할 일${L.length ? ` <small style="font-weight:600">${L.length}개</small>` : ""}</h2>${L.length ? L.slice(0, 5).map(nhRow).join("") : '<div class="desc" style="padding:6px 0 10px;font-size:16px">지금 할 일 없어요</div>'}${more > 0 ? `<button class="nhlink" data-view="parcel">외 ${more}건 더 보기</button>` : ""}</div><div class="nhn">${noticeCardHtml()}${bigDepCardHtml()}<div class="nhsent">${sentCardHtml()}</div>${(() => { const n = czWaitItems().length; return n ? `<button class="czrow nhsent1" data-view="parcel"><span>답 기다리는 요청 ${n}건</span></button>` : ""; })()}</div></div><div class="nhr">
+    <div class="nhq"><button data-snew="quick"><b>퀵</b><span class="l">다른 지점에서 급하게 받기</span><span class="s">급하게 받기</span></button><button data-go="pcnew"><b>택배</b><span class="l">손님 집으로 보내기</span><span class="s">손님 집으로</span></button><button data-snew="jeon"><b>전달</b><span class="l">지점끼리 물건 옮기기</span><span class="s">지점끼리 옮기기</span></button><button data-go="creq"><b>고객요청</b><span class="l">손님 부탁 적어 두기</span><span class="s">손님 부탁 적기</span></button></div>
     <div style="display:flex;gap:8px;margin-bottom:4px"><button class="nhbtn gray" data-go="in" style="flex:1">출근</button>${w.length && w[0] !== "시험" ? '<button class="nhbtn gray" data-go="out" style="flex:1">퇴근</button>' : ""}<button class="nhbtn gray" data-view="parcel" style="flex:1">오늘 일과표</button></div>
     ${befBoxHtml()}
     <button class="nhlink" data-ez="home">쉬운 화면으로 보기</button></div></div>`;
@@ -1151,7 +1159,7 @@ function render() {
     blog: blogHtml(),
     game: gameHtml(),
     ask: askHtml(),
-    parcel: TEST ? nhAllHtml(openCard, closeCard) + parcelHtml() : parcelHtml(), // 10/27 사장님 '각이 안 맞음': 왼쪽에 퀵/전달 + 택배, 오른쪽에 오늘 지점별 택배
+    parcel: TEST ? `<div class="nhpage">${nhAllHtml(openCard, closeCard)}${parcelHtml()}</div>` : parcelHtml(), // 10/27 사장님 '각이 안 맞음': 왼쪽에 퀵/전달 + 택배, 오른쪽에 오늘 지점별 택배
   }[VIEW];
   const badge = (k) => { const n = k === "parcel" && TEST ? (() => { try { return nowItems().length; } catch { return 0; } })() : k === "home" && TEST ? 0 : k === "talk" ? talkCount() : k === "home" ? todoItems().length : k === "blog" ? blogDue().length : k === "as2" ? as2Items().filter((x) => (B === "본점" && (x.st === 0 || x.st === 1)) || (x.b === B && !a2Lead(x) && (x.st === 3 || (x.st === 4 && !x.contact)))).length : 0; return n ? `<em class="bd">${n}</em>` : ""; };
   // 10/20 사장님 "여기 창이 별거 없네": 맨 위 칸 = 지금 할 일. 다음 단계 버튼을 바로 누르게, 진행 막대 대신 단계 점
