@@ -310,7 +310,7 @@
 })();
 </script>
 <script>
-const VER = "11.10-11"; window.VER_ERR = VER;
+const VER = "11.10-12"; window.VER_ERR = VER;
 const GAME_LOCK = true; // 11/02 쉬는 시간 게임 잠금
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
@@ -634,7 +634,7 @@ function turnPop() {
   document.body.appendChild(box);
 }
 /* 11/10 하루 일과: 때가 되면 '지금 할 일'에 뜨고, 안 하면 남아 있음 (시험 모드) */
-const VM_BR = ["본점"]; /* 자판기 보고를 하는 지점. 액상덕후 확인 뒤 늘림 */
+const VM_BR = ["본점", "율하", "상인"]; /* 자판기 보고를 하는 지점. 11/11 액상덕후 기억 기준, 확정 아님 */
 const VM_LOCAL = {};
 const vmDone = (slot) => VM_LOCAL[slot] || (BOARD?.vm || {})[slot + (TEST ? "T" : "")] || null;
 function dayPlan() {
@@ -644,12 +644,12 @@ function dayPlan() {
   const add = (k, at, name, done, doneTxt, act, x) => P.push({ k, t: fm(at), name, done: !!done, doneTxt: doneTxt || "", act, due: nowM >= at, late: !done && nowM >= at + 30, ...x });
   add("in", oM, "출근", s0.ins.length, s0.ins.map((x) => x.name).join(", "), "출근", { attr: 'data-go="in"', due: true });
   add("open", oM, "오픈 체크", s0.open, s0.open?.t, "체크", { attr: 'data-go="open"' });
+  if (VM_BR.includes(B)) add("vmam", oM, "오전 자판기 보고", vmDone("am"), vmDone("am")?.t, "사진 찍기", { attr: 'data-vm="am"', due: nowM >= oM || !!s0.open, hint: "자판기 사진 3장" });
   add("stock", oM, "아침 재고보고", sd0, sd0?.t, "하기", { href: czStockUrl() });
-  if (VM_BR.includes(B)) add("vmam", oM, "오전 자판기 보고", vmDone("am"), vmDone("am")?.t, "사진 찍기", { attr: 'data-vm="am"', pop: 1, hint: "자판기 사진 3장" });
-  if (VM_BR.includes(B)) add("vmpm", cM - 70, "오후 자판기 보고", vmDone("pm"), vmDone("pm")?.t, "사진 찍기", { attr: 'data-vm="pm"', pop: 1, hint: "자판기 사진 3장" });
-  add("close", cM, "마감 체크", s0.close, s0.close?.t, "체크", { attr: 'data-go="close"' });
-  if (CLOSE_OK.includes(B)) add("closing", cM, "마감 보고", CLOSE_SENT && CLOSE_SENT.status === "done", CLOSE_SENT?.at, "보고", { attr: 'data-go="closing"' });
   if (B === "본점") { const c0 = ls.get("vf-ct-day", null), cd = c0 && c0.d === todayKey() ? c0 : null, tot = BOARD?.custToday?.n, left = cd?.stop && tot != null ? Math.max(0, tot - cd.ok - cd.skip - cd.fail) : null; add("coupon", cM - 60, left ? `쿠폰 보내기, ${left}명 남음` : "쿠폰 보내기", cd && !cd.stop, cd ? `${cd.t}, ${cd.ok}명` : "", "보내기", { attr: 'data-ct="go"', hint: "오늘 손님에게 쿠폰 문자" }); }
+  add("close", cM, "마감 체크", s0.close, s0.close?.t, "체크", { attr: 'data-go="close"' });
+  if (VM_BR.includes(B)) add("vmpm", cM, "오후 자판기 보고", vmDone("pm"), vmDone("pm")?.t, "사진 찍기", { attr: 'data-vm="pm"', due: nowM >= cM || !!s0.close, hint: "자판기 사진 3장" });
+  if (CLOSE_OK.includes(B)) add("closing", cM, "마감 보고", CLOSE_SENT && CLOSE_SENT.status === "done", CLOSE_SENT?.at, "보고", { attr: 'data-go="closing"' });
   if (s0.ins.length) add("out", cM, "퇴근", !w.length, "", "퇴근", { attr: 'data-go="out"' });
   return P;
 }
@@ -703,11 +703,26 @@ function vmPick(slot) {
   };
   inp.click();
 }
-document.addEventListener("click", (e) => { const c = e.target.closest?.("[data-vm]"); if (c) vmPick(c.dataset.vm); });
+document.addEventListener("click", (e) => { const c = e.target.closest?.("[data-vm]"); if (!c) return; if (c.closest("#sheet")) closeSheet(); vmPick(c.dataset.vm); });
+/* 11/11 오픈 체크, 마감 체크를 끝내면 바로 자판기 사진을 물어봄 (시험 모드, 자판기 지점만). 나중에를 누르면 지금 할 일에 남음 */
+function vmAsk(slot) {
+  if (!TEST || !VM_BR.includes(B) || vmDone(slot)) return;
+  openSheet(`<h2>자판기 사진 3장 찍기</h2><div class="desc" style="font-size:17px">${slot === "am" ? "오전" : "오후"} 자판기 보고예요</div><div class="btns"><button class="btn" data-x>나중에</button><button class="btn primary" data-vm="${slot}">지금 찍기</button></div>`);
+}
+/* 마감 보고, 퇴근을 누를 때 오후 자판기 보고가 안 됐으면 알려 줌 */
+let VM_PM_SKIP = false;
+document.addEventListener("click", (e) => {
+  const t = e.target.closest?.('[data-go="closing"],[data-go="out"]'); if (!t || !TEST || !B || !VM_BR.includes(B) || VM_PM_SKIP) return;
+  if (t.dataset.force) { VM_PM_SKIP = true; return; }
+  const p = dayPlan().find((x) => x.k === "vmpm" && !x.done && x.due); if (!p) return;
+  e.stopPropagation(); e.preventDefault(); czCssOn();
+  const nm = t.dataset.go === "out" ? "퇴근" : "마감 보고";
+  openSheet(`<h2>오후 자판기 보고를 아직 안 했어요</h2><div class="desc">${nm} 전에 자판기 사진 3장을 찍어 주세요.</div>${nhRow({ title: p.name, sub: p.hint, red: true, act: p.act, attr: p.attr }, 0)}<div class="btns"><button class="btn" data-x>닫기</button><button class="btn primary" data-go="${t.dataset.go}" data-force="1">그냥 ${nm} 하기</button></div>`);
+}, true);
 /* 마감 체크를 열 때 오늘 안 한 일이 있으면 먼저 보여 줌 (시험 모드) */
 document.addEventListener("click", (e) => {
   const t = e.target.closest?.('[data-go="close"]'); if (!t || !TEST || !B || t.dataset.force) return;
-  const miss = dayPlan().filter((p) => ["open", "stock", "vmam", "vmpm"].includes(p.k) && !p.done && p.due); if (!miss.length) return;
+  const miss = dayPlan().filter((p) => ["open", "stock", "vmam"].includes(p.k) && !p.done && p.due); if (!miss.length) return;
   e.stopPropagation(); e.preventDefault(); czCssOn();
   openSheet(`<h2>오늘 아직 안 한 일 ${miss.length}개</h2><div class="desc">마감 전에 먼저 해 주세요.</div>${miss.map((p, i) => nhRow({ title: p.name, sub: p.hint || p.t + "에 할 일", red: true, act: p.act, attr: p.attr, href: p.href }, i)).join("")}<div class="btns"><button class="btn" data-x>닫기</button><button class="btn primary" data-go="close" data-force="1">그냥 마감 체크 하기</button></div>`);
 }, true);
@@ -3264,7 +3279,7 @@ async function doCheck(kind) {
   try {
     await send({ type: kind, missed, by: working().join(", ") || CKBY, ...(kind === "open" ? { prep, prepDiff } : {}) });
     const s = st(); s[kind] = { t: now(), missed }; if (kind === "open") s.prep = prep; saveSt(s);
-    closeSheet(); render(); toast(`${kind === "open" ? "오픈 체크 완료, 돈통은 봇이 포스와 맞춰보는 중" : "마감 체크 완료"}`);
+    closeSheet(); render(); toast(`${kind === "open" ? "오픈 체크 완료, 돈통은 봇이 포스와 맞춰보는 중" : "마감 체크 완료"}`); vmAsk(kind === "open" ? "am" : "pm");
   } catch (e) { $("#okCk").disabled = false; fail(e); }
 }
 function sheetOut() {
