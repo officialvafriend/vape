@@ -299,6 +299,12 @@
   html.feel .nhtg{font-size:16px;font-weight:800;color:var(--sub);padding:16px 0 2px;border-top:1px solid var(--line)}html.feel h2+.nhtg,html.feel .nhdone+.nhtg{border-top:0;padding-top:6px}
   html.feel .nhrow>i.b{background:var(--blue)}html.feel .nhrow.dn{opacity:.55}
   html.feel .nhtap{width:100%;min-height:64px;margin:0;background:none;border:0;border-top:1px solid var(--line);border-radius:0;font:inherit;text-align:left;color:inherit;text-decoration:none;cursor:pointer}html.feel .nhtap.f{border-top:0}html.feel .nhtap.drop{flex-wrap:nowrap}
+  /* 11/10 시험 모드 신입 시험 고침: 닫기 묻기, 지점 안 고름, AS 탭 위 버튼 */
+  html.feel .xask{position:sticky;bottom:0;z-index:3;background:#fff;border-top:2px solid var(--red);padding:14px 0 calc(10px + env(safe-area-inset-bottom));margin-top:8px}html.feel .xask b{display:block;font-size:20px;margin-bottom:10px;color:var(--ink)}
+  html.feel .chip-all:not(.on){background:#fff;color:var(--ink);box-shadow:inset 0 0 0 1px #c9cfd6}
+  html.feel .chips.need{outline:2px solid var(--red);outline-offset:4px;border-radius:12px}html.feel .chips.need::before{content:"지점을 골라 주세요";display:block;width:100%;color:var(--red);font-weight:800;font-size:16px}
+  html.feel .a2top .btns{margin:0}html.feel .a2top .btn{min-height:64px;font-size:18px}html.feel .a2sub{margin-top:12px;font-size:16px;font-weight:700;color:var(--sub)}
+
   html.feel .nhtap .gt,html.feel .nhdone .gt{flex:none;margin-left:auto;font-size:26px;font-weight:400;line-height:1;color:var(--sub);padding:0 4px}
   html.feel .nhpage .nhdone>summary{display:flex;align-items:center;gap:8px;min-height:56px;font-size:18px;font-weight:700;color:var(--ink2);cursor:pointer;list-style:none}html.feel .nhdone>summary::-webkit-details-marker{display:none}html.feel .nhdone[open] .gt{transform:rotate(90deg)}html.feel .nhdone{border-bottom:1px solid var(--line);margin-bottom:2px}
   html.feel .nhpage .card>h2,html.feel .nhpage summary{font-size:20px;font-weight:800;color:var(--ink)}
@@ -398,7 +404,7 @@
 })();
 </script>
 <script>
-const VER = "11.10-19"; window.VER_ERR = VER;
+const VER = "11.10-20"; window.VER_ERR = VER;
 const GAME_LOCK = true; // 11/02 쉬는 시간 게임 잠금
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
@@ -707,7 +713,7 @@ function turnPop() {
   document.body.appendChild(box);
 }
 /* 11/10 하루 일과: 때가 되면 '지금 할 일'에 뜨고, 안 하면 남아 있음 (시험 모드) */
-const VM_BR = ["본점", "율하", "상인"]; /* 자판기 보고를 하는 지점. 11/11 액상덕후 기억 기준, 확정 아님 */
+const VM_BR = []; /* 11/10 액상덕후 "자판기는 이제 안 쓰나 봐": 시험 모드 자판기 보고 끔. 전에는 본점, 율하, 상인 */
 const VM_LOCAL = {};
 const vmDone = (slot) => VM_LOCAL[slot] || (BOARD?.vm || {})[slot + (TEST ? "T" : "")] || null;
 function dayPlan() {
@@ -776,6 +782,8 @@ function nhAllHtml(openCard, closeCard) {
 }
 /* 버튼에 적힌 동작을 그대로 실행 (팝업의 '지금 하기'용) */
 function runAct(x) { if (x.href) { location.href = x.href; return; } const b = document.createElement("button"); b.style.display = "none"; for (const mm of String(x.attr || "").matchAll(/data-(\w+)="([^"]*)"/g)) b.dataset[mm[1]] = mm[2]; document.body.appendChild(b); b.click(); b.remove(); }
+/* 11/10 시험 모드: 적은 내용이 있는 창을 닫을 때 창 안에서 한 번 묻기(브라우저 확인창이 안 뜨는 기기 대비) */
+function xAskShow() { let a = $("#xAsk"); if (!a) { a = document.createElement("div"); a.id = "xAsk"; a.className = "xask"; a.innerHTML = '<b>적은 내용이 사라져요. 닫을까요?</b><div class="btns"><button class="btn" data-xno>계속 쓰기</button><button class="btn primary" data-xyes>네, 닫아요</button></div>'; $("#sheet").appendChild(a); } a.scrollIntoView({ block: "end", behavior: "smooth" }); }
 /* 자판기 보고: 사진을 고르면 바로 봇으로 */
 function vmPick(slot) {
   const by = working().join(", "); if (!by) return needIn(() => vmPick(slot));
@@ -1217,7 +1225,7 @@ function render() {
     stock: `<div class="cols one"><div>${surveyCardHtml()}</div></div>`,
     talk: ONLY_OPEN_CLOSE ? talkHtml() : `<div class="cols"><div>${memoCardHtml()}${creqCardHtml()}</div><div>${reqCard}${myQuicksCard()}</div></div>`,
     as: `<div class="cols one"><div>${asCardHtml()}</div></div>`,
-    as2: as2Html(),
+    as2: (TEST ? as2TopHtml() : "") + as2Html(),
     note: noteHtml(),
     reply: replyHtml(),
     blog: blogHtml(),
@@ -1628,6 +1636,7 @@ function as2BranchHtml() {
     ${q ? found.map((x) => row(x, `<span class="a2st" style="display:inline-block">${where(x)}</span>`)).join("") || '<div class="desc" style="padding:10px 2px">찾는 AS가 없어요</div>' : ""}
     ${leadN ? `<div class="desc" style="margin-top:16px">오래된 AS ${leadN}개는 팀장님이 챙기고 있어요</div>` : ""}</div>`;
 }
+const as2TopHtml = () => `<div class="card a2top"><div class="btns"><button class="btn" data-req="break">🔧 매장 물건 고장 알리기</button><button class="btn" data-req="supply">🧻 비품 요청</button></div><div class="a2sub">아래는 손님 기기 AS예요</div></div>`;
 function as2Html() {
   if (B !== "본점") { as2Dec(); return as2BranchHtml(); }
   as2Dec();
@@ -2387,9 +2396,9 @@ const pcList = () => (BOARD?.parcels || []).filter((r) => !r.test === !TEST && !
 const pcDay = () => (TEST ? BOARD?.pdayTest : BOARD?.pday) || {};
 const pcState = (b) => { const x = pcDay()[b] || {}; const hm2 = (h) => { const [a, c] = String(h || "").split(":"); return +a * 60 + +c; }, n = new Date(), nm = n.getHours() * 60 + n.getMinutes();
   if (x.none) return { ok: false, t: "택배 안 함" };
-  if (x.gone || (b === B && PC.gone)) return { ok: false, t: `오늘 출고됨 ${x.gone?.t || PC.gone}` };
+  if (x.gone || (b === B && PC.gone)) return { ok: false, t: TEST ? `오늘 택배 이미 나감 ${x.gone?.t || PC.gone}` : `오늘 출고됨 ${x.gone?.t || PC.gone}` };
   if (x.cut && nm > hm2(x.cut)) return { ok: false, t: `마감 시간 지남 (${x.cut})` };
-  return { ok: true, t: `출고 전${x.carrier ? `, ${x.carrier}` : ""}${x.cut ? `, ${x.cut}까지` : ""}` }; };
+  return { ok: true, t: `${TEST ? "오늘 보낼 수 있어요" : "출고 전"}${x.carrier ? `, ${x.carrier}` : ""}${x.cut ? `, ${x.cut}까지` : ""}` }; };
 // 10/26 사장님: 노란 줄은 "누가 요청, 뭘, 손님" 순서로 바로 읽히게. 종류(택배, 퀵 등)는 작은 표시로
 const hp = (attr, ic, tag, txt, old, act) => UI2 ? `<button class="hpill" ${attr}>${ic} <i>${tag}</i> <b>${txt}</b><em>${act}</em></button>` : `<button class="hpill" ${attr}>${ic} <b>${old}</b><em>${act}</em></button>`;
 const pcPills = () => pcList().filter((r) => r.to === B && r.st === "ask").map((r) => hp(`data-view="parcel"`, "📦", "택배", `${esc(ho(r.from))} 요청, ${esc(r.items)} 재고 있나요?`, `택배 재고 확인, ${esc(r.items)} (${esc(ho(r.from))} 요청)`, "답하기")).join("")
@@ -2427,7 +2436,7 @@ function sheetPcNew() {
   PC.to = null; PK = { list: [], res: [] }; if (PICK) { loadProds(); loadPst().then(pkStockDraw); }
   const chips = (order) => (order || BR.map((b) => [b, null])).map(([b, km], i) => { const x = pcState(b); return `<button class="chip ${PC.to === b ? "on" : ""}" data-pcto="${b}" style="${x.ok ? "" : "opacity:.6"}">${order && i === 0 ? "⭐ " : ""}${esc(ho(b))} <small>${esc(x.t)}${km != null ? `, 약 ${km < 1 ? 1 : Math.round(km)}km` : ""}</small></button>`; }).join("");
   window._pcChips = chips;
-  openSheet(`<h2>📦 택배 요청</h2><div class="desc">보낼 지점이 [있어요]를 누르면 그때 손님 결제를 받아요.</div>
+  openSheet(`<h2>📦 택배 요청</h2><div class="desc">${TEST ? "요청을 보내면 그 지점이 재고를 확인해요. \"있어요\" 답이 오면 그때 손님 결제를 받아요." : "보낼 지점이 [있어요]를 누르면 그때 손님 결제를 받아요."}</div>
     ${PICK ? pkHtml() : '<input class="input" id="pcItems" placeholder="품목, 수량 (예: 메가킥 망고 3병)" maxlength="120">'}
     <input class="input" id="pcName" placeholder="손님 이름" maxlength="20"><input class="input" id="pcPhone" placeholder="손님 연락처" inputmode="tel" maxlength="20">
     <input class="input" id="pcAddr" placeholder="받을 주소" maxlength="120">
@@ -2642,7 +2651,7 @@ function sheetSnNew(kind) {
 async function doSnNew(t) {
   const v = (id) => ($(id)?.value || "").trim(), k = SN.kind;
   const items = PICK ? pkItems() : v("#snItems");
-  if (!SN.to) return toast("지점을 골라 주세요"); if (!items) return toast("상품을 골라 주세요");
+  if (!SN.to) { if (TEST) { const cs = $("[data-snto]")?.closest(".chips"); if (cs) { cs.classList.add("need"); cs.scrollIntoView({ block: "center", behavior: "smooth" }); } } return toast(TEST ? "어느 지점에서 받을지 먼저 골라 주세요" : "지점을 골라 주세요"); } if (!items) return toast("상품을 골라 주세요");
   if (k === "openquick") { if (!v("#snAddr")) return toast("받을 주소를 넣어 주세요"); if (!$("#snPaid")?.checked) return toast("포스에서 먼저 결제해 주세요"); }
   const by = working().join(", "); if (!by) return needIn(() => {});
   if (TEST && !t.dataset.ok) return sendCheck(t, items, [[v("#snName"), v("#snPhone")].filter(Boolean).join(", "), v("#snAddr"), SN.to === "all" ? "전 지점에 물어봐요" : `${ho(SN.to)}에서 받아요`, v("#snMemo") ? `메모: ${v("#snMemo")}` : ""], PICK ? pendTxt() : "");
@@ -3585,11 +3594,13 @@ async function doAsAdd(t) {
 
 document.addEventListener("click", (e) => {
   const t = e.target.closest("button,[data-x]");
-  if (!t) { const a2 = e.target.closest("[data-a2d]"); if (a2) return sheetAs2Detail(a2.dataset.a2d); const rw = e.target.closest("[data-crd],[data-mmd]"); if (rw) return rw.dataset.crd ? sheetCreqDetail(rw.dataset.crd) : sheetMemoDetail(rw.dataset.mmd); if (e.target.id === "dim") { if (sheetDirty() || (TEST && (((PK.list || []).length && $("#okSnNew,#okPcNew")) || ($("#okSnNew") && SN.to) || ($("#okPcNew") && PC.to)))) return toast(TEST ? "적은 내용이 있어요. 닫으려면 아래 버튼을 눌러 주세요" : "입력한 내용이 있어요. 닫으려면 [취소]를 눌러 주세요"); closeSheet(); } return; }
+  if (!t) { const a2 = e.target.closest("[data-a2d]"); if (a2) return sheetAs2Detail(a2.dataset.a2d); const rw = e.target.closest("[data-crd],[data-mmd]"); if (rw) return rw.dataset.crd ? sheetCreqDetail(rw.dataset.crd) : sheetMemoDetail(rw.dataset.mmd); if (e.target.id === "dim") { if (sheetDirty() || (TEST && (((PK.list || []).length && $("#okSnNew,#okPcNew")) || ($("#okSnNew") && SN.to) || ($("#okPcNew") && PC.to)))) return TEST ? xAskShow() : toast("입력한 내용이 있어요. 닫으려면 [취소]를 눌러 주세요"); closeSheet(); } return; }
   if (t.dataset.talk) { TALK = t.dataset.talk; ls.set("vf-app-talk", TALK); return render(); }
   if (t.dataset.crf) { CRF = t.dataset.crf; return render(); }
   if (t.dataset.b) { B = t.dataset.b; ls.set("vf-app-branch", B); return render(); }
-  if (t.dataset.x !== undefined) { if (TEST && $("#okSnNew,#okPcNew") && ((PK.list || []).length || ($("#okSnNew") && SN.to) || ($("#okPcNew") && PC.to) || [...document.querySelectorAll("#sheet input:not([type=checkbox]),#sheet textarea")].some((i) => i.id !== "pkQ" && (i.value || "").trim())) && !confirm("적은 내용이 사라져요. 닫을까요?")) return; return closeSheet(); }
+  if (t.dataset.xyes !== undefined) return closeSheet();
+  if (t.dataset.xno !== undefined) return $("#xAsk")?.remove();
+  if (t.dataset.x !== undefined) { if (TEST && $("#okSnNew,#okPcNew") && ((PK.list || []).length || ($("#okSnNew") && SN.to) || ($("#okPcNew") && PC.to) || [...document.querySelectorAll("#sheet input:not([type=checkbox]),#sheet textarea")].some((i) => i.id !== "pkQ" && (i.value || "").trim())) ) return xAskShow(); return closeSheet(); }
   const go = t.dataset.go;
   if (t.dataset.view) { VIEW = t.dataset.view; ls.set("vf-app-view", VIEW); render(); window.scrollTo(0, 0); return; }
   if (go === "showall") { document.body.classList.add("showall"); return; }
@@ -3618,7 +3629,7 @@ document.addEventListener("click", (e) => {
   if (t.dataset.snew) return sheetSnNew(t.dataset.snew);
   if (t.dataset.ntopen) return noticeSheet(t.dataset.ntopen);
   if (t.id === "okNotice") return doNoticeOk(t);
-  if (t.dataset.snto) { const off = TEST && t.classList.contains("on"); SN.to = off ? null : t.dataset.snto; document.querySelectorAll("[data-snto]").forEach((x) => x.classList.toggle("on", !off && x === t)); if (off) { if (SN.kind === "quick" && $("#okSnNew")) $("#okSnNew").textContent = "요청 보내기"; return; } if (TEST && SN.kind === "quick" && $("#okSnNew")) $("#okSnNew").textContent = SN.to === "all" ? "전 지점에 물어보기" : `${ho(SN.to)}에 요청 보내기`; return; }
+  if (t.dataset.snto) { const off = TEST && t.classList.contains("on"); SN.to = off ? null : t.dataset.snto; $("[data-snto]")?.closest(".chips")?.classList.remove("need"); document.querySelectorAll("[data-snto]").forEach((x) => x.classList.toggle("on", !off && x === t)); if (off) { if (SN.kind === "quick" && $("#okSnNew")) $("#okSnNew").textContent = "요청 보내기"; return; } if (TEST && SN.kind === "quick" && $("#okSnNew")) $("#okSnNew").textContent = SN.to === "all" ? "전 지점에 물어보기" : `${ho(SN.to)}에 요청 보내기`; return; }
   if (t.id === "okSnNew") return doSnNew(t);
   if (t.dataset.snopen) return sheetSnStep(t.dataset.snopen);
   if (t.dataset.why) { const i = $("#snWhy"); if (i) i.value = t.dataset.why; document.querySelectorAll("[data-why]").forEach((x) => x.classList.toggle("on", x === t)); return; }
