@@ -404,7 +404,7 @@
 })();
 </script>
 <script>
-const VER = "11.10-20"; window.VER_ERR = VER;
+const VER = "11.10-21"; window.VER_ERR = VER;
 const GAME_LOCK = true; // 11/02 쉬는 시간 게임 잠금
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
@@ -569,6 +569,11 @@ const BEF_GUIDE = [
   [/퇴근/, [['data-go="out"', "퇴근 열기"]]],
   [/마감/, [['data-go="close"', "마감 체크 열기"]]],
 ];
+/* 11/10 베프 업그레이드: 길 안내 카드 첫 줄 앞말 */
+const BEF_SAY = { "비품 요청 열기": "비품이 모자라면 ", "매장 물건 고장 알리기": "매장 물건이 고장 났으면 ", "손님 기기 AS 접수": "손님 기기면 ", "AS 접수 열기": "손님 기기 AS는 ", "시연 교체 적기": "시연 기기를 바꿨으면 ", "고객요청 열기": "손님 부탁은 ", "노트 열기": "건의나 메모는 " };
+/* 11/10 시험 모드: 베프 답에 나온 화면 이름을 바로 여는 버튼(최대 2개) */
+const BEF_JUMP = [["[퀵]", 'data-snew="quick"', "퀵 열기"], ["[택배]", 'data-go="pcnew"', "택배 열기"], ["[전달]", 'data-snew="jeon"', "전달 열기"], ["[고객요청]", 'data-go="creq"', "고객요청 열기"], ["[매장 물건 고장 알리기]", 'data-req="break"', "매장 물건 고장 알리기"], ["[비품 요청]", 'data-req="supply"', "비품 요청"], ["[출근]", 'data-go="in"', "출근 열기"], ["[AS]", 'data-view="as2"', "AS 열기"]];
+const befJump = (a) => { const hit = BEF_JUMP.filter(([k]) => String(a || "").includes(k)).slice(0, 2); return hit.length ? `<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;white-space:normal">${hit.map(([, at, n]) => `<button ${at} style="${befBtn}">${n}</button>`).join("")}</div>` : ""; };
 function befPend() {
   const el = $("#pkR"); if (!el) return;
   const l = (PK.pend || [])[0]; if (!l) { el.innerHTML = ""; return; }
@@ -605,7 +610,8 @@ async function befDo(q) {
   const g = BEF_GUIDE.filter(([re]) => re.test(q));
   if (g.length && !r.kind && !has && (q.replace(/\s/g, "").length <= 14 || /어디서|어디에|어떻게\s*해|하고\s*싶|접수|요청|떨어졌|났어|바꿨|열어|할래|할게/.test(q))) {
     const i = BEF_PICK.push({ q }) - 1, seen = new Set(), bs = g.flatMap((x) => x[1]).filter(([a]) => !seen.has(a) && seen.add(a));
-    return card(wrap("여기서 하면 돼요", bs.map(([a, n]) => `<button ${a} style="${befBtn}${on}">${n}</button>`).join("") + `<button data-befask="${i}" style="${befBtn}">베프에게 물어보기</button>`));
+    const pi = Math.max(0, /손님|기기/.test(q) ? bs.findIndex(([a]) => a === 'data-view="as2"') : /고장|망가|부서|안\s*켜/.test(q) ? bs.findIndex(([a]) => a === 'data-req="break"') : 0), pb = bs[pi], rest = bs.filter((_, k) => k !== pi);
+    return card(wrap(`${BEF_SAY[pb[1]] || ""}[${pb[1]}]를 눌러요.${rest.length ? "<br>다른 일이면 아래에서 골라요." : ""}`, [pb, ...rest].map(([a, n], k) => `<button ${a} style="${befBtn}${k ? "" : on}">${n}</button>`).join("") + `<button data-befask="${i}" style="${befBtn}">다시 물어보기</button>`));
   }
   if (r.kind && (has || !r.lines.length || !EZ_ASK.test(q))) { clr(); befOpen(r, r.kind); return true; }
   if (!r.kind && has && r.lines.every((l) => l.hits.length) && (r.lines.some((l) => l.cnt) || !EZ_ASK.test(q))) {
@@ -1077,7 +1083,7 @@ function askHtml() {
   const leadLine = (x) => { if (x.lead == null || !x.leadName) return ""; const c = ASK.leads?.[x.lead]; return `\n\n📞 ${esc(x.leadName)} 팀장님 ${c ? `<a href="tel:${esc(c[1])}" style="color:var(--blue);font-weight:800">${esc(c[1])}</a>` : '<span style="color:var(--sub)">(매장 코드를 넣으면 번호가 보여요)</span>'}`; };
   // 10/29 액상덕후 "답변이 도움이 되었나요? 버튼 만들어서 민심 수집": 답마다 👍 👎 한 번. 👎 받은 답은 봇이 다시 안 씀
   const fbHtml = (x) => { const v = x.fb || ASK.fb?.[x.id]; return `<div style="margin:-4px 0 8px 38px;font-size:12px;color:var(--sub);display:flex;gap:6px;align-items:center">${v ? (v > 0 ? "👍 고마워요!" : "👎 알려 줘서 고마워요. 고칠게요") : `도움이 됐나요? <button data-befb="${esc(x.id)}|1" style="background:#f2f4f6;border:0;border-radius:12px;padding:4px 10px;font-size:14px">👍</button><button data-befb="${esc(x.id)}|-1" style="background:#f2f4f6;border:0;border-radius:12px;padding:4px 10px;font-size:14px">👎</button>`}</div>`; };
-  const msgs = L.map((x) => me(x) + (x.card ? bot("", x.card) : x.a ? bot(esc(x.at || ""), esc(x.a).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>") + leadLine(x)) + fbHtml(x) : bot("", `<span style="color:var(--sub)">${ASK_CLOSE(x.q) ? "포스랑 은행 기록을 보고 있어요. 1분쯤 걸려요" : "답 쓰는 중이에요"} <span class="bef-dots"><i>●</i><i>●</i><i>●</i></span></span>`))).join("");
+  const msgs = L.map((x) => me(x) + (x.card ? bot("", x.card) : x.a ? bot(esc(x.at || ""), esc(x.a).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>") + leadLine(x) + (TEST ? befJump(x.a) : "")) + fbHtml(x) : bot("", `<span style="color:var(--sub)">${ASK_CLOSE(x.q) ? "포스랑 은행 기록을 보고 있어요. 1분쯤 걸려요" : "답 쓰는 중이에요"} <span class="bef-dots"><i>●</i><i>●</i><i>●</i></span></span>`))).join("");
   setTimeout(() => { const box = $("#askBox"), q = $("#askQ"); if (box) box.scrollTop = box.scrollHeight; if (VIEW === "ask" && window.scrollY > 0) window.scrollTo(0, 0); /* 11/03: 답 오면 화면이 내려가 제목이 사라지던 것 */ if (q && ASK.focus) { q.focus(); q.setSelectionRange(q.value.length, q.value.length); } }, 0);
   return `<div class="cols one"><div><div class="card" style="padding:0;display:flex;flex-direction:column;height:calc(100vh - 190px);min-height:420px;overflow:hidden">
     <div style="padding:14px 16px;border-bottom:1px solid var(--line);font-weight:800">💛 베프 <small style="color:var(--sub);font-weight:500">오늘 대화만 보여요</small></div>
