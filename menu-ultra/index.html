@@ -576,10 +576,13 @@ function go(v){ if (v === 'home' && document.body.dataset.v !== 'home') logoPlay
   document.querySelectorAll('#seg button').forEach(b => b.classList.toggle('on', b.dataset.v === v)); }
 
 // 첫 화면 포스터 10/27: 이벤트 3개(하복2, 대량, 일회용), 새로고침마다 이벤트별 시안 중 하나를 골라 보여 줌 (pst_b_*.jpg, 디자인작업/261027_상담패드B안/gpt)
-const PB = { H: [1,2,3,4,5], B: [1,2,3,4,5], D: [1,2,3,4] }; // 10/27 v3: B 빛과 그림자, D 톤온톤 (D5는 사장님 "어떻게 해도 별로"라 뺌)
+/* 11/10 주력 기기패키지를 말론, 말론S로 변경 (하복2 포스터는 첫 화면에서 뺌). 그림에 글자가 들어 있어 색상별로 한 장씩 */
+const MAL_P = [["M", "pst_m_black.jpg", "블랙"], ["M", "pst_m_gun.jpg", "건메탈"], ["M", "pst_m_silver.jpg", "실버"], ["S", "pst_s_black.jpg", "블랙"], ["S", "pst_s_gun.jpg", "건메탈"], ["S", "pst_s_silver.jpg", "실버"]];
+const PB = { B: [1,2,3,4,5], D: [1,2,3,4] }; // 10/27 v3: B 빛과 그림자, D 톤온톤 (D5는 사장님 "어떻게 해도 별로"라 뺌)
 const PB_OLD = { H: "pst_havok2_v7.jpg", B: "pst_bulk3050.jpg", D: "pst_dsp105.jpg" };
-const PID = Object.keys(PB).map(k => PB[k].length ? k + PB[k][Math.floor(Math.random() * PB[k].length)] : null); // 예: ["H3", "B1", "D4"]
-const PST = PID.map((id, i) => id ? "pst_b_" + id + ".jpg" : PB_OLD[Object.keys(PB)[i]]); // 글자 박힌 판 (이벤트 화면 썸네일용)
+const PID0 = Object.keys(PB).map(k => PB[k].length ? k + PB[k][Math.floor(Math.random() * PB[k].length)] : null); // 예: ["B1", "D4"]
+const PID = [...MAL_P.map(() => null), ...PID0];
+const PST = [...MAL_P.map((x) => x[1]), ...PID0.map((id, i) => id ? "pst_b_" + id + ".jpg" : PB_OLD[Object.keys(PB)[i]])]; // 글자 박힌 판 (이벤트 화면 썸네일용)
 // 글자 (10/27 확정 문구, 가격은 사장님 확인값): 위 = 작은 글 + 제목 + 설명 / 아래 = 빨간 딱지 + 큰 숫자
 const PTX = {
   H: { cls: "mj oh", top: `<div class="eye">베이프렌드 기기패키지</div><div class="ti">HAVOK II</div><div class="sub">하복2 + 입호흡 액상 10병</div>`, pr: `<div class="r1"><span class="pl">15,000원 할인</span><s>179,000원</s></div><b class="pb">164,000<small>원</small></b>` },
@@ -624,7 +627,7 @@ function showP(i, dir = 1) {
 new ResizeObserver(pvFit).observe($('poster'));
 showP(0);
 setInterval(() => { if (document.body.dataset.v === 'home' && !drag && !pvBusy && Date.now() > pvHold) showP(pi + 1, 1); }, 5000);
-const PST_K = Object.keys(PB); // PST 순서 = 이벤트 키 (H 하복2, B 대량, D 일회용)
+const PST_K = [...MAL_P.map((x) => x[0]), ...Object.keys(PB)]; // PST 순서 = 이벤트 키 (M 말론, S 말론S, B 대량, D 일회용)
 $('poster').onclick = (e) => { if (pMoved) { pMoved = false; return; } if (e.target.closest('#dots')) { pvHold = Date.now() + 8000; return showP(pi + 1, 1); } openEv(PST_K[pi]); };
 $('dots').onclick = (e) => { e.stopPropagation(); pvHold = Date.now() + 8000; showP(pi + 1, 1); };
 // 손가락(마우스)으로 밀기 (10/27 "가로 화면도 포스터는 손으로 넘겨도 되잖아"): 화면 폭 15% 넘게 밀었거나 빨리 튕기면 넘김, 끌고 난 뒤엔 구매 창 안 열림
@@ -716,7 +719,7 @@ function estimate(c) { // c = { dev: 하복2 대수, v: 빌런+릭, p: 다른 �
   const tryPk = (need, add, label, onlyVL) => { if (!c.dev) return;
     for (let a = 0; a <= Math.min(need, c.v); a++) { if (need - a > (onlyVL ? 0 : c.p)) continue;
       const t = DS + add + prPrice(c.v - a + c.p - (need - a)); if (t < b) { b = t; how = label; } } };
-  tryPk(5, ADD.vl5, "베이프렌드 기기패키지", true); tryPk(5, ADD.pr5, "프리미엄 기기패키지", false); tryPk(10, ADD.pr10, "프리미엄 기기패키지 10병", false);
+  if (!c.noVl) tryPk(5, ADD.vl5, "베이프렌드 기기패키지", true); /* 말론, 말론S는 빌런 릭 3만원 없음 (11/10) */ tryPk(5, ADD.pr5, "프리미엄 기기패키지", false); tryPk(10, ADD.pr10, "프리미엄 기기패키지 10병", false);
   return { total: b + pmPrice(c.m || 0), how };
 }
 
@@ -724,7 +727,7 @@ function estimate(c) { // c = { dev: 하복2 대수, v: 빌런+릭, p: 다른 �
 const cart = new Map();
 const countCart = () => { const c = { dev: 0, devSum: 0, v: 0, p: 0, m: 0, other: 0 };
   // 일회용 낱개(dsp1), 폐호흡(lung)은 goodsPlan()에서 따로 계산
-  for (const x of cart.values()) { if (x.k === "dsp1" || x.k === "lung") continue; if (x.items) { c.other += x.unit * x.qty; continue; } if (x.k === "dev") { c.dev += x.qty; c.devSum += x.unit * x.qty; } else if (x.k === "goods") c.other += x.unit * x.qty; else if (x.prime) c.m += x.qty; else if (isVL(x)) c.v += x.qty; else c.p += x.qty; } return c; };
+  for (const x of cart.values()) { if (x.k === "dsp1" || x.k === "lung") continue; if (x.items) { c.other += x.unit * x.qty; continue; } if (x.k === "dev") { c.dev += x.qty; c.devSum += x.unit * x.qty; if (/^말론/.test(x.model || x.n)) c.noVl = true; } else if (x.k === "goods") c.other += x.unit * x.qty; else if (x.prime) c.m += x.qty; else if (isVL(x)) c.v += x.qty; else c.p += x.qty; } return c; };
 // ── 첫구매 혜택 (10/28 이사님, 사장님): 셋 중 하나 하면 PERK_AMT 할인. 직원이 포스에서 할인 처리 ──
 const PERK_AMT = 2000, PERK_MIN = 200000; // 기기패키지 20만원 이상, 현금, 계좌이체 결제일 때만 (10/28 사장님)
 const PERK_OPTS = [["clip", "네이버 클립 올리기", "QR 찍고 올리기, 직원이 도와드려요"], ["insta", "인스타 팔로우하기", "QR 찍고 팔로우"], ["kakao", "카카오톡 친구추가 하기", "QR 찍고 친구추가"]];
@@ -1070,7 +1073,11 @@ const DSP_POOL = () => GDS.filter((g) => g.c === "dsp" && /^(팜팜바|모스바
 const DSP_IMG = { 팜팜바: "dsp_farm.png", 모스바: "dsp_moss.png" };
 let EV = null; // { k, need, pick: Map(id → 수), color }
 const pickN = () => [...EV.pick.values()].reduce((a, n) => a + n, 0);
+const MAL = { M: { model: "말론 기계", name: "말론", pod: "말론팟 0.6옴" }, S: { model: "말론S", name: "말론S", pod: "말론S 0.6옴팟" } };
+const malPod = () => GDS.find((g) => g.c === "pod" && g.n === MAL[EV.k].pod && !outOf(g.n));
 function openEv(k, need) { evQ = ""; evMore = false; mf = "전체";
+  if (k === "M" || k === "S") { const o = devOpts(MAL[k].model); if (!o.length) return toast(BRANCH + " " + MAL[k].name + " 재고가 없어요");
+    const p = MAL_P[pi] && MAL_P[pi][0] === k ? MAL_P[pi] : MAL_P.find((x) => x[0] === k), n = need === 5 ? 5 : 10; EV = { k, need: n, pick: new Map(), color: (o.find((x) => x.opt === p[2]) || o[0]).opt, hero: p[1], pods: 0, podAsk: false }; }
   if (k === "H") { const o = devOpts("하복2"); if (!o.length) return toast(BRANCH + " 하복2 재고가 없어요"); EV = { k, need: need === 5 ? 5 : 10, pick: new Map(), color: o[0].opt, pods: QZ_POD_N }; }
   if (k === "B") EV = { k, need: 30, pick: new Map() };
   if (k === "D") { if (!DSP_POOL().length) return toast(BRANCH + " 팜팜바, 모스바 재고가 없어요"); EV = { k, need: 15, pick: new Map() }; }
@@ -1096,6 +1103,7 @@ const COMBO = {
   B: () => [["빌런 위주", "과일멘솔", byRe(BULK_POOL, /빌런/)], ["빌런, 릭 반반", "멘솔 + 노멘솔", mix(byRe(BULK_POOL, /빌런/), byRe(BULK_POOL, /릭 /))], ["골고루", "다섯 브랜드 섞어서", mix(byRe(BULK_POOL, /빌런/), byRe(BULK_POOL, /릭 /), byRe(BULK_POOL, /^디오/), byRe(BULK_POOL, /아이스샷|토바코샷/))]],
   D: () => { const p = DSP_POOL(); return [["팜팜바만", "", p.filter((g) => g.model === "팜팜바")], ["모스바만", "", p.filter((g) => g.model === "모스바")], ["섞어서", "", mix(p.filter((g) => g.model === "팜팜바"), p.filter((g) => g.model === "모스바"))]]; },
 };
+COMBO.M = COMBO.S = COMBO.H;
 const unit = () => EV.k === "D" ? "개" : "병";
 let evQ = "", evMore = false;
 const evMoreBtn = (lab) => `<button class="lqmore" style="width:100%;margin-top:12px" ${lab}</button>`;
@@ -1129,6 +1137,27 @@ function drawEv() {
     if (evMore) h += `<div class="chips sub" style="margin-top:12px">${MORE_TABS.map((t) => `<button data-emf="${t}" class="${t === mf ? "on" : ""}">${t}</button>`).join("")}</div>` + (moreL.length ? `<div class="grid" style="margin-top:10px">${moreL.map((x) => evCard(x.id, imgOf(x), short(x.n), [x.br, x.f].filter(Boolean).join(", "), 0, false)).join("")}</div>` : '<div class="evtip">이 분류에 재고 있는 액상이 없어요</div>'); }
     $('evGo').textContent = rest ? `${n}병 고르고 담기 (남은 ${rest}병은 매장에서), ${tot}` : `이 구성으로 담기, ${tot}`;
   }
+  if (EV.k === "M" || EV.k === "S") { /* 11/10 말론, 말론S 패키지: 10병 + 팟 4팩, 5병 + 팟 2팩. 즉시 할인 없음, 한정판은 기기값만 다름 */
+    const M = MAL[EV.k], o = devOpts(M.model), d = o.find((x) => x.opt === EV.color) || o[0], pod = malPod(), podW = pod ? pod.price * EV.pods : 0, pk = EV.pods / POD_PER_PACK, tot = won(d.price + (EV.need === 10 ? ADD.pr10 : ADD.pr5) + podW);
+    const setP = (q) => d.price + (q === 10 ? ADD.pr10 : ADD.pr5), rec = EV.need === 10 ? 4 : 2;
+    const hero = (EV.k === "S" && (MAL_P.find((x) => x[0] === "S" && x[2] === d.opt) || {})[1]) || EV.hero;
+    $('evEye').textContent = "베이프렌드 기기패키지"; $('evTi').textContent = `${M.name} + 액상 ${EV.need}병`;
+    h += `<div class="card evhero"><img src="${hero}" alt=""><div class="pr"><b class="price">${tot}</b><span style="font-size:14px;color:var(--grey)">${M.name} ${won(d.price)} + 액상 ${EV.need}병 ${won(EV.need === 10 ? ADD.pr10 : ADD.pr5)}${pod && pk ? ` + 팟 ${pk}팩 ${won(podW)}` : ""}</span></div></div>
+      <div class="opt2" style="margin-bottom:var(--gap)">${[[10, "액상 10병"], [5, "액상 5병"]].map(([q, t]) => `<button class="${EV.need === q ? "on" : ""}" data-hq="${q}"><b style="font-size:18px">${t}</b><span>${won(setP(q))}</span></button>`).join("")}</div>
+      <div class="evtip">이벤트에 참여하시면 다음 방문 때 쓰는 3,000원 할인쿠폰을 드려요 (유효기간 1년)</div>`;
+    h += `<div class="evsec">① 색상</div>` + (o.length > 1 ? `<div class="opt2" style="margin-bottom:var(--gap)">${o.map((x) => `<button class="${x.opt === d.opt ? "on" : ""}" data-ec="${x.opt}"><b style="font-size:18px">${x.opt}</b><span>${won(x.price)}</span></button>`).join("")}</div>` : `<div class="evtip">색상은 매장에서 보고 골라요</div>`);
+    if (pod) h += `<div class="evsec" id="evPodBox">② ${M.name} 팟 같이 담기</div><div class="card" style="padding:16px;margin-bottom:10px;line-height:1.55"><b style="display:block;font-size:18px;color:var(--red)">팟, 코일은 필수품이에요!</b><div style="font-size:16px;margin-top:6px">자주 교체하지 않으면 누수가 생기고, 누수는 기기 고장의 원인이에요.</div><div style="font-size:16px;margin-top:4px;font-weight:700">보통 액상 1병당 1개, 또는 7~8일에 한 번 교체를 권장해 드려요.</div></div><div class="opt2" style="margin-bottom:10px">${[rec, rec / 2].map((q, i) => `<button class="${pk === q ? "on" : ""}" data-evpk="${q}"><b style="font-size:18px">팟 ${q}팩${i ? "" : " 추천"}</b><span>+${won(pod.price * POD_PER_PACK * q)}</span></button>`).join("")}</div><div class="card" style="padding:14px 16px;display:flex;gap:14px;align-items:center"><div style="flex:1"><b style="font-size:17px">${esc(pod.n)}</b><div style="color:var(--grey);font-size:14px">1팩(${POD_PER_PACK}개) ${won(pod.price * POD_PER_PACK)}${pk ? `, ${pk}팩 ${won(podW)}` : ""}</div></div><div class="pstep"><button data-evpod="-1">-</button><b>${pk}팩</b><button data-evpod="1">+</button></div></div>`;
+    h += pickHead(`③ 액상 ${EV.need}병`) + `<div class="grid">${LQ.map((x) => evCard(x.id, imgOf(x), short(x.n), x.f || "", 0, outOf(x.n))).join("")}</div>`;
+    const others = [...EV.pick.keys()].filter((id) => !LQ.some((x) => x.id === id)).map((id) => ALL_LQ.find((x) => x.id === id)).filter(Boolean);
+    const found = evQ.trim() ? searchItems(evQ).filter((r) => r.t === "liq" && r.x.line === "프리미엄").map((r) => r.x).slice(0, 12) : [];
+    const moreL = evMore ? moreLiq().filter((x) => x.line === "프리미엄") : [], moreIds = new Set(moreL.map((x) => x.id));
+    const show = [...new Map([...others, ...found].map((x) => [x.id, x])).values()].filter((x) => !moreIds.has(x.id));
+    h += `<div class="evsec">다른 프리미엄 액상</div><input class="evq" id="evQ" placeholder="원래 피시던 맛 찾기 (이름, 초성)" value="${esc(evQ)}" autocomplete="off">`;
+    h += show.length ? `<div class="grid" style="margin-top:10px">${show.map((x) => evCard(x.id, imgOf(x), short(x.n), [x.br, x.f].filter(Boolean).join(", "), 0, outOf(x.n))).join("")}</div>` : (evQ.trim() ? '<div class="evtip">찾는 프리미엄 액상이 없어요</div>' : "");
+    h += evMoreBtn(evMore ? 'data-evm="1">다른 액상 접기' : 'data-evm="1">찾는 맛이 없으세요?<b>더 많은 액상 보러 가기</b>');
+    if (evMore) h += `<div class="chips sub" style="margin-top:12px">${MORE_TABS.map((t) => `<button data-emf="${t}" class="${t === mf ? "on" : ""}">${t}</button>`).join("")}</div>` + (moreL.length ? `<div class="grid" style="margin-top:10px">${moreL.map((x) => evCard(x.id, imgOf(x), short(x.n), [x.br, x.f].filter(Boolean).join(", "), 0, false)).join("")}</div>` : '<div class="evtip">이 분류에 재고 있는 액상이 없어요</div>');
+    $('evGo').textContent = pod && !EV.pods && EV.podAsk ? `팟 없이 담기, ${tot}` : rest ? `${n}병 고르고 담기 (남은 ${rest}병은 매장에서), ${tot}` : `이 구성으로 담기, ${tot}`;
+  }
   if (EV.k === "B") {
     $('evEye').textContent = "베이프렌드 대량 특가"; $('evTi').textContent = "액상 대량구매";
     h += `<div class="evsec">① 몇 병?</div><div class="opt2">${[30, 50].map((q) => `<button class="${EV.need === q ? "on" : ""}" data-bq="${q}"><b>${q}병 <span class="price" style="font-size:22px;color:var(--red)">${won(BULK[q])}</span></b><span>병당 ${won(BULK[q] / q)}</span></button>`).join("")}</div>`;
@@ -1154,8 +1183,9 @@ $('evB').onclick = (e) => {
   else if (e.target.closest('[data-emf]')) mf = e.target.closest('[data-emf]').dataset.emf;
   else if (m) { const id = m.dataset.em, v = (EV.pick.get(id) || 0) - 1; v > 0 ? EV.pick.set(id, v) : EV.pick.delete(id); }
   else if (c) EV.color = c.dataset.ec;
+  else if (e.target.closest('[data-evpk]')) { const q = +e.target.closest('[data-evpk]').dataset.evpk * POD_PER_PACK; EV.pods = EV.pods === q ? 0 : q; }
   else if (e.target.closest('[data-evpod]')) EV.pods = Math.max(0, Math.min(20, (EV.pods || 0) + POD_PER_PACK * +e.target.closest('[data-evpod]').dataset.evpod));
-  else if (e.target.closest('[data-hq]')) { EV.need = +e.target.closest('[data-hq]').dataset.hq; if (EV.need === 5) for (const id of [...EV.pick.keys()]) { const x = LQ.find((y) => y.id === id); if (!x || !isVL(x)) EV.pick.delete(id); } while (pickN() > EV.need) { const last = [...EV.pick.keys()].pop(); const v = EV.pick.get(last) - 1; v > 0 ? EV.pick.set(last, v) : EV.pick.delete(last); } }
+  else if (e.target.closest('[data-hq]')) { EV.need = +e.target.closest('[data-hq]').dataset.hq; if (EV.k === "H" && EV.need === 5) for (const id of [...EV.pick.keys()]) { const x = LQ.find((y) => y.id === id); if (!x || !isVL(x)) EV.pick.delete(id); } while (pickN() > EV.need) { const last = [...EV.pick.keys()].pop(); const v = EV.pick.get(last) - 1; v > 0 ? EV.pick.set(last, v) : EV.pick.delete(last); } }
   else if (q) { EV.need = +q.dataset.bq; while (pickN() > EV.need) { const last = [...EV.pick.keys()].pop(); const v = EV.pick.get(last) - 1; v > 0 ? EV.pick.set(last, v) : EV.pick.delete(last); } }
   else if (clr) EV.pick.clear();
   else if (cb) { const pool = COMBO[EV.k]()[+cb.dataset.cb][2]; let i = 0; while (pickN() < EV.need && pool.length) { const x = pool[i++ % pool.length]; EV.pick.set(x.id, (EV.pick.get(x.id) || 0) + 1); } if (!pool.length) toast("이 조합은 재고가 없어요"); }
@@ -1163,12 +1193,18 @@ $('evB').onclick = (e) => {
   else return;
   drawEv(); $('evB').scrollTop = st;
 };
-$('evGo').onclick = () => { const rest = EV.need - pickN();
+$('evGo').onclick = () => { if ((EV.k === "M" || EV.k === "S") && malPod() && !EV.pods && !EV.podAsk) { EV.podAsk = true; drawEv(); toast("팟도 같이 챙겨 드릴까요?"); const b = document.getElementById('evPodBox'); if (b) b.scrollIntoView({ block: "start" }); return; }
+  const rest = EV.need - pickN();
   if (EV.k === "H") { const d = devOpts("하복2").find((o) => o.opt === EV.color);
     addItem(d.id, { k: "dev", n: d.n, label: d.n, img: DEV_IMG.하복2[EV.color], unit: d.price, model: "하복2" });
     for (const [id, q] of EV.pick) { const x = LQ.find((y) => y.id === id) || ALL_LQ.find((y) => y.id === id); addItem(id, { k: "liq", n: x.n, label: short(x.n), img: imgOf(x), unit: 15000 }, q); }
     if (rest) addItem("todo" + Date.now(), { k: "liq", n: "", label: EV.need === 5 ? `빌런, 릭 ${rest}병 (매장에서 고르기)` : `액상 ${rest}병 (매장에서 고르기)`, img: "", unit: 15000, todo: true, vl: EV.need === 5 }, rest);
     const pod = qzPod("0.6"); if (pod && EV.pods) addGoods(pod, EV.pods); }
+  if (EV.k === "M" || EV.k === "S") { const M = MAL[EV.k], o = devOpts(M.model), d = o.find((x) => x.opt === EV.color) || o[0], pod = malPod();
+    addItem(d.id, { k: "dev", n: d.n, label: d.n, img: devImgOf(M.model, d.opt), unit: d.price, model: d.model });
+    for (const [id, q] of EV.pick) { const x = ALL_LQ.find((y) => y.id === id); addItem(id, { k: "liq", n: x.n, label: short(x.n), img: imgOf(x), unit: 15000 }, q); }
+    if (rest) addItem("todo" + Date.now(), { k: "liq", n: "", label: `액상 ${rest}병 (매장에서 고르기)`, img: "", unit: 15000, todo: true, vl: false }, rest);
+    if (pod && EV.pods) addGoods(pod, EV.pods); }
   if (EV.k === "B") { const items = [...EV.pick].map(([id, q]) => { const x = BULK_POOL.find((y) => y.id === id); return [x.n, short(x.n), q]; });
     if (rest) items.push(["", "매장에서 고르기", rest]);
     const first = BULK_POOL.find((y) => y.id === [...EV.pick.keys()][0]);
