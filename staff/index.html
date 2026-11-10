@@ -282,6 +282,34 @@
   /* 11/05 점검: 마감 보고 뒤 버튼 3개에 글자 칸이 0이 되어 차액 경고가 안 보이던 것 → 버튼이 2개 이상이면 아랫줄로 */
   .step:has(.act ~ .act){flex-wrap:wrap}.step:has(.act ~ .act) .tx{flex:1 1 calc(100% - 50px);min-width:0}.step:has(.act ~ .act) .act{margin-top:2px}
   @media (max-width:899px){.store{min-height:40px}.chip{min-height:40px}.rlink button,.rlink a{min-height:42px;display:inline-flex;align-items:center}.rteye::after{content:"";position:absolute;inset:-9px}}
+  /* 11/10 시험 모드 폰, PC 배치 */
+  .nhgrid{display:flex;flex-direction:column}.nhl,.nhr{display:contents}.nhc{order:1}.nhr>*{order:2}.nhn{order:3}.nhr>.nhlink{order:4}
+  html.feel .btns>[data-x]{order:-1}
+  html.feel .nhrow em,html.feel .nhrow small{word-break:keep-all;overflow-wrap:anywhere}
+  html.feel .sheet{max-height:min(88vh,92%)}
+  @media (max-width:899px){
+    html.feel .store,html.feel .hmini,html.feel .act,html.feel .rqk,html.feel .nhlink,html.feel .keybar,html.feel .keybar button,html.feel .chip,html.feel [data-ez="classic"]{min-height:48px}
+    html.feel .chips{gap:8px}
+    html.feel .rqone{flex-wrap:wrap;gap:8px;overflow:visible}
+    html.feel .pkrow b{white-space:normal;word-break:break-word}
+    html.feel .pkrow span{gap:8px}
+    html.feel .pkrow span button{width:44px;height:48px}
+    html.feel .bnav button{position:relative}
+    html.feel .bnav .bd{position:absolute;top:-2px;left:calc(50% + 6px);margin:0}
+    .nhsay{position:sticky;bottom:calc(76px + env(safe-area-inset-bottom));z-index:6}
+    .nhsaylb{display:none}
+    html.feel .keybar{margin-top:8px}
+    html.feel .foot button,html.feel .keybar~button{min-height:48px}
+  }
+  @media (min-width:900px){
+    html.feel .dim{align-items:center}
+    html.feel .side .store{min-height:40px;margin-bottom:16px}
+    .nhgrid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:16px;align-items:start}
+    .nhl,.nhr{display:block}
+    .nhgrid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start}
+    html.feel .cztiles{grid-template-columns:repeat(3,minmax(0,1fr))}
+    html.feel .cz{max-width:920px;margin-inline:auto}
+  }
 </style>
 </head>
 <body>
@@ -310,7 +338,7 @@
 })();
 </script>
 <script>
-const VER = "11.10-13"; window.VER_ERR = VER;
+const VER = "11.10-15"; window.VER_ERR = VER;
 const GAME_LOCK = true; // 11/02 쉬는 시간 게임 잠금
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
@@ -528,11 +556,11 @@ document.addEventListener("click", (e) => {
 /* 11/10 요청으로 안 보이는 글: 베프(AI)로 보내기 전에 한 번 묻기 (시험 모드). 글은 지우지 않아서 [글 고치기]로 돌아감 */
 let BEF_ASK = null;
 function befAskSheet(q, go) {
-  BEF_ASK = go;
+  BEF_ASK = go; document.activeElement?.blur?.();
   openSheet(`<h2>베프에게 물어볼까요?</h2><div class="btns"><button class="btn" data-x>아니요</button><button class="btn primary" id="befAskYes">물어보기</button></div>`);
 }
 document.addEventListener("click", (e) => { if (e.target.closest?.("#befAskYes") && BEF_ASK) { const go = BEF_ASK; BEF_ASK = null; closeSheet(); go(); } });
-function befBoxHtml() { czCssOn(); return `<div class="desc" style="margin:14px 2px 6px;font-weight:700">💛 베프에게 글로 시키기</div><div class="czin" style="margin-bottom:12px"><input id="ezSay" placeholder="예: 빌런 자두 3개 택배" value="${esc(EZ.say)}" autocomplete="off" enterkeyhint="send" maxlength="300"><button data-ez="say" aria-label="보내기">↑</button></div>`; }
+function befBoxHtml() { czCssOn(); return `<div class="desc nhsaylb" style="margin:14px 2px 6px;font-weight:700">💛 베프에게 글로 시키기</div><div class="czin nhsay" style="margin-bottom:12px"><input id="ezSay" placeholder="예: 빌런 자두 3개 택배" value="${esc(EZ.say)}" autocomplete="off" enterkeyhint="send" maxlength="300"><button data-ez="say" aria-label="보내기">↑</button></div>`; }
 const ezBk = "<button data-ez=\"back\" style=\"display:inline-flex;position:sticky;top:8px;z-index:6;align-items:center;gap:6px;height:56px;padding:0 22px 0 16px;margin:0 0 10px;border:0;border-radius:999px;background:#fff;color:var(--ink);font:inherit;font-size:20px;font-weight:800;box-shadow:0 2px 8px rgba(0,0,0,.08)\"><span style=\"font-size:26px;line-height:1\">‹</span>뒤로</button>";
 const ezGo = (x) => { if (x === "home") EZ.hist = []; else if (x !== EZ.s) (EZ.hist ||= []).push(EZ.s); document.activeElement?.blur?.(); EZ.s = x; render(); window.scrollTo(0, 0); setTimeout(() => $("#ezPc")?.focus(), 30); };
 const ezAdd = (p, n) => { const i = EZ.cart.findIndex((x) => x[0] === p[0]); if (i >= 0) EZ.cart[i][1] += n; else EZ.cart.push([p[0], n, p[1] || null]); };
@@ -657,22 +685,22 @@ function nhHtml() {
   czCssOn();
   const L = nowItems(), more = L.length - 5, w = working();
   return `<span class="nhtag">시험 모드, 진짜 기록에 안 섞여요</span>
-    <div class="card"><h2>지금 할 일${L.length ? ` <small style="font-weight:600">${L.length}개</small>` : ""}</h2>${L.length ? L.slice(0, 5).map(nhRow).join("") : '<div class="desc" style="padding:6px 0 10px;font-size:16px">지금 할 일 없어요</div>'}${more > 0 ? `<button class="nhlink" data-view="parcel">외 ${more}건 더 보기</button>` : ""}</div>
+    <div class="nhgrid"><div class="nhl"><div class="card nhc"><h2>지금 할 일${L.length ? ` <small style="font-weight:600">${L.length}개</small>` : ""}</h2>${L.length ? L.slice(0, 5).map(nhRow).join("") : '<div class="desc" style="padding:6px 0 10px;font-size:16px">지금 할 일 없어요</div>'}${more > 0 ? `<button class="nhlink" data-view="parcel">외 ${more}건 더 보기</button>` : ""}</div><div class="nhn">${noticeCardHtml()}${bigDepCardHtml()}${sentCardHtml()}</div></div><div class="nhr">
     <div class="nhq"><button data-snew="quick"><b>퀵</b><span>다른 지점에서 급하게 받기</span></button><button data-go="pcnew"><b>택배</b><span>손님 집으로 보내기</span></button><button data-snew="jeon"><b>전달</b><span>지점끼리 물건 옮기기</span></button><button data-go="creq"><b>고객요청</b><span>손님 부탁 적어 두기</span></button></div>
     <div style="display:flex;gap:8px;margin-bottom:4px"><button class="nhbtn gray" data-go="in" style="flex:1">출근</button>${w.length && w[0] !== "시험" ? '<button class="nhbtn gray" data-go="out" style="flex:1">퇴근</button>' : ""}<button class="nhbtn gray" data-view="parcel" style="flex:1">오늘 일과표</button></div>
-    ${befBoxHtml()}${noticeCardHtml()}${bigDepCardHtml()}${sentCardHtml()}
-    <button class="nhlink" data-ez="home">쉬운 화면으로 보기</button>`;
+    ${befBoxHtml()}
+    <button class="nhlink" data-ez="home">쉬운 화면으로 보기</button></div></div>`;
 }
 function nhAllHtml(openCard, closeCard) {
   czCssOn();
   const P = dayPlan(), T = nowItems().filter((x) => !P.some((p) => p.name === x.title)), W = czWaitItems(), day = todayKey();
   const plan = P.map((p, i) => `<div class="nhrow ${i ? "" : "f"}"><span class="tm">${p.t}</span><i class="${p.done ? "ok" : p.late ? "r" : ""}"></i><span><em>${p.name}</em><small class="${p.late ? "red" : ""}">${p.done ? "했어요" + (p.doneTxt ? ", " + esc(p.doneTxt) : "") : p.late ? "아직 안 했어요, 늦었어요" : p.due ? "지금 할 시간이에요" : "아직 시간 전이에요"}</small></span>${p.done ? "" : p.href ? `<a class="nhbtn ${p.due ? "" : "gray"}" href="${p.href}">${p.act}</a>` : `<button class="nhbtn ${p.due ? "" : "gray"}" ${p.attr}>${p.act}</button>`}</div>`).join("");
   const fin = [...snList().filter((r) => (r.from === B || r.to === B) && r.d === day && r.st === "done").map((r) => `${(SKIND[r.kind] || "보내기").replace(/^\S+ /, "")}, ${r.items}`), ...pcList().filter((r) => (r.from === B || r.to === B) && r.d === day && r.st === "done").map((r) => `택배, ${r.items}`)];
-  return `<div class="card"><h2>오늘 일과표</h2>${plan}</div>
+  return `<div class="nhgrid2"><div><div class="card"><h2>오늘 일과표</h2>${plan}</div></div><div>
     <div class="card"><h2>우리 매장이 할 일 <small style="font-weight:600">${T.length}개</small></h2>${T.length ? T.map(nhRow).join("") : '<div class="desc" style="padding:6px 0 10px;font-size:16px">없어요</div>'}</div>
     <div class="card"><h2>다른 지점 답 기다림 <small style="font-weight:600">${W.length}개</small></h2>${W.length ? W.map((x, i) => nhRow({ title: x.title, sub: `${x.sub}, ${x.act}`, act: "보기", attr: x.attr }, i)).join("") : '<div class="desc" style="padding:6px 0 10px;font-size:16px">없어요</div>'}</div>
     <details class="card"><summary style="font-size:17px;font-weight:800;cursor:pointer">오늘 끝난 것 ${fin.length}개</summary>${fin.map((x) => `<div class="desc" style="padding:8px 0;font-size:15px">${esc(x)}</div>`).join("") || '<div class="desc" style="padding:8px 0">아직 없어요</div>'}</details>
-    ${custCardHtml()}<div class="cols"><div>${openCard}</div><div>${closeCard}</div></div>${replyQuickHtml()}`;
+    ${custCardHtml()}</div></div><div class="cols"><div>${openCard}</div><div>${closeCard}</div></div>${replyQuickHtml()}`;
 }
 /* 버튼에 적힌 동작을 그대로 실행 (팝업의 '지금 하기'용) */
 function runAct(x) { if (x.href) { location.href = x.href; return; } const b = document.createElement("button"); b.style.display = "none"; for (const mm of String(x.attr || "").matchAll(/data-(\w+)="([^"]*)"/g)) b.dataset[mm[1]] = mm[2]; document.body.appendChild(b); b.click(); b.remove(); }
@@ -813,6 +841,16 @@ function toast(m) { const t = $("#toast"); t.textContent = m; t.classList.add("o
 const qs = new URLSearchParams(location.search);
 // 10/19 시험 모드(?test=1): 신호에 test 표시 → 봇이 시험_ 탭에만 기록, 디스코드 알림 없음. 이 기기 기록도 따로
 const TEST = qs.get("test") === "1";
+if (TEST) {
+  document.addEventListener("keydown", (e) => {
+    if (e.key !== "Escape" || e.isComposing) return;
+    const top = document.querySelector('[data-sc="back"],[data-tp="later"]'); if (top) return top.click();
+    if (!$("#dim")?.classList.contains("on")) return;
+    const x = document.querySelector("#sheet [data-x]"); if (x) x.click(); else $("#dim").click();
+  });
+  const vv = window.visualViewport, vvFit = () => { const d = $("#dim"); if (d) { d.style.height = vv.height + "px"; d.style.top = vv.offsetTop + "px"; d.style.bottom = "auto"; } };
+  if (vv) { vv.addEventListener("resize", vvFit); vv.addEventListener("scroll", vvFit); setTimeout(vvFit, 0); }
+}
 if (TEST) document.documentElement.classList.add("feel"); // 11/04 누르는 느낌(시험 모드만)
 // 시험 모드에서 마감 보고 창의 확인, 보내기 버튼은 짧게 진동(안드로이드만, 아이폰은 무시됨)
 if (TEST) document.addEventListener("click", (e) => { if (e.target.closest?.("#sheet .check, #okClose, #okClose2") && !e.target.closest("button:disabled")) try { navigator.vibrate?.(8); } catch {} }, true);
