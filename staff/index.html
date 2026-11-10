@@ -310,7 +310,7 @@
 })();
 </script>
 <script>
-const VER = "11.10-12"; window.VER_ERR = VER;
+const VER = "11.10-13"; window.VER_ERR = VER;
 const GAME_LOCK = true; // 11/02 쉬는 시간 게임 잠금
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
@@ -422,25 +422,12 @@ const ezBg = (x) => { const o = new Set(); for (let i = 0; i < x.length - 1; i++
 let PRODJ = null;
 /* 오타, 줄임말: 자모 단위로 70% 넘게 겹치는 상품 5개까지 */
 function ezFuzzy(w) { const a = ezBg(ezJamo(w)); if (a.size < 6) return []; PRODJ ||= (PRODS || []).map((p) => [p, ezBg(ezJamo(p[0]))]); return PRODJ.map(([p, b]) => { let n = 0; a.forEach((x) => { if (b.has(x)) n++; }); return [p, n / a.size]; }).filter((x) => x[1] >= 0.7).sort((x, y) => y[1] - x[1] || x[0][0].length - y[0][0].length).slice(0, 5).map((x) => x[0]); }
-/* 11/10 택배 글에서 주소, 손님 이름 뽑기 (시험 모드 글 칸 전용) */
-const EZ_ADDR = /(?:(?:대구|서울|부산|인천|광주|대전|울산|세종|경기|강원|충북|충남|전북|전남|경북|경남|제주)(?:광역시|특별시|특별자치시|특별자치도|도)?\s*)?[가-힣]{1,6}(?:시|군|구)\s+(?:[가-힣]{1,6}(?:구|군)\s+)?[가-힣0-9]{1,12}(?:동|읍|면|로|길|가)(?:\s*\d+(?:-\d+)?(?![\d개병팩박])(?:번지|번길)?)*(?:\s*[가-힣A-Za-z0-9]{1,15}(?:아파트|빌라|오피스텔|맨션|타운|빌딩|상가))?(?:\s*\d+동)?(?:\s*\d+호)?(?:\s*\d+층)?/;
-const ezIsName = (w) => !!w && /^[가-힣]{2,4}$/.test(w) && !/^(택배|퀵|손님|고객|번호|연락처|주소|전화|이름|사장|팀장|이사|기사|직원|부탁|감사|보내|받을|보낼|오늘|내일|지금|본점)$/.test(w) && !BEF_BR.some(([re]) => re.test(w)) && !(PRODS || []).some((p) => pkNorm(p[0]).includes(pkNorm(w)));
 /* 상품 빼고 남은 말 중 메모로 남길 것 */
 const ezMemo = (rest, urgent) => { const L = rest.map((x) => x.replace(/\s+/g, " ").trim()).filter((x) => x.length > 1 && !EZ_ASK.test(x) && !/^(저기요|저기|혹시|그럼|이거|그거|오늘|지금|바로|그리고|네|음|아)$/.test(x)); return [...(urgent ? ["급해요"] : []), ...L].join(", ").slice(0, 120); };
 function ezParse(q) {
-  let t = " " + q + " ", to = null, addr = "", name = "";
-  const rest = [], isPc = /택배/.test(q), urgent = /급해|급합니다|빨리/.test(q);
-  const ph = t.match(/01\d[-\s]?\d{3,4}[-\s]?\d{4}/);
-  if (isPc) {
-    t = t.replace(/(주소는?|연락처는?|전화번호는?|전화는?|번호는?)\s*[:：]?(?=\s)/g, " ");
-    const am = t.match(EZ_ADDR); if (am) { addr = am[0].trim(); t = t.replace(am[0], " "); }
-    const nm0 = t.match(/(?:이름은?|성함은?|받는\s*분은?|받는\s*사람은?)\s*[:：]?\s*([가-힣]{2,4})(?=\s|,|$)/) || t.match(/(?:^|\s)([가-힣]{2,4}?)(?<!손|고객)(?:님|씨)(?=\s|,|$)/);
-    if (nm0 && ezIsName(nm0[1])) { name = nm0[1]; t = t.replace(nm0[0], " "); }
-    const ph2 = t.match(/01\d[-\s]?\d{3,4}[-\s]?\d{4}/);
-    if (!name && ph2) { const pre = t.slice(0, ph2.index).match(/(?:^|\s)([가-힣]{2,6})\s*$/), post = t.slice(ph2.index + ph2[0].length).match(/^\s*([가-힣]{2,4})(?=\s|,|$)/);
-      for (const m of [pre, post]) { if (!m || name) continue; const w = m[1].replace(/(고객님|고객|손님|님|씨)$/, ""); if (ezIsName(w)) { name = w; t = m === pre ? t.slice(0, m.index) + " " + t.slice(ph2.index) : t.replace(ph2[0] + m[0], ph2[0] + " "); } } }
-  }
-  if (ph) t = t.replace(ph[0], " ");
+  let t = " " + q + " ", to = null;
+  const rest = [], urgent = /급해|급합니다|빨리/.test(q);
+  const ph = t.match(/01\d[-\s]?\d{3,4}[-\s]?\d{4}/); if (ph) t = t.replace(ph[0], " ");
   for (const [re, b] of BEF_BR) if (re.test(t)) { to ||= b; t = t.replace(re, " "); }
   const kind = /택배/.test(t) ? "parcel" : /퀵/.test(t) ? "quick" : null;
   t = t.replace(/[()\[\]"']/g, " ").replace(/[?!~]+/g, " ").replace(/\.+(?=\s|$)/g, " ");
@@ -474,7 +461,7 @@ function ezParse(q) {
   }
   /* 상품이 하나라도 잡혔으면, 개수도 없고 상품도 아닌 말은 버림 */
   if (lines.some((l) => l.hits.length)) { lines.filter((l) => !l.hits.length && !l.cnt).forEach((l) => rest.push(l.w)); lines = lines.filter((l) => l.hits.length || l.cnt); }
-  return { kind, to, lines, phone: ph ? ph[0] : "", name, addr, memo: ezMemo(rest, urgent) };
+  return { kind, to, lines, phone: ph ? ph[0] : "", memo: ezMemo(rest, urgent) };
 }
 /* 11/10 기존 화면의 베프: 글로 쓰면 기존 퀵, 택배 창을 채워서 열어 줌. 보내기는 직원이 창에서 직접 누름 */
 const BEF_GUIDE = [
@@ -510,7 +497,7 @@ function befOpen(r, kind) {
     else if (ch) ch.click(); else say = `${ho(r.to)}에서는 ${kind === "parcel" ? "택배" : "퀵"}을 못 받아요. 다른 지점을 골라 주세요`;
   }
   const fill = (id, x) => { if (x && $(id)) $(id).value = x; };
-  if (kind === "parcel") { fill("#pcPhone", r.phone); fill("#pcName", r.name); fill("#pcAddr", r.addr); fill("#pcMemo", r.memo); } else fill("#snMemo", r.memo);
+  if (kind === "parcel") fill("#pcPhone", r.phone); else fill("#snMemo", r.memo);
   befPend();
   if (!PK.pend.length && miss.length) { const i = $("#pkQ"); if (i) { i.value = miss[0]; pkSearch(miss[0]); } say ||= `"${miss[0]}"는 못 찾았어요. 아래에서 찾아 주세요`; }
   if (say) toast(say);
@@ -542,9 +529,7 @@ document.addEventListener("click", (e) => {
 let BEF_ASK = null;
 function befAskSheet(q, go) {
   BEF_ASK = go;
-  const r = ezParse(q), has = r.lines.some((l) => l.hits.length && l.cnt), i = has ? BEF_PICK.push({ q, r }) - 1 : -1;
-  const tt = has ? esc(r.lines.filter((l) => l.hits.length).map((l) => `${l.hits.length === 1 && !l.fz ? l.hits[0][0] : l.w} ${l.n}개`).join(", ")) : "";
-  openSheet(`<h2>베프에게 물어볼까요?</h2><div class="say" style="white-space:pre-line">${esc(q)}</div><div class="desc">물어보면 오늘 질문 횟수가 1번 줄어요</div>${has ? `<div class="desc" style="margin-top:12px;font-weight:700;color:var(--ink)">${tt}, 보내는 거면 여기를 눌러 주세요</div><div class="btns" style="position:static;margin-top:6px"><button class="btn primary" data-befopen="${i}|quick">퀵 창 열기</button><button class="btn primary" data-befopen="${i}|parcel">택배 창 열기</button></div>` : ""}<div class="btns"><button class="btn" data-x>글 고치기</button><button class="btn ${has ? "" : "primary"}" id="befAskYes">물어보기</button></div>`);
+  openSheet(`<h2>베프에게 물어볼까요?</h2><div class="btns"><button class="btn" data-x>아니요</button><button class="btn primary" id="befAskYes">물어보기</button></div>`);
 }
 document.addEventListener("click", (e) => { if (e.target.closest?.("#befAskYes") && BEF_ASK) { const go = BEF_ASK; BEF_ASK = null; closeSheet(); go(); } });
 function befBoxHtml() { czCssOn(); return `<div class="desc" style="margin:14px 2px 6px;font-weight:700">💛 베프에게 글로 시키기</div><div class="czin" style="margin-bottom:12px"><input id="ezSay" placeholder="예: 빌런 자두 3개 택배" value="${esc(EZ.say)}" autocomplete="off" enterkeyhint="send" maxlength="300"><button data-ez="say" aria-label="보내기">↑</button></div>`; }
@@ -559,7 +544,7 @@ async function ezSayRun() {
   if (EZ.classic) { if (await befDo(q)) { clr(); return; } return befAskSheet(q, () => { clr(); if (VIEW !== "ask") { VIEW = "ask"; ls.set("vf-app-view", VIEW); render(); window.scrollTo(0, 0); } askGo(q, null, true); }); }
   const r0 = ezParse(q), r = EZ_ASK.test(q) && !(r0.kind && r0.lines.some((l) => l.hits.length)) ? null : r0;
   if (!r || (!r.kind && !r.lines.some((l) => l.hits.length))) return befAskSheet(q, () => { clr(); CZ.n = -1; (EZ.hist ||= []).push(EZ.s); EZ.s = "rec"; askGo(q, null, true); });
-  EZ.say = ""; EZ.cart = []; EZ.pend = []; EZ.miss = []; EZ.q = ""; EZ.pc = r.kind === "parcel" ? { name: r.name, phone: r.phone, addr: r.addr } : {}; EZ.memo = r.memo;
+  EZ.say = ""; EZ.cart = []; EZ.pend = []; EZ.miss = []; EZ.q = ""; EZ.pc = r.kind === "parcel" && r.phone ? { phone: r.phone } : {}; EZ.memo = r.kind === "parcel" ? "" : r.memo;
   EZ.to0 = r.to && r.to !== B && !NO_QUICK.includes(r.to) ? r.to : null;
   EZ.kind = r.kind || "quick";
   if (r.kind && !r.lines.length) return ezGo("q1");
@@ -771,7 +756,7 @@ function ezHtml() {
   if (v === "cart") return h("더 보낼 거 있어요?") + EZ.cart.map(([n, q], i) => `<div class="ezd" style="display:flex;align-items:center;gap:10px;background:#fff;border:1px solid #d1d6db;border-radius:14px;padding:14px;margin-top:10px;color:var(--ink);font-weight:700"><span style="flex:1">${esc(n)} ${q}개</span><button data-ezd="${i}" aria-label="빼기" style="border:0;background:#f2f4f6;border-radius:10px;width:48px;height:48px;font-size:20px">✕</button></div>`).join("") + (EZ.miss.length ? `<div class="ezd" style="color:var(--red);font-weight:700">못 찾았어요: ${esc(EZ.miss.join(", "))}</div>` : "") + ezB('data-ez="more"', "➕ 더 담기") + (EZ.cart.length ? ezB('data-ez="done"', "다 골랐어요", "alert") : "") + ezBack;
   if (EZPC[v]) { const o = EZPC[v]; return h(o[0]) + `<input class="ezi" id="ezPc" data-f="${o[1]}" placeholder="${o[2]}" value="${esc(EZ.pc[o[1]] || "")}" maxlength="${o[6]}" autocomplete="off"${o[5] === "tel" ? ' inputmode="tel"' : ""}>` + ezB('data-ez="nx"', "다음", "alert") + `<button class="ezback" data-ez="${o[7]}">이전</button>`; }
   if (v === "q3" && EZ.kind === "parcel") { const L = BR.filter((b) => !(pcDay()[b] || {}).none).map((b) => [b, PST ? ezShort(b) : null, pcState(b)]).sort((x, y) => (y[2].ok - x[2].ok) || ((x[1] ?? 9e9) - (y[1] ?? 9e9))); return h("어디서 보낼까요?") + (PST ? "" : '<div class="ezd">재고는 매장 코드를 넣으면 보여요</div>') + L.map(([b, m, x]) => ezB(`data-ezt="${b}"`, esc(ho(b)), "small", [m == null ? "" : m ? m + "개 부족" : "다 있음", x.ok ? "" : x.t].filter(Boolean).join(", "))).join("") + ezBack; }
-  if (v === "q4" && EZ.kind === "parcel") { const x = pcState(EZ.to); return h("이렇게 보낼까요?") + EZ.cart.map(([n, q]) => `<div class="ezd" style="font-size:24px;font-weight:700;color:var(--ink)">${esc(n)} ${q}개</div>`).join("") + `<div class="ezd">${esc(EZ.pc.name)}, ${esc(EZ.pc.phone)}</div><div class="ezd">${esc(EZ.pc.addr)}</div><div class="ezd">${esc(ho(EZ.to))}에서 보내요</div>${EZ.memo ? `<div class="ezd">메모: ${esc(EZ.memo)}</div>` : ""}` + (x.ok ? "" : `<div class="ezd" style="color:var(--red);font-weight:700">${esc(x.t)}, 내일 나가요</div>`) + ezB('data-ez="go"', "네, 재고 물어보기", "alert") + ezBack; }
+  if (v === "q4" && EZ.kind === "parcel") { const x = pcState(EZ.to); return h("이렇게 보낼까요?") + EZ.cart.map(([n, q]) => `<div class="ezd" style="font-size:24px;font-weight:700;color:var(--ink)">${esc(n)} ${q}개</div>`).join("") + `<div class="ezd">${esc(EZ.pc.name)}, ${esc(EZ.pc.phone)}</div><div class="ezd">${esc(EZ.pc.addr)}</div><div class="ezd">${esc(ho(EZ.to))}에서 보내요</div>` + (x.ok ? "" : `<div class="ezd" style="color:var(--red);font-weight:700">${esc(x.t)}, 내일 나가요</div>`) + ezB('data-ez="go"', "네, 재고 물어보기", "alert") + ezBack; }
   if (v === "q3") { const short = ezShort, L = BR.filter((b) => b !== B && !NO_QUICK.includes(b)).map((b) => [b, PST ? short(b) : null]).sort((x, y) => (x[1] ?? 9e9) - (y[1] ?? 9e9)); return h("어디서 받을까요?") + (PST ? "" : '<div class="ezd">재고는 매장 코드를 넣으면 보여요</div>') + L.map(([b, m]) => ezB(`data-ezt="${b}"`, esc(ho(b)), "small", m == null ? "" : m ? m + "개 부족" : "다 있음")).join("") + ezBack; }
   if (v === "q4") return h("이렇게 보낼까요?") + EZ.cart.map(([n, q]) => `<div class="ezd" style="font-size:24px;font-weight:700;color:var(--ink)">${esc(n)} ${q}개</div>`).join("") + `<div class="ezd">${esc(ho(EZ.to))}에서 받아요</div>${EZ.memo ? `<div class="ezd">메모: ${esc(EZ.memo)}</div>` : ""}` + ezB('data-ez="go"', "네, 보내요", "alert") + ezBack;
   if (v === "all") return czAll();
@@ -812,7 +797,7 @@ document.addEventListener("click", async (e) => {
     if (EZ.kind === "parcel") {
       const x = pcState(EZ.to), by = working().join(", "); if (!by) return needIn(() => {});
       c.disabled = true;
-      try { await send({ type: "parcelnew", id: Date.now().toString(36) + Math.random().toString(36).slice(2, 5), to: EZ.to, items: EZ.cart.map(([n, q]) => `${n} ${q}개`).join(", ") + (EZ.memo ? ` (메모: ${EZ.memo})` : ""), prods: EZ.cart.map((x2) => [...x2]), name: EZ.pc.name.trim(), phone: EZ.pc.phone.trim(), addr: EZ.pc.addr.trim(), late: !x.ok, by }); toast(ho(EZ.to) + "에 택배 요청을 보냈어요"); EZ.q = ""; EZ.cart = []; EZ.pc = {}; go("home"); } catch (err) { c.disabled = false; fail(err); }
+      try { await send({ type: "parcelnew", id: Date.now().toString(36) + Math.random().toString(36).slice(2, 5), to: EZ.to, items: EZ.cart.map(([n, q]) => `${n} ${q}개`).join(", "), prods: EZ.cart.map((x2) => [...x2]), name: EZ.pc.name.trim(), phone: EZ.pc.phone.trim(), addr: EZ.pc.addr.trim(), late: !x.ok, by }); toast(ho(EZ.to) + "에 택배 요청을 보냈어요"); EZ.q = ""; EZ.cart = []; EZ.pc = {}; go("home"); } catch (err) { c.disabled = false; fail(err); }
       return;
     }
     if (quickClosed()) { const to = EZ.to; sheetSnNew("quick"); PK.list = EZ.cart.map((x) => [...x]); pkRedraw(); document.querySelector(`[data-snto="${to}"]`)?.click(); return toast("오늘 퀵 시간이 지나 오픈퀵으로 접수해요"); }
@@ -2320,10 +2305,10 @@ function parcelHtml() {
       ${L.length ? L.map(row).join("") : '<div class="desc" style="padding:4px 0 12px">진행 중인 택배가 없어요</div>'}</div></div></div>`;
 }
 /* 11/10 보내기 직전 확인 (시험 모드). 창은 그대로 두고 위에 띄움 */
-function sendCheck(t, rows, why) {
+function sendCheck(t, items, lines, why) {
   const box = document.createElement("div");
   box.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;display:flex;align-items:center;justify-content:center;padding:16px";
-  box.innerHTML = `<div style="background:#fff;border-radius:20px;max-width:440px;width:100%;max-height:85vh;overflow:auto;padding:24px;box-sizing:border-box;box-shadow:0 10px 40px rgba(0,0,0,.25)"><div style="font-size:24px;font-weight:800;margin-bottom:8px">이대로 보낼까요?</div>${rows.filter((r) => r[1]).map(([k, x]) => `<div style="padding:10px 0;border-top:1px solid var(--line)"><div style="font-size:14px;color:var(--sub)">${k}</div><div style="font-size:18px;font-weight:700;line-height:1.4;white-space:pre-line;word-break:keep-all">${esc(x)}</div></div>`).join("")}${why ? `<div style="font-size:16px;font-weight:700;color:var(--red);margin-top:8px">${esc(why)}</div>` : ""}<div class="btns" style="position:static"><button class="btn" data-sc="back">고치기</button><button class="btn primary" data-sc="go">보내기</button></div></div>`;
+  box.innerHTML = `<div style="background:#fff;border-radius:20px;max-width:440px;width:100%;max-height:85vh;overflow:auto;padding:24px;box-sizing:border-box;box-shadow:0 10px 40px rgba(0,0,0,.25)"><div class="ezh" style="margin:0 0 10px;font-size:26px">이렇게 보낼까요?</div>${items.split(", ").map((x) => `<div class="ezd" style="font-size:22px;font-weight:700;color:var(--ink)">${esc(x)}</div>`).join("")}${lines.filter(Boolean).map((x) => `<div class="ezd" style="font-size:18px;word-break:keep-all">${esc(x)}</div>`).join("")}${why ? `<div class="ezd" style="font-size:17px;font-weight:700;color:var(--red)">${esc(why)}</div>` : ""}<div class="btns" style="position:static"><button class="btn" data-sc="back">고칠래요</button><button class="btn primary" data-sc="go">네, 보내요</button></div></div>`;
   box.addEventListener("click", (e) => { const k = e.target.closest("[data-sc]")?.dataset.sc; if (!k) return; e.stopPropagation(); box.remove(); if (k === "go") { t.dataset.ok = "1"; t.click(); delete t.dataset.ok; } });
   document.body.appendChild(box);
 }
@@ -2335,7 +2320,7 @@ function sheetPcNew() {
   openSheet(`<h2>📦 택배 요청</h2><div class="desc">보낼 지점이 [있어요]를 누르면 그때 손님 결제를 받아요.</div>
     ${PICK ? pkHtml() : '<input class="input" id="pcItems" placeholder="품목, 수량 (예: 메가킥 망고 3병)" maxlength="120">'}
     <input class="input" id="pcName" placeholder="손님 이름" maxlength="20"><input class="input" id="pcPhone" placeholder="손님 연락처" inputmode="tel" maxlength="20">
-    <input class="input" id="pcAddr" placeholder="받을 주소" maxlength="120">${TEST ? '<input class="input" id="pcMemo" placeholder="메모 (선택, 예: 손님이 오후 3시 전 원함)" maxlength="50">' : ""}
+    <input class="input" id="pcAddr" placeholder="받을 주소" maxlength="120">
     <div class="desc" style="margin-top:12px">보낼 지점</div><div class="chips" id="pcTo">${chips(null)}</div>
     <div class="btns"><button class="btn" data-x>취소</button><button class="btn primary" id="okPcNew">${TEST ? "택배 요청 보내기" : "재고 물어보기"}</button></div>`);
 }
@@ -2345,10 +2330,10 @@ async function doPcNew(t) {
   if (!items) return toast("품목을 골라 주세요"); if (!v("#pcAddr")) return toast("주소를 넣어 주세요"); if (!PC.to) return toast("보낼 지점을 골라 주세요");
   const x = pcState(PC.to); if ((pcDay()[PC.to] || {}).none) return toast("그 지점은 택배를 안 해요");
   const by = working().join(", "); if (!by) return needIn(() => {});
-  if (TEST && !t.dataset.ok) return sendCheck(t, [["상품", items.split(", ").join("\n")], ["보낼 지점", ho(PC.to)], ["손님", [v("#pcName"), v("#pcPhone")].filter(Boolean).join(", ")], ["받을 주소", v("#pcAddr")], ["메모", v("#pcMemo")]], [x.ok ? "" : `${x.t}이라 내일 나가요`, PICK ? pendTxt() : ""].filter(Boolean).join("\n"));
+  if (TEST && !t.dataset.ok) return sendCheck(t, items, [[v("#pcName"), v("#pcPhone")].filter(Boolean).join(", "), v("#pcAddr"), `${ho(PC.to)}에서 보내요`], [x.ok ? "" : `${x.t}이라 내일 나가요`, PICK ? pendTxt() : ""].filter(Boolean).join(", "));
   if (!TEST && !x.ok && !confirm(`${ho(PC.to)}은 ${x.t}이라 내일 나가요. 그래도 보낼까요?`)) return;
   t.disabled = true;
-  try { await send({ type: "parcelnew", id: Date.now().toString(36) + Math.random().toString(36).slice(2, 5), to: PC.to, items: TEST && v("#pcMemo") ? `${items} (메모: ${v("#pcMemo")})` : items, prods: PICK ? pkProds() : [], name: v("#pcName"), phone: v("#pcPhone"), addr: v("#pcAddr"), late: !x.ok, by }); closeSheet(); render(); toast(`${ho(PC.to)}에 택배 요청을 보냈어요`); } catch (e) { t.disabled = false; fail(e); }
+  try { await send({ type: "parcelnew", id: Date.now().toString(36) + Math.random().toString(36).slice(2, 5), to: PC.to, items, prods: PICK ? pkProds() : [], name: v("#pcName"), phone: v("#pcPhone"), addr: v("#pcAddr"), late: !x.ok, by }); closeSheet(); render(); toast(`${ho(PC.to)}에 택배 요청을 보냈어요`); } catch (e) { t.disabled = false; fail(e); }
 }
 async function sheetPcPack(id) {
   const r = pcList().find((x) => x.id === id); if (!r) return;
@@ -2550,7 +2535,7 @@ async function doSnNew(t) {
   if (!SN.to) return toast("지점을 골라 주세요"); if (!items) return toast("상품을 골라 주세요");
   if (k === "openquick") { if (!v("#snAddr")) return toast("받을 주소를 넣어 주세요"); if (!$("#snPaid")?.checked) return toast("포스에서 먼저 결제해 주세요"); }
   const by = working().join(", "); if (!by) return needIn(() => {});
-  if (TEST && !t.dataset.ok) return sendCheck(t, [["종류", k === "jeon" ? "전달" : k === "openquick" ? "오픈퀵" : "퀵"], [k === "jeon" || k === "quick" ? "받을 곳" : "보낼 곳", SN.to === "all" ? "전 지점에 물어보기" : ho(SN.to)], ["상품", items.split(", ").join("\n")], ["손님", [v("#snName"), v("#snPhone")].filter(Boolean).join(", ")], ["받을 주소", v("#snAddr")], ["메모", v("#snMemo")]], PICK ? pendTxt() : "");
+  if (TEST && !t.dataset.ok) return sendCheck(t, items, [[v("#snName"), v("#snPhone")].filter(Boolean).join(", "), v("#snAddr"), SN.to === "all" ? "전 지점에 물어봐요" : `${ho(SN.to)}에서 받아요`, v("#snMemo") ? `메모: ${v("#snMemo")}` : ""], PICK ? pendTxt() : "");
   t.disabled = true;
   try { await send({ type: "snew", id: Date.now().toString(36) + Math.random().toString(36).slice(2, 5), kind: k, to: SN.to, items, prods: PICK ? pkProds() : [], memo: v("#snMemo"), name: v("#snName"), phone: v("#snPhone"), addr: v("#snAddr"), by }); closeSheet(); render(); toast(SN.to === "all" ? "전 지점에 물어봤어요" : `${ho(SN.to)}에 보냈어요`); } catch (e) { t.disabled = false; fail(e); }
 }
