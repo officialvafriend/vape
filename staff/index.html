@@ -347,6 +347,23 @@
     html.feel .cztiles{grid-template-columns:repeat(3,minmax(0,1fr))}
     html.feel .cz{max-width:920px;margin-inline:auto}
   }
+  /* 11/11 마감 보고 돈 세기 하나씩 (시험 모드) */
+  .cwhide{display:none!important}
+  .cwbox{position:fixed;inset:0;z-index:120;background:var(--bg);overflow:auto;padding:12px 16px calc(16px + env(safe-area-inset-bottom))}
+  .cwin{max-width:460px;margin:0 auto}
+  .cwtop{display:flex;align-items:center;gap:8px;min-height:56px}
+  .cwtop button{min-height:48px;padding:0 16px;border-radius:12px;background:#fff;font:inherit;font-size:18px;font-weight:700;color:var(--ink)}
+  .cwp{margin-left:auto;margin-right:8px;font-size:20px;font-weight:800}
+  .cwsum{font-size:18px;color:var(--ink2);margin-top:6px}.cwsum b{color:var(--ink);font-weight:800}
+  .cwq{font-size:28px;font-weight:800;line-height:1.3;margin-top:14px;color:var(--ink)}
+  .cwhint{font-size:16px;color:var(--ink2);margin-top:4px}
+  .cwval{font-size:48px;font-weight:800;text-align:right;min-height:80px;line-height:64px;background:#fff;border-radius:16px;padding:8px 18px;margin-top:12px;font-variant-numeric:tabular-nums;color:var(--ink)}.cwval small{font-size:20px;font-weight:700;color:var(--ink2);margin-left:6px}
+  .cwkeys{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:12px}
+  .cwkeys button{height:72px;border:0;border-radius:14px;background:#fff;font:inherit;font-size:30px;font-weight:700;color:var(--ink)}
+  .cwkeys .del{font-size:20px}.cwkeys .go{background:var(--blue);color:#fff;font-size:22px;font-weight:800}
+  .cwrow{display:flex;align-items:center;gap:12px;background:#fff;border-radius:14px;padding:8px 14px;margin-top:8px;min-height:64px}.cwrow span{flex:1;min-width:0;font-size:20px;font-weight:700;color:var(--ink)}.cwrow b{font-size:22px;font-weight:800;color:var(--ink)}.cwrow button{min-height:48px;padding:0 14px;border:0;border-radius:12px;background:#eef1f5;font:inherit;font-size:18px;font-weight:700;color:var(--ink)}
+  .cwgo{display:block;width:100%;min-height:76px;border:0;border-radius:16px;background:var(--blue);color:#fff;font:inherit;font-size:22px;font-weight:800;margin-top:14px}
+  html.feel .sheet:has([data-cw]) .btns .btn{height:auto;min-height:76px;font-size:20px;font-weight:800}
 </style>
 </head>
 <body>
@@ -375,7 +392,7 @@
 })();
 </script>
 <script>
-const VER = "11.10-17"; window.VER_ERR = VER;
+const VER = "11.10-18"; window.VER_ERR = VER;
 const GAME_LOCK = true; // 11/02 쉬는 시간 게임 잠금
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
@@ -2937,8 +2954,84 @@ const numv = (id) => +(($("#" + id) && $("#" + id).value) || "").replace(/\D/g, 
 const has = (id) => !!(($("#" + id) && $("#" + id).value) || "").replace(/\D/g, "");
 const fld = ([id, label, req], money) => `<label><span>${label}${req ? ' <em class="req">*</em>' : ""}</span><input class="input" id="${id}" inputmode="numeric" placeholder="${money ? "원" : "개"}"></label>`;
 let MIDMODE = false;
-function sheetClosing(mid) {
-  if (!working().length) return needIn(() => sheetClosing(mid));
+/* 11/11 돈 세기 하나씩: 지금 창의 돈통 칸을 채워서 같은 코드로 보냄. 봇 쪽 변경 없음 (시험 모드) */
+const CW = { way: "", t0: 0, fix: 0 };
+let CWS = null, CWCUR = "";
+const CWK = () => `vf-cw-${B}`, CWLOG = () => `vf-cw-log-${B}`;
+const cwLoad = () => { const s = ls.get(CWK(), null); return s && s.d === todayKey() ? s : null; };
+const cwSave = () => ls.set(CWK(), { ...CWS, d: todayKey() });
+const cwQ = ([id, label, unit]) => id === "cEtc" ? "기타 금액은 얼마예요?" : unit === "개" ? `${label} 동전 몇 개예요?` : `${label}권 몇 장이에요?`;
+const cwTotal = (a) => CASH.reduce((t, [id, , , won]) => t + (+a[id] || 0) * won, 0);
+const cwSij = (a) => (+a.c50 || 0) * 50000 + Math.max(0, (+a.c10 || 0) - 10) * 10000;
+const cwWon = (n) => (+n || 0).toLocaleString() + "원";
+const cwTime = (s) => (Math.floor(s / 60) ? Math.floor(s / 60) + "분 " : "") + (s % 60) + "초";
+function cwChoose() {
+  const s = cwLoad(), L = ls.get(CWLOG(), []), last = (w, n) => { const x = L.filter((y) => y.w === w).pop(); return x ? `${n} ${cwTime(x.sec)}, 고치기 ${x.fix}번` : ""; }, past = [last("old", "지금 방식"), last("new", "새 방식")].filter(Boolean);
+  openSheet(`<h2>마감 보고, 어떻게 할까요?</h2>${s ? `<div class="btns" style="margin-top:14px"><button class="btn primary" data-cw="resume" style="flex:1">이어서 하기 (${Math.min(s.i + 1, CASH.length)} / ${CASH.length})</button></div>` : ""}<div class="btns" style="margin-top:14px"><button class="btn" data-cw="old" style="flex:1">지금 방식</button><button class="btn primary" data-cw="new" style="flex:1">새 방식(하나씩)</button></div>${past.length ? `<div class="desc" style="font-size:16px;margin-top:14px">지난번: ${past.join(", ")}</div>` : ""}`);
+}
+function cwApply() { CASH.forEach(([id]) => { const el = $("#" + id); if (el) el.value = CWS.a[id] ?? ""; }); closeCalc(); }
+function cwHide() { const sh = $("#sheet"); sh.querySelectorAll(".cash.big,.cash.coins").forEach((e) => e.classList.add("cwhide")); sh.querySelector(".grp")?.classList.add("cwhide"); $("#cSij").insertAdjacentHTML("afterend", '<button class="btn sm" data-cw="recount" style="width:100%">돈 다시 세기</button>'); }
+function cwClose() { document.getElementById("cwBox")?.remove(); }
+function cwDraw() {
+  let box = document.getElementById("cwBox"); if (!box) { box = document.createElement("div"); box.id = "cwBox"; box.className = "cwbox"; document.body.appendChild(box); }
+  const s = CWS, n = CASH.length;
+  if (s.i >= n) {
+    const tot = cwTotal(s.a), sij = cwSij(s.a);
+    box.innerHTML = `<div class="cwin"><div class="cwtop"><button data-cwa="back">뒤로</button><span class="cwp">${n} / ${n}</span><button data-cwa="exit">나가기</button></div><div class="cwq">돈통이 이대로 맞아요?</div>${CASH.map(([id, label, unit], i) => `<div class="cwrow"><span>${label}</span><b>${(+s.a[id] || 0).toLocaleString()}${unit}</b><button data-cwfix="${i}">고치기</button></div>`).join("")}<div class="cwsum" style="margin-top:14px">돈통 합계 <b>${cwWon(tot)}</b></div><div class="cwsum">시재 <b>${cwWon(sij)}</b>, 내일 준비금 <b>${cwWon(tot - sij)}</b></div><button class="cwgo" data-cwa="done">맞아요, 다음으로</button></div>`;
+    box.scrollTop = 0; return;
+  }
+  const q = CASH[s.i], partial = { ...s.a, [q[0]]: CWCUR };
+  box.innerHTML = `<div class="cwin"><div class="cwtop"><button data-cwa="back">뒤로</button><span class="cwp">${s.i + 1} / ${n}</span><button data-cwa="exit">나가기</button></div><div class="cwsum">지금까지 합계 <b>${cwWon(cwTotal(partial))}</b></div><div class="cwq">${cwQ(q)}</div><div class="cwhint">없으면 0을 눌러요</div><div class="cwval">${CWCUR ? (+CWCUR).toLocaleString() : ""}<small>${q[2]}</small></div><div class="cwkeys">${[1, 2, 3, 4, 5, 6, 7, 8, 9].map((d) => `<button data-cwk="${d}">${d}</button>`).join("")}<button class="del" data-cwk="del">지우기</button><button data-cwk="0">0</button><button class="go" data-cwa="next">${s.back ? "고치기 끝" : "다음"}</button></div></div>`;
+}
+function cwStart(fresh) {
+  if (fresh || !cwLoad()) { CWS = { i: 0, a: {}, t0: Date.now(), fix: 0 }; cwSave(); } else CWS = cwLoad();
+  CW.way = "new"; CW.t0 = CWS.t0; CW.fix = CWS.fix; CWCUR = CWS.i < CASH.length ? (CWS.a[CASH[CWS.i][0]] ?? "") : "";
+  sheetClosing(false, "new"); cwApply(); cwDraw();
+}
+function cwPress(k) {
+  const q = CASH[CWS.i]; if (!q) return;
+  if (k === "del") CWCUR = CWCUR.slice(0, -1);
+  else if (CWCUR === "0") CWCUR = k;
+  else if (CWCUR.length < (q[2] === "원" ? 9 : 4)) CWCUR += k;
+  cwDraw();
+}
+function cwAct(k) {
+  const s = CWS, n = CASH.length;
+  if (k === "next") { if (CWCUR === "") return toast("없으면 0을 눌러 주세요"); s.a[CASH[s.i][0]] = CWCUR; if (s.back) { s.back = false; s.i = n; } else s.i++; CWCUR = s.i < n ? (s.a[CASH[s.i][0]] ?? "") : ""; cwSave(); return cwDraw(); }
+  if (k === "back") { if (s.back) { s.back = false; s.i = n; cwSave(); CWCUR = ""; return cwDraw(); } if (s.i === 0) return cwAct("exit"); s.i--; CWCUR = s.a[CASH[s.i][0]] ?? ""; cwSave(); return cwDraw(); }
+  if (k === "exit") { cwSave(); cwClose(); return closeSheet(); }
+  if (k === "done") { cwApply(); return cwClose(); }
+}
+document.addEventListener("click", (e) => {
+  const a = e.target.closest?.("[data-cw],[data-cwa],[data-cwk],[data-cwfix],[data-cwok]"); if (!a) return; const d = a.dataset;
+  if (d.cwok !== undefined) return a.closest(".cwdone")?.remove();
+  if (d.cwk) return cwPress(d.cwk);
+  if (d.cwa) return cwAct(d.cwa);
+  if (d.cwfix !== undefined) { CWS.fix = (CWS.fix || 0) + 1; CW.fix = CWS.fix; CWS.i = +d.cwfix; CWS.back = true; CWCUR = CWS.a[CASH[CWS.i][0]] ?? ""; cwSave(); return cwDraw(); }
+  if (d.cw === "old") { CW.way = "old"; CW.t0 = Date.now(); CW.fix = 0; return sheetClosing(false, "old"); }
+  if (d.cw === "new") return cwStart(true);
+  if (d.cw === "resume") return cwStart(false);
+  if (d.cw === "recount") { CWS = cwLoad(); if (!CWS) return; CWS.i = CASH.length; CWS.back = false; CWCUR = ""; cwDraw(); }
+});
+document.addEventListener("keydown", (e) => {
+  if (!document.getElementById("cwBox") || e.isComposing) return;
+  if (/^[0-9]$/.test(e.key) && CWS.i < CASH.length) { e.preventDefault(); e.stopPropagation(); return cwPress(e.key); }
+  if (e.key === "Backspace" && CWS.i < CASH.length) { e.preventDefault(); e.stopPropagation(); return cwPress("del"); }
+  if (e.key === "Enter") { e.preventDefault(); e.stopPropagation(); return cwAct(CWS.i < CASH.length ? "next" : "done"); }
+  if (e.key === "Escape") { e.preventDefault(); e.stopPropagation(); return cwAct("exit"); }
+}, true);
+/* 보낸 뒤: 방식별 시간과 고치기 횟수를 이 기기에만 적고 끝 화면에 보여 줌 */
+function cwDone() {
+  if (!CW.way) return;
+  const sec = Math.max(1, Math.round((Date.now() - CW.t0) / 1000)), L = ls.get(CWLOG(), []), name = CW.way === "new" ? "새 방식" : "지금 방식", fix = CW.fix;
+  L.push({ w: CW.way, sec, fix, d: todayKey() }); ls.set(CWLOG(), L.slice(-20)); if (CW.way === "new") ls.set(CWK(), null); CW.way = "";
+  const box = document.createElement("div"); box.className = "cwdone"; box.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;display:flex;align-items:center;justify-content:center;padding:16px";
+  box.innerHTML = `<div style="background:#fff;border-radius:20px;max-width:440px;width:100%;padding:24px;box-sizing:border-box"><div style="font-size:26px;font-weight:800;color:var(--ink)">마감 보고를 보냈어요</div><div style="font-size:20px;margin-top:10px;color:var(--ink)">${name}, ${cwTime(sec)}</div><div style="font-size:20px;margin-top:4px;color:var(--ink)">고치기 ${fix}번</div><button class="cwgo" data-cwok>확인</button></div>`;
+  document.body.appendChild(box);
+}
+function sheetClosing(mid, way) {
+  if (!working().length) return needIn(() => sheetClosing(mid, way));
+  if (TEST && !mid && !way) return cwChoose();
   MIDMODE = !!mid; CX = expList().map((x) => ({ n: x.n, a: x.a })); // 10/28 💸 지출로 낮에 적은 것
   const prep = todayPrep();
   // 10/19 저녁 사장님 "개복잡": 기본 화면은 돈통, 리뷰/각인, 확인 2개, 지출 버튼만. 포스 숫자를 고칠 때만 아래 '직접 입력'을 펼침
@@ -2964,6 +3057,7 @@ function sheetClosing(mid) {
     <div class="sv-bar"><div class="btns" style="margin:0"><button class="btn" data-x>취소</button><button class="btn primary" id="okClose">보고 보내기</button></div></div>`);
   if (CX.length) { expDraw(); const eb = $("#expBtn"); if (eb) eb.textContent = "＋ 지출 하나 더"; }
   closeCalc();
+  if (way === "new") cwHide();
 }
 function expDraw() {
   $("#cExp").innerHTML = CX.map((x, i) => `<div class="exrow"><input class="input" data-exn="${i}" maxlength="20" placeholder="지출 사유 (예: 택배, 퀵비)" value="${esc(x.n)}"><input class="input" data-exa="${i}" inputmode="numeric" placeholder="원" value="${x.a ? x.a.toLocaleString() : ""}"><button class="exdel" data-exdel="${i}">✕</button></div>`).join("");
@@ -3039,7 +3133,7 @@ function closeConfirm() {
     <div class="btns"><button class="btn" id="closeBack">다시 고치기</button><button class="btn primary" id="okClose2">네, 보낼게요</button></div>`;
   sh.appendChild(box); sh.scrollTop = 0;
 }
-function closeBack() { const sh = $("#sheet"); const b = sh.querySelector(".cconf"); if (b) b.remove(); [...sh.children].forEach((el) => (el.style.display = "")); $("#cWhy").style.display = closeCalc().diff ? "" : "none"; }
+function closeBack() { if (TEST && CW.way) { CW.fix++; if (CW.way === "new" && CWS) { CWS.fix = CW.fix; cwSave(); } } const sh = $("#sheet"); const b = sh.querySelector(".cconf"); if (b) b.remove(); [...sh.children].forEach((el) => (el.style.display = "")); $("#cWhy").style.display = closeCalc().diff ? "" : "none"; }
 async function doClosing() {
   const k = closeCalc(), v = (id) => ($("#" + id).value || "").replace(/\D/g, "");
   const hn = $('[data-cck="hn"]').classList.contains("on"), vm = $('[data-cck="vm"]').classList.contains("on");
@@ -3061,7 +3155,7 @@ async function doClosing() {
     if (asPin() && !TEST) { try { await asApi({ action: "closeAdd", date: cDay, branch: B, by, cash, rev: v("cRev"), eng: v("cEng"), hn, vm, ua: navigator.userAgent.slice(0, 60), sales: { 현금: numv("pCash"), 카드: numv("pCard"), 이체: numv("pTr"), 기타: numv("pEtc") }, exp: k.exp, diff: k.diff, bills: kpi.bills }); sheetOk = ", 지점 시트에도 기록"; } catch (e2) { sheetOk = ", 지점 시트 기록 실패(" + e2.message + ")"; } }
     ls.set(nextKey(), { d: cDay, v: k.drawer - k.sij });
     if (cDay === closeDay()) CLOSE_SENT = { date: cDay, status: "done", at: now(), by, known: k.diff != null, warn: k.diff ? [`돈통 차액 ${(k.diff > 0 ? "+" : "") + k.diff.toLocaleString()}원`] : [] };
-    closeSheet(); render(); toast(`${cDay === todayKey() ? "" : cDay.slice(5).replace("-", "/") + " "}마감 보고를 보냈어요, 1~2분 뒤에 결과가 떠요`);
+    closeSheet(); render(); toast(`${cDay === todayKey() ? "" : cDay.slice(5).replace("-", "/") + " "}마감 보고를 보냈어요, 1~2분 뒤에 결과가 떠요`); if (TEST) cwDone();
     // 10/21: 결과가 오면 바로 결과 창(다 맞으면 보고문, 안 맞으면 확인할 것)
     const sentAt = now(); CLOSEPEND = { t: sentAt, date: cDay }; pendSave(); render(); let rn = 0; const ri = setInterval(async () => { await loadBoard(); const bc = TEST ? BOARD?.closingTest : BOARD?.closing; if (bc && bc.date === cDay && bc.at >= sentAt && bc.full) { clearInterval(ri); CLOSEPEND = null; pendSave(); render(); if (!$("#dim").classList.contains("on")) sheetReport(); return; } if (++rn >= 36) { clearInterval(ri); CLOSEPEND = null; pendSave(); render(); toast("마감 결과가 아직 안 왔어요, 잠시 뒤 새로고침해 주세요"); } }, 10e3);
   } catch (e) { okb.disabled = false; okb.textContent = "다시 보내기"; fail(e); }
