@@ -1238,7 +1238,7 @@ function branchHtml(b, g) {
 function sheetBranch(b, g) { openSheet(branchHtml(b, g)); bindSparks(); }
 function sheetTaskStatus(id) {
   const t = D.matrix.find((y) => y.id === id), def = D.tasks.find((y) => y.id === id);
-  openSheet(`<div class="eyebrow">${esc(REP_TXT(def))}${t.time ? ", " + esc(t.time) : ""}</div><h3>${esc(t.title)}</h3>${def.note ? `<div class="caption">${esc(def.note)}</div>` : ""}
+  openSheet(`<div class="eyebrow">${esc(REP_TXT(def))}${t.time ? ", " + esc(t.time) : ""}</div><h3>${esc(t.title)}</h3>${def.note ? `<div class="caption" style="white-space:pre-line;line-height:1.7;max-height:50vh;overflow:auto">${esc(def.note)}</div>` : ""}
     <div class="list">${Object.entries(t.br).map(([b, v]) => `<div class="item"><div class="av ${v ? "good" : ""}">${v ? "✓" : BR.indexOf(b) + 1}</div><div class="tx"><b>${esc(b)}</b><span>${v === null || v === undefined ? "오늘 대상 아님" : v ? `${esc(v.by)}, ${esc(v.t)}에 끝냄` : "아직이에요"}${def.kind === "survey" ? svInfo(id, b) : ""}</span></div></div>`).join("")}</div>${def.kind === "survey" ? svRowsBlock(id) : ""}
     <div class="btns"><button class="btn red" data-tdelid="${id}" style="flex:0 0 96px">삭제</button><button class="btn gray" data-x>닫기</button><button class="btn sec2" data-tedit="${id}">고치기</button></div>`); // 10/25 사장님 "업무 지우기도 있으면": 고치기 안에 숨어 있던 삭제를 바로 보이게
 }
