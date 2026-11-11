@@ -22,7 +22,7 @@
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
   body{background:var(--bg);color:var(--ink);font-family:"Pretendard Variable",Pretendard,-apple-system,"Malgun Gothic",sans-serif;-webkit-font-smoothing:antialiased;letter-spacing:-.2px}
   button,input,select{font:inherit;color:inherit} button{border:0;background:none;cursor:pointer}
-  .wrap{max-width:560px;margin:0 auto;padding:12px 16px calc(96px + env(safe-area-inset-bottom))}
+  .wrap{max-width:560px;margin:0 auto;padding:12px 24px calc(96px + env(safe-area-inset-bottom))} /* 여백 가이드 1111 */
   .top{display:flex;align-items:center;padding:8px 4px 18px}
   .top .logo{font-weight:800;font-size:17px} .top .logo b{color:var(--blue)}
   .top .r{margin-left:auto;display:flex;gap:4px}
@@ -35,7 +35,7 @@
   .caption{font-size:14px;color:var(--sub);margin-top:8px;line-height:1.5}
   .bar{height:10px;border-radius:99px;background:var(--line2);overflow:hidden;margin-top:18px}
   .bar i{display:block;height:100%;border-radius:99px;background:var(--blue);transition:width .4s}
-  .sec{font-size:18px;font-weight:700;margin:26px 4px 10px;display:flex;align-items:baseline;gap:6px} .sec small{font-size:14px;color:var(--sub);font-weight:600}
+  .sec{font-size:18px;font-weight:700;margin:32px 4px 16px;display:flex;align-items:baseline;gap:6px} .sec small{font-size:14px;color:var(--sub);font-weight:600}
   .list{background:var(--card);border-radius:22px;padding:6px 0;margin-bottom:12px}
   .item{display:flex;align-items:center;gap:14px;padding:14px 20px;width:100%;text-align:left}
   .item:active{background:var(--press)}
@@ -68,7 +68,7 @@
   .chips{display:flex;flex-wrap:wrap;gap:8px}
   .chip{height:40px;padding:0 15px;border-radius:12px;background:var(--line);font-size:15px;font-weight:600;color:var(--ink2)}
   .chip.on{background:var(--blue);color:#fff}
-  .chips.hs{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin-left:-16px;margin-right:-16px;padding:0 16px}.chips.hs::-webkit-scrollbar{display:none}.chips.hs .chip{flex:none}
+  .chips.hs{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin-left:-24px;margin-right:-24px;padding:0 24px}.chips.hs::-webkit-scrollbar{display:none}.chips.hs .chip{flex:none}
   .seg{display:flex;background:var(--line);border-radius:12px;padding:4px;gap:4px}
   .seg button{flex:1;height:38px;border-radius:9px;font-weight:600;font-size:14px;color:var(--sub)} .seg button.on{background:var(--card);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.08)}
   .tag{display:inline-block;font-size:12px;font-weight:700;padding:3px 8px;border-radius:8px;background:var(--blue-soft);color:var(--blue);margin:6px 4px 0 0}
@@ -77,8 +77,8 @@
   .sw{width:46px;height:28px;border-radius:99px;background:var(--line2);position:relative;flex:none;transition:.2s}
   .sw::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.15)}
   .sw.on{background:var(--blue)} .sw.on::after{left:21px}
-  .sticky{position:fixed;left:0;right:0;bottom:calc(64px + env(safe-area-inset-bottom));display:flex;justify-content:center;padding:0 16px;z-index:15;pointer-events:none}
-  .sticky .btn{max-width:528px;pointer-events:auto;box-shadow:0 6px 20px rgba(49,130,246,.3)}
+  .sticky{position:fixed;left:0;right:0;bottom:calc(64px + env(safe-area-inset-bottom));display:flex;justify-content:center;padding:0 24px;z-index:15;pointer-events:none}
+  .sticky .btn{max-width:512px;pointer-events:auto;box-shadow:0 6px 20px rgba(49,130,246,.3)}
   .spark{display:block;width:100%;height:56px;margin-top:14px}
   .tip{position:fixed;pointer-events:none;background:var(--ink);color:var(--card);font-size:12px;font-weight:600;padding:6px 9px;border-radius:8px;opacity:0;z-index:60;white-space:nowrap}
   .toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(10px);background:#191f28;color:#fff;padding:14px 20px;border-radius:14px;font-weight:600;opacity:0;transition:.25s;z-index:70;max-width:90vw;text-align:center}
@@ -89,7 +89,7 @@
   /* ── PC 배치 (10/12, 900px 이상): 폰 화면은 그대로, 넓은 화면에서는 왼쪽 메뉴 + 요약 + 두 열 ── */
   .warn{color:var(--red);font-weight:600;background:var(--red-soft);border-radius:12px;padding:10px 14px;margin-top:8px;font-size:14px;line-height:1.5}
   .okline{color:var(--green);font-weight:700;margin-top:14px;font-size:15px}
-  .pchead{margin-bottom:14px}.pchead h1{font-size:22px;font-weight:800;letter-spacing:-.6px;line-height:1.3}.pchead .caption{margin:4px 0 0}
+  .pchead{margin-bottom:16px}.pchead h1{font-size:22px;font-weight:800;letter-spacing:-.6px;line-height:1.3}.pchead .caption{margin:4px 0 0}
   .av svg{width:22px;height:22px}
   .stk{--pb:calc(22px + env(safe-area-inset-bottom));position:sticky;bottom:calc(0px - var(--pb));z-index:2;margin:16px -22px calc(0px - var(--pb));padding:12px 22px var(--pb);background:var(--card);box-shadow:0 -1px 0 var(--line2)}@media (min-width:900px){.stk{--pb:26px}}.panel .stk{--pb:28px;margin-left:-28px;margin-right:-28px;padding-left:28px;padding-right:28px}
   .bdgp{margin-top:16px}.bdgp .gt{font-size:14px;font-weight:600;color:var(--sub);margin-bottom:8px}.bdgp .gt b{color:var(--ink);font-weight:700}.bdgp .gc{display:flex;flex-wrap:wrap;gap:8px}
@@ -100,7 +100,7 @@
   .nbadge{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--red);color:#fff;font-size:11px;font-weight:800;margin-left:6px;line-height:1}.nav button{position:relative}.nav .nbadge{position:absolute;top:1px;left:calc(50% + 6px);margin:0}.subnav .nbadge{vertical-align:1px}
   /* 11/5 블로그 탭: 점유 막대, 줄 등장, 버튼 눌림. 움직임 줄이기 설정이면 옮기는 움직임은 뺀다 */
   .sbar{height:8px;border-radius:99px;background:var(--line2);overflow:hidden;margin-top:8px}.sbar i{display:block;height:100%;border-radius:99px;background:var(--blue)}.sbar i.pk{background:var(--blue)}
-  :is(.wrap,.main,.narrow)>.chips{gap:8px}:is(.wrap,.main,.narrow)>.chips .chip:not(.on){background:var(--card);box-shadow:inset 0 0 0 1px var(--line2);color:var(--ink)}:is(.wrap,.main,.narrow)>.chips .chip.on{box-shadow:0 2px 8px rgba(27,100,218,.28)}
+  :is(.wrap,.main,.narrow)>.chips{gap:12px}:is(.wrap,.main,.narrow)>.chips .chip:not(.on){background:var(--card);box-shadow:inset 0 0 0 1px var(--line2);color:var(--ink)}:is(.wrap,.main,.narrow)>.chips .chip.on{box-shadow:0 2px 8px rgba(27,100,218,.28)}
   .kwrow .tx b{white-space:normal;line-height:1.35}.kwrow{align-items:flex-start}
   .btn,.chip,.subnav button{transition:transform .12s var(--ease-out)}.btn:active,.chip:active,.subnav button:active{transform:scale(.97)}
   @keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}@keyframes fadein{from{opacity:0}to{opacity:1}}@keyframes reveal{from{clip-path:inset(0 100% 0 0 round 99px)}to{clip-path:inset(0 0 0 0 round 99px)}}
@@ -131,7 +131,7 @@
     .panel .list{background:none;padding:0;margin:14px -28px 0} .panel .item{padding:13px 28px}
     .panel .btns .btn{height:50px;font-size:16px}
     .item{cursor:pointer} .item:hover{background:var(--press)}
-    .sec{margin-top:22px}
+    .sec{margin-top:32px}
     .dim{align-items:center} .sheet{border-radius:26px;max-height:86vh;width:min(620px,100%);padding-bottom:26px}
     .sticky{left:236px;bottom:28px} .sticky .btn{max-width:480px}
     .toast{bottom:40px}
@@ -146,7 +146,7 @@
 .ops td small{display:block;font-size:11px;font-weight:600}
 /* 10/19 KPI: 버튼 36px 14px, 숫자 24px, 표 14px 40px, 홈 상위/하위 두 칸 */
 .kbar{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px}
-.subnav{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 16px}.subnav button{height:40px;padding:0 14px;border-radius:12px;background:var(--card);font-weight:700;font-size:15px;color:var(--ink2);border:1px solid var(--line2)}.subnav button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.subnav{display:flex;flex-wrap:wrap;gap:12px;margin:0 0 16px}.subnav button{height:40px;padding:0 14px;border-radius:12px;background:var(--card);font-weight:700;font-size:15px;color:var(--ink2);border:1px solid var(--line2)}.subnav button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
 .hstat{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:10px;margin:0 0 18px}.hstat div{background:var(--card);border-radius:18px;padding:16px 18px}.hstat span{display:block;font-size:13px;font-weight:700;color:var(--sub);white-space:nowrap}.hstat b{display:block;font-size:24px;font-weight:800;letter-spacing:-.6px;margin-top:6px;white-space:nowrap}
 @media (max-width:700px){.hstat{grid-template-columns:1fr 1fr}.hstat b{font-size:22px}}
 .botwarn{display:block;width:100%;text-align:left;background:var(--red-soft);color:var(--red);font-weight:700;font-size:14px;border-radius:12px;padding:10px 14px;margin:0 0 14px}
@@ -172,7 +172,7 @@
 .item.svr{min-height:56px}.item.svr .tx span{white-space:normal}.item.svr .val{flex:0 0 auto;max-width:44%;font-size:14px;font-weight:600;color:var(--ink2);white-space:normal}.item.svr .val small{display:block;font-size:12px;font-weight:600;color:var(--sub)}.item.svr .val small.t-good{color:var(--green)}
 .item.opm{min-height:52px;padding-top:10px;padding-bottom:10px}.item.opm .tx b{font-size:15px}.item.opm .tx span{white-space:normal}.item.opm .tx em{font-style:normal;font-weight:600}.item.opm .val{font-size:13px}.item.opm .val b{font-size:13px;font-weight:700}.item.opm .val span{display:block;font-size:12px}
 @media (max-width:700px){.hstat{grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}.hstat div{min-height:72px;padding:12px 14px}.hstat span{font-size:12px}.hstat b{font-size:20px;margin-top:4px}}
-@media (min-width:900px){.sec.svsec{margin-top:22px}.cols.sv+.sec.svsec{margin-top:22px}.cols.sv .sec.svsec{margin-top:0}.cols.sv{margin-bottom:8px}.ops.sv td,.ops.sv th{padding-left:14px;padding-right:14px}.ops.sv td{height:48px}}
+@media (min-width:900px){.sec.svsec{margin-top:32px}.cols.sv+.sec.svsec{margin-top:32px}.cols.sv .sec.svsec{margin-top:0}.cols.sv{margin-bottom:8px}.ops.sv td,.ops.sv th{padding-left:14px;padding-right:14px}.ops.sv td{height:48px}}
 /* 폰: 표 대신 지점마다 카드 (지점 이름 한 줄 + 칸 3열) */
 @media (max-width:899px){
   .ops.br,.ops.sv{min-width:0;display:block}.ops.br thead,.ops.sv thead{display:none}.ops.br tbody,.ops.sv tbody{display:block}
@@ -300,7 +300,7 @@
 .tkempty{margin-top:16px;padding:22px;border-radius:14px;background:var(--bg);color:var(--sub);font-size:14px;text-align:center}
 .u-acch .tx span.tkn,.tkn{display:inline;margin-top:0;font-size:13px;color:var(--sub);font-weight:700;margin-left:4px}.tkr{margin-bottom:0}
 .tkl{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--line)}.tkl:first-child{border-top:0}.tkl .d{flex:0 0 76px;font-size:13px;font-weight:700;color:var(--sub)}.tkl .tx{flex:1;min-width:0}.tkl .tx b{display:block;font-size:14px;font-weight:700}.tkl .tx span{display:block;font-size:12px;color:var(--sub)}
-.tksec{margin:26px 4px 10px}.main:has(.tkw){max-width:1560px}.u-accb .sec:first-child{display:none}.u-accb>.list{margin:0 -16px;background:none}
+.tksec{margin:32px 4px 16px}.main:has(.tkw){max-width:1560px}.u-accb .sec:first-child{display:none}.u-accb>.list{margin:0 -16px;background:none}
 @media(min-width:900px){
   .tkw{grid-template-columns:440px minmax(0,1fr);gap:24px}
   .mkh b{font-size:23px}.mkh span{font-size:14px}.mkc .caption{font-size:15px}.mkseg button{font-size:15px;height:42px}
@@ -358,7 +358,7 @@
   .main:has(.tsw){max-width:1480px}
   .tsw{grid-template-columns:minmax(0,5fr) minmax(0,6fr);gap:32px}
   .tsw .card{padding:30px 30px 28px;border-radius:26px}.tsw .card .eyebrow{font-size:16px}.tsw .card .headline{font-size:32px;letter-spacing:-.9px}.tsw .card .bar{height:12px;margin-top:22px}
-  .tsw .sec{font-size:21px;margin:30px 6px 12px}.tsw .sec small{font-size:15px}
+  .tsw .sec{font-size:21px;margin:32px 6px 16px}.tsw .sec small{font-size:15px}
   .tsw .list{border-radius:26px;padding:8px 0}.tsw .list .item{min-height:84px;padding:16px 26px;gap:18px}
   .tsw .item .tx b{font-size:19px}.tsw .item .tx span{font-size:15px;margin-top:4px}.tsw .item .val b{font-size:16px!important}
   .tsw .av{width:50px;height:50px;border-radius:16px}.tsav svg{width:26px;height:26px}.av.tscnt{font-size:16px}
@@ -476,11 +476,11 @@ const MORE = ["kpi", "note", "office", "staff", "naver"];
 function moreSheetHtml() { const nm = { kpi: "KPI", note: "매장 노트", office: "사무실", staff: "직원웹", naver: "네이버" }; return `<h3>더보기</h3><div class="list" style="margin-top:12px">${MORE.map((k) => `<button class="item" data-tab="${k}"><div class="av ${grpOf(tab)[0] === k ? "blue" : ""}">${ICON[k]}</div><div class="tx"><b>${nm[k]}${k === "office" && botBad() ? ' <span class="t-bad">●</span>' : ""}</b></div><span class="chev">›</span></button>`).join("")}</div><div class="btns"><button class="btn gray" data-x>닫기</button></div>`; }
 // 10/19 사장님 "다 따로 들어가기 불편해": 네이버 앱, 직원웹을 관리자 안 메뉴로 (같은 사이트라 안에 띄움, 네이버 열쇠, 직원웹 지점은 각 앱이 이 기기에 기억)
 // 10/26 사장님 "홈이 가득가득, 업무 안에 블로그도": 메뉴 12개 → 7개 묶음, 묶음 안은 위쪽 작은 탭
-const GROUPS = [["home", "홈", ["home"]], ["tasks", "업무", ["tasks"]], ["close", "마감", ["close"]], ["kpi", "KPI", ["kpi"]], ["goods", "상품", ["order", "bunbae", "stockrep", "survey", "group", "must"]], ["note", "매장 노트", ["note"]], ["office", "사무실", ["office"]], ["staff", "직원웹", ["staff"]], ["naver", "네이버", ["naver"]]];
-const SUBNM = { bunbae: "분배 넣기", tasks: "업무", blog: "블로그", order: "주문요청", stockrep: "재고보고", survey: "재고조사", group: "그룹관리", must: "추가 필수", office: "봇 상태", staff: "직원웹", naver: "네이버" };
+const GROUPS = [["home", "홈", ["home"]], ["tasks", "업무", ["tasks"]], ["close", "마감", ["close", "coins"]], ["kpi", "KPI", ["kpi"]], ["goods", "상품", ["order", "bunbae", "stockrep", "survey", "group", "must"]], ["note", "매장 노트", ["note"]], ["office", "사무실", ["office"]], ["staff", "직원웹", ["staff"]], ["naver", "네이버", ["naver"]]];
+const SUBNM = { close: "마감 보고", coins: "잔돈", bunbae: "분배 넣기", tasks: "업무", blog: "블로그", order: "주문요청", stockrep: "재고보고", survey: "재고조사", group: "그룹관리", must: "추가 필수", office: "봇 상태", staff: "직원웹", naver: "네이버" };
 const grpOf = (t) => GROUPS.find((g) => g[2].includes(t === "blog" ? "tasks" : t)) || GROUPS[0];
 const grpTab = (g) => { const last = ls.get("vf-admin-sub-" + g[0]); return g[2].includes(last) ? last : g[2][0]; };
-const subnavHtml = () => { const g = grpOf(tab); return g[2].length > 1 ? `<div class="subnav">${g[2].map((k) => `<button class="${k === tab ? "on" : ""}" data-tab="${k}">${SUBNM[k]}${k === "blog" && bdTodoN() ? `<span class="nbadge">${bdTodoN()}</span>` : ""}</button>`).join("")}</div>` : ""; };
+const subnavHtml = () => { const g = grpOf(tab), ks = g[2].filter((k) => k !== "coins" || (D && D.coins)); /* 잔돈 탭은 자료가 오기 시작하면 보임 */ return ks.length > 1 ? `<div class="subnav">${ks.map((k) => `<button class="${k === tab ? "on" : ""}" data-tab="${k}">${SUBNM[k]}${k === "blog" && bdTodoN() ? `<span class="nbadge">${bdTodoN()}</span>` : ""}</button>`).join("")}</div>` : ""; };
 const EMBED = { naver: () => "../naver/", staff: () => `../staff/?branch=${encodeURIComponent(staffB)}` };
 let staffB = ls.get("vf-admin-staffb") || "본점";
 function embedHtml() {
@@ -497,14 +497,14 @@ function render() {
   document.querySelectorAll("#nav button").forEach((b) => { if (b.dataset.g === "more") { b.classList.toggle("on", MORE.includes(grpOf(tab)[0])); if (!b.dataset.ic) { b.dataset.ic = 1; b.innerHTML = ICON.more + "더보기"; } return; } const g = GROUPS.find((x) => x[0] === b.dataset.g); if (g) { b.dataset.tab = grpTab(g); b.classList.toggle("on", grpOf(tab) === g); if (!b.dataset.ic) { b.dataset.ic = 1; b.innerHTML = (g[0] === "goods" ? ICON.survey : ICON[g[0]]) + (g[0] === "note" ? "노트" : g[1]); } if (g[0] === "tasks") { b.querySelector(".nbadge")?.remove(); if (tn) b.insertAdjacentHTML("beforeend", `<span class="nbadge">${tn}</span>`); } } });
   const [, hh, mm] = D.at.match(/(\d{2}):(\d{2})$/) || [];
   if (EMBED[tab] && $("#app .emb") && $("#app .emb").dataset.k === tab + staffB) return; // 자동 새로고침 때 안에 띄운 앱이 처음으로 돌아가지 않게
-  const body0 = EMBED[tab] ? embedHtml() : tab === "home" ? (pc ? homePC() : homeHtml()) : tab === "kpi" ? kpiHtml() : tab === "close" ? closingAllHtml() : tab === "survey" ? surveyHtml() : tab === "tasks" ? tasksHtml() : tab === "note" ? noteHtml() : tab === "order" ? orderHtml() : tab === "office" ? officeHtml() : tab === "group" ? groupHtml() : tab === "stockrep" ? stockTblHtml() : tab === "bunbae" ? bunbaeHtml() : tab === "blog" ? blogTabHtml() : mustHtml();
+  const body0 = EMBED[tab] ? embedHtml() : tab === "home" ? (pc ? homePC() : homeHtml()) : tab === "kpi" ? kpiHtml() : tab === "close" ? closingAllHtml() : tab === "survey" ? surveyHtml() : tab === "tasks" ? tasksHtml() : tab === "note" ? noteHtml() : tab === "order" ? orderHtml() : tab === "office" ? officeHtml() : tab === "group" ? groupHtml() : tab === "stockrep" ? stockTblHtml() : tab === "coins" ? coinsHtml() : tab === "bunbae" ? bunbaeHtml() : tab === "blog" ? blogTabHtml() : mustHtml();
   const body = subnavHtml() + body0;
   if (!pc) { $("#app").innerHTML = `<div class="top"><div class="logo">VAFRIEND <b>관리자</b></div><div class="r"><button class="ic" data-act="reload">${hh ? `${hh}:${mm} 기준 ↻` : "새로고침"}</button><button class="ic" data-act="logout">잠그기</button></div></div>${body}`; markEmb(); return; }
   const ICG = { goods: ICON.order };
   $("#app").innerHTML = `<div class="shell"><aside class="side"><div class="logo">VAFRIEND <b>관리자</b></div>
       ${GROUPS.map((g) => `<button class="navb ${grpOf(tab) === g ? "on" : ""}" data-tab="${grpTab(g)}">${ICG[g[0]] || ICON[g[0]]}${g[1]}${g[0] === "tasks" && tn ? `<span class="nbadge">${tn}</span>` : ""}${g[0] === "office" && botBad() ? ' <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--red);margin-left:4px"></span>' : ""}</button>`).join("")}
       <div class="foot"><button class="navb" data-act="reload">↻ ${hh ? `${hh}:${mm} 기준` : "새로고침"}</button><button class="navb" data-act="logout">🔒 잠그기</button></div></aside>
-    <main class="main ${EMBED[tab] ? "embm" : ""}">${tab === "home" || tab === "tasks" || tab === "kpi" || tab === "survey" || tab === "group" || tab === "must" || tab === "stockrep" || tab === "close" || EMBED[tab] ? body : `<div class="narrow">${body}</div>`}</main></div>`;
+    <main class="main ${EMBED[tab] ? "embm" : ""}">${tab === "home" || tab === "tasks" || tab === "kpi" || tab === "survey" || tab === "group" || tab === "must" || tab === "stockrep" || tab === "coins" || tab === "close" || EMBED[tab] ? body : `<div class="narrow">${body}</div>`}</main></div>`;
   markEmb();
   if (tab === "home") { if (panelKeep) { $("#panel").innerHTML = panelKeep; bindSparks(); } else { const top = issuesLeft()[0], fresh = top && issKey(top) !== panelOffKey; if (fresh && top.b && D.branches.some((y) => y.b === top.b)) { panelBranch(top.b, "프리미엄 A"); panelKeep = ""; } else { $("#panel").innerHTML = fresh && top.kind === "aout" ? `<div class="eyebrow">제일 급한 것</div>${heroHtml()}` : panelDefault(); bindSparks(); } } }
 }
@@ -729,10 +729,10 @@ function blogTabHtml() {
   return head + seg + blogAdmHtml() + blogBoardHtml() + blogDraftsHtml(true);
 }
 /* 11/5 지시문 초안: [지시문 만들기] → 운영봇이 소넷으로 초안(1~2분) → 여기서 보고 고치기, 촬영 업무 요청, 직원웹에 올리기 */
-const BD_BR = BR.filter((b) => b !== "동성로2"); /* 동성로2는 예전 지시문이 없어 틀을 못 만든다 */
+const BD_BR = BR; /* 11/11 액상덕후 "블로그지시문 쓰는거 동성로2호점 추가": 틀은 blog/0000-9-dongseongro2.html */
 let BD = null, BDL = [], bdT = null;
-const jm = (b) => (String(b).endsWith("점") ? b : b + "점");
-const BD_BASE = { 동성로: "대구동성로전자담배", 수성: "대구수성전자담배", 본점: "동대구전자담배", 율하: "대구율하전자담배", 반월당: "대구반월당전자담배", 상인: "대구상인동전자담배", 광장코아: "대구광장코아전자담배", 현풍: "대구현풍전자담배" }; /* 02_지점블로그_지시문.md 월요일 키워드 */
+const jm = (b) => (b === "동성로2" ? "동성로2호점" : String(b).endsWith("점") ? b : b + "점");
+const BD_BASE = { 동성로: "대구동성로전자담배", 수성: "대구수성전자담배", 본점: "동대구전자담배", 율하: "대구율하전자담배", 반월당: "대구반월당전자담배", 상인: "대구상인동전자담배", 광장코아: "대구광장코아전자담배", 현풍: "대구현풍전자담배", 동성로2: "대구동성로전자담배" }; /* 02_지점블로그_지시문.md 월요일 키워드. 동성로2는 동성로와 같은 지역 키워드(고쳐 쓸 수 있음) */
 const bdSplit = (b, k, dow) => { const sp = String(k).indexOf(" "), lt = sp > 0 ? k.slice(sp + 1).trim() : ""; return { kw: dow === 3 ? "대구전자담배" : BD_BASE[b] || (sp > 0 ? k.slice(0, sp) : k), lt }; };
 const nextDow = (dow) => { let d = D.d; for (let i = 0; i < 8; i++) { d = addDays(d, 1); if (new Date(d + "T00:00:00Z").getUTCDay() === dow) return d; } return d; };
 function bdList() { const L = (D.blogDrafts ||= []); BDL = BDL.filter((r) => Date.now() - r._t < 10 * 60e3 && !L.some((y) => y.id === r.id && y.st !== "wait")); for (const r of BDL) if (!L.some((y) => y.id === r.id)) L.push(r); return L; }
@@ -1261,7 +1261,8 @@ function bindSparks() {
     s.addEventListener("pointermove", show); s.addEventListener("pointerdown", show); s.addEventListener("pointerleave", () => (tip.style.opacity = 0));
   });
 }
-const REP_TXT = (t) => !t ? "" : t.rep === "once" ? `${t.date.slice(5).replace("-", "/")} 한 번` : t.rep === "daily" ? "매일" : t.rep === "weekly" ? `매주 ${(t.dow || []).slice().sort((a, b) => ((a + 6) % 7) - ((b + 6) % 7)).map((d) => WD[d]).join(", ")}` : `매월 ${t.dom}일`;
+const dueLbl = (v) => (v ? `${dLabel(v.slice(0, 10))}${v.length > 10 ? " " + v.slice(11) : ""}` : "");
+const REP_TXT = (t) => !t ? "" : t.rep === "untildone" ? `완료할 때까지${t.due ? ", 마감 " + dueLbl(t.due) : ""}` : t.rep === "once" ? `${t.date.slice(5).replace("-", "/")} 한 번` : t.rep === "daily" ? "매일" : t.rep === "weekly" ? `매주 ${(t.dow || []).slice().sort((a, b) => ((a + 6) % 7) - ((b + 6) % 7)).map((d) => WD[d]).join(", ")}` : `매월 ${t.dom}일`;
 // ── 재고조사 (직원웹에서 센 수량 ↔ 포스 수량). [승인](포스 반영)은 아직 꺼 둠 ──
 const SVST = { wait: ["승인 대기", "blue"], reject: ["반려", "gray"], done: ["반영 완료", "good"] };
 // 10/27 사장님 "보기 불편": 재고조사 탭 = 왼쪽 A그룹 카드(품절/있음을 글자로) + 지점당 한 줄(A그룹 품절, 오늘 재고보고와 조정 결과). 표와 %는 뺌(지점 상세에서), 승인형 재고조사 카드도 뺌(기록 있을 때만 아래)
@@ -1283,6 +1284,30 @@ function stockTblHtml() {
   const rows = T.items.map((n) => `<tr><td>${esc(n)}</td><td class="sum">${sum(n)}</td>${show.map((c) => { if (!c.on) return '<td class="na">–</td>'; const v = c.r.q[n]; return v == null ? '<td class="na">–</td>' : `<td class="${v === 0 ? "z" : ""}">${v}</td>`; }).join("")}</tr>`).join("");
   const tot = `<tr class="tot"><td>지점 합계</td><td class="sum">${T.items.reduce((a, n) => a + sum(n), 0)}</td>${show.map((c) => c.on ? `<td>${T.items.reduce((a, n) => a + num(c, n), 0)}</td>` : '<td class="na">–</td>').join("")}</tr>`;
   return hero + `<div class="srw"><table class="srt"><thead>${head}</thead><tbody>${rows}${tot}</tbody></table></div>`;
+}
+/* 11/10 액상덕후 "마감할 때 잔돈 갯수를 세잖아, 그거 볼 수 있게 탭을": 받은 잔돈, 마감 때 센 잔돈. 표 모양은 재고보고와 같게(.srt)
+   자료 D.coins.days[날짜] = { recv: { 지점: { t, by, q: { c5, c1, c500, c100 } } }, close: { 지점: { t, by, src: "마감"|"중간", q } } } (수량, 금액은 여기서 곱함) */
+const COIN_DEN = [["c5", "5천원", 5000, "장"], ["c1", "1천원", 1000, "장"], ["c500", "500원", 500, "개"], ["c100", "100원", 100, "개"]];
+let coinD = "";
+function coinsHtml() {
+  const C = D.coins; if (!C || !C.days) return '<div class="empty">잔돈 표는 운영봇이 자료를 보내기 시작하면 보여요</div>';
+  const today = D.d || (D.at || "").slice(0, 10), days = [...new Set([today, ...Object.keys(C.days)])].sort().reverse().slice(0, 7);
+  const d = days.includes(coinD) ? coinD : today, day = C.days[d] || {}, pc = isPC();
+  const order = ["본점", ...BR.filter((b) => b !== "본점")], shown = !pc && srB ? order.filter((b) => b === srB) : order;
+  const lab = (x) => `${+x.slice(5, 7)}/${+x.slice(8)}(${"일월화수목금토"[new Date(x).getUTCDay()]})`;
+  const w = (v) => Math.round(v).toLocaleString("ko-KR");
+  const tbl = (title, M, kind) => {
+    const col = order.map((b) => ({ b, i: BR.indexOf(b) + 1, r: M && M[b] && M[b].q ? M[b] : null })), on = col.filter((c) => c.r), off = col.filter((c) => !c.r), show = col.filter((c) => shown.includes(c.b));
+    const q = (c, k) => (c.r && typeof c.r.q[k] === "number" ? c.r.q[k] : 0), amt = (c) => COIN_DEN.reduce((a, [k, , v]) => a + q(c, k) * v, 0);
+    const note = kind === "recv" ? (on.length ? `${on.length}곳이 받았다고 보고했어요` : "아직 받았다는 보고가 없어요") : `${on.length}곳 보고${off.length ? `, 안 옴: ${off.map((c) => esc(c.b)).join(", ")}` : ""}`;
+    const head = `<tr><th>권종</th><th class="sum">합계</th>${show.map((c) => `<th class="${c.r ? "" : "na"}"><small>${c.i}호</small><b>${esc(c.b)}</b><small>${c.r ? `${esc(c.r.t || "")} ${esc(String(c.r.by || "").split(",")[0])}${c.r.src === "중간" ? " (중간 체크)" : ""}` : "안 옴"}</small></th>`).join("")}</tr>`;
+    const rows = COIN_DEN.map(([k, nm, , u]) => `<tr><td>${nm} <small style="color:var(--sub);font-weight:500">${u}</small></td><td class="sum">${w(col.reduce((a, c) => a + q(c, k), 0))}</td>${show.map((c) => (c.r && typeof c.r.q[k] === "number" ? `<td>${w(c.r.q[k])}</td>` : '<td class="na">–</td>')).join("")}</tr>`).join("");
+    const tot = `<tr class="tot"><td>금액 합계</td><td class="sum">${w(col.reduce((a, c) => a + amt(c), 0))}원</td>${show.map((c) => (c.r ? `<td>${w(amt(c))}원</td>` : '<td class="na">–</td>')).join("")}</tr>`;
+    return `<div class="sec">${title} <small>${note}</small></div><div class="srw" style="max-height:none"><table class="srt"><thead>${head}</thead><tbody>${rows}${tot}</tbody></table></div>`;
+  };
+  const dchips = `<div class="chips" style="margin:0 0 4px;flex-wrap:wrap">${days.map((x) => `<button class="chip ${x === d ? "on" : ""}" data-coind="${x}">${x === today ? "오늘 " : ""}${lab(x)}</button>`).join("")}</div>`;
+  const bchips = !pc ? `<div class="srchips" style="margin:0 0 4px"><button class="chip ${!srB ? "on" : ""}" data-srb="">전체</button>${order.map((b) => `<button class="chip ${srB === b ? "on" : ""}" data-srb="${esc(b)}">${BR.indexOf(b) + 1} ${esc(b)}</button>`).join("")}</div>` : "";
+  return dchips + bchips + tbl("받은 잔돈", day.recv, "recv") + tbl("마감 때 센 잔돈", day.close, "close");
 }
 function surveyHtml() {
   const con = D.branches.filter((x) => x.connected);
@@ -1433,21 +1458,23 @@ function fnWhenHtml(withRep) {
     h += fnRow('data-fnw="daily"', rep === "daily", "매일", "", "rd") + fnRow('data-fnw="weekly"', rep === "weekly", "매주", rep === "weekly" && o.dow.length ? o.dow.slice().sort((a, b) => ((a + 6) % 7) - ((b + 6) % 7)).map((x) => WD[x]).join(", ") : "", "rd");
     if (rep === "weekly") h += `<div class="fnsubin u-chips">${[1, 2, 3, 4, 5, 6, 0].map((x) => `<button class="u-schip ${o.dow.includes(x) ? "on" : ""}" data-fndow="${x}">${WD[x]}</button>`).join("")}</div>`;
     h += fnRow('data-fnw="monthly"', rep === "monthly", "매월", rep === "monthly" ? `${o.dom}일마다` : "", "rd");
+    h += fnRow('data-fnw="untildone"', rep === "untildone", "완료할 때까지", rep === "untildone" ? (o.due ? `마감 ${dueLbl(o.due)}` : "지점이 완료를 누를 때까지 매일 떠요") : "지점이 완료를 누를 때까지 매일 떠요", "rd");
+    if (rep === "untildone") h += `<div class="fnsubin"><label class="caption" style="margin:0 0 4px;display:block">언제부터 띄울까요</label><input class="in" type="date" id="fnUdStart" value="${esc(o.date)}"><label class="caption" style="margin:12px 0 4px;display:block">마감 날짜, 시각</label><div style="display:flex;gap:8px"><input class="in" type="date" id="fnDueD" value="${esc((o.due || "").slice(0, 10))}" min="${D.d}" style="flex:1"><input class="in" type="time" id="fnDueT" value="${esc((o.due || "").slice(11, 16))}" style="flex:0 0 130px"></div><div class="caption" style="margin:6px 0 0">마감이 지나도 완료 안 한 지점에는 계속 떠요</div></div>`;
     if (rep === "monthly") h += `<div class="fnsubin"><div class="u-step"><button data-fndom="-1" aria-label="하루 앞으로" ${o.dom <= 1 ? "disabled" : ""}>−</button><b>${o.dom}일</b><button data-fndom="1" aria-label="하루 뒤로" ${o.dom >= 31 ? "disabled" : ""}>＋</button></div></div>`;
   }
   return `<div class="fnlist">${h}</div>`;
 }
-const fnWhenTxt = (o) => (o.rep && o.rep !== "once" ? REP_TXT(o) : d0(o.date));
+const fnWhenTxt = (o) => (o.rep === "untildone" ? `${d0(o.date)}부터, 완료할 때까지` : o.rep && o.rep !== "once" ? REP_TXT(o) : d0(o.date));
 const d0 = (d) => (d === D.d ? `오늘 ${dLabel(d)}` : d === addDays(D.d, 1) ? `내일 ${dLabel(d)}` : dLabel(d));
 const fnSum = (n, label, val) => `<button class="fnsum" data-fngo="${n}"><span>${label}</span><b>${val}</b><i>›</i></button>`;
 const fnTime = (o) => swRow("data-fnt", FN.tOn, "시각 정하기", FN.tOn ? "" : "끄면 그날 아무 때나 해요") + (FN.tOn ? `<input class="in" type="time" id="fnTime" value="${esc(o.time || "")}" style="margin-top:6px">` : "");
 function fnSteps() {
   const k = FN.k;
   if (k === "task") { const t = editTask; return [
-    ["무엇을 시킬까요?", `<input class="in fnin" id="fnTitle" maxlength="60" placeholder="예) 진열장 유리 닦기" value="${esc(t.title)}"><input class="in" id="fnNote" maxlength="200" placeholder="메모 (선택) 예) 끝나면 사진 찍어 두기" value="${esc(t.note)}">`],
+    ["무엇을 시킬까요?", `<input class="in fnin" id="fnTitle" maxlength="60" placeholder="예) 진열장 유리 닦기" value="${esc(t.title)}"><textarea class="in" id="fnNote" rows="3" maxlength="6000" placeholder="메모, 설명 (선택) 예) 끝나면 사진 찍어 두기" style="height:auto;padding:12px 16px;line-height:1.6">${esc(t.note)}</textarea><div class="caption" style="margin:4px 0 0">긴 설명(200자 넘게)은 3단계에서 '완료할 때까지'를 고르면 보낼 수 있어요</div>`],
     ["어느 지점에 보낼까요?", fnBrHtml(), `<span id="fncnt">${t.br.length ? t.br.length + "곳 골랐어요" : "지점을 골라 주세요"}</span>`],
     ["언제 할까요?", fnWhenHtml(true)],
-    ["이렇게 보낼게요", `<div class="fnlist">${fnSum(1, "할 일", esc(t.title))}${t.note ? fnSum(1, "메모", esc(t.note)) : ""}${fnSum(2, "지점", fnBrTxt(t.br))}${fnSum(3, "언제", fnWhenTxt(t))}</div>${fnTime(t)}`, "줄을 누르면 고칠 수 있어요"]]; }
+    ["이렇게 보낼게요", `<div class="fnlist">${fnSum(1, "할 일", esc(t.title))}${t.note ? fnSum(1, "메모", esc(t.note.length > 40 ? t.note.slice(0, 40).replace(/\s+/g, " ") + `… (${t.note.length.toLocaleString()}자)` : t.note)) : ""}${fnSum(2, "지점", fnBrTxt(t.br))}${fnSum(3, "언제", fnWhenTxt(t))}${t.rep === "untildone" ? fnSum(3, "마감", t.due ? dueLbl(t.due) : "없음") : ""}</div>${t.rep === "untildone" ? "" : fnTime(t)}`, "줄을 누르면 고칠 수 있어요"]]; }
   if (k === "notice") return [
     ["어떤 공지를 올릴까요?", `<input class="in fnin" id="fnNtTitle" maxlength="60" placeholder="제목 예) 블로그 단톡방 정리 안내" value="${esc(NTF.title)}"><textarea class="in" id="fnNtBody" rows="5" maxlength="1200" placeholder="내용" style="height:auto;padding:12px 16px">${esc(NTF.body)}</textarea>`],
     ["어느 지점에 띄울까요?", fnBrHtml(), `<span id="fncnt">${NTBR.size ? NTBR.size + "곳 골랐어요" : "지점을 골라 주세요"}</span>`],
@@ -1476,6 +1503,7 @@ function fnRead() {
   if ($("#fnNtTitle")) { NTF.title = $("#fnNtTitle").value; NTF.body = $("#fnNtBody").value; }
   if (o && $("#fnDate")) o.date = $("#fnDate").value || o.date;
   if (o && $("#fnTime")) o.time = $("#fnTime").value;
+  if (o && $("#fnUdStart")) { o.date = $("#fnUdStart").value || o.date; const dd = $("#fnDueD").value, tt = $("#fnDueT").value; o.due = dd ? (tt ? `${dd} ${tt}` : dd) : ""; }
 }
 function fnCheck() {
   const k = FN.k, s = FN.s;
@@ -1484,6 +1512,7 @@ function fnCheck() {
   if (s === 1 && k === "survey" && !svNew.g) return "그룹을 골라 주세요";
   if (s === 2 && !fnSel().length) return "지점을 골라 주세요";
   if (s === 3 && k === "task" && editTask.rep === "weekly" && !editTask.dow.length) return "요일을 골라 주세요";
+  if (s === 3 && k === "task" && editTask.rep !== "untildone" && editTask.note.length > 200) return `메모가 ${editTask.note.length}자예요. 200자까지만 돼요. 길게 쓰려면 '완료할 때까지'를 골라 주세요`;
   return "";
 }
 async function fnSend() {
@@ -1685,7 +1714,11 @@ async function saveTask() {
   if (!t.title) return toast("무엇을 할지 적어 주세요"); if (!t.br.length) return toast("지점을 골라 주세요");
   if (t.rep === "weekly" && !t.dow.length) return toast("요일을 골라 주세요");
   t.id ||= Date.now().toString(36);
-  try { await sendOp("task", t); const i = D.tasks.findIndex((x) => x.id === t.id); i >= 0 ? (D.tasks[i] = { ...t }) : D.tasks.push({ ...t }); editTask = null; closeSheet(); render(); toast("저장했어요. 직원웹에는 1~2분 뒤에 떠요"); setTimeout(() => reload(true), 90e3); }
+  if (t.rep === "untildone") t.time = "";
+  if (t.rep !== "untildone" && t.note.length > 200) return toast("메모는 200자까지예요. 길게 쓰려면 '완료할 때까지'를 골라 주세요");
+  try {
+    if (t.rep === "untildone" && t.note.length > 1200) { const P = t.note.match(/[\s\S]{1,1200}/g); await sendOp("task", { ...t, note: "", noteN: P.length }); for (let i = 0; i < P.length; i++) await sendOp("taskNote", { id: t.id, i, n: P.length, part: P[i] }); }
+    else await sendOp("task", t); const i = D.tasks.findIndex((x) => x.id === t.id); i >= 0 ? (D.tasks[i] = { ...t }) : D.tasks.push({ ...t }); editTask = null; closeSheet(); render(); toast("저장했어요. 직원웹에는 1~2분 뒤에 떠요"); setTimeout(() => reload(true), 90e3); }
   catch (e) { toast("저장하지 못했어요. 다시 눌러 주세요"); }
 }
 document.addEventListener("input", (e) => { if (e.target.id === "ntRange") { NTUNTIL = +e.target.value; $("#ntuv").textContent = ntuLabel(NTUNTIL); } });
@@ -1772,6 +1805,7 @@ document.addEventListener("click", async (e) => {
   if (t.dataset.notelike) return noteAct(t.dataset.notelike, true);
   if (t.dataset.notecmt) return noteAct(t.dataset.notecmt, false);
   if (t.dataset.staffb) { staffB = t.dataset.staffb; ls.set("vf-admin-staffb", staffB); return render(); }
+  if (t.dataset.coind) { coinD = t.dataset.coind; return render(); }
   if (t.dataset.srb != null) { srB = t.dataset.srb; ls.set("vf-admin-srb", srB); return render(); }
   if (t.dataset.clb) { clB = t.dataset.clb; ls.set("vf-admin-clb", clB); return render(); }
   if (t.dataset.srcopy) { const b = t.dataset.srcopy, r = D.stockTbl?.br?.[b]; if (!r) return; const txt = D.stockTbl.items.map((n) => r.q[n] == null ? "" : r.q[n]).join("\n"); try { await navigator.clipboard.writeText(txt); toast(`${b} 숫자 ${D.stockTbl.items.length}개 복사했어요, 노션 ${b} 칸 첫 줄에 붙여 넣으면 돼요`); } catch { toast("복사하지 못했어요"); } return; }
