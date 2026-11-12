@@ -760,12 +760,13 @@ function drawCart() {
   $('lines').innerHTML = cart.size ? [...cart].map(([key, x]) => `<div class="ln">${x.img ? `<img src="${x.img}" alt="">` : '<i class="noim"></i>'}<span class="n">${esc(x.label)}${x.k === "liq" && x.n ? noTag(x.n) : ""}${x.items ? `<small>${esc(x.items.map(([, l, q]) => l + " " + q).join(", "))}</small>` : ""}</span><span class="qb"><button data-m="${key}">−</button><b>${x.qty}</b><button data-p="${key}">+</button></span><b class="price">${won(x.unit * x.qty)}</b></div>`).join("")
       + (off > 0 ? `<div class="sum2"><div class="r"><span>낱개로 샀을 때</span><s>${won(unitAll)}</s></div><div class="r off"><span>${esc(t.how || "묶음, 이벤트")} 할인</span><b>-${won(off)}</b></div><div class="save">총 ${won(off)} 할인 받았어요</div></div>` : "")
       + memberBox() + benefitBox() + ledgerBox()
-    : '<div style="padding:24px 0 8px;color:var(--grey)">담은 상품이 없어요</div>' + (memregOn() ? memberBox() : ""); /* 11/12 액상덕후: 빈 장바구니에서도 회원조회, 회원가입 */
+    : '<div style="padding:24px 0 8px;color:var(--grey)">담은 상품이 없어요</div>' + (memregOn() ? memberBox() + (member.type || member.reg ? '<button class="memgo sub" data-memclear="1" style="margin-top:10px">처음으로 (입력한 것 지우기)</button>' : "") : ""); /* 11/12 액상덕후: 빈 장바구니에서도 회원조회, 회원가입 + 지우기 */
   setFoot("cart");
 }
 $('lines').onclick = (e) => {
   const ck = e.target.closest('[data-ck]'); if (ck) { member[ck.dataset.ck] = !member[ck.dataset.ck]; if (member.bad === "agree") member.bad = ""; drawCart(); return; }
   const mo = e.target.closest('[data-memok]'); if (mo) { if (!/^01[016789]\d{7,8}$/.test(member.phone)) { member.bad = "phone"; drawCart(); return toast("휴대폰 번호를 확인해 주세요"); } member.bad = ""; if (memregOn()) { memRegSend(true); return; } member.okd = true; drawCart(); return; } /* 11/12 본점: 포스에서 회원 조회 */
+  const mc = e.target.closest('[data-memclear]'); if (mc) { Object.assign(member, { type: null, name: "", year: "", phone: "", agree: false, mk: false, sex: "", reg: null, bad: "", okd: false }); drawCart(); return; } /* 11/12 빈 장바구니 회원 칸 초기화 */
   const mn = e.target.closest('[data-memnew]'); if (mn) { member.type = "new"; member.reg = null; drawCart(); return; } /* 조회에 없던 번호 → 번호 그대로 회원등록 */
   const mg = e.target.closest('[data-memreg]'); if (mg) { memRegSend(); return; }
   const sx = e.target.closest('[data-sex]'); if (sx) { member.sex = sx.dataset.sex; drawCart(); return; }
@@ -1111,8 +1112,10 @@ const DSP_POOL = () => GDS.filter((g) => g.c === "dsp" && /^(팜팜바|모스바
 const DSP_IMG = { 팜팜바: "dsp_farm.png", 모스바: "dsp_moss.png" };
 let EV = null; // { k, need, pick: Map(id → 수), color }
 const pickN = () => [...EV.pick.values()].reduce((a, n) => a + n, 0);
-const MAL = { M: { model: "말론 기계", name: "말론", pod: "말론팟 0.6옴" }, S: { model: "말론S", name: "말론S", pod: "말론S 0.6옴팟" } };
-const malPod = () => GDS.find((g) => g.c === "pod" && g.n === MAL[EV.k].pod && !outOf(g.n));
+/* 11/12 액상덕후: 말론, 말론S 팟은 0.4옴, 0.6옴 둘 다 있고 0.4옴을 많이 팔아야 함(맛 표현이 제일 좋음) → 0.4옴 기본, 0.6옴은 고를 수 있게 */
+const MAL = { M: { model: "말론 기계", name: "말론", pods: { "0.4": "말론팟 0.4옴", "0.6": "말론팟 0.6옴" } }, S: { model: "말론S", name: "말론S", pods: { "0.4": "말론S 0.4옴팟", "0.6": "말론S 0.6옴팟" } } };
+const malPodOf = (k, ohm) => GDS.find((g) => g.c === "pod" && g.n === MAL[k].pods[ohm] && !outOf(g.n));
+const malPod = () => malPodOf(EV.k, EV.ohm || "0.4") || malPodOf(EV.k, EV.ohm === "0.6" ? "0.4" : "0.6");
 function openEv(k, need) { evQ = ""; evMore = false; mf = "전체";
   if (k === "M" || k === "S") { const o = devOpts(MAL[k].model); if (!o.length) return toast(BRANCH + " " + MAL[k].name + " 재고가 없어요");
     const p = MAL_P[pi] && MAL_P[pi][0] === k ? MAL_P[pi] : MAL_P.find((x) => x[0] === k), n = need === 5 ? 5 : 10; EV = { k, need: n, pick: new Map(), color: (o.find((x) => x.opt === p[2]) || o[0]).opt, hero: p[1], pods: 0, podAsk: false, mcol: p[2] }; }
@@ -1182,7 +1185,10 @@ function drawEv() {
     h += `<div class="card evhero"><img src="${hero}" alt=""><div class="pr"><b class="price">${tot}</b><span style="font-size:14px;color:var(--grey)">${M.name} ${won(d.price)} + 액상 ${EV.need}병 ${won(EV.need === 10 ? ADD.pr10 : ADD.pr5)}${pod && pk ? ` + 팟 ${pk}팩 ${won(podW)}` : ""}</span></div></div>
       <div class="opt2" style="margin-bottom:var(--gap)">${[[10, "액상 10병"], [5, "액상 5병"]].map(([q, t]) => `<button class="${EV.need === q ? "on" : ""}" data-hq="${q}"><b style="font-size:18px">${t}</b><span>${won(setP(q))}</span></button>`).join("")}</div>`;
     h += `<div class="evsec">① 색상</div>` + (o.length > 1 ? `<div class="opt2" style="margin-bottom:var(--gap)">${o.map((x) => `<button class="${x.opt === d.opt ? "on" : ""}" data-ec="${x.opt}"><b style="font-size:18px">${x.opt}</b><span>${won(x.price)}</span></button>`).join("")}</div>` : `<div class="opt2" style="margin-bottom:6px;grid-template-columns:repeat(3,1fr)">${["블랙", "건메탈", "실버"].map((c) => `<button class="${EV.mcol === c ? "on" : ""}" data-mcol="${c}"><b style="font-size:18px">${c}</b></button>`).join("")}</div><div class="evtip">색상별 재고는 직원이 확인해요</div>`); /* 11/12 말론은 포스에 색 구분이 없어서 고른 색만 직원에게 보여 줌 */
-    if (pod) h += `<div class="evsec" id="evPodBox">② ${M.name} 팟 같이 담기</div><div style="font-size:17px;font-weight:800;margin:2px 0 10px">팟은 액상 1병에 1개, 안 바꾸면 누수가 생겨요</div><div class="opt2" style="margin-bottom:10px">${[rec, rec / 2].map((q, i) => `<button class="${pk === q ? "on" : ""}" data-evpk="${q}"><b style="font-size:18px">팟 ${q}팩${i ? "" : " 추천"}</b><span>+${won(pod.price * POD_PER_PACK * q)}</span></button>`).join("")}</div><div class="card" style="padding:14px 16px;display:flex;gap:14px;align-items:center"><div style="flex:1"><b style="font-size:17px">${esc(pod.n)}</b><div style="color:var(--grey);font-size:14px">1팩(${POD_PER_PACK}개) ${won(pod.price * POD_PER_PACK)}${pk ? `, ${pk}팩 ${won(podW)}` : ""}</div></div><div class="pstep"><button data-evpod="-1">-</button><b>${pk}팩</b><button data-evpod="1">+</button></div></div>`;
+    const p4 = malPodOf(EV.k, "0.4"), p6 = malPodOf(EV.k, "0.6"), ohmNow = pod && pod.n === MAL[EV.k].pods["0.6"] ? "0.6" : "0.4";
+    if (pod) h += `<div class="evsec" id="evPodBox">② ${M.name} 팟 같이 담기</div><div style="font-size:17px;font-weight:800;margin:2px 0 10px">팟은 액상 1병에 1개, 안 바꾸면 누수가 생겨요</div>`
+      + (p4 && p6 ? `<div class="opt2" style="margin-bottom:10px"><button class="${ohmNow === "0.4" ? "on" : ""}" data-evohm="0.4"><b style="font-size:18px">0.4옴 추천</b><span>맛 표현이 제일 좋아요</span></button><button class="${ohmNow === "0.6" ? "on" : ""}" data-evohm="0.6"><b style="font-size:18px">0.6옴</b><span>&nbsp;</span></button></div>` : "")
+      + `<div class="opt2" style="margin-bottom:10px">${[rec, rec / 2].map((q, i) => `<button class="${pk === q ? "on" : ""}" data-evpk="${q}"><b style="font-size:18px">팟 ${q}팩${i ? "" : " 추천"}</b><span>+${won(pod.price * POD_PER_PACK * q)}</span></button>`).join("")}</div><div class="card" style="padding:14px 16px;display:flex;gap:14px;align-items:center"><div style="flex:1"><b style="font-size:17px">${esc(pod.n)}</b><div style="color:var(--grey);font-size:14px">1팩(${POD_PER_PACK}개) ${won(pod.price * POD_PER_PACK)}${pk ? `, ${pk}팩 ${won(podW)}` : ""}</div></div><div class="pstep"><button data-evpod="-1">-</button><b>${pk}팩</b><button data-evpod="1">+</button></div></div>`;
     h += pickHead(`③ 액상 ${EV.need}병`) + `<div class="grid">${LQ.map((x) => evCard(x.id, imgOf(x), short(x.n), x.f || "", 0, outOf(x.n))).join("")}</div>`;
     const others = [...EV.pick.keys()].filter((id) => !LQ.some((x) => x.id === id)).map((id) => ALL_LQ.find((x) => x.id === id)).filter(Boolean);
     const found = evQ.trim() ? searchItems(evQ).filter((r) => r.t === "liq" && r.x.line === "프리미엄").map((r) => r.x).slice(0, 12) : [];
@@ -1221,6 +1227,7 @@ $('evB').onclick = (e) => {
   else if (m) { const id = m.dataset.em, v = (EV.pick.get(id) || 0) - 1; v > 0 ? EV.pick.set(id, v) : EV.pick.delete(id); }
   else if (c) EV.color = c.dataset.ec;
   else if (e.target.closest('[data-mcol]')) EV.mcol = e.target.closest('[data-mcol]').dataset.mcol;
+  else if (e.target.closest('[data-evohm]')) EV.ohm = e.target.closest('[data-evohm]').dataset.evohm; /* 11/12 말론 팟 0.4/0.6옴 */
   else if (e.target.closest('[data-evpk]')) { const q = +e.target.closest('[data-evpk]').dataset.evpk * POD_PER_PACK; EV.pods = EV.pods === q ? 0 : q; }
   else if (e.target.closest('[data-evpod]')) EV.pods = Math.max(0, Math.min(20, (EV.pods || 0) + POD_PER_PACK * +e.target.closest('[data-evpod]').dataset.evpod));
   else if (e.target.closest('[data-hq]')) { EV.need = +e.target.closest('[data-hq]').dataset.hq; if (false) for (const id of [...EV.pick.keys()]) { const x = LQ.find((y) => y.id === id); if (!x || !isVL(x)) EV.pick.delete(id); } while (pickN() > EV.need) { const last = [...EV.pick.keys()].pop(); const v = EV.pick.get(last) - 1; v > 0 ? EV.pick.set(last, v) : EV.pick.delete(last); } }
@@ -1791,7 +1798,7 @@ function QZ_RULE(A) {
   /* 11/11 액상덕후: 입호흡 추천은 말론, 말론S (발라맥스프로, 하복2 대신). 팟은 미리 안 담고 금액만 같이 보여 줌 */
   const mD = (devOpts("말론 기계") || [])[0], sD = (devOpts("말론S") || [])[0], mp = (n) => { const p = GDS.find((g) => g.c === "pod" && g.n === n && !outOf(g.n)); return p ? p.price * POD_PER_PACK : 0; };
   const MP = (k, d, q, nm, pn) => d ? [[k + q, `${nm} + 액상 ${q}병`, won(d.price + (q === 10 ? ADD.pr10 : ADD.pr5)) + (mp(pn) ? `, 팟 ${q === 10 ? 4 : 2}팩 더하면 ${won(d.price + (q === 10 ? ADD.pr10 : ADD.pr5) + mp(pn) * (q === 10 ? 4 : 2))}` : "")]] : [];
-  const M10 = MP("M", mD, 10, "말론", "말론팟 0.6옴"), M5 = MP("M", mD, 5, "말론", "말론팟 0.6옴"), S10 = MP("S", sD, 10, "말론S", "말론S 0.6옴팟"), S5 = MP("S", sD, 5, "말론S", "말론S 0.6옴팟");
+  const M10 = MP("M", mD, 10, "말론", "말론팟 0.4옴"), M5 = MP("M", mD, 5, "말론", "말론팟 0.4옴"), S10 = MP("S", sD, 10, "말론S", "말론S 0.4옴팟"), S5 = MP("S", sD, 5, "말론S", "말론S 0.4옴팟"); /* 11/12 0.4옴 기준 */
   const malOk = !!(mD || sD);
   const packs = !malOk ? (low ? [["D", "일회용 10+5 패키지", "팜팜바, 모스바 15개, 5개 서비스"], ...vbPack, H10, H5] : mid ? [H10, ...vbPack, H5] : [H10, H5])
     : low ? [["D", "일회용 10+5 패키지", "팜팜바, 모스바 15개, 5개 서비스"], ...S5, ...S10, ...M5] : [...M10, ...S10, ...M5];
