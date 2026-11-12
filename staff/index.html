@@ -459,6 +459,21 @@
   .tnd{margin-top:8px;border:1px solid var(--line);border-radius:10px;background:#fafbfc}
   .tnd summary{min-height:48px;display:flex;align-items:center;padding:0 14px;font-size:17px;font-weight:700;cursor:pointer}
   .tnd summary small{margin-left:6px;color:var(--sub);font-weight:500}
+  /* 11/12 시재, 포스 개점 준비금 크게 */
+  .sjbig{background:#f2f8ff;border:2px solid #d6e8ff;border-radius:16px;padding:6px 16px;margin:0 0 14px}
+  .sjh{font-size:18px;font-weight:800;color:var(--ink);padding:10px 0 4px}
+  .sjr{padding:12px 0;border-top:1px solid #d6e8ff}.sjh+.sjr{border-top:0}
+  .sjr span{display:block;font-size:18px;font-weight:700;color:var(--ink2)}
+  .sjr b{display:block;font-size:40px;font-weight:800;letter-spacing:-.5px;line-height:1.2;margin-top:4px;font-variant-numeric:tabular-nums;color:var(--ink)}
+  .sjr em{display:block;font-style:normal;font-size:17px;font-weight:700;color:var(--blue);margin-top:2px}
+  /* 11/11 홈 베프 칸, 베프 탭 바로가기 */
+  .czin.befhome{margin:0 0 12px;padding:0 0 0 18px;border-radius:14px;box-shadow:none;border:1px solid var(--line);background:#fff}
+  .czin.befhome input{height:48px;font-size:17px}
+  .czin.befhome button{width:40px;height:40px;margin:4px;border-radius:10px;font-size:18px}
+  @media (max-width:760px){.czin.befhome input{height:52px}.czin.befhome button{width:44px;height:44px}}
+  .befsc{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px}
+  .befsc .rqk{min-height:40px;display:inline-flex;align-items:center;flex:none}
+  @media (max-width:760px){.befsc .rqk{min-height:44px}}
   /* 11/11 촬영 목록: 맨 위 3줄, 세트 접기, 한 줄에 사진 하나 */
   .shot{margin-top:10px}
   .shtop{background:#f7f8fa;border-radius:12px;padding:4px 14px}.shtop>div{display:flex;gap:12px;min-height:44px;align-items:center;font-size:17px;border-bottom:1px solid var(--line)}.shtop>div:last-child{border-bottom:0}
@@ -473,6 +488,15 @@
   .shi s{flex:0 0 32px;height:32px;border-radius:50%;border:2px solid var(--line);text-decoration:none;color:transparent;display:flex;align-items:center;justify-content:center;font-weight:800}
   .shi.on span{color:var(--sub)}.shi.on s{background:var(--green);border-color:var(--green);color:#fff}
   .shnote{font-size:14px;color:var(--sub);margin-top:6px}
+.shopen{display:flex;align-items:center;justify-content:space-between;width:100%;min-height:52px;margin-top:10px;padding:0 16px;border:0;border-radius:12px;background:#e8f3ff;color:var(--blue);font:inherit;font-size:17px;font-weight:700} /* 1111 촬영창 */
+.shopen em{font-style:normal;font-weight:800;font-variant-numeric:tabular-nums}.shopen:active{transform:scale(.98)}
+.shmeta{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.shmeta span{background:#f2f4f6;border-radius:999px;padding:6px 12px;font-size:15px;font-weight:700;color:var(--ink2)}
+.shtabs{position:sticky;top:0;z-index:2;display:flex;gap:8px;background:#fff;padding:12px 0 10px;margin-top:4px}
+.shtabs button{flex:1;min-width:0;min-height:56px;border:0;border-radius:12px;background:#f2f4f6;font:inherit;color:var(--ink2);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+.shtabs button b{font-size:17px}.shtabs button em{font-style:normal;font-size:13px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--sub)}
+.shtabs button.on{background:var(--blue);color:#fff}.shtabs button.on em{color:#fff}
+.shsub{font-size:15px;color:var(--sub);line-height:1.6;margin:2px 2px 8px}.shlist{border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.shbtns{position:sticky;bottom:-20px;background:#fff;padding:12px 0 20px;margin:12px 0 -20px}
   .tndb{white-space:pre-line;line-height:1.7;font-size:16px;padding:0 14px 14px;max-height:60vh;overflow:auto;word-break:keep-all}
 </style>
 </head>
@@ -502,7 +526,7 @@
 })();
 </script>
 <script>
-const VER = "11.10-35"; window.VER_ERR = VER;
+const VER = "11.10-38"; window.VER_ERR = VER;
 const GAME_LOCK = true; // 11/02 쉬는 시간 게임 잠금
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
@@ -561,6 +585,28 @@ function shotHtml(t) {
 }
 document.addEventListener("toggle", (e) => { const d = e.target; if (!d?.dataset?.shs || !d.open) return; document.querySelectorAll(`details.shs[data-shs="${d.dataset.shs}"]`).forEach((x) => { if (x !== d) x.open = false; }); }, true); // 한 번에 한 세트
 document.addEventListener("click", (e) => { const b = e.target.closest?.("[data-shot]"); if (!b) return; const [id, k] = b.dataset.shot.split("|"), t = { id }, o = ls.get(SHOT_LS(t), {}); o[k] ? delete o[k] : (o[k] = 1); ls.set(SHOT_LS(t), o); b.classList.toggle("on", !!o[k]); b.setAttribute("aria-pressed", !!o[k]); const em = b.closest("details")?.querySelector("summary em"); if (em) { const all = b.closest("details").querySelectorAll(".shi"); em.textContent = `${[...all].filter((x) => x.classList.contains("on")).length}/${all.length}`; } });
+/* 1111 촬영창: 홈에는 한 줄만, 촬영 목록은 창으로 연다 (액상덕후 "화면이 개길어짐") */
+const SHOT_TAB = {};
+const shotDoneN = (t, p) => { const d = ls.get(SHOT_LS(t), {}); return p.sets.reduce((a, x, si) => a + x.items.filter((_, i) => d[`${si}.${i}`]).length, 0); };
+const shotAllN = (p) => p.sets.reduce((a, x) => a + x.items.length, 0);
+function shotRowHtml(t) { const p = shotParse(t.note); if (!p) return ""; return `<button class="shopen" data-shotopen="${t.id}"><b>촬영 목록 보기</b><em data-shotsum="${t.id}">${shotDoneN(t, p)}/${shotAllN(p)}</em></button>`; }
+function shotSheetHtml(t) {
+  const p = shotParse(t.note), done = ls.get(SHOT_LS(t), {}), si = Math.min(SHOT_TAB[t.id] || 0, p.sets.length - 1), x = p.sets[si], cnt = (k) => p.sets[k].items.filter((_, i) => done[`${k}.${i}`]).length;
+  const nm = (y) => y.name.split(/\s+/)[0], sub = [x.name.split(/\s+/).slice(1).join(" ").replace(/^\(\d+장\)\s*/, ""), ...x.etc].filter(Boolean), fin = t.done || TASK_DONE[t.id];
+  return `<h2>${esc(t.title)}</h2><div class="shmeta">${t.due ? `<span>${esc(udDue(t))}</span>` : ""}<span>총 ${esc(p.total)}장</span></div>
+    <div class="shtabs">${p.sets.map((y, k) => `<button class="${k === si ? "on" : ""}" data-shottab="${t.id}|${k}" aria-pressed="${k === si}"><b>${esc(nm(y))}</b><em>${cnt(k)}/${y.items.length}</em></button>`).join("")}</div>
+    ${sub.length ? `<div class="shsub">${sub.map(esc).join("<br>")}</div>` : ""}
+    <div class="shlist">${x.items.map((z, i) => `<button class="shi ${done[`${si}.${i}`] ? "on" : ""}" data-shot="${t.id}|${si}.${i}" aria-pressed="${!!done[`${si}.${i}`]}"><i>${i + 1}</i><span>${esc(z)}</span><s>✓</s></button>`).join("")}</div>
+    ${p.how.length || p.rule.length ? `<details class="shs"><summary><b>보내는 방법, 지킬 것</b><span></span><em></em></summary><div class="shetc">${[...p.how, ...p.rule].map((y) => `<p style="margin:0 0 10px">${esc(y)}</p>`).join("")}</div></details>` : ""}
+    <div class="shnote">찍은 것 표시는 이 폰에만 남아요</div>
+    <div class="btns shbtns"><button class="btn" data-x>닫기</button>${fin ? "" : t.kind === "photo" ? `<button class="btn primary" data-tphoto="${t.id}">📷 사진 올리기</button>` : `<button class="btn primary" data-tdone="${t.id}">다 했어요</button>`}</div>`;
+}
+const shotTask = (id) => (BOARD?.tasks || []).find((y) => y.id === id);
+document.addEventListener("click", (e) => {
+  const o = e.target.closest?.("[data-shotopen]"); if (o) { const t = shotTask(o.dataset.shotopen); if (t && shotParse(t.note)) openSheet(shotSheetHtml(t)); return; }
+  const tb = e.target.closest?.("[data-shottab]"); if (tb) { const [id, k] = tb.dataset.shottab.split("|"), t = shotTask(id); if (!t) return; SHOT_TAB[id] = +k; $("#sheet").innerHTML = shotSheetHtml(t); $("#sheet").scrollTop = 0; return; }
+  const c = e.target.closest?.("[data-shot]"); if (c) { const id = c.dataset.shot.split("|")[0], si = c.dataset.shot.split("|")[1].split(".")[0], t = shotTask(id), p = t && shotParse(t.note); if (!p) return; const d = ls.get(SHOT_LS(t), {}); const em = document.querySelector(`[data-shottab="${id}|${si}"] em`); if (em) em.textContent = `${p.sets[+si].items.filter((_, i) => d[`${si}.${i}`]).length}/${p.sets[+si].items.length}`; document.querySelectorAll(`[data-shotsum="${id}"]`).forEach((y) => { y.textContent = `${shotDoneN(t, p)}/${shotAllN(p)}`; }); }
+});
 const udNote = (t) => shotHtml(t) || (udLong(t) ? `<details class="tnd"><summary>설명 펼쳐 보기 <small>${t.note.length.toLocaleString()}자</small></summary><div class="tndb">${esc(t.note)}</div></details>` : "");
 /* 11/9 오늘 쿠폰 손님: 본점 시험. 버튼 누를 때만 포스에서 읽고, 이름과 번호는 매장 열쇠로 풂 */
 
@@ -757,6 +803,8 @@ function befAskSheet(q, go) {
   openSheet(`<h2>베프에게 물어볼까요?</h2><div class="btns"><button class="btn" data-x>아니요</button><button class="btn primary" id="befAskYes">물어보기</button></div>`);
 }
 document.addEventListener("click", (e) => { if (e.target.closest?.("#befAskYes") && BEF_ASK) { const go = BEF_ASK; BEF_ASK = null; closeSheet(); go(); } });
+function befHomeHtml() { czCssOn(); return `<div class="czin befhome"><input id="ezSay" placeholder="베프한테 물어보기" value="${esc(EZ.say)}" autocomplete="off" enterkeyhint="send" maxlength="300" aria-label="베프한테 물어보기"><button data-ez="say" aria-label="보내기">↑</button></div>`; }
+const BEF_SC = [['data-snew="quick"', "🛵 퀵"], ['data-go="pcnew"', "📦 택배"], ['data-snew="jeon"', "🔁 전달"], ['data-go="creq"', "🙋 고객요청"]];
 function befBoxHtml() { czCssOn(); return `<div class="desc nhsaylb" style="margin:14px 2px 6px;font-weight:700">💛 베프에게 글로 시키기</div><div class="czin nhsay" style="margin-bottom:12px"><input id="ezSay" placeholder="예: 빌런 자두 3개 택배" value="${esc(EZ.say)}" autocomplete="off" enterkeyhint="send" maxlength="300"><button data-ez="say" aria-label="보내기">↑</button></div>`; }
 const ezBk = "<button data-ez=\"back\" style=\"display:inline-flex;position:sticky;top:8px;z-index:6;align-items:center;gap:6px;height:56px;padding:0 22px 0 16px;margin:0 0 10px;border:0;border-radius:999px;background:#fff;color:var(--ink);font:inherit;font-size:20px;font-weight:800;box-shadow:0 2px 8px rgba(0,0,0,.08)\"><span style=\"font-size:26px;line-height:1\">‹</span>뒤로</button>";
 const ezGo = (x) => { if (x === "home") EZ.hist = []; else if (x !== EZ.s) (EZ.hist ||= []).push(EZ.s); document.activeElement?.blur?.(); EZ.s = x; render(); window.scrollTo(0, 0); setTimeout(() => $("#ezPc")?.focus(), 30); };
@@ -766,7 +814,7 @@ async function ezSayRun() {
   const q = (EZ.say || $("#ezSay")?.value || "").trim(); if (!q) return toast("할 일을 적어 주세요");
   await loadProds();
   const clr = () => { EZ.say = ""; const i = $("#ezSay"); if (i) i.value = ""; document.activeElement?.blur?.(); };
-  if (EZ.classic) { if (await befDo(q)) { clr(); return; } return befAskSheet(q, () => { clr(); if (VIEW !== "ask") { VIEW = "ask"; ls.set("vf-app-view", VIEW); render(); window.scrollTo(0, 0); } askGo(q, null, true); }); }
+  if (EZ.classic || !TEST) { if (await befDo(q)) { clr(); return; } return befAskSheet(q, () => { clr(); if (VIEW !== "ask") { VIEW = "ask"; ls.set("vf-app-view", VIEW); render(); window.scrollTo(0, 0); } askGo(q, null, true); }); }
   const r0 = ezParse(q), r = EZ_ASK.test(q) && !(r0.kind && r0.lines.some((l) => l.hits.length)) ? null : r0;
   if (!r || (!r.kind && !r.lines.some((l) => l.hits.length))) return befAskSheet(q, () => { clr(); CZ.n = -1; (EZ.hist ||= []).push(EZ.s); EZ.s = "rec"; askGo(q, null, true); });
   EZ.say = ""; EZ.cart = []; EZ.pend = []; EZ.miss = []; EZ.q = ""; EZ.pc = r.kind === "parcel" && r.phone ? { phone: r.phone } : {}; EZ.memo = r.kind === "parcel" ? "" : r.memo;
@@ -874,7 +922,7 @@ function nowItems() {
   try { bbPackList().forEach((c) => L.push({ title: `${ho(c.b)}에 보낼 물건 ${c.items.length}종`, sub: "본사 물건 나누기, 담아서 보내기", act: "담기", attr: `data-bbpack="${c.id}|${c.b}"` })); } catch {}
   try { todoItems().forEach((it) => L.push({ title: it.title, sub: it.sub || "오늘 일정", act: "보기", attr: 'data-view="talk"' })); } catch {}
   try { const n = as2Items().filter((x) => x.st === 4 && !x.contact && x.b === B && !a2Lead(x)).length; if (n) L.push({ title: `AS 맡긴 기기 도착 ${n}건`, sub: "손님께 연락하기", act: "보기", attr: 'data-view="as2"' }); } catch {}
-  try { (BOARD?.tasks || []).filter((t) => !t.done && !TASK_DONE[t.id]).forEach((t) => L.push(t.kind === "photo" ? { title: t.title, sub: "사진 찍어 올리기", act: "사진", attr: `data-tphoto="${t.id}"` } : t.kind === "survey" ? { title: t.title, sub: "개수 세기", act: "세기", attr: `data-tsv="${t.id}"` } : { title: t.title, sub: t.due ? udDue(t) : t.time ? t.time + "까지" : "오늘 할 일", act: "완료", attr: `data-tdone="${t.id}"` })); } catch {}
+  try { (BOARD?.tasks || []).filter((t) => !t.done && !TASK_DONE[t.id]).forEach((t) => L.push(t.kind === "photo" ? { title: t.title, sub: "사진 찍어 올리기", act: "사진", attr: `data-tphoto="${t.id}"` } : t.kind === "survey" ? { title: t.title, sub: "개수 세기", act: "세기", attr: `data-tsv="${t.id}"` } : shotParse(t.note) ? { title: t.title, sub: t.due ? udDue(t) : "촬영 목록", act: "보기", attr: `data-shotopen="${t.id}"` } : { title: t.title, sub: t.due ? udDue(t) : t.time ? t.time + "까지" : "오늘 할 일", act: "완료", attr: `data-tdone="${t.id}"` })); } catch {}
   try { blogDue().forEach((x) => L.push({ title: `블로그 글: ${x.kw}`, sub: "블로그 쓰기", act: "보기", attr: 'data-view="blog"' })); } catch {}
   return L;
 }
@@ -1309,7 +1357,7 @@ function askHtml() {
   const fbHtml = (x) => { const v = x.fb || ASK.fb?.[x.id]; return `<div style="margin:-4px 0 8px 38px;font-size:12px;color:var(--sub);display:flex;gap:6px;align-items:center">${v ? (v > 0 ? "👍 고마워요!" : "👎 알려 줘서 고마워요. 고칠게요") : `도움이 됐나요? <button data-befb="${esc(x.id)}|1" style="background:#f2f4f6;border:0;border-radius:12px;padding:4px 10px;font-size:14px">👍</button><button data-befb="${esc(x.id)}|-1" style="background:#f2f4f6;border:0;border-radius:12px;padding:4px 10px;font-size:14px">👎</button>`}</div>`; };
   const msgs = L.map((x) => me(x) + (x.card ? bot("", x.card) : x.a ? bot(esc(x.at || ""), (TEST ? befLines : (h) => h)(esc(x.a).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>")) + leadLine(x) + (TEST ? befJump(x.a) : "")) + fbHtml(x) : bot("", `<span style="color:var(--sub)">${ASK_CLOSE(x.q) ? "포스랑 은행 기록을 보고 있어요. 1분쯤 걸려요" : "답 쓰는 중이에요"} <span class="bef-dots"><i>●</i><i>●</i><i>●</i></span></span>`))).join("");
   setTimeout(() => { const box = $("#askBox"), q = $("#askQ"); if (box) box.scrollTop = box.scrollHeight; if (VIEW === "ask" && window.scrollY > 0) window.scrollTo(0, 0); /* 11/03: 답 오면 화면이 내려가 제목이 사라지던 것 */ if (q && ASK.focus) { q.focus(); q.setSelectionRange(q.value.length, q.value.length); } }, 0);
-  return `<div class="cols one"><div><div class="card" style="padding:0;display:flex;flex-direction:column;height:calc(100vh - 190px);min-height:420px;overflow:hidden">
+  return `<div class="befsc">${BEF_SC.map(([a, n]) => `<button class="rqk" ${a}>${n}</button>`).join("")}</div><div class="cols one"><div><div class="card" style="padding:0;display:flex;flex-direction:column;height:calc(100vh - 190px);min-height:420px;overflow:hidden">
     <div style="padding:14px 16px;border-bottom:1px solid var(--line);font-weight:800">💛 베프 <small style="color:var(--sub);font-weight:500">${TEST ? "AI 도우미예요. 우리 매장 오늘 대화가 보여요" : "오늘 대화만 보여요"}</small></div>
     <div id="askBox" style="flex:1;overflow-y:auto;padding:6px 14px">${hi}${msgs}</div>
     ${faq.length ? `<div class="faqrow" style="display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:10px 12px 0;border-top:1px solid var(--line)">${faq.map((x, i) => `<button data-askfaq="${i}" style="flex:none;min-height:40px;background:#f2f4f6;color:var(--ink2);border:0;border-radius:14px;padding:6px 12px;font-size:14px;font-weight:700">${esc(x.q)}</button>`).join("")}</div>` : ""}
@@ -1404,7 +1452,7 @@ function alertCheck() {
 function renderAll() { render0(); try { if (TEST) tdRefresh(); } catch {} }
 function render() { return renderAll(); }
 function render0() {
-  if (typeof TEST !== "undefined" && TEST) { if (VIEW !== "home" && EZ.s === "all") EZ.s = "home"; document.documentElement.classList.toggle("ez", VIEW === "home" && !EZ.classic); document.documentElement.classList.toggle("nh", VIEW === "home" && EZ.classic); document.documentElement.classList.toggle("czhome", VIEW === "home" && !EZ.classic && EZ.s === "home"); if (VIEW === "home" && (document.activeElement?.id === "ezSay" || (!EZ.classic && /^(ezQ|ezF|ezPc)$/.test(document.activeElement?.id || "")))) return; }
+  if (typeof TEST !== "undefined" && TEST) { if (VIEW !== "home" && EZ.s === "all") EZ.s = "home"; document.documentElement.classList.toggle("ez", VIEW === "home" && !EZ.classic); document.documentElement.classList.toggle("nh", VIEW === "home" && EZ.classic); document.documentElement.classList.toggle("czhome", VIEW === "home" && !EZ.classic && EZ.s === "home"); if (VIEW === "home" && (document.activeElement?.id === "ezSay" || (!EZ.classic && /^(ezQ|ezF|ezPc)$/.test(document.activeElement?.id || "")))) return; } else if (VIEW === "home" && document.activeElement?.id === "ezSay") return;
   if (LEADER) return renderLeader();
   if (!B) return renderPick();
   setTimeout(alertCheck, 300); setTimeout(turnPop, 600);
@@ -1453,7 +1501,7 @@ function render0() {
     ${kpi("talk", "인수인계, 고객요청", memoN + creqN + "건", `인수인계 ${memoN}, 고객요청 ${creqN}`)}
   </div>`;
   const body = {
-    home: TEST && !EZ.classic ? ezHtml() : TEST ? nhHtml() : ONLY_OPEN_CLOSE ? `${TEST ? '<button class="ezb" data-ez="home" style="min-height:64px;font-size:20px;justify-content:center">쉬운 화면으로</button>' : ""}${TEST ? befBoxHtml() : ""}${noticeCardHtml()}${taskCardHtml()}${bigDepCardHtml()}${sentCardHtml()}${replyQuickHtml()}${custCardHtml()}<div class="cols">${done === N && now() >= "17:00" ? `<div>${closeCard}</div><div>${openCard}</div>` : `<div>${openCard}</div><div>${closeCard}</div>`}</div>` : `${bigDepCardHtml()}<div class="cols"><div>${done < N ? openCard : closeCard}${taskCardHtml()}</div><div>${memoCardHtml()}${asPin() ? asCardHtml() : ""}</div></div>`,
+    home: TEST && !EZ.classic ? ezHtml() : TEST ? nhHtml() : ONLY_OPEN_CLOSE ? `${noticeCardHtml()}${taskCardHtml()}${bigDepCardHtml()}${sentCardHtml()}${befHomeHtml()}${replyQuickHtml()}${custCardHtml()}<div class="cols">${done === N && now() >= "17:00" ? `<div>${closeCard}</div><div>${openCard}</div>` : `<div>${openCard}</div><div>${closeCard}</div>`}</div>` : `${bigDepCardHtml()}<div class="cols"><div>${done < N ? openCard : closeCard}${taskCardHtml()}</div><div>${memoCardHtml()}${asPin() ? asCardHtml() : ""}</div></div>`,
     work: `<div class="cols"><div>${openCard}</div><div>${closeCard}</div></div>`,
     stock: `<div class="cols one"><div>${surveyCardHtml()}</div></div>`,
     talk: ONLY_OPEN_CLOSE ? talkHtml() : `<div class="cols"><div>${memoCardHtml()}${creqCardHtml()}</div><div>${reqCard}${myQuicksCard()}</div></div>`,
@@ -1477,7 +1525,7 @@ function render0() {
   const heroAs = AH.length ? `<div class="hil"><p class="hk" style="color:#9bd0ff">🔧 AS 지점 도착, 손님께 연락할 것 ${AH.length}개</p>${AH.slice(0, 3).map((x) => `<div class="hrow"><div class="ht"><b>${esc(as2Title(x))}</b><span>${esc(as2Name(x) || "손님")}, 접수 ${x.d.slice(5).replace("-", "/")} ${esc(x.by)}${x.loan && !x.loanBack ? ", 📱 대여 중: " + esc((x.loan === "대여 있음" ? "기기명 없음" : x.loan)) : ""}</span></div><div class="hbs"><button class="ok" data-a2sms="${x.id}">📩 문자</button><button data-a2go="5" data-id="${x.id}">전달 완료</button></div></div>`).join("")}${AH.length > 3 ? `<p style="margin-top:8px"><button data-view="as2" style="color:#9bd0ff;font-weight:800">외 ${AH.length - 3}개는 AS관리에서 →</button></p>` : ""}</div>` : "";
   const heroIl = TD.length ? `<div class="hil"><p class="hk">📅 오늘 일정 ${TD.length}개, 처리 못 하면 다음 근무자에게 넘어가요</p>${TD.map((it) => `<div class="hrow"><div class="ht"><b>${it.ic} ${esc(it.title)}</b><span>${esc(it.sub)}</span></div><div class="hbs">${ilBtns(it, true)}</div></div>`).join("")}</div>` : "";
   const heroPill = bbPills() + snPills() + pcPills() + blogDue().map((x) => hp(`data-view="blog"`, "📝", "블로그", `${esc(x.kw)}${x.date < todayKey() ? ` (${sd(x.date)}분)` : ""}${blogCnt(x) ? `, ${blogCnt(x)}` : ""}`, `블로그 발행: ${esc(x.kw)}${x.date < todayKey() ? ` (${sd(x.date)}분)` : ""}${blogCnt(x) ? ` <span style="color:#c2344d">${blogCnt(x)}</span>` : ""}`, "하기")).join("")
-    + (BOARD?.tasks || []).filter((t) => !t.done && !TASK_DONE[t.id]).map((t) => t.kind === "photo" ? hp(`data-tphoto="${t.id}"`, "📷", "촬영", `${esc(t.title)}${phN(t) ? `, 사진 ${phN(t)}장 올림` : ""}`, `촬영: ${esc(t.title)}`, "사진 올리기") : t.kind === "survey" ? hp(`data-tsv="${t.id}"`, "📦", "재고조사", `${esc(t.title)}${cntTxt(t) ? `, ${cntTxt(t)}` : ""}`, `재고조사: ${esc(t.title)}`, "세기") : hp(`data-tdone="${t.id}"`, "🔔", "할 일", `${esc(t.title)}${t.time ? ` (${esc(t.time)})` : ""}${t.due ? ` (${udDue(t)})` : ""}${cntTxt(t) ? `, ${cntTxt(t)}` : ""}`, `할 일: ${esc(t.title)}${t.time ? ` (${esc(t.time)})` : ""}${t.due ? ` <span style="color:${udDue(t) === "마감 지남" ? "#c2344d" : "inherit"}">(${udDue(t)})</span>` : ""}${cntTxt(t) ? ` <span style="color:#c2344d">${cntTxt(t)}</span>` : ""}`, "완료")).join("");
+    + (BOARD?.tasks || []).filter((t) => !t.done && !TASK_DONE[t.id]).map((t) => t.kind === "photo" ? hp(`data-tphoto="${t.id}"`, "📷", "촬영", `${esc(t.title)}${phN(t) ? `, 사진 ${phN(t)}장 올림` : ""}`, `촬영: ${esc(t.title)}`, "사진 올리기") : t.kind === "survey" ? hp(`data-tsv="${t.id}"`, "📦", "재고조사", `${esc(t.title)}${cntTxt(t) ? `, ${cntTxt(t)}` : ""}`, `재고조사: ${esc(t.title)}`, "세기") : shotParse(t.note) ? hp(`data-shotopen="${t.id}"`, "📷", "촬영", `${esc(t.title)}`, `촬영: ${esc(t.title)}`, "보기") : hp(`data-tdone="${t.id}"`, "🔔", "할 일", `${esc(t.title)}${t.time ? ` (${esc(t.time)})` : ""}${t.due ? ` (${udDue(t)})` : ""}${cntTxt(t) ? `, ${cntTxt(t)}` : ""}`, `할 일: ${esc(t.title)}${t.time ? ` (${esc(t.time)})` : ""}${t.due ? ` <span style="color:${udDue(t) === "마감 지남" ? "#c2344d" : "inherit"}">(${udDue(t)})</span>` : ""}${cntTxt(t) ? ` <span style="color:#c2344d">${cntTxt(t)}</span>` : ""}`, "완료")).join("");
   // 10/26 사장님 "오후 내내 '지금 할 일, 마감'이 웃김": 오픈 끝 ~ 마감 1시간 전은 '영업 중' 카드(요청 버튼). 우선 시험 모드에서만
   const cAt = closeAtOf(B, d), nowM = d.getHours() * 60 + d.getMinutes(), cAtM = (([h, m]) => +h * 60 + +m)(cAt.split(":"));
   const biz = done === N && !cSteps[0] && d.getHours() >= 5 && nowM < cAtM - 60;
@@ -3016,7 +3064,7 @@ function taskCardHtml() {
   const list = (BOARD?.tasks || []).map((t) => ({ ...t, done: t.done || TASK_DONE[t.id] || null }));
   if (!list.length) return "";
   const left = list.filter((t) => !t.done).length;
-  return `<div class="card"><h2>✅ 오늘 할 일, ${left ? `남은 것 ${left}개` : "모두 완료"}</h2>${list.map((t) => `<div class="crow"${t.kind === "photo" || udLong(t) ? ' style="flex-wrap:wrap"' : ""}><div${t.kind === "photo" || udLong(t) ? ' style="flex:1 1 100%"' : ""}><b style="${t.done ? "color:var(--sub);text-decoration:line-through" : ""}">${esc(t.title)}</b><span${t.kind === "photo" ? ' style="white-space:pre-line;line-height:1.7"' : ""}>${t.time ? esc(t.time) + ", " : ""}${t.due ? `<b class="${udDue(t) === "마감 지남" ? "udp" : "udd"}">${udDue(t)}</b>${udLong(t) || !t.note ? "" : ", "}` : ""}${udLong(t) ? "" : esc(t.note || "")}${t.done ? `, ✓ ${esc(t.done.by)} ${esc(t.done.t)}` : ""}</span>${udNote(t)}${t.kind === "photo" && phN(t) ? `<em>📷 사진 ${phN(t)}장 올렸어요</em>` : ""}</div>${t.done ? "" : t.kind === "photo" ? `<button class="act" data-tphoto="${t.id}">📷 사진 올리기</button><button class="act gray" data-tdone="${t.id}">완료</button>` : t.kind === "survey" ? `<button class="act" data-tsv="${t.id}">세기</button>` : `<button class="act" data-tdone="${t.id}">완료</button>`}</div>`).join("")}</div>`;
+  return `<div class="card"><h2>✅ 오늘 할 일, ${left ? `남은 것 ${left}개` : "모두 완료"}</h2>${list.map((t) => `<div class="crow"${t.kind === "photo" || udLong(t) ? ' style="flex-wrap:wrap"' : ""}><div${t.kind === "photo" || udLong(t) ? ' style="flex:1 1 100%;min-width:0"' : ""}><b style="${t.done ? "color:var(--sub);text-decoration:line-through" : ""}${shotParse(t.note) ? ";display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" : ""}">${esc(t.title)}</b><span${t.kind === "photo" ? ' style="white-space:pre-line;line-height:1.7"' : ""}>${t.time ? esc(t.time) + ", " : ""}${t.due ? `<b class="${udDue(t) === "마감 지남" ? "udp" : "udd"}">${udDue(t)}</b>${udLong(t) || !t.note ? "" : ", "}` : ""}${udLong(t) ? "" : esc(t.note || "")}${t.done ? `, ✓ ${esc(t.done.by)} ${esc(t.done.t)}` : ""}</span>${shotParse(t.note) ? shotRowHtml(t) : udNote(t)}${t.kind === "photo" && phN(t) ? `<em>📷 사진 ${phN(t)}장 올렸어요</em>` : ""}</div>${t.done ? "" : t.kind === "photo" ? `<button class="act" data-tphoto="${t.id}">📷 사진 올리기</button><button class="act gray" data-tdone="${t.id}">완료</button>` : t.kind === "survey" ? `<button class="act" data-tsv="${t.id}">세기</button>` : shotParse(t.note) ? "" /* 촬영 목록은 창 안에서 [다 했어요] */ : `<button class="act" data-tdone="${t.id}">완료</button>`}</div>`).join("")}</div>`;
 }
 async function doTaskDone(id) {
   const by = working().join(", "); if (!by) return needIn(() => doTaskDone(id));
@@ -3169,14 +3217,26 @@ function bankBox(w, bl) {
   const odd = (n, a) => /정보통신|나이스|페이|주식회사|\(주\)|은행|카드|이자/.test(n) || a % 100 !== 0;
   return `<div style="font-size:14px;color:var(--sub);margin:10px 0 4px">봇이 손님 이체로 센 통장 입금 ${bl.length}건</div>${bl.map(([t, n, a]) => `<div style="display:flex;gap:8px;font-size:14px;padding:3px 0;${odd(n, a) ? "color:var(--red);font-weight:800" : ""}"><span style="width:44px">${esc(t)}</span><span style="flex:1">${esc(n)}${odd(n, a) ? " ← 판매 아닌 입금 같아요" : ""}</span><b>${(+a).toLocaleString()}</b></div>`).join("")}`;
 }
+const sjParts = (c50, c10) => [c50 ? `5만원권 ${c50}장` : "", Math.max(0, c10 - 10) ? `1만원권 ${Math.max(0, c10 - 10)}장` : ""].filter(Boolean).join(", ") || "뺄 돈 없음";
+const sjBig = (o, head) => `<div class="sjbig">${head ? `<div class="sjh">${head}</div>` : ""}<div class="sjr"><span>시재로 뺄 돈</span><b>${(+o.sij || 0).toLocaleString()}원</b><em>${esc(sjParts(o.c50, o.c10))}</em></div><div class="sjr"><span>포스 개점 준비금에 넣을 숫자</span><b>${(+o.next || 0).toLocaleString()}원</b><em>포스 [준비금등록]에 이 숫자를 넣어요</em></div></div>`;
+const sjNow = () => ({ sij: sijae(), c50: cashN("c50"), c10: cashN("c10"), next: cashTotal() - sijae() });
+const SJ_MID = () => `vf-sjmid-${B}-${todayKey()}${TEST ? "-t" : ""}`;
+// 마감 보고를 보낸 뒤: [확인]을 눌러야 닫힘
+function sjDone(o) {
+  const box = document.createElement("div"); box.className = "sjdone"; box.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:260;display:flex;align-items:center;justify-content:center;padding:16px";
+  box.innerHTML = `<div style="background:#fff;border-radius:20px;max-width:460px;width:100%;padding:24px;box-sizing:border-box">${sjBig(o, "마감 보고를 보냈어요. 이제 이렇게 해 주세요")}<button class="cwgo" data-sjok>확인</button></div>`;
+  document.body.appendChild(box);
+}
+document.addEventListener("click", (e) => { if (e.target.closest?.("[data-sjok]")) e.target.closest(".sjdone")?.remove(); });
 async function sheetMidResult() {
   const x = TEST ? BOARD?.midCheckTest : BOARD?.midCheck; if (!x) return;
+  const sm = TEST ? ls.get(SJ_MID(), null) : null, pre = sm && sm.t <= x.t ? sjBig(sm, "지금 마감한다면 (마감 때 다시 센 숫자로 바뀌어요)") : "";
   const f = x.full ? await decOne(x.full) : null, W = f?.w || [];
   const box = f?.t ? `<details style="margin-top:12px"><summary style="font-weight:800;cursor:pointer">📄 중간 체크 전체 보기</summary><pre style="white-space:pre-wrap;font-family:inherit;font-size:14px;line-height:1.55;background:#f9fafb;border-radius:12px;padding:12px;margin-top:8px">${esc(f.t)}</pre></details>` : "";
-  if (!f && x.warnN) return openSheet(`<h2>⚠️ 안 맞는 게 있어요</h2><div class="desc">이 기기에서는 자세한 내용을 열 수 없어요. 매장 전용 주소로 연 기기에서 확인해 주세요.</div><div class="btns"><button class="btn" data-x>닫기</button></div>`);
-  if (!W.length) return openSheet(`<div class="midok"><div class="midokc">✓</div><h2 style="margin-top:14px">중간 체크 다 맞아요!</h2><div class="desc">${esc(x.t)} ${esc(x.by || "")}, 돈통이 포스와 같아요${x.bills != null ? `, 지금까지 객수 ${x.bills}명` : ""}${x.rev != null ? `, 리뷰 ${x.rev}` : ""}${x.eng != null ? `, 각인 ${x.eng}` : ""}</div></div>${box}<div class="btns"><button class="btn primary" data-x>확인</button></div>`);
-  if (f?.v?.t) return openSheet(`${verdictCard(f.v)}${box}<div class="btns"><button class="btn" data-x>닫기</button><button class="btn primary" data-go="mid">다시 체크</button></div>`);
-  openSheet(`<h2>⚠️ 안 맞는 게 있어요</h2><div class="desc">마감 전에 미리 찾은 거라 다행이에요. 아래를 확인해 주세요.</div>
+  if (!f && x.warnN) return openSheet(pre + `<h2>⚠️ 안 맞는 게 있어요</h2><div class="desc">이 기기에서는 자세한 내용을 열 수 없어요. 매장 전용 주소로 연 기기에서 확인해 주세요.</div><div class="btns"><button class="btn" data-x>닫기</button></div>`);
+  if (!W.length) return openSheet(pre + `<div class="midok"><div class="midokc">✓</div><h2 style="margin-top:14px">중간 체크 다 맞아요!</h2><div class="desc">${esc(x.t)} ${esc(x.by || "")}, 돈통이 포스와 같아요${x.bills != null ? `, 지금까지 객수 ${x.bills}명` : ""}${x.rev != null ? `, 리뷰 ${x.rev}` : ""}${x.eng != null ? `, 각인 ${x.eng}` : ""}</div></div>${box}<div class="btns"><button class="btn primary" data-x>확인</button></div>`);
+  if (f?.v?.t) return openSheet(pre + `${verdictCard(f.v)}${box}<div class="btns"><button class="btn" data-x>닫기</button><button class="btn primary" data-go="mid">다시 체크</button></div>`);
+  openSheet(pre + `<h2>⚠️ 안 맞는 게 있어요</h2><div class="desc">마감 전에 미리 찾은 거라 다행이에요. 아래를 확인해 주세요.</div>
     ${warnCards(W, f?.bl, true)}
     <div class="desc" style="margin-top:10px">원인을 못 찾으면 팀장님께 알려 주세요.</div>${box}
     <div class="btns"><button class="btn" data-x>닫기</button><button class="btn primary" data-go="mid">다시 체크</button></div>`);
@@ -3472,7 +3532,7 @@ function closeCalc() {
   $("#cSales").innerHTML = `<div class="hi"><span>총매출 (자동)</span><b>${sales.toLocaleString()}원</b></div>`;
   const drawer = cashTotal(), sij = sijae(), exp = expSum(), ok = has("cPrep") && drawer > 0 && has("pCash");
   const diff = ok ? drawer - (numv("cPrep") + numv("pCash") - exp + chgTotal()) : null;
-  $("#cSij").innerHTML = `<div class="hi"><span>시재 (자동)</span><b>${sij.toLocaleString()}원</b></div><div><span>내일 준비금</span><b>${(drawer - sij).toLocaleString()}원</b></div><p>돈통 합계 ${drawer.toLocaleString()}원, 만원권 10장은 내일 준비금으로 남겨요</p>${diff != null ? `<div class="diff ${diff ? "bad" : "good"}"><span>현금 차액</span><b>${(diff > 0 ? "+" : "") + diff.toLocaleString()}원</b></div>` : ""}`;
+  $("#cSij").innerHTML = `<div class="hi"><span>시재 (자동)</span><b>${sij.toLocaleString()}원</b></div><div><span>${TEST ? "포스 개점 준비금" : "내일 준비금"}</span><b>${(drawer - sij).toLocaleString()}원</b></div><p>돈통 합계 ${drawer.toLocaleString()}원, 만원권 10장은 ${TEST ? "포스 개점 준비금" : "내일 준비금"}으로 남겨요</p>${diff != null ? `<div class="diff ${diff ? "bad" : "good"}"><span>현금 차액</span><b>${(diff > 0 ? "+" : "") + diff.toLocaleString()}원</b></div>` : ""}`;
   $("#cWhy").style.display = diff ? "" : "none";
   const b = numv("kBills"), pr = (a, c) => (c ? Math.round((a / c) * 1000) / 10 + "%" : "-");
   $("#cKpi").innerHTML = [["객단가", b ? Math.round(sales / b).toLocaleString() + "원" : "-"], ["객당 프리미엄", b ? (Math.round((numv("kPrem") / b) * 10) / 10) + "병" : "-"], ["지정판매율", pr(numv("kDes"), numv("kPrem"))],
@@ -3492,9 +3552,9 @@ function closeConfirm() {
   const sh = $("#sheet"), w = (n) => (+n || 0).toLocaleString() + "원";
   [...sh.children].forEach((el) => { if (!el.classList.contains("cconf")) el.style.display = "none"; });
   const box = document.createElement("div"); box.className = "cconf";
-  box.innerHTML = `<h2>꼼꼼히 확인하셨나요?</h2><div class="desc">${MIDMODE ? "봇이 지금까지 포스 숫자와 맞춰 볼게요." : "보내면 팀장님께 바로 보고돼요. 포스 화면과 숫자가 같은지 한 번 더 봐 주세요."}</div>
+  box.innerHTML = `${TEST ? sjBig(sjNow(), MIDMODE ? "지금 마감한다면" : "") : ""}<h2>꼼꼼히 확인하셨나요?</h2><div class="desc">${MIDMODE ? "봇이 지금까지 포스 숫자와 맞춰 볼게요." : "보내면 팀장님께 바로 보고돼요. 포스 화면과 숫자가 같은지 한 번 더 봐 주세요."}</div>
     ${SALES.some(([id]) => has(id)) ? `<div class="cashsum" style="margin-top:14px">${SALES.filter(([id]) => has(id)).map(([id, l]) => `<div><span>${l} (직접 입력)</span><b>${w(numv(id))}</b></div>`).join("")}</div>` : ""}
-    <div class="cashsum" style="margin-top:10px"><div><span>오늘 준비금</span><b>${has("cPrep") ? w(numv("cPrep")) : "포스 자동"}</b></div>${chgTotal() ? `<div><span>잔돈 추가</span><b>${w(chgTotal())}</b></div>` : ""}<div><span>현금 지출 ${CX.filter((x) => x.a).length}건</span><b>${w(k.exp)}</b></div><div><span>돈통 합계</span><b>${w(k.drawer)}</b></div><div class="hi"><span>시재</span><b>${w(k.sij)}</b></div><div><span>내일 준비금</span><b>${w(k.drawer - k.sij)}</b></div>
+    <div class="cashsum" style="margin-top:10px"><div><span>오늘 준비금</span><b>${has("cPrep") ? w(numv("cPrep")) : "포스 자동"}</b></div>${chgTotal() ? `<div><span>잔돈 추가</span><b>${w(chgTotal())}</b></div>` : ""}<div><span>현금 지출 ${CX.filter((x) => x.a).length}건</span><b>${w(k.exp)}</b></div><div><span>돈통 합계</span><b>${w(k.drawer)}</b></div><div class="hi"><span>시재</span><b>${w(k.sij)}</b></div><div><span>${TEST ? "포스 개점 준비금" : "내일 준비금"}</span><b>${w(k.drawer - k.sij)}</b></div>
       ${!MIDMODE && k.sij === 0 && cashN("c50") === 0 ? `<div style="margin:8px 0;color:var(--red);font-weight:800;font-size:14px">⚠️ 시재가 0원이에요. 시재(5만원권, 10장 넘는 1만원권)를 먼저 빼고 센 건 아닌가요? 뺀 돈까지 다시 넣어서 세 주세요</div>` : ""}
       <div class="diff ${k.diff == null ? "" : k.diff ? "bad" : "good"}"><span>현금 차액</span><b>${k.diff == null ? "보내면 포스 숫자로 계산돼요" : (k.diff > 0 ? "+" : "") + w(k.diff)}</b></div>${k.diff ? `<p>사유: ${esc($("#cWhy").value.trim())}</p>` : ""}</div>
     <div class="cashsum" style="margin-top:10px"><div><span>마감 날짜</span><b>${$("#cDate").value}${$("#cDate").value !== todayKey() ? " (나중 입력)" : ""}</b></div><div><span>은행 잔액</span><b>${has("bankBal") ? w(numv("bankBal")) + ", " + esc($("#bankName").value.trim()) : "-"}</b></div>
@@ -3518,6 +3578,7 @@ async function doClosing() {
   try {
     if (MIDMODE) {
       await send({ type: "closing", v: 2, mid: 1, date: todayKey(), nums: { cash: numv("pCash"), card: numv("pCard"), tr: numv("pTr"), etc: numv("pEtc") }, exp, ...expT, prep: numv("cPrep"), cash, why: ($("#cWhy").value || "").trim().slice(0, 80), kpi, rev: v("cRev"), eng: v("cEng"), ev: v("cEv"), fx: v("cFx"), hn, vm, by });
+      if (TEST) ls.set(SJ_MID(), { ...sjNow(), t: now() });
       MIDPEND = { t: now(), by }; pendSave(); MIDMODE = false; closeSheet(); render(); toast("보냈어요, 1~2분 뒤에 결과가 떠요");
       const sent = MIDPEND.t; let n = 0; const iv = setInterval(async () => { await loadBoard(); const x = TEST ? BOARD?.midCheckTest : BOARD?.midCheck; if (x && x.t >= sent && x.status !== "확인 중" && x.full) { clearInterval(iv); MIDPEND = null; pendSave(); render(); sheetMidResult(); return; } if (++n >= 36) { clearInterval(iv); MIDPEND = null; pendSave(); render(); toast("결과가 아직 안 왔어요, 잠시 뒤 새로고침해 주세요"); } }, 10e3);
       return;
@@ -3527,8 +3588,9 @@ async function doClosing() {
     let sheetOk = "";
     if (asPin() && !TEST) { try { await asApi({ action: "closeAdd", date: cDay, branch: B, by, cash, rev: v("cRev"), eng: v("cEng"), hn, vm, ua: navigator.userAgent.slice(0, 60), sales: { 현금: numv("pCash"), 카드: numv("pCard"), 이체: numv("pTr"), 기타: numv("pEtc") }, exp: k.exp, diff: k.diff, bills: kpi.bills }); sheetOk = ", 지점 시트에도 기록"; } catch (e2) { sheetOk = ", 지점 시트 기록 실패(" + e2.message + ")"; } }
     ls.set(nextKey(), { d: cDay, v: k.drawer - k.sij });
+    const sjO = { ...sjNow() };
     if (cDay === closeDay()) CLOSE_SENT = { date: cDay, status: "done", at: now(), by, known: k.diff != null, warn: k.diff ? [`돈통 차액 ${(k.diff > 0 ? "+" : "") + k.diff.toLocaleString()}원`] : [] };
-    closeSheet(); render(); toast(`${cDay === todayKey() ? "" : cDay.slice(5).replace("-", "/") + " "}마감 보고를 보냈어요, 1~2분 뒤에 결과가 떠요`); if (TEST) { if (cDay === closeDay()) wrapOpen(todayKey()); cwDone(); }
+    closeSheet(); render(); toast(`${cDay === todayKey() ? "" : cDay.slice(5).replace("-", "/") + " "}마감 보고를 보냈어요, 1~2분 뒤에 결과가 떠요`); if (TEST) { if (cDay === closeDay()) wrapOpen(todayKey()); cwDone(); sjDone(sjO); }
     // 10/21: 결과가 오면 바로 결과 창(다 맞으면 보고문, 안 맞으면 확인할 것)
     const sentAt = now(); CLOSEPEND = { t: sentAt, date: cDay }; pendSave(); render(); let rn = 0; const ri = setInterval(async () => { await loadBoard(); const bc = TEST ? BOARD?.closingTest : BOARD?.closing; if (bc && bc.date === cDay && bc.at >= sentAt && bc.full) { clearInterval(ri); CLOSEPEND = null; pendSave(); render(); if (!$("#dim").classList.contains("on")) sheetReport(); return; } if (++rn >= 36) { clearInterval(ri); CLOSEPEND = null; pendSave(); render(); toast("마감 결과가 아직 안 왔어요, 잠시 뒤 새로고침해 주세요"); } }, 10e3);
   } catch (e) { okb.disabled = false; okb.textContent = "다시 보내기"; fail(e); }
