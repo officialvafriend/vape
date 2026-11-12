@@ -1028,6 +1028,14 @@ const QR_SEPS = { cr: "\r", crlf: "\r\n", lf: "\n", tab: "\t" };
 let qrSep = (() => { try { return localStorage.getItem("vf-qr-sep") || "cr"; } catch (e) { return "cr"; } })();
 // QR 두 개 (10/27 사장님 "QR로 찍으면 바로 처리"): ① 결제 QR = 기기 + 묶음 + 정가 낱개 → 찍으면 결제 금액이 바로 맞음
 // ② 서비스 QR = 묶음에 든 액상, 이벤트 서비스분 → 찍고 그 줄들만 포스에서 서비스(0원) 처리 (재고 빼기용). 서비스는 결제 QR에 안 섞음(사장님 10/27 지금 판 규칙)
+/* 11/12 공기계 주문 QR: [포스 옆 휴대폰으로 보내기] → 온라인팀 슈파베이스 qr_send (상품 바코드와 이름만, 손님 정보 안 보냄). 공개 키, 표는 잠겨 있고 함수로만 씀 */
+const SB_URL = "https://bjjlmnkyhedtutogzliq.supabase.co", SB_KEY = "sb_publishable_i8rfcm_zAnwV75joN58FCw_8tHgFUKr";
+const QR_SEND_ON = BRANCH === "본점"; /* 시험 지점 */
+async function qrSend(codes, svc, total, btn) { btn.disabled = true; btn.textContent = "보내는 중...";
+  const sum = [...cart.values()].map((x) => (x.label || x.n) + (x.qty > 1 ? " x" + x.qty : "")).join(", ");
+  try { const r = await fetch(SB_URL + "/rest/v1/rpc/qr_send", { method: "POST", headers: { apikey: SB_KEY, Authorization: "Bearer " + SB_KEY, "Content-Type": "application/json" }, body: JSON.stringify({ p_branch: BRANCH, p_codes: codes, p_svc: svc, p_summary: sum, p_total: total }) });
+    if (!r.ok) throw new Error(String(r.status)); btn.textContent = "보냈어요, 포스 옆 휴대폰을 보세요"; toast("포스 옆 휴대폰으로 보냈어요"); }
+  catch (er) { btn.disabled = false; btn.textContent = "다시 보내기"; toast("못 보냈어요, 인터넷을 확인해 주세요"); } }
 function qrView() {
   staffView(); staffOn = true;
   const codes = [], svcCodes = [], miss = [], svcMiss = [], unreg = [];
@@ -1053,6 +1061,7 @@ function qrView() {
     <div style="margin-top:10px;font-size:14px;color:var(--grey)">하나만 찍히면 구분 문자를 바꿔 보세요 <select id="qrSep">${Object.keys(QR_SEPS).map((k) => `<option value="${k}" ${k === qrSep ? "selected" : ""}>${{ cr: "Enter (CR)", crlf: "Enter (CR+LF)", lf: "줄바꿈 (LF)", tab: "Tab" }[k]}</option>`).join("")}</select></div>${memLine()}`;
   $('qrSep').onchange = (e) => { qrSep = e.target.value; try { localStorage.setItem("vf-qr-sep", qrSep); } catch (er) {} qrView(); };
   setFoot("qr");
+  if (QR_SEND_ON) { const sb = document.createElement("button"); sb.className = "cta"; sb.style.marginBottom = "12px"; sb.textContent = "포스 옆 휴대폰으로 보내기"; sb.onclick = () => qrSend(codes, svcCodes, t, sb); $('lines').prepend(sb); }
 }
 
 // ── 포스터 누르면 이벤트 구매 화면 (10/27 사장님 "A안처럼 구매 페이지") ──
