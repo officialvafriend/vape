@@ -867,11 +867,11 @@ async function memRegSend() {
     if (!r.ok) throw new Error("응답 " + r.status); member.reg.s = "wait"; memRedraw(); setTimeout(() => memPoll(id), 1500);
   } catch (e) { member.reg = null; memRedraw(); toast("보내지 못했어요, 다시 눌러 주세요"); } }
 const memFull = () => member.name.trim() ? member.name.trim() + (member.year || "") : ""; /* 11/12 성함+년생(예: 클로드98), 동명이인 구분 */
-const MEM_S = { send: "보내는 중이에요", wait: "등록하는 중이에요. 잠깐이면 돼요, 계속 고르셔도 돼요", ok: "회원등록 됐어요!", dup: "이미 회원이세요, 오늘 구매도 적립돼요", err: "등록이 안 됐어요, 직원에게 말씀해 주세요", off: "등록이 안 됐어요, 직원에게 말씀해 주세요", late: "확인이 늦어지고 있어요, 직원에게 말씀해 주세요" };
+const MEM_S = { send: "보내는 중이에요", wait: "등록하는 중이에요. 잠깐이면 돼요, 계속 고르셔도 돼요", ok: "회원등록 됐어요!", dup: "이미 회원이세요! 결제할 때 직원에게 말씀해 주세요", err: "등록이 안 됐어요, 직원에게 말씀해 주세요", off: "등록이 안 됐어요, 직원에게 말씀해 주세요", late: "확인이 늦어지고 있어요, 직원에게 말씀해 주세요" };
 function memberBox() {
   if (!member.type) return `<div class="mem"><div class="t">혹시 처음 오셨나요?</div>
-    <button class="pk2" data-mem="new"><b>처음이에요, 회원등록하고 적립하기!</b><span>오늘 구매부터 바로 적립돼요</span></button>
-    <button class="pk2" data-mem="old"><b>회원이에요, 회원정보 입력하기</b><span>휴대폰 번호만 입력하면 적립돼요</span></button></div>`;
+    <button class="pk2" data-mem="new"><b>처음이에요, 회원등록하고 적립하기!</b><span>오늘 구매부터 적립받을 수 있어요</span></button>
+    <button class="pk2" data-mem="old"><b>회원이에요, 회원정보 입력하기</b><span>휴대폰 번호만 넣어 주세요</span></button></div>`;
   if (member.reg) return `<div class="mem"><div class="t">회원등록</div><div class="memst ${member.reg.s}">${MEM_S[member.reg.s] || ""}</div>${/err|off|late/.test(member.reg.s) ? '<button class="memgo" data-mem="new">다시 입력하기</button>' : ""}</div>`;
   const back = `<button data-mem="">다시 고르기</button>`;
   if (member.type === "new") { const bad = (k) => member.bad === k ? " bad" : "", full = memFull();
