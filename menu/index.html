@@ -836,15 +836,17 @@ const extraLines = () => (engrave !== null ? `<div class="scan" data-n="1" data-
 const member = { type: null, name: "", phone: "", agree: false, sex: "", reg: null };
 /* 11/6 회원등록 시험: 패드 입력을 봇이 포스에 등록. 본점 menu-b 주소에서만 켜짐. 이름, 번호는 공개키로 잠가서 보냄 */
 const MEMREG_KEY = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA9uVKKI1z1Iyh3kGLkFnd/fMrBVT6hzfZTBe5ENYILIcIHSNMUM/vhDVBp4cr8Fm6USOMGrh5GCqPOBsNW0JCXIN6AIWy8QPAMuwn5G/Hasf3C8GXxRjrY+wnFx9PEuSXNb+OEC/kLMl3JuA7vCW0Rz10ilguPYyakwmjPgBqf+Ku9hIxeWgODYMYB9Ue7qdSU2bIs3sKgseehYahaJWHBovBdQaRSogNBPp+zbrjwCAt6LVEQNT+yRjMlzDEuQs0uHmxBPtm0ZW/BzLZUWdf10rHHoKXdDtjx0nby6oeFbpyC2slLUPn3Z2L3FVenhk/Ttp5vyLhBZiOC/ybattxWQIDAQAB", MEMREG_API = "https://api.github.com/repos/officialvafriend/vape/contents/menu-b/memreg.json?ref=main";
-const memregOn = () => BRANCH === "본점" && new URLSearchParams(location.search).get("memreg") === "1" && (/\/menu-b\//.test(location.pathname) || /^(localhost|127\.0\.0\.1)$/.test(location.hostname));
+const memregOn = () => BRANCH === "본점"; /* 11/12 본점 정식 주소에서 켬 (전엔 menu-b?memreg=1 시험만) */
 async function memSeal(o) { const raw = Uint8Array.from(atob(MEMREG_KEY), (c) => c.charCodeAt(0)); const k = await crypto.subtle.importKey("spki", raw, { name: "RSA-OAEP", hash: "SHA-256" }, false, ["encrypt"]); const e = await crypto.subtle.encrypt({ name: "RSA-OAEP" }, k, new TextEncoder().encode(JSON.stringify(o))); return btoa(String.fromCharCode(...new Uint8Array(e))); }
 const memRedraw = () => { if (!staffOn) drawCart(); };
+/* 11/12 결과는 슈파베이스 memreg_get으로 1.5초마다 (빠름), 6초에 한 번은 깃허브 파일도 예비로 */
 async function memPoll(id, n = 0) { if (!member.reg || member.reg.id !== id) return;
-  let row = null; try { const r = await fetch(MEMREG_API, { cache: "no-store", headers: { Accept: "application/vnd.github.raw+json" } }); if (r.ok) row = (await r.json()).find((x) => x.id === id); } catch (e) {}
+  let st = null; try { const r = await fetch(SB_URL + "/rest/v1/rpc/memreg_get", { method: "POST", headers: { apikey: SB_KEY, Authorization: "Bearer " + SB_KEY, "Content-Type": "application/json" }, body: JSON.stringify({ p_id: id }) }); if (r.ok) st = await r.json(); } catch (e) {}
+  if (!st && n % 4 === 3) { try { const r = await fetch(MEMREG_API, { cache: "no-store", headers: { Accept: "application/vnd.github.raw+json" } }); if (r.ok) { const row = (await r.json()).find((x) => x.id === id); if (row) st = row.s; } } catch (e) {} }
   if (!member.reg || member.reg.id !== id) return;
-  if (row && row.s !== "wait") { member.reg.s = row.s; memRedraw(); return; }
-  if (n >= 30) { member.reg.s = "late"; memRedraw(); return; }
-  setTimeout(() => memPoll(id, n + 1), 6000); }
+  if (st && st !== "wait") { member.reg.s = st; memRedraw(); return; }
+  if (n >= 80) { member.reg.s = "late"; memRedraw(); return; }
+  setTimeout(() => memPoll(id, n + 1), 1500); }
 async function memRegSend() {
   if (member.name.trim().length < 1) return toast("이름을 넣어 주세요"); if (!/^01[016789]\d{7,8}$/.test(member.phone)) return toast("휴대폰 번호를 확인해 주세요");
   if (!member.sex) return toast("성별을 골라 주세요"); if (!member.agree) return toast("동의에 체크해 주세요");
@@ -852,9 +854,9 @@ async function memRegSend() {
   member.reg = { id, s: "send" }; memRedraw();
   try { const enc = await memSeal({ name: member.name.trim(), phone: member.phone, sex: member.sex });
     const r = await fetch(HOOK, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ content: JSON.stringify({ type: "memreg", branch: BRANCH, pad: PAD_NO, id, enc }), allowed_mentions: { parse: [] }, flags: 4096 }) });
-    if (!r.ok) throw new Error("응답 " + r.status); member.reg.s = "wait"; memRedraw(); setTimeout(() => memPoll(id), 8000);
+    if (!r.ok) throw new Error("응답 " + r.status); member.reg.s = "wait"; memRedraw(); setTimeout(() => memPoll(id), 1500);
   } catch (e) { member.reg = null; memRedraw(); toast("보내지 못했어요, 다시 눌러 주세요"); } }
-const MEM_S = { send: "보내는 중이에요", wait: "등록하는 중이에요. 1분쯤 걸려요, 계속 고르셔도 돼요", ok: "회원등록 됐어요!", dup: "이미 회원이세요, 오늘 구매도 적립돼요", err: "등록이 안 됐어요, 직원에게 말씀해 주세요", off: "등록이 안 됐어요, 직원에게 말씀해 주세요", late: "확인이 늦어지고 있어요, 직원에게 말씀해 주세요" };
+const MEM_S = { send: "보내는 중이에요", wait: "등록하는 중이에요. 잠깐이면 돼요, 계속 고르셔도 돼요", ok: "회원등록 됐어요!", dup: "이미 회원이세요, 오늘 구매도 적립돼요", err: "등록이 안 됐어요, 직원에게 말씀해 주세요", off: "등록이 안 됐어요, 직원에게 말씀해 주세요", late: "확인이 늦어지고 있어요, 직원에게 말씀해 주세요" };
 function memberBox() {
   if (!member.type) return `<div class="mem"><div class="t">혹시 처음 오셨나요?</div>
     <button class="pk2" data-mem="new"><b>처음이에요, 회원등록하고 적립하기!</b><span>오늘 구매부터 바로 적립돼요</span></button>
