@@ -765,7 +765,8 @@ function drawCart() {
 }
 $('lines').onclick = (e) => {
   const ck = e.target.closest('[data-ck]'); if (ck) { member[ck.dataset.ck] = !member[ck.dataset.ck]; if (member.bad === "agree") member.bad = ""; drawCart(); return; }
-  const mo = e.target.closest('[data-memok]'); if (mo) { if (!/^01[016789]\d{7,8}$/.test(member.phone)) { member.bad = "phone"; drawCart(); return toast("휴대폰 번호를 확인해 주세요"); } member.bad = ""; member.okd = true; drawCart(); return; }
+  const mo = e.target.closest('[data-memok]'); if (mo) { if (!/^01[016789]\d{7,8}$/.test(member.phone)) { member.bad = "phone"; drawCart(); return toast("휴대폰 번호를 확인해 주세요"); } member.bad = ""; if (memregOn()) { memRegSend(true); return; } member.okd = true; drawCart(); return; } /* 11/12 본점: 포스에서 회원 조회 */
+  const mn = e.target.closest('[data-memnew]'); if (mn) { member.type = "new"; member.reg = null; drawCart(); return; } /* 조회에 없던 번호 → 번호 그대로 회원등록 */
   const mg = e.target.closest('[data-memreg]'); if (mg) { memRegSend(); return; }
   const sx = e.target.closest('[data-sex]'); if (sx) { member.sex = sx.dataset.sex; drawCart(); return; }
   const mb = e.target.closest('[data-mem]'); if (mb) { member.type = mb.dataset.mem || null; member.reg = null; drawCart(); return; }
@@ -854,24 +855,27 @@ async function memPoll(id, n = 0) { if (!member.reg || member.reg.id !== id) ret
   if (st && st !== "wait") { member.reg.s = st; memRedraw(); return; }
   if (n >= 80) { member.reg.s = "late"; memRedraw(); return; }
   setTimeout(() => memPoll(id, n + 1), 1500); }
-async function memRegSend() {
+async function memRegSend(look) { /* 11/12 look=true: 회원이에요 번호로 포스에서 찾기만 */
   const need = (k, msg) => { member.bad = k; drawCart(); toast(msg); setTimeout(() => { const el = document.querySelector('.mem .bad'); if (el) { el.scrollIntoView({ block: "center" }); if (el.tagName === "INPUT") el.focus(); } }, 60); };
+  if (!look) {
   if (!/^[가-힣a-zA-Z ]{1,12}$/.test(member.name.trim())) return need("name", "성함을 알려 주세요");
-  if (!/^\d{2}$/.test(member.year || "")) return need("year", "몇 년생인지 알려 주세요");
+  if (!/^\d{2}$/.test(member.year || "")) return need("year", "몇 년생인지 알려 주세요"); }
   if (!/^01[016789]\d{7,8}$/.test(member.phone)) return need("phone", "휴대폰 번호를 확인해 주세요");
-  if (!member.agree) return need("agree", "(필수) 동의를 눌러 주세요"); member.bad = "";
+  if (!look && !member.agree) return need("agree", "(필수) 동의를 눌러 주세요"); member.bad = "";
   const id = Array.from(crypto.getRandomValues(new Uint8Array(8)), (b) => b.toString(36)).join("").slice(0, 16).padEnd(8, "0");
-  member.reg = { id, s: "send" }; memRedraw();
-  try { const enc = await memSeal({ name: memFull(), phone: member.phone, sex: "", sms: member.mk ? "Y" : "N" }); /* 성별은 안 받음, 포스 기본값(여) */ /* 11/12 (선택) 쿠폰, 혜택 문자 동의 → 포스 문자 수신 Y */
-    const r = await fetch(HOOK, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ content: JSON.stringify({ type: "memreg", branch: BRANCH, pad: PAD_NO, id, enc }), allowed_mentions: { parse: [] }, flags: 4096 }) });
+  member.reg = { id, s: "send", look: !!look }; memRedraw();
+  try { const enc = await memSeal(look ? { name: "", phone: member.phone, sex: "", sms: "N" } : { name: memFull(), phone: member.phone, sex: "", sms: member.mk ? "Y" : "N" }); /* 성별은 안 받음, 포스 기본값(여) */ /* 11/12 (선택) 쿠폰, 혜택 문자 동의 → 포스 문자 수신 Y */
+    const r = await fetch(HOOK, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ content: JSON.stringify({ type: "memreg", branch: BRANCH, pad: PAD_NO, id, enc, ...(look ? { look: 1 } : {}) }), allowed_mentions: { parse: [] }, flags: 4096 }) });
     if (!r.ok) throw new Error("응답 " + r.status); member.reg.s = "wait"; memRedraw(); setTimeout(() => memPoll(id), 1500);
   } catch (e) { member.reg = null; memRedraw(); toast("보내지 못했어요, 다시 눌러 주세요"); } }
 const memFull = () => member.name.trim() ? member.name.trim() + (member.year || "") : ""; /* 11/12 성함+년생(예: 클로드98), 동명이인 구분 */
 const MEM_S = { send: "보내는 중이에요", wait: "등록하는 중이에요. 잠깐이면 돼요, 계속 고르셔도 돼요", ok: "회원등록 됐어요!", dup: "이미 회원이세요! 결제할 때 직원에게 말씀해 주세요", err: "등록이 안 됐어요, 직원에게 말씀해 주세요", off: "등록이 안 됐어요, 직원에게 말씀해 주세요", late: "확인이 늦어지고 있어요, 직원에게 말씀해 주세요" };
+const MEM_L = { send: "찾는 중이에요", wait: "포스에서 찾는 중이에요. 계속 고르셔도 돼요", found: "회원 확인됐어요! 결제할 때 이 번호로 찾을게요", none: "이 번호로 된 회원이 없어요", err: "확인이 안 됐어요, 직원에게 번호를 말씀해 주세요", off: "확인이 안 됐어요, 직원에게 번호를 말씀해 주세요", late: "확인이 늦어지고 있어요, 직원에게 번호를 말씀해 주세요" };
 function memberBox() {
   if (!member.type) return `<div class="mem"><div class="t">혹시 처음 오셨나요?</div>
     <button class="pk2" data-mem="new"><b>처음이에요, 회원등록하기</b><span>구매 이력이 남아서 AS 받을 때 편해요</span></button>
     <button class="pk2" data-mem="old"><b>회원이에요, 번호 넣기</b><span>휴대폰 번호만 넣어 주세요</span></button></div>`;
+  if (member.reg && member.reg.look) { const s = member.reg.s; return `<div class="mem"><div class="t">회원 확인</div><div class="memst ${s === "found" ? "ok" : s === "none" ? "err" : s}">${MEM_L[s] || ""}</div>${s === "none" ? '<button class="memgo" data-memnew="1">처음이에요, 회원등록하기</button><button class="memgo sub" data-mem="old">번호 다시 넣기</button>' : /err|off|late/.test(s) ? '<button class="memgo" data-mem="old">다시 넣기</button>' : ""}</div>`; }
   if (member.reg) return `<div class="mem"><div class="t">회원등록</div><div class="memst ${member.reg.s}">${MEM_S[member.reg.s] || ""}</div>${/err|off|late/.test(member.reg.s) ? '<button class="memgo" data-mem="new">다시 입력하기</button>' : ""}</div>`;
   const back = `<button data-mem="">다시 고르기</button>`;
   if (member.type === "new") { const bad = (k) => member.bad === k ? " bad" : "", full = memFull();
@@ -880,7 +884,7 @@ function memberBox() {
     ${memregOn() ? `<div class="mq">몇 년생이세요?</div><div class="myr"><input type="tel" id="memYear" class="${bad("year")}" inputmode="numeric" maxlength="2" placeholder="98" value="${esc(member.year)}"><span>년생</span></div>` : ""}
     <div class="mq">휴대폰 번호</div><input type="tel" id="memPhone" class="${bad("phone")}" inputmode="numeric" placeholder="숫자만" value="${esc(member.phone)}">
     ${memregOn() ? `<div class="mpv" id="memPv">${full ? `<b>${esc(full)}</b> 님으로 가입돼요` : ""}</div>` : ""}
-    <button class="memck${member.agree ? " on" : ""}${bad("agree")}" data-ck="agree"><i></i><span>(필수) 적립에 쓰는 이름, 번호 저장에 동의해요</span></button>
+    <button class="memck${member.agree ? " on" : ""}${bad("agree")}" data-ck="agree"><i></i><span>(필수) 이름, 번호 저장에 동의해요</span></button>
     ${memregOn() ? `<button class="memck${member.mk ? " on" : ""}" data-ck="mk"><i></i><span>(선택) 쿠폰 문자 받기</span></button><button class="memgo" data-memreg="1">회원 등록하기</button>` : ""}</div>`; }
   return `<div class="mem"><div class="t">회원정보 입력 ${back}</div><input type="tel" id="memPhone" class="${member.bad === "phone" ? "bad" : ""}" inputmode="numeric" placeholder="가입하신 휴대폰 번호 (숫자만)" value="${esc(member.phone)}"><button class="memgo" data-memok="1">${member.okd ? "확인됐어요" : "확인"}</button>${member.okd ? '<div class="mpv">직원이 포스에서 번호로 적립해 드려요</div>' : ""}</div>`;
 }
@@ -1048,13 +1052,17 @@ const QR_SEPS = { cr: "\r", crlf: "\r\n", lf: "\n", tab: "\t" };
 let qrSep = (() => { try { return localStorage.getItem("vf-qr-sep") || "cr"; } catch (e) { return "cr"; } })();
 // QR 두 개 (10/27 사장님 "QR로 찍으면 바로 처리"): ① 결제 QR = 기기 + 묶음 + 정가 낱개 → 찍으면 결제 금액이 바로 맞음
 // ② 서비스 QR = 묶음에 든 액상, 이벤트 서비스분 → 찍고 그 줄들만 포스에서 서비스(0원) 처리 (재고 빼기용). 서비스는 결제 QR에 안 섞음(사장님 10/27 지금 판 규칙)
-/* 11/12 공기계 주문 QR: [포스 옆 휴대폰으로 보내기] → 온라인팀 슈파베이스 qr_send (상품 바코드와 이름만, 손님 정보 안 보냄). 공개 키, 표는 잠겨 있고 함수로만 씀 */
+/* 11/12 공기계 주문 QR: [포스 옆 휴대폰으로 보내기] → 온라인팀 슈파베이스 qr_send (상품 바코드와 이름, 동의한 손님은 성함+년생과 번호). 공개 키, 표는 잠겨 있고 함수로만 씀 */
 const SB_URL = "https://bjjlmnkyhedtutogzliq.supabase.co", SB_KEY = "sb_publishable_i8rfcm_zAnwV75joN58FCw_8tHgFUKr";
 const QR_SEND_ON = BRANCH === "본점"; /* 시험 지점 */
 async function qrSend(codes, svc, total, btn) { btn.disabled = true; btn.textContent = "보내는 중...";
   const sum = [...cart.values()].map((x) => (x.label || x.n) + (x.qty > 1 ? " x" + x.qty : "")).join(", ");
-  try { const r = await fetch(SB_URL + "/rest/v1/rpc/qr_send", { method: "POST", headers: { apikey: SB_KEY, Authorization: "Bearer " + SB_KEY, "Content-Type": "application/json" }, body: JSON.stringify({ p_branch: BRANCH, p_codes: codes, p_svc: svc, p_summary: sum, p_total: total }) });
-    if (!r.ok) throw new Error(String(r.status)); btn.textContent = "보냈어요, 포스 옆 휴대폰을 보세요"; toast("포스 옆 휴대폰으로 보냈어요"); }
+  /* 11/12 액상덕후 "주문이 여러 건이면 클로드98 010-1234-1234님의 주문": 회원 칸에 넣은 성함+년생, 번호를 같이 (동의한 것만, 폰에서 [완료]하면 지움) */
+  const okPh = /^01[016789]\d{7,8}$/.test(member.phone), rs = member.reg ? member.reg.s : "";
+  const cust = member.type === "new" && member.agree && okPh && memFull() ? { t: "new", nm: memFull(), ph: member.phone, st: rs, sms: member.mk ? "Y" : "N" } : member.type === "old" && okPh ? { t: "old", ph: member.phone, st: rs } : null;
+  try { const r = await fetch(SB_URL + "/rest/v1/rpc/qr_send", { method: "POST", headers: { apikey: SB_KEY, Authorization: "Bearer " + SB_KEY, "Content-Type": "application/json" }, body: JSON.stringify({ p_branch: BRANCH, p_codes: codes, p_svc: svc, p_summary: sum, p_total: total, p_cust: cust }) });
+    if (!r.ok) throw new Error(String(r.status)); let no = ""; try { no = String(Number(await r.json()) % 1000); } catch (e) {}
+    btn.textContent = no ? `${no}번으로 보냈어요, 포스 옆 휴대폰을 보세요` : "보냈어요, 포스 옆 휴대폰을 보세요"; toast("포스 옆 휴대폰으로 보냈어요"); }
   catch (er) { btn.disabled = false; btn.textContent = "다시 보내기"; toast("못 보냈어요, 인터넷을 확인해 주세요"); } }
 function qrView() {
   staffView(); staffOn = true;
