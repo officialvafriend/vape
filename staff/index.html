@@ -526,7 +526,7 @@
 })();
 </script>
 <script>
-const VER = "11.10-38"; window.VER_ERR = VER;
+const VER = "11.10-39"; window.VER_ERR = VER;
 const GAME_LOCK = true; // 11/02 쉬는 시간 게임 잠금
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
@@ -3230,7 +3230,7 @@ function sjDone(o) {
 document.addEventListener("click", (e) => { if (e.target.closest?.("[data-sjok]")) e.target.closest(".sjdone")?.remove(); });
 async function sheetMidResult() {
   const x = TEST ? BOARD?.midCheckTest : BOARD?.midCheck; if (!x) return;
-  const sm = TEST ? ls.get(SJ_MID(), null) : null, pre = sm && sm.t <= x.t ? sjBig(sm, "지금 마감한다면 (마감 때 다시 센 숫자로 바뀌어요)") : "";
+  const sm = ls.get(SJ_MID(), null), pre = sm && sm.t <= x.t ? sjBig(sm, "지금 마감한다면 (마감 때 다시 센 숫자로 바뀌어요)") : "";
   const f = x.full ? await decOne(x.full) : null, W = f?.w || [];
   const box = f?.t ? `<details style="margin-top:12px"><summary style="font-weight:800;cursor:pointer">📄 중간 체크 전체 보기</summary><pre style="white-space:pre-wrap;font-family:inherit;font-size:14px;line-height:1.55;background:#f9fafb;border-radius:12px;padding:12px;margin-top:8px">${esc(f.t)}</pre></details>` : "";
   if (!f && x.warnN) return openSheet(pre + `<h2>⚠️ 안 맞는 게 있어요</h2><div class="desc">이 기기에서는 자세한 내용을 열 수 없어요. 매장 전용 주소로 연 기기에서 확인해 주세요.</div><div class="btns"><button class="btn" data-x>닫기</button></div>`);
@@ -3552,7 +3552,7 @@ function closeConfirm() {
   const sh = $("#sheet"), w = (n) => (+n || 0).toLocaleString() + "원";
   [...sh.children].forEach((el) => { if (!el.classList.contains("cconf")) el.style.display = "none"; });
   const box = document.createElement("div"); box.className = "cconf";
-  box.innerHTML = `${TEST ? sjBig(sjNow(), MIDMODE ? "지금 마감한다면" : "") : ""}<h2>꼼꼼히 확인하셨나요?</h2><div class="desc">${MIDMODE ? "봇이 지금까지 포스 숫자와 맞춰 볼게요." : "보내면 팀장님께 바로 보고돼요. 포스 화면과 숫자가 같은지 한 번 더 봐 주세요."}</div>
+  box.innerHTML = `${sjBig(sjNow(), MIDMODE ? "지금 마감한다면" : "")}<h2>꼼꼼히 확인하셨나요?</h2><div class="desc">${MIDMODE ? "봇이 지금까지 포스 숫자와 맞춰 볼게요." : "보내면 팀장님께 바로 보고돼요. 포스 화면과 숫자가 같은지 한 번 더 봐 주세요."}</div>
     ${SALES.some(([id]) => has(id)) ? `<div class="cashsum" style="margin-top:14px">${SALES.filter(([id]) => has(id)).map(([id, l]) => `<div><span>${l} (직접 입력)</span><b>${w(numv(id))}</b></div>`).join("")}</div>` : ""}
     <div class="cashsum" style="margin-top:10px"><div><span>오늘 준비금</span><b>${has("cPrep") ? w(numv("cPrep")) : "포스 자동"}</b></div>${chgTotal() ? `<div><span>잔돈 추가</span><b>${w(chgTotal())}</b></div>` : ""}<div><span>현금 지출 ${CX.filter((x) => x.a).length}건</span><b>${w(k.exp)}</b></div><div><span>돈통 합계</span><b>${w(k.drawer)}</b></div><div class="hi"><span>시재</span><b>${w(k.sij)}</b></div><div><span>${TEST ? "포스 개점 준비금" : "내일 준비금"}</span><b>${w(k.drawer - k.sij)}</b></div>
       ${!MIDMODE && k.sij === 0 && cashN("c50") === 0 ? `<div style="margin:8px 0;color:var(--red);font-weight:800;font-size:14px">⚠️ 시재가 0원이에요. 시재(5만원권, 10장 넘는 1만원권)를 먼저 빼고 센 건 아닌가요? 뺀 돈까지 다시 넣어서 세 주세요</div>` : ""}
@@ -3578,7 +3578,7 @@ async function doClosing() {
   try {
     if (MIDMODE) {
       await send({ type: "closing", v: 2, mid: 1, date: todayKey(), nums: { cash: numv("pCash"), card: numv("pCard"), tr: numv("pTr"), etc: numv("pEtc") }, exp, ...expT, prep: numv("cPrep"), cash, why: ($("#cWhy").value || "").trim().slice(0, 80), kpi, rev: v("cRev"), eng: v("cEng"), ev: v("cEv"), fx: v("cFx"), hn, vm, by });
-      if (TEST) ls.set(SJ_MID(), { ...sjNow(), t: now() });
+      ls.set(SJ_MID(), { ...sjNow(), t: now() });
       MIDPEND = { t: now(), by }; pendSave(); MIDMODE = false; closeSheet(); render(); toast("보냈어요, 1~2분 뒤에 결과가 떠요");
       const sent = MIDPEND.t; let n = 0; const iv = setInterval(async () => { await loadBoard(); const x = TEST ? BOARD?.midCheckTest : BOARD?.midCheck; if (x && x.t >= sent && x.status !== "확인 중" && x.full) { clearInterval(iv); MIDPEND = null; pendSave(); render(); sheetMidResult(); return; } if (++n >= 36) { clearInterval(iv); MIDPEND = null; pendSave(); render(); toast("결과가 아직 안 왔어요, 잠시 뒤 새로고침해 주세요"); } }, 10e3);
       return;
@@ -3590,7 +3590,7 @@ async function doClosing() {
     ls.set(nextKey(), { d: cDay, v: k.drawer - k.sij });
     const sjO = { ...sjNow() };
     if (cDay === closeDay()) CLOSE_SENT = { date: cDay, status: "done", at: now(), by, known: k.diff != null, warn: k.diff ? [`돈통 차액 ${(k.diff > 0 ? "+" : "") + k.diff.toLocaleString()}원`] : [] };
-    closeSheet(); render(); toast(`${cDay === todayKey() ? "" : cDay.slice(5).replace("-", "/") + " "}마감 보고를 보냈어요, 1~2분 뒤에 결과가 떠요`); if (TEST) { if (cDay === closeDay()) wrapOpen(todayKey()); cwDone(); sjDone(sjO); }
+    closeSheet(); render(); toast(`${cDay === todayKey() ? "" : cDay.slice(5).replace("-", "/") + " "}마감 보고를 보냈어요, 1~2분 뒤에 결과가 떠요`); if (TEST) { if (cDay === closeDay()) wrapOpen(todayKey()); cwDone(); } if (cDay === todayKey()) sjDone(sjO);
     // 10/21: 결과가 오면 바로 결과 창(다 맞으면 보고문, 안 맞으면 확인할 것)
     const sentAt = now(); CLOSEPEND = { t: sentAt, date: cDay }; pendSave(); render(); let rn = 0; const ri = setInterval(async () => { await loadBoard(); const bc = TEST ? BOARD?.closingTest : BOARD?.closing; if (bc && bc.date === cDay && bc.at >= sentAt && bc.full) { clearInterval(ri); CLOSEPEND = null; pendSave(); render(); if (!$("#dim").classList.contains("on")) sheetReport(); return; } if (++rn >= 36) { clearInterval(ri); CLOSEPEND = null; pendSave(); render(); toast("마감 결과가 아직 안 왔어요, 잠시 뒤 새로고침해 주세요"); } }, 10e3);
   } catch (e) { okb.disabled = false; okb.textContent = "다시 보내기"; fail(e); }
