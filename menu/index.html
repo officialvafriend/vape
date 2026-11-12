@@ -844,7 +844,7 @@ const extraLines = () => (engrave !== null ? `<div class="scan" data-n="1" data-
 const member = { type: null, name: "", year: "", phone: "", agree: false, mk: false, sex: "", reg: null, bad: "", okd: false };
 /* 11/6 회원등록 시험: 패드 입력을 봇이 포스에 등록. 본점 menu-b 주소에서만 켜짐. 이름, 번호는 공개키로 잠가서 보냄 */
 const MEMREG_KEY = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA9uVKKI1z1Iyh3kGLkFnd/fMrBVT6hzfZTBe5ENYILIcIHSNMUM/vhDVBp4cr8Fm6USOMGrh5GCqPOBsNW0JCXIN6AIWy8QPAMuwn5G/Hasf3C8GXxRjrY+wnFx9PEuSXNb+OEC/kLMl3JuA7vCW0Rz10ilguPYyakwmjPgBqf+Ku9hIxeWgODYMYB9Ue7qdSU2bIs3sKgseehYahaJWHBovBdQaRSogNBPp+zbrjwCAt6LVEQNT+yRjMlzDEuQs0uHmxBPtm0ZW/BzLZUWdf10rHHoKXdDtjx0nby6oeFbpyC2slLUPn3Z2L3FVenhk/Ttp5vyLhBZiOC/ybattxWQIDAQAB", MEMREG_API = "https://api.github.com/repos/officialvafriend/vape/contents/menu-b/memreg.json?ref=main";
-const memregOn = () => BRANCH === "본점"; /* 11/12 본점 정식 주소에서 켬 (전엔 menu-b?memreg=1 시험만) */
+const memregOn = () => ["본점", "동성로", "율하", "수성", "반월당", "상인", "광장코아", "현풍", "동성로2"].includes(BRANCH); /* 11/12 회원등록, 조회는 전 지점 (폰 보내기 QR_SEND_ON은 본점만) */ /* 11/12 본점 정식 주소에서 켬 (전엔 menu-b?memreg=1 시험만) */
 async function memSeal(o) { const raw = Uint8Array.from(atob(MEMREG_KEY), (c) => c.charCodeAt(0)); const k = await crypto.subtle.importKey("spki", raw, { name: "RSA-OAEP", hash: "SHA-256" }, false, ["encrypt"]); const e = await crypto.subtle.encrypt({ name: "RSA-OAEP" }, k, new TextEncoder().encode(JSON.stringify(o))); return btoa(String.fromCharCode(...new Uint8Array(e))); }
 const memRedraw = () => { if (!staffOn) drawCart(); };
 /* 11/12 결과는 슈파베이스 memreg_get으로 1.5초마다 (빠름), 6초에 한 번은 깃허브 파일도 예비로 */
