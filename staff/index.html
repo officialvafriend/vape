@@ -533,7 +533,7 @@
 })();
 </script>
 <script>
-const VER = "11.10-45"; window.VER_ERR = VER;
+const VER = "11.10-46"; window.VER_ERR = VER;
 const GAME_LOCK = true; // 11/02 쉬는 시간 게임 잠금
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
@@ -824,11 +824,10 @@ async function memSb(id) { try { const r = await fetch(MSB, { method: "POST", he
 async function memWait(id, pick, kind) { // 슈파베이스 먼저(0.1초), 중계는 예비 (최대 60초)
   const t0 = Date.now();
   for (let i = 0; Date.now() - t0 < 60e3; i++) {
-    const s = await memSb(id);
-    if (typeof s === "string" && s && s !== "wait") { if (kind === "st") return s; if (s.startsWith("R:")) return s.slice(2); }
-    if (i % 5 === 4) { await loadRelay(); const v = pick(RELAY?.v?.mem); if (v != null) return v; }
+    if (kind === "st") { const s = await memSb(id); if (typeof s === "string" && s && s !== "wait") return s; }
+    if (kind !== "st" || i % 3 === 2) { await loadRelay(); const v = pick(RELAY?.v?.mem); if (v != null) return v; }
     const w = $("#memSec"); if (w) w.textContent = Math.floor((Date.now() - t0) / 1000) + "초";
-    await new Promise((r) => setTimeout(r, 400));
+    if (kind === "st") await new Promise((r) => setTimeout(r, 400));
   }
   return null;
 }
