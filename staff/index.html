@@ -533,7 +533,7 @@
 })();
 </script>
 <script>
-const VER = "11.10-46"; window.VER_ERR = VER;
+const VER = "11.10-47"; window.VER_ERR = VER;
 const GAME_LOCK = true; // 11/02 쉬는 시간 게임 잠금
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
@@ -820,14 +820,16 @@ const won = (n) => (+String(n || 0).replace(/[^\d-]/g, "") || 0).toLocaleString(
 const ymdTxt = (v) => { const d = String(v || "").replace(/\D/g, ""); return d.length >= 8 ? `${d.slice(2, 4)}.${d.slice(4, 6)}.${d.slice(6, 8)}` : String(v || "") || "-"; };
 let MEM = null; // { k: "reg"|"find", step, name, phone, q, id, wait, res, pick, orders }
 const MSB = "https://bjjlmnkyhedtutogzliq.supabase.co/rest/v1/rpc/memreg_get", MSB_KEY = "sb_publishable_i8rfcm_zAnwV75joN58FCw_8tHgFUKr";
+async function memSbR(id) { try { const r = await fetch(MSB.replace("memreg_get", "memfind_get"), { method: "POST", headers: { apikey: MSB_KEY, Authorization: "Bearer " + MSB_KEY, "Content-Type": "application/json" }, body: JSON.stringify({ p_id: id }) }); return r.ok ? await r.json() : null; } catch { return null; } }
 async function memSb(id) { try { const r = await fetch(MSB, { method: "POST", headers: { apikey: MSB_KEY, Authorization: "Bearer " + MSB_KEY, "Content-Type": "application/json" }, body: JSON.stringify({ p_id: id }) }); return r.ok ? await r.json() : null; } catch { return null; } }
 async function memWait(id, pick, kind) { // 슈파베이스 먼저(0.1초), 중계는 예비 (최대 60초)
   const t0 = Date.now();
   for (let i = 0; Date.now() - t0 < 60e3; i++) {
     if (kind === "st") { const s = await memSb(id); if (typeof s === "string" && s && s !== "wait") return s; }
-    if (kind !== "st" || i % 3 === 2) { await loadRelay(); const v = pick(RELAY?.v?.mem); if (v != null) return v; }
+    if (kind !== "st") { const e = await memSbR(id); if (typeof e === "string" && e) return e; } // 11/13 결과용 슈파베이스 표(0.1초)
+    if (i % 6 === 5) { await loadRelay(); const v = pick(RELAY?.v?.mem); if (v != null) return v; } // 예비: 중계
     const w = $("#memSec"); if (w) w.textContent = Math.floor((Date.now() - t0) / 1000) + "초";
-    if (kind === "st") await new Promise((r) => setTimeout(r, 400));
+    await new Promise((r) => setTimeout(r, kind === "st" ? 400 : 250));
   }
   return null;
 }
