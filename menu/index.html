@@ -446,6 +446,9 @@ body[data-theme=dark] .shbtn .b1{background:#f1f1f3;color:#15120f}
 .sum2 .r{display:flex;justify-content:space-between;font-size:15px;padding:3px 0;color:var(--grey)}.sum2 .r.off b{color:var(--red)}
 .sum2 .save{font-size:14px;font-weight:800;color:var(--red);text-align:right;margin-top:4px}
 .mem{background:var(--bg);border-radius:16px;padding:14px 16px;margin:10px 0 4px}
+/* 11/13 품절 접기 */
+#sres:not(.showsold) .sr.sold,#liqGrid:not(.showsold) .it.sold,#podList:not(.showsold) .sr.sold{display:none}
+.soldmore{grid-column:1/-1;display:block;width:100%;height:56px;margin:8px 0;border-radius:14px;border:1.5px dashed var(--line);background:transparent;color:var(--grey);font-size:17px;font-weight:700}
 /* 11/12 혜택 칸 안 비슷한 맛 */
 .simr{margin-top:12px}.simr>span{display:block;font-size:15px;font-weight:700;color:var(--grey);margin-bottom:8px}
 .simr>div{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
@@ -1015,11 +1018,12 @@ $('chips').onclick = (e) => { const b = e.target.closest('button'); if (!b) retu
 /* 11/13 액상덕후: 품절은 목록 아래로 (검색에는 그대로 나옴) */
 const soldLast = (a, b) => (outOf(a.n) ? 1 : 0) - (outOf(b.n) ? 1 : 0);
 function drawLiq() {
+  if (drawLiq.k !== lf) { drawLiq.k = lf; $('liqGrid').classList.remove('showsold'); } /* 11/13 탭 바꾸면 품절 다시 접기 */
   if (lf === "폐호흡") { // 프리미엄 폐호흡 (지점 포스 '폐호흡액상' 중 30,000원, lung.js), 3병 40,000원
     const L2 = [...LUNG].sort((a, b) => soldLast(a, b) || (LUNG_BEST.findIndex((r) => r.test(a.n)) + 1 || 99) - (LUNG_BEST.findIndex((r) => r.test(b.n)) + 1 || 99));
     $('liqGrid').innerHTML = (L2.length ? `<div class="card evbar" style="grid-column:1/-1"><b>프리미엄 폐호흡 3병 40,000원</b><span>1병 30,000원, 3병마다 40,000원, 맛 섞어도 돼요</span></div>` : '<div class="evtip" style="grid-column:1/-1">이 지점 폐호흡 자료가 없어요</div>')
       + L2.map((x) => { const q = (cart.get(x.id) || {}).qty || 0, o = outOf(x.n), b = LUNG_BEST.some((r) => r.test(x.n));
-        return `<div class="it ${q ? "got" : ""} ${o ? "sold" : ""}" ${o ? `data-ask="${esc(x.n)}"` : ""}>${o ? '<span class="badge so">품절, 다른 지점 확인</span>' : b ? '<span class="rib">BEST</span>' : ""}${q ? `<span class="qty">${q}병 담음</span>` : ""}<div class="im" style="background:${tintOf(x)}">${LUNG_IMG[x.n] ? `<img src="${LUNG_IMG[x.n]}" alt="" loading="lazy">` : `<span class="ltile">${esc(x.n.replace(/\s*\(?모드\)?$/, "").slice(0, 5))}</span>`}</div><div class="nm">${esc(x.n.replace(/\s*\(?모드\)?$/, ""))}</div><div class="fl">폐호흡</div><div class="bt"><span class="price">${won(x.price)}</span>${o ? "" : `<button class="add" data-lg="${x.id}">+</button>`}</div></div>`; }).join("");
+        return `<div class="it ${q ? "got" : ""} ${o ? "sold" : ""}" ${o ? `data-ask="${esc(x.n)}"` : ""}>${o ? '<span class="badge so">품절, 다른 지점 확인</span>' : b ? '<span class="rib">BEST</span>' : ""}${q ? `<span class="qty">${q}병 담음</span>` : ""}<div class="im" style="background:${tintOf(x)}">${LUNG_IMG[x.n] ? `<img src="${LUNG_IMG[x.n]}" alt="" loading="lazy">` : `<span class="ltile">${esc(x.n.replace(/\s*\(?모드\)?$/, "").slice(0, 5))}</span>`}</div><div class="nm">${esc(x.n.replace(/\s*\(?모드\)?$/, ""))}</div><div class="fl">폐호흡</div><div class="bt"><span class="price">${won(x.price)}</span>${o ? "" : `<button class="add" data-lg="${x.id}">+</button>`}</div></div>`; }).join("") + soldMore(L2.filter((x) => outOf(x.n)).length);
     return; }
   if (lf === "더보기") { // 11/10 "액상 종류 이거밖에 없어요?" 응대: 메인 추천 밖의 액상 중 이 지점 재고 있는 것
     const L3 = moreLiq();
@@ -1029,7 +1033,7 @@ function drawLiq() {
         : '<div class="evtip" style="grid-column:1/-1">이 지점에 재고가 있는 다른 액상이 없어요</div>');
     return; }
   $('liqGrid').innerHTML = LQ.filter((x) => lf === "전체" || BR_OF(x) === lf).sort(soldLast).map((x) => { const q = (cart.get(x.id) || {}).qty || 0, out = outOf(x.n);
-    return `<div class="it ${q ? "got" : ""} ${out ? "sold" : ""}" ${out ? `data-ask="${esc(x.n)}"` : ""}>${out ? '<span class="badge so">품절, 다른 지점 확인</span>' : tagHtml(x.n)}${q ? `<span class="qty">${q}병 담음</span>` : ""}<div class="im" style="background:${tintOf(x)}">${imgH(imgOf(x), x.n)}</div><div class="nm">${esc(short(x.n))}${noTag(x.n)}</div><div class="fl">${esc([x.f, (x.t || []).includes("노멘솔") ? "노멘솔" : ""].filter(Boolean).join(", "))}</div><div class="bt"><span class="price">15,000원</span>${out ? "" : `<button class="add" data-a="${x.id}">+</button>`}</div></div>`; }).join("") + '<button class="lqmore" data-more="1">찾는 맛이 없으세요?<b>다른 액상 더보기</b></button>';
+    return `<div class="it ${q ? "got" : ""} ${out ? "sold" : ""}" ${out ? `data-ask="${esc(x.n)}"` : ""}>${out ? '<span class="badge so">품절, 다른 지점 확인</span>' : tagHtml(x.n)}${q ? `<span class="qty">${q}병 담음</span>` : ""}<div class="im" style="background:${tintOf(x)}">${imgH(imgOf(x), x.n)}</div><div class="nm">${esc(short(x.n))}${noTag(x.n)}</div><div class="fl">${esc([x.f, (x.t || []).includes("노멘솔") ? "노멘솔" : ""].filter(Boolean).join(", "))}</div><div class="bt"><span class="price">15,000원</span>${out ? "" : `<button class="add" data-a="${x.id}">+</button>`}</div></div>`; }).join("") + soldMore(LQ.filter((x) => (lf === "전체" || BR_OF(x) === lf) && outOf(x.n)).length) + '<button class="lqmore" data-more="1">찾는 맛이 없으세요?<b>다른 액상 더보기</b></button>';
 }
 let mf = "전체";
 const MORE_TABS = ["전체", "과일", "디저트, 음료", "멘솔, 민트", "시가, 타바코", "무니코틴"];
@@ -1360,18 +1364,22 @@ const liqPrice = (x) => x.line === "프라임" ? 20000 : 15000;
 const addLiqX = (x) => addItem(x.id, { k: "liq", n: x.n, label: short(x.n), img: imgOf(x), unit: liqPrice(x), ...(x.line === "프라임" ? { prime: true } : {}) });
 const POD_IMG = {"아르거스 0.8옴팟":"gp_c78.jpg","AIO 0.3옴":"gp_c201.jpg","닷스틱코일 0.4옴":"gp_c188.jpg","닷스틱코일 1.0옴":"gp_c188.jpg","Q16 경통":"gp_c85.jpg","Q16 프로경통":"gp_c85.jpg","코스모 0.7옴":"gp_c187.jpg","바이퍼 경통":"gp_c429.jpg","제우스맥스 0.14옴코일":"gp_c191.jpg","제우스맥스 트리플 0.2옴 코일":"gp_c191.jpg","제우스맥스 쿼드 0.15옴 코일":"gp_c191.jpg","크로스0.8옴팟":"gp_c41.jpg","베이비0.7옴팟":"gp_c40.jpg","베이비벌크팟":"gp_c40.jpg","럭스Q팟 0.6옴":"gp_c43.jpg","브이메이트v2팟":"gp_c627.jpg","아스몬 0.6옴":"gp_c4.jpg","아스몬0.6옴체결팟":"gp_c4.jpg","아스몬 공팟":"gp_c39.jpg","아스몬 투명케이스":"gp_c257.jpg","젤로0.8옴":"gp_c8.jpg","젤로캡":"gp_c253.jpg","젤로맥스 0.6옴팟":"gp_c6.jpg","젤로드립팁":"gp_c279.jpg","젤로맥스 케이스":"gp_c300.jpg","젤로 크리스탈 0.6옴 팟":"gp_c9.jpg","젤로 울트라팟 0.15옴 팟":"gp_c10.jpg","젤로 울트라팟 0.15옴":"gp_c10.jpg","젤로맥스 0.6옴팟 5ml":"gp_c5.jpg","AX 0.6옴팟":"gp_c522.jpg","썬더Q 0.6옴팟":"gp_c524.jpg","베이비프로0.6옴팟":"gp_c14.jpg","페보 0.6옴팟":"gp_c515.jpg","소울 0.6옴팟":"gp_c36.jpg","소울 드립팁블랙":"gp_c293.jpg","소울 드립팁화이트":"gp_c293.jpg","말론팟 0.6옴":"gp_c0.jpg","말론팟 0.4옴":"gp_c0.jpg","말론 케이스":"gp_c247.jpg","불렛 드립팁":"gp_c248.jpg","에이펙스 팟":"gp_c316.jpg","아르거스 V3 0.7옴팟":"gp_c34.jpg","벨본 0.6옴팟":"gp_c28.jpg","벨본 0.6옴":"gp_c28.jpg","닷 프리즘드립팁":"gp_c236.jpg","마이팟 프로 0.6옴팟":"gp_c32.jpg","플라스크3 공팟":"gp_c541.jpg","GTI 0.2코일":"gp_c195.jpg","썬더유 0.7옴 팟":"gp_c623.jpg","오리즌 0.6옴팟":"gp_c518.jpg","디오x팟":"gp_c69.jpg","하복코일 0.6":"gp_d107.jpg","하복코일 0.25옴":"gp_d107.jpg","하복공팟":"gp_d72.jpg","발라클리어공팟":"gp_d121.jpg","발라맥스공팟":"gp_d81.jpg","발라(맥)0.6옴코일":"gp_d122.jpg","발라코일V2 0.6옴":"gp_d122.jpg","발라코일V2 0.8옴":"gp_d122.jpg","발라코일V2 1.0옴":"gp_d122.jpg","발라맥스프로팟 0.6옴":"gp_d18.jpg","발라맥스 프로공팟":"gp_d18.jpg","발라R 0.6옴팟":"gp_d70.jpg","발라리안 에어 0.6옴팟":"gp_d21.jpg","발라맥스프로케이스":"gp_d25.jpg","아스트로 레드팟":"gp_d44.jpg","아스트로 블랙팟":"gp_d44.jpg","베놈 레드팟":"gp_d44.jpg","베놈 블랙팟":"gp_d44.jpg"}; // 소모품 사진 (도매몰 사진을 GPT로 다듬음, 10/29)
 const gImg = (g) => g.c === "pod" && POD_IMG[g.n] ? POD_IMG[g.n] : g.c === "dev" ? devImgOf(g.model, g.opt) : g.c === "dsp" ? (DSP_IMG[g.model] || "") : g.c === "pod" && g.n.includes("하복2") && g.n.includes("팟") ? "dev_havok2_pod.jpg" : "";
+/* 11/13 액상덕후 "품절 상품은 더보기로 가려줘": 품절은 접어 두고 [품절 상품 N개 보기]로 펼침 (검색, 액상, 폐호흡, 팟 목록) */
+const soldMore = (n, allSold) => n ? `${allSold ? '<div class="evtip" style="grid-column:1/-1">재고 있는 상품이 없어요</div>' : ""}<button class="soldmore" data-soldmore="1">품절 상품 ${n}개 보기</button>` : "";
+document.addEventListener('click', (e) => { const b = e.target.closest('[data-soldmore]'); if (!b) return; e.stopPropagation(); const box = b.parentElement; box.classList.toggle('showsold'); b.textContent = box.classList.contains('showsold') ? "품절 상품 접기" : b.textContent.replace("접기", ""); if (!box.classList.contains('showsold')) { const n = box.querySelectorAll('.sold').length; b.textContent = `품절 상품 ${n}개 보기`; } }, true);
 function drawSearch() {
   const q = $('q').value; $('q').parentElement.classList.toggle('on', !!q); document.body.classList.toggle('srchon', !!q.trim());
   if (!q.trim()) return;
   const r = searchItems(q);
   $('sres').innerHTML = r.length ? r.map((o) => { const x = o.x, liq = o.t === "liq", key = x.id, have = (cart.get(key) || {}).qty || 0, out = outOf(x.n);
     const img = liq ? imgOf(x) : o.t === "lung" ? "" : gImg2(x), price = liq ? liqPrice(x) : x.price;
-    return `<div class="sr ${out ? "sold" : ""}"><div class="im" style="background:${liq ? tintOf(x) : "#f4f4f6"}">${img ? `<img src="${img}" alt="" loading="lazy">` : { dev: "🔋", pod: "🧩", dsp: "🚬" }[x.c] || "💧"}</div><div class="n"><b>${esc(liq ? short(x.n) : x.n)}${liq ? noTag(x.n) : ""}</b><span>${esc(liq ? [x.br, x.line, x.f].filter(Boolean).join(", ") : { dev: "기기", pod: "팟, 코일", dsp: "일회용" }[x.c] || "")}${out ? ", 품절" : ""}</span>${have ? `<span class="q"> 담음 ${have}</span>` : ""}</div><b class="price">${won(price)}</b>${out ? `<button class="askb" data-ask="${esc(x.n)}">다른 지점 확인</button>` : `<button class="add" data-s="${key}" data-t="${o.t}">+</button>`}</div>`; }).join("")
+    return `<div class="sr ${out ? "sold" : ""}"${liq ? ` data-lid="${x.id}"` : ""}><div class="im" style="background:${liq ? tintOf(x) : "#f4f4f6"}">${img ? `<img src="${img}" alt="" loading="lazy">` : { dev: "🔋", pod: "🧩", dsp: "🚬" }[x.c] || "💧"}</div><div class="n"><b>${esc(liq ? short(x.n) : x.n)}${liq ? noTag(x.n) : ""}</b><span>${esc(liq ? [x.br, x.line, x.f].filter(Boolean).join(", ") : { dev: "기기", pod: "팟, 코일", dsp: "일회용" }[x.c] || "")}${out ? ", 품절" : ""}</span>${have ? `<span class="q"> 담음 ${have}</span>` : ""}</div><b class="price">${won(price)}</b>${out ? `<button class="askb" data-ask="${esc(x.n)}">다른 지점 확인</button>` : `<button class="add" data-s="${key}" data-t="${o.t}">+</button>`}</div>`; }).join("")
+    + soldMore(r.filter((o) => outOf(o.x.n)).length, r.every((o) => outOf(o.x.n)))
     : '<div style="padding:40px 0;text-align:center;color:var(--grey);line-height:1.7">찾는 상품이 없어요<br>초성(ㅂㄹ)이나 시연번호 숫자로도 찾을 수 있어요<br><button class="cta" style="max-width:320px;margin-top:14px" onclick="qzStart()">나에게 맞는 전자담배 찾기</button></div>';
 }
-$('q').addEventListener('input', drawSearch);
+$('q').addEventListener('input', () => { $('sres').classList.remove('showsold'); drawSearch(); });
 $('qx').onclick = (e) => { e.preventDefault(); $('q').value = ""; drawSearch(); drawDspList(); };
-$('sres').onclick = (e) => { const b = e.target.closest('[data-s]'); if (!b) return; const id = b.dataset.s;
+$('sres').onclick = (e) => { const b = e.target.closest('[data-s]'); if (!b) { if (e.target.closest('button')) return; const row = e.target.closest('[data-lid]'); if (row) liqOpen(ALL_LQ.find((y) => y.id === row.dataset.lid)); return; } /* 11/13 검색 결과 줄을 누르면 자세히 (액상) */ const id = b.dataset.s;
   if (b.dataset.t === "liq") { addLiqX(ALL_LQ.find((y) => y.id === id)); }
   else if (b.dataset.t === "lung") addGoods(LUNG.find((y) => y.id === id)); else addGoods(GDS.find((y) => y.id === id));
   toast("담았어요"); drawSearch(); };
@@ -1655,6 +1663,7 @@ $('dspList').onclick = (e) => { const t = e.target;
 let podSub = "팟·코일", podDev = "", podMore = false;
 const podDevOf = (g) => (POD_DEV.find((d) => d.re.test(g.n)) || {}).k || "기타";
 function drawPodView() {
+  if (drawPodView.k !== podSub + podDev) { drawPodView.k = podSub + podDev; $('podList').classList.remove('showsold'); }
   const pods = GDS.filter((g) => g.c === "pod" && (g.sub || "팟·코일") === podSub);
   const rk = (d) => d === "기타" ? 999 : (MYDEV_TOP.indexOf(d) + 1 || 100);
   const devs = [...new Set(pods.map(podDevOf))].sort((a, b) => rk(a) - rk(b) || a.localeCompare(b, "ko")); if (!devs.includes(podDev)) podDev = devs[0] || "";
@@ -1662,7 +1671,7 @@ function drawPodView() {
   $('podSub').innerHTML = ["팟·코일", "케이스·드립팁·기타"].map((t) => `<button data-ps="${t}" class="${t === podSub ? "on" : ""}">${t === "팟·코일" ? "팟, 코일" : "케이스, 기타"}</button>`).join("");
   $('podDev').innerHTML = shown.map((d) => `<button data-pd="${esc(d)}" class="${d === podDev ? "on" : ""}">${esc(d)}</button>`).join("") + (shown.length < devs.length ? `<button data-pdmore="1" class="more">기기 더 보기 +${devs.length - shown.length}</button>` : "");
   $('podList').innerHTML = pods.filter((g) => podDevOf(g) === podDev).sort(soldLast).map((g) => { const k = packOf(g), q = (cart.get(g.id) || {}).qty || 0, o = outOf(g.n);
-    return `<div class="sr ${o ? "sold" : ""}"><div class="im">${gImg(g) ? `<img src="${gImg(g)}" alt="" loading="lazy">` : "🧩"}</div><div class="n"><b>${esc(g.n)}</b><span>${won(g.price)} (낱개)${q ? `, <b style="color:var(--red);display:inline">담음 ${q}</b>` : ""}${o ? ", 품절" : ""}</span></div>${o ? `<button class="askb" data-ask="${esc(g.n)}">다른 지점 확인</button>` : (k ? `<button class="pkb" data-pp="${g.id}" data-k="${k}">1팩 ${k}개 ${won(g.price * k)}</button>` : "") + `<button class="pkb ln1" data-pp="${g.id}" data-k="1">낱개</button>`}</div>`; }).join("") || '<div class="evtip">이 지점에 해당 상품이 없어요</div>';
+    return `<div class="sr ${o ? "sold" : ""}"><div class="im">${gImg(g) ? `<img src="${gImg(g)}" alt="" loading="lazy">` : "🧩"}</div><div class="n"><b>${esc(g.n)}</b><span>${won(g.price)} (낱개)${q ? `, <b style="color:var(--red);display:inline">담음 ${q}</b>` : ""}${o ? ", 품절" : ""}</span></div>${o ? `<button class="askb" data-ask="${esc(g.n)}">다른 지점 확인</button>` : (k ? `<button class="pkb" data-pp="${g.id}" data-k="${k}">1팩 ${k}개 ${won(g.price * k)}</button>` : "") + `<button class="pkb ln1" data-pp="${g.id}" data-k="1">낱개</button>`}</div>`; }).join("") + soldMore(pods.filter((g) => podDevOf(g) === podDev && outOf(g.n)).length, pods.filter((g) => podDevOf(g) === podDev).every((g) => outOf(g.n))) || '<div class="evtip">이 지점에 해당 상품이 없어요</div>';
 }
 $('podSub').onclick = (e) => { const b = e.target.closest('[data-ps]'); if (b) { podSub = b.dataset.ps; podDev = ""; drawPodView(); } };
 $('podDev').onclick = (e) => { if (e.target.closest('[data-pdmore]')) { podMore = true; return drawPodView(); } const b = e.target.closest('[data-pd]'); if (b) { podDev = b.dataset.pd; drawPodView(); } };
@@ -1800,7 +1809,7 @@ function liqOpen(x) { if (!x) return; const out = outOf(x.n), q = (cart.get(x.id
     ${TASTE[x.n] ? `<div class="sp-desc" style="font-size:20px;line-height:1.5">${esc(TASTE[x.n])}</div>` : ""}
     ${out ? '<div class="sp-desc">이 매장은 품절이에요</div>' : `<button class="memgo" data-lqadd="${x.id}" style="height:64px;font-size:20px">${q ? `한 병 더 담기 (지금 ${q}병)` : "담기"}</button>`}`;
   document.body.classList.add('spon'); }
-document.addEventListener('click', (e) => { const b = e.target.closest('[data-lqadd]'); if (!b) return; e.stopPropagation(); const x = ALL_LQ.find((y) => y.id === b.dataset.lqadd); if (x) { addLiqX(x); toast("담았어요"); document.body.classList.remove('spon'); if (typeof rkDraw === "function") rkDraw(); } }, true);
+document.addEventListener('click', (e) => { const b = e.target.closest('[data-lqadd]'); if (!b) return; e.stopPropagation(); const x = ALL_LQ.find((y) => y.id === b.dataset.lqadd); if (x) { addLiqX(x); toast("담았어요"); document.body.classList.remove('spon'); if (typeof rkDraw === "function") rkDraw(); if (document.body.classList.contains('srchon')) drawSearch(); } }, true);
 document.addEventListener('click', (e) => { const b = e.target.closest('[data-spec]'); if (!b) return; e.stopPropagation(); specOpen(b.dataset.spec, b.dataset.c); }, true);
 
 // ── 나에게 맞는 전자담배 찾기 (10/27, 28 사장님 "병원 가면 처음에 설문조사 하잖아") ──
