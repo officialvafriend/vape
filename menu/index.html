@@ -446,6 +446,12 @@ body[data-theme=dark] .shbtn .b1{background:#f1f1f3;color:#15120f}
 .sum2 .r{display:flex;justify-content:space-between;font-size:15px;padding:3px 0;color:var(--grey)}.sum2 .r.off b{color:var(--red)}
 .sum2 .save{font-size:14px;font-weight:800;color:var(--red);text-align:right;margin-top:4px}
 .mem{background:var(--bg);border-radius:16px;padding:14px 16px;margin:10px 0 4px}
+/* 11/12 혜택 칸 안 비슷한 맛 */
+.simr{margin-top:12px}.simr>span{display:block;font-size:15px;font-weight:700;color:var(--grey);margin-bottom:8px}
+.simr>div{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.simr button{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;background:var(--card);border-radius:14px;padding:10px 6px 12px;text-align:center}
+.simr img{width:64px;height:64px;object-fit:cover;border-radius:10px}.simr b{font-size:15px;line-height:1.2}.simr small{font-size:13px;color:var(--grey)}
+.simr i{position:absolute;top:6px;right:6px;width:26px;height:26px;border-radius:13px;background:var(--black);color:#fff;font-style:normal;font-weight:800;line-height:26px;font-size:17px}
 /* 11/12 빈 장바구니 회원 칸 크게 */
 .membig .mem{padding:22px 20px}.membig .mem .t{font-size:26px;margin-bottom:16px}.membig .mem .t button{font-size:16px}
 .membig .mem .pk2{padding:26px 22px;margin-bottom:12px;border-radius:18px}.membig .mem .pk2 b{font-size:24px}.membig .mem .pk2 span{font-size:17px;display:block;margin-top:4px}
@@ -770,13 +776,14 @@ function drawCart() {
   const off = unitAll - t.total;
   $('lines').innerHTML = cart.size ? [...cart].map(([key, x]) => `<div class="ln">${x.img ? `<img src="${x.img}" alt="">` : '<i class="noim"></i>'}<span class="n">${esc(x.label)}${x.k === "liq" && x.n ? noTag(x.n) : ""}${x.items ? `<small>${esc(x.items.map(([, l, q]) => l + " " + q).join(", "))}</small>` : ""}</span><span class="qb"><button data-m="${key}">−</button><b>${x.qty}</b><button data-p="${key}">+</button></span><b class="price">${won(x.unit * x.qty)}</b></div>`).join("")
       + (off > 0 ? `<div class="sum2"><div class="r"><span>낱개로 샀을 때</span><s>${won(unitAll)}</s></div><div class="r off"><span>${esc(t.how || "묶음, 이벤트")} 할인</span><b>-${won(off)}</b></div><div class="save">총 ${won(off)} 할인 받았어요</div></div>` : "")
-      + memberBox() + benefitBox() + ledgerBox()
+      + benefitBox() + memberBox() + ledgerBox() /* 11/12 혜택(비슷한 맛)을 회원 칸 위로 */
     : '<div style="padding:16px 0 4px;color:var(--grey)">담은 상품이 없어요</div>' + (memregOn() ? '<div class="membig">' + memberBox() + (member.type || member.reg ? '<button class="memgo sub" data-memclear="1" style="margin-top:10px">처음으로 (입력한 것 지우기)</button>' : "") + '</div>' : ""); /* 11/12 빈 장바구니에선 회원 칸을 크게 */ /* 11/12 액상덕후: 빈 장바구니에서도 회원조회, 회원가입 + 지우기 */
   setFoot("cart");
 }
 $('lines').onclick = (e) => {
   const ck = e.target.closest('[data-ck]'); if (ck) { member[ck.dataset.ck] = !member[ck.dataset.ck]; if (member.bad === "agree") member.bad = ""; drawCart(); return; }
   const mo = e.target.closest('[data-memok]'); if (mo) { if (!/^01[016789]\d{7,8}$/.test(member.phone)) { member.bad = "phone"; drawCart(); return toast("휴대폰 번호를 확인해 주세요"); } member.bad = ""; if (memregOn()) { memRegSend(true); return; } member.okd = true; drawCart(); return; } /* 11/12 본점: 포스에서 회원 조회 */
+  const sa = e.target.closest('[data-sima]'); if (sa) { const x = ALL_LQ.find((y) => y.id === sa.dataset.sima); if (x) { addLiqX(x); toast("담았어요"); drawCart(); } return; } /* 11/12 비슷한 맛 담기 */
   const mc = e.target.closest('[data-memclear]'); if (mc) { Object.assign(member, { type: null, name: "", year: "", phone: "", agree: false, mk: false, sex: "", reg: null, bad: "", okd: false }); drawCart(); return; } /* 11/12 빈 장바구니 회원 칸 초기화 */
   const mn = e.target.closest('[data-memnew]'); if (mn) { member.type = "new"; member.reg = null; drawCart(); return; } /* 조회에 없던 번호 → 번호 그대로 회원등록 */
   const mg = e.target.closest('[data-memreg]'); if (mg) { memRegSend(); return; }
@@ -818,6 +825,17 @@ const podFams = () => [...new Set(GDS.filter((g) => g.c === "pod" && (g.sub || "
 const MYDEV_TOP = ["하복2", "발라리안", "하복", "말론S", "말론", "젤로", "조바", "플러키"];
 const myDevBox = () => { const q = norm(myDevQ), fams = podFams(), hit = q ? fams.filter((f) => norm(f).includes(q) || q.includes(norm(f))) : fams.slice(0, 8);
   return `<div class="nudge md"><b>쓰시는 기기 소모품은 필요 없으세요?</b><span>기기 이름을 넣으면 맞는 팟, 코일을 보여 드려요</span><input id="myDev" placeholder="예: 하복, 발라리안, 말론" value="${esc(myDevQ)}" autocomplete="off"><div class="mdc">${hit.map((f) => `<button data-myd="${esc(f)}">${esc(f)}</button>`).join("") || '<em>맞는 기기가 없어요, 직원에게 물어봐 주세요</em>'}</div></div>`; };
+/* 11/12 액상덕후: "몇 병 더 담으면" 칸 안에 비슷한 맛 추천. 같은 맛 > 같은 계열, A그룹과 이 지점 랭킹 먼저. 품절, 담은 것, 프라임은 뺌 */
+function simLiq(items, k = 3) {
+  const inCart = new Set(cart.keys()), mine = [...cart].filter(([, x]) => x.k === "liq").map(([id]) => ALL_LQ.find((y) => y.id === id)).filter(Boolean); /* 장바구니 칸에는 id가 없고 열쇠가 상품 id */
+  if (!mine.length) return [];
+  const fs = new Set(mine.map((x) => x.f).filter(Boolean)), gs = new Set(mine.map((x) => x.g).filter(Boolean)), aIds = new Set(LQ.map((x) => x.id));
+  const rk = new Map(); try { ((RK && RK.branches && RK.branches[BRANCH] && RK.branches[BRANCH].liq) || []).forEach((r, i) => { const x = rkFind("liq", r[0]); if (x && !rk.has(x.id)) rk.set(x.id, i); }); } catch (e) {}
+  return ALL_LQ.filter((x) => !inCart.has(x.id) && !outOf(x.n) && x.line !== "프라임" && (fs.has(x.f) || gs.has(x.g)))
+    .map((x) => ({ x, s: (fs.has(x.f) ? 4 : 0) + (gs.has(x.g) ? 2 : 0) + (aIds.has(x.id) ? 2 : 0) + (rk.has(x.id) ? 2 - rk.get(x.id) / 10 : 0) }))
+    .sort((a, b) => b.s - a.s).slice(0, k).map((o) => o.x); }
+function simBox(items) { const L = simLiq(items); if (!L.length) return "";
+  return `<div class="simr"><span>비슷한 맛도 같이 담아 보세요</span><div>${L.map((x) => `<button data-sima="${x.id}"><img src="${imgOf(x)}" alt=""><b>${esc(short(x.n))}</b><small>${esc(x.f || "")}</small><i>+</i></button>`).join("")}</div></div>`; }
 function benefitBox() { /* 11/12 "글이 한 번에 너무 많다": 지금 상황에 맞는 안내 하나만 (각인 넣는 중이면 그 칸은 같이) */
   const t = totalOf(), c = t.c, items = [...cart.values()], n = c.v + c.p, out = [];
   const liqAll = n + c.m + items.filter((x) => x.k === "bulk").reduce((a, x) => a + x.items.reduce((s, [, , q]) => s + q, 0) * x.qty, 0);
@@ -830,7 +848,7 @@ function benefitBox() { /* 11/12 "글이 한 번에 너무 많다": 지금 상�
     const md = (devOpts("말론 기계") || [])[0] || (devOpts("말론S") || [])[0];
     if (n >= 11) one = `<div class="nudge"><b>프리미엄 11병 90,000원 적용 중</b><span>지금 ${n}병 담았어요</span></div>`;
     else if (n < 5 || !md) { const goal = n < 5 ? 5 : 11, more = goal - n, diff = prPrice(n + more) - prPrice(n);
-      one = `<div class="nudge"><b>${diff < 0 ? `${more}병 더 담으면 오히려 ${won(-diff)} 싸져요` : `${more}병 더 담으면 ${goal}병 ${goal === 5 ? "49,500" : "90,000"}원`}</b><div class="bar2"><i style="width:${Math.min(100, n / goal * 100)}%"></i></div></div>`; }
+      one = `<div class="nudge"><b>${diff < 0 ? `${more}병 더 담으면 오히려 ${won(-diff)} 싸져요` : `${more}병 더 담으면 ${goal}병 ${goal === 5 ? "49,500" : "90,000"}원`}</b><div class="bar2"><i style="width:${Math.min(100, n / goal * 100)}%"></i></div>${simBox(items)}</div>`; }
     else { const nm = md.model === "말론 기계" ? "말론" : md.model, withDev = estimate({ ...c, dev: 1, devSum: md.price, noVl: true }).total + c.other;
       one = `<button class="upsell" data-up="1"><span><b>이 맛들로 ${nm} 패키지 만들기</b><small>${nm}를 더하면 총 ${won(withDev)}</small></span><i>→</i></button>`; }
   }
