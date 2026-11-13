@@ -541,7 +541,7 @@ body[data-theme=dark] .scan svg{background:#fff;border-radius:8px}
       <div class="thumbs" id="thumbs"></div>
       <div class="pk" id="pk"></div>
       <div id="pods"></div>
-      <button class="cta" id="devAdd">담기</button>
+      <div id="devVid"></div><button class="cta" id="devAdd">담기</button>
     </div>
 
     <!-- 액상 -->
@@ -1012,7 +1012,7 @@ function drawDev() {
   $('pk').style.display = cur ? "" : "none";
   $('pk').innerHTML = [[10, "+ 액상 10병", price + ADD.pr10, price + 90000], [5, "+ 액상 5병", price + ADD.pr5, price + 75000], [0, "기기만", price, 0]]
     .map(([k, t, p, was]) => `<button data-k="${k}" class="${pkSel === k ? "on" : ""}"><b>${t}</b><div>${was ? `<s>${won(was)}</s>` : ""}<div class="price">${won(p)}</div></div></button>`).join("");
-  $('devSpec').dataset.spec = dm; $('devSpec').dataset.c = dc || ""; $('devAdd').disabled = !cur; drawPods(); document.querySelector('.hero .ph').style.background = HEX[dc] ? HEX[dc] + '26' : ''; $('devAdd').textContent = cur ? (pkSel ? `${dm} ${dc || ""} 담고 액상 ${pkSel}병 고르기` : `${dm} ${dc || ""} 담기`) : "이 지점 재고 없음";
+  $('devVid').innerHTML = window.vidBtn ? vidBtn(dm) : ""; /* 11/13 플러키 등 사용 영상 버튼은 담기 버튼 바로 위 */ $('devSpec').dataset.spec = dm; $('devSpec').dataset.c = dc || ""; $('devAdd').disabled = !cur; drawPods(); document.querySelector('.hero .ph').style.background = HEX[dc] ? HEX[dc] + '26' : ''; $('devAdd').textContent = cur ? (pkSel ? `${dm} ${dc || ""} 담고 액상 ${pkSel}병 고르기` : `${dm} ${dc || ""} 담기`) : "이 지점 재고 없음";
 }
 $('colors').onclick = (e) => { const b = e.target.closest('button'); if (b) { dc = b.dataset.c; drawDev(); } };
 $('thumbs').onclick = (e) => { const b = e.target.closest('button'); if (b) { dm = b.dataset.m; pkSel = 10; drawDev(); } };
@@ -1656,7 +1656,7 @@ function drawDspList() {
 }
 function dspDraw() { const m = dspOpen, all = GDS.filter((g) => g.c === "dsp" && g.model === m && (g.ev || "") === dspEv), info = dInfo(m), g = DSPEV.find((x) => x.ev === dspEv), got = all.reduce((a, x) => a + ((cart.get(x.id) || {}).qty || 0), 0);
   $('spTi').textContent = !dspEv && !/배터리/.test(info.name) ? info.name + " 배터리" : info.name;
-  $('spB').innerHTML = `${vidBtn(m)}${info.d ? `<p class="dsub">${esc(info.d)}</p>` : ""}${info.w ? `<div class="evtip">${esc(info.w)}</div>` : ""}<div class="dfl">${all.map((x) => { const q = (cart.get(x.id) || {}).qty || 0, out2 = outOf(x.n), pic = DSPF_IMG[x.n]; return `<button class="dflc ${q ? "on" : ""} ${out2 ? "sold" : ""}" ${out2 ? `data-ask="${esc(x.n)}"` : `data-dg="${x.id}"`}>${pic ? `<img src="${pic}" alt="" loading="lazy">` : ""}<span>${esc(x.opt || x.n.replace(m, "").trim() || x.n)}${out2 ? ", 품절" : ""}</span>${q ? `<b>${q}</b>` : ""}</button>`; }).join("")}</div>${g ? dspNudge(g) : ""}<button class="cta" data-dspx="1" style="margin-top:14px">${got ? `${got}개 담았어요, 닫기` : "닫기"}</button>`; }
+  $('spB').innerHTML = `${info.d ? `<p class="dsub">${esc(info.d)}</p>` : ""}${info.w ? `<div class="evtip">${esc(info.w)}</div>` : ""}<div class="dfl">${all.map((x) => { const q = (cart.get(x.id) || {}).qty || 0, out2 = outOf(x.n), pic = DSPF_IMG[x.n]; return `<button class="dflc ${q ? "on" : ""} ${out2 ? "sold" : ""}" ${out2 ? `data-ask="${esc(x.n)}"` : `data-dg="${x.id}"`}>${pic ? `<img src="${pic}" alt="" loading="lazy">` : ""}<span>${esc(x.opt || x.n.replace(m, "").trim() || x.n)}${out2 ? ", 품절" : ""}</span>${q ? `<b>${q}</b>` : ""}</button>`; }).join("")}</div>${g ? dspNudge(g) : ""}<button class="cta" data-dspx="1" style="margin-top:14px">${got ? `${got}개 담았어요, 닫기` : "닫기"}</button>`; }
 let dspEv = "";
 const dspPick = (m, ev) => { dspOpen = m; dspEv = ev || ""; const lab = $('spTi').previousElementSibling; if (lab) lab.textContent = "맛 고르기"; dspDraw(); document.body.classList.add('spon'); };
 $('spB').addEventListener('click', (e) => { const t = e.target, a = t.closest('[data-dg]'), x = t.closest('[data-airx]');
@@ -1815,8 +1815,9 @@ function specOpen(model, color) {
 }
 $('spX').onclick = () => document.body.classList.remove('spon');
 /* 11/13 액상덕후: 말론S 사용 영상 보기 버튼. 영상이 크니 누를 때만 받아서 재생 */
-const DEV_VID = { "플러키": "vid_plucky.mp4" }; /* 11/13 말론S 영상은 뺌(액상덕후 "지워"), 플러키 사용 영상 */
-const vidBtn = (m) => DEV_VID[m] ? `<button class="vidgo" data-vid="${esc(m)}"><i>▶</i>${esc(m)} 사용 영상 보기</button>` : "";
+var DEV_VID = { "플러키": "vid_plucky.mp4" }; /* 11/13 말론S 영상은 뺌(액상덕후 "지워"), 플러키(기기) 사용 영상: 기기 화면 담기 버튼 위 */
+var vidBtn = (m) => DEV_VID[m] ? `<button class="vidgo" data-vid="${esc(m)}"><i>▶</i>${esc(m)} 사용 영상 보기</button>` : "";
+try { $('devVid').innerHTML = vidBtn(dm); } catch (e) {} /* 처음 그릴 때는 아직 정의 전이라 여기서 한 번 더 */
 function vidOpen(m) { const v = $('vidV'); $('vidTi').textContent = m + " 사용 영상"; v.src = DEV_VID[m]; $('vidBox').hidden = false; v.play().catch(() => {}); }
 function vidClose() { const v = $('vidV'); v.pause(); v.removeAttribute('src'); v.load(); $('vidBox').hidden = true; }
 $('vidX').onclick = vidClose; $('vidBox').onclick = (e) => { if (e.target.id === 'vidBox') vidClose(); };
