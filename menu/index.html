@@ -1656,7 +1656,7 @@ function drawDspList() {
 }
 function dspDraw() { const m = dspOpen, all = GDS.filter((g) => g.c === "dsp" && g.model === m && (g.ev || "") === dspEv), info = dInfo(m), g = DSPEV.find((x) => x.ev === dspEv), got = all.reduce((a, x) => a + ((cart.get(x.id) || {}).qty || 0), 0);
   $('spTi').textContent = !dspEv && !/배터리/.test(info.name) ? info.name + " 배터리" : info.name;
-  $('spB').innerHTML = `${info.d ? `<p class="dsub">${esc(info.d)}</p>` : ""}${info.w ? `<div class="evtip">${esc(info.w)}</div>` : ""}<div class="dfl">${all.map((x) => { const q = (cart.get(x.id) || {}).qty || 0, out2 = outOf(x.n), pic = DSPF_IMG[x.n]; return `<button class="dflc ${q ? "on" : ""} ${out2 ? "sold" : ""}" ${out2 ? `data-ask="${esc(x.n)}"` : `data-dg="${x.id}"`}>${pic ? `<img src="${pic}" alt="" loading="lazy">` : ""}<span>${esc(x.opt || x.n.replace(m, "").trim() || x.n)}${out2 ? ", 품절" : ""}</span>${q ? `<b>${q}</b>` : ""}</button>`; }).join("")}</div>${g ? dspNudge(g) : ""}<button class="cta" data-dspx="1" style="margin-top:14px">${got ? `${got}개 담았어요, 닫기` : "닫기"}</button>`; }
+  $('spB').innerHTML = `${vidBtn(m)}${info.d ? `<p class="dsub">${esc(info.d)}</p>` : ""}${info.w ? `<div class="evtip">${esc(info.w)}</div>` : ""}<div class="dfl">${all.map((x) => { const q = (cart.get(x.id) || {}).qty || 0, out2 = outOf(x.n), pic = DSPF_IMG[x.n]; return `<button class="dflc ${q ? "on" : ""} ${out2 ? "sold" : ""}" ${out2 ? `data-ask="${esc(x.n)}"` : `data-dg="${x.id}"`}>${pic ? `<img src="${pic}" alt="" loading="lazy">` : ""}<span>${esc(x.opt || x.n.replace(m, "").trim() || x.n)}${out2 ? ", 품절" : ""}</span>${q ? `<b>${q}</b>` : ""}</button>`; }).join("")}</div>${g ? dspNudge(g) : ""}<button class="cta" data-dspx="1" style="margin-top:14px">${got ? `${got}개 담았어요, 닫기` : "닫기"}</button>`; }
 let dspEv = "";
 const dspPick = (m, ev) => { dspOpen = m; dspEv = ev || ""; const lab = $('spTi').previousElementSibling; if (lab) lab.textContent = "맛 고르기"; dspDraw(); document.body.classList.add('spon'); };
 $('spB').addEventListener('click', (e) => { const t = e.target, a = t.closest('[data-dg]'), x = t.closest('[data-airx]');
@@ -1815,7 +1815,7 @@ function specOpen(model, color) {
 }
 $('spX').onclick = () => document.body.classList.remove('spon');
 /* 11/13 액상덕후: 말론S 사용 영상 보기 버튼. 영상이 크니 누를 때만 받아서 재생 */
-const DEV_VID = { "말론S": "vid_malone_s.mp4" };
+const DEV_VID = { "플러키": "vid_plucky.mp4" }; /* 11/13 말론S 영상은 뺌(액상덕후 "지워"), 플러키 사용 영상 */
 const vidBtn = (m) => DEV_VID[m] ? `<button class="vidgo" data-vid="${esc(m)}"><i>▶</i>${esc(m)} 사용 영상 보기</button>` : "";
 function vidOpen(m) { const v = $('vidV'); $('vidTi').textContent = m + " 사용 영상"; v.src = DEV_VID[m]; $('vidBox').hidden = false; v.play().catch(() => {}); }
 function vidClose() { const v = $('vidV'); v.pause(); v.removeAttribute('src'); v.load(); $('vidBox').hidden = true; }
