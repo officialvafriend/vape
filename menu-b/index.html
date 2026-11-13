@@ -530,7 +530,7 @@ body[data-theme=dark] .scan svg{background:#fff;border-radius:8px}
         <button class="g-qz" onclick="qzStart()"><img src="pst_c_H5.jpg" alt="" style="object-position:50% 55%"><small>몇 가지만 고르면 1분이면 끝나요</small><b>나에게 맞는 전자담배 찾기</b></button>
         <button onclick="go('liq')"><img src="pst_c_B1.jpg" alt="" style="object-position:50% 50%"><small>빌런, 릭</small><b>액상</b></button>
         <button onclick="go('dsp')"><img src="pst_c_D1.jpg" alt="" style="object-position:45% 55%"><small>10개 사면 5개 더</small><b>일회용</b></button>
-        <button onclick="go('dev')"><img src="pst_c_H2.jpg" alt="" style="object-position:50% 45%"><small>하복2, 발라맥스프로</small><b>기기</b></button>
+        <button onclick="go('dev')"><img src="pst_c_H2.jpg" alt="" style="object-position:50% 45%"><small>말론S, 말론, 하복2</small><b>기기</b></button>
       </div>
     </div>
 
@@ -728,7 +728,9 @@ const DEV_IMG_A = {"말론":{"건메탈":"dev_v000.jpg","블랙":"dev_v001.jpg",
 const devImgs = (m) => { if (DEV_IMG[m]) return DEV_IMG[m]; for (const k of [m, m.replace(/ \S+$/, ""), m.split(" ")[0]]) { const v = DEV_IMG_A[k]; if (v) return typeof v === "string" ? { "": v } : v; } return {}; };
 const devImgOf = (m, opt) => { const o = devImgs(m); return o[opt] || Object.values(o)[0] || ""; };
 // 기기 화면 목록 (10/28 사장님 "판매중인 기기는 많은데 왜 이거밖에"): A그룹 먼저, 그 밖에 이 지점 재고 있는 기기
-const devModels = () => [...new Set([...A_DEV, ...GDS.filter((g) => g.c === "dev" && !OUT.has(g.n)).map((g) => g.model)])];
+/* 11/13 액상덕후: 기기 순서 말론S 1번, 말론 2번 (재고 있을 때) */
+const DEV_FIRST = ["말론S", "말론 기계"];
+const devModels = () => [...new Set([...DEV_FIRST.filter((m) => GDS.some((g) => g.c === "dev" && g.model === m && !OUT.has(g.n))), ...A_DEV, ...GDS.filter((g) => g.c === "dev" && !OUT.has(g.n)).map((g) => g.model)])];
 const A_DEV = ["하복2", "발라맥스프로", "맥스프로 스티그마", "조바"];
 const DEV_IMG = { 하복2: { 실버: "dev_havok2_silver.png", 블랙: "dev_havok2_black.png", 네이비: "dev_havok2_navy.png", 올리브: "dev_havok2_olive.png" },
   발라맥스프로: { 블랙: "dev_v017.jpg", 블루: "dev_v018.jpg", 실버: "dev_v019.jpg", 퍼플: "dev_v020.jpg", 핑크: "dev_v021.jpg" },
@@ -998,7 +1000,7 @@ $('shBtns').onclick = (e) => { const b = e.target.closest('[data-f]'); if (!b) r
 function resetSale() { myDevOpen = false; qzPkMore = false; cart.clear(); PERK = null; Object.assign(member, { type: null, name: "", year: "", phone: "", agree: false, mk: false, sex: "", reg: null, bad: "", okd: false }); goalN = 0; engrave = null; scanDone.clear(); qz = { i: 0, ans: {} }; Object.assign(ledger, { name: "", gu: "", etc: "" }); airxGift = "pod"; }
 let shClrT = 0; const shClrOff = () => { clearTimeout(shClrT); $('shClear').classList.remove('arm'); $('shClear').textContent = "비우기"; };
 $('shClear').onclick = () => { const b = $('shClear'); if (!b.classList.contains('arm')) { b.classList.add('arm'); b.textContent = "한 번 더 누르면 비워요"; shClrT = setTimeout(shClrOff, 3000); return; } shClrOff(); resetSale(); document.body.classList.remove('open'); cartViewBack(); drawLiq(); drawGoal(); if (typeof drawDspList === "function") { drawDspList(); drawPodView(); } toast("비웠어요"); };
-function nextCust() { resetSale(); lf = "전체"; mf = "전체"; evQ = ""; myDevQ = ""; dm = "하복2"; pkSel = 10; $('chips').querySelectorAll('button').forEach((x) => x.classList.toggle('on', x.dataset.f === lf)); document.body.classList.remove('open'); cartViewBack(); drawDev(); drawLiq(); drawGoal(); drawDspList(); drawPodView(); }
+function nextCust() { resetSale(); lf = "전체"; mf = "전체"; evQ = ""; myDevQ = ""; dm = devModels()[0] || "하복2"; pkSel = 10; $('chips').querySelectorAll('button').forEach((x) => x.classList.toggle('on', x.dataset.f === lf)); document.body.classList.remove('open'); cartViewBack(); drawDev(); drawLiq(); drawGoal(); drawDspList(); drawPodView(); }
 /* 11/10 다음 손님: 처음이나 로고를 눌렀을 때 담은 상품이 남아 있으면 8초 동안 비우기 버튼을 보여 줌. 안 누르면 그대로 유지 */
 function nxShow() { const c = $('nxChip'); if (!cart.size) return c.classList.remove('on'); c.classList.add('on'); clearTimeout(c._t); c._t = setTimeout(() => c.classList.remove('on'), 8000); }
 $('nxChip').onclick = () => { $('nxChip').classList.remove('on'); nextCust(); toast("비웠어요, 다음 손님 맞이하세요"); };
@@ -1007,7 +1009,7 @@ function doneSale() { if (!confirm("결제 완료하고 처음 화면으로 갈�
 
 // ── 기기 화면 ──
 const devOpts = (m) => GDS.filter((g) => g.c === "dev" && g.model === m && !OUT.has(g.n));
-let dm = "하복2", dc = null, pkSel = 10; // 10/28 사장님: 10병 먼저 권하기
+let dm = devModels()[0] || "하복2", dc = null, pkSel = 10; // 10/28 사장님: 10병 먼저 권하기
 const optIs = (o) => (o.opt || null) === (dc || null);
 function drawDev() {
   const opts = devOpts(dm); if (!opts.find(optIs)) dc = (opts[0] || {}).opt || null; /* 11/10 색 없는 기기(하복SE, 말론 기계 등)도 담기게 */
