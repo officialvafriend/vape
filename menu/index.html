@@ -1861,7 +1861,7 @@ try { $('devVid').innerHTML = vidBtn(dm); } catch (e) {} /* 처음 그릴 때는
 let VCAP = [];
 function vidCapLoad(src) { VCAP = []; $('vidCap').textContent = ""; if (!/.mp4$/.test(src)) return; fetch(src.replace(/.mp4$/, ".json") + "?v=1113").then((r) => r.ok ? r.json() : []).then((j) => { VCAP = Array.isArray(j) ? j : []; }).catch(() => {}); }
 $('vidV').addEventListener('timeupdate', () => { const t = $('vidV').currentTime, c = VCAP.find((x) => t >= x.s && t <= x.e + 0.4); const el = $('vidCap'); const nt = c ? c.t : ""; if (el.textContent !== nt) el.textContent = nt; });
-function vidOpen(m) { const v = $('vidV'); vidCapLoad(DEV_VID[m]); $('vidTi').textContent = (m === "말론 기계" ? "말론" : m) + " 사용 영상"; v.src = DEV_VID[m]; v.muted = true; $('vidBox').hidden = false; v.play().catch(() => {}); }
+function vidOpen(m) { const v = $('vidV'); vidCapLoad(DEV_VID[m]); $('vidTi').textContent = (m === "말론 기계" ? "말론" : m) + " 사용 영상"; v.src = DEV_VID[m]; v.muted = false; v.volume = 1; /* 11/13 액상덕후 "소리가 왜 안 나": 소리 켜고 시작 */ $('vidBox').hidden = false; v.play().catch(() => {}); }
 function vidClose() { const v = $('vidV'); v.pause(); v.removeAttribute('src'); v.load(); $('vidBox').hidden = true; }
 $('vidX').onclick = vidClose; $('vidBox').onclick = (e) => { if (e.target.id === 'vidBox') vidClose(); };
 document.addEventListener('click', (e) => { const b = e.target.closest('[data-vid]'); if (!b) return; e.stopPropagation(); vidOpen(b.dataset.vid); }, true);
