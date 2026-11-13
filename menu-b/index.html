@@ -1354,7 +1354,7 @@ function searchItems(qs) {
   const onlyCho = /^[ㄱ-ㅎ]+$/.test(q), noNo = !q.includes("노멘솔") && q.includes("멘솔");
   return IDX.map((o0) => { const o = noNo ? { ...o0, nm: o0.nm.replace(/노멘솔/g, ""), all: o0.all.replace(/노멘솔/g, "") } : o0; let sc = 0;
     if (onlyCho) { if (o.cho.startsWith(q)) sc = 3; else if (o.cho.includes(q)) sc = 2; } else if (o.nm.startsWith(q)) sc = 4; else if (o.nm.includes(q)) sc = 3; else if (o.all.includes(q)) sc = 1;
-    return [sc, o]; }).filter(([sc]) => sc).sort((a, b) => b[0] - a[0]).slice(0, 40).map(([, o]) => o);
+    return [sc, o]; }).filter(([sc]) => sc).sort((a, b) => (outOf(a[1].x.n) ? 1 : 0) - (outOf(b[1].x.n) ? 1 : 0) || b[0] - a[0]).slice(0, 40).map(([, o]) => o); /* 11/13 검색도 품절은 아래로 */
 }
 const liqPrice = (x) => x.line === "프라임" ? 20000 : 15000;
 const addLiqX = (x) => addItem(x.id, { k: "liq", n: x.n, label: short(x.n), img: imgOf(x), unit: liqPrice(x), ...(x.line === "프라임" ? { prime: true } : {}) });
