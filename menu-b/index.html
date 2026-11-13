@@ -1815,7 +1815,7 @@ function specOpen(model, color) {
 }
 $('spX').onclick = () => document.body.classList.remove('spon');
 /* 11/13 액상덕후: 말론S 사용 영상 보기 버튼. 영상이 크니 누를 때만 받아서 재생 */
-const DEV_VID = { "말론S": "vid_malone_s.mp4" };
+const DEV_VID = {}; /* 11/13 액상덕후 "말론S 영상 지워": 영상 뺌, 버튼도 안 나옴 */
 const vidBtn = (m) => DEV_VID[m] ? `<button class="vidgo" data-vid="${esc(m)}"><i>▶</i>${esc(m)} 사용 영상 보기</button>` : "";
 function vidOpen(m) { const v = $('vidV'); $('vidTi').textContent = m + " 사용 영상"; v.src = DEV_VID[m]; $('vidBox').hidden = false; v.play().catch(() => {}); }
 function vidClose() { const v = $('vidV'); v.pause(); v.removeAttribute('src'); v.load(); $('vidBox').hidden = true; }
