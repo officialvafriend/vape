@@ -446,6 +446,11 @@ body[data-theme=dark] .shbtn .b1{background:#f1f1f3;color:#15120f}
 .sum2 .r{display:flex;justify-content:space-between;font-size:15px;padding:3px 0;color:var(--grey)}.sum2 .r.off b{color:var(--red)}
 .sum2 .save{font-size:14px;font-weight:800;color:var(--red);text-align:right;margin-top:4px}
 .mem{background:var(--bg);border-radius:16px;padding:14px 16px;margin:10px 0 4px}
+/* 11/13 기기 사용 영상 */
+.vidbox{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;padding:20px}.vidbox[hidden]{display:none}
+.vidin{width:100%;max-width:760px;max-height:100%;display:flex;flex-direction:column}.vidh{display:flex;justify-content:space-between;align-items:center;color:#fff;padding:0 4px 12px}.vidh b{font-size:22px}.vidh button{width:52px;height:52px;border-radius:26px;background:rgba(255,255,255,.18);color:#fff;font-size:24px}
+.vidin video{width:100%;max-height:calc(100vh - 120px);border-radius:16px;background:#000}
+.vidgo{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;height:60px;margin:0 0 var(--gap);border-radius:14px;background:var(--black);color:#fff;font-size:19px;font-weight:800}.vidgo i{font-style:normal;width:30px;height:30px;border-radius:15px;background:var(--red);display:flex;align-items:center;justify-content:center;font-size:13px}
 /* 11/13 자세히 창 이벤트 칸 */
 .spev{background:var(--card);border-radius:16px;padding:16px 18px;margin:12px 0 4px;border:2px solid var(--red)}
 .spev-t{font-size:18px;font-weight:800;color:var(--red);margin-bottom:8px}
@@ -587,6 +592,7 @@ body[data-theme=dark] .scan svg{background:#fff;border-radius:8px}
 <div class="asks" id="ask"><div class="evh"><div><small style="color:var(--grey)">다른 지점 재고</small><b>재고 확인</b></div><button id="askX" aria-label="닫기">✕</button></div><div class="evb" id="askB"></div></div>
 <button class="askchip" id="askChip"></button>
 <button class="nxchip" id="nxChip">다음 손님이세요?<b>담은 상품 비우기</b></button>
+<div id="vidBox" class="vidbox" hidden><div class="vidin"><div class="vidh"><b id="vidTi">사용 영상</b><button id="vidX" aria-label="닫기">✕</button></div><video id="vidV" controls playsinline preload="none"></video></div></div>
 <div class="asks sps" id="sp"><div class="evh"><div><small style="color:var(--grey)">전자담배 기기</small><b id="spTi">스펙</b></div><button id="spX" aria-label="닫기">✕</button></div><div class="evb" id="spB"></div></div>
 <div class="toast" id="toast"></div>
 <!-- 지금 판과 같은 데이터: 액상(data.js), 지점별 포스 바코드(pos.js), 지점별 기기 재고와 판매가(goods.js) -->
@@ -1261,6 +1267,7 @@ function drawEv() {
     $('evEye').textContent = "베이프렌드 기기패키지"; $('evTi').textContent = `${M.name} + 액상 ${EV.need}병`;
     h += `<div class="card evhero"><img src="${hero}" alt=""><div class="pr"><b class="price">${tot}</b><span style="font-size:14px;color:var(--grey)">${M.name} ${won(d.price)} + 액상 ${EV.need}병 ${won(EV.need === 10 ? ADD.pr10 : ADD.pr5)}${pod && pk ? ` + 팟 ${pk}팩 ${won(podW)}` : ""}</span></div></div>
       <div class="opt2" style="margin-bottom:var(--gap)">${[[10, "액상 10병"], [5, "액상 5병"]].map(([q, t]) => `<button class="${EV.need === q ? "on" : ""}" data-hq="${q}"><b style="font-size:18px">${t}</b><span>${won(setP(q))}</span></button>`).join("")}</div>`;
+    h += vidBtn(M.name); /* 11/13 말론S 사용 영상 */
     h += `<div class="evsec">① 색상</div>` + (o.length > 1 ? `<div class="opt2" style="margin-bottom:var(--gap)">${o.map((x) => `<button class="${x.opt === d.opt ? "on" : ""}" data-ec="${x.opt}"><b style="font-size:18px">${x.opt}</b><span>${won(x.price)}</span></button>`).join("")}</div>` : `<div class="opt2" style="margin-bottom:6px;grid-template-columns:repeat(3,1fr)">${["블랙", "건메탈", "실버"].map((c) => `<button class="${EV.mcol === c ? "on" : ""}" data-mcol="${c}"><b style="font-size:18px">${c}</b></button>`).join("")}</div><div class="evtip">색상별 재고는 직원이 확인해요</div>`); /* 11/12 말론은 포스에 색 구분이 없어서 고른 색만 직원에게 보여 줌 */
     const p4 = malPodOf(EV.k, "0.4"), p6 = malPodOf(EV.k, "0.6"), ohmNow = pod && pod.n === MAL[EV.k].pods["0.6"] ? "0.6" : "0.4";
     if (pod) h += `<div class="evsec" id="evPodBox">② ${M.name} 팟 같이 담기</div><div style="font-size:17px;font-weight:800;margin:2px 0 10px">팟은 액상 1병에 1개, 안 바꾸면 누수가 생겨요</div>`
@@ -1799,6 +1806,7 @@ function specOpen(model, color) {
     two = [["가격", cur ? won(cur.price) : "-", "레이저 각인 무료"], ["호흡 방식", DEV_SUB[model] || "입호흡", ""]]; }
   dspOpen = ""; { const lab = $('spTi').previousElementSibling; if (lab) lab.textContent = "전자담배 기기"; } $('spTi').textContent = model;
   $('spB').innerHTML = `<div class="sp-hero" style="background:${HEX[c] ? HEX[c] + "22" : "var(--card)"}"><img src="${img}" alt=""><span>${esc(c || "")}</span></div>
+    ${vidBtn(model)}
     <div class="sp-two">${two.map(([k, v, u]) => `<div><b>${k}</b><strong>${esc(v)}</strong>${u ? `<span>${esc(u)}</span>` : ""}</div>`).join("")}</div>
     ${d && d.desc && model !== "하복2" ? `<div class="sp-desc">${esc(d.desc)}</div>` : ""}
     <div class="sp-grid">${rows.map(([k, v, u]) => `<div><b>${esc(k)}</b><strong>${esc(v)}</strong>${u ? `<span>${esc(u)}</span>` : ""}</div>`).join("")}</div>
@@ -1806,6 +1814,13 @@ function specOpen(model, color) {
   document.body.classList.add('spon');
 }
 $('spX').onclick = () => document.body.classList.remove('spon');
+/* 11/13 액상덕후: 말론S 사용 영상 보기 버튼. 영상이 크니 누를 때만 받아서 재생 */
+const DEV_VID = { "말론S": "vid_malone_s.mp4" };
+const vidBtn = (m) => DEV_VID[m] ? `<button class="vidgo" data-vid="${esc(m)}"><i>▶</i>${esc(m)} 사용 영상 보기</button>` : "";
+function vidOpen(m) { const v = $('vidV'); $('vidTi').textContent = m + " 사용 영상"; v.src = DEV_VID[m]; $('vidBox').hidden = false; v.play().catch(() => {}); }
+function vidClose() { const v = $('vidV'); v.pause(); v.removeAttribute('src'); v.load(); $('vidBox').hidden = true; }
+$('vidX').onclick = vidClose; $('vidBox').onclick = (e) => { if (e.target.id === 'vidBox') vidClose(); };
+document.addEventListener('click', (e) => { const b = e.target.closest('[data-vid]'); if (!b) return; e.stopPropagation(); vidOpen(b.dataset.vid); }, true);
 /* 11/12 액상덕후: 랭킹에서 상품을 누르면 자세히. 맛 표현 문장은 TASTE에 액상덕후가 정해 준 것만 (없으면 맛, 계열만) */
 const TASTE = {};
 function liqOpen(x) { if (!x) return; const out = outOf(x.n), q = (cart.get(x.id) || {}).qty || 0, img = imgOf(x), tags = (x.t || []).filter((t) => t !== "일반");
