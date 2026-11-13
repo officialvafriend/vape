@@ -89,6 +89,7 @@
   .fl-sum .r{display:flex;justify-content:space-between;font-size:21px;padding:14px 0;border-bottom:1px solid #ececf0}
   .fl-total{display:flex;justify-content:space-between;align-items:baseline;margin-top:18px}.fl-total span{font-size:22px;color:var(--g)}.fl-total b{font-size:36px}
   .fl-saved{font-size:21px;color:var(--red);font-weight:800;text-align:right;margin-top:6px}
+  .fl-revisit{display:flex;gap:16px;align-items:center;margin-top:22px;padding:20px 22px;border-radius:18px;background:var(--row)}.fl-revisit .e{font-size:40px}.fl-revisit b{display:block;font-size:24px}.fl-revisit small{display:block;font-size:17px;color:var(--g);margin-top:4px;line-height:1.5}
   .fl-sheet{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.4);display:flex;align-items:flex-end}.fl-sheet[hidden]{display:none}
   .fl-sheet .in{width:100%;background:#fff;border-radius:28px 28px 0 0;padding:28px 28px 34px}.fl-sheet h3{font-size:26px;margin:0 0 16px}
   .fl-sheet .it{background:var(--row);border-radius:16px;padding:18px 20px;margin-bottom:10px}.fl-sheet .it b{display:block;font-size:21px}.fl-sheet .it span{font-size:18px;color:#3a3a3c;line-height:1.5}
@@ -160,10 +161,17 @@
     if (F.step === "done") { const t = totalOf(), items = [...cart.values()], unitAll = items.reduce((a, x) => a + (x.unit || 0) * x.qty, 0), off = Math.max(0, unitAll - t.total);
       B.innerHTML = `${SAY("이렇게 담으셨어요. 확인해 주시면 계산 도와드릴게요")}<div class="fl-q">이렇게\n담았어요 🛍️</div>
         <div class="fl-sum">${items.map((x) => `<div class="r"><span>${esc(short(x.label || x.n).replace("말론 기계", "말론"))} × ${x.qty}</span><span>${won2(x.unit * x.qty)}</span></div>`).join("")}</div>
-        <div class="fl-total"><span>합계</span><b>${won2(t.total)}</b></div>${off ? `<div class="fl-saved">🎉 패키지로 ${won2(off)} 아꼈어요</div>` : ""}
+        <div class="fl-total"><span>합계</span><b>${won2(t.total)}</b></div>${off ? `<div class="fl-saved">🎉 패키지로 ${won2(off)} 아꼈어요</div>` : ""}${revisitBox()}
         <div class="fl-sub" style="margin-top:22px">처음 오셨으면 다음 화면에서 회원등록을 하시면 AS 받을 때 편해요</div>`;
       foot(`<button class="fl-cta red" data-fl="finish">👍 직원에게 보여 주기</button>`); return; }
   }
+  /* 11/13 액상덕후 "C, D에는 재방문 예정일": 액상 1병(팟 1개)에 7일 기준 (액상덕후 안내 "1병당 팟 1개, 7~8일에 한 번 교체") */
+  const DAYS_PER = 7;
+  function revisit() { const L = [...cart.values()], bottles = L.filter((x) => x.k === "liq" || x.k === "lung").reduce((a, x) => a + x.qty, 0), pods = L.filter((x) => x.k === "goods" && /팟|코일/.test(x.n)).reduce((a, x) => a + x.qty, 0), n = bottles || pods; if (!n) return null;
+    const d = new Date(Date.now() + 9 * 3600e3); d.setUTCDate(d.getUTCDate() + n * DAYS_PER); return { n, by: bottles ? "액상" : "팟", d, txt: `${d.getUTCMonth() + 1}월 ${d.getUTCDate()}일 (${"일월화수목금토"[d.getUTCDay()]})` }; }
+  function revisitBox() { const r = revisit(); if (!r) return ""; F.revisit = r.d.toISOString().slice(0, 10);
+    return `<div class="fl-revisit"><span class="e">📅</span><span><b>다음 방문 예정일 ${r.txt}쯤</b><small>${r.by} ${r.n}${r.by === "액상" ? "병" : "개"}, 1${r.by === "액상" ? "병" : "개"}에 ${DAYS_PER}일 기준이에요. 그때쯤 ${r.by === "액상" ? "액상과 팟이" : "팟이"} 떨어져요</small></span></div>`; }
+  window.flowRevisit = () => F.revisit || null;
   function podOf() { const m = F.model; if (m === "말론S") return malPodOf("S", "0.4") || malPodOf("S", "0.6"); if (m === "말론 기계") return malPodOf("M", "0.4") || malPodOf("M", "0.6"); if (m === "하복2") return F.ans.draw === "연기 많이" ? qzPod("0.15") || qzPod("0.6") : qzPod("0.6"); return null; }
   function addDev() { const m = F.model, o = curOpt(); if (!o || [...cart.values()].some((x) => x.k === "dev")) return;
     addItem(o.id, { k: "dev", n: o.n, label: m === "말론 기계" ? o.n + ` (${F.mcol})` : o.n, img: devImg(m, o.opt), unit: o.price, model: m }); }
