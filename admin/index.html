@@ -959,7 +959,7 @@ function opsHtml() {
   const rows = D.ops.map((o) => {
     const c = o.close, L = !c && o.live ? o.live : null, vs = c && o.avgPrev ? Math.round(((c.총 - o.avgPrev) / o.avgPrev) * 100) : null;
     return `<tr data-brpc="${esc(o.b)}" style="cursor:pointer">${td(`<b>${BR.indexOf(o.b) + 1} ${esc(o.b)}</b>`)}
-      ${o.open ? td(`${o.open}${o.vsAvg != null && Math.abs(o.vsAvg) >= 5 ? `<small>평소보다 ${Math.abs(o.vsAvg)}분 ${o.vsAvg > 0 ? "늦음" : "빠름"}</small>` : ""}${o.prepDiff ? `<small>준비금 ${o.prepDiff > 0 ? "+" : ""}${won(o.prepDiff)}</small>` : ""}`, o.late || o.prepDiff ? "r" : "") : td("안 함", "n")}
+      ${o.open ? td(`${o.open}${o.vsAvg != null && Math.abs(o.vsAvg) >= 5 ? `<small>평소보다 ${Math.abs(o.vsAvg)}분 ${o.vsAvg > 0 ? "늦음" : "빠름"}</small>` : ""}${o.prepDiff ? `<small>준비금 ${o.prepDiff > 0 ? "+" : ""}${won(o.prepDiff)}</small>` : ""}${o.prepTr ? `<small title="${esc(o.prepTr)}">이체 미입력</small>` : ""}`, o.late || o.prepDiff || o.prepTr ? "r" : "") : td("안 함", "n")}
       ${c ? td(`${c.at}${c.warn ? `<small>확인 ${c.warn}건</small>` : ""}`, c.warn ? "r" : "g") : td("안 함", "n")}
       ${c ? td(`${won(c.총)}${vs != null ? `<small>지난달 평균 ${vs > 0 ? "+" : ""}${vs}%</small>` : ""}`) : L ? td(won(L.sales)) : NO}
       ${c && c.diff != null ? td(c.diff ? (c.diff > 0 ? "+" : "") + won(c.diff) : "0", c.diff ? "r" : "g") : NO}
@@ -980,6 +980,7 @@ function issues(done) {
     if (c) { const w = (c.warn && c.warn.length ? c.warn : warnsOf(c)), full = warnsOf(c); if (w.length) L.push({ ids: [`close|${o.b}|${c.at || ""}`], lv: 1, b: o.b, t: w.length === 1 ? `${n}호 ${o.b} 마감, ${w[0]}` : `${n}호 ${o.b} 마감, 확인 ${w.length}건: ${w.join(", ")}`, d: full.join(" | ") }); }
     else if (late) L.push({ ids: [`noclose|${o.b}`], lv: 3, b: o.b, t: `${n}호 ${o.b}, 마감 보고 아직`, d: "22시가 지났는데 마감 보고가 없어요" });
     if (o.prepDiff) L.push({ ids: [`prep|${o.b}|${o.prepDiff}`], lv: 1, b: o.b, t: `${n}호 ${o.b}, 준비금 ${o.prepDiff > 0 ? "+" : ""}${won(o.prepDiff)}원`, d: `돈통 준비금이 어제보다 ${o.prepDiff > 0 ? "+" : ""}${won(o.prepDiff)}원` });
+    if (o.prepTr) L.push({ ids: [`preptr|${o.b}`], lv: 1, b: o.b, t: `${n}호 ${o.b}, 포스에 이체 미입력`, d: String(o.prepTr) }); /* 1113 이체 미입력 */
     if (o.late && !seen(`lateopen|${o.b}`)) lateOpen.push(o);
   }
   if (lateOpen.length === 1) { const o = lateOpen[0]; L.push({ ids: [`lateopen|${o.b}`], lv: 3, b: o.b, t: `${BR.indexOf(o.b) + 1}호 ${o.b}, ${o.late}분 늦게 오픈`, d: `${o.open} 오픈, 평소 ${o.avgOpen}` }); }
@@ -1233,8 +1234,30 @@ function branchHtml(b, g) {
     <div class="seg" style="margin-top:16px">${tabs.map((t) => `<button class="${t === sheetG ? "on" : ""}" data-brg="${t}" data-b="${b}">${esc(GNAME[t] || t)}</button>`).join("")}</div>
     ${gr.out.length ? `<div class="list">${gr.out.map((o) => `<div class="item"><div class="tx"><b>${esc(o.n)}</b>
       <div>${o.others.length ? o.others.map((ob) => `<span class="tag">${esc(ob)}에 있어요</span>`).join("") : '<span class="tag gray">다른 지점에도 없어요</span>'}</div></div></div>`).join("")}</div>` : `<div class="caption" style="margin-top:16px">품절된 상품이 없어요</div>`}
-    <div class="btns"><button class="btn gray" data-x>닫기</button><button class="btn sec2" data-mustgo="${b}">추가 필수 상품 고르기</button></div>`);
+    ${insHtml(b)}<div class="btns"><button class="btn gray" data-x>닫기</button><button class="btn sec2" data-mustgo="${b}">추가 필수 상품 고르기</button></div>`);
 }
+/* 1112 퇴근 취소 */
+let TODAY = null;
+async function loadToday() {
+  const read = (u) => fetch(u + "?t=" + Date.now(), { cache: "no-store" }).then((r) => { if (!r.ok) throw 0; return r.json(); });
+  const got = (await Promise.allSettled([read("https://raw.githubusercontent.com/officialvafriend/vape/main/staff/today.json"), read("https://officialvafriend.github.io/vape/staff/today.json")])).filter((x) => x.status === "fulfilled" && x.value?.d).map((x) => x.value);
+  if (got.length) TODAY = got.sort((a, b) => (b.d + " " + b.at).localeCompare(a.d + " " + a.at))[0];
+  const el = $("#insbox"); if (el) el.outerHTML = insHtml(el.dataset.b);
+}
+const insOf = (b) => { const o = (D?.ops || []).find((y) => y.b === b); return o && Array.isArray(o.ins) ? o.ins : !TODAY ? null : D && TODAY.d === D.d ? TODAY.br?.[b]?.ins || [] : []; }; /* 관리자 자료에 출근 목록이 오면 그걸 먼저(더 빠름) */
+function insHtml(b) {
+  const L = insOf(b);
+  const row = (a) => `<div class="item"><div class="tx"><b>${esc(a.name)}</b><span>${esc(a.t)} 출근${a.out ? `, ${esc(a.out)} 퇴근` : ", 근무 중"}</span></div>${a.out ? `<button data-clockundo="${esc(b)}¦${esc(a.name)}" style="flex:0 0 auto;height:44px;padding:0 14px;border-radius:10px;background:var(--line2);color:var(--ink2);font-size:14px;font-weight:600">퇴근 취소</button>` : ""}</div>`;
+  return `<div id="insbox" data-b="${esc(b)}"><div class="lbl">오늘 출근</div>${L === null ? '<div class="caption">불러오는 중이에요</div>' : L.length ? `<div class="list">${L.map(row).join("")}</div>` : '<div class="caption">오늘 출근 기록이 없어요</div>'}</div>`;
+}
+document.addEventListener("click", async (e) => {
+  if (e.target.closest?.("[data-brpc]")) loadToday();
+  const c = e.target.closest?.("[data-clockundo]"); if (!c) return;
+  const [b, name] = c.dataset.clockundo.split("¦"), by = await adminName(); if (!by) return;
+  const a = (insOf(b) || []).find((x) => x.name === name), out0 = a?.out, sent = D?.at || "";
+  try { c.disabled = true; await sendOp("clockundo", { b, name, by }); if (a) a.out = null; const el = $("#insbox"); if (el) el.outerHTML = insHtml(b); toast(`${name} 퇴근을 취소했어요`); const chk = async (k) => { await loadToday(); try { await reload(true); } catch {} const hasOps = Array.isArray((D?.ops || []).find((y) => y.b === b)?.ins), fresh = hasOps && (D?.at || "") > sent, a2 = (insOf(b) || []).find((x) => x.name === name); const el2 = $("#insbox"); if (el2) el2.outerHTML = insHtml(b); if (fresh) { if (a2?.out) toast(`${name} 퇴근 취소가 안 됐어요. 다시 눌러 주세요`, 5000); return; } if (k < 3) setTimeout(() => chk(k + 1), 50e3); }; setTimeout(() => chk(1), 20e3); }
+  catch (er) { if (a) a.out = out0; c.disabled = false; toast("못 보냈어요. 다시 눌러 주세요"); }
+});
 function sheetBranch(b, g) { openSheet(branchHtml(b, g)); bindSparks(); }
 function sheetTaskStatus(id) {
   const t = D.matrix.find((y) => y.id === id), def = D.tasks.find((y) => y.id === id);
@@ -1351,7 +1374,7 @@ function oldSurveyHtml() {
 function opsMobileHtml() {
   if (!D.ops) return "";
   const rows = D.ops.map((o) => { const c = o.close, L = !c && o.live ? o.live : null, s = c ? +c.총 || 0 : L ? L.sales : 0, n = c ? +c.bills || 0 : L ? L.bills : 0;
-    const warn = [o.prepDiff ? `준비금 ${o.prepDiff > 0 ? "+" : ""}${won(o.prepDiff)}` : "", c && c.diff ? `현금 차액 ${c.diff > 0 ? "+" : ""}${won(c.diff)}` : "", c && c.warn ? `확인 ${c.warn}건` : ""].filter(Boolean);
+    const warn = [o.prepDiff ? `준비금 ${o.prepDiff > 0 ? "+" : ""}${won(o.prepDiff)}` : "", o.prepTr ? "이체 미입력" : "", c && c.diff ? `현금 차액 ${c.diff > 0 ? "+" : ""}${won(c.diff)}` : "", c && c.warn ? `확인 ${c.warn}건` : ""].filter(Boolean);
     const right = c ? `<b class="${c.warn ? "t-bad" : "t-good"}">마감 ${esc(c.at)}</b>` : o.open ? `<b class="${o.late ? "t-bad" : ""}">오픈 ${esc(o.open)}</b>${o.late ? `<span class="t-bad">${o.late}분 늦음</span>` : ""}` : '<b class="t-sub">오픈 안 함</b>';
     return `<button class="item opm" data-brpc="${esc(o.b)}"><div class="tx"><b>${BR.indexOf(o.b) + 1} ${esc(o.b)}</b><span>${s ? `${m1(s)}, ${n}명` : "아직 매출 없음"}${warn.length ? `<em class="t-bad">, ${warn.join(", ")}</em>` : ""}</span></div><div class="val">${right}</div><span class="chev">›</span></button>`; }).join("");
   const done = D.ops.filter((o) => o.close).length;
@@ -1885,7 +1908,7 @@ async function boot() {
 boot();
 
 setInterval(() => KEY && reload(true), 3 * 60e3);
-setInterval(() => KEY && loadBot(), 60e3); setTimeout(loadBot, 1500);
+setInterval(() => KEY && loadBot(), 60e3); setTimeout(loadBot, 1500); setInterval(() => KEY && loadToday(), 3 * 60e3); setTimeout(loadToday, 2500);
 matchMedia("(min-width:900px)").addEventListener("change", () => { panelKeep = ""; if (D) render(); });
 </script>
 </body>
