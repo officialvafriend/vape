@@ -464,7 +464,10 @@ body[data-theme=dark] .srcart{background:#f1f1f3;color:#15120f}body[data-theme=d
 /* 11/13 기기 사용 영상 */
 .vidbox{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;padding:20px}.vidbox[hidden]{display:none}
 .vidin{width:100%;max-width:760px;max-height:100%;display:flex;flex-direction:column}.vidh{display:flex;justify-content:space-between;align-items:center;color:#fff;padding:0 4px 12px}.vidh b{font-size:22px}.vidh button{width:52px;height:52px;border-radius:26px;background:rgba(255,255,255,.18);color:#fff;font-size:24px}
-.vidin video{width:100%;max-height:calc(100vh - 260px);border-radius:16px;background:#000}
+.vidin{overflow-y:auto}.vidin video{width:100%;max-height:46vh;border-radius:16px;background:#000}
+.vidh>b{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.vidh .vidsnd{flex:none;width:auto;white-space:nowrap;margin-left:auto;margin-right:12px;height:56px;padding:0 22px;border-radius:28px;background:#fff;color:#15120f;font-size:19px;font-weight:800}.vidh .vidsnd.off{background:#d81f2a;color:#fff}
+.vidguide{margin-top:12px;max-height:38vh;overflow-y:auto;border-radius:14px;background:#fff;color:#15120f;padding:6px 10px}.vidguide:empty{display:none}.vgt{font-size:18px;font-weight:800;padding:8px 6px}.vgt small{font-size:14px;color:#8b8b8b;font-weight:600;margin-left:6px}
+.vg{display:flex;gap:12px;align-items:flex-start;width:100%;text-align:left;padding:12px 8px;border-top:1px solid #eee;background:none;color:#15120f}.vg .e{font-size:26px}.vg .t{flex:1}.vg b{display:block;font-size:19px}.vg small{display:block;font-size:16px;color:#555;line-height:1.45;margin-top:2px}.vg i{font-style:normal;font-size:14px;color:#8b8b8b;white-space:nowrap}.vg.on{background:#fff3f3;border-radius:10px}.vg.on b{color:#d81f2a}
 .vidcap{min-height:110px;margin-top:12px;padding:14px 18px;border-radius:14px;background:rgba(0,0,0,.55);color:#fff;font-size:26px;font-weight:700;line-height:1.45;text-align:center;word-break:keep-all}.vidcap:empty{visibility:hidden}
 .vidgo{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;height:60px;margin:0 0 var(--gap);border-radius:14px;background:var(--black);color:#fff;font-size:19px;font-weight:800}.vidgo i{font-style:normal;width:30px;height:30px;border-radius:15px;background:var(--red);display:flex;align-items:center;justify-content:center;font-size:13px}
 /* 11/13 자세히 창 이벤트 칸 */
@@ -608,7 +611,7 @@ body[data-theme=dark] .scan svg{background:#fff;border-radius:8px}
 <div class="asks" id="ask"><div class="evh"><div><small style="color:var(--grey)">다른 지점 재고</small><b>재고 확인</b></div><button id="askX" aria-label="닫기">✕</button></div><div class="evb" id="askB"></div></div>
 <button class="askchip" id="askChip"></button>
 <button class="nxchip" id="nxChip">다음 손님이세요?<b>담은 상품 비우기</b></button>
-<div id="vidBox" class="vidbox" hidden><div class="vidin"><div class="vidh"><b id="vidTi">사용 영상</b><button id="vidX" aria-label="닫기">✕</button></div><video id="vidV" controls playsinline preload="none"></video><div id="vidCap" class="vidcap"></div></div></div>
+<div id="vidBox" class="vidbox" hidden><div class="vidin"><div class="vidh"><b id="vidTi">사용 영상</b><button id="vidSnd" class="vidsnd">🔊 소리 끄기</button><button id="vidX" aria-label="닫기">✕</button></div><video id="vidV" controls playsinline preload="none"></video><div id="vidCap" class="vidcap"></div><div id="vidGuide" class="vidguide"></div></div></div>
 <div class="asks sps" id="sp"><div class="evh"><div><small style="color:var(--grey)">전자담배 기기</small><b id="spTi">스펙</b></div><button id="spX" aria-label="닫기">✕</button></div><div class="evb" id="spB"></div></div>
 <div class="toast" id="toast"></div>
 <!-- 지금 판과 같은 데이터: 액상(data.js), 지점별 포스 바코드(pos.js), 지점별 기기 재고와 판매가(goods.js) -->
@@ -1859,9 +1862,19 @@ var vidBtn = (m) => DEV_VID[m] ? `<button class="vidgo" data-vid="${esc(m)}"><i>
 try { $('devVid').innerHTML = vidBtn(dm); } catch (e) {} /* 처음 그릴 때는 아직 정의 전이라 여기서 한 번 더 */
 /* 11/13 자막: 영상 옆 같은 이름 .json [{s,e,t}] 을 읽어 영상 아래 큰 글씨로 (손님이 눈으로 읽게) */
 let VCAP = [];
-function vidCapLoad(src) { VCAP = []; $('vidCap').textContent = ""; if (!/.mp4$/.test(src)) return; fetch(src.replace(/.mp4$/, ".json") + "?v=1113").then((r) => r.ok ? r.json() : []).then((j) => { VCAP = Array.isArray(j) ? j : []; }).catch(() => {}); }
-$('vidV').addEventListener('timeupdate', () => { const t = $('vidV').currentTime, c = VCAP.find((x) => t >= x.s && t <= x.e + 0.4); const el = $('vidCap'); const nt = c ? c.t : ""; if (el.textContent !== nt) el.textContent = nt; });
-function vidOpen(m) { const v = $('vidV'); vidCapLoad(DEV_VID[m]); $('vidTi').textContent = (m === "말론 기계" ? "말론" : m) + " 사용 영상"; v.src = DEV_VID[m]; v.muted = false; v.volume = 1; /* 11/13 액상덕후 "소리가 왜 안 나": 소리 켜고 시작 */ $('vidBox').hidden = false; v.play().catch(() => {}); }
+/* 11/13 간단 설명서: 영상 옆 같은 이름 .guide.json [{t,e,h,d}], 누르면 그 부분부터 */
+let VGUIDE = [];
+const vgTime = (t) => Math.floor(t / 60) + ":" + String(Math.floor(t % 60)).padStart(2, "0");
+function vidGuideLoad(src) { VGUIDE = []; $('vidGuide').innerHTML = ""; if (!/\.mp4$/.test(src)) return;
+  fetch(src.replace(/\.mp4$/, ".guide.json") + "?v=1113").then((r) => r.ok ? r.json() : []).then((j) => { VGUIDE = Array.isArray(j) ? j : [];
+    $('vidGuide').innerHTML = VGUIDE.length ? '<div class="vgt">📋 간단 설명서 <small>누르면 그 부분부터 나와요</small></div>' + VGUIDE.map((g, i) => `<button class="vg" data-vg="${i}"><span class="e">${esc(g.e || "")}</span><span class="t"><b>${esc(g.h)}</b><small>${esc(g.d)}</small></span><i>${vgTime(g.t)}</i></button>`).join("") : ""; }).catch(() => {}); }
+$('vidGuide').onclick = (e) => { const b = e.target.closest('[data-vg]'); if (!b) return; const g = VGUIDE[+b.dataset.vg], v = $('vidV'); v.currentTime = g.t; v.play().catch(() => {}); };
+function vidCapLoad(src) { vidGuideLoad(src); VCAP = []; $('vidCap').textContent = ""; if (!/.mp4$/.test(src)) return; fetch(src.replace(/.mp4$/, ".json") + "?v=1113").then((r) => r.ok ? r.json() : []).then((j) => { VCAP = Array.isArray(j) ? j : []; }).catch(() => {}); }
+$('vidV').addEventListener('timeupdate', () => { const t = $('vidV').currentTime, c = VCAP.find((x) => t >= x.s && t <= x.e + 0.4); const el = $('vidCap'); const nt = c ? c.t : ""; if (el.textContent !== nt) el.textContent = nt; let gi = -1; VGUIDE.forEach((g, i) => { if (t >= g.t) gi = i; }); document.querySelectorAll('#vidGuide .vg').forEach((b, i) => b.classList.toggle('on', i === gi)); });
+function vidOpen(m) { const v = $('vidV'); vidCapLoad(DEV_VID[m]); $('vidTi').textContent = (m === "말론 기계" ? "말론" : m) + " 사용 영상"; v.src = DEV_VID[m]; v.muted = false; v.volume = 1; vidSndTxt(); /* 11/13 액상덕후 "소리가 왜 안 나": 소리 켜고 시작, 큰 소리 버튼 */ $('vidBox').hidden = false; v.play().catch(() => {}); }
+function vidSndTxt() { const v = $('vidV'); $('vidSnd').textContent = v.muted ? "🔇 소리 켜기" : "🔊 소리 끄기"; $('vidSnd').classList.toggle('off', v.muted); }
+$('vidSnd').onclick = () => { const v = $('vidV'); v.muted = !v.muted; vidSndTxt(); };
+$('vidV').addEventListener('volumechange', vidSndTxt);
 function vidClose() { const v = $('vidV'); v.pause(); v.removeAttribute('src'); v.load(); $('vidBox').hidden = true; }
 $('vidX').onclick = vidClose; $('vidBox').onclick = (e) => { if (e.target.id === 'vidBox') vidClose(); };
 document.addEventListener('click', (e) => { const b = e.target.closest('[data-vid]'); if (!b) return; e.stopPropagation(); vidOpen(b.dataset.vid); }, true);
