@@ -472,6 +472,13 @@
   .czin.befhome button{width:40px;height:40px;margin:4px;border-radius:10px;font-size:18px}
   @media (max-width:760px){.czin.befhome input{height:52px}.czin.befhome button{width:44px;height:44px}}
   .befsc{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px}
+  .befiss{display:flex;align-items:center;gap:12px;background:var(--amber-soft);border-radius:14px;padding:12px 14px;margin:0 0 12px}
+  .befiss .tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.befiss b{font-size:16px}.befiss span{font-size:17px;font-weight:700;color:var(--ink)}.befiss em{font-style:normal;font-size:15px;color:var(--ink2)}
+  .befiss .rqk{min-height:44px;flex:none}
+  /* 11/13 회원등록, 회원조회 */
+  .memin{height:60px;font-size:24px;margin-top:14px}
+  .memrow{display:flex;align-items:center;gap:12px;width:100%;min-height:60px;padding:10px 14px;margin-top:8px;border:1px solid var(--line);border-radius:12px;background:#fff;font:inherit;text-align:left}
+  .memrow b{font-size:19px}.memrow span{flex:1;font-size:17px;color:var(--ink2);font-variant-numeric:tabular-nums}.memrow em{font-style:normal;font-size:15px;color:var(--sub)}
   .befsc .rqk{min-height:40px;display:inline-flex;align-items:center;flex:none}
   @media (max-width:760px){.befsc .rqk{min-height:44px}}
   /* 11/11 촬영 목록: 맨 위 3줄, 세트 접기, 한 줄에 사진 하나 */
@@ -526,7 +533,7 @@
 })();
 </script>
 <script>
-const VER = "11.10-39"; window.VER_ERR = VER;
+const VER = "11.10-45"; window.VER_ERR = VER;
 const GAME_LOCK = true; // 11/02 쉬는 시간 게임 잠금
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
@@ -804,7 +811,91 @@ function befAskSheet(q, go) {
 }
 document.addEventListener("click", (e) => { if (e.target.closest?.("#befAskYes") && BEF_ASK) { const go = BEF_ASK; BEF_ASK = null; closeSheet(); go(); } });
 function befHomeHtml() { czCssOn(); return `<div class="czin befhome"><input id="ezSay" placeholder="베프한테 물어보기" value="${esc(EZ.say)}" autocomplete="off" enterkeyhint="send" maxlength="300" aria-label="베프한테 물어보기"><button data-ez="say" aria-label="보내기">↑</button></div>`; }
-const BEF_SC = [['data-snew="quick"', "🛵 퀵"], ['data-go="pcnew"', "📦 택배"], ['data-snew="jeon"', "🔁 전달"], ['data-go="creq"', "🙋 고객요청"]];
+const BEF_SC = [['data-snew="quick"', "🛵 퀵"], ['data-go="pcnew"', "📦 택배"], ['data-snew="jeon"', "🔁 전달"], ['data-go="creq"', "🙋 고객요청"], ['data-mem="reg"', "👤 회원등록"], ['data-mem="find"', "🔎 회원조회"]];
+const MEM_KEY = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA9uVKKI1z1Iyh3kGLkFnd/fMrBVT6hzfZTBe5ENYILIcIHSNMUM/vhDVBp4cr8Fm6USOMGrh5GCqPOBsNW0JCXIN6AIWy8QPAMuwn5G/Hasf3C8GXxRjrY+wnFx9PEuSXNb+OEC/kLMl3JuA7vCW0Rz10ilguPYyakwmjPgBqf+Ku9hIxeWgODYMYB9Ue7qdSU2bIs3sKgseehYahaJWHBovBdQaRSogNBPp+zbrjwCAt6LVEQNT+yRjMlzDEuQs0uHmxBPtm0ZW/BzLZUWdf10rHHoKXdDtjx0nby6oeFbpyC2slLUPn3Z2L3FVenhk/Ttp5vyLhBZiOC/ybattxWQIDAQAB";
+async function memSealW(o) { const raw = Uint8Array.from(atob(MEM_KEY), (c) => c.charCodeAt(0)); const k = await crypto.subtle.importKey("spki", raw, { name: "RSA-OAEP", hash: "SHA-256" }, false, ["encrypt"]); const e = await crypto.subtle.encrypt({ name: "RSA-OAEP" }, k, new TextEncoder().encode(JSON.stringify(o))); return btoa(String.fromCharCode(...new Uint8Array(e))); }
+const memId = () => Array.from(crypto.getRandomValues(new Uint8Array(8)), (x) => x.toString(36).padStart(2, "0")).join("").replace(/[^a-z0-9]/g, "").slice(0, 16).padEnd(10, "0");
+const hpFmt = (p) => { const d = String(p || "").replace(/\D/g, ""); return d.length === 11 ? `${d.slice(0, 3)}-${d.slice(3, 7)}-${d.slice(7)}` : d.length === 10 ? `${d.slice(0, 3)}-${d.slice(3, 6)}-${d.slice(6)}` : String(p || ""); };
+const won = (n) => (+String(n || 0).replace(/[^\d-]/g, "") || 0).toLocaleString() + "원";
+const ymdTxt = (v) => { const d = String(v || "").replace(/\D/g, ""); return d.length >= 8 ? `${d.slice(2, 4)}.${d.slice(4, 6)}.${d.slice(6, 8)}` : String(v || "") || "-"; };
+let MEM = null; // { k: "reg"|"find", step, name, phone, q, id, wait, res, pick, orders }
+const MSB = "https://bjjlmnkyhedtutogzliq.supabase.co/rest/v1/rpc/memreg_get", MSB_KEY = "sb_publishable_i8rfcm_zAnwV75joN58FCw_8tHgFUKr";
+async function memSb(id) { try { const r = await fetch(MSB, { method: "POST", headers: { apikey: MSB_KEY, Authorization: "Bearer " + MSB_KEY, "Content-Type": "application/json" }, body: JSON.stringify({ p_id: id }) }); return r.ok ? await r.json() : null; } catch { return null; } }
+async function memWait(id, pick, kind) { // 슈파베이스 먼저(0.1초), 중계는 예비 (최대 60초)
+  const t0 = Date.now();
+  for (let i = 0; Date.now() - t0 < 60e3; i++) {
+    const s = await memSb(id);
+    if (typeof s === "string" && s && s !== "wait") { if (kind === "st") return s; if (s.startsWith("R:")) return s.slice(2); }
+    if (i % 5 === 4) { await loadRelay(); const v = pick(RELAY?.v?.mem); if (v != null) return v; }
+    const w = $("#memSec"); if (w) w.textContent = Math.floor((Date.now() - t0) / 1000) + "초";
+    await new Promise((r) => setTimeout(r, 400));
+  }
+  return null;
+}
+function memSheet() {
+  const M = MEM; if (!M) return;
+  const btns = (a) => `<div class="sv-bar"><div class="btns" style="margin:0">${a}</div></div>`;
+  if (M.k === "reg") {
+    if (M.step === "name") return openSheet(`<h2>👤 회원등록 <small class="cckn">1 / 2</small></h2><div class="desc" style="font-size:18px">손님 이름을 적어 주세요. 같은 이름이 많으면 뒤에 태어난 해를 붙여요 (예: 김민지98)</div><input class="input memin" id="memName" maxlength="14" value="${esc(M.name || "")}" placeholder="이름" autocomplete="off">${btns('<button class="btn" data-x>닫기</button><button class="btn primary" data-memnext="name">다음</button>')}`);
+    if (M.step === "phone") return openSheet(`<h2>👤 회원등록 <small class="cckn">2 / 2</small></h2><div class="desc" style="font-size:18px">${esc(M.name)} 님 전화번호를 적어 주세요</div><input class="input memin" id="memPhone" inputmode="numeric" maxlength="13" value="${esc(M.phone || "")}" placeholder="010" autocomplete="off">${btns('<button class="btn" data-memback="name">이전</button><button class="btn primary" data-memnext="phone">다음</button>')}`);
+    if (M.step === "ok") return openSheet(`<h2>👤 이렇게 등록할까요?</h2><div class="cckbox"><div class="cckl">이름</div><div class="cckv" style="font-size:30px">${esc(M.name)}</div><div class="cckl" style="margin-top:12px">전화번호</div><div class="cckv" style="font-size:30px">${esc(hpFmt(M.phone))}</div></div>${TEST ? '<div class="desc">시험 모드라 포스에는 넣지 않아요</div>' : ""}${btns('<button class="btn" data-memback="phone">고치기</button><button class="btn primary" data-memgo="reg">등록</button>')}`);
+    if (M.step === "wait") return openSheet(`<h2>👤 회원등록</h2><div class="cckwait">포스에 넣고 있어요<br><small><span id="memSec">0초</span></small></div>`);
+    return openSheet(`<h2>👤 회원등록</h2><div class="cckwait">${esc(M.res || "")}</div>${btns('<button class="btn" data-x>닫기</button><button class="btn primary" data-mem="reg">다른 손님 등록</button>')}`);
+  }
+  // 찾기
+  if (M.step === "q") return openSheet(`<h2>🔎 회원조회</h2><div class="desc" style="font-size:18px">전화번호 전체, 뒤 4자리, 이름 중 하나</div><input class="input memin" id="memQ" maxlength="14" value="${esc(M.q || "")}" placeholder="예: 1234 또는 김민지" autocomplete="off">${btns('<button class="btn" data-x>닫기</button><button class="btn primary" data-memgo="find">찾기</button>')}`);
+  if (M.step === "wait") return openSheet(`<h2>🔎 회원조회</h2><div class="cckwait">포스에서 찾고 있어요<br><small><span id="memSec">0초</span></small></div>`);
+  if (M.step === "err") return openSheet(`<h2>🔎 회원조회</h2><div class="cckwait">${esc(M.res || "")}</div>${btns('<button class="btn" data-x>닫기</button><button class="btn primary" data-memback="q">다시 찾기</button>')}`);
+  if (M.step === "list") { const L = M.list || [];
+    if (!L.length) return openSheet(`<h2>🔎 회원조회</h2><div class="cckwait">"${esc(M.q)}"로 찾은 회원이 없어요</div>${btns('<button class="btn" data-x>닫기</button><button class="btn primary" data-memback="q">다시 찾기</button><button class="btn" data-mem="reg">회원등록</button>')}`);
+    return openSheet(`<h2>🔎 ${L.length}명 찾았어요${M.n > L.length ? ` <small class="cckn">앞 ${L.length}명만</small>` : ""}</h2>${L.map((r, i) => `<button class="memrow" data-mempick="${i}"><b>${esc(r.nm)}</b><span>${esc(hpFmt(r.hp))}</span><em>${esc(r.cls || "")}</em></button>`).join("")}${btns('<button class="btn" data-memback="q">다시 찾기</button>')}`); }
+  if (M.step === "one" || M.step === "orders") { const r = M.list[M.pick];
+    const info = [["등급", r.cls || "-"], ["포인트", (+String(r.pt || 0).replace(/[^\d-]/g, "") || 0).toLocaleString() + "점"], ["구매", `${(+r.cnt || 0).toLocaleString()}번, ${won(r.amt)}`], ["가입일", ymdTxt(r.ins)], ["생일", ymdTxt(r.birth)], ["문자 수신", r.sms === "Y" ? "받음" : r.sms === "N" ? "안 받음" : (r.sms || "-")]];
+    const od = M.orders, ot = !od ? "" : od.wait ? '<div class="cckwait" style="padding:16px 0">주문내역을 읽고 있어요 <small><span id="memSec">0초</span></small></div>' : od.err ? `<div class="desc">${esc(od.err)}</div>` : !od.rows.length ? `<div class="desc" style="font-size:17px">${od.more ? "최근 1년" : "최근 3개월"} 이 지점 주문이 없어요</div>` :
+      `<div class="cckx">${od.rows.map((x) => `<div><span>${esc(ymdTxt(x.d))} ${esc(x.p)}${x.q > 1 ? ` ×${x.q}` : ""}</span><b>${won(x.amt)}</b></div>`).join("")}</div>`;
+    return openSheet(`<h2>${esc(r.nm)} <small class="cckn">${esc(hpFmt(r.hp))}</small></h2><div class="cckx">${info.map(([a, b]) => `<div><span>${a}</span><b>${esc(b)}</b></div>`).join("")}</div>
+      <div class="grp" style="margin-top:16px">주문내역 <small>이 지점에서 산 것</small></div>${ot}
+      ${btns(`<button class="btn" data-memback="list">목록</button>${!od ? '<button class="btn primary" data-memord="92">주문내역 보기</button>' : od.rows && !od.more ? '<button class="btn primary" data-memord="365">1년 더 보기</button>' : ""}`)}`); }
+}
+async function memRegGo() {
+  const M = MEM; M.step = "wait"; memSheet(); M.id = memId();
+  try { await send({ type: "memreg", id: M.id, enc: await memSealW({ name: M.name, phone: M.phone, sms: "N" }), by: working().join(", ") }); } catch (e) { M.step = "res"; M.res = "보내지 못했어요. 다시 눌러 주세요"; return memSheet(); }
+  const s = await memWait(M.id, (m) => { const v = m?.st?.[M.id]; return v && v !== "wait" ? v : null; }, "st");
+  M.step = "res"; M.res = s === "ok" ? `${M.name} 님 등록됐어요` : s === "dup" ? "이미 있는 회원이에요" : s === "test" ? "시험 모드라 포스에는 넣지 않았어요 (입력은 맞아요)" : s === "off" ? "지금은 등록을 받지 않아요. 팀장님께 알려 주세요" : s ? "안 됐어요, 포스에 직접 등록해 주세요" : "결과가 안 왔어요. 포스에서 등록됐는지 확인해 주세요";
+  memSheet();
+}
+async function memFindGo(arg, apply) {
+  const id = memId();
+  try { await send({ type: "memfind", id, enc: await memSealW(arg), by: working().join(", ") }); } catch { return apply({ s: "err", why: "보내지 못했어요. 다시 눌러 주세요" }); }
+  const enc = await memWait(id, (m) => m?.r?.[id] ?? null);
+  if (!enc) return apply({ s: "err", why: "결과가 안 왔어요. 다시 찾아 주세요" });
+  try { apply(await clDec(enc)); } catch { apply({ s: "err", why: bKey() ? "결과를 못 열었어요" : "매장 코드를 넣은 기기에서만 볼 수 있어요" }); }
+}
+document.addEventListener("click", async (e) => {
+  const t = e.target.closest?.("[data-mem],[data-memnext],[data-memback],[data-memgo],[data-mempick],[data-memord]"); if (!t) return; const d = t.dataset;
+  if (d.mem) { if (d.mem === "find" && !bKey()) return toast("매장 코드를 넣은 기기에서만 회원조회를 할 수 있어요"); MEM = d.mem === "reg" ? { k: "reg", step: "name" } : { k: "find", step: "q" }; if (d.mem === "find") send({ type: "memwarm" }).catch(() => {}); memSheet(); setTimeout(() => $(".memin")?.focus(), 80); return; }
+  const M = MEM; if (!M) return;
+  if (d.memnext === "name") { const v = ($("#memName")?.value || "").trim(); if (!/^[가-힣a-zA-Z ]{1,12}\d{0,2}$/.test(v)) return toast("이름을 한글이나 영어로 적어 주세요"); M.name = v; M.step = M.phone ? "ok" : "phone"; memSheet(); return setTimeout(() => $(".memin")?.focus(), 80); }
+  if (d.memnext === "phone") { const v = ($("#memPhone")?.value || "").replace(/\D/g, ""); if (!/^01[016789]\d{7,8}$/.test(v)) return toast("휴대폰 번호 11자리를 적어 주세요"); M.phone = v; M.step = "ok"; return memSheet(); }
+  if (d.memback) { M.step = d.memback === "list" ? "list" : d.memback; if (d.memback === "list") M.orders = null; memSheet(); return setTimeout(() => $(".memin")?.focus(), 80); }
+  if (d.memgo === "reg") return memRegGo();
+  if (d.memgo === "find") { const q = ($("#memQ")?.value || "").trim(); if (!q) return toast("번호나 이름을 적어 주세요"); M.q = q; M.step = "wait"; memSheet();
+    return memFindGo({ q }, (o) => { if (MEM !== M) return; if (o.s !== "ok") { M.step = "err"; M.res = o.why || "못 찾았어요"; } else { M.list = o.rows || []; M.n = o.n; M.step = M.list.length === 1 ? "one" : "list"; M.pick = 0; M.orders = null; } memSheet(); if (M.step === "one") memOrdersGo(M, false); }); }
+  if (d.mempick) { M.pick = +d.mempick; M.step = "one"; M.orders = null; memSheet(); return memOrdersGo(M, false); }
+  if (d.memord) return memOrdersGo(M, d.memord === "365");
+});
+function memOrdersGo(M, more) { const r = M.list[M.pick], pick = M.pick; M.orders = { wait: true, more }; M.step = "orders"; memSheet();
+  return memFindGo({ no: r.no, nm: r.nm, more }, (o) => { if (MEM !== M || M.pick !== pick) return; M.orders = o.s === "ok" ? { rows: o.rows || [], more } : { err: o.why || "못 읽었어요", more }; memSheet(); }); }
+document.addEventListener("keydown", (e) => { if (e.key !== "Enter" || !e.target.classList?.contains("memin")) return; const b = document.querySelector("[data-memnext],[data-memgo]"); if (b) b.click(); });
+// 베프에 말로: "회원등록", "김철수 01012345678 등록해 줘", "뒤 1234 회원 찾아 줘" → 위 창으로 (베프 AI로 안 보냄)
+function memFromText(q) {
+  const t = String(q || ""), ph = (t.replace(/[\s-]/g, "").match(/01[016789]\d{7,8}/) || [])[0], nm = (t.match(/([가-힣]{2,5}\d{0,2})\s*(?:님|손님|고객)?\s*(?:010|01[16789])/) || [])[1];
+  if (/회원\s*(가입|등록)|등록\s*해/.test(t) && /회원|등록/.test(t)) { MEM = { k: "reg", step: "name", name: nm || "", phone: ph || "" }; MEM.step = !MEM.name ? "name" : !MEM.phone ? "phone" : "ok"; memSheet(); setTimeout(() => $(".memin")?.focus(), 80); return true; }
+  const l4 = (t.match(/뒤\s*(?:번호|자리)?\s*(\d{4})/) || [])[1];
+  if (/회원/.test(t) && /찾|조회|검색|뭐\s*샀|주문|구매/.test(t)) { if (!bKey()) { toast("매장 코드를 넣은 기기에서만 회원조회를 할 수 있어요"); return true; } const q = ph || l4 || (t.match(/([가-힣]{2,5}\d{0,2})\s*(?:님|손님|고객|회원)/) || [])[1] || ""; MEM = { k: "find", step: "q", q }; memSheet(); if (q) document.querySelector('[data-memgo="find"]')?.click(); else setTimeout(() => $(".memin")?.focus(), 80); return true; }
+  return false;
+}
+
 function befBoxHtml() { czCssOn(); return `<div class="desc nhsaylb" style="margin:14px 2px 6px;font-weight:700">💛 베프에게 글로 시키기</div><div class="czin nhsay" style="margin-bottom:12px"><input id="ezSay" placeholder="예: 빌런 자두 3개 택배" value="${esc(EZ.say)}" autocomplete="off" enterkeyhint="send" maxlength="300"><button data-ez="say" aria-label="보내기">↑</button></div>`; }
 const ezBk = "<button data-ez=\"back\" style=\"display:inline-flex;position:sticky;top:8px;z-index:6;align-items:center;gap:6px;height:56px;padding:0 22px 0 16px;margin:0 0 10px;border:0;border-radius:999px;background:#fff;color:var(--ink);font:inherit;font-size:20px;font-weight:800;box-shadow:0 2px 8px rgba(0,0,0,.08)\"><span style=\"font-size:26px;line-height:1\">‹</span>뒤로</button>";
 const ezGo = (x) => { if (x === "home") EZ.hist = []; else if (x !== EZ.s) (EZ.hist ||= []).push(EZ.s); document.activeElement?.blur?.(); EZ.s = x; render(); window.scrollTo(0, 0); setTimeout(() => $("#ezPc")?.focus(), 30); };
@@ -1222,7 +1313,7 @@ const st = () => {
   let s = ls.get(dayKey(), { ins: [], open: null, close: null });
   if (TEST) s = testMix(ls.get(`vf-app-${B}-${todayKey()}`, { ins: [], open: null, close: null }), s); // 이 기기의 실제 기록 위에 시험 기록
   if (!SRV) return s;
-  for (const a of SRV.ins || []) { const m = s.ins.find((x) => x.name === a.name); if (!m) s.ins.push({ name: a.name, t: a.t, out: a.out || undefined }); else if (a.out && !m.out && !(m.re && m.re > a.out)) m.out = a.out; } // 다시 출근(re)이 서버 퇴근 기록보다 뒤면 근무 중
+  for (const a of SRV.ins || []) { const m = s.ins.find((x) => x.name === a.name); if (!m) s.ins.push({ name: a.name, t: a.t, out: a.out || undefined }); else if (a.out && !m.out && !(m.re && m.re > a.out)) m.out = a.out; else if (!a.out && m.out && a.last && a.last >= m.out) { delete m.out; m.re = a.last; } } // 다시 출근(re)이 서버 퇴근 기록보다 뒤면 근무 중
   for (const k of ["open", "close"]) if (!s[k] && SRV[k]) s[k] = { t: SRV[k].t, missed: Array(SRV[k].miss || 0).fill("") };
   return s;
 };
@@ -1340,6 +1431,18 @@ const ASK = { prev: "", draft: "", focus: false };
 // 10/29 액상덕후 "베프로 하자", "자주묻는질문은 미리 준비(API 비용)", "질문 정리 잘해서 올리라고": 자주 묻는 질문 버튼은 바로 답(봇은 기록만), 너무 짧은 질문은 한 번 더 적게
 /* 11/10 액상덕후 "모바일 베프 답장 가독성": 시험 모드는 답을 줄마다 나눠 간격을 줌 */
 const befLines = (h) => `<div class="bfls">${String(h).split("\n").map((l) => l.trim() ? `<div class="bfl">${l}</div>` : "").join("")}</div>`;
+document.addEventListener("click", async (e) => { const b = e.target.closest?.("[data-bkundo]"); if (!b) return; if (!confirm("넣은 입금을 되돌릴까요?")) return; b.disabled = true; try { await send({ type: "bankundo", id: b.dataset.bkundo, by: working().join(", ") }); toast("되돌리는 중이에요. 잠시 뒤 답에 나와요"); } catch (er) { b.disabled = false; fail(er); } });
+let BS = { enc: null, v: null };
+function befIssueHtml() {
+  const e = RELAY?.v?.bs || null; if (e !== BS.enc) { BS.enc = e; BS.v = null; if (e) clDec(e).then((o) => { BS.v = o; if (VIEW === "ask") bgRender(); }).catch(() => {}); }
+  const L = BS.v?.issues || []; if (!L.length) return ""; const x = L[0];
+  return `<div class="befiss"><div class="tx"><b>지금 ${esc(B)}에 확인할 것 ${L.length}건</b><span>${esc(x.t)}</span><em>${esc(x.how || "")}</em></div>${x.act === "paste" ? '<button class="rqk" data-befpaste>문자 붙여 넣기</button>' : x.act === "mid" ? '<button class="rqk" data-go="mid">중간체크</button>' : ""}</div>`;
+}
+document.addEventListener("click", (e) => { if (!e.target.closest?.("[data-befpaste]")) return; const q = $("#askQ"); if (q) { q.placeholder = "폰에 온 은행 문자를 그대로 붙여 넣어 주세요"; q.focus(); } });
+const CRPROP_DONE = new Set();
+document.addEventListener("click", async (e) => { const b = e.target.closest?.("[data-crprop]"); if (!b) return; const row = [...(BOARD?.qa || []), ...(RELAY?.v?.qa || [])].find((x) => x.id === b.dataset.crprop); const ids = row?.propose?.ids || []; if (!ids.length) return;
+  if (!working().length) return needIn(() => {}); b.disabled = true; const by = working().join(", ");
+  try { for (const id of ids) { await send({ type: "creqstep", id, k: "done", by }); STEPS[id] = "done"; } CRPROP_DONE.add(row.id); render(); toast(`${ids.length}건을 전달 완료로 바꿨어요`); } catch (er) { b.disabled = false; fail(er); } });
 function askHtml() {
   const srv = (BOARD?.qa || []).filter((x) => !x.test === !TEST);
   ASK.local = (ASK.local || []).filter((x) => !srv.some((y) => y.id === x.id && (y.a || !x.a)) && Date.now() - x.ms < (x.card ? 30 : 5) * 60e3);
@@ -1354,10 +1457,10 @@ function askHtml() {
   if (BOARD?.leads && ASK.leadsEnc !== BOARD.leads) { ASK.leadsEnc = BOARD.leads; decOne(BOARD.leads).then((o) => { ASK.leads = o?.L || null; if (VIEW === "ask") bgRender(); }).catch(() => {}); }
   const leadLine = (x) => { if (x.lead == null || !x.leadName) return ""; const c = ASK.leads?.[x.lead]; return `\n\n📞 ${esc(x.leadName)} 팀장님 ${c ? `<a href="tel:${esc(c[1])}" style="color:var(--blue);font-weight:800">${esc(c[1])}</a>` : '<span style="color:var(--sub)">(매장 코드를 넣으면 번호가 보여요)</span>'}`; };
   // 10/29 액상덕후 "답변이 도움이 되었나요? 버튼 만들어서 민심 수집": 답마다 👍 👎 한 번. 👎 받은 답은 봇이 다시 안 씀
-  const fbHtml = (x) => { const v = x.fb || ASK.fb?.[x.id]; return `<div style="margin:-4px 0 8px 38px;font-size:12px;color:var(--sub);display:flex;gap:6px;align-items:center">${v ? (v > 0 ? "👍 고마워요!" : "👎 알려 줘서 고마워요. 고칠게요") : `도움이 됐나요? <button data-befb="${esc(x.id)}|1" style="background:#f2f4f6;border:0;border-radius:12px;padding:4px 10px;font-size:14px">👍</button><button data-befb="${esc(x.id)}|-1" style="background:#f2f4f6;border:0;border-radius:12px;padding:4px 10px;font-size:14px">👎</button>`}</div>`; };
+  const fbHtml = (x) => { const v = x.fb || ASK.fb?.[x.id]; if (x.propose?.kind === "creqdone" && !CRPROP_DONE.has(x.id)) return `<div style="margin:-4px 0 8px 38px;display:flex;gap:6px;flex-wrap:wrap"><button class="rqk" data-crprop="${esc(x.id)}" style="min-height:44px">네, ${x.propose.ids.length}건 완료로</button></div>`; const und = (x.fill || []).filter((id) => !(x.fillUndone || []).includes(id)); if (und.length) return `<div style="margin:-4px 0 8px 38px;display:flex;gap:6px;flex-wrap:wrap">${und.map((id) => `<button class="rqk" data-bkundo="${esc(id)}" style="min-height:44px">잘못 넣었어요, 되돌리기</button>`).join("")}</div>`; return `<div style="margin:-4px 0 8px 38px;font-size:12px;color:var(--sub);display:flex;gap:6px;align-items:center">${v ? (v > 0 ? "👍 고마워요!" : "👎 알려 줘서 고마워요. 고칠게요") : `도움이 됐나요? <button data-befb="${esc(x.id)}|1" style="background:#f2f4f6;border:0;border-radius:12px;padding:4px 10px;font-size:14px">👍</button><button data-befb="${esc(x.id)}|-1" style="background:#f2f4f6;border:0;border-radius:12px;padding:4px 10px;font-size:14px">👎</button>`}</div>`; };
   const msgs = L.map((x) => me(x) + (x.card ? bot("", x.card) : x.a ? bot(esc(x.at || ""), (TEST ? befLines : (h) => h)(esc(x.a).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>")) + leadLine(x) + (TEST ? befJump(x.a) : "")) + fbHtml(x) : bot("", `<span style="color:var(--sub)">${ASK_CLOSE(x.q) ? "포스랑 은행 기록을 보고 있어요. 1분쯤 걸려요" : "답 쓰는 중이에요"} <span class="bef-dots"><i>●</i><i>●</i><i>●</i></span></span>`))).join("");
   setTimeout(() => { const box = $("#askBox"), q = $("#askQ"); if (box) box.scrollTop = box.scrollHeight; if (VIEW === "ask" && window.scrollY > 0) window.scrollTo(0, 0); /* 11/03: 답 오면 화면이 내려가 제목이 사라지던 것 */ if (q && ASK.focus) { q.focus(); q.setSelectionRange(q.value.length, q.value.length); } }, 0);
-  return `<div class="befsc">${BEF_SC.map(([a, n]) => `<button class="rqk" ${a}>${n}</button>`).join("")}</div><div class="cols one"><div><div class="card" style="padding:0;display:flex;flex-direction:column;height:calc(100vh - 190px);min-height:420px;overflow:hidden">
+  return `${befIssueHtml()}<div class="befsc">${BEF_SC.map(([a, n]) => `<button class="rqk" ${a}>${n}</button>`).join("")}</div><div class="cols one"><div><div class="card" style="padding:0;display:flex;flex-direction:column;height:calc(100vh - 190px);min-height:420px;overflow:hidden">
     <div style="padding:14px 16px;border-bottom:1px solid var(--line);font-weight:800">💛 베프 <small style="color:var(--sub);font-weight:500">${TEST ? "AI 도우미예요. 우리 매장 오늘 대화가 보여요" : "오늘 대화만 보여요"}</small></div>
     <div id="askBox" style="flex:1;overflow-y:auto;padding:6px 14px">${hi}${msgs}</div>
     ${faq.length ? `<div class="faqrow" style="display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:10px 12px 0;border-top:1px solid var(--line)">${faq.map((x, i) => `<button data-askfaq="${i}" style="flex:none;min-height:40px;background:#f2f4f6;color:var(--ink2);border:0;border-radius:14px;padding:6px 12px;font-size:14px;font-weight:700">${esc(x.q)}</button>`).join("")}</div>` : ""}
@@ -1413,6 +1516,7 @@ document.addEventListener("click", (e) => {
 async function askGo(text, faq, raw) {
   const q = (text || $("#askQ")?.value || "").trim(); if (!q) return;
   if (!faq && (ASK.local || []).some((x) => !x.a) || (!faq && (BOARD?.qa || []).some((x) => !x.a && !x.test === !TEST))) return toast("앞 질문 답이 오고 있어요. 조금만 기다려 주세요");
+  if (!faq && !raw && memFromText(q)) { if ($("#askQ")) $("#askQ").value = ""; return; } // 11/13 회원등록, 회원조회는 베프 AI로 안 보내고 창으로
   if (TEST && !faq && !raw && await befDo(q)) return;
   if (TEST && !faq && await befQuick(q)) return;
   if (!faq && q.replace(/\s/g, "").length < 6) return toast("상품, 상황까지 한 번에 적어 주세요");
@@ -4029,7 +4133,7 @@ async function doCheck(kind) {
 function sheetOut() {
   const w = st().ins.filter((x) => !x.out);
   const oc = creqList().length;
-  openSheet(`<h2>👋 퇴근</h2>${oc ? `<div class="desc" style="color:var(--amber)">진행 중 고객요청 ${oc}건은 다음 근무자에게 그대로 넘어가요</div>` : ""}<textarea class="input" id="outMemo" rows="2" placeholder="다음 근무자에게 남길 말 (선택)"></textarea><div class="desc" style="margin-top:12px">누가 퇴근하나요?</div><div class="chips">${w.map((x) => `<button class="chip" data-out="${esc(x.name)}">${esc(x.name)} (출근 ${x.t})</button>`).join("")}</div>
+  openSheet(`<h2>👋 퇴근</h2>${oc ? `<div class="desc" style="color:var(--amber)">진행 중 고객요청 ${oc}건은 다음 근무자에게 그대로 넘어가요</div>` : ""}<textarea class="input" id="outMemo" rows="2" placeholder="다음 근무자에게 남길 말 (선택)"></textarea><div class="desc" style="margin-top:12px">누가 퇴근하나요?</div><div class="chips">${w.map((x) => `<button class="chip" data-out="${esc(x.name)}">${esc(x.name)} (출근 ${x.t})</button>`).join("")}</div>${st().ins.filter((x) => x.out).length ? `<div class="desc" style="margin-top:16px">잘못 누른 퇴근이 있나요?</div>${st().ins.filter((x) => x.out).map((x) => `<button class="btn" data-unout="${esc(x.name)}" style="margin-top:8px;min-height:52px;font-size:17px">${esc(x.name)} 퇴근 취소 <small style="color:var(--sub);font-weight:500">(${esc(x.out)} 퇴근)</small></button>`).join("")}` : ""}
     <div class="btns"><button class="btn" data-x>취소</button></div>`);
 }
 async function doOut(name) {
@@ -4037,9 +4141,17 @@ async function doOut(name) {
     const om = ($("#outMemo")?.value || "").trim(); if (om) await sendMemo(om, "next", name);
     await send({ type: "clockout", name });
     const s = st(); const x = s.ins.find((y) => y.name === name); if (x) x.out = now(); saveSt(s);
-    closeSheet(); render(); toast(`${name}님 퇴근 ${now()}`);
+    render(); openSheet(`<h2>${esc(name)}님 퇴근했어요</h2><div class="desc" style="font-size:18px">${now()} 퇴근으로 적었어요.</div><div class="btns"><button class="btn" data-unout="${esc(name)}">잘못 눌렀어요</button><button class="btn primary" data-x>확인</button></div>`);
   } catch (e) { fail(e); }
 }
+async function doUnout(name) {
+  try {
+    await send({ type: "clockundo", name, by: working().join(", ") || name });
+    const s = st(), x = s.ins.find((y) => y.name === name); if (x) { delete x.out; x.re = now(); } saveSt(s);
+    closeSheet(); render(); toast(`${name}님 퇴근을 취소했어요. 다시 근무 중이에요`);
+  } catch (e) { fail(e); }
+}
+document.addEventListener("click", (e) => { const b = e.target.closest?.("[data-unout]"); if (b) doUnout(b.dataset.unout); });
 
 // ── AS (10/14, 7단계) ── 본사 AS 시트(베이프렌드_AS)와 바로 연결. 지점 매장 코드로 들어가고, 그 지점 건만 보임(본점 코드는 전 지점)
 // ① 접수(지점) → ② 회수, 본점 전달 대기(지점) → ③ 본점 도착(본점) → ④ 지점 분배 완료(본점) → ⑤ 지점 도착(지점) → ⑥ 고객 연락 완료(지점) → ⑦ 고객 전달 완료(지점, 화면에서 사라지고 시트에만)
