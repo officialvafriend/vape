@@ -447,6 +447,11 @@ body[data-theme=dark] .shbtn .b1{background:#f1f1f3;color:#15120f}
 .sum2 .r{display:flex;justify-content:space-between;font-size:15px;padding:3px 0;color:var(--grey)}.sum2 .r.off b{color:var(--red)}
 .sum2 .save{font-size:14px;font-weight:800;color:var(--red);text-align:right;margin-top:4px}
 .mem{background:var(--bg);border-radius:16px;padding:14px 16px;margin:10px 0 4px}
+/* 11/13 판매자 고르기 */
+.sellr{display:flex;align-items:center;gap:12px;margin:0 0 10px;padding:10px 12px;border-radius:14px;background:var(--bg)}.sellr>span{font-size:15px;font-weight:800;white-space:nowrap}
+.sellr>div{display:flex;gap:8px;overflow-x:auto}.sellr button{flex:none;height:44px;padding:0 16px;border-radius:22px;background:var(--card);border:2px solid var(--line);font-size:16px;font-weight:700;color:var(--ink)}
+.sellr button.on{background:var(--black);border-color:var(--black);color:#fff}
+.sellq{font-size:16px;margin:0 0 10px;padding:10px 12px;border-radius:12px;background:var(--bg)}.sellq b{font-size:18px}.sellq.none{color:var(--red);font-weight:700}
 /* 11/13 신입 시험 고침 */
 .podbig{display:block;width:100%;min-height:76px;border-radius:16px;background:var(--red);color:#fff;text-align:center;padding:10px 14px;margin-bottom:8px}.podbig b{display:block;font-size:21px}.podbig span{display:block;font-size:15px;opacity:.9;margin-top:2px}
 .podbig.on{background:var(--black)}
@@ -793,6 +798,17 @@ const perkUrl = (k) => k === "clip" ? (CLIP_URL[BRANCH] || CLIP_DEF) : k === "in
 const totalOf = () => { const c = countCart(), e = estimate(c), gp = goodsPlan(), base = e.total + c.other + gp.total, ok = !!(c.dev && e.how && base >= PERK_MIN), off = PERK && ok ? PERK_AMT : 0; return { ...e, total: base - off, perkOff: off, perkOk: ok, c, gp }; };
 function addItem(key, it, d = 1) { const cur = cart.get(key); const q = (cur ? cur.qty : 0) + d; setTimeout(() => { if (typeof drawDspList === "function") { drawDspList(); drawPodView(); } }, 0);
   if (q <= 0) cart.delete(key); else cart.set(key, { ...(cur || it), qty: q }); drawCart(); drawLiq(); drawGoal(); }
+/* ── 판매자 (11/13): 출근자 목록은 staff/today.json(운영봇이 올림), 고른 이름은 그날 이 패드에 기억. 손님이 바뀌어도 그대로 ── */
+let SELLERS = [], SELLER = (() => { try { const o = JSON.parse(localStorage.getItem("vf-seller") || "{}"); return o.d === new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10) && o.b === BRANCH ? o.n : ""; } catch (e) { return ""; } })();
+const sellerSave = () => { try { localStorage.setItem("vf-seller", JSON.stringify({ d: new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10), b: BRANCH, n: SELLER })); } catch (e) {} };
+async function sellerLoad() { try { const j = await (await fetch("https://officialvafriend.github.io/vape/staff/today.json?t=" + Math.floor(Date.now() / 60e3), { cache: "no-store" })).json();
+  const b = (j.br || {})[BRANCH] || {}, now = (b.ins || []).filter((a) => !a.out && a.name && !/^시험/.test(a.name)).map((a) => a.name);
+  const before = SELLERS.join("|"); SELLERS = [...new Set(now)];
+  if (!SELLER && SELLERS.length === 1) { SELLER = SELLERS[0]; sellerSave(); }
+  if (before !== SELLERS.join("|") && !staffOn) drawCart(); } catch (e) {} }
+const sellerBox = () => { const L = [...new Set([...SELLERS, ...(SELLER ? [SELLER] : [])])]; if (!L.length) return "";
+  return `<div class="sellr"><span>🙋 판매자</span><div>${L.map((n) => `<button class="${n === SELLER ? "on" : ""}" data-seller="${esc(n)}">${esc(n)}</button>`).join("")}</div></div>`; };
+setTimeout(sellerLoad, 1500); setInterval(sellerLoad, 5 * 60e3);
 function drawCart() {
   const t = totalOf(), n = [...cart.values()].reduce((a, x) => a + x.qty, 0);
   $('cnt').textContent = n; $('sum').textContent = $('sum2').textContent = won(t.total);
@@ -801,7 +817,7 @@ function drawCart() {
   // 낱개로 샀을 때 금액 (액상 1병 15,000 / 대량구매는 병 수 × 15,000 / 일회용 10+5는 15개 정가) → 할인 보여 주기
   const unitAll = [...cart.values()].reduce((a, x) => a + (x.k === "bulk" ? x.items.reduce((s, [, , q]) => s + q * 15000, 0) * x.qty : x.k === "dsp15" ? x.items.reduce((s, [, , q, p]) => s + q * p, 0) * x.qty : x.unit * x.qty), 0);
   const off = unitAll - t.total;
-  $('lines').innerHTML = cart.size ? [...cart].map(([key, x]) => `<div class="ln">${x.img ? `<img src="${x.img}" alt="">` : '<i class="noim"></i>'}<span class="n">${esc(x.label)}${x.k === "liq" && x.n ? noTag(x.n) : ""}${x.items ? `<small>${esc(x.items.map(([, l, q]) => l + " " + q).join(", "))}</small>` : ""}</span><span class="qb"><button data-m="${key}">−</button><b>${x.qty}</b><button data-p="${key}">+</button></span><b class="price">${won(x.unit * x.qty)}</b></div>`).join("")
+  $('lines').innerHTML = cart.size ? sellerBox() + [...cart].map(([key, x]) => `<div class="ln">${x.img ? `<img src="${x.img}" alt="">` : '<i class="noim"></i>'}<span class="n">${esc(x.label)}${x.k === "liq" && x.n ? noTag(x.n) : ""}${x.items ? `<small>${esc(x.items.map(([, l, q]) => l + " " + q).join(", "))}</small>` : ""}</span><span class="qb"><button data-m="${key}">−</button><b>${x.qty}</b><button data-p="${key}">+</button></span><b class="price">${won(x.unit * x.qty)}</b></div>`).join("")
       + (off > 0 ? `<div class="sum2"><div class="r"><span>낱개로 샀을 때</span><s>${won(unitAll)}</s></div><div class="r off"><span>${esc(t.how || "묶음, 이벤트")} 할인</span><b>-${won(off)}</b></div><div class="save">총 ${won(off)} 할인 받았어요</div></div>` : "")
       + benefitBox() + memberBox() + ledgerBox() /* 11/12 혜택(비슷한 맛)을 회원 칸 위로 */
     : '<div style="padding:16px 0 4px;color:var(--grey)">담은 상품이 없어요</div>' + (memregOn() ? '<div class="membig">' + memberBox() + (member.type || member.reg ? '<button class="memgo sub" data-memclear="1" style="margin-top:10px">처음으로 (입력한 것 지우기)</button>' : "") + '</div>' : ""); /* 11/12 빈 장바구니에선 회원 칸을 크게 */ /* 11/12 액상덕후: 빈 장바구니에서도 회원조회, 회원가입 + 지우기 */
@@ -810,6 +826,7 @@ function drawCart() {
 $('lines').onclick = (e) => {
   const ck = e.target.closest('[data-ck]'); if (ck) { member[ck.dataset.ck] = !member[ck.dataset.ck]; if (member.bad === "agree") member.bad = ""; drawCart(); return; }
   const mo = e.target.closest('[data-memok]'); if (mo) { if (!/^01[016789]\d{7,8}$/.test(member.phone)) { member.bad = "phone"; drawCart(); return toast("휴대폰 번호를 확인해 주세요"); } member.bad = ""; if (memregOn()) { memRegSend(true); return; } member.okd = true; drawCart(); return; } /* 11/12 본점: 포스에서 회원 조회 */
+  const sl = e.target.closest('[data-seller]'); if (sl) { SELLER = SELLER === sl.dataset.seller ? "" : sl.dataset.seller; sellerSave(); drawCart(); return; } /* 11/13 판매자 */
   const sa = e.target.closest('[data-sima]'); if (sa) { const x = ALL_LQ.find((y) => y.id === sa.dataset.sima); if (x) { addLiqX(x); toast("담았어요"); drawCart(); } return; } /* 11/12 비슷한 맛 담기 */
   const mc = e.target.closest('[data-memclear]'); if (mc) { Object.assign(member, { type: null, name: "", year: "", phone: "", agree: false, mk: false, sex: "", reg: null, bad: "", okd: false }); drawCart(); return; } /* 11/12 빈 장바구니 회원 칸 초기화 */
   const mn = e.target.closest('[data-memnew]'); if (mn) { member.type = "new"; member.reg = null; drawCart(); return; } /* 조회에 없던 번호 → 번호 그대로 회원등록 */
@@ -1175,8 +1192,8 @@ function qrView() {
   const chunks = (l) => { const o = []; for (let i = 0; i < l.length; i += QR_MAX) o.push(l.slice(i, i + QR_MAX)); return o; };
   const payQ = chunks(codes), svcQ = chunks(svcCodes);
   const part = (k, n) => n > 1 ? ` ${k + 1}/${n}` : "";
-  $('shH').textContent = "QR로 한 번에 찍기";
-  $('lines').innerHTML = `${orderBox()}<div style="font-size:14.5px;color:var(--grey);margin-bottom:10px">포스 판매 화면에서 스캐너로 위에서부터 차례로 찍으세요. (${esc(BRANCH)} 포스 기준)</div>
+  $('shH').textContent = "QR로 한 번에 찍기"; ev("w", SELLER || "", String(t)); /* 11/13 판매자 기록 (패드 사용기록) */
+  $('lines').innerHTML = `${SELLER ? `<div class="sellq">🙋 판매자 <b>${esc(SELLER)}</b></div>` : `<div class="sellq none">🙋 판매자를 안 골랐어요. 장바구니 맨 위에서 골라 주세요</div>`}${orderBox()}<div style="font-size:14.5px;color:var(--grey);margin-bottom:10px">포스 판매 화면에서 스캐너로 위에서부터 차례로 찍으세요. (${esc(BRANCH)} 포스 기준)</div>
     ${unreg.length ? `<div class="posw">바코드가 없어서 QR에서 뺐어요. 포스에서 직접 찾아 넣어 주세요: ${unreg.map(esc).join(", ")}</div>` : ""}
     ${payQ.map((l, k) => `${stp(1, "결제 QR 찍기" + part(k, payQ.length), "기기, 묶음 상품, 정가 상품")}<div class="qrbox">${qr(l)}<div style="font-size:16px;font-weight:800;margin-top:8px">${l.length}개 찍힘${k === payQ.length - 1 ? `, 포스 금액 ${won(t)} 확인` : ""}</div></div>`).join("")}
     ${svcQ.map((l, k) => `${stp(2, "서비스 QR 찍기" + part(k, svcQ.length), "찍은 다음 새로 들어온 줄만 포스에서 서비스(0원) 처리해 주세요")}<div class="qrbox svq">${qr(l)}<div style="font-size:16px;font-weight:800;margin-top:8px">서비스 ${l.length}개 (금액 0원으로 처리)</div></div>`).join("")}
