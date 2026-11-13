@@ -715,6 +715,7 @@ const STOCK_URL = "https://officialvafriend.github.io/vape/menu/stock.json";
 let OUT = new Set(), STOCK_AT = "", STOCK_ALL = {};
 /* 11/13 본점 "메가킥 무니코틴 품절 풀기": 포스 재고 0이어도 매장에 있어 파는 것 (바코드 등록함) */
 const FORCE_IN = { "본점": ["(무) 메가킥 블랙베리", "(무) 메가킥 딸기", "(무) 메가킥 자몽"] };
+const canSell = (n) => !!POSB[posName(n)]; /* 11/13 포스에 있으면 품절이어도 담고 찍을 수 있음 */
 const outOf = (n) => { const k = posName(n); if ((FORCE_IN[BRANCH] || []).includes(k) && POSB[k]) return false; return OUT.has(k) || (!!(window.POS && window.POS[BRANCH]) && !POSB[k]); }; // 포스 자료가 없는 지점은 등록 여부로는 막지 않음 // [상품코드, 바코드, 형식, 바코드 등록 여부, 분류]
 const GDS = (window.GOODS_BY || {})[BRANCH] || window.GOODS || [];
 const won = (n) => n.toLocaleString() + "원";
@@ -1045,7 +1046,7 @@ function drawLiq() {
     const L2 = [...LUNG].sort((a, b) => soldLast(a, b) || (LUNG_BEST.findIndex((r) => r.test(a.n)) + 1 || 99) - (LUNG_BEST.findIndex((r) => r.test(b.n)) + 1 || 99));
     $('liqGrid').innerHTML = (L2.length ? `<div class="card evbar" style="grid-column:1/-1"><b>프리미엄 폐호흡 3병 40,000원</b><span>1병 30,000원, 3병마다 40,000원, 맛 섞어도 돼요</span></div>` : '<div class="evtip" style="grid-column:1/-1">이 지점 폐호흡 자료가 없어요</div>')
       + L2.map((x) => { const q = (cart.get(x.id) || {}).qty || 0, o = outOf(x.n), b = LUNG_BEST.some((r) => r.test(x.n));
-        return `<div class="it ${q ? "got" : ""} ${o ? "sold" : ""}" ${o ? `data-ask="${esc(x.n)}"` : ""}>${o ? '<span class="badge so">품절, 다른 지점 확인</span>' : b ? '<span class="rib">BEST</span>' : ""}${q ? `<span class="qty">${q}병 담음</span>` : ""}<div class="im" style="background:${tintOf(x)}">${LUNG_IMG[x.n] ? `<img src="${LUNG_IMG[x.n]}" alt="" loading="lazy">` : `<span class="ltile">${esc(x.n.replace(/\s*\(?모드\)?$/, "").slice(0, 5))}</span>`}</div><div class="nm">${esc(x.n.replace(/\s*\(?모드\)?$/, ""))}</div><div class="fl">폐호흡</div><div class="bt"><span class="price">${won(x.price)}</span>${o ? "" : `<button class="add" data-lg="${x.id}">+</button>`}</div></div>`; }).join("") + soldMore(L2.filter((x) => outOf(x.n)).length);
+        return `<div class="it ${q ? "got" : ""} ${o ? "sold" : ""}" ${o && !canSell(x.n) ? `data-ask="${esc(x.n)}"` : ""}>${o ? (canSell(x.n) ? '<span class="badge so">품절, 담을 수 있어요</span>' : '<span class="badge so">품절, 다른 지점 확인</span>') : b ? '<span class="rib">BEST</span>' : ""}${q ? `<span class="qty">${q}병 담음</span>` : ""}<div class="im" style="background:${tintOf(x)}">${LUNG_IMG[x.n] ? `<img src="${LUNG_IMG[x.n]}" alt="" loading="lazy">` : `<span class="ltile">${esc(x.n.replace(/\s*\(?모드\)?$/, "").slice(0, 5))}</span>`}</div><div class="nm">${esc(x.n.replace(/\s*\(?모드\)?$/, ""))}</div><div class="fl">폐호흡</div><div class="bt"><span class="price">${won(x.price)}</span>${o && !canSell(x.n) ? "" : `<button class="add" data-lg="${x.id}">+</button>`}</div></div>`; }).join("") + soldMore(L2.filter((x) => outOf(x.n)).length);
     return; }
   if (lf === "더보기") { // 11/10 "액상 종류 이거밖에 없어요?" 응대: 메인 추천 밖의 액상 중 이 지점 재고 있는 것
     const L3 = moreLiq();
@@ -1055,7 +1056,7 @@ function drawLiq() {
         : '<div class="evtip" style="grid-column:1/-1">이 지점에 재고가 있는 다른 액상이 없어요</div>');
     return; }
   $('liqGrid').innerHTML = LQ.filter((x) => lf === "전체" || BR_OF(x) === lf).sort(soldLast).map((x) => { const q = (cart.get(x.id) || {}).qty || 0, out = outOf(x.n);
-    return `<div class="it ${q ? "got" : ""} ${out ? "sold" : ""}" ${out ? `data-ask="${esc(x.n)}"` : ""}>${out ? '<span class="badge so">품절, 다른 지점 확인</span>' : tagHtml(x.n)}${q ? `<span class="qty">${q}병 담음</span>` : ""}<div class="im" style="background:${tintOf(x)}">${imgH(imgOf(x), x.n)}</div><div class="nm">${esc(short(x.n))}${noTag(x.n)}</div><div class="fl">${esc([x.f, (x.t || []).includes("노멘솔") ? "노멘솔" : ""].filter(Boolean).join(", "))}</div><div class="bt"><span class="price">15,000원</span>${out ? "" : `<button class="add" data-a="${x.id}">+</button>`}</div></div>`; }).join("") + soldMore(LQ.filter((x) => (lf === "전체" || BR_OF(x) === lf) && outOf(x.n)).length) + '<button class="lqmore" data-more="1">찾는 맛이 없으세요?<b>다른 액상 더보기</b></button>';
+    return `<div class="it ${q ? "got" : ""} ${out ? "sold" : ""}" ${out && !canSell(x.n) ? `data-ask="${esc(x.n)}"` : ""}>${out ? (canSell(x.n) ? '<span class="badge so">품절, 담을 수 있어요</span>' : '<span class="badge so">품절, 다른 지점 확인</span>') : tagHtml(x.n)}${q ? `<span class="qty">${q}병 담음</span>` : ""}<div class="im" style="background:${tintOf(x)}">${imgH(imgOf(x), x.n)}</div><div class="nm">${esc(short(x.n))}${noTag(x.n)}</div><div class="fl">${esc([x.f, (x.t || []).includes("노멘솔") ? "노멘솔" : ""].filter(Boolean).join(", "))}</div><div class="bt"><span class="price">15,000원</span>${out && !canSell(x.n) ? "" : `<button class="add" data-a="${x.id}">+</button>`}</div></div>`; }).join("") + soldMore(LQ.filter((x) => (lf === "전체" || BR_OF(x) === lf) && outOf(x.n)).length) + '<button class="lqmore" data-more="1">찾는 맛이 없으세요?<b>다른 액상 더보기</b></button>';
 }
 let mf = "전체";
 const MORE_TABS = ["전체", "과일", "디저트, 음료", "멘솔, 민트", "시가, 타바코", "무니코틴"];
@@ -1259,13 +1260,13 @@ function drawEv() {
     // 다른 프리미엄 액상 검색 (패키지 10병은 프리미엄이면 다 됨)
     const others = [...EV.pick.keys()].filter((id) => !LQ.some((x) => x.id === id)).map((id) => ALL_LQ.find((x) => x.id === id)).filter(Boolean);
     const found = evQ.trim() ? searchItems(evQ).filter((o) => o.t === "liq" && o.x.line === "프리미엄").map((o) => o.x).slice(0, 12) : [];
-    h += `<div class="grid">${LQ.slice().sort(soldLast).map((x) => evCard(x.id, imgOf(x), short(x.n), x.f || "", 0, outOf(x.n))).join("")}</div>`;
+    h += `<div class="grid">${LQ.slice().sort(soldLast).map((x) => evCard(x.id, imgOf(x), short(x.n), x.f || "", 0, outOf(x.n) && !canSell(x.n))).join("")}</div>`;
     h += `<div class="evsec">다른 프리미엄 액상</div><input class="evq" id="evQ" placeholder="원래 피시던 맛 찾기 (이름, 초성)" value="${esc(evQ)}" autocomplete="off">`;
     /* 11/10 설문 뒤 이 화면에서 지정 액상만 보여 흐름이 끊기던 것: 창을 나가지 않고 더 보기, 고른 개수는 그대로 이어짐 */
     const moreL = evMore ? moreLiq().filter((x) => x.line === "프리미엄") : [], moreIds = new Set(moreL.map((x) => x.id));
     {
     const show = [...new Map([...others, ...found].map((x) => [x.id, x])).values()].filter((x) => !moreIds.has(x.id));
-    h += show.length ? `<div class="grid" style="margin-top:10px">${show.map((x) => evCard(x.id, imgOf(x), short(x.n), [x.br, x.f].filter(Boolean).join(", "), 0, outOf(x.n))).join("")}</div>` : (evQ.trim() ? '<div class="evtip">찾는 프리미엄 액상이 없어요</div>' : "");
+    h += show.length ? `<div class="grid" style="margin-top:10px">${show.map((x) => evCard(x.id, imgOf(x), short(x.n), [x.br, x.f].filter(Boolean).join(", "), 0, outOf(x.n) && !canSell(x.n))).join("")}</div>` : (evQ.trim() ? '<div class="evtip">찾는 프리미엄 액상이 없어요</div>' : "");
     h += evMoreBtn(evMore ? 'data-evm="1">다른 액상 접기' : 'data-evm="1">찾는 맛이 없으세요?<b>더 많은 액상 보러 가기</b>');
     if (evMore) h += `<div class="chips sub" style="margin-top:12px">${MORE_TABS.map((t) => `<button data-emf="${t}" class="${t === mf ? "on" : ""}">${t}</button>`).join("")}</div>` + (moreL.length ? `<div class="grid" style="margin-top:10px">${moreL.map((x) => evCard(x.id, imgOf(x), short(x.n), [x.br, x.f].filter(Boolean).join(", "), 0, false)).join("")}</div>` : '<div class="evtip">이 분류에 재고 있는 액상이 없어요</div>'); }
     $('evGo').textContent = rest ? `${n}병 고르고 담기 (남은 ${rest}병은 매장에서), ${tot}` : `이 구성으로 담기, ${tot}`;
@@ -1284,13 +1285,13 @@ function drawEv() {
       h += `<div class="evsec" id="evPodBox">② ${M.name} 팟 같이 담기</div><div style="font-size:17px;font-weight:800;margin:2px 0 10px">팟은 액상 1병에 1개, 안 바꾸면 누수가 생겨요</div>`
       + `<button class="podbig ${on ? "on" : ""}" data-evpk="${on ? pk : rec}"><b>${on ? `✓ ${ohmNow}옴 팟 ${pk}팩 담았어요` : `${ohmNow}옴 팟 ${rec}팩 같이 담기`}</b><span>${on ? "다시 누르면 빼요" : "+" + won(pod.price * POD_PER_PACK * rec) + (ohmNow === "0.4" ? ", 맛 표현이 제일 좋아요" : "")}</span></button>`
       + `<div class="podmore">${p4 && p6 ? `<button data-evohm="${ohmNow === "0.4" ? "0.6" : "0.4"}">${ohmNow === "0.4" ? "0.6옴으로 바꾸기" : "0.4옴으로 바꾸기"}</button>` : "<span></span>"}<span class="pstep"><button data-evpod="-1">-</button><b>${pk}팩</b><button data-evpod="1">+</button></span></div>`; }
-    h += pickHead(`③ 액상 ${EV.need}병`) + `<div class="grid">${LQ.slice().sort(soldLast).map((x) => evCard(x.id, imgOf(x), short(x.n), x.f || "", 0, outOf(x.n))).join("")}</div>`;
+    h += pickHead(`③ 액상 ${EV.need}병`) + `<div class="grid">${LQ.slice().sort(soldLast).map((x) => evCard(x.id, imgOf(x), short(x.n), x.f || "", 0, outOf(x.n) && !canSell(x.n))).join("")}</div>`;
     const others = [...EV.pick.keys()].filter((id) => !LQ.some((x) => x.id === id)).map((id) => ALL_LQ.find((x) => x.id === id)).filter(Boolean);
     const found = evQ.trim() ? searchItems(evQ).filter((r) => r.t === "liq" && r.x.line === "프리미엄").map((r) => r.x).slice(0, 12) : [];
     const moreL = evMore ? moreLiq().filter((x) => x.line === "프리미엄") : [], moreIds = new Set(moreL.map((x) => x.id));
     const show = [...new Map([...others, ...found].map((x) => [x.id, x])).values()].filter((x) => !moreIds.has(x.id));
     h += `<div class="evsec">다른 프리미엄 액상</div><input class="evq" id="evQ" placeholder="원래 피시던 맛 찾기 (이름, 초성)" value="${esc(evQ)}" autocomplete="off">`;
-    h += show.length ? `<div class="grid" style="margin-top:10px">${show.map((x) => evCard(x.id, imgOf(x), short(x.n), [x.br, x.f].filter(Boolean).join(", "), 0, outOf(x.n))).join("")}</div>` : (evQ.trim() ? '<div class="evtip">찾는 프리미엄 액상이 없어요</div>' : "");
+    h += show.length ? `<div class="grid" style="margin-top:10px">${show.map((x) => evCard(x.id, imgOf(x), short(x.n), [x.br, x.f].filter(Boolean).join(", "), 0, outOf(x.n) && !canSell(x.n))).join("")}</div>` : (evQ.trim() ? '<div class="evtip">찾는 프리미엄 액상이 없어요</div>' : "");
     h += evMoreBtn(evMore ? 'data-evm="1">다른 액상 접기' : 'data-evm="1">찾는 맛이 없으세요?<b>더 많은 액상 보러 가기</b>');
     if (evMore) h += `<div class="chips sub" style="margin-top:12px">${MORE_TABS.map((t) => `<button data-emf="${t}" class="${t === mf ? "on" : ""}">${t}</button>`).join("")}</div>` + (moreL.length ? `<div class="grid" style="margin-top:10px">${moreL.map((x) => evCard(x.id, imgOf(x), short(x.n), [x.br, x.f].filter(Boolean).join(", "), 0, false)).join("")}</div>` : '<div class="evtip">이 분류에 재고 있는 액상이 없어요</div>');
     h += '<div class="evtip" style="margin-top:14px">이벤트에 참여하시면 다음 방문 때 3,000원 할인쿠폰을 드려요</div>';
@@ -1299,13 +1300,13 @@ function drawEv() {
   if (EV.k === "B") {
     $('evEye').textContent = "베이프렌드 대량 특가"; $('evTi').textContent = "액상 대량구매";
     h += `<div class="evsec">① 몇 병?</div><div class="opt2">${[30, 50].map((q) => `<button class="${EV.need === q ? "on" : ""}" data-bq="${q}"><b>${q}병 <span class="price" style="font-size:22px;color:var(--red)">${won(BULK[q])}</span></b><span>병당 ${won(BULK[q] / q)}</span></button>`).join("")}</div>`;
-    h += pickHead("② 맛 고르기") + `<div class="grid">${BULK_POOL.map((x) => evCard(x.id, imgOf(x), short(x.n), x.f || "", 0, outOf(x.n))).join("")}</div>`;
+    h += pickHead("② 맛 고르기") + `<div class="grid">${BULK_POOL.map((x) => evCard(x.id, imgOf(x), short(x.n), x.f || "", 0, outOf(x.n) && !canSell(x.n))).join("")}</div>`;
     $('evGo').textContent = rest ? `${n}병 고르고 담기 (남은 ${rest}병은 매장에서), ${won(BULK[EV.need])}` : `${EV.need}병 담기, ${won(BULK[EV.need])}`;
   }
   if (EV.k === "D") {
     $('evEye').textContent = "베이프렌드 일회용 대량"; $('evTi').textContent = "10개 사면 5개 더";
     h += `<div class="card evhero" style="padding:20px"><div class="pr"><b style="font-size:20px">팜팜바, 모스바 원하는 맛으로 15개</b><span style="display:block;font-size:14px;color:var(--grey);margin-top:6px">15개 중 가장 싼 5개는 서비스(0원), 최대 33% 할인</span></div></div>`;
-    h += pickHead("맛 고르기") + `<div class="grid">${DSP_POOL().map((g) => evCard(g.id, DSP_IMG[g.model] || "", g.n, g.model, g.price, outOf(g.n))).join("")}</div>`;
+    h += pickHead("맛 고르기") + `<div class="grid">${DSP_POOL().map((g) => evCard(g.id, DSP_IMG[g.model] || "", g.n, g.model, g.price, outOf(g.n) && !canSell(g.n))).join("")}</div>`;
     $('evGo').textContent = rest ? `${n}개 고르고 담기 (남은 ${rest}개는 매장에서), 약 ${won(dspTotal(rest))}` : `15개 담기, ${won(dspTotal())}`;
   }
   const qf = document.activeElement && document.activeElement.id === "evQ", pos = qf ? document.activeElement.selectionStart : 0;
@@ -1401,7 +1402,7 @@ function drawSearch() {
   if (r.length && r.every((o) => outOf(o.x.n))) $('sres').classList.add('showsold'); /* 11/13 전부 품절이면 접지 않음 */
   $('sres').innerHTML = (cart.size ? srchCartBar() : "") + (r.length ? r.map((o) => { const x = o.x, liq = o.t === "liq", key = x.id, have = (cart.get(key) || {}).qty || 0, out = outOf(x.n);
     const img = liq ? imgOf(x) : o.t === "lung" ? "" : gImg2(x), price = liq ? liqPrice(x) : x.price;
-    return `<div class="sr ${out ? "sold" : ""}"${liq ? ` data-lid="${x.id}"` : ""}><div class="im" style="background:${liq ? tintOf(x) : "#f4f4f6"}">${img ? `<img src="${img}" alt="" loading="lazy">` : { dev: "🔋", pod: "🧩", dsp: "🚬" }[x.c] || "💧"}</div><div class="n"><b>${esc(liq ? short(x.n) : x.n)}${liq ? noTag(x.n) : ""}</b><span>${esc(liq ? [x.br, x.line, x.f].filter(Boolean).join(", ") : { dev: "기기", pod: "팟, 코일", dsp: "일회용" }[x.c] || "")}${out ? ", 품절" : ""}</span>${have ? `<span class="q"> 담음 ${have}</span>` : ""}</div><b class="price">${won(price)}</b>${out ? `<button class="askb" data-ask="${esc(x.n)}">다른 지점 확인</button>` : `<button class="add" data-s="${key}" data-t="${o.t}">+</button>`}</div>`; }).join("")
+    return `<div class="sr ${out ? "sold" : ""}"${liq ? ` data-lid="${x.id}"` : ""}><div class="im" style="background:${liq ? tintOf(x) : "#f4f4f6"}">${img ? `<img src="${img}" alt="" loading="lazy">` : { dev: "🔋", pod: "🧩", dsp: "🚬" }[x.c] || "💧"}</div><div class="n"><b>${esc(liq ? short(x.n) : x.n)}${liq ? noTag(x.n) : ""}</b><span>${esc(liq ? [x.br, x.line, x.f].filter(Boolean).join(", ") : { dev: "기기", pod: "팟, 코일", dsp: "일회용" }[x.c] || "")}${out ? ", 품절" : ""}</span>${have ? `<span class="q"> 담음 ${have}</span>` : ""}</div><b class="price">${won(price)}</b>${out && !canSell(x.n) ? `<button class="askb" data-ask="${esc(x.n)}">다른 지점 확인</button>` : `<button class="add" data-s="${key}" data-t="${o.t}">+</button>`}</div>`; }).join("")
     + soldMore(r.filter((o) => outOf(o.x.n)).length, r.every((o) => outOf(o.x.n)))
     : '<div style="padding:40px 0;text-align:center;color:var(--grey);line-height:1.7">찾는 상품이 없어요<br>초성(ㅂㄹ)이나 시연번호 숫자로도 찾을 수 있어요<br><button class="cta" style="max-width:320px;margin-top:14px" onclick="qzStart()">나에게 맞는 전자담배 찾기</button></div>');
 }
@@ -1671,7 +1672,7 @@ function drawDspList() {
 }
 function dspDraw() { const m = dspOpen, all = GDS.filter((g) => g.c === "dsp" && g.model === m && (g.ev || "") === dspEv), info = dInfo(m), g = DSPEV.find((x) => x.ev === dspEv), got = all.reduce((a, x) => a + ((cart.get(x.id) || {}).qty || 0), 0);
   $('spTi').textContent = !dspEv && !/배터리/.test(info.name) ? info.name + " 배터리" : info.name;
-  $('spB').innerHTML = `${info.d ? `<p class="dsub">${esc(info.d)}</p>` : ""}${info.w ? `<div class="evtip">${esc(info.w)}</div>` : ""}<div class="dfl">${all.map((x) => { const q = (cart.get(x.id) || {}).qty || 0, out2 = outOf(x.n), pic = DSPF_IMG[x.n]; return `<button class="dflc ${q ? "on" : ""} ${out2 ? "sold" : ""}" ${out2 ? `data-ask="${esc(x.n)}"` : `data-dg="${x.id}"`}>${pic ? `<img src="${pic}" alt="" loading="lazy">` : ""}<span>${esc(x.opt || x.n.replace(m, "").trim() || x.n)}${out2 ? ", 품절" : ""}</span>${q ? `<b>${q}</b>` : ""}</button>`; }).join("")}</div>${g ? dspNudge(g) : ""}<button class="cta" data-dspx="1" style="margin-top:14px">${got ? `${got}개 담았어요, 닫기` : "닫기"}</button>`; }
+  $('spB').innerHTML = `${info.d ? `<p class="dsub">${esc(info.d)}</p>` : ""}${info.w ? `<div class="evtip">${esc(info.w)}</div>` : ""}<div class="dfl">${all.map((x) => { const q = (cart.get(x.id) || {}).qty || 0, out2 = outOf(x.n), pic = DSPF_IMG[x.n]; return `<button class="dflc ${q ? "on" : ""} ${out2 ? "sold" : ""}" ${out2 && !canSell(x.n) ? `data-ask="${esc(x.n)}"` : `data-dg="${x.id}"`}>${pic ? `<img src="${pic}" alt="" loading="lazy">` : ""}<span>${esc(x.opt || x.n.replace(m, "").trim() || x.n)}${out2 ? ", 품절" : ""}</span>${q ? `<b>${q}</b>` : ""}</button>`; }).join("")}</div>${g ? dspNudge(g) : ""}<button class="cta" data-dspx="1" style="margin-top:14px">${got ? `${got}개 담았어요, 닫기` : "닫기"}</button>`; }
 let dspEv = "";
 const dspPick = (m, ev) => { dspOpen = m; dspEv = ev || ""; const lab = $('spTi').previousElementSibling; if (lab) lab.textContent = "맛 고르기"; dspDraw(); document.body.classList.add('spon'); };
 $('spB').addEventListener('click', (e) => { const t = e.target, a = t.closest('[data-dg]'), x = t.closest('[data-airx]');
@@ -1699,7 +1700,7 @@ function drawPodView() {
   $('podSub').innerHTML = ["팟·코일", "케이스·드립팁·기타"].map((t) => `<button data-ps="${t}" class="${t === podSub ? "on" : ""}">${t === "팟·코일" ? "팟, 코일" : "케이스, 기타"}</button>`).join("");
   $('podDev').innerHTML = shown.map((d) => `<button data-pd="${esc(d)}" class="${d === podDev ? "on" : ""}">${esc(d)}</button>`).join("") + (shown.length < devs.length ? `<button data-pdmore="1" class="more">기기 더 보기 +${devs.length - shown.length}</button>` : "");
   $('podList').innerHTML = pods.filter((g) => podDevOf(g) === podDev).sort(soldLast).map((g) => { const k = packOf(g), q = (cart.get(g.id) || {}).qty || 0, o = outOf(g.n);
-    return `<div class="sr ${o ? "sold" : ""}"><div class="im">${gImg(g) ? `<img src="${gImg(g)}" alt="" loading="lazy">` : "🧩"}</div><div class="n"><b>${esc(g.n)}</b><span>${won(g.price)} (낱개)${q ? `, <b style="color:var(--red);display:inline">담음 ${q}</b>` : ""}${o ? ", 품절" : ""}</span></div>${o ? `<button class="askb" data-ask="${esc(g.n)}">다른 지점 확인</button>` : (k ? `<button class="pkb" data-pp="${g.id}" data-k="${k}">1팩 ${k}개 ${won(g.price * k)}</button>` : "") + `<button class="pkb ln1" data-pp="${g.id}" data-k="1">낱개</button>`}</div>`; }).join("") + soldMore(pods.filter((g) => podDevOf(g) === podDev && outOf(g.n)).length, pods.filter((g) => podDevOf(g) === podDev).every((g) => outOf(g.n))) || '<div class="evtip">이 지점에 해당 상품이 없어요</div>';
+    return `<div class="sr ${o ? "sold" : ""}"><div class="im">${gImg(g) ? `<img src="${gImg(g)}" alt="" loading="lazy">` : "🧩"}</div><div class="n"><b>${esc(g.n)}</b><span>${won(g.price)} (낱개)${q ? `, <b style="color:var(--red);display:inline">담음 ${q}</b>` : ""}${o ? ", 품절" : ""}</span></div>${o && !canSell(g.n) ? `<button class="askb" data-ask="${esc(g.n)}">다른 지점 확인</button>` : (k ? `<button class="pkb" data-pp="${g.id}" data-k="${k}">1팩 ${k}개 ${won(g.price * k)}</button>` : "") + `<button class="pkb ln1" data-pp="${g.id}" data-k="1">낱개</button>`}</div>`; }).join("") + soldMore(pods.filter((g) => podDevOf(g) === podDev && outOf(g.n)).length, pods.filter((g) => podDevOf(g) === podDev).every((g) => outOf(g.n))) || '<div class="evtip">이 지점에 해당 상품이 없어요</div>';
 }
 $('podSub').onclick = (e) => { const b = e.target.closest('[data-ps]'); if (b) { podSub = b.dataset.ps; podDev = ""; drawPodView(); } };
 $('podDev').onclick = (e) => { if (e.target.closest('[data-pdmore]')) { podMore = true; return drawPodView(); } const b = e.target.closest('[data-pd]'); if (b) { podDev = b.dataset.pd; drawPodView(); } };
@@ -1844,7 +1845,7 @@ function liqOpen(x) { if (!x) return; const out = outOf(x.n), q = (cart.get(x.id
   $('spB').innerHTML = `<div class="sp-hero" style="background:${tintOf(x)}">${img ? `<img src="${img}" alt="">` : ""}<span>${esc(x.f || "")}</span></div>
     <div class="sp-two"><div><b>맛</b><strong>${esc(x.f || "-")}</strong>${x.g ? `<span>${esc(x.g)}</span>` : ""}</div><div><b>가격</b><strong>${won(liqPrice(x))}</strong><span>${esc([x.line, ...tags].filter(Boolean).join(", "))}</span></div></div>
     ${TASTE[x.n] ? `<div class="sp-desc" style="font-size:20px;line-height:1.5">${esc(TASTE[x.n])}</div>` : ""}
-    ${out ? '<div class="sp-desc">이 매장은 품절이에요</div>' : x.line === "프라임" ? `<button class="memgo" data-lqadd="${x.id}" style="height:64px;font-size:20px">${q ? `한 병 더 담기 (지금 ${q}병)` : "담기"}</button>`
+    ${out && !canSell(x.n) ? '<div class="sp-desc">이 매장은 품절이에요</div>' : x.line === "프라임" ? `<button class="memgo" data-lqadd="${x.id}" style="height:64px;font-size:20px">${q ? `한 병 더 담기 (지금 ${q}병)` : "담기"}</button>`
       : `<div class="spev"><div class="spev-t">진행 중인 이벤트</div>${[["5병", "49,500원", "병당 9,900원"], ["10+1 (11병)", "90,000원", "병당 약 8,200원"], ["기기 살 때 액상 10병", "75,000원", "기기값은 따로"]].map(([a, b, c]) => `<div class="spev-r"><b>${a}</b><strong>${b}</strong><span>${c}</span></div>`).join("")}<div class="spev-n">맛 섞어서 골라도 돼요</div></div>
       <button class="memgo" data-lqev="${x.id}" style="height:68px;font-size:21px">이벤트가로 구매하기</button><button class="memgo sub" data-lqadd="${x.id}" style="height:52px;font-size:17px;background:var(--card);color:var(--ink);border:1.5px solid var(--line)">${q ? `한 병 더 담기 (지금 ${q}병)` : "1병만 담기 15,000원"}</button>`}`; /* 11/13 액상덕후: 자세히 창에 진행 중인 이벤트 + [이벤트가로 구매하기] (가격은 지금 패드 계산 그대로) */
   document.body.classList.add('spon'); }
@@ -2022,7 +2023,7 @@ function rkDraw() {
     const x = rkFind(rkTab, n), out = x ? outOf(x.n) : false, q = x ? (cart.get(x.id) || {}).qty || 0 : 0;
     const img = !x ? "" : rkTab === "lung" ? (LUNG_IMG[x.n] || "") : rkTab === "dsp" ? gImg2(x) : imgOf(x);
     const label = rkTab === "liq" ? short(n) : rkTab === "lung" ? n.replace(/\s*\(?모드\)?$/, "") : n;
-    return `<div ${dl} class="rkr rkin ${i < 3 ? "top" : ""} ${out ? "sold" : ""}"><i>${i + 1}</i>${mv}<div class="im" style="background:${x ? tintOf(x) : "#f4f4f6"}">${img ? `<img src="${img}" alt="" loading="lazy">` : ""}</div><div class="n"><b>${esc(label)}${x && rkTab === "liq" ? noTag(x.n) : ""}</b><span>${esc(x ? [x.f, x.br].filter(Boolean)[0] || "" : "")}${q ? `, 담음 ${q}` : ""}${out ? ", 품절" : ""}</span></div>${!x ? "" : out ? `<button class="askb" data-ask="${esc(x.n)}">다른 지점 확인</button>` : `<button class="add" data-rka="${x.id}">+</button>`}</div>`; }).join("") || '<div class="evtip">이 분류는 아직 자료가 없어요</div>';
+    return `<div ${dl} class="rkr rkin ${i < 3 ? "top" : ""} ${out ? "sold" : ""}"><i>${i + 1}</i>${mv}<div class="im" style="background:${x ? tintOf(x) : "#f4f4f6"}">${img ? `<img src="${img}" alt="" loading="lazy">` : ""}</div><div class="n"><b>${esc(label)}${x && rkTab === "liq" ? noTag(x.n) : ""}</b><span>${esc(x ? [x.f, x.br].filter(Boolean)[0] || "" : "")}${q ? `, 담음 ${q}` : ""}${out ? ", 품절" : ""}</span></div>${!x ? "" : out && !canSell(x.n) ? `<button class="askb" data-ask="${esc(x.n)}">다른 지점 확인</button>` : `<button class="add" data-rka="${x.id}">+</button>`}</div>`; }).join("") || '<div class="evtip">이 분류는 아직 자료가 없어요</div>';
 }
 $('rkTab').onclick = (e) => { const t = e.target.closest('[data-rk]'); if (t) { rkTab = t.dataset.rk; rkDraw(); } };
 $('rkList').onclick = (e) => { const a = e.target.closest('[data-rka]'), d = e.target.closest('[data-rkdev]'), sq = e.target.closest('[data-rkq]');
