@@ -446,6 +446,12 @@ body[data-theme=dark] .shbtn .b1{background:#f1f1f3;color:#15120f}
 .sum2 .r{display:flex;justify-content:space-between;font-size:15px;padding:3px 0;color:var(--grey)}.sum2 .r.off b{color:var(--red)}
 .sum2 .save{font-size:14px;font-weight:800;color:var(--red);text-align:right;margin-top:4px}
 .mem{background:var(--bg);border-radius:16px;padding:14px 16px;margin:10px 0 4px}
+/* 11/13 자세히 창 이벤트 칸 */
+.spev{background:var(--card);border-radius:16px;padding:16px 18px;margin:12px 0 4px;border:2px solid var(--red)}
+.spev-t{font-size:18px;font-weight:800;color:var(--red);margin-bottom:8px}
+.spev-r{display:grid;grid-template-columns:1fr auto;gap:0 12px;padding:8px 0;border-top:1px solid var(--line)}.spev-r:first-of-type{border-top:0}
+.spev-r b{font-size:18px}.spev-r strong{font-size:20px;color:var(--red);text-align:right}.spev-r span{grid-column:1/-1;font-size:14px;color:var(--grey)}
+.spev-n{font-size:15px;color:var(--grey);margin-top:6px}
 /* 11/13 품절 접기 */
 #sres:not(.showsold) .sr.sold,#liqGrid:not(.showsold) .it.sold,#podList:not(.showsold) .sr.sold{display:none}
 .soldmore{grid-column:1/-1;display:block;width:100%;height:56px;margin:8px 0;border-radius:14px;border:1.5px dashed var(--line);background:transparent;color:var(--grey);font-size:17px;font-weight:700}
@@ -1807,8 +1813,15 @@ function liqOpen(x) { if (!x) return; const out = outOf(x.n), q = (cart.get(x.id
   $('spB').innerHTML = `<div class="sp-hero" style="background:${tintOf(x)}">${img ? `<img src="${img}" alt="">` : ""}<span>${esc(x.f || "")}</span></div>
     <div class="sp-two"><div><b>맛</b><strong>${esc(x.f || "-")}</strong>${x.g ? `<span>${esc(x.g)}</span>` : ""}</div><div><b>가격</b><strong>${won(liqPrice(x))}</strong><span>${esc([x.line, ...tags].filter(Boolean).join(", "))}</span></div></div>
     ${TASTE[x.n] ? `<div class="sp-desc" style="font-size:20px;line-height:1.5">${esc(TASTE[x.n])}</div>` : ""}
-    ${out ? '<div class="sp-desc">이 매장은 품절이에요</div>' : `<button class="memgo" data-lqadd="${x.id}" style="height:64px;font-size:20px">${q ? `한 병 더 담기 (지금 ${q}병)` : "담기"}</button>`}`;
+    ${out ? '<div class="sp-desc">이 매장은 품절이에요</div>' : x.line === "프라임" ? `<button class="memgo" data-lqadd="${x.id}" style="height:64px;font-size:20px">${q ? `한 병 더 담기 (지금 ${q}병)` : "담기"}</button>`
+      : `<div class="spev"><div class="spev-t">진행 중인 이벤트</div>${[["5병", "49,500원", "병당 9,900원"], ["10+1 (11병)", "90,000원", "병당 약 8,200원"], ["기기 + 액상 10병", "75,000원", "기기 패키지, 액상 값"]].map(([a, b, c]) => `<div class="spev-r"><b>${a}</b><strong>${b}</strong><span>${c}</span></div>`).join("")}<div class="spev-n">맛 섞어서 골라도 돼요</div></div>
+      <button class="memgo" data-lqev="${x.id}" style="height:68px;font-size:21px">이벤트가로 구매하기</button><button class="memgo sub" data-lqadd="${x.id}" style="height:52px;font-size:17px;background:var(--card);color:var(--ink);border:1.5px solid var(--line)">${q ? `한 병 더 담기 (지금 ${q}병)` : "1병만 담기 15,000원"}</button>`}`; /* 11/13 액상덕후: 자세히 창에 진행 중인 이벤트 + [이벤트가로 구매하기] (가격은 지금 패드 계산 그대로) */
   document.body.classList.add('spon'); }
+/* 이벤트가로 구매하기: 이 맛 1병 담고 액상 목록으로, 다음 이벤트까지 남은 병 수 안내 */
+document.addEventListener('click', (e) => { const b = e.target.closest('[data-lqev]'); if (!b) return; e.stopPropagation(); const x = ALL_LQ.find((y) => y.id === b.dataset.lqev); if (!x) return;
+  addLiqX(x); document.body.classList.remove('spon', 'srchon'); $('q').value = ""; if (typeof rkDraw === "function") rkDraw();
+  const c = countCart(), n = c.v + c.p, goal = n < 5 ? 5 : n < 11 ? 11 : 0; lf = "전체"; $('chips').querySelectorAll('button').forEach((y) => y.classList.toggle('on', y.dataset.f === lf)); go('liq'); drawLiq();
+  toast(goal ? `${short(x.n)} 담았어요. ${goal - n}병 더 고르면 ${goal === 5 ? "5병 49,500원" : "11병 90,000원"}` : `${short(x.n)} 담았어요. 11병 90,000원 적용 중`); }, true);
 document.addEventListener('click', (e) => { const b = e.target.closest('[data-lqadd]'); if (!b) return; e.stopPropagation(); const x = ALL_LQ.find((y) => y.id === b.dataset.lqadd); if (x) { addLiqX(x); toast("담았어요"); document.body.classList.remove('spon'); if (typeof rkDraw === "function") rkDraw(); if (document.body.classList.contains('srchon')) drawSearch(); } }, true);
 document.addEventListener('click', (e) => { const b = e.target.closest('[data-spec]'); if (!b) return; e.stopPropagation(); specOpen(b.dataset.spec, b.dataset.c); }, true);
 
