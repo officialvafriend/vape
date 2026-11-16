@@ -280,6 +280,17 @@ body.land .ftc{display:grid;grid-template-columns:1fr 1fr;align-content:start}
 .typing{display:inline-flex;gap:5px}.typing i{width:9px;height:9px;border-radius:50%;background:#c9cdd2;animation:tp 1s infinite}.typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}
 @keyframes tp{50%{transform:translateY(-6px);opacity:.5}}
 body.land .msg .its{grid-template-columns:repeat(5,1fr)}
+/* 떠 있는 회원등록 버튼: 첫 화면, 회원등록 화면 말고 어디서든 */
+.fab{position:fixed;right:24px;bottom:36px;z-index:8;display:flex;align-items:center;gap:10px;padding:14px 22px 14px 16px;border:3px solid #fff;border-radius:999px;
+  background:#E01A19;color:#fff;font-family:var(--jal);font-size:22px;box-shadow:0 8px 24px rgba(0,0,0,.35);animation:fabin .4s cubic-bezier(.2,1.6,.4,1)}
+.fab .em{font-size:28px;animation:bob 2.4s ease-in-out infinite}
+.fab:active{transform:scale(.95)}
+.fab.up{bottom:128px}
+.fab[hidden]{display:none}
+@keyframes fabin{0%{transform:scale(.5);opacity:0}100%{transform:scale(1);opacity:1}}
+body.land .fab.up{bottom:108px}
+body.fabon:not(.land) .pane.ask .opts{margin-bottom:84px}
+body.fabon .grid,body.fabon .chat,body.fabon .ftc{padding-bottom:96px}
 .empty{grid-column:1/-1;padding:48px 0;text-align:center;font-size:22px;color:var(--sub)}
 
 .toast{position:fixed;left:50%;top:40px;transform:translate(-50%,-20px);opacity:0;padding:18px 28px;border-radius:999px;
@@ -309,6 +320,7 @@ h1,h2,.brand span,.ttl,.ib.txt,.opt .t,.opt .n,.memban b,.save .big,.save .pct,.
 <body>
 <main class="screen" id="app"></main>
 <div class="toast" id="toast"></div>
+<button class="fab" id="fab" hidden aria-label="회원등록"><span class="em">🎁</span>회원등록</button>
 <script>
 /* ---------- 자료 ---------- */
 var LIQ = window.LIQ || [];
@@ -896,6 +908,7 @@ function render(){
     h = listPane({step:3,total:3,h:pk.line+' 액상에서<br>'+pk.n+'병 골라 주세요',list:byRank(DATA().filter(function(x){return x.line===pk.line})),
       chips:[pk.t], note:saveBox(pk.t, PRICE[pk.line]*pk.n, pk.price)}); }
   var app=document.getElementById('app'); app.innerHTML=h; app.className='screen';
+  var fab=document.getElementById('fab'); fab.hidden = v==='home' || v.indexOf('mem')===0; fab.classList.toggle('up', !!app.querySelector('.acts,.cta,.askbar')); document.body.classList.toggle('fabon', !fab.hidden);
   var g=app.querySelector('.grid'); if(g) g.scrollTop=0;
   ['mName','mYear','mPhone'].forEach(function(id){ var el=document.getElementById(id); if(!el) return; el.addEventListener('input',function(){
     var m=M_(), k={mName:'name',mYear:'year',mPhone:'phone'}[id]; if (k!=='name') el.value=el.value.replace(/\D/g,''); m[k]=el.value; if (m.bad===k) { m.bad=''; el.classList.remove('bad'); }
@@ -969,6 +982,7 @@ document.getElementById('app').addEventListener('click',function(e){
   if (a==='pack') { state.pack=i; return on('mtl-pack-res'); }
 });
 
+document.getElementById('fab').addEventListener('click',function(){ go('mem'); });
 /* 2분 동안 아무도 안 만지면 첫 화면으로 */
 var idleT; function idle(){clearTimeout(idleT); idleT=setTimeout(function(){ if(state.view!=='home') home(); },120000);}
 ['pointerdown','scroll'].forEach(function(ev){addEventListener(ev,idle,true)}); idle();
