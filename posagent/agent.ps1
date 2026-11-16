@@ -2,7 +2,7 @@
 # 상담패드 [포스로 보내기] 주문을 슈파베이스(공기계 QR과 같은 주문 표)에서 받아, 포스 화면 오른쪽 아래 작은 창에 띄움.
 # 직원이 [포스에 넣기]를 누르면 오케이포스 창을 앞으로 가져와 바코드를 스캐너처럼(숫자 + Enter) 대신 입력.
 # 승인된 기기만 그 지점 주문을 읽음. 설정: 같은 폴더 설정.json
-# 자동 업데이트: 5분마다 posagent/ver.txt 확인, 다르면 창을 닫고 실행.cmd가 update.ps1로 새 판을 받아 다시 켬
+# 자동 업데이트: 5분마다 posagent/ver.txt 확인, 다르면 exit 8, 실행.cmd가 update.ps1로 새 판을 받아 다시 켬. 그 밖의 끝남(창 X, 오류)은 다시 안 켬
 param([switch]$Test)
 $ErrorActionPreference = "Stop"
 try { [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor 3072 } catch {}   # 옛 윈도우 TLS 1.2
@@ -16,7 +16,7 @@ public class W32 {
 }
 "@
 $HERE = Split-Path -Parent $MyInvocation.MyCommand.Path
-$VER = "1116d"
+$VER = "1116e"
 $WEB = "https://officialvafriend.github.io/vape/posagent/"
 $SB = "https://bjjlmnkyhedtutogzliq.supabase.co/rest/v1/rpc/"; $KEY = "sb_publishable_i8rfcm_zAnwV75joN58FCw_8tHgFUKr"
 $cfgPath = Join-Path $HERE "설정.json"
@@ -132,4 +132,5 @@ $t.Add_Tick({
 $script:updating = $false
 $t.Start(); Draw
 [Windows.Forms.Application]::Run($f)
-if (-not $script:updating) { exit 9 }   # 직원이 창을 닫으면 진짜 끔 (실행.cmd가 다시 안 켬)
+if ($script:updating) { exit 8 }   # 새 판 받으러 갈 때만 8 (실행.cmd가 그때만 다시 켬)
+exit 9   # 창 닫기, 오류 모두 그냥 끝
