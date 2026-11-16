@@ -287,6 +287,8 @@ body.land .msg .its{grid-template-columns:repeat(5,1fr)}
 .fab:active{transform:scale(.95)}
 .fab.up{bottom:128px}
 .fab[hidden]{display:none}
+.fab.home{right:auto;left:24px;background:#fff;color:var(--bg);border-color:var(--bg)}
+.fab.home .em{animation:none}
 @keyframes fabin{0%{transform:scale(.5);opacity:0}100%{transform:scale(1);opacity:1}}
 body.land .fab.up{bottom:108px}
 body.fabon:not(.land) .pane.ask .opts{margin-bottom:84px}
@@ -321,6 +323,7 @@ h1,h2,.brand span,.ttl,.ib.txt,.opt .t,.opt .n,.memban b,.save .big,.save .pct,.
 <main class="screen" id="app"></main>
 <div class="toast" id="toast"></div>
 <button class="fab" id="fab" hidden aria-label="회원등록"><span class="em">🎁</span>회원등록</button>
+<button class="fab home" id="fabh" hidden aria-label="처음으로"><span class="em">🏠</span>처음으로</button>
 <script>
 /* ---------- 자료 ---------- */
 var LIQ = window.LIQ || [];
@@ -908,7 +911,8 @@ function render(){
     h = listPane({step:3,total:3,h:pk.line+' 액상에서<br>'+pk.n+'병 골라 주세요',list:byRank(DATA().filter(function(x){return x.line===pk.line})),
       chips:[pk.t], note:saveBox(pk.t, PRICE[pk.line]*pk.n, pk.price)}); }
   var app=document.getElementById('app'); app.innerHTML=h; app.className='screen';
-  var fab=document.getElementById('fab'); fab.hidden = v==='home' || v.indexOf('mem')===0; fab.classList.toggle('up', !!app.querySelector('.acts,.cta,.askbar')); document.body.classList.toggle('fabon', !fab.hidden);
+  var fab=document.getElementById('fab'); fab.hidden = v==='home' || v.indexOf('mem')===0; fab.classList.toggle('up', !!app.querySelector('.acts,.cta,.askbar')); var fh=document.getElementById('fabh'); fh.hidden = v==='home'; fh.classList.toggle('up', fab.classList.contains('up'));
+  document.body.classList.toggle('fabon', !fab.hidden || !fh.hidden);
   var g=app.querySelector('.grid'); if(g) g.scrollTop=0;
   ['mName','mYear','mPhone'].forEach(function(id){ var el=document.getElementById(id); if(!el) return; el.addEventListener('input',function(){
     var m=M_(), k={mName:'name',mYear:'year',mPhone:'phone'}[id]; if (k!=='name') el.value=el.value.replace(/\D/g,''); m[k]=el.value; if (m.bad===k) { m.bad=''; el.classList.remove('bad'); }
@@ -983,6 +987,7 @@ document.getElementById('app').addEventListener('click',function(e){
 });
 
 document.getElementById('fab').addEventListener('click',function(){ go('mem'); });
+document.getElementById('fabh').addEventListener('click',function(){ home(); });
 /* 2분 동안 아무도 안 만지면 첫 화면으로 */
 var idleT; function idle(){clearTimeout(idleT); idleT=setTimeout(function(){ if(state.view!=='home') home(); },120000);}
 ['pointerdown','scroll'].forEach(function(ev){addEventListener(ev,idle,true)}); idle();
