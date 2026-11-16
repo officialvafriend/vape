@@ -13,10 +13,21 @@ public class W32 {
   [DllImport("user32.dll")] public static extern bool SetForegroundWindow(IntPtr h);
   [DllImport("user32.dll")] public static extern bool ShowWindow(IntPtr h, int c);
   [DllImport("user32.dll")] public static extern IntPtr GetForegroundWindow();
+  [DllImport("user32.dll")] public static extern void keybd_event(byte vk, byte scan, uint flags, UIntPtr extra);
+  [DllImport("user32.dll")] public static extern uint MapVirtualKey(uint code, uint type);
+  public static void Key(byte vk, int ms) {
+    byte sc = (byte)MapVirtualKey(vk, 0);
+    keybd_event(vk, sc, 0, UIntPtr.Zero); System.Threading.Thread.Sleep(ms);
+    keybd_event(vk, sc, 2, UIntPtr.Zero); System.Threading.Thread.Sleep(ms);
+  }
+  public static void Scan(string code, int ms) {
+    foreach (char ch in code) { if (ch >= '0' && ch <= '9') Key((byte)ch, ms); }
+    Key(0x0D, ms);
+  }
 }
 "@
 $HERE = Split-Path -Parent $MyInvocation.MyCommand.Path
-$VER = "1116f"
+$VER = "1116g"
 $WEB = "https://officialvafriend.github.io/vape/posagent/"
 $SB = "https://bjjlmnkyhedtutogzliq.supabase.co/rest/v1/rpc/"; $KEY = "sb_publishable_i8rfcm_zAnwV75joN58FCw_8tHgFUKr"
 $cfgPath = Join-Path $HERE "설정.json"
@@ -27,6 +38,7 @@ $BRANCH = CfgGet "지점" "본점"
 $TITLE = CfgGet "포스창이름" "OKPOS|오케이포스|포스"
 $GAP = [int](CfgGet "입력간격ms" 150)
 $SEP = CfgGet "구분" "{ENTER}"
+$KEYMS = [int](CfgGet "키간격ms" 15)   # 무선 바코드처럼 진짜 키보드 신호로 한 글자씩
 $devPath = Join-Path $env:APPDATA "vf-posagent-dev.txt"
 if (Test-Path $devPath) { $DEV = (Get-Content $devPath -Raw).Trim() } else { $DEV = -join ((1..18) | ForEach-Object { "{0:x2}" -f (Get-Random -Max 256) }); Set-Content $devPath $DEV }
 $SHORT = $DEV.Substring(0, 6).ToUpper()
@@ -88,7 +100,7 @@ function TypeCodes($codes) {
   foreach ($c in $codes) {
     if (-not ("$c" -match '^[0-9]{4,20}$')) { continue }   # 숫자 바코드만
     if ([W32]::GetForegroundWindow() -ne $p.MainWindowHandle) { [Windows.Forms.MessageBox]::Show("포스 창이 바뀌어서 멈췄어요. $i 개 넣었어요.", "포스 입력") | Out-Null; return $false }
-    [Windows.Forms.SendKeys]::SendWait("$c$SEP"); $i++; $lbMain.Text = "넣는 중 $i / $(@($codes).Count)`n마우스, 키보드 잠시 그대로"; $f.Refresh(); Start-Sleep -Milliseconds $GAP
+    [W32]::Scan("$c", $KEYMS); $i++; $lbMain.Text = "넣는 중 $i / $(@($codes).Count)`n마우스, 키보드 잠시 그대로"; $f.Refresh(); Start-Sleep -Milliseconds $GAP
   }
   return $true
 }
