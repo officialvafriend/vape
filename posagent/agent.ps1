@@ -16,7 +16,7 @@ public class W32 {
 }
 "@
 $HERE = Split-Path -Parent $MyInvocation.MyCommand.Path
-$VER = "1116e"
+$VER = "1116f"
 $WEB = "https://officialvafriend.github.io/vape/posagent/"
 $SB = "https://bjjlmnkyhedtutogzliq.supabase.co/rest/v1/rpc/"; $KEY = "sb_publishable_i8rfcm_zAnwV75joN58FCw_8tHgFUKr"
 $cfgPath = Join-Path $HERE "설정.json"
@@ -76,10 +76,13 @@ function Draw {
   else { $btnNext.Visible = $false; $btnDone.SetBounds(8, 132, ($W - 16), 26) }
   $btnDone.Visible = $true; $f.ClientSize = New-Object Drawing.Size($W, 164); Place
 }
-function PosWindow { Get-Process | Where-Object { $_.MainWindowHandle -ne 0 -and $_.MainWindowTitle -match $TITLE -and $_.Id -ne $PID } | Select-Object -First 1 }
+$SKIP = 'explorer|cmd|powershell|pwsh|conhost|notepad|chrome|msedge|whale|firefox|iexplore|kakaotalk|code|cursor'
+function PosWindow { Get-Process | Where-Object { $_.MainWindowHandle -ne 0 -and $_.Id -ne $PID -and $_.ProcessName -notmatch "^($SKIP)$" -and ($_.MainWindowTitle -match $TITLE -or $_.ProcessName -match 'okpos') } | Sort-Object { if ($_.ProcessName -match 'okpos') { 0 } else { 1 } } | Select-Object -First 1 }
+function IsLocked($p) { try { $null = $p.Handle; $false } catch { $true } }   # 포스가 관리자 권한이면 손이 안 닿음
 function TypeCodes($codes) {
   $p = PosWindow
   if (-not $p) { [Windows.Forms.MessageBox]::Show("오케이포스 판매 화면을 찾지 못했어요.`n포스 판매 화면을 열어 주세요.", "포스 입력") | Out-Null; return $false }
+  if (IsLocked $p) { [Windows.Forms.MessageBox]::Show("포스가 관리자 권한으로 켜져 있어서 넣을 수 없어요.`n이 창을 X로 닫고, 실행.cmd를 마우스 오른쪽 → [관리자 권한으로 실행] 해 주세요.`n(찾은 창: $($p.ProcessName) / $($p.MainWindowTitle))", "포스 입력") | Out-Null; return $false }
   [W32]::ShowWindow($p.MainWindowHandle, 9) | Out-Null; [W32]::SetForegroundWindow($p.MainWindowHandle) | Out-Null; Start-Sleep -Milliseconds 400
   $i = 0
   foreach ($c in $codes) {
@@ -96,7 +99,8 @@ $btnGo.Add_Click({
     if ($script:svcLeft -ne $null -and $script:svcLeft.id -eq $o.id) {
       if (TypeCodes @($o.svc)) { Finish $o "다 넣었어요. 마지막 $(@($o.svc).Count)개를 서비스로 바꾸고, 포스 금액이 $(Won $o.total) 인지 확인해 주세요." }
     } else {
-      $ok = [Windows.Forms.MessageBox]::Show("포스 판매 화면이 비어 있나요?`n다른 손님 결제 중이면 [아니요]를 누르고 먼저 끝내 주세요.", "포스 입력", "YesNo")
+      $pw = PosWindow; $pn = if ($pw) { "$($pw.ProcessName) / $($pw.MainWindowTitle)" } else { "못 찾음" }
+      $ok = [Windows.Forms.MessageBox]::Show("포스 판매 화면이 비어 있나요?`n다른 손님 결제 중이면 [아니요]를 누르고 먼저 끝내 주세요.`n`n넣을 창: $pn", "포스 입력", "YesNo")
       if ($ok -eq "Yes" -and (TypeCodes @($o.codes))) {
         if (@($o.svc).Count) { $script:svcLeft = $o } else { Finish $o "다 넣었어요. 포스 금액이 $(Won $o.total) 인지 확인해 주세요." }
       }
