@@ -257,6 +257,29 @@ body.land .chars .bub{position:relative;right:auto;top:auto;align-self:flex-star
 .ftc .grid3 .item{box-shadow:0 0 0 1px #eef0f3}
 body.land .fthero svg{height:140px}
 body.land .ftc{display:grid;grid-template-columns:1fr 1fr;align-content:start}
+/* 빨강이, 까망이에게 타자로 물어보기 */
+.chat{margin-top:14px;flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:14px;padding:4px 0 10px;scrollbar-width:none}
+.chat::-webkit-scrollbar{display:none}
+.msg{display:flex;align-items:flex-end;gap:10px;max-width:100%}
+.msg .av{flex:none;width:64px}
+.msg .av svg{display:block}
+.msg .bb{background:#fff;color:#191f28;border-radius:22px 22px 22px 6px;padding:16px 20px;font-size:21px;line-height:1.5;max-width:calc(100% - 74px)}
+.msg .bb .who{display:block;font-family:var(--jal);font-size:16px;color:var(--bg);margin-bottom:4px}
+.msg.T .bb{background:#1f1f22;color:#fff}.msg.T .bb .who{color:#ffb4b9}
+.msg.me{justify-content:flex-end}.msg.me .bb{background:#ffe9ea;color:#5a1822;border-radius:22px 22px 6px 22px;font-family:var(--jal)}
+.msg .its{margin-top:12px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.msg .its .item{box-shadow:0 0 0 1px #eef0f3}.msg.T .its .item{box-shadow:none}
+.msg .its .item .nm{font-size:17px}.msg .its .item .pr{font-size:17px}
+.msg .devs{margin-top:8px}.msg.T .ftrow{border-color:#333}.msg.T .ftrow small{color:#c9cdd2}.msg.T .ftrow b{color:#fff}
+.sug{display:flex;gap:8px;overflow-x:auto;padding:2px 0 10px;scrollbar-width:none}.sug::-webkit-scrollbar{display:none}
+.sug button{flex:none;padding:10px 16px;border-radius:999px;border:0;background:rgba(255,255,255,.16);font-size:18px;font-weight:700;white-space:nowrap}
+.askbar{display:flex;gap:10px}
+.askbar input{flex:1;height:72px;border:3px solid transparent;border-radius:22px;padding:0 22px;font:700 23px var(--kr);color:#191f28;background:#fff;outline:none;-webkit-user-select:text;user-select:text}
+.askbar input:focus{border-color:var(--accent)}
+.askbar button{flex:none;width:110px;border:0;border-radius:22px;background:#E01A19;color:#fff;font-family:var(--jal);font-size:22px}
+.typing{display:inline-flex;gap:5px}.typing i{width:9px;height:9px;border-radius:50%;background:#c9cdd2;animation:tp 1s infinite}.typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}
+@keyframes tp{50%{transform:translateY(-6px);opacity:.5}}
+body.land .msg .its{grid-template-columns:repeat(5,1fr)}
 .empty{grid-column:1/-1;padding:48px 0;text-align:center;font-size:22px;color:var(--sub)}
 
 .toast{position:fixed;left:50%;top:40px;transform:translate(-50%,-20px);opacity:0;padding:18px 28px;border-radius:999px;
@@ -717,6 +740,92 @@ function ftPane(){
     (F?'<button class="main" data-act="m-staff">💁 직원에게 보여 주기</button>':'<button class="main" data-act="ft11">🏆 11병 패키지 보기</button>')+'</div></div>';
 }
 
+/* ---------- 타자로 물어보면 빨강이(F), 까망이(T)가 같이 답하기 ----------
+   인터넷 AI 없이 패드 안에서 단어를 읽어서 고름 (맛, 멘솔, 니코틴, 입호흡/폐호흡, 기기/액상, 예산) */
+var KW = {
+  '과일':/과일|상큼|새콤|포도|사과|애플|복숭아|피치|망고|자두|레몬|라임|딸기|수박|워터멜론|멜론|메론|베리|석류|알로에|자몽|오렌지|파인|리치|용과|체리|키위|귤/,
+  '멘솔·민트':/멘솔|민트|박하|시원|쿨|화한|화하|얼음|아이스|상쾌/,
+  '디저트·음료':/달달|달콤|단\s?거|단맛|디저트|커피|콜라|사이다|소다|우유|밀크|초코|바닐라|요거트|녹차|홍차|티\b|음료|캔디|사탕|아이스크림/,
+  '시가·타바코':/담배맛|연초|타바코|시가|구수|묵직|타격감|목넘김\s?(쎈|센|강)/
+};
+var WORDS = ['청포도','포도','사과','애플','복숭아','피치','망고','자두','레몬','라임','딸기','수박','워터멜론','멜론','블루베리','베리','석류','알로에','자몽','오렌지','파인','리치','용과','체리','콜라','사이다','소다','커피','초코','바닐라','요거트','우유','녹차','민트','시가','보석바'];
+function parseAsk(q){
+  var t=q.replace(/\s+/g,' '), o={raw:q, groups:[], words:[], kind:'mtl'};
+  Object.keys(KW).forEach(function(g){ if (KW[g].test(t)) o.groups.push(g); });
+  o.noMint = /노멘솔|멘솔\s?(없|싫|빼|말고|노)|안\s?시원|시원한\s?(거|건)?\s?(싫|별로|말고)|민트\s?(싫|빼)/.test(t);
+  if (o.noMint) o.groups = o.groups.filter(function(g){return g!=='멘솔·민트'});
+  o.noNic = /무니코틴|니코틴\s?(없|0|빼|노)|노\s?니코틴/.test(t);
+  if (/폐호흡|폐로|폐\s|구름|연기\s?(많|크|빵빵)|모드/.test(t)) o.kind='dl';
+  o.dev = /기기|기계|디바이스|본체|팟\s?(기기)?\s?추천|뭐\s?사|입문\s?세트|하복|말론|플러키|조바/.test(t);
+  o.cheap = /싸|저렴|가성비|싼|돈|아끼|할인|패키지|얼마|가격|최저/.test(t);
+  o.first = /처음|입문|초보|안\s?피워|끊|모르겠/.test(t);
+  o.rank = /인기|잘\s?나가|많이\s?팔|랭킹|베스트|1위|유명/.test(t);
+  var m = t.match(/(\d+(?:\.\d+)?)\s*(만\s?원|만|원)/); if (m) { var n=parseFloat(m[1]); o.budget = /만/.test(m[2]) ? n*10000 : n; }
+  WORDS.forEach(function(w){ if (t.indexOf(w)>=0 && !o.words.some(function(x){return x.indexOf(w)>=0})) o.words.push(w); });
+  return o;
+}
+function answer(q){
+  var o=parseAsk(q), F='', T='', items=[], devs=[], data = o.kind==='dl' ? LUNGL : LIQ;
+  var pool = data.filter(function(x){
+    if (o.groups.length && o.groups.indexOf(x.g)<0) return false;
+    if (o.noMint && (x.cool!==undefined ? x.cool : ((x.t||[]).indexOf('노멘솔')<0 && x.g==='멘솔·민트'))) return false;
+    if (o.noMint && x.cool===undefined && /멘솔|민트|쿨|아이스/.test(x.n)) return false;
+    if (o.noNic && (x.t||[]).indexOf('무니코틴')<0) return false;
+    return true; });
+  if (o.words.length) { var w = pool.filter(function(x){ return o.words.some(function(k){ return ((x.dn||x.n)+(x.f||'')).indexOf(k)>=0; }); }); if (w.length) pool = w; }
+  pool = byRank(pool);
+  var cond = [o.kind==='dl'?'폐호흡':'입호흡'].concat(o.words.length?o.words:o.groups.map(function(g){return g.replace('·',' ')})).concat(o.noMint?['노멘솔']:[]).concat(o.noNic?['무니코틴']:[]);
+  var unit = o.kind==='dl' ? '3병 40,000원이면 병당 13,333원' : '5병 49,500원이면 병당 9,900원, 11병이면 8,182원';
+
+  if (o.dev || (o.first && !o.groups.length && !o.words.length)) {
+    var list = MODELS.filter(function(M){ return !o.budget || M.price<=o.budget; });
+    if (o.kind==='dl') list = list.filter(function(M){ return /하복/.test(M.dn); }).concat(list.filter(function(M){ return !/하복/.test(M.dn); }));
+    var fPick = F_DEV.map(function(d){return d.dn}).filter(function(dn){ return list.some(function(M){return M.dn===dn}); }).slice(0,2);
+    var tPick = list.slice().sort(function(a,b){return a.price-b.price}).slice(0,2);
+    devs = {F:fPick.map(function(dn){ return [dn, (F_DEV.filter(function(d){return d.dn===dn})[0]||{}).say||'']; }),
+            T:tPick.map(function(M){ return [M.dn, '기기 '+won(M.price)+(/^말론/.test(M.dn)?' · 액상 10병 패키지면 '+won(M.price+75000):'')]; })};
+    F = (o.first?'처음이시구나~ 설레겠다! 🥰 ':'')+(o.budget?won(o.budget)+' 안에서 ':'')+'제가 보기엔 들고 다닐 때 제일 예쁜 건 이거예요 💖';
+    T = (o.budget?'예산 '+won(o.budget)+' 이하 기준. ':'')+'기기 값 낮은 순 2개입니다. 액상까지 살 거면 기기 패키지가 따로 사는 것보다 최대 75,000원 쌉니다. 📊';
+    if (!list.length) { F='앗 그 예산엔 딱 맞는 기기가 없어요 🥲 직원한테 같이 물어봐요!'; T='조건 '+won(o.budget)+' 이하 기기: 0개. 예산을 올리거나 직원에게 문의하십시오.'; devs={F:[],T:[]}; }
+    return {F:F, T:T, devs:devs, items:[]};
+  }
+  if (!o.groups.length && !o.words.length && !o.noMint && !o.noNic && !o.rank && !o.cheap) {
+    return {F:'음~ 무슨 맛이 좋은지 조금만 더 알려 줄래요? 🤔 "달달한 거", "시원한 과일"처럼요!', T:'입력에서 조건을 찾지 못했습니다. 맛(과일/멘솔/달달/담배맛), 멘솔 여부, 기기, 예산 중 하나를 넣어 주십시오.', items:[]};
+  }
+  items = pool.slice(0,3);
+  if (!items.length) return {F:'헉 딱 맞는 게 없어요 😢 조건을 하나만 빼 볼까요?', T:'조건 '+cond.join(' + ')+' → 0개. 조건을 줄이십시오.', items:[]};
+  var g0 = o.groups[0] || (items[0]&&items[0].g);
+  var fLine = {'과일':'상큼달달해서 한 모금이면 기분이 확 좋아져요 🍑🌈','멘솔·민트':'머리까지 시원해지는 그 느낌! 상쾌함 그 자체예요 🧊🌊','디저트·음료':'달달해서 하루 끝에 나한테 주는 선물 같아요 🍰💕','시가·타바코':'구수하고 묵직해서 연초 생각날 때 딱이에요 🍂😌'}[g0] || '제 마음에 쏙 드는 걸로 골랐어요 💖';
+  F = (o.words.length?o.words.join(', ')+' 좋아하시는구나~ ':'')+fLine;
+  var top = items[0], sold = RANK[top.n]||0;
+  T = '조건: '+cond.join(' + ')+' → '+pool.length+'개 중 판매량 순 상위 '+items.length+'개입니다.'+(sold?' 1위는 이번 주 '+(BRANCH?BRANCH+'에서 ':'전 지점 ')+sold+'병 팔렸습니다.':'')+' '+unit+'. 💡';
+  return {F:F, T:T, items:items};
+}
+var CHAT_SUG = ['🍇 달달한 과일 추천해줘','🙅 멘솔 없는 거','🧊 엄청 시원한 거','🍂 담배맛 나는 거','💸 10만원 이하 기기','☁️ 폐호흡 망고','🌱 처음인데 뭐 사요?'];
+function chatPane(){
+  var L = state.chat || [];
+  var msgs = L.map(function(m){
+    if (m.who==='me') return '<div class="msg me"><div class="bb">'+esc(m.text)+'</div></div>';
+    var isF = m.who==='F';
+    var body = m.typing ? '<span class="typing"><i></i><i></i><i></i></span>' : esc(m.text);
+    var extra = '';
+    if (m.items && m.items.length) extra += '<div class="its">'+m.items.map(function(id){ var x=LIQ.concat(LUNGL).filter(function(y){return y.id===id})[0]; return x?card(x, isF?'빨강이 픽 💖':((RANK[x.n]||0)?(RANK[x.n])+'병 팔림':'')):''; }).join('')+'</div>';
+    if (m.devs && m.devs.length) extra += '<div class="devs">'+m.devs.map(function(d){return ftDevRow(d[0], d[1])}).join('')+'</div>';
+    return '<div class="msg '+m.who+'"><span class="av">'+(isF?chRed(64):chBlack(64))+'</span><div class="bb"><span class="who">'+(isF?'빨강이 (F)':'까망이 (T)')+'</span>'+body+extra+'</div></div>';
+  }).join('');
+  return '<div class="pane res">'+topBar('빨강이 · 까망이에게 물어보기',1,1)+
+    '<div class="chat" id="chat">'+msgs+'</div>'+
+    '<div class="sug">'+CHAT_SUG.map(function(t){return '<button data-act="sug" data-t="'+esc(t.replace(/^\S+\s/,''))+'">'+esc(t)+'</button>'}).join('')+'</div>'+
+    '<form class="askbar" id="askf"><input id="askq" placeholder="예: 멘솔 없는 포도 맛 추천해줘" autocomplete="off" enterkeyhint="send" value="'+esc(state.askq||'')+'"><button type="submit">보내기</button></form></div>';
+}
+function chatSend(q){
+  q=(q||'').trim(); if(!q) return;
+  var L = state.chat = state.chat || []; L.push({who:'me', text:q});
+  var A = answer(q), f={who:'F',typing:true}, t={who:'T',typing:true}; L.push(f); L.push(t); render();
+  setTimeout(function(){ f.typing=false; f.text=A.F; f.items=(A.items||[]).map(function(x){return x.id}); f.devs=A.devs?A.devs.F:null; render(); }, 600);
+  setTimeout(function(){ t.typing=false; t.text=A.T; t.items=(A.items||[]).slice().reverse().slice(0,0).map(function(x){return x.id}); t.devs=A.devs?A.devs.T:null; render(); }, 1200);
+}
+
 function render(){
   var v=state.view, h='';
   if (v==='home') h = ask({h:'어서 오세요! 👋<br>무엇을 도와드릴까요?', p:'골라 주시면 딱 맞게 안내해 드릴게요.',
@@ -732,6 +841,7 @@ function render(){
   else if (v==='mem-new') h = memPane('new');
   else if (v==='mem-old') h = memPane('old');
   else if (v==='mem-done') h = memDone();
+  else if (v==='chat') h = chatPane();
   else if (v==='ft') h = ftPane();
   else if (v==='mtl-map') h = mapPane();
   else if (v==='mtl-mpack') h = mpackPane();
@@ -790,6 +900,9 @@ function render(){
   ['mName','mYear','mPhone'].forEach(function(id){ var el=document.getElementById(id); if(!el) return; el.addEventListener('input',function(){
     var m=M_(), k={mName:'name',mYear:'year',mPhone:'phone'}[id]; if (k!=='name') el.value=el.value.replace(/\D/g,''); m[k]=el.value; if (m.bad===k) { m.bad=''; el.classList.remove('bad'); }
     var pv=document.getElementById('mPv'), full=m.name.trim()?m.name.trim()+(m.year||''):''; if (pv) pv.innerHTML=full?'<b>'+esc(full)+'</b> 님으로 가입돼요 🙌':''; }); });
+  var askf=document.getElementById('askf'); if(askf){ askf.addEventListener('submit',function(e){ e.preventDefault(); var q=document.getElementById('askq').value; state.askq=''; chatSend(q); });
+    var aq=document.getElementById('askq'); aq.addEventListener('input',function(){ state.askq=aq.value; });
+    var ch=document.getElementById('chat'); if(ch) ch.scrollTop=ch.scrollHeight; }
   var dq=document.getElementById('dq'); if(dq) dq.addEventListener('input',function(){ state.dq=dq.value; var l=(state.dq||'').replace(/\s/g,''); document.getElementById('dres').innerHTML=devCards(l?DEVL.filter(function(d){return (d.n+d.cp).replace(/\s/g,'').indexOf(l)>=0}):DEVL); });
   var sq=document.getElementById('sq'); if(sq) sq.addEventListener('input',function(){ state.q=sq.value; document.getElementById('sres').innerHTML=searchList(); });
 }
@@ -812,6 +925,11 @@ document.getElementById('app').addEventListener('click',function(e){
     if (!/^01[016789]\d{7,8}$/.test(m.phone)) return need('phone','휴대폰 번호를 확인해 주세요 📱');
     if (state.memKind==='new' && !m.agree) return need('agree','(필수) 동의를 눌러 주세요');
     m.bad=''; return go('mem-done'); }
+  if (a==='ft' && state.view==='home') { var k=b.dataset.k;
+    state.chat = k==='F' ? [{who:'F',text:'안녕하세요! 저는 빨강이(F)예요 🥰 예쁘고 기분 좋은 걸로 골라 드릴게요. 편하게 타자로 물어봐 주세요 💖'},{who:'T',text:'까망이(T)입니다. 🤖 저는 가격과 판매량으로만 답합니다. 맛은 취향이니까요.'}]
+                         : [{who:'T',text:'까망이(T)입니다. 🤖 원하는 조건을 입력하십시오. 가격과 판매량 기준으로 답합니다.'},{who:'F',text:'저는 빨강이(F)! 🥰 까망이는 맨날 숫자 얘기만 해요~ 저는 기분 좋은 걸로 골라 드릴게요 💖'}];
+    return go('chat'); }
+  if (a==='sug') return chatSend(b.dataset.t);
   if (a==='ft') { state.ft=b.dataset.k; state.ftm=0; if (state.view==='ft') { render(); return; } return go('ft'); }
   if (a==='ftm') { state.ftm=i; return render(); }
   if (a==='ftdev') { var mi=MODELS.map(function(m){return m.dn}).indexOf(b.dataset.dn); if (mi<0) return; state.model=mi; state.mopt=0; return go('dev-dtl'); }
