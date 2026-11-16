@@ -217,6 +217,9 @@ body.land .done{margin-top:16px;padding:22px}body.land .done .big{font-size:32px
 .pop{animation:pop .5s cubic-bezier(.2,1.6,.4,1)}@keyframes pop{0%{transform:scale(.6);opacity:0}100%{transform:scale(1);opacity:1}}
 /* 베이프렌드 캐릭터 (포토존 그림을 다시 그림): 빨간 동글이, 까만 네모 */
 .chars{position:absolute;right:-8px;top:-122px;display:flex;align-items:flex-end;gap:2px;pointer-events:none}
+.chars button{pointer-events:auto;border:0;background:none;padding:0;position:relative}
+.chars button:active{transform:scale(.94)}
+.chars .tag{position:absolute;left:50%;bottom:-6px;transform:translateX(-50%);padding:3px 10px;border-radius:999px;background:#fff;color:var(--bg);font-size:14px;white-space:nowrap;box-shadow:0 2px 6px rgba(0,0,0,.2)}
 .chars svg{display:block}
 .chars .bub{position:absolute;right:282px;top:22px;padding:10px 16px;border-radius:18px 18px 4px 18px;background:#fff;color:var(--bg);font-size:18px;font-weight:800;white-space:nowrap;box-shadow:0 4px 12px rgba(0,0,0,.2);animation:bob 2.4s ease-in-out infinite}
 .q{position:relative}
@@ -228,6 +231,32 @@ body.land .done{margin-top:16px;padding:22px}body.land .done .big{font-size:32px
 .call svg{display:block}
 body.land .chars{position:static;margin-top:36px;justify-content:flex-start}
 body.land .chars .bub{position:relative;right:auto;top:auto;align-self:flex-start;margin-right:6px}
+/* F, T 추천 */
+.fthero{margin-top:18px;display:flex;align-items:flex-end;gap:14px}
+.fthero .say{flex:1;position:relative;margin-bottom:34px;padding:20px 24px;border-radius:26px 26px 26px 6px;background:#fff;color:#191f28;font-size:23px;line-height:1.45;box-shadow:0 4px 14px rgba(0,0,0,.2)}
+.fthero .say b{font-family:var(--jal);font-weight:normal;color:var(--bg)}
+.ftc{margin-top:18px;flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:16px;padding-bottom:8px;scrollbar-width:none}
+.ftc::-webkit-scrollbar{display:none}
+.ftcard{background:#fff;color:#191f28;border-radius:24px;padding:20px 22px;flex:none}
+.ftcard h3{font-family:var(--jal);font-weight:normal;font-size:25px;margin-bottom:12px}
+.ftcard .note{font-size:18px;color:#6b7684;margin:-4px 0 12px}
+.ftrow{display:flex;align-items:center;gap:16px;padding:12px 0;border-top:1px solid #eef0f3;width:100%;border-left:0;border-right:0;border-bottom:0;background:none;text-align:left;color:inherit}
+.ftrow:first-of-type{border-top:0}
+.ftrow img,.ftrow .ph0{flex:none;width:84px;height:84px;border-radius:18px;object-fit:cover;background:#f2f2f4}
+.ftrow .tx{flex:1;min-width:0}.ftrow b{display:block;font-family:var(--jal);font-weight:normal;font-size:22px}
+.ftrow small{display:block;margin-top:4px;font-size:18px;color:#4e5968;line-height:1.4}
+.ftrow .rt{flex:none;text-align:right;font-family:var(--jal);font-size:21px;color:#e5313b}.ftrow .rt s{display:block;font-family:var(--kr);font-size:15px;color:#b0b8c1}
+.ftrow i{font-style:normal;font-size:30px;color:#b0b8c1}
+.moods{display:flex;gap:10px;margin-bottom:6px;flex-wrap:wrap}
+.moods button{padding:10px 16px;border-radius:999px;border:2px solid #eef0f3;background:#fff;font-size:18px;font-weight:700;color:#191f28}
+.moods button.on{border-color:var(--bg);background:#fff6f7;color:var(--bg)}
+.tt{width:100%;border-collapse:collapse;font-size:20px}
+.tt td{padding:10px 4px;border-top:1px solid #eef0f3}.tt tr:first-child td{border-top:0}
+.tt td:last-child{text-align:right;font-family:var(--jal);color:#191f28}.tt tr.best td{color:#e5313b}.tt tr.best td:last-child{color:#e5313b}
+.ftc .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.ftc .grid3 .item{box-shadow:0 0 0 1px #eef0f3}
+body.land .fthero svg{height:140px}
+body.land .ftc{display:grid;grid-template-columns:1fr 1fr;align-content:start}
 .empty{grid-column:1/-1;padding:48px 0;text-align:center;font-size:22px;color:var(--sub)}
 
 .toast{position:fixed;left:50%;top:40px;transform:translate(-50%,-20px);opacity:0;padding:18px 28px;border-radius:999px;
@@ -636,12 +665,62 @@ function chBlack(h){ return '<svg viewBox="0 0 200 215" height="'+h+'" aria-hidd
   '<rect x="48" y="44" width="104" height="124" rx="30" fill="#141414" stroke="#fff" stroke-width="3"/>'+
   '<circle cx="84" cy="98" r="5.5" fill="#fff"/><circle cx="116" cy="98" r="5.5" fill="#fff"/>'+
   '<path d="M90 120 H110" stroke="#fff" stroke-width="5" stroke-linecap="round"/></svg>'; }
-function chars(msg){ return '<div class="chars">'+(msg?'<span class="bub">'+esc(msg)+'</span>':'')+'<span class="bob">'+chRed(150)+'</span><span class="bob2">'+chBlack(150)+'</span></div>'; }
+function chars(msg){ return '<div class="chars">'+(msg?'<span class="bub">'+esc(msg)+'</span>':'')+'<button class="bob" data-act="ft" data-k="F" aria-label="빨강이 감성 추천">'+chRed(150)+'<span class="tag">F 감성 추천</span></button><button class="bob2" data-act="ft" data-k="T" aria-label="까망이 가성비 추천">'+chBlack(150)+'<span class="tag">T 가성비 추천</span></button></div>'; }
+
+/* ---------- 캐릭터 추천: 빨강이 = F (감성), 까망이 = T (가성비) ---------- */
+var F_DEV = [
+  {dn:'말론S', say:'손에 쏙 들어오는 크기라 너무 귀여워요 🥹 다크그린, 샌드골드 색은 진짜 감성 그 자체!'},
+  {dn:'하복2', say:'올리브, 네이비 색 보셨어요? 🫒 각진 무늬가 빛 받으면 반짝여서 볼 때마다 기분 좋아요 ✨'},
+  {dn:'플러키', say:'티파니 블루 실화예요? 💙 가방에서 꺼낼 때마다 다들 어디 거냐고 물어봐요!'},
+  {dn:'말론', say:'묵직하고 고급스러워서 들고 있으면 괜히 어른 된 기분 😎'}
+];
+var F_MOOD = [
+  {k:'과일', t:'🍑 상큼하고 싶을 때', say:'기분 꿀꿀한 날엔 상큼한 과일이 최고예요! 한 모금이면 기분이 확 좋아져요 🌈'},
+  {k:'디저트·음료', t:'🍰 달달 위로가 필요할 때', say:'오늘 하루 고생했으니까 달달한 걸로 나를 위로해 줘요 🥺💕'},
+  {k:'멘솔·민트', t:'🧊 정신 번쩍 들고 싶을 때', say:'머리가 복잡할 땐 시원한 멘솔로 싹 비워요! 상쾌함 그 자체 🌊'}
+];
+function ftDevRow(dn, say, right){
+  var M = MODELS.filter(function(m){return m.dn===dn})[0]; if (!M) return '';
+  return '<button class="ftrow" data-act="ftdev" data-dn="'+esc(dn)+'">'+(M.img?'<img src="'+esc(M.img)+'" alt="">':'<span class="ph0"></span>')+
+    '<span class="tx"><b>'+esc(dn)+'</b><small>'+esc(say)+'</small></span>'+(right||'<i>›</i>')+'</button>';
+}
+function ftPane(){
+  var F = state.ft==='F', h='', ch = F ? chRed(150) : chBlack(150);
+  var prem = byRank(LIQ.filter(function(x){return x.line==='프리미엄'}));
+  if (F) {
+    var md = F_MOOD[state.ftm||0], liqs = prem.filter(function(x){return x.g===md.k}).slice(0,3);
+    h = '<div class="fthero"><span class="bob">'+ch+'</span><div class="say">어머 오셨어요?! 🥰<br><b>빨강이(F)</b>는요, 매일 손에 쥐는 거니까 <b>예쁘고 기분 좋은 게</b> 제일 중요하다고 생각해요 💖</div></div>'+
+      '<section class="ftc">'+
+        '<div class="ftcard"><h3>💖 보기만 해도 설레는 기기</h3>'+F_DEV.map(function(d){return ftDevRow(d.dn,d.say)}).join('')+'</div>'+
+        '<div class="ftcard"><h3>🌈 오늘 기분은 어때요?</h3><div class="moods">'+F_MOOD.map(function(m,i){return '<button data-act="ftm" data-i="'+i+'" class="'+(i===(state.ftm||0)?'on':'')+'">'+m.t+'</button>'}).join('')+'</div>'+
+          '<div class="note">'+esc(md.say)+'</div><div class="grid3">'+liqs.map(function(x,i){return card(x, i===0?'빨강이 픽 💖':'')}).join('')+'</div></div>'+
+      '</section>';
+  } else {
+    var top = prem.filter(function(x){return (RANK[x.n]||0)>0}).slice(0,3), cheap = MODELS.slice().sort(function(a,b){return a.price-b.price}).slice(0,3);
+    var mp = (MODELS.filter(function(m){return m.dn==='말론'})[0]||{price:72000}).price;
+    h = '<div class="fthero"><span class="bob">'+ch+'</span><div class="say">결론부터 말씀드리겠습니다. 🤖<br><b>맛은 취향</b>입니다. 그래서 <b>가격과 숫자</b>로만 추천합니다. 📊</div></div>'+
+      '<section class="ftc">'+
+        '<div class="ftcard"><h3>📊 액상 1병 실제 가격</h3><table class="tt">'+
+          '<tr><td>1병씩</td><td>15,000원</td></tr><tr><td>5병 패키지 (49,500원)</td><td>9,900원</td></tr>'+
+          '<tr class="best"><td>🏆 11병 패키지 (90,000원)</td><td>8,182원</td></tr></table>'+
+          '<div class="note" style="margin:10px 0 0">→ 11병이 1병씩보다 <b style="color:#e5313b">병당 6,818원 (45%)</b> 쌉니다. 어차피 피울 거면 11병이 합리적입니다.</div></div>'+
+        '<div class="ftcard"><h3>🧮 기기는 패키지가 정답입니다</h3>'+
+          ftDevRow('말론','따로 사면 '+won(mp+150000)+'. 액상 10병 포함 패키지면 병당 7,500원 꼴입니다.','<span class="rt"><s>'+won(mp+150000)+'</s>'+won(mp+75000)+'</span>')+
+          ftDevRow('하복2','입호흡, 폐호흡 둘 다 됩니다. 기기 하나로 두 가지 = 기기값 절약.','<span class="rt"><s>'+won(89000+150000)+'</s>164,000원</span>')+'</div>'+
+        '<div class="ftcard"><h3>💰 기기 값만 보면 이게 제일 쌉니다</h3>'+cheap.map(function(M){return ftDevRow(M.dn,'기기 값 순위 최저권. 일단 시작해 보기엔 부담이 제일 적습니다.','<span class="rt">'+won(M.price)+'</span>')}).join('')+'</div>'+
+        '<div class="ftcard"><h3>📈 실패 확률 최소: 판매량 1~3위</h3><div class="note">많이 팔린 데는 이유가 있습니다. 이번 주 데이터 기준입니다.</div><div class="grid3">'+
+          top.map(function(x,i){return card(x, (i+1)+'위 · '+(RANK[x.n]||0)+'병')}).join('')+'</div></div>'+
+      '</section>';
+  }
+  return '<div class="pane res">'+topBar(F?'빨강이의 감성 추천 💖':'까망이의 가성비 추천 🤖',1,1)+h+
+    '<div class="acts"><button data-act="ft" data-k="'+(F?'T':'F')+'">'+(F?'🤖 까망이(T) 의견 듣기':'💖 빨강이(F) 의견 듣기')+'</button>'+
+    (F?'<button class="main" data-act="m-staff">💁 직원에게 보여 주기</button>':'<button class="main" data-act="ft11">🏆 11병 패키지 보기</button>')+'</div></div>';
+}
 
 function render(){
   var v=state.view, h='';
   if (v==='home') h = ask({h:'어서 오세요! 👋<br>무엇을 도와드릴까요?', p:'골라 주시면 딱 맞게 안내해 드릴게요.',
-    extra:chars('뭐든 물어보세요!')+'<button class="memban" data-act="mem"><span class="em">🎁</span><span><b>회원등록하고 적립 받기</b><small>구매 이력이 남아서 AS 받을 때도 편해요</small></span><i>›</i></button>', opts:[
+    extra:chars('우리 눌러 보세요! 👆')+'<button class="memban" data-act="mem"><span class="em">🎁</span><span><b>회원등록하고 적립 받기</b><small>구매 이력이 남아서 AS 받을 때도 편해요</small></span><i>›</i></button>', opts:[
     {e:'👋',t:'처음 오셨을까요?',d:'전자담배가 처음이거나 매장 방문이 처음이에요',act:'new'},
     {e:'💨',t:'입호흡 액상을 찾으실까요?',d:'연초처럼 입으로 머금었다 들이마셔요',act:'mtl'},
     {e:'📱',t:'기기 보러 왔어요!',d:'말론, 말론S, 하복2 등 매장 기기 구경하기',act:'dev'},
@@ -653,6 +732,7 @@ function render(){
   else if (v==='mem-new') h = memPane('new');
   else if (v==='mem-old') h = memPane('old');
   else if (v==='mem-done') h = memDone();
+  else if (v==='ft') h = ftPane();
   else if (v==='mtl-map') h = mapPane();
   else if (v==='mtl-mpack') h = mpackPane();
   else if (v==='dev') h = modelListPane();
@@ -732,6 +812,10 @@ document.getElementById('app').addEventListener('click',function(e){
     if (!/^01[016789]\d{7,8}$/.test(m.phone)) return need('phone','휴대폰 번호를 확인해 주세요 📱');
     if (state.memKind==='new' && !m.agree) return need('agree','(필수) 동의를 눌러 주세요');
     m.bad=''; return go('mem-done'); }
+  if (a==='ft') { state.ft=b.dataset.k; state.ftm=0; if (state.view==='ft') { render(); return; } return go('ft'); }
+  if (a==='ftm') { state.ftm=i; return render(); }
+  if (a==='ftdev') { var mi=MODELS.map(function(m){return m.dn}).indexOf(b.dataset.dn); if (mi<0) return; state.model=mi; state.mopt=0; return go('dev-dtl'); }
+  if (a==='ft11') { state.kind='mtl'; state.mpack=4; state.mpn=11; return go('mtl-mpack'); }
   if (a==='dev') return on('dev');
   if (a==='mpick') { state.model=i; state.mopt=0; return go('dev-dtl'); }
   if (a==='mopt') { state.mopt=i; return render(); }
