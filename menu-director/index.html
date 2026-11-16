@@ -9,7 +9,7 @@ function vfFit(){var land=matchMedia("(orientation: landscape)").matches,a=scree
   if(document.body)document.body.classList.toggle('land',land);}
 vfFit();addEventListener('orientationchange',function(){setTimeout(vfFit,60);});addEventListener('resize',function(){clearTimeout(window.__vft);window.__vft=setTimeout(vfFit,120);});</script>
 <meta name="robots" content="noindex">
-<meta name="theme-color" content="#6E1F2A">
+<meta name="theme-color" content="#1A88E8">
 <link rel="icon" href="vf_logo.png">
 <title>베이프렌드 상담패드 director</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
@@ -28,19 +28,22 @@ vfFit();addEventListener('orientationchange',function(){setTimeout(vfFit,60);});
    바탕은 VAFRIEND 빨강보다 차분한 버건디.
    11/16 2번 입호흡: 맛 계열 → 멘솔/니코틴 → 추천 목록(이번 주 판매 많은 순) */
 :root{
-  --bg:#6E1F2A;            /* 버건디 바탕 */
-  --bg2:#5A1822;           /* 아래쪽 살짝 진하게 */
-  --card:rgba(255,255,255,.10);
-  --card-on:rgba(255,255,255,.22);
-  --ink:#fff; --sub:rgba(255,255,255,.72);
-  --accent:#FFB4B9;        /* 연한 빨강: 번호, 진행 막대, 눌렀을 때 테두리 */
+  /* 11/16 하늘색 + 흰색 투톤 (토스 느낌). 하늘색 바탕에 흰 카드, 강조는 진한 하늘색 */
+  --bg:#1A88E8;            /* 하늘색 바탕 */
+  --bg2:#1A88E8;
+  --deep:#0A62C9;          /* 흰 카드 위 강조 글씨, 가격, 아끼는 금액 */
+  --tint:#E8F3FF;          /* 흰 카드 안 연한 하늘색 */
+  --card:rgba(255,255,255,.18);
+  --card-on:rgba(255,255,255,.3);
+  --ink:#fff; --sub:rgba(255,255,255,.92);
+  --accent:#FFFFFF;
   --r:28px; --pad:48px;
   --kr:"Pretendard","Malgun Gothic",sans-serif;
   --jal:"Jalnan","Pretendard","Malgun Gothic",sans-serif;
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{height:100%}
-body{background:linear-gradient(180deg,var(--bg) 0%,var(--bg2) 100%);color:var(--ink);font-family:var(--kr);
+body{background:var(--bg);color:var(--ink);font-family:var(--kr);
   -webkit-user-select:none;user-select:none;overflow:hidden}
 button{font-family:inherit;color:inherit;cursor:pointer}
 .screen{height:100%;padding:56px var(--pad) 48px}
@@ -62,13 +65,13 @@ button{font-family:inherit;color:inherit;cursor:pointer}
 .q p{margin-top:20px;font-size:24px;color:var(--sub);line-height:1.5}
 .opts{margin-top:auto;display:flex;flex-direction:column;gap:20px}
 .opt{display:flex;align-items:center;gap:22px;width:100%;min-height:112px;padding:20px 26px;
-  background:#fff;color:#191f28;border:2px solid transparent;border-radius:var(--r);box-shadow:0 4px 14px rgba(40,0,10,.18);
+  background:#fff;color:#191f28;border:2px solid transparent;border-radius:var(--r);box-shadow:0 4px 14px rgba(0,50,110,.18);
   text-align:left;transition:background .15s,border-color .15s,transform .1s}
 .opt:active{transform:scale(.985)}
-.opt.on{border-color:var(--bg);background:#fff6f7}
+.opt.on{border-color:var(--deep);background:var(--tint)}
 .opt::after{content:'›';margin-left:auto;padding-left:8px;font-size:40px;line-height:1;color:#b0b8c1}
-.opt .n{flex:none;width:68px;height:68px;border-radius:22px;background:#fbeff0;
-  display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:800;color:var(--bg)}
+.opt .n{flex:none;width:68px;height:68px;border-radius:22px;background:var(--tint);
+  display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:800;color:var(--deep)}
 .opt .t{display:block;font-size:29px;font-weight:800;letter-spacing:-.03em;color:#191f28}
 .opt .d{display:block;margin-top:6px;font-size:20px;color:#6b7684}
 
@@ -77,21 +80,21 @@ button{font-family:inherit;color:inherit;cursor:pointer}
 .res .q h1{font-size:44px}
 .chips{margin-top:18px;display:flex;flex-wrap:wrap;gap:10px}
 .chips span{padding:8px 16px;border-radius:999px;background:var(--card);font-size:18px;font-weight:700}
-.ev{margin-top:20px;padding:16px 22px;border-radius:18px;background:rgba(255,180,185,.16);font-size:19px;line-height:1.45}
+.ev{margin-top:20px;padding:16px 22px;border-radius:18px;background:rgba(255,255,255,.22);font-size:19px;line-height:1.45}
 .ev b{color:var(--accent)}
 .grid{margin-top:24px;flex:1;overflow-y:auto;display:grid;grid-template-columns:repeat(3,1fr);gap:16px;align-content:start;grid-auto-rows:max-content;
   padding-bottom:8px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
 .grid::-webkit-scrollbar{display:none}
 .item{background:#fff;color:#15120f;border-radius:22px;overflow:hidden;display:flex;flex-direction:column}
 .item .ph{position:relative;aspect-ratio:1/1;background:#f2f2f4}
-.ph .tile{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:12px;text-align:center;font-size:24px;font-weight:800;color:#6E1F2A;background:#f6e9ea;line-height:1.3}
+.ph .tile{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:12px;text-align:center;font-size:24px;font-weight:800;color:var(--deep);background:var(--tint);line-height:1.3}
 .item .ph img{width:100%;height:100%;object-fit:cover;display:block}
-.item .rk{position:absolute;left:10px;top:10px;padding:5px 11px;border-radius:999px;background:#d81f2a;color:#fff;font-size:15px;font-weight:800}
+.item .rk{position:absolute;left:10px;top:10px;padding:5px 11px;border-radius:999px;background:var(--deep);color:#fff;font-size:15px;font-weight:800}
 .item .tg{position:absolute;right:10px;top:10px;padding:5px 10px;border-radius:999px;background:rgba(21,18,15,.75);color:#fff;font-size:14px;font-weight:700}
 .item .bd{padding:14px 16px 16px;display:flex;flex-direction:column;gap:4px;flex:1}
 .item .br{font-size:15px;color:#6c675f;font-weight:700}
 .item .nm{font-size:20px;font-weight:800;line-height:1.3;letter-spacing:-.02em}
-.item .pr{margin-top:auto;padding-top:6px;font-size:20px;font-weight:800;color:#d81f2a}
+.item .pr{margin-top:auto;padding-top:6px;font-size:20px;font-weight:800;color:var(--deep)}
 .item .lc{font-size:14px;color:#6c675f}
 .sq{margin-top:22px;width:100%;height:76px;border:0;border-radius:22px;padding:0 28px;font:700 26px var(--kr);color:#15120f;background:#fff;outline:none;-webkit-user-select:text;user-select:text}
 .grid.list{grid-template-columns:1fr;gap:12px}
@@ -99,7 +102,7 @@ button{font-family:inherit;color:inherit;cursor:pointer}
 .row img{width:72px;height:72px;border-radius:14px;object-fit:cover;background:#fff;flex:none}
 .row span{flex:1;display:flex;flex-direction:column;gap:4px}.row b{font-size:23px}.row small{font-size:17px;color:var(--sub)}
 .row i{font-style:normal;font-size:34px;color:var(--sub)}
-.call{display:flex;align-items:center;justify-content:center;height:200px;border-radius:var(--r);background:#fff;color:var(--bg);font-size:52px;font-weight:800;animation:pulse 1.6s ease-in-out infinite}
+.call{display:flex;align-items:center;justify-content:center;height:200px;border-radius:var(--r);background:#fff;color:var(--deep);font-size:52px;font-weight:800;animation:pulse 1.6s ease-in-out infinite}
 @keyframes pulse{50%{transform:scale(.97);opacity:.85}}
 body.land .grid.list{grid-template-columns:1fr 1fr}
 body.land .call{height:150px;font-size:44px}
@@ -109,14 +112,14 @@ body.land .call{height:150px;font-size:44px}
 .rec .info{flex:1;display:flex;flex-direction:column;gap:10px;min-width:0}
 .rec .info h2{font-size:30px;font-weight:800;letter-spacing:-.02em}
 .rec .why{font-size:19px;line-height:1.5;color:#4a4540}
-.pk{display:flex;justify-content:space-between;gap:12px;padding:12px 16px;border-radius:14px;background:#f6e9ea;font-size:20px;font-weight:700}
-.pk b{color:#d81f2a;white-space:nowrap}
+.pk{display:flex;justify-content:space-between;gap:12px;padding:12px 16px;border-radius:14px;background:var(--tint);font-size:20px;font-weight:700}
+.pk b{color:var(--deep);white-space:nowrap}
 .pk.alt{background:#f2f2f4;font-weight:600}
 .small{font-size:16px;color:#6c675f}
 .sec{grid-column:1/-1;font-size:24px;font-weight:800}
 .acts{display:flex;gap:14px;margin-top:16px}
 .acts button{flex:1;height:72px;border:0;border-radius:20px;background:var(--card);font-size:22px;font-weight:800}
-.acts button.main{background:#fff;color:var(--bg)}
+.acts button.main{background:#fff;color:var(--deep)}
 body.land .rec .dv{width:170px}
 body.land .newres{display:grid;grid-template-columns:1.15fr 1fr;grid-template-rows:auto auto 1fr auto;column-gap:32px}
 body.land .newres .top,body.land .newres .bar,body.land .newres .acts{grid-column:1/-1}
@@ -135,7 +138,7 @@ body.land .newres .item .nm{font-size:17px}body.land .newres .item .pr{font-size
 .dtl h2{font-size:32px;font-weight:800;letter-spacing:-.02em}
 .dtl dl{display:grid;grid-template-columns:auto 1fr;gap:8px 16px;font-size:19px}
 .dtl dt{color:#6c675f;font-weight:700}.dtl dd{font-weight:700}
-.dtl dd.red{color:#d81f2a}
+.dtl dd.red{color:var(--deep)}
 .dtl p{font-size:19px;line-height:1.55;color:#4a4540}
 .tipbox{margin-top:28px;padding:28px;border-radius:var(--r);background:#fff;color:#15120f}
 .tipbox li{margin:0 0 14px 28px;font-size:23px;line-height:1.5}
@@ -144,17 +147,17 @@ body.land .dgrid{grid-template-columns:repeat(6,1fr)}
 body.land .dtl .ph{width:220px}
 .colors{display:flex;flex-wrap:wrap;gap:8px}
 .colors button{padding:8px 16px;border-radius:999px;border:2px solid #e6e6ea;background:#fff;color:#15120f;font-size:17px;font-weight:700}
-.colors button.on{border-color:#d81f2a;color:#d81f2a}
-.dcard .pr{padding:0 12px 12px;font-size:17px;font-weight:800;color:#d81f2a}
+.colors button.on{border-color:var(--deep);color:var(--deep)}
+.dcard .pr{padding:0 12px 12px;font-size:17px;font-weight:800;color:var(--deep)}
 .dcard b{padding-bottom:4px}
 /* 입호흡 맛 지도 (커피 취향 탐색 참고) */
 .mapf{margin-top:18px;display:flex;gap:10px}
 .mapf button{padding:10px 20px;border-radius:999px;border:0;background:var(--card);font-size:19px;font-weight:700}
-.mapf button.on{background:#fff;color:var(--bg)}
+.mapf button.on{background:#fff;color:var(--deep)}
 .tmap{position:relative;margin:24px auto 0;width:100%;max-width:704px;aspect-ratio:1/1;border-radius:24px;background:rgba(0,0,0,.22);padding:44px}
 .tmap .qd{position:absolute;display:grid;grid-template-columns:repeat(4,1fr);gap:8px;align-content:center;justify-items:center;padding:30px 18px;
   border:1.5px dashed rgba(255,255,255,.35);border-radius:16px;background:rgba(255,255,255,.04);transition:background .15s}
-.tmap .qd:active,.tmap .qd.on{background:rgba(255,180,185,.22);border-color:var(--accent)}
+.tmap .qd:active,.tmap .qd.on{background:rgba(255,255,255,.26);border-color:var(--accent)}
 .tmap .qd.tl{left:44px;top:44px;right:calc(50% + 10px);bottom:calc(50% + 10px)}
 .tmap .qd.tr{right:44px;top:44px;left:calc(50% + 10px);bottom:calc(50% + 10px)}
 .tmap .qd.bl{left:44px;bottom:44px;right:calc(50% + 10px);top:calc(50% + 10px)}
@@ -164,15 +167,15 @@ body.land .dtl .ph{width:220px}
 .tmap .qd i{display:block;width:58px;height:58px;border-radius:50%;overflow:hidden;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.3)}
 .tmap .qd i img{width:100%;height:100%;object-fit:cover;object-position:50% 30%}
 .tmap .qd .ql{position:absolute;left:12px;top:8px;font-size:15px;font-weight:800;color:rgba(255,255,255,.85)}
-.tmap .ax{position:absolute;width:96px;height:96px;border-radius:50%;background:#fff;color:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;
+.tmap .ax{position:absolute;width:96px;height:96px;border-radius:50%;background:#fff;color:var(--deep);display:flex;flex-direction:column;align-items:center;justify-content:center;
   font-size:19px;font-weight:800;box-shadow:0 4px 14px rgba(0,0,0,.25);z-index:2;pointer-events:none}
-.tmap .ax small{font-size:13px;font-weight:700;color:#8a5a60}
+.tmap .ax small{font-size:13px;font-weight:700;color:#4f6f90}
 .tmap .ax.t{left:50%;top:0;transform:translate(-50%,-30%)}
 .tmap .ax.b{left:50%;bottom:0;transform:translate(-50%,30%)}
 .tmap .ax.l{left:0;top:50%;transform:translate(-30%,-50%)}
 .tmap .ax.r{right:0;top:50%;transform:translate(30%,-50%)}
 .tmap .hint{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:2;pointer-events:none;padding:10px 18px;border-radius:999px;
-  background:rgba(40,10,15,.75);font-size:18px;font-weight:800;white-space:nowrap}
+  background:rgba(0,60,130,.72);font-size:18px;font-weight:800;white-space:nowrap}
 body.land .pane.res:has(.mapwrap){display:grid;grid-template-columns:1fr auto;grid-template-rows:auto auto 1fr;column-gap:40px}
 body.land .pane.res:has(.mapwrap) .top,body.land .pane.res:has(.mapwrap) .bar{grid-column:1/-1}
 body.land .mapwrap{grid-column:2;grid-row:3;min-height:0;padding:28px 0 8px}
@@ -181,17 +184,17 @@ body.land .tmap .qd i{width:46px;height:46px}
 body.land .tmap .qd{padding:26px 12px 10px;gap:6px}
 .pksz{margin-top:16px;display:flex;gap:12px}
 .pksz button{flex:1;height:64px;border-radius:18px;border:2px solid transparent;background:var(--card);font-size:21px;font-weight:800}
-.pksz button.on{background:#fff;color:var(--bg);border-color:var(--accent)}
-.save{margin-top:18px;display:flex;align-items:center;gap:18px;background:#fff;color:#191f28;border-radius:24px;padding:20px 24px;box-shadow:0 4px 14px rgba(40,0,10,.18)}
+.pksz button.on{background:#fff;color:var(--deep);border-color:var(--accent)}
+.save{margin-top:18px;display:flex;align-items:center;gap:18px;background:#fff;color:#191f28;border-radius:24px;padding:20px 24px;box-shadow:0 4px 14px rgba(0,50,110,.18)}
 .save .em{font-size:46px;line-height:1}
 .save .tx{flex:1;min-width:0}
 .save .l{font-size:18px;font-weight:700;color:#6b7684}
-.save .big{margin-top:2px;font-size:34px;font-weight:800;letter-spacing:-.03em;color:#e5313b}
+.save .big{margin-top:2px;font-size:34px;font-weight:800;letter-spacing:-.03em;color:var(--deep)}
 .save .pr{margin-top:4px;font-size:18px;color:#6b7684}.save .pr s{color:#b0b8c1}.save .pr b{color:#191f28}
-.save .pct{flex:none;padding:8px 14px;border-radius:999px;background:#ffe9ea;color:#e5313b;font-size:22px;font-weight:800}
+.save .pct{flex:none;padding:8px 14px;border-radius:999px;background:var(--tint);color:var(--deep);font-size:22px;font-weight:800}
 .pk .pp{display:flex;align-items:baseline;gap:8px;white-space:nowrap}.pk .pp s{font-size:15px;color:#9a9a9a;font-weight:600}
-.pk em{display:block;margin-top:3px;font-style:normal;font-size:15px;font-weight:800;color:#e5313b}
-.item .unit{font-size:14px;font-weight:700;color:#e5313b;background:#ffeef0;border-radius:8px;padding:4px 8px;align-self:flex-start}
+.pk em{display:block;margin-top:3px;font-style:normal;font-size:15px;font-weight:800;color:var(--deep)}
+.item .unit{font-size:14px;font-weight:700;color:var(--deep);background:var(--tint);border-radius:8px;padding:4px 8px;align-self:flex-start}
 /* 첫 화면 회원등록 띠 */
 .memban{margin-top:28px;display:flex;align-items:center;gap:18px;width:100%;padding:18px 22px;border:0;border-radius:22px;background:rgba(255,255,255,.14);text-align:left}
 .memban .em{font-size:38px}.memban b{display:block;font-size:24px;font-weight:800}.memban small{display:block;margin-top:4px;font-size:18px;color:var(--sub)}
@@ -205,8 +208,8 @@ body.land .tmap .qd{padding:26px 12px 10px;gap:6px}
 .form .fi span{font-size:24px;font-weight:800;white-space:nowrap}
 .ck{display:flex;align-items:center;gap:14px;width:100%;padding:16px 20px;border:0;border-radius:18px;background:var(--card);font-size:21px;font-weight:700;text-align:left}
 .ck i{flex:none;width:34px;height:34px;border-radius:50%;border:2px solid rgba(255,255,255,.5);display:flex;align-items:center;justify-content:center;font-style:normal;font-size:20px}
-.ck.on i{background:#fff;color:var(--bg);border-color:#fff}.ck.on i::after{content:'✓'}.ck.bad{outline:3px solid #ff8a8a}
-.cta{margin-top:auto;height:84px;border:0;border-radius:22px;background:#fff;color:var(--bg);font-size:27px;font-weight:800}
+.ck.on i{background:#fff;color:var(--deep);border-color:#fff}.ck.on i::after{content:'✓'}.ck.bad{outline:3px solid #ff8a8a}
+.cta{margin-top:auto;height:84px;border:0;border-radius:22px;background:#fff;color:var(--deep);font-size:27px;font-weight:800}
 .pv{font-size:20px;color:var(--sub)}.pv b{color:#fff}
 .done{margin-top:40px;background:#fff;color:#191f28;border-radius:var(--r);padding:32px;display:flex;flex-direction:column;gap:12px}
 .done .big{font-size:40px;font-weight:800;letter-spacing:-.03em}.done .row2{display:flex;justify-content:space-between;font-size:24px;padding:14px 0;border-top:1px solid #eef0f3}
@@ -219,9 +222,9 @@ body.land .done{margin-top:16px;padding:22px}body.land .done .big{font-size:32px
 .chars{position:absolute;right:-8px;top:-122px;display:flex;align-items:flex-end;gap:2px;pointer-events:none}
 .chars button{pointer-events:auto;border:0;background:none;padding:0;position:relative}
 .chars button:active{transform:scale(.94)}
-.chars .tag{position:absolute;left:50%;bottom:-6px;transform:translateX(-50%);padding:3px 10px;border-radius:999px;background:#fff;color:var(--bg);font-size:14px;white-space:nowrap;box-shadow:0 2px 6px rgba(0,0,0,.2)}
+.chars .tag{position:absolute;left:50%;bottom:-6px;transform:translateX(-50%);padding:3px 10px;border-radius:999px;background:#fff;color:var(--deep);font-size:14px;white-space:nowrap;box-shadow:0 2px 6px rgba(0,0,0,.2)}
 .chars svg{display:block}
-.chars .bub{position:absolute;right:282px;top:22px;padding:10px 16px;border-radius:18px 18px 4px 18px;background:#fff;color:var(--bg);font-size:18px;font-weight:800;white-space:nowrap;box-shadow:0 4px 12px rgba(0,0,0,.2);animation:bob 2.4s ease-in-out infinite}
+.chars .bub{position:absolute;right:282px;top:22px;padding:10px 16px;border-radius:18px 18px 4px 18px;background:#fff;color:var(--deep);font-size:18px;font-weight:800;white-space:nowrap;box-shadow:0 4px 12px rgba(0,0,0,.2);animation:bob 2.4s ease-in-out infinite}
 .q{position:relative}
 .bob{animation:bob 2.4s ease-in-out infinite}.bob2{animation:bob 2.4s ease-in-out .5s infinite}
 @keyframes bob{50%{transform:translateY(-8px)}}
@@ -234,7 +237,7 @@ body.land .chars .bub{position:relative;right:auto;top:auto;align-self:flex-star
 /* F, T 추천 */
 .fthero{margin-top:18px;display:flex;align-items:flex-end;gap:14px}
 .fthero .say{flex:1;position:relative;margin-bottom:34px;padding:20px 24px;border-radius:26px 26px 26px 6px;background:#fff;color:#191f28;font-size:23px;line-height:1.45;box-shadow:0 4px 14px rgba(0,0,0,.2)}
-.fthero .say b{font-family:var(--jal);font-weight:normal;color:var(--bg)}
+.fthero .say b{font-family:var(--jal);font-weight:normal;color:var(--deep)}
 .ftc{margin-top:18px;flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:16px;padding-bottom:8px;scrollbar-width:none}
 .ftc::-webkit-scrollbar{display:none}
 .ftcard{background:#fff;color:#191f28;border-radius:24px;padding:20px 22px;flex:none}
@@ -245,14 +248,14 @@ body.land .chars .bub{position:relative;right:auto;top:auto;align-self:flex-star
 .ftrow img,.ftrow .ph0{flex:none;width:84px;height:84px;border-radius:18px;object-fit:cover;background:#f2f2f4}
 .ftrow .tx{flex:1;min-width:0}.ftrow b{display:block;font-family:var(--jal);font-weight:normal;font-size:22px}
 .ftrow small{display:block;margin-top:4px;font-size:18px;color:#4e5968;line-height:1.4}
-.ftrow .rt{flex:none;text-align:right;font-family:var(--jal);font-size:21px;color:#e5313b}.ftrow .rt s{display:block;font-family:var(--kr);font-size:15px;color:#b0b8c1}
+.ftrow .rt{flex:none;text-align:right;font-family:var(--jal);font-size:21px;color:var(--deep)}.ftrow .rt s{display:block;font-family:var(--kr);font-size:15px;color:#b0b8c1}
 .ftrow i{font-style:normal;font-size:30px;color:#b0b8c1}
 .moods{display:flex;gap:10px;margin-bottom:6px;flex-wrap:wrap}
 .moods button{padding:10px 16px;border-radius:999px;border:2px solid #eef0f3;background:#fff;font-size:18px;font-weight:700;color:#191f28}
-.moods button.on{border-color:var(--bg);background:#fff6f7;color:var(--bg)}
+.moods button.on{border-color:var(--deep);background:var(--tint);color:var(--deep)}
 .tt{width:100%;border-collapse:collapse;font-size:20px}
 .tt td{padding:10px 4px;border-top:1px solid #eef0f3}.tt tr:first-child td{border-top:0}
-.tt td:last-child{text-align:right;font-family:var(--jal);color:#191f28}.tt tr.best td{color:#e5313b}.tt tr.best td:last-child{color:#e5313b}
+.tt td:last-child{text-align:right;font-family:var(--jal);color:#191f28}.tt tr.best td{color:var(--deep)}.tt tr.best td:last-child{color:var(--deep)}
 .ftc .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
 .ftc .grid3 .item{box-shadow:0 0 0 1px #eef0f3}
 body.land .fthero svg{height:140px}
@@ -264,9 +267,9 @@ body.land .ftc{display:grid;grid-template-columns:1fr 1fr;align-content:start}
 .msg .av{flex:none;width:64px}
 .msg .av svg{display:block}
 .msg .bb{background:#fff;color:#191f28;border-radius:22px 22px 22px 6px;padding:16px 20px;font-size:21px;line-height:1.5;max-width:calc(100% - 74px)}
-.msg .bb .who{display:block;font-family:var(--jal);font-size:16px;color:var(--bg);margin-bottom:4px}
-.msg.T .bb{background:#1f1f22;color:#fff}.msg.T .bb .who{color:#ffb4b9}
-.msg.me{justify-content:flex-end}.msg.me .bb{background:#ffe9ea;color:#5a1822;border-radius:22px 22px 6px 22px;font-family:var(--jal)}
+.msg .bb .who{display:block;font-family:var(--jal);font-size:16px;color:var(--deep);margin-bottom:4px}
+.msg.T .bb{background:#1f1f22;color:#fff}.msg.T .bb .who{color:#BFE0FF}
+.msg.me{justify-content:flex-end}.msg.me .bb{background:var(--tint);color:var(--deep);border-radius:22px 22px 6px 22px;font-family:var(--jal)}
 .msg .its{margin-top:12px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 .msg .its .item{box-shadow:0 0 0 1px #eef0f3}.msg.T .its .item{box-shadow:none}
 .msg .its .item .nm{font-size:17px}.msg .its .item .pr{font-size:17px}
@@ -276,27 +279,37 @@ body.land .ftc{display:grid;grid-template-columns:1fr 1fr;align-content:start}
 .askbar{display:flex;gap:10px}
 .askbar input{flex:1;height:72px;border:3px solid transparent;border-radius:22px;padding:0 22px;font:700 23px var(--kr);color:#191f28;background:#fff;outline:none;-webkit-user-select:text;user-select:text}
 .askbar input:focus{border-color:var(--accent)}
-.askbar button{flex:none;width:110px;border:0;border-radius:22px;background:#E01A19;color:#fff;font-family:var(--jal);font-size:22px}
+.askbar button{flex:none;width:110px;border:0;border-radius:22px;background:var(--deep);color:#fff;font-family:var(--jal);font-size:22px}
 .typing{display:inline-flex;gap:5px}.typing i{width:9px;height:9px;border-radius:50%;background:#c9cdd2;animation:tp 1s infinite}.typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}
 @keyframes tp{50%{transform:translateY(-6px);opacity:.5}}
 body.land .msg .its{grid-template-columns:repeat(5,1fr)}
 /* 떠 있는 회원등록 버튼: 첫 화면, 회원등록 화면 말고 어디서든 */
 .fab{position:fixed;right:24px;bottom:36px;z-index:8;display:flex;align-items:center;gap:10px;padding:14px 22px 14px 16px;border:3px solid #fff;border-radius:999px;
-  background:#E01A19;color:#fff;font-family:var(--jal);font-size:22px;box-shadow:0 8px 24px rgba(0,0,0,.35);animation:fabin .4s cubic-bezier(.2,1.6,.4,1)}
+  background:var(--deep);color:#fff;font-family:var(--jal);font-size:22px;box-shadow:0 8px 24px rgba(0,0,0,.35);animation:fabin .4s cubic-bezier(.2,1.6,.4,1)}
 .fab .em{font-size:28px;animation:bob 2.4s ease-in-out infinite}
 .fab:active{transform:scale(.95)}
 .fab.up{bottom:128px}
 .fab[hidden]{display:none}
-.fab.home{right:auto;left:24px;background:#fff;color:var(--bg);border-color:var(--bg)}
+.fab.home{right:auto;left:24px;background:#fff;color:var(--deep);border-color:var(--deep)}
 .fab.home .em{animation:none}
 @keyframes fabin{0%{transform:scale(.5);opacity:0}100%{transform:scale(1);opacity:1}}
 body.land .fab.up{bottom:108px}
 body.fabon:not(.land) .pane.ask .opts{margin-bottom:84px}
 body.fabon .grid,body.fabon .chat,body.fabon .ftc{padding-bottom:96px}
+.banrow{margin-top:24px;display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.banrow .memban{margin-top:0;padding:16px 18px;gap:12px}
+.banrow .memban .em{font-size:32px}.banrow .memban b{font-size:21px}.banrow .memban small{font-size:16px}
+.memban.cheap{background:#fff;color:#191f28}.memban.cheap small{color:#4e5968}.memban.cheap i{color:#b0b8c1}.memban.cheap b{color:var(--deep)}
+.step{display:flex;gap:16px;align-items:flex-start}
+.step .sn{flex:none;width:44px;height:44px;border-radius:14px;background:var(--tint);color:var(--deep);display:flex;align-items:center;justify-content:center;font-family:var(--jal);font-size:22px}
+.step .sb{flex:1;min-width:0}.step h3{margin-bottom:6px}
+.step p{font-size:19px;line-height:1.5;color:#4e5968}.step p b{color:var(--deep);font-family:var(--jal);font-weight:normal}
+.step .go{margin-top:12px;padding:12px 18px;border:0;border-radius:14px;background:var(--tint);color:var(--deep);font-family:var(--jal);font-size:19px}
+body.land .banrow{grid-template-columns:1fr}
 .empty{grid-column:1/-1;padding:48px 0;text-align:center;font-size:22px;color:var(--sub)}
 
 .toast{position:fixed;left:50%;top:40px;transform:translate(-50%,-20px);opacity:0;padding:18px 28px;border-radius:999px;
-  background:#fff;color:var(--bg);font-size:20px;font-weight:700;white-space:nowrap;transition:.2s;pointer-events:none;z-index:9}
+  background:#fff;color:var(--deep);font-size:20px;font-weight:700;white-space:nowrap;transition:.2s;pointer-events:none;z-index:9}
 .toast.show{opacity:1;transform:translate(-50%,0)}
 
 /* 가로로 돌리면: 질문은 왼쪽, 선택 카드는 오른쪽 */
@@ -586,7 +599,7 @@ function devPacks(M){
   return [];
 }
 function modelCards(){ return MODELS.length ? MODELS.map(function(M,i){
-    return '<button class="dcard" data-act="mpick" data-i="'+i+'"><div class="ph">'+devTile({img:M.img,n:M.dn})+(i<3?'<span class="rk" style="position:absolute;left:10px;top:10px;padding:5px 11px;border-radius:999px;background:#d81f2a;color:#fff;font-size:15px;font-weight:800">추천</span>':'')+'</div><b>'+esc(M.dn)+'</b><span class="pr">'+won(M.price)+'~</span></button>';
+    return '<button class="dcard" data-act="mpick" data-i="'+i+'"><div class="ph">'+devTile({img:M.img,n:M.dn})+(i<3?'<span class="rk" style="position:absolute;left:10px;top:10px;padding:5px 11px;border-radius:999px;background:var(--deep);color:#fff;font-size:15px;font-weight:800">추천</span>':'')+'</div><b>'+esc(M.dn)+'</b><span class="pr">'+won(M.price)+'~</span></button>';
   }).join('') : '<div class="empty">지금 보여 드릴 기기 자료가 없어요. 직원에게 물어봐 주세요.</div>'; }
 function modelListPane(){
   return '<div class="pane res">'+topBar('기기 보기',1,2)+
@@ -741,7 +754,7 @@ function ftPane(){
         '<div class="ftcard"><h3>📊 액상 1병 실제 가격</h3><table class="tt">'+
           '<tr><td>1병씩</td><td>15,000원</td></tr><tr><td>5병 패키지 (49,500원)</td><td>9,900원</td></tr>'+
           '<tr class="best"><td>🏆 11병 패키지 (90,000원)</td><td>8,182원</td></tr></table>'+
-          '<div class="note" style="margin:10px 0 0">→ 11병이 1병씩보다 <b style="color:#e5313b">병당 6,818원 (45%)</b> 쌉니다. 어차피 피울 거면 11병이 합리적입니다.</div></div>'+
+          '<div class="note" style="margin:10px 0 0">→ 11병이 1병씩보다 <b style="color:var(--deep)">병당 6,818원 (45%)</b> 쌉니다. 어차피 피울 거면 11병이 합리적입니다.</div></div>'+
         '<div class="ftcard"><h3>🧮 기기는 패키지가 정답입니다</h3>'+
           ftDevRow('말론','따로 사면 '+won(mp+150000)+'. 액상 10병 포함 패키지면 병당 7,500원 꼴입니다.','<span class="rt"><s>'+won(mp+150000)+'</s>'+won(mp+75000)+'</span>')+
           ftDevRow('하복2','입호흡, 폐호흡 둘 다 됩니다. 기기 하나로 두 가지 = 기기값 절약.','<span class="rt"><s>'+won(89000+150000)+'</s>164,000원</span>')+'</div>'+
@@ -841,10 +854,27 @@ function chatSend(q){
   setTimeout(function(){ t.typing=false; t.text=A.T; t.items=(A.items||[]).slice().reverse().slice(0,0).map(function(x){return x.id}); t.devs=A.devs?A.devs.T:null; render(); }, 1200);
 }
 
+/* ---------- 가장 저렴하게 사는 방법 (지금 가격 기준) ---------- */
+function cheapPane(){
+  var mp = (MODELS.filter(function(m){return m.dn==='말론'})[0]||{price:72000}).price;
+  var st = function(n, e, t, body, act, btn){ return '<div class="ftcard step"><span class="sn">'+n+'</span><div class="sb"><h3>'+e+' '+t+'</h3><p>'+body+'</p>'+(act?'<button class="go" data-act="'+act+'">'+btn+' ›</button>':'')+'</div></div>'; };
+  return '<div class="pane res">'+topBar('가장 저렴하게 사는 법 💸',1,1)+
+    '<section class="q" style="margin-top:28px"><h1>이 순서대로만 하면<br>제일 싸요! 💸</h1>'+saveBox('말론 + 액상 10병을 기기 패키지로 사면', mp+150000, mp+75000)+'</section>'+
+    '<section class="ftc">'+
+      st(1,'🎁','회원등록부터 해요','구매할 때마다 적립되고, 다음부터는 <b>번호만</b> 말하면 돼요. AS 받을 때도 구매 기록이 남아서 편해요.','mem','회원등록하기')+
+      st(2,'💧','액상은 11병 패키지가 제일 싸요','1병씩 사면 15,000원인데 11병 90,000원이면 <b>병당 8,182원</b>이에요. 1병씩보다 <b>75,000원 (45%)</b> 아껴요. 5병만 사도 병당 9,900원!','pk11','11병 패키지 보기')+
+      st(3,'📱','기기는 액상이랑 같이 사요','말론, 말론S + 액상 10병이면 <b>'+won(mp+75000)+'</b> (따로 사면 '+won(mp+150000)+'). 하복2 + 10병은 <b>164,000원</b>이에요.','dev','기기 보러 가기')+
+      st(4,'☁️','폐호흡은 3병씩 사요','1병 30,000원인데 3병 묶음이면 <b>40,000원</b>, 병당 13,333원이에요. 맛 섞어도 돼요. <b>50,000원</b> 아껴요.','dl','폐호흡 보러 가기')+
+      st(5,'💵','기기 패키지 20만원 넘으면 현금이 이득','기기 패키지 20만원 이상을 현금이나 계좌이체로 사면 <b>2,000원</b> 더 빼 드려요. (직원에게 확인해 주세요)','','')+
+    '</section>'+
+    '<div class="acts"><button data-act="m-staff">💁 직원에게 물어보기</button><button class="main" data-act="mem">🎁 회원등록하기</button></div></div>';
+}
+
 function render(){
   var v=state.view, h='';
   if (v==='home') h = ask({h:'어서 오세요! 👋<br>무엇을 도와드릴까요?', p:'골라 주시면 딱 맞게 안내해 드릴게요.',
-    extra:chars('우리 눌러 보세요! 👆')+'<button class="memban" data-act="mem"><span class="em">🎁</span><span><b>회원등록하고 적립 받기</b><small>구매 이력이 남아서 AS 받을 때도 편해요</small></span><i>›</i></button>', opts:[
+    extra:chars('눌러 봐요 👆')+'<div class="banrow"><button class="memban" data-act="mem"><span class="em">🎁</span><span><b>회원등록하고 적립</b><small>AS 받을 때도 편해요</small></span><i>›</i></button>'+
+      '<button class="memban cheap" data-act="cheap"><span class="em">💸</span><span><b>가장 저렴하게 사는 법</b><small>최대 75,000원 아껴요</small></span><i>›</i></button></div>', opts:[
     {e:'👋',t:'처음 오셨을까요?',d:'전자담배가 처음이거나 매장 방문이 처음이에요',act:'new'},
     {e:'💨',t:'입호흡 액상을 찾으실까요?',d:'연초처럼 입으로 머금었다 들이마셔요',act:'mtl'},
     {e:'📱',t:'기기 보러 왔어요!',d:'말론, 말론S, 하복2 등 매장 기기 구경하기',act:'dev'},
@@ -856,6 +886,7 @@ function render(){
   else if (v==='mem-new') h = memPane('new');
   else if (v==='mem-old') h = memPane('old');
   else if (v==='mem-done') h = memDone();
+  else if (v==='cheap') h = cheapPane();
   else if (v==='chat') h = chatPane();
   else if (v==='ft') h = ftPane();
   else if (v==='mtl-map') h = mapPane();
@@ -935,6 +966,8 @@ document.getElementById('app').addEventListener('click',function(e){
   if (a==='home') return home();
   if (a==='soon') return toast('"'+b.querySelector('.t').textContent+'" 화면은 준비 중이에요');
   if (a==='mem') { b.classList.add('on'); return go('mem'); }
+  if (a==='cheap') return go('cheap');
+  if (a==='pk11') { state.kind='mtl'; state.mpack=4; state.mpn=11; return go('mtl-mpack'); }
   if (a==='mem-new' || a==='mem-old') { state.memKind=a.slice(4); M_().bad=''; return on(a); }
   if (a==='mck') { var mm=M_(); mm[b.dataset.k]=!mm[b.dataset.k]; if (mm.bad==='agree') mm.bad=''; return render(); }
   if (a==='mem-send') { var m=M_(), need=function(k,msg){ m.bad=k; render(); toast(msg); var el=document.querySelector('.bad'); if(el&&el.focus) el.focus(); };
