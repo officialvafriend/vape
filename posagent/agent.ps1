@@ -30,7 +30,7 @@ public class W32 {
 }
 "@
 $HERE = Split-Path -Parent $MyInvocation.MyCommand.Path
-$VER = "1116i"
+$VER = "1116j"
 $WEB = "https://officialvafriend.github.io/vape/posagent/"
 $SB = "https://bjjlmnkyhedtutogzliq.supabase.co/rest/v1/rpc/"; $KEY = "sb_publishable_i8rfcm_zAnwV75joN58FCw_8tHgFUKr"
 $cfgPath = Join-Path $HERE "설정.json"
@@ -56,25 +56,42 @@ function Rpc($fn, $body) {
 function Won($n) { "{0:N0}원" -f [int]$n }
 
 # ── 작은 창 ──
-$W = 300
+$wa0 = [Windows.Forms.Screen]::PrimaryScreen.WorkingArea
+$W = [Math]::Min(300, [int]($wa0.Width * 0.22))
 $f = New-Object Windows.Forms.Form
 $f.Text = "포스 입력"; $f.TopMost = $true; $f.FormBorderStyle = "FixedToolWindow"; $f.ShowInTaskbar = $true
 $f.ClientSize = New-Object Drawing.Size($W, 70); $f.StartPosition = "Manual"; $f.BackColor = [Drawing.Color]::White
 $wa = [Windows.Forms.Screen]::PrimaryScreen.WorkingArea
-function Place { $f.Left = $wa.Right - $f.Width - 6; $f.Top = $wa.Bottom - $f.Height - 6 }
+function Place { $f.Left = $wa.Right - $f.Width - 6; $f.Top = $wa.Top + [int]($wa.Height * 0.09) }   # 포스 결제 버튼(오른쪽 아래)을 안 가리게 오른쪽 위
 $font = { param($s, $b) New-Object Drawing.Font("Malgun Gothic", $s, $(if ($b) { [Drawing.FontStyle]::Bold } else { [Drawing.FontStyle]::Regular })) }
 $lbTop = New-Object Windows.Forms.Label; $lbTop.SetBounds(8, 4, ($W - 16), 16); $lbTop.Font = & $font 8 $false; $lbTop.ForeColor = [Drawing.Color]::Gray
 $lbMain = New-Object Windows.Forms.Label; $lbMain.SetBounds(8, 22, ($W - 16), 44); $lbMain.Font = & $font 9.5 $true
 $btnGo = New-Object Windows.Forms.Button; $btnGo.Font = & $font 11 $true; $btnGo.BackColor = [Drawing.Color]::FromArgb(216, 31, 42); $btnGo.ForeColor = [Drawing.Color]::White; $btnGo.FlatStyle = "Flat"
 $btnNext = New-Object Windows.Forms.Button; $btnNext.Font = & $font 8 $false
 $btnDone = New-Object Windows.Forms.Button; $btnDone.Font = & $font 8 $false; $btnDone.Text = "이 주문 지우기"
-$f.Controls.AddRange(@($lbTop, $lbMain, $btnGo, $btnNext, $btnDone))
-function Small($txt) { $lbMain.Text = $txt; $lbMain.Height = 44; $btnGo.Visible = $false; $btnNext.Visible = $false; $btnDone.Visible = $false; $f.ClientSize = New-Object Drawing.Size($W, 70); Place }
+$btnMini = New-Object Windows.Forms.Button; $btnMini.Font = & $font 8 $false; $btnMini.Text = "접기"; $btnMini.FlatStyle = "Flat"
+$f.Controls.AddRange(@($lbTop, $lbMain, $btnGo, $btnNext, $btnDone, $btnMini))
+$script:mini = $false
+function MiniView {
+  $n = @($script:orders).Count
+  $lbTop.Text = $(if ($n) { "주문 $n 개 있어요, 펼치기" } else { "포스 입력, 펼치기" }); $lbTop.SetBounds(8, 4, ($W - 16), 18); $lbTop.ForeColor = $(if ($n) { [Drawing.Color]::FromArgb(216, 31, 42) } else { [Drawing.Color]::Gray })
+  $lbMain.Visible = $false; $btnGo.Visible = $false; $btnNext.Visible = $false; $btnDone.Visible = $false; $btnMini.Visible = $false
+  $f.ClientSize = New-Object Drawing.Size($W, 26); Place
+}
+$btnMini.Add_Click({ $script:mini = $true; Draw })
+$lbTop.Add_Click({ if ($script:mini) { $script:mini = $false; Draw } })
+$f.Add_FormClosing({ param($s2, $e2)
+  if ($script:updating -or $env:VF_SNAP) { return }
+  $r = [Windows.Forms.MessageBox]::Show("포스 입력을 끌까요?`n`n[예] 끄기 (주문이 와도 안 떠요)`n[아니요] 작게 접기 (주문 오면 다시 펼쳐져요)", "포스 입력", "YesNo")
+  if ($r -ne "Yes") { $e2.Cancel = $true; $script:mini = $true; Draw }
+})
+function Small($txt) { $lbMain.Visible = $true; $btnMini.Visible = $false; $lbMain.Text = $txt; $lbMain.Height = 44; $btnGo.Visible = $false; $btnNext.Visible = $false; $btnDone.Visible = $false; $f.ClientSize = New-Object Drawing.Size($W, 70); Place }
 
 $script:orders = @(); $script:idx = 0; $script:svcLeft = $null; $script:state = "boot"; $script:busy = $false; $script:errMsg = ""; $script:tick = 0
 function Cur { if ($script:orders.Count) { $script:orders[[Math]::Min($script:idx, $script:orders.Count - 1)] } }
 function Draw {
-  $lbTop.Text = "$BRANCH  기기 $SHORT  v$VER"
+  if ($script:mini) { MiniView; return }
+  $lbTop.Text = "$BRANCH  기기 $SHORT  v$VER"; $lbTop.ForeColor = [Drawing.Color]::Gray; $lbTop.SetBounds(8, 4, ($W - 60), 16)
   if ($script:state -eq "wait") { Small "승인 기다리는 중`n기기 코드 $SHORT 를 관리자에게 알려 주세요"; return }
   if ($script:state -eq "err") { Small "연결 안 됨, 다시 시도 중`n$($script:errMsg)"; return }
   $o = Cur
@@ -88,7 +105,7 @@ function Draw {
     $lbMain.Text = "$([int]$o.id % 1000)번$who`n$($o.summary)`n합계 $(Won $o.total)" + $(if ($sv) { " (서비스 $sv 개 따로)" } else { "" })
     $btnGo.Text = "포스에 넣기 ($(@($o.codes).Count + $sv)개)"
   }
-  $lbMain.Height = 62; $btnGo.SetBounds(8, 88, ($W - 16), 40); $btnGo.Visible = $true
+  $lbMain.Visible = $true; $lbMain.Height = 62; $btnGo.SetBounds(8, 88, ($W - 16), 40); $btnGo.Visible = $true; $btnMini.SetBounds(($W - 50), 2, 44, 20); $btnMini.Visible = $true
   $half = [int](($W - 22) / 2)
   if ($script:orders.Count -gt 1) { $btnNext.Text = "다음 ($($script:idx + 1)/$($script:orders.Count))"; $btnNext.SetBounds(8, 132, $half, 26); $btnNext.Visible = $true; $btnDone.SetBounds((14 + $half), 132, $half, 26) }
   else { $btnNext.Visible = $false; $btnDone.SetBounds(8, 132, ($W - 16), 26) }
@@ -160,7 +177,7 @@ $t.Add_Tick({
     $list = @(Rpc "qr_pending" @{ p_dev = $DEV } | ForEach-Object { $_ })
     $before = ($script:orders | ForEach-Object { $_.id }) -join ","; $script:orders = $list; $after = ($list | ForEach-Object { $_.id }) -join ","
     $was = $script:state; $script:state = "ok"
-    if ($before -ne $after -or $was -ne "ok") { if ($script:idx -ge $list.Count) { $script:idx = 0 }; Draw; if ($list.Count -and $before -ne $after) { [System.Media.SystemSounds]::Asterisk.Play(); $f.Activate() } }
+    if ($before -ne $after -or $was -ne "ok") { if ($script:idx -ge $list.Count) { $script:idx = 0 }; Draw; if ($list.Count -and $before -ne $after) { $script:mini = $false; Draw; [System.Media.SystemSounds]::Asterisk.Play() } }
   } catch { $m = "$($_.Exception.Message)"; if ($m.Length -gt 60) { $m = $m.Substring(0, 60) }; if ($script:state -ne "err" -or $script:errMsg -ne $m) { $script:errMsg = $m; $script:state = "err"; Draw } }
 })
 $script:updating = $false
