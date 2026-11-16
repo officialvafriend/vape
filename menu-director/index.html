@@ -56,15 +56,16 @@ button{font-family:inherit;color:inherit;cursor:pointer}
 .q h1{font-size:56px;font-weight:800;line-height:1.25;letter-spacing:-.03em}
 .q p{margin-top:20px;font-size:24px;color:var(--sub);line-height:1.5}
 .opts{margin-top:auto;display:flex;flex-direction:column;gap:20px}
-.opt{display:flex;align-items:center;gap:28px;width:100%;min-height:120px;padding:26px 36px;
-  background:var(--card);border:2px solid transparent;border-radius:var(--r);
+.opt{display:flex;align-items:center;gap:22px;width:100%;min-height:112px;padding:20px 26px;
+  background:#fff;color:#191f28;border:2px solid transparent;border-radius:var(--r);box-shadow:0 4px 14px rgba(40,0,10,.18);
   text-align:left;transition:background .15s,border-color .15s,transform .1s}
 .opt:active{transform:scale(.985)}
-.opt.on{background:var(--card-on);border-color:var(--accent)}
-.opt .n{flex:none;width:56px;height:56px;border-radius:50%;background:rgba(255,255,255,.14);
-  display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800;color:var(--accent)}
-.opt .t{display:block;font-size:31px;font-weight:800;letter-spacing:-.02em}
-.opt .d{display:block;margin-top:8px;font-size:21px;color:var(--sub)}
+.opt.on{border-color:var(--bg);background:#fff6f7}
+.opt::after{content:'›';margin-left:auto;padding-left:8px;font-size:40px;line-height:1;color:#b0b8c1}
+.opt .n{flex:none;width:68px;height:68px;border-radius:22px;background:#fbeff0;
+  display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:800;color:var(--bg)}
+.opt .t{display:block;font-size:29px;font-weight:800;letter-spacing:-.03em;color:#191f28}
+.opt .d{display:block;margin-top:6px;font-size:20px;color:#6b7684}
 
 /* 추천 목록 */
 .res .q{margin-top:40px}
@@ -176,6 +177,39 @@ body.land .tmap .qd{padding:26px 12px 10px;gap:6px}
 .pksz{margin-top:16px;display:flex;gap:12px}
 .pksz button{flex:1;height:64px;border-radius:18px;border:2px solid transparent;background:var(--card);font-size:21px;font-weight:800}
 .pksz button.on{background:#fff;color:var(--bg);border-color:var(--accent)}
+.save{margin-top:18px;display:flex;align-items:center;gap:18px;background:#fff;color:#191f28;border-radius:24px;padding:20px 24px;box-shadow:0 4px 14px rgba(40,0,10,.18)}
+.save .em{font-size:46px;line-height:1}
+.save .tx{flex:1;min-width:0}
+.save .l{font-size:18px;font-weight:700;color:#6b7684}
+.save .big{margin-top:2px;font-size:34px;font-weight:800;letter-spacing:-.03em;color:#e5313b}
+.save .pr{margin-top:4px;font-size:18px;color:#6b7684}.save .pr s{color:#b0b8c1}.save .pr b{color:#191f28}
+.save .pct{flex:none;padding:8px 14px;border-radius:999px;background:#ffe9ea;color:#e5313b;font-size:22px;font-weight:800}
+.pk .pp{display:flex;align-items:baseline;gap:8px;white-space:nowrap}.pk .pp s{font-size:15px;color:#9a9a9a;font-weight:600}
+.pk em{display:block;margin-top:3px;font-style:normal;font-size:15px;font-weight:800;color:#e5313b}
+.item .unit{font-size:14px;font-weight:700;color:#e5313b;background:#ffeef0;border-radius:8px;padding:4px 8px;align-self:flex-start}
+/* 첫 화면 회원등록 띠 */
+.memban{margin-top:28px;display:flex;align-items:center;gap:18px;width:100%;padding:18px 22px;border:0;border-radius:22px;background:rgba(255,255,255,.14);text-align:left}
+.memban .em{font-size:38px}.memban b{display:block;font-size:24px;font-weight:800}.memban small{display:block;margin-top:4px;font-size:18px;color:var(--sub)}
+.memban i{margin-left:auto;font-style:normal;font-size:36px;color:var(--sub)}
+/* 회원등록 입력 */
+.form{margin-top:28px;display:flex;flex-direction:column;gap:14px}
+.form label{font-size:19px;font-weight:700;color:var(--sub)}
+.form .fi{display:flex;align-items:center;gap:12px}
+.form input{width:100%;height:76px;border:3px solid transparent;border-radius:20px;padding:0 24px;font:800 28px var(--kr);color:#191f28;background:#fff;outline:none;-webkit-user-select:text;user-select:text}
+.form input:focus{border-color:var(--accent)}.form input.bad{border-color:#ff8a8a}
+.form .fi span{font-size:24px;font-weight:800;white-space:nowrap}
+.ck{display:flex;align-items:center;gap:14px;width:100%;padding:16px 20px;border:0;border-radius:18px;background:var(--card);font-size:21px;font-weight:700;text-align:left}
+.ck i{flex:none;width:34px;height:34px;border-radius:50%;border:2px solid rgba(255,255,255,.5);display:flex;align-items:center;justify-content:center;font-style:normal;font-size:20px}
+.ck.on i{background:#fff;color:var(--bg);border-color:#fff}.ck.on i::after{content:'✓'}.ck.bad{outline:3px solid #ff8a8a}
+.cta{margin-top:auto;height:84px;border:0;border-radius:22px;background:#fff;color:var(--bg);font-size:27px;font-weight:800}
+.pv{font-size:20px;color:var(--sub)}.pv b{color:#fff}
+.done{margin-top:40px;background:#fff;color:#191f28;border-radius:var(--r);padding:32px;display:flex;flex-direction:column;gap:12px}
+.done .big{font-size:40px;font-weight:800;letter-spacing:-.03em}.done .row2{display:flex;justify-content:space-between;font-size:24px;padding:14px 0;border-top:1px solid #eef0f3}
+.done .row2 span{color:#6b7684}.done .row2 b{font-weight:800}
+body.land .form{margin-top:12px;gap:6px}body.land .form label{font-size:16px}body.land .form input{height:54px;font-size:23px;border-radius:16px}
+body.land .ck{padding:9px 16px;font-size:18px}body.land .ck i{width:28px;height:28px}body.land .cta{height:64px;font-size:23px}
+body.land .done{margin-top:16px;padding:22px}body.land .done .big{font-size:32px}body.land .done .row2{padding:8px 0;font-size:21px}
+.pop{animation:pop .5s cubic-bezier(.2,1.6,.4,1)}@keyframes pop{0%{transform:scale(.6);opacity:0}100%{transform:scale(1);opacity:1}}
 .empty{grid-column:1/-1;padding:48px 0;text-align:center;font-size:22px;color:var(--sub)}
 
 .toast{position:fixed;left:50%;top:40px;transform:translate(-50%,-20px);opacity:0;padding:18px 28px;border-radius:999px;
@@ -189,7 +223,7 @@ body.land .ask .top,body.land .ask .bar{grid-column:1/-1}
 body.land .ask .q{margin-top:64px}
 body.land .ask .opts{margin-top:32px;gap:12px;align-self:start}
 body.land .opt{min-height:0;padding:14px 26px;gap:22px}
-body.land .opt .n{width:46px;height:46px;font-size:22px}
+body.land .opt .n{width:52px;height:52px;border-radius:16px;font-size:28px}
 body.land .opt .t{font-size:25px}
 body.land .opt .d{font-size:18px;margin-top:4px}
 body.land .res .q{margin-top:24px}
@@ -232,19 +266,19 @@ fetch('../menu/rank.json?t='+Date.now()).then(function(r){return r.json()}).then
 
 /* ---------- 화면 정의 ---------- */
 var FLAVOR = [
-  {v:"과일",t:"과일",d:"청포도, 자두, 자몽처럼 상큼달달"},
-  {v:"멘솔·민트",t:"멘솔 · 민트",d:"쿨하고 깔끔하게"},
-  {v:"디저트·음료",t:"디저트 · 음료",d:"소다, 커피, 아이스크림처럼 달콤하게"},
-  {v:"시가·타바코",t:"시가 · 타바코",d:"연초랑 비슷한 묵직한 맛"},
-  {v:"",t:"잘 모르겠어요",d:"요즘 많이 찾는 맛으로 보여드릴게요"}
+  {v:"과일",e:"🍇",t:"과일",d:"청포도, 자두, 자몽처럼 상큼달달"},
+  {v:"멘솔·민트",e:"🧊",t:"멘솔 · 민트",d:"쿨하고 깔끔하게"},
+  {v:"디저트·음료",e:"🥤",t:"디저트 · 음료",d:"소다, 커피, 아이스크림처럼 달콤하게"},
+  {v:"시가·타바코",e:"🚬",t:"시가 · 타바코",d:"연초랑 비슷한 묵직한 맛"},
+  {v:"",e:"🤔",t:"잘 모르겠어요",d:"요즘 많이 찾는 맛으로 보여드릴게요"}
 ];
 /* 폐호흡은 샤크, 홀리, 오니처럼 맛 이름 없이 별명만 있는 액상이 많아서 따로 묶음 */
-var FLAVOR_DL = FLAVOR.slice(0,4).concat([{v:"기타",t:"샤크 · 홀리 · 오니 등",d:"맛 이름 대신 별명으로 부르는 액상"}], FLAVOR.slice(4));
+var FLAVOR_DL = FLAVOR.slice(0,4).concat([{v:"기타",e:"🦈",t:"샤크 · 홀리 · 오니 등",d:"맛 이름 대신 별명으로 부르는 액상"}], FLAVOR.slice(4));
 function FL(){ return state.kind==='dl' ? FLAVOR_DL : FLAVOR; }
 var COOL = [
-  {v:"",t:"상관없어요",d:"시원한 것도, 아닌 것도 다 보여드려요"},
-  {v:"노멘솔",t:"시원한 건 싫어요",d:"멘솔 없는 노멘솔 액상"},
-  {v:"무니코틴",t:"니코틴 없이",d:"무니코틴 액상"}
+  {v:"",e:"👌",t:"상관없어요",d:"시원한 것도, 아닌 것도 다 보여드려요"},
+  {v:"노멘솔",e:"🙅",t:"시원한 건 싫어요",d:"멘솔 없는 노멘솔 액상"},
+  {v:"무니코틴",e:"🌿",t:"니코틴 없이",d:"무니코틴 액상"}
 ];
 var state = {view:'home', hist:[], flavor:null, cool:null, kind:'mtl'};
 function DATA(){ return state.kind==='dl' ? LUNGL : LIQ; }
@@ -252,7 +286,7 @@ function KT(){ return state.view.indexOf('new')===0 ? '처음 오신 분' : stat
 
 function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
 function won(n){return n.toLocaleString('ko-KR')+'원'}
-function go(v){state.hist.push(state.view); state.view=v; render();}
+function go(v){state.hist.push(state.view); state.view=v; var t=document.getElementById('toast'); if(t) t.classList.remove('show'); render();}
 function back(){state.view=state.hist.pop()||'home'; render();}
 function home(){state={view:'home',hist:[],flavor:null,cool:null,q:'',base:null,pack:null,kind:'mtl',ans:{}}; render();}
 
@@ -265,9 +299,9 @@ function topBar(title, step, total){
 }
 function ask(o){ // 질문 한 화면: o = {title, step, total, h, p, opts:[{t,d,act}], sel}
   return '<div class="pane ask">'+topBar(o.title,o.step,o.total)+
-    '<section class="q"><h1>'+o.h+'</h1>'+(o.p?'<p>'+o.p+'</p>':'')+'</section>'+
+    '<section class="q"><h1>'+o.h+'</h1>'+(o.p?'<p>'+o.p+'</p>':'')+(o.extra||'')+'</section>'+
     '<section class="opts">'+o.opts.map(function(x,i){
-      return '<button class="opt'+(o.sel===(x.i!=null?x.i:i)?' on':'')+'" data-act="'+x.act+'" data-i="'+(x.i!=null?x.i:i)+'"><span class="n">'+(i+1)+'</span><span><span class="t">'+esc(x.t)+'</span><span class="d">'+esc(x.d)+'</span></span></button>';
+      return '<button class="opt'+(o.sel===(x.i!=null?x.i:i)?' on':'')+'" data-act="'+x.act+'" data-i="'+(x.i!=null?x.i:i)+'"><span class="n">'+(x.e||(i+1))+'</span><span><span class="t">'+esc(x.t)+'</span><span class="d">'+esc(x.d)+'</span></span></button>';
     }).join('')+'</section></div>';
 }
 
@@ -278,15 +312,20 @@ function pick(f,c){ return DATA().filter(function(x){
     return true; }); }
 function byRank(arr){ return arr.map(function(x,i){return {x:x, s:RANK[x.n]||0, i:i}})
     .sort(function(a,b){return b.s-a.s || (a.x.line===b.x.line?0:a.x.line==="프리미엄"?-1:1) || a.i-b.i}).map(function(o){return o.x}); }
-var EV_DL = '<div class="ev"><b>폐호흡</b> 1병 30,000원 · <b>3병마다 40,000원</b> · 맛 섞어도 돼요</div>';
-var EV = '<div class="ev"><b>프리미엄</b> 1병 15,000원 · 5병 49,500원 · 11병 90,000원 &nbsp;|&nbsp; <b>프라임</b> 1병 20,000원 · 3병 50,000원 · 10병 160,000원</div>';
+var EV_DL = '<div class="ev">💡 <b>폐호흡 3병 40,000원</b> · 1병씩 사는 것보다 <b>50,000원 아껴요</b> · 맛 섞어도 돼요</div>';
+var EV = '<div class="ev">💡 <b>프리미엄</b> 5병 49,500원 → <b>25,500원 아껴요</b> · 11병 90,000원 → <b>75,000원 아껴요</b> &nbsp;|&nbsp; <b>프라임</b> 3병 50,000원 → <b>10,000원 아껴요</b></div>';
+var UNIT = {"프리미엄":"💸 5병 패키지면 1병 9,900원","프라임":"💸 3병이면 1병 16,667원","폐호흡":"💸 3병이면 1병 13,333원"};
+function saveBox(label, full, price){ var off=full-price, pct=Math.round(off/full*100);
+  return '<div class="save pop"><span class="em">🎉</span><div class="tx"><div class="l">'+esc(label)+'</div><div class="big">'+won(off)+' 아껴요</div><div class="pr"><s>'+won(full)+'</s> → <b>'+won(price)+'</b></div></div><span class="pct">-'+pct+'%</span></div>'; }
+function pkRow(name, price, full, alt){ var off=(full||0)-price;
+  return '<div class="pk'+(alt?' alt':'')+'"><span>'+esc(name)+(off>0?'<em>💸 '+won(off)+' 아껴요</em>':'')+'</span><span class="pp">'+(off>0?'<s>'+won(full)+'</s>':'')+'<b>'+won(price)+'</b></span></div>'; }
 function card(x, badge){
   var tag=(x.t||[]).filter(function(t){return t!=="일반"}).join(' · ');
   var src = x.src!=null ? x.src : '../img/'+x.img;
   return '<div class="item"><div class="ph">'+(src?'<img loading="lazy" src="'+esc(src)+'" alt="" onerror="this.style.visibility=\'hidden\'">':'<span class="tile">'+esc(x.dn||x.n)+'</span>')+
     (badge?'<span class="rk">'+esc(badge)+'</span>':'')+(tag?'<span class="tg">'+esc(tag)+'</span>':'')+'</div>'+
     '<div class="bd"><span class="br">'+esc([x.br,x.f].filter(Boolean).join(' · '))+'</span><span class="nm">'+esc(x.dn||x.n)+'</span>'+
-    '<span class="pr">'+(PRICE[x.line]?won(PRICE[x.line]):'')+'</span><span class="lc">'+esc(x.line)+(x.loc?' · 위치 '+esc(x.loc.split('|')[0]):'')+'</span></div></div>';
+    '<span class="pr">'+(PRICE[x.line]?won(PRICE[x.line]):'')+'</span>'+(UNIT[x.line]?'<span class="unit">'+UNIT[x.line]+'</span>':'')+'<span class="lc">'+esc(x.line)+(x.loc?' · 위치 '+esc(x.loc.split('|')[0]):'')+'</span></div></div>';
 }
 /* 목록 한 화면: o = {step,total,h,chips,list,top(인기 표시 몇 위까지),note(위 안내),empty} */
 function listPane(o){
@@ -330,8 +369,8 @@ function searchPane(){
 }
 
 var PACKS_DL = [
-  {line:"폐호흡",n:3,price:40000,t:"폐호흡 3병 40,000원",d:"1병에 13,333원꼴, 맛 섞어도 돼요"},
-  {line:"폐호흡",n:6,price:80000,t:"폐호흡 6병 80,000원",d:"3병 묶음 두 번, 1병에 13,333원꼴"}
+  {e:"🎁",line:"폐호흡",n:3,price:40000,t:"폐호흡 3병 40,000원",d:"💸 50,000원 아껴요 · 맛 섞어도 돼요"},
+  {e:"🎉",line:"폐호흡",n:6,price:80000,t:"폐호흡 6병 80,000원",d:"💸 100,000원 아껴요 · 3병 묶음 두 번"}
 ];
 function PK(){ return state.kind==='dl' ? PACKS_DL : PACKS; }
 var PACKS = [
@@ -350,11 +389,11 @@ var DEVS = {
   "하복2":      {img:"../menu/dev_havok2_black.png", price:function(){return devPrice("하복2",89000)}}
 };
 var NEWQ = {
-  now:   {h:'지금 무엇을<br>피우세요?', p:'제일 많이 피우시는 걸 골라 주세요.', a:[["연초","일반 담배"],["궐련형","아이코스, 릴 같은"],["다른 전자담배","써 본 적 있어요"],["처음이에요","아직 안 피워요"]]},
-  cig:   {h:'어떤 담배를<br>피우세요?', p:'비슷한 쪽을 골라 주세요.', a:[["멘솔 캡슐","에쎄 체인지, 에쎄 히말라야 같은"],["강한 타격감","디스플러스, 메비우스, 말보로 골드 같은"],["과일향 캡슐","레종 프레소, 디스 아프리카 룰라 같은"],["잘 모르겠어요","직원이 같이 봐 드려요"]]},
-  heat:  {h:'어떤 걸<br>쓰세요?', p:'비슷한 쪽을 골라 주세요.', a:[["아이코스 일반","담배맛 스틱"],["아이코스 멘솔, 캡슐","멘솔이나 과일 캡슐 스틱"],["릴 하이브리드","캡슐 넣는 릴"],["릴, 글로 일반","그 밖의 궐련형"]]},
-  amount:{h:'하루에 얼마나<br>피우세요?', p:'대충 골라 주셔도 돼요.', a:[["반 갑 이하","가끔 피워요"],["반 갑에서 한 갑","보통이에요"],["한 갑 이상","많이 피워요"]]},
-  draw:  {h:'연기를 어떻게<br>빨아들이세요?', p:'처음이시면 "잘 모르겠어요"를 골라 주세요.', a:[["입에 머금었다가","연초처럼 (입호흡)"],["바로 깊게","폐까지 한 번에 (폐호흡)"],["잘 모르겠어요","처음이면 입호흡이 편해요"]]}
+  now:   {h:'지금 무엇을<br>피우세요?', p:'제일 많이 피우시는 걸 골라 주세요.', a:[["연초","일반 담배","🚬"],["궐련형","아이코스, 릴 같은","🔥"],["다른 전자담배","써 본 적 있어요","💨"],["처음이에요","아직 안 피워요","🌱"]]},
+  cig:   {h:'어떤 담배를<br>피우세요?', p:'비슷한 쪽을 골라 주세요.', a:[["멘솔 캡슐","에쎄 체인지, 에쎄 히말라야 같은","🧊"],["강한 타격감","디스플러스, 메비우스, 말보로 골드 같은","💪"],["과일향 캡슐","레종 프레소, 디스 아프리카 룰라 같은","🍇"],["잘 모르겠어요","직원이 같이 봐 드려요","🤔"]]},
+  heat:  {h:'어떤 걸<br>쓰세요?', p:'비슷한 쪽을 골라 주세요.', a:[["아이코스 일반","담배맛 스틱","🍂"],["아이코스 멘솔, 캡슐","멘솔이나 과일 캡슐 스틱","🧊"],["릴 하이브리드","캡슐 넣는 릴","🍇"],["릴, 글로 일반","그 밖의 궐련형","🔥"]]},
+  amount:{h:'하루에 얼마나<br>피우세요?', p:'대충 골라 주셔도 돼요.', a:[["반 갑 이하","가끔 피워요","🌙"],["반 갑에서 한 갑","보통이에요","☀️"],["한 갑 이상","많이 피워요","🔥"]]},
+  draw:  {h:'연기를 어떻게<br>빨아들이세요?', p:'처음이시면 "잘 모르겠어요"를 골라 주세요.', a:[["입에 머금었다가","연초처럼 (입호흡)","👄"],["바로 깊게","폐까지 한 번에 (폐호흡)","🫁"],["잘 모르겠어요","처음이면 입호흡이 편해요","🤔"]]}
 };
 function newSteps(){ var A=state.ans||{}, l=['now']; if (A.now==='연초') l.push('cig'); if (A.now==='궐련형') l.push('heat'); return l.concat(['amount','draw']); }
 var HINT = {"멘솔 캡슐":["멘솔·민트","과일"],"강한 타격감":["시가·타바코"],"과일향 캡슐":["과일"],"아이코스 일반":["시가·타바코"],"아이코스 멘솔, 캡슐":["멘솔·민트","과일"],"릴 하이브리드":["과일","멘솔·민트"]};
@@ -366,7 +405,7 @@ function newRule(){
     var hp=DEVS["하복2"].price();
     return {kind:'dl', dev:'하복2', title:'하복2 + 폐호흡 액상',
       why:'깊게 빨아들이시면 폐호흡이 맞아요. 하복2는 팟만 바꾸면 입호흡, 폐호흡 둘 다 돼요.',
-      packs:[['하복2 + 폐호흡 3병', hp+40000]], liqs:byRank(LUNGL).slice(0,6)};
+      packs:[['하복2 + 폐호흡 3병', hp+40000, hp+90000]], liqs:byRank(LUNGL).slice(0,6)};
   }
   var g = HINT[smk] || (A.now==='처음이에요' ? ["과일"] : ["과일","멘솔·민트"]);
   var pool = LIQ.filter(function(x){ return g.indexOf(x.g)>=0 && (!plain || (((x.t||[]).indexOf('노멘솔')>=0 || x.g==='시가·타바코') && !/멘솔|민트|쿨|아이스/.test(x.n))); });
@@ -377,15 +416,15 @@ function newRule(){
     + (plain ? '멘솔 없는 담배를 피우셨으니 멘솔은 뺐어요. ' : '')
     + (A.draw==='잘 모르겠어요' ? '처음엔 연초랑 비슷한 입호흡이 편해요. ' : '')
     + (low ? '하루 반 갑 이하면 작고 가벼운 말론S로 시작하기 좋아요.' : '하루 반 갑 넘게 피우시면 말론이 잘 맞아요. 10병 패키지가 병당 7,500원이라 가장 아껴요.');
-  var packs = low ? [[dev+' + 액상 5병', dp+40000],[dev+' + 액상 10병', dp+75000]] : [[dev+' + 액상 10병', dp+75000],[dev+' + 액상 5병', dp+40000]];
+  var packs = low ? [[dev+' + 액상 5병', dp+40000, dp+75000],[dev+' + 액상 10병', dp+75000, dp+150000]] : [[dev+' + 액상 10병', dp+75000, dp+150000],[dev+' + 액상 5병', dp+40000, dp+75000]];
   return {kind:'mtl', dev:dev, title:dev+' 기기 패키지', why:why, packs:packs, liqs:liqs};
 }
 function newResult(){
   var R=newRule(), D=DEVS[R.dev], n=newSteps().length+1;
   return '<div class="pane res newres">'+topBar('처음 오신 분',n,n)+
-    '<section class="q"><h1>이 조합을 추천해요</h1>'+
+    '<section class="q"><h1>이 조합을 추천해요 ✨</h1>'+
       '<div class="rec"><div class="dv"><img src="'+esc(D.img)+'" alt=""></div><div class="info"><h2>'+esc(R.title)+'</h2>'+
-        R.packs.map(function(k,i){return '<div class="pk'+(i?' alt':'')+'"><span>'+esc(k[0])+'</span><b>'+won(k[1])+'</b></div>'}).join('')+
+        R.packs.map(function(k,i){return pkRow(k[0],k[1],k[2],i)}).join('')+
         '<div class="why">'+esc(R.why)+'</div><div class="small">팟은 따로예요. 지점마다 재고가 달라서 직원이 확인해 드려요.</div></div></div>'+
       '</section><section class="grid"><div class="sec">같이 보면 좋은 액상</div>'+R.liqs.map(function(x,i){var hot=(RANK[x.n]||0)>0&&i<3; return card(x, hot?'인기 '+(i+1)+'위':'');}).join('')+'</section>'+
     '<div class="acts"><button data-act="new-more" data-k="'+R.kind+'">다른 액상 더 보기</button><button class="main" data-act="m-staff">직원 부르기</button></div></div>';
@@ -396,22 +435,22 @@ var DEVL = (window.DEVINFO||[]).map(function(d,i){ return {id:'D'+i, n:d.n, img:
 /* 하복2는 교육 사이트 자료에 아직 없어서 상품 자료(goods.js) 값으로 넣음 */
 if (!DEVL.some(function(d){return /하복\s*2/.test(d.n)})) DEVL.unshift({id:'DH2', n:'하복2', img:'../menu/dev_havok2_black.png', dp:won(devPrice('하복2',89000)), b:'', f:'팟 교체형', o:'입호흡 0.6Ω / 폐호흡 0.15Ω', cp:'0.6Ω팟 6,000원 / 0.15Ω팟 6,000원', desc:'팟만 바꾸면 입호흡, 폐호흡 둘 다 되는 기기예요.'});
 var FIX = [
-  {t:'탄 맛이 나요', d:'피울 때 쓴맛, 탄 냄새', tips:['팟이나 코일을 오래 쓰면 가장 많이 생겨요. 이때는 팟(코일)을 새로 바꿔야 해요.','새 팟에 액상을 넣고 바로 피우면 솜이 덜 젖어서 탄 맛이 날 수 있어요. 5분 정도 기다렸다 피워 주세요.','액상이 거의 없을 때도 탄 맛이 나요. 액상 양을 확인해 주세요.']},
-  {t:'액상이 새요', d:'기기나 입에 액상이 묻어요', tips:['팟을 빼서 휴지로 닦고 끝까지 딸깍 끼워 주세요.','액상을 선 위로 가득 넣으면 넘칠 수 있어요. 표시선까지만 넣어 주세요.','계속 새면 팟 불량일 수 있어요. 직원에게 보여 주세요.']},
-  {t:'전원이 안 켜져요', d:'불이 안 들어와요, 충전이 안 돼요', tips:['배터리가 다 됐을 수 있어요. 먼저 충전해 주세요.','버튼을 빠르게 5번 누르면 켜지고 꺼지는 기기가 많아요. 한번 해 보세요.','충전해도 안 되면 직원이 기기를 바로 확인해 드려요.']},
-  {t:'연기가 잘 안 나요', d:'빨아도 약하거나 안 나와요', tips:['액상이 남아 있는지 먼저 확인해 주세요.','팟을 빼서 기기에 닿는 금속 부분을 휴지로 닦고 다시 끼워 주세요.','그래도 약하면 팟(코일) 수명일 수 있어요.']},
-  {t:'그 밖의 문제', d:'직원이 바로 봐 드려요', tips:[]}
+  {e:'🔥',t:'탄 맛이 나요', d:'피울 때 쓴맛, 탄 냄새', tips:['팟이나 코일을 오래 쓰면 가장 많이 생겨요. 이때는 팟(코일)을 새로 바꿔야 해요.','새 팟에 액상을 넣고 바로 피우면 솜이 덜 젖어서 탄 맛이 날 수 있어요. 5분 정도 기다렸다 피워 주세요.','액상이 거의 없을 때도 탄 맛이 나요. 액상 양을 확인해 주세요.']},
+  {e:'💧',t:'액상이 새요', d:'기기나 입에 액상이 묻어요', tips:['팟을 빼서 휴지로 닦고 끝까지 딸깍 끼워 주세요.','액상을 선 위로 가득 넣으면 넘칠 수 있어요. 표시선까지만 넣어 주세요.','계속 새면 팟 불량일 수 있어요. 직원에게 보여 주세요.']},
+  {e:'🔋',t:'전원이 안 켜져요', d:'불이 안 들어와요, 충전이 안 돼요', tips:['배터리가 다 됐을 수 있어요. 먼저 충전해 주세요.','버튼을 빠르게 5번 누르면 켜지고 꺼지는 기기가 많아요. 한번 해 보세요.','충전해도 안 되면 직원이 기기를 바로 확인해 드려요.']},
+  {e:'🌫️',t:'연기가 잘 안 나요', d:'빨아도 약하거나 안 나와요', tips:['액상이 남아 있는지 먼저 확인해 주세요.','팟을 빼서 기기에 닿는 금속 부분을 휴지로 닦고 다시 끼워 주세요.','그래도 약하면 팟(코일) 수명일 수 있어요.']},
+  {e:'🛠️',t:'그 밖의 문제', d:'직원이 바로 봐 드려요', tips:[]}
 ];
 function staffPane(title, h, p){
   return '<div class="pane ask">'+topBar(title,2,2)+'<section class="q"><h1>'+h+'</h1><p>'+p+'</p></section>'+
-    '<section class="opts"><div class="call">직원 호출</div></section></div>';
+    '<section class="opts"><div class="call">🔔 직원 호출</div></section></div>';
 }
 function devTile(d){ return d.img ? '<img loading="lazy" src="'+esc(d.img)+'" alt="" onerror="this.style.visibility=\'hidden\'">' : '<span class="tile">'+esc(d.n)+'</span>'; }
 function devListPane(){
   var q=(state.dq||'').replace(/\s/g,'');
   var list = q ? DEVL.filter(function(d){return (d.n+d.cp).replace(/\s/g,'').indexOf(q)>=0}) : DEVL;
   return '<div class="pane res">'+topBar('필요하신 도움',2,3)+
-    '<section class="q"><h1>어떤 기기를 쓰세요?</h1><p>사진에서 찾거나 이름을 쳐 주세요.</p>'+
+    '<section class="q"><h1>어떤 기기를 쓰세요? 🔍</h1><p>사진에서 찾거나 이름을 쳐 주세요.</p>'+
       '<input id="dq" class="sq" type="search" placeholder="예: 말론, 하복, 발라" value="'+esc(state.dq||'')+'" autocomplete="off"></section>'+
     '<section class="grid dgrid" id="dres">'+devCards(list)+'</section></div>';
 }
@@ -452,8 +491,8 @@ var MODELS = (function(){
   return out.sort(function(a,b){ var x=top.indexOf(a.dn), y=top.indexOf(b.dn); return (x<0?9:x)-(y<0?9:y) || b.price-a.price; });
 })();
 function devPacks(M){
-  if (/^말론/.test(M.dn)) return [[M.dn+' + 액상 5병', M.price+40000],[M.dn+' + 액상 10병', M.price+75000]];
-  if (M.dn==='하복2') return [['하복2 + 액상 5병',129000],['하복2 + 액상 10병',164000],['하복2 + 폐호흡 3병',M.price+40000]];
+  if (/^말론/.test(M.dn)) return [[M.dn+' + 액상 5병', M.price+40000, M.price+75000],[M.dn+' + 액상 10병', M.price+75000, M.price+150000]];
+  if (M.dn==='하복2') return [['하복2 + 액상 5병',129000,M.price+75000],['하복2 + 액상 10병',164000,M.price+150000],['하복2 + 폐호흡 3병',M.price+40000,M.price+90000]];
   return [];
 }
 function modelCards(){ return MODELS.length ? MODELS.map(function(M,i){
@@ -461,7 +500,7 @@ function modelCards(){ return MODELS.length ? MODELS.map(function(M,i){
   }).join('') : '<div class="empty">지금 보여 드릴 기기 자료가 없어요. 직원에게 물어봐 주세요.</div>'; }
 function modelListPane(){
   return '<div class="pane res">'+topBar('기기 보기',1,2)+
-    '<section class="q"><h1>어떤 기기가<br>마음에 드세요?</h1><p>'+(BRANCH?esc(BRANCH)+'에 지금 있는 기기예요.':'매장에 있는 기기예요.')+' 눌러서 자세히 보세요.</p></section>'+
+    '<section class="q"><h1>어떤 기기가<br>마음에 드세요? 📱</h1><p>'+(BRANCH?esc(BRANCH)+'에 지금 있는 기기예요.':'매장에 있는 기기예요.')+' 눌러서 자세히 보세요.</p></section>'+
     '<section class="grid dgrid">'+modelCards()+'</section></div>';
 }
 function modelDetail(){
@@ -473,7 +512,7 @@ function modelDetail(){
     '<section class="dtl"><div class="ph">'+devTile({img:img,n:M.dn})+'</div><div class="info"><h2>'+esc(M.dn)+'</h2>'+
       (M.opts.length>1||M.opts[0].opt ? '<div class="colors">'+M.opts.map(function(x,i){return '<button data-act="mopt" data-i="'+i+'" class="'+(i===(state.mopt||0)?'on':'')+'">'+esc(x.opt||'기본')+'</button>'}).join('')+'</div>' : '')+
       '<dl>'+row('기기 값',won(o.price),1)+row('팟·코일',I.cp)+row('저항',I.o)+row('팟',I.f)+row('배터리',I.b)+'</dl>'+
-      (pk.length?pk.map(function(k,i){return '<div class="pk'+(i?' alt':'')+'"><span>'+esc(k[0])+'</span><b>'+won(k[1])+'</b></div>'}).join(''):'')+
+      (pk.length?pk.map(function(k,i){return pkRow(k[0],k[1],k[2],i)}).join(''):'')+
       (I.desc?'<p>'+esc(I.desc)+'</p>':'')+'<div class="small">'+(pk.length?'팟은 따로예요. ':'')+'색상과 재고는 직원이 확인해 드려요.</div></div></section>'+
     '<div class="acts" style="margin-top:auto;padding-top:20px"><button data-act="back">다른 기기 보기</button><button class="main" data-act="mcall">이 기기 보여 주세요</button></div></div>';
 }
@@ -482,7 +521,7 @@ function modelDetail(){
    위 시원한 / 아래 진한, 왼쪽 깔끔한 / 오른쪽 달콤한.
    왼위 멘솔·민트, 오른위 과일, 왼아래 시가·타바코, 오른아래 디저트·음료 */
 var QUADS = [{c:'tl',g:'멘솔·민트'},{c:'tr',g:'과일'},{c:'bl',g:'시가·타바코'},{c:'br',g:'디저트·음료'}];
-var MAPF = [{v:'',t:'전체'},{v:'노멘솔',t:'노멘솔만'},{v:'무니코틴',t:'무니코틴만'}];
+var MAPF = [{v:'',t:'✨ 전체'},{v:'노멘솔',t:'🙅 노멘솔만'},{v:'무니코틴',t:'🌿 무니코틴만'}];
 function mapPane(){
   var f=state.mapf||'';
   return '<div class="pane res">'+topBar('입호흡 액상',2,3)+
@@ -502,11 +541,11 @@ function mapPane(){
 var STRONG = /블랙멘솔|파워멘솔|쿨멘솔|아이스샷|꽁꽁|멘솔마스터|아이스멘솔|툰드라|베이퍼 하이|슈퍼쿨|스노우/;
 var NOT_PLAIN = /라임|피치|자몽|사과|알로에|그레이프|망고|레몬|커런트|워터멜론|레드불|초코|그린티|티|캔디|사탕|바인|블루|프루아|체체|톨리|찰스|렘드|플로이|욜|모모|알로|말보루|라무네|소다/;
 var MPACKS = [
-  {t:'멘솔 쎈 패키지', d:'블랙멘솔, 쿨멘솔처럼 확 시원한 맛', pool:function(P){return P.filter(function(x){return STRONG.test(x.n)})}},
-  {t:'담배맛 패키지', d:'시가, 타바코처럼 구수하고 묵직한 맛', pool:function(P){return P.filter(function(x){return x.g==='시가·타바코'})}},
-  {t:'단일 멘솔 패키지', d:'다른 맛 없이 멘솔, 민트만', pool:function(P){return P.filter(function(x){return x.g==='멘솔·민트' && /멘솔|민트/.test(x.n) && !NOT_PLAIN.test(x.n) && !STRONG.test(x.n)})}},
-  {t:'처음이라 여러 가지 섞어서', d:'과일, 디저트, 멘솔, 담배맛 골고루', mix:true},
-  {t:'액상 랭킹으로 추천', d:'이번 주 많이 나간 순서대로', pool:function(P){return P}}
+  {e:'🥶',t:'멘솔 쎈 패키지', d:'블랙멘솔, 쿨멘솔처럼 확 시원한 맛 · 💸 최대 75,000원 아껴요', pool:function(P){return P.filter(function(x){return STRONG.test(x.n)})}},
+  {e:'🚬',t:'담배맛 패키지', d:'시가, 타바코처럼 구수하고 묵직한 맛 · 💸 최대 75,000원 아껴요', pool:function(P){return P.filter(function(x){return x.g==='시가·타바코'})}},
+  {e:'🧊',t:'단일 멘솔 패키지', d:'다른 맛 없이 멘솔, 민트만 · 💸 최대 75,000원 아껴요', pool:function(P){return P.filter(function(x){return x.g==='멘솔·민트' && /멘솔|민트/.test(x.n) && !NOT_PLAIN.test(x.n) && !STRONG.test(x.n)})}},
+  {e:'🌈',t:'처음이라 여러 가지 섞어서', d:'과일, 디저트, 멘솔, 담배맛 골고루 · 💸 최대 75,000원 아껴요', mix:true},
+  {e:'🏆',t:'액상 랭킹으로 추천', d:'이번 주 많이 나간 순서대로 · 💸 최대 75,000원 아껴요', pool:function(P){return P}}
 ];
 function mpackList(k, n){
   var P = byRank(LIQ.filter(function(x){return x.line==='프리미엄'}));
@@ -520,73 +559,114 @@ function mpackPane(){
   return '<div class="pane res">'+topBar('입호흡 액상',3,3)+
     '<section class="q"><h1>'+esc(M.t)+'</h1>'+
       '<div class="pksz"><button data-act="mpn" data-i="5" class="'+(n===5?'on':'')+'">5병 49,500원</button><button data-act="mpn" data-i="11" class="'+(n===11?'on':'')+'">11병 90,000원</button></div>'+
-      '<div class="ev">앞의 <b>'+Math.min(n,list.length)+'병</b>으로 추천해요 · 1병씩 사면 '+won(full)+' → <b>'+won(full-price)+' 아껴요</b> · 맛은 바꿔도 돼요</div>'+
+      saveBox('프리미엄 '+n+'병을 패키지로 사면', full, price)+'<div class="ev">👇 앞의 <b>'+Math.min(n,list.length)+'병</b>으로 추천해요 · 맛은 바꿔도 돼요</div>'+
     '</section><section class="grid">'+(list.length?list.slice(0,Math.max(n+6,12)).map(function(x,i){return card(x, i<n?'추천 '+(i+1):'');}).join(''):'<div class="empty">맞는 액상이 없어요. 직원에게 물어봐 주세요.</div>')+'</section>'+
     '<div class="acts"><button data-act="back">다른 패키지</button><button class="main" data-act="mpcall">이 패키지로 할게요</button></div></div>';
 }
 
+/* ---------- 회원등록: menu-b와 같은 항목 (성함, 년생, 번호, 필수 동의, 선택 쿠폰 문자).
+   지금은 어디에도 보내지 않고 직원에게 보여 주는 화면까지만. 입력값은 처음으로 가면 지움 ---------- */
+function M_(){ return state.mem || (state.mem={name:'',year:'',phone:'',agree:false,mk:false,bad:''}); }
+function memPane(kind){
+  var m=M_(), bad=function(k){return m.bad===k?' bad':''}, full=m.name.trim()?m.name.trim()+(m.year||''):'';
+  if (kind==='new') return '<div class="pane res">'+topBar('회원등록',2,3)+
+    '<section class="q" style="margin-top:36px"><h1>회원등록 📝</h1><p>1분이면 끝나요. 다음부터 번호만 말씀하시면 돼요.</p></section>'+
+    '<section class="form">'+
+      '<label>성함</label><input id="mName" class="'+bad('name')+'" placeholder="예: 김민수" value="'+esc(m.name)+'" autocomplete="off">'+
+      '<label>몇 년생이세요?</label><div class="fi"><input id="mYear" class="'+bad('year')+'" inputmode="numeric" maxlength="2" placeholder="98" value="'+esc(m.year)+'"><span>년생</span></div>'+
+      '<label>휴대폰 번호</label><input id="mPhone" class="'+bad('phone')+'" type="tel" inputmode="numeric" maxlength="11" placeholder="숫자만 넣어 주세요" value="'+esc(m.phone)+'">'+
+      '<div class="pv" id="mPv">'+(full?'<b>'+esc(full)+'</b> 님으로 가입돼요 🙌':'')+'</div>'+
+      '<button class="ck'+(m.agree?' on':'')+bad('agree')+'" data-act="mck" data-k="agree"><i></i>(필수) 이름, 번호 저장에 동의해요</button>'+
+      '<button class="ck'+(m.mk?' on':'')+'" data-act="mck" data-k="mk"><i></i>(선택) 쿠폰 문자 받을래요 🎟️</button>'+
+    '</section><button class="cta" data-act="mem-send">회원 등록하기</button></div>';
+  return '<div class="pane res">'+topBar('회원등록',2,3)+
+    '<section class="q" style="margin-top:36px"><h1>가입하신 번호를<br>알려 주세요 📱</h1><p>직원이 포스에서 찾아서 적립해 드려요.</p></section>'+
+    '<section class="form"><label>휴대폰 번호</label><input id="mPhone" class="'+bad('phone')+'" type="tel" inputmode="numeric" maxlength="11" placeholder="숫자만 넣어 주세요" value="'+esc(m.phone)+'"></section>'+
+    '<button class="cta" data-act="mem-send">확인</button></div>';
+}
+function memDone(){
+  var m=M_(), full=m.name.trim()+(m.year||''), ph=m.phone.replace(/(\d{3})(\d{3,4})(\d{4})/,'$1-$2-$3');
+  return '<div class="pane res">'+topBar('회원등록',3,3)+
+    '<section class="done pop"><div style="font-size:64px">🎉</div><div class="big">'+(state.memKind==='new'?esc(full)+' 님,<br>거의 다 됐어요!':'번호 확인했어요!')+'</div>'+
+      '<div style="font-size:21px;color:#6b7684;line-height:1.5">직원이 포스에서 바로 '+(state.memKind==='new'?'등록':'찾아서 적립')+'해 드려요.<br>이 화면을 직원에게 보여 주세요 🙏</div>'+
+      (state.memKind==='new'?'<div class="row2"><span>이름</span><b>'+esc(full)+'</b></div>':'')+
+      '<div class="row2"><span>휴대폰</span><b>'+esc(ph)+'</b></div>'+
+      (state.memKind==='new'?'<div class="row2"><span>쿠폰 문자</span><b>'+(m.mk?'받을래요 🎟️':'안 받아요')+'</b></div>':'')+
+    '</section><button class="cta" data-act="home">계속 둘러보기 👀</button></div>';
+}
+
 function render(){
   var v=state.view, h='';
-  if (v==='home') h = ask({h:'어서 오세요!<br>무엇을 도와드릴까요?', p:'골라 주시면 딱 맞게 안내해 드릴게요.', opts:[
-    {t:'처음 오셨을까요?',d:'전자담배가 처음이거나 매장 방문이 처음이에요',act:'new'},
-    {t:'입호흡 액상을 찾으실까요?',d:'연초처럼 입으로 머금었다 들이마셔요',act:'mtl'},
-    {t:'기기 보러 왔어요!',d:'말론, 말론S, 하복2 등 매장 기기 구경하기',act:'dev'},
-    {t:'폐호흡 액상을 찾으실까요?',d:'바로 폐로 깊게 들이마셔요',act:'dl'},
-    {t:'아니면 필요하신 도움이 있으실까요?',d:'기기 고장, 코일 교체, 그 밖의 문의',act:'help'}]});
+  if (v==='home') h = ask({h:'어서 오세요! 👋<br>무엇을 도와드릴까요?', p:'골라 주시면 딱 맞게 안내해 드릴게요.',
+    extra:'<button class="memban" data-act="mem"><span class="em">🎁</span><span><b>회원등록하고 적립 받기</b><small>구매 이력이 남아서 AS 받을 때도 편해요</small></span><i>›</i></button>', opts:[
+    {e:'👋',t:'처음 오셨을까요?',d:'전자담배가 처음이거나 매장 방문이 처음이에요',act:'new'},
+    {e:'💨',t:'입호흡 액상을 찾으실까요?',d:'연초처럼 입으로 머금었다 들이마셔요',act:'mtl'},
+    {e:'📱',t:'기기 보러 왔어요!',d:'말론, 말론S, 하복2 등 매장 기기 구경하기',act:'dev'},
+    {e:'☁️',t:'폐호흡 액상을 찾으실까요?',d:'바로 폐로 깊게 들이마셔요',act:'dl'},
+    {e:'🙋',t:'아니면 필요하신 도움이 있으실까요?',d:'기기 고장, 코일 교체, 그 밖의 문의',act:'help'}]});
+  else if (v==='mem') h = ask({title:'회원등록',step:1,total:3,h:'회원이신가요? 🙂',p:'회원이면 구매할 때마다 적립돼요.', opts:[
+    {e:'🆕',t:'처음이에요, 회원등록하기',d:'1분이면 끝나요',act:'mem-new'},
+    {e:'📱',t:'회원이에요, 번호로 찾기',d:'휴대폰 번호만 넣어 주세요',act:'mem-old'}]});
+  else if (v==='mem-new') h = memPane('new');
+  else if (v==='mem-old') h = memPane('old');
+  else if (v==='mem-done') h = memDone();
   else if (v==='mtl-map') h = mapPane();
   else if (v==='mtl-mpack') h = mpackPane();
   else if (v==='dev') h = modelListPane();
   else if (v==='dev-dtl') h = modelDetail();
-  else if (v==='help') h = ask({title:'필요하신 도움',step:1,total:3,h:'어떤 도움이<br>필요하세요?',p:'골라 주시면 바로 안내해 드릴게요.', opts:[
-    {t:'코일 · 팟 사러 왔어요',d:'쓰시는 기기에 맞는 팟을 찾아 드려요',act:'h-pod'},
-    {t:'기기가 이상해요',d:'탄 맛, 액상 샘, 전원, 연기 문제',act:'h-fix'},
-    {t:'기기 사용법이 궁금해요',d:'기기별 팟, 저항, 배터리 정보',act:'h-use'},
-    {t:'회원 · 적립 · 결제 문의',d:'직원이 바로 도와드려요',act:'h-mem'},
-    {t:'그 밖의 문의',d:'무엇이든 물어봐 주세요',act:'h-etc'}]});
+  else if (v==='help') h = ask({title:'필요하신 도움',step:1,total:3,h:'어떤 도움이<br>필요하세요? 🙋',p:'골라 주시면 바로 안내해 드릴게요.', opts:[
+    {e:'🔧',t:'코일 · 팟 사러 왔어요',d:'쓰시는 기기에 맞는 팟을 찾아 드려요',act:'h-pod'},
+    {e:'🚨',t:'기기가 이상해요',d:'탄 맛, 액상 샘, 전원, 연기 문제',act:'h-fix'},
+    {e:'📖',t:'기기 사용법이 궁금해요',d:'기기별 팟, 저항, 배터리 정보',act:'h-use'},
+    {e:'💳',t:'회원 · 적립 · 결제 문의',d:'직원이 바로 도와드려요',act:'h-mem'},
+    {e:'💬',t:'그 밖의 문의',d:'무엇이든 물어봐 주세요',act:'h-etc'}]});
   else if (v==='help-dev') h = devListPane();
   else if (v==='help-dev-dtl') h = devDetail();
-  else if (v==='help-fix') h = ask({title:'필요하신 도움',step:2,total:3,h:'어떤 증상인가요?',p:'제일 비슷한 걸 골라 주세요.', opts:FIX.map(function(f){return {t:f.t,d:f.d,act:'fixpick'}})});
+  else if (v==='help-fix') h = ask({title:'필요하신 도움',step:2,total:3,h:'어떤 증상인가요? 🩺',p:'제일 비슷한 걸 골라 주세요.', opts:FIX.map(function(f){return {e:f.e,t:f.t,d:f.d,act:'fixpick'}})});
   else if (v==='help-fix-res') h = fixPane();
   else if (v==='help-staff') h = staffPane(state.staffT||'필요하신 도움', state.staffH||'직원이 바로<br>도와드릴게요!', state.staffP||'카운터 쪽 직원에게 이 화면을 보여 주시거나<br>잠깐만 기다려 주세요.');
   else if (v==='new-res') h = newResult();
   else if (v.indexOf('new-')===0) { var k=v.slice(4), Q=NEWQ[k], st=newSteps(), A=state.ans||{};
     h = ask({title:'처음 오신 분', step:st.indexOf(k)+1, total:st.length+1, h:Q.h, p:Q.p,
       sel:A[k]==null?null:Q.a.map(function(o){return o[0]}).indexOf(A[k]),
-      opts:Q.a.map(function(o){return {t:o[0],d:o[1],act:'newans'}})}); }
-  else if (v==='mtl') h = ask({title:KT(),step:1,total:4,h:'어떻게 골라 드릴까요?',p:'편하신 방법을 골라 주세요.', opts:[
-    {t:'내가 고르고 싶다!',d:'맛이랑 멘솔을 골라서 직접 찾아요',act:'m-self'},
-    {t:'귀찮다! 직원이 알아서 추천',d:'직원이 바로 와서 골라 드려요',act:'m-staff'},
-    {t:'전에 피던 거랑 비슷한 걸로',d:'피시던 액상을 알려 주시면 비슷한 맛을 찾아요',act:'m-like'},
-    {t:'액상 랭킹 보기',d:'이번 주 우리 매장에서 많이 나간 순서',act:'m-rank'},
-    {t:'패키지 추천',d:state.kind==='dl'?'3병마다 40,000원':'여러 병 사면 더 싸요',act:'m-pack'}]});
-  else if (v==='mtl-flavor') h = ask({title:KT(),step:2,total:4,h:'어떤 맛을 좋아하세요?',p:'제일 끌리는 걸 하나 골라 주세요.',
+      opts:Q.a.map(function(o){return {e:o[2],t:o[0],d:o[1],act:'newans'}})}); }
+  else if (v==='mtl') h = ask({title:KT(),step:1,total:4,h:'어떻게 골라 드릴까요? 🤗',p:'편하신 방법을 골라 주세요.', opts:[
+    {e:'🗺️',t:'내가 고르고 싶다!',d:'맛이랑 멘솔을 골라서 직접 찾아요',act:'m-self'},
+    {e:'🙌',t:'귀찮다! 직원이 알아서 추천',d:'직원이 바로 와서 골라 드려요',act:'m-staff'},
+    {e:'🔁',t:'전에 피던 거랑 비슷한 걸로',d:'피시던 액상을 알려 주시면 비슷한 맛을 찾아요',act:'m-like'},
+    {e:'🏆',t:'액상 랭킹 보기',d:'이번 주 우리 매장에서 많이 나간 순서',act:'m-rank'},
+    {e:'🎁',t:'패키지 추천',d:state.kind==='dl'?'3병마다 40,000원':'여러 병 사면 더 싸요',act:'m-pack'}]});
+  else if (v==='mtl-flavor') h = ask({title:KT(),step:2,total:4,h:'어떤 맛을 좋아하세요? 😋',p:'제일 끌리는 걸 하나 골라 주세요.',
     sel:state.flavor==null?null:FL().map(function(o){return o.v}).indexOf(state.flavor),
-    opts:FL().map(function(o,i){ if (state.kind!=='dl') return {t:o.t,d:o.d,act:'flavor',i:i}; var n=pick(o.v,null).length; return n?{t:o.t,d:(o.v&&o.v!=='기타'?'':o.d+' ')+'('+n+'개)',act:'flavor',i:i}:null}).filter(Boolean)});
+    opts:FL().map(function(o,i){ if (state.kind!=='dl') return {e:o.e,t:o.t,d:o.d,act:'flavor',i:i}; var n=pick(o.v,null).length; return n?{e:o.e,t:o.t,d:(o.v&&o.v!=='기타'?'':o.d+' ')+'('+n+'개)',act:'flavor',i:i}:null}).filter(Boolean)});
   else if (v==='mtl-cool') h = ask({title:KT(),step:3,total:4,h:'멘솔이나 니코틴은<br>어떻게 할까요?',p:'고르신 맛 안에서 골라 드릴게요.',
     sel:state.cool==null?null:COOL.map(function(o){return o.v}).indexOf(state.cool),
-    opts:COOL.map(function(o,i){var n=pick(state.flavor,o.v).length; return n?{t:o.t,d:o.d+' ('+n+'개)',act:'cool',i:i}:null}).filter(Boolean)});
-  else if (v==='mtl-res') h = listPane({step:state.kind==='dl'?4:3,total:state.kind==='dl'?4:3,h:'이런 맛 어떠세요?',list:byRank(pick(state.flavor,state.cool)),
+    opts:COOL.map(function(o,i){var n=pick(state.flavor,o.v).length; return n?{e:o.e,t:o.t,d:o.d+' ('+n+'개)',act:'cool',i:i}:null}).filter(Boolean)});
+  else if (v==='mtl-res') h = listPane({step:state.kind==='dl'?4:3,total:state.kind==='dl'?4:3,h:'이런 맛 어떠세요? 😋',list:byRank(pick(state.flavor,state.cool)),
     chips:[state.flavor==='기타'?'샤크 · 홀리 · 오니 등':state.flavor||'모든 맛', state.cool?(state.cool==='노멘솔'?'노멘솔만':state.cool==='무니코틴'?'무니코틴만':state.cool):'전체']});
   else if (v==='mtl-staff') h = '<div class="pane ask">'+topBar(KT(),2,2)+
-    '<section class="q"><h1>직원이 바로<br>도와드릴게요!</h1><p>카운터 쪽 직원에게 이 화면을 보여 주시거나<br>잠깐만 기다려 주세요.</p></section>'+
-    '<section class="opts"><div class="call">직원 호출</div>'+
-    '<button class="opt" data-act="m-rank"><span class="n">↗</span><span><span class="t">기다리면서 랭킹 구경하기</span><span class="d">이번 주 많이 나간 액상</span></span></button></section></div>';
+    '<section class="q"><h1>직원이 바로<br>도와드릴게요! 🙋</h1><p>카운터 쪽 직원에게 이 화면을 보여 주시거나<br>잠깐만 기다려 주세요.</p></section>'+
+    '<section class="opts"><div class="call">🔔 직원 호출</div>'+
+    '<button class="opt" data-act="m-rank"><span class="n">🏆</span><span><span class="t">기다리면서 랭킹 구경하기</span><span class="d">이번 주 많이 나간 액상</span></span></button></section></div>';
   else if (v==='mtl-like') h = searchPane();
   else if (v==='mtl-like-res') { var base=DATA().filter(function(x){return x.id===state.base})[0];
     h = listPane({step:3,total:3,h:'"'+esc(base.dn||base.n)+'"랑<br>비슷한 맛이에요',list:similar(base),chips:[base.g, base.f||''].filter(function(t){return t&&t!=='기타'}),
       empty:'비슷한 맛을 못 찾았어요. 직원에게 물어봐 주세요.'}); }
-  else if (v==='mtl-rank') h = listPane({step:2,total:2,h:'이번 주 액상 랭킹',top:10,
+  else if (v==='mtl-rank') h = listPane({step:2,total:2,h:'이번 주 액상 랭킹 🏆',top:10,
     list:byRank(DATA()).filter(function(x){return (RANK[x.n]||0)>0}).slice(0,30),
     chips:[BRANCH?BRANCH+' 기준':'전 지점 합계'], empty:'랭킹 자료를 불러오는 중이에요.'});
-  else if (v==='mtl-pack' && state.kind!=='dl') h = ask({title:KT(),step:2,total:3,h:'어떤 패키지로<br>드릴까요?',p:'프리미엄 5병 49,500원 · 11병 90,000원, 맛은 바꿔도 돼요.',
-    opts:MPACKS.map(function(o){return {t:o.t,d:o.d,act:'mpk'}})});
-  else if (v==='mtl-pack') h = ask({title:KT(),step:2,total:3,h:'여러 병 사면<br>더 싸요!',p:state.kind==='dl'?'폐호흡 액상은 1병 30,000원이에요.':'1병 값은 프리미엄 15,000원, 프라임 20,000원이에요.',
-    opts:PK().map(function(o){return {t:o.t,d:o.d,act:'pack'}})});
+  else if (v==='mtl-pack' && state.kind!=='dl') h = ask({title:KT(),step:2,total:3,h:'어떤 패키지로<br>드릴까요? 🎁',p:'프리미엄 5병 49,500원 · 11병 90,000원, 맛은 바꿔도 돼요.',
+    opts:MPACKS.map(function(o){return {e:o.e,t:o.t,d:o.d,act:'mpk'}})});
+  else if (v==='mtl-pack') h = ask({title:KT(),step:2,total:3,h:'여러 병 사면<br>더 싸요! 💸',p:state.kind==='dl'?'폐호흡 액상은 1병 30,000원이에요.':'1병 값은 프리미엄 15,000원, 프라임 20,000원이에요.',
+    opts:PK().map(function(o){return {e:o.e,t:o.t,d:o.d,act:'pack'}})});
   else if (v==='mtl-pack-res') { var pk=PK()[state.pack];
     h = listPane({step:3,total:3,h:pk.line+' 액상에서<br>'+pk.n+'병 골라 주세요',list:byRank(DATA().filter(function(x){return x.line===pk.line})),
-      chips:[pk.t], note:'<div class="ev"><b>'+esc(pk.t)+'</b> · 1병씩 사면 '+won(PRICE[pk.line]*pk.n)+' → <b>'+won(PRICE[pk.line]*pk.n-pk.price)+' 아껴요</b></div>'}); }
+      chips:[pk.t], note:saveBox(pk.t, PRICE[pk.line]*pk.n, pk.price)}); }
   var app=document.getElementById('app'); app.innerHTML=h; app.className='screen';
   var g=app.querySelector('.grid'); if(g) g.scrollTop=0;
+  ['mName','mYear','mPhone'].forEach(function(id){ var el=document.getElementById(id); if(!el) return; el.addEventListener('input',function(){
+    var m=M_(), k={mName:'name',mYear:'year',mPhone:'phone'}[id]; if (k!=='name') el.value=el.value.replace(/\D/g,''); m[k]=el.value; if (m.bad===k) { m.bad=''; el.classList.remove('bad'); }
+    var pv=document.getElementById('mPv'), full=m.name.trim()?m.name.trim()+(m.year||''):''; if (pv) pv.innerHTML=full?'<b>'+esc(full)+'</b> 님으로 가입돼요 🙌':''; }); });
   var dq=document.getElementById('dq'); if(dq) dq.addEventListener('input',function(){ state.dq=dq.value; var l=(state.dq||'').replace(/\s/g,''); document.getElementById('dres').innerHTML=devCards(l?DEVL.filter(function(d){return (d.n+d.cp).replace(/\s/g,'').indexOf(l)>=0}):DEVL); });
   var sq=document.getElementById('sq'); if(sq) sq.addEventListener('input',function(){ state.q=sq.value; document.getElementById('sres').innerHTML=searchList(); });
 }
@@ -601,6 +681,14 @@ document.getElementById('app').addEventListener('click',function(e){
   if (a==='back') return back();
   if (a==='home') return home();
   if (a==='soon') return toast('"'+b.querySelector('.t').textContent+'" 화면은 준비 중이에요');
+  if (a==='mem') { b.classList.add('on'); return go('mem'); }
+  if (a==='mem-new' || a==='mem-old') { state.memKind=a.slice(4); M_().bad=''; return on(a); }
+  if (a==='mck') { var mm=M_(); mm[b.dataset.k]=!mm[b.dataset.k]; if (mm.bad==='agree') mm.bad=''; return render(); }
+  if (a==='mem-send') { var m=M_(), need=function(k,msg){ m.bad=k; render(); toast(msg); var el=document.querySelector('.bad'); if(el&&el.focus) el.focus(); };
+    if (state.memKind==='new') { if (!/^[가-힣a-zA-Z ]{1,12}$/.test(m.name.trim())) return need('name','성함을 알려 주세요 🙏'); if (!/^\d{2}$/.test(m.year)) return need('year','몇 년생인지 알려 주세요 🙏'); }
+    if (!/^01[016789]\d{7,8}$/.test(m.phone)) return need('phone','휴대폰 번호를 확인해 주세요 📱');
+    if (state.memKind==='new' && !m.agree) return need('agree','(필수) 동의를 눌러 주세요');
+    m.bad=''; return go('mem-done'); }
   if (a==='dev') return on('dev');
   if (a==='mpick') { state.model=i; state.mopt=0; return go('dev-dtl'); }
   if (a==='mopt') { state.mopt=i; return render(); }
