@@ -90,7 +90,7 @@
   .warn{color:var(--red);font-weight:600;background:var(--red-soft);border-radius:12px;padding:10px 14px;margin-top:8px;font-size:14px;line-height:1.5}
   .okline{color:var(--green);font-weight:700;margin-top:14px;font-size:15px}
   /* 1116 특이건 */ .spbox{background:var(--blue-soft);border-radius:12px;padding:12px 14px;margin-top:8px;font-size:14px;line-height:1.6}.spbox b{color:var(--blue);font-size:15px}.spbox b small{font-weight:600;color:var(--sub);margin-left:8px;font-size:13px}.spbox p{margin:2px 0 0;color:var(--ink)}.spbox>small{display:block;color:var(--sub);font-size:13px;margin-top:4px}
-  .sptag{flex:none;font-size:12px;font-weight:700;padding:2px 7px;border-radius:8px;background:var(--blue-soft);color:var(--blue);white-space:nowrap}.dot.sp{background:var(--blue)}.clfix{margin-top:10px;font-size:13px;font-weight:600;color:var(--sub);background:none;text-decoration:underline;padding:6px 0}
+  .sptag{flex:none;font-size:12px;font-weight:700;padding:2px 7px;border-radius:8px;background:var(--blue-soft);color:var(--blue);white-space:nowrap}.dot.sp{background:var(--blue)}
   .pchead{margin-bottom:16px}.pchead h1{font-size:22px;font-weight:800;letter-spacing:-.6px;line-height:1.3}.pchead .caption{margin:4px 0 0}
   .av svg{width:22px;height:22px}
   .stk{--pb:calc(22px + env(safe-area-inset-bottom));position:sticky;bottom:calc(0px - var(--pb));z-index:2;margin:16px -22px calc(0px - var(--pb));padding:12px 22px var(--pb);background:var(--card);box-shadow:0 -1px 0 var(--line2)}@media (min-width:900px){.stk{--pb:26px}}.panel .stk{--pb:28px;margin-left:-28px;margin-right:-28px;padding-left:28px;padding-right:28px}
@@ -679,8 +679,8 @@ const clDiffTxt = (c) => (+c.diff ? `${c.diff > 0 ? "+" : ""}${Math.round(+c.dif
 const clMD = (c) => c.date.slice(5).replace("-", "/");
 const clYest = () => { const t = new Date(D.d + "T00:00:00Z"); t.setUTCDate(t.getUTCDate() - 1); return t.toISOString().slice(0, 10); };
 const spBox = (c) => { const r = c.resolved || {}, df = clDiffTxt(c), w = warnsOf(c).filter((x) => !/^돈통 차액/.test(x)); return `<div class="spbox"><b>특이건${df ? `<small>차액 ${df}</small>` : ""}</b><p>${esc(r.why || "확인")}</p>${r.fill ? `<p>${esc(r.fill)}</p>` : ""}<small>${esc(r.by || "관리자")} 확인, ${esc(r.at || "")}</small>${w.length ? `<small>처음 경고: ${esc(w.join(" | "))}</small>` : ""}</div>`; };
-/* 마감 상세의 차액 칸: 맞음 = 초록 한 줄, 특이건 = 차분한 칸 + [틀림으로 되돌리기], 틀림 = 빨간 줄 + [사유 적고 닫기] */
-const clBody = (c) => { const st = clSt(c), k = esc(c.b + "¦" + c.date); return st === "sp" ? spBox(c) + `<button class="clfix" data-clundo="${k}">틀림으로 되돌리기</button>` : st === "bad" ? warnsOf(c).map((w) => `<div class="warn">⚠️ ${esc(w)}</div>`).join("") + (warnsOf(c).length ? "" : `<div class="warn">⚠️ 돈통 차액 ${clDiffTxt(c)}</div>`) + `<button class="btn sec2" data-clres="${k}" style="height:46px;font-size:15px;margin-top:10px">사유 적고 닫기</button>` : '<div class="okline">✅ 돈통 차액 없음</div>'; };
+/* 마감 상세의 차액 칸: 맞음 = 초록 한 줄, 특이건 = 차분한 칸, 틀림 = 빨간 줄. 보기만 함(11/16 액상덕후 "사유 적기는 빼자": 관리자웹에서는 닫거나 되돌리는 버튼이 없다. 특이건은 봇 쪽에서 한 건씩 넣음) */
+const clBody = (c) => { const st = clSt(c); return st === "sp" ? spBox(c) : st === "bad" ? warnsOf(c).map((w) => `<div class="warn">⚠️ ${esc(w)}</div>`).join("") + (warnsOf(c).length ? "" : `<div class="warn">⚠️ 돈통 차액 ${clDiffTxt(c)}</div>`) : '<div class="okline">✅ 돈통 차액 없음</div>'; };
 const spList = () => { const y = clYest(); return (D.closings || []).map((c, i) => [c, i]).filter(([c]) => (c.date === D.d || c.date === y) && clSt(c) === "sp"); };
 // 10/26 블로그 발행: 지시문 날짜별로 8지점 발행 여부, 누르면 글 열기
 /* 11/5 블로그 탭: 네이버 대시보드 기록(순위감지봇, ../naver/data.json)으로 지점별 추천 키워드. 점유 = 블로그 상위 30개 중 우리 글 수 */
@@ -990,7 +990,7 @@ function issues(done) {
     const n = BR.indexOf(o.b) + 1, c = closingOf(o.b);
     if (c) { const w = (c.warn && c.warn.length ? c.warn : warnsOf(c)), full = warnsOf(c); if (w.length && clSt(c) !== "sp") L.push({ ids: [`close|${o.b}|${c.at || ""}`], lv: 1, b: o.b, t: w.length === 1 ? `${n}호 ${o.b} 마감, ${w[0]}` : `${n}호 ${o.b} 마감, 확인 ${w.length}건: ${w.join(", ")}`, d: full.join(" | ") }); }
     else if (late) L.push({ ids: [`noclose|${o.b}`], lv: 3, b: o.b, t: `${n}호 ${o.b}, 마감 보고 아직`, d: "22시가 지났는데 마감 보고가 없어요" });
-    { const yd = clYest(), yi = (D.closings || []).findIndex((x) => x.b === o.b && x.date === yd), y = yi >= 0 ? D.closings[yi] : null; if (y && clSt(y) === "bad") { const yw = warnsOf(y); L.push({ ids: [`closey|${o.b}|${yd}`], lv: 1, cl: yi, t: `${n}호 ${o.b} 어제 마감, ${yw.length === 1 ? yw[0] : yw.length ? `확인 ${yw.length}건` : "돈통 차액 " + clDiffTxt(y)}`, d: yw.length > 1 ? yw.join(" | ") : "사유를 적으면 특이건으로 넘어가요" }); } } /* 1116 특이건 */
+    { const yd = clYest(), yi = (D.closings || []).findIndex((x) => x.b === o.b && x.date === yd), y = yi >= 0 ? D.closings[yi] : null; if (y && clSt(y) === "bad") { const yw = warnsOf(y); L.push({ ids: [`closey|${o.b}|${yd}`], lv: 1, cl: yi, t: `${n}호 ${o.b} 어제 마감, ${yw.length === 1 ? yw[0] : yw.length ? `확인 ${yw.length}건` : "돈통 차액 " + clDiffTxt(y)}`, d: yw.length > 1 ? yw.join(" | ") : "눌러서 마감 보고를 봐 주세요" }); } } /* 1116 특이건 */
     if (o.prepDiff) L.push({ ids: [`prep|${o.b}|${o.prepDiff}`], lv: 1, b: o.b, t: `${n}호 ${o.b}, 준비금 ${o.prepDiff > 0 ? "+" : ""}${won(o.prepDiff)}원`, d: `돈통 준비금이 어제보다 ${o.prepDiff > 0 ? "+" : ""}${won(o.prepDiff)}원` });
     if (o.prepTr) L.push({ ids: [`preptr|${o.b}`], lv: 1, b: o.b, t: `${n}호 ${o.b}, 포스에 이체 미입력`, d: String(o.prepTr) }); /* 1113 이체 미입력 */
     if (o.late && !seen(`lateopen|${o.b}`)) lateOpen.push(o);
@@ -1273,23 +1273,6 @@ document.addEventListener("click", async (e) => {
   try { c.disabled = true; await sendOp("clockundo", { b, name, by }); if (a) a.out = null; const el = $("#insbox"); if (el) el.outerHTML = insHtml(b); toast(`${name} 퇴근을 취소했어요`); const chk = async (k) => { await loadToday(); try { await reload(true); } catch {} const hasOps = Array.isArray((D?.ops || []).find((y) => y.b === b)?.ins), fresh = hasOps && (D?.at || "") > sent, a2 = (insOf(b) || []).find((x) => x.name === name); const el2 = $("#insbox"); if (el2) el2.outerHTML = insHtml(b); if (fresh) { if (a2?.out) toast(`${name} 퇴근 취소가 안 됐어요. 다시 눌러 주세요`, 5000); return; } if (k < 3) setTimeout(() => chk(k + 1), 50e3); }; setTimeout(() => chk(1), 20e3); }
   catch (er) { if (a) a.out = out0; c.disabled = false; toast("못 보냈어요. 다시 눌러 주세요"); }
 });
-/* 1116 특이건: [사유 적고 닫기] = closingResolve { b, d, why, by }, [틀림으로 되돌리기] = { b, d, undo, by }. 보낸 뒤 화면을 먼저 바꾸고 30초, 90초, 150초에 새 자료로 확인 */
-let CL_PEND = null;
-document.addEventListener("click", async (e) => {
-  const r = e.target.closest?.("[data-clres],[data-clundo]"); if (!r) return;
-  const undo = r.dataset.clundo !== undefined, [b, d] = (undo ? r.dataset.clundo : r.dataset.clres).split("¦"), find = () => (D.closings || []).findIndex((x) => x.b === b && x.date === d), c = D.closings[find()]; if (!c) return;
-  const md = d.slice(5).replace("-", "/"); let why = "";
-  if (undo) { if (!(await askConfirm("틀림으로 되돌릴까요?", `${ho(b)} ${md} 마감이 다시 확인할 것에 떠요`, "되돌리기"))) return; }
-  else { why = await askText("왜 차액이 났나요?", `${ho(b)} ${md} 마감${clDiffTxt(c) ? ", 차액 " + clDiffTxt(c) : ""}. 적으면 특이건으로 넘어가요`, "예: 팟 5,500원을 현금으로 잘못 찍음", "", "특이건으로 넘기기"); if (!why) return; }
-  const by = await adminName(); if (!by) return;
-  const old = c.resolved, t = new Date(Date.now() + 9 * 3600e3), at = `${String(t.getUTCMonth() + 1).padStart(2, "0")}/${String(t.getUTCDate()).padStart(2, "0")} ${String(t.getUTCHours()).padStart(2, "0")}:${String(t.getUTCMinutes()).padStart(2, "0")}`;
-  const show = () => { const keep = !usePanel() && $("#dim").classList.contains("on"); render(); const i = find(); if (i >= 0 && (keep || usePanel())) sheetClosing(i); };
-  try { r.disabled = true; await sendOp("closingResolve", undo ? { b, d, undo: true, by } : { b, d, why, by });
-    const want = undo ? null : { at, by, why }; if (want) c.resolved = want; else delete c.resolved; CL_PEND = { b, d, want }; show(); toast(undo ? "틀림으로 되돌렸어요" : "특이건으로 넘겼어요");
-    const chk = async (k) => { if (!CL_PEND || CL_PEND.b !== b || CL_PEND.d !== d) return; try { await reload(true); } catch {} const c2 = D.closings[find()]; if (!c2) return; if (!!c2.resolved === !!want) { CL_PEND = null; return; } if (k < 3) { if (want) c2.resolved = want; else delete c2.resolved; render(); setTimeout(() => chk(k + 1), 60e3); } else { CL_PEND = null; render(); toast(undo ? "되돌리기가 안 됐어요. 다시 눌러 주세요" : "사유가 저장 안 됐어요. 다시 적어 주세요", 5000); } };
-    setTimeout(() => chk(1), 30e3); }
-  catch (er) { if (old) c.resolved = old; r.disabled = false; toast("못 보냈어요. 다시 눌러 주세요"); }
-});
 function sheetBranch(b, g) { openSheet(branchHtml(b, g)); bindSparks(); }
 function sheetTaskStatus(id) {
   const t = D.matrix.find((y) => y.id === id), def = D.tasks.find((y) => y.id === id);
@@ -1335,7 +1318,8 @@ function stockTblHtml() {
   // 10/28 사장님 "위에 따로 보여줘야 함? 지점 이름 옆에만 표시해도 되잖아" → 카드 없이 제목 한 줄, 보고 시각과 보고자는 지점 머리글에
   const hero = `<div class="sec">오늘 재고보고 <small>${onN}곳 보고${off.length ? `, 안 옴: ${off.map((c) => esc(c.b)).join(", ")}` : ""}. 노션 코일표 순서, 지점 이름을 누르면 그 지점 숫자가 세로로 복사돼요</small></div>
     ${!pc ? `<div class="srchips" style="margin:0 0 4px"><button class="chip ${!srB ? "on" : ""}" data-srb="">전체</button>${col.map((c) => `<button class="chip ${srB === c.b ? "on" : ""}" data-srb="${esc(c.b)}">${c.i} ${esc(c.b)}</button>`).join("")}</div>` : ""}`;
-  const head = `<tr><th>품목</th><th class="sum">합계</th>${show.map((c) => `<th class="${c.on ? "" : "na"}">${c.on ? `<button data-srcopy="${esc(c.b)}" title="숫자 세로로 복사"><small>${c.i}호</small><b>${esc(c.b)}</b><small>${esc(c.r.t)} ${esc(String(c.r.by).split(",")[0])}</small><small>복사</small></button>` : `<small>${c.i}호</small><b>${esc(c.b)}</b><small>안 옴${c.r ? "(" + esc(c.r.d.slice(5).replace("-", "/")) + ")" : ""}</small>`}</th>`).join("")}</tr>`;
+  /* 11/16 액상덕후 "이쪽에 복사버튼 먼저 만들어줘": 품목 이름도 지점 숫자처럼 세로로 복사 */
+  const head = `<tr><th><button data-srcopy="품목" title="품목 이름 세로로 복사" style="text-align:left"><b>품목</b><small>복사</small></button></th><th class="sum">합계</th>${show.map((c) => `<th class="${c.on ? "" : "na"}">${c.on ? `<button data-srcopy="${esc(c.b)}" title="숫자 세로로 복사"><small>${c.i}호</small><b>${esc(c.b)}</b><small>${esc(c.r.t)} ${esc(String(c.r.by).split(",")[0])}</small><small>복사</small></button>` : `<small>${c.i}호</small><b>${esc(c.b)}</b><small>안 옴${c.r ? "(" + esc(c.r.d.slice(5).replace("-", "/")) + ")" : ""}</small>`}</th>`).join("")}</tr>`;
   const rows = T.items.map((n) => `<tr><td>${esc(n)}</td><td class="sum">${sum(n)}</td>${show.map((c) => { if (!c.on) return '<td class="na">–</td>'; const v = c.r.q[n]; return v == null ? '<td class="na">–</td>' : `<td class="${v === 0 ? "z" : ""}">${v}</td>`; }).join("")}</tr>`).join("");
   const tot = `<tr class="tot"><td>지점 합계</td><td class="sum">${T.items.reduce((a, n) => a + sum(n), 0)}</td>${show.map((c) => c.on ? `<td>${T.items.reduce((a, n) => a + num(c, n), 0)}</td>` : '<td class="na">–</td>').join("")}</tr>`;
   return hero + `<div class="srw"><table class="srt"><thead>${head}</thead><tbody>${rows}${tot}</tbody></table></div>`;
@@ -1864,6 +1848,7 @@ document.addEventListener("click", async (e) => {
   if (t.dataset.coind) { coinD = t.dataset.coind; return render(); }
   if (t.dataset.srb != null) { srB = t.dataset.srb; ls.set("vf-admin-srb", srB); return render(); }
   if (t.dataset.clb) { clB = t.dataset.clb; ls.set("vf-admin-clb", clB); return render(); }
+  if (t.dataset.srcopy === "품목") { const L = D.stockTbl?.items || []; if (!L.length) return; try { await navigator.clipboard.writeText(L.join("\n")); toast(`품목 이름 ${L.length}개 복사했어요, 첫 줄에 붙여 넣으면 아래로 채워져요`); } catch { toast("복사하지 못했어요"); } return; }
   if (t.dataset.srcopy) { const b = t.dataset.srcopy, r = D.stockTbl?.br?.[b]; if (!r) return; const txt = D.stockTbl.items.map((n) => r.q[n] == null ? "" : r.q[n]).join("\n"); try { await navigator.clipboard.writeText(txt); toast(`${b} 숫자 ${D.stockTbl.items.length}개 복사했어요, 노션 ${b} 칸 첫 줄에 붙여 넣으면 돼요`); } catch { toast("복사하지 못했어요"); } return; }
   if (t.dataset.tab) { tab = t.dataset.tab; ls.set("vf-admin-tab", tab); closeSheet(true); enterOnce = true; render(); return scrollTo(0, 0); }
   const a = t.dataset.act;
