@@ -17,6 +17,7 @@ vfFit();addEventListener('orientationchange',function(){setTimeout(vfFit,60);});
 <script src="../menu/lung.js"></script>
 <script src="lung_img.js"></script>
 <script src="../menu/goods.js"></script>
+<script src="../menu/devinfo.js"></script>
 <style>
 /* menu-director: 새 상담패드. 이 폴더 안에서만 고친다 (menu, menu-b는 손대지 않음)
    11/16 첫 화면: 플랜핏 온보딩 참고 = 위에 큰 질문 한 줄 + 작은 설명, 아래에 둥근 선택 카드를 쌓음.
@@ -76,7 +77,7 @@ button{font-family:inherit;color:inherit;cursor:pointer}
 .grid::-webkit-scrollbar{display:none}
 .item{background:#fff;color:#15120f;border-radius:22px;overflow:hidden;display:flex;flex-direction:column}
 .item .ph{position:relative;aspect-ratio:1/1;background:#f2f2f4}
-.item .ph .tile{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:12px;text-align:center;font-size:24px;font-weight:800;color:#6E1F2A;background:#f6e9ea;line-height:1.3}
+.ph .tile{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:12px;text-align:center;font-size:24px;font-weight:800;color:#6E1F2A;background:#f6e9ea;line-height:1.3}
 .item .ph img{width:100%;height:100%;object-fit:cover;display:block}
 .item .rk{position:absolute;left:10px;top:10px;padding:5px 11px;border-radius:999px;background:#d81f2a;color:#fff;font-size:15px;font-weight:800}
 .item .tg{position:absolute;right:10px;top:10px;padding:5px 10px;border-radius:999px;background:rgba(21,18,15,.75);color:#fff;font-size:14px;font-weight:700}
@@ -115,6 +116,25 @@ body.land .newres .top,body.land .newres .bar,body.land .newres .acts{grid-colum
 body.land .newres .q{grid-column:1;overflow:auto}
 body.land .newres .grid{grid-column:2;grid-row:3;margin-top:24px;grid-template-columns:repeat(3,1fr);min-height:0}
 body.land .newres .item .nm{font-size:17px}body.land .newres .item .pr{font-size:17px}
+.dgrid{grid-template-columns:repeat(4,1fr)}
+.dcard{border:0;background:#fff;color:#15120f;border-radius:20px;overflow:hidden;display:flex;flex-direction:column;text-align:left}
+.dcard .ph{aspect-ratio:4/5;background:#f2f2f4;position:relative}
+.dcard .ph img{width:100%;height:100%;object-fit:cover;display:block}
+.dcard b{padding:10px 12px 12px;font-size:17px;line-height:1.3}
+.dtl{margin-top:28px;display:flex;gap:28px;background:#fff;color:#15120f;border-radius:var(--r);padding:24px;min-height:0;overflow:auto}
+.dtl .ph{flex:none;width:260px;aspect-ratio:4/5;border-radius:18px;overflow:hidden;background:#f2f2f4;position:relative}
+.dtl .ph img{width:100%;height:100%;object-fit:cover;display:block}
+.dtl .info{flex:1;display:flex;flex-direction:column;gap:12px}
+.dtl h2{font-size:32px;font-weight:800;letter-spacing:-.02em}
+.dtl dl{display:grid;grid-template-columns:auto 1fr;gap:8px 16px;font-size:19px}
+.dtl dt{color:#6c675f;font-weight:700}.dtl dd{font-weight:700}
+.dtl dd.red{color:#d81f2a}
+.dtl p{font-size:19px;line-height:1.55;color:#4a4540}
+.tipbox{margin-top:28px;padding:28px;border-radius:var(--r);background:#fff;color:#15120f}
+.tipbox li{margin:0 0 14px 28px;font-size:23px;line-height:1.5}
+.tipbox li:last-child{margin-bottom:0}
+body.land .dgrid{grid-template-columns:repeat(6,1fr)}
+body.land .dtl .ph{width:220px}
 .empty{grid-column:1/-1;padding:48px 0;text-align:center;font-size:22px;color:var(--sub)}
 
 .toast{position:fixed;left:50%;top:40px;transform:translate(-50%,-20px);opacity:0;padding:18px 28px;border-radius:999px;
@@ -330,13 +350,67 @@ function newResult(){
     '<div class="acts"><button data-act="new-more" data-k="'+R.kind+'">다른 액상 더 보기</button><button class="main" data-act="m-staff">직원 부르기</button></div></div>';
 }
 
+/* ---------- 4번 필요하신 도움 ---------- */
+var DEVL = (window.DEVINFO||[]).map(function(d,i){ return {id:'D'+i, n:d.n, img:d.img?'../'+d.img:'', dp:d.dp, b:d.b, f:d.f, o:d.o, cp:d.cp, desc:d.desc}; });
+/* 하복2는 교육 사이트 자료에 아직 없어서 상품 자료(goods.js) 값으로 넣음 */
+if (!DEVL.some(function(d){return /하복\s*2/.test(d.n)})) DEVL.unshift({id:'DH2', n:'하복2', img:'../menu/dev_havok2_black.png', dp:won(devPrice('하복2',89000)), b:'', f:'팟 교체형', o:'입호흡 0.6Ω / 폐호흡 0.15Ω', cp:'0.6Ω팟 6,000원 / 0.15Ω팟 6,000원', desc:'팟만 바꾸면 입호흡, 폐호흡 둘 다 되는 기기예요.'});
+var FIX = [
+  {t:'탄 맛이 나요', d:'피울 때 쓴맛, 탄 냄새', tips:['팟이나 코일을 오래 쓰면 가장 많이 생겨요. 이때는 팟(코일)을 새로 바꿔야 해요.','새 팟에 액상을 넣고 바로 피우면 솜이 덜 젖어서 탄 맛이 날 수 있어요. 5분 정도 기다렸다 피워 주세요.','액상이 거의 없을 때도 탄 맛이 나요. 액상 양을 확인해 주세요.']},
+  {t:'액상이 새요', d:'기기나 입에 액상이 묻어요', tips:['팟을 빼서 휴지로 닦고 끝까지 딸깍 끼워 주세요.','액상을 선 위로 가득 넣으면 넘칠 수 있어요. 표시선까지만 넣어 주세요.','계속 새면 팟 불량일 수 있어요. 직원에게 보여 주세요.']},
+  {t:'전원이 안 켜져요', d:'불이 안 들어와요, 충전이 안 돼요', tips:['배터리가 다 됐을 수 있어요. 먼저 충전해 주세요.','버튼을 빠르게 5번 누르면 켜지고 꺼지는 기기가 많아요. 한번 해 보세요.','충전해도 안 되면 직원이 기기를 바로 확인해 드려요.']},
+  {t:'연기가 잘 안 나요', d:'빨아도 약하거나 안 나와요', tips:['액상이 남아 있는지 먼저 확인해 주세요.','팟을 빼서 기기에 닿는 금속 부분을 휴지로 닦고 다시 끼워 주세요.','그래도 약하면 팟(코일) 수명일 수 있어요.']},
+  {t:'그 밖의 문제', d:'직원이 바로 봐 드려요', tips:[]}
+];
+function staffPane(title, h, p){
+  return '<div class="pane ask">'+topBar(title,2,2)+'<section class="q"><h1>'+h+'</h1><p>'+p+'</p></section>'+
+    '<section class="opts"><div class="call">직원 호출</div></section></div>';
+}
+function devTile(d){ return d.img ? '<img loading="lazy" src="'+esc(d.img)+'" alt="" onerror="this.style.visibility=\'hidden\'">' : '<span class="tile">'+esc(d.n)+'</span>'; }
+function devListPane(){
+  var q=(state.dq||'').replace(/\s/g,'');
+  var list = q ? DEVL.filter(function(d){return (d.n+d.cp).replace(/\s/g,'').indexOf(q)>=0}) : DEVL;
+  return '<div class="pane res">'+topBar('필요하신 도움',2,3)+
+    '<section class="q"><h1>어떤 기기를 쓰세요?</h1><p>사진에서 찾거나 이름을 쳐 주세요.</p>'+
+      '<input id="dq" class="sq" type="search" placeholder="예: 말론, 하복, 발라" value="'+esc(state.dq||'')+'" autocomplete="off"></section>'+
+    '<section class="grid dgrid" id="dres">'+devCards(list)+'</section></div>';
+}
+function devCards(list){ return list.length ? list.map(function(d){ return '<button class="dcard" data-act="devpick" data-id="'+d.id+'"><div class="ph">'+devTile(d)+'</div><b>'+esc(d.n)+'</b></button>'; }).join('') : '<div class="empty">찾는 기기가 없어요. 직원에게 물어봐 주세요.</div>'; }
+function devDetail(){
+  var d=DEVL.filter(function(x){return x.id===state.dev})[0]; if(!d) return '';
+  var row=function(k,v,c){return v?'<dt>'+k+'</dt><dd'+(c?' class="red"':'')+'>'+esc(v)+'</dd>':''};
+  return '<div class="pane res">'+topBar('필요하신 도움',3,3)+
+    '<section class="q"><h1>'+(state.helpMode==='pod'?'이 기기 팟은<br>이거예요':'이런 기기예요')+'</h1></section>'+
+    '<section class="dtl"><div class="ph">'+devTile(d)+'</div><div class="info"><h2>'+esc(d.n)+'</h2><dl>'+
+      row(state.helpMode==='pod'?'팟·코일 값':'팟·코일',d.cp,1)+row('저항',d.o)+row('팟',d.f)+row('배터리',d.b)+row('기기 값',d.dp)+'</dl>'+
+      (d.desc?'<p>'+esc(d.desc)+'</p>':'')+'<div class="small">가격과 재고는 지점마다 다를 수 있어요.</div></div></section>'+
+    '<div class="acts" style="margin-top:auto;padding-top:20px"><button data-act="back">다른 기기 보기</button><button class="main" data-act="help-call">직원에게 말하기</button></div></div>';
+}
+function fixPane(){
+  var f=FIX[state.fix];
+  return '<div class="pane res">'+topBar('필요하신 도움',3,3)+
+    '<section class="q"><h1>'+esc(f.t)+'</h1><p>이렇게 한번 해 보세요.</p></section>'+
+    '<section class="tipbox"><ol>'+f.tips.map(function(t){return '<li>'+esc(t)+'</li>'}).join('')+'</ol></section>'+
+    '<div class="acts" style="margin-top:auto"><button data-act="back">다른 증상</button><button class="main" data-act="help-call">그래도 안 돼요, 직원 부르기</button></div></div>';
+}
+
 function render(){
   var v=state.view, h='';
   if (v==='home') h = ask({h:'어서 오세요!<br>무엇을 도와드릴까요?', p:'골라 주시면 딱 맞게 안내해 드릴게요.', opts:[
     {t:'처음 오셨을까요?',d:'전자담배가 처음이거나 매장 방문이 처음이에요',act:'new'},
     {t:'입호흡 액상을 찾으실까요?',d:'연초처럼 입으로 머금었다 들이마셔요',act:'mtl'},
     {t:'폐호흡 액상을 찾으실까요?',d:'바로 폐로 깊게 들이마셔요',act:'dl'},
-    {t:'아니면 필요하신 도움이 있으실까요?',d:'기기 고장, 코일 교체, 그 밖의 문의',act:'soon'}]});
+    {t:'아니면 필요하신 도움이 있으실까요?',d:'기기 고장, 코일 교체, 그 밖의 문의',act:'help'}]});
+  else if (v==='help') h = ask({title:'필요하신 도움',step:1,total:3,h:'어떤 도움이<br>필요하세요?',p:'골라 주시면 바로 안내해 드릴게요.', opts:[
+    {t:'코일 · 팟 사러 왔어요',d:'쓰시는 기기에 맞는 팟을 찾아 드려요',act:'h-pod'},
+    {t:'기기가 이상해요',d:'탄 맛, 액상 샘, 전원, 연기 문제',act:'h-fix'},
+    {t:'기기 사용법이 궁금해요',d:'기기별 팟, 저항, 배터리 정보',act:'h-use'},
+    {t:'회원 · 적립 · 결제 문의',d:'직원이 바로 도와드려요',act:'h-mem'},
+    {t:'그 밖의 문의',d:'무엇이든 물어봐 주세요',act:'h-etc'}]});
+  else if (v==='help-dev') h = devListPane();
+  else if (v==='help-dev-dtl') h = devDetail();
+  else if (v==='help-fix') h = ask({title:'필요하신 도움',step:2,total:3,h:'어떤 증상인가요?',p:'제일 비슷한 걸 골라 주세요.', opts:FIX.map(function(f){return {t:f.t,d:f.d,act:'fixpick'}})});
+  else if (v==='help-fix-res') h = fixPane();
+  else if (v==='help-staff') h = staffPane('필요하신 도움', state.staffH||'직원이 바로<br>도와드릴게요!', state.staffP||'카운터 쪽 직원에게 이 화면을 보여 주시거나<br>잠깐만 기다려 주세요.');
   else if (v==='new-res') h = newResult();
   else if (v.indexOf('new-')===0) { var k=v.slice(4), Q=NEWQ[k], st=newSteps(), A=state.ans||{};
     h = ask({title:'처음 오신 분', step:st.indexOf(k)+1, total:st.length+1, h:Q.h, p:Q.p,
@@ -374,6 +448,7 @@ function render(){
       chips:[pk.t], note:'<div class="ev"><b>'+esc(pk.t)+'</b> · 1병씩 사면 '+won(PRICE[pk.line]*pk.n)+' → <b>'+won(PRICE[pk.line]*pk.n-pk.price)+' 아껴요</b></div>'}); }
   var app=document.getElementById('app'); app.innerHTML=h; app.className='screen';
   var g=app.querySelector('.grid'); if(g) g.scrollTop=0;
+  var dq=document.getElementById('dq'); if(dq) dq.addEventListener('input',function(){ state.dq=dq.value; var l=(state.dq||'').replace(/\s/g,''); document.getElementById('dres').innerHTML=devCards(l?DEVL.filter(function(d){return (d.n+d.cp).replace(/\s/g,'').indexOf(l)>=0}):DEVL); });
   var sq=document.getElementById('sq'); if(sq) sq.addEventListener('input',function(){ state.q=sq.value; document.getElementById('sres').innerHTML=searchList(); });
 }
 
@@ -387,6 +462,14 @@ document.getElementById('app').addEventListener('click',function(e){
   if (a==='back') return back();
   if (a==='home') return home();
   if (a==='soon') return toast('"'+b.querySelector('.t').textContent+'" 화면은 준비 중이에요');
+  if (a==='help') return on('help');
+  if (a==='h-pod' || a==='h-use') { state.helpMode=a==='h-pod'?'pod':'use'; state.dq=''; return on('help-dev'); }
+  if (a==='h-fix') return on('help-fix');
+  if (a==='h-mem' || a==='h-etc') { state.staffH='직원이 바로<br>도와드릴게요!'; state.staffP=a==='h-mem'?'회원 조회, 적립, 결제는 직원이 포스에서 바로 해 드려요.<br>카운터로 와 주시거나 잠깐만 기다려 주세요.':'카운터 쪽 직원에게 이 화면을 보여 주시거나<br>잠깐만 기다려 주세요.'; return on('help-staff'); }
+  if (a==='devpick') { state.dev=b.dataset.id; return go('help-dev-dtl'); }
+  if (a==='fixpick') { state.fix=i; if (!FIX[i].tips.length) { state.staffH='직원이 바로<br>봐 드릴게요!'; state.staffP='기기를 가지고 카운터로 와 주시거나<br>잠깐만 기다려 주세요.'; return on('help-staff'); } return on('help-fix-res'); }
+  if (a==='help-call') { var dd=state.view==='help-dev-dtl'?DEVL.filter(function(x){return x.id===state.dev})[0]:null;
+    state.staffH='직원이 바로<br>도와드릴게요!'; state.staffP=dd?'"'+esc(dd.n)+'" '+(state.helpMode==='pod'?'팟 찾으신다고 전해 드릴게요.':'사용법 알려 드릴게요.')+'<br>잠깐만 기다려 주세요.':'"'+esc(FIX[state.fix].t)+'" 증상, 직원이 바로 봐 드릴게요.<br>기기를 가지고 카운터로 와 주세요.'; return go('help-staff'); }
   if (a==='new') { state.ans={}; return on('new-now'); }
   if (a==='newans') { var k=state.view.slice(4), st, nx; state.ans[k]=NEWQ[k].a[i][0];
     if (k==='now') { delete state.ans.cig; delete state.ans.heat; }
