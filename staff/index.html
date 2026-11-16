@@ -533,7 +533,7 @@
 })();
 </script>
 <script>
-const VER = "11.10-48"; window.VER_ERR = VER;
+const VER = "11.10-49"; window.VER_ERR = VER;
 const GAME_LOCK = false; // 11/02 쉬는 시간 게임 잠금 → 11/13 액상덕후 "연기피하기 지금 다 열어줘"로 다시 엶
 // 실제 사이트(깃허브)에선 옆 폴더, 내 컴퓨터 미리보기에선 실제 사이트 주소로 (재고보고, 메뉴판 링크)
 const SITE = location.hostname.endsWith("github.io") ? "../" : "https://officialvafriend.github.io/vape/";
@@ -1444,6 +1444,9 @@ const CRPROP_DONE = new Set();
 document.addEventListener("click", async (e) => { const b = e.target.closest?.("[data-crprop]"); if (!b) return; const row = [...(BOARD?.qa || []), ...(RELAY?.v?.qa || [])].find((x) => x.id === b.dataset.crprop); const ids = row?.propose?.ids || []; if (!ids.length) return;
   if (!working().length) return needIn(() => {}); b.disabled = true; const by = working().join(", ");
   try { for (const id of ids) { await send({ type: "creqstep", id, k: "done", by }); STEPS[id] = "done"; } CRPROP_DONE.add(row.id); render(); toast(`${ids.length}건을 전달 완료로 바꿨어요`); } catch (er) { b.disabled = false; fail(er); } });
+// 11/13 규칙으로 만든 베프 답의 전체 이름: 지점 열쇠로 잠긴 글(aEnc)을 이 기기에서 열어 보여 줌(매장 코드 없으면 가린 글 그대로)
+const BEF_FULL = {};
+function befFull(x) { if (!x.aEnc) return x.a; const c = BEF_FULL[x.id]; if (c) return c; if (c === undefined && bKey()) { BEF_FULL[x.id] = null; clDec(x.aEnc).then((o) => { if (o?.a) { BEF_FULL[x.id] = o.a; if (VIEW === "ask") bgRender(); } }).catch(() => {}); } return x.a; }
 function askHtml() {
   const srv = (BOARD?.qa || []).filter((x) => !x.test === !TEST);
   ASK.local = (ASK.local || []).filter((x) => !srv.some((y) => y.id === x.id && (y.a || !x.a)) && Date.now() - x.ms < (x.card ? 30 : 5) * 60e3);
@@ -1459,7 +1462,7 @@ function askHtml() {
   const leadLine = (x) => { if (x.lead == null || !x.leadName) return ""; const c = ASK.leads?.[x.lead]; return `\n\n📞 ${esc(x.leadName)} 팀장님 ${c ? `<a href="tel:${esc(c[1])}" style="color:var(--blue);font-weight:800">${esc(c[1])}</a>` : '<span style="color:var(--sub)">(매장 코드를 넣으면 번호가 보여요)</span>'}`; };
   // 10/29 액상덕후 "답변이 도움이 되었나요? 버튼 만들어서 민심 수집": 답마다 👍 👎 한 번. 👎 받은 답은 봇이 다시 안 씀
   const fbHtml = (x) => { const v = x.fb || ASK.fb?.[x.id]; if (x.propose?.kind === "creqdone" && !CRPROP_DONE.has(x.id)) return `<div style="margin:-4px 0 8px 38px;display:flex;gap:6px;flex-wrap:wrap"><button class="rqk" data-crprop="${esc(x.id)}" style="min-height:44px">네, ${x.propose.ids.length}건 완료로</button></div>`; const und = (x.fill || []).filter((id) => !(x.fillUndone || []).includes(id)); if (und.length) return `<div style="margin:-4px 0 8px 38px;display:flex;gap:6px;flex-wrap:wrap">${und.map((id) => `<button class="rqk" data-bkundo="${esc(id)}" style="min-height:44px">잘못 넣었어요, 되돌리기</button>`).join("")}</div>`; return `<div style="margin:-4px 0 8px 38px;font-size:12px;color:var(--sub);display:flex;gap:6px;align-items:center">${v ? (v > 0 ? "👍 고마워요!" : "👎 알려 줘서 고마워요. 고칠게요") : `도움이 됐나요? <button data-befb="${esc(x.id)}|1" style="background:#f2f4f6;border:0;border-radius:12px;padding:4px 10px;font-size:14px">👍</button><button data-befb="${esc(x.id)}|-1" style="background:#f2f4f6;border:0;border-radius:12px;padding:4px 10px;font-size:14px">👎</button>`}</div>`; };
-  const msgs = L.map((x) => me(x) + (x.card ? bot("", x.card) : x.a ? bot(esc(x.at || ""), (TEST ? befLines : (h) => h)(esc(x.a).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>")) + leadLine(x) + (TEST ? befJump(x.a) : "")) + fbHtml(x) : bot("", `<span style="color:var(--sub)">${ASK_CLOSE(x.q) ? "포스랑 은행 기록을 보고 있어요. 1분쯤 걸려요" : "답 쓰는 중이에요"} <span class="bef-dots"><i>●</i><i>●</i><i>●</i></span></span>`))).join("");
+  const msgs = L.map((x) => me(x) + (x.card ? bot("", x.card) : x.a ? bot(esc(x.at || ""), (TEST ? befLines : (h) => h)(esc(befFull(x)).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>")) + leadLine(x) + (TEST ? befJump(x.a) : "")) + fbHtml(x) : bot("", `<span style="color:var(--sub)">${ASK_CLOSE(x.q) ? "포스랑 은행 기록을 보고 있어요. 1분쯤 걸려요" : "답 쓰는 중이에요"} <span class="bef-dots"><i>●</i><i>●</i><i>●</i></span></span>`))).join("");
   setTimeout(() => { const box = $("#askBox"), q = $("#askQ"); if (box) box.scrollTop = box.scrollHeight; if (VIEW === "ask" && window.scrollY > 0) window.scrollTo(0, 0); /* 11/03: 답 오면 화면이 내려가 제목이 사라지던 것 */ if (q && ASK.focus) { q.focus(); q.setSelectionRange(q.value.length, q.value.length); } }, 0);
   return `${befIssueHtml()}<div class="befsc">${BEF_SC.map(([a, n]) => `<button class="rqk" ${a}>${n}</button>`).join("")}</div><div class="cols one"><div><div class="card" style="padding:0;display:flex;flex-direction:column;height:calc(100vh - 190px);min-height:420px;overflow:hidden">
     <div style="padding:14px 16px;border-bottom:1px solid var(--line);font-weight:800">💛 베프 <small style="color:var(--sub);font-weight:500">${TEST ? "AI 도우미예요. 우리 매장 오늘 대화가 보여요" : "오늘 대화만 보여요"}</small></div>
