@@ -16,7 +16,7 @@ public class W32 {
 }
 "@
 $HERE = Split-Path -Parent $MyInvocation.MyCommand.Path
-$VER = "1116c"
+$VER = "1116d"
 $WEB = "https://officialvafriend.github.io/vape/posagent/"
 $SB = "https://bjjlmnkyhedtutogzliq.supabase.co/rest/v1/rpc/"; $KEY = "sb_publishable_i8rfcm_zAnwV75joN58FCw_8tHgFUKr"
 $cfgPath = Join-Path $HERE "설정.json"
@@ -116,7 +116,7 @@ $t.Add_Tick({
   if ($script:busy) { return }
   $script:tick++
   if (-not $Test -and $script:tick % 150 -eq 0 -and -not $script:orders.Count) {
-    try { $v = (Web).DownloadString($WEB + "ver.txt?" + [DateTime]::Now.Ticks).Trim(); if ($v -and $v -ne $VER) { $t.Stop(); $f.Close(); return } } catch {}
+    try { $v = (Web).DownloadString($WEB + "ver.txt?" + [DateTime]::Now.Ticks).Trim(); if ($v -and $v -ne $VER) { $script:updating = $true; $t.Stop(); $f.Close(); return } } catch {}
   }
   if ($Test) { if ($script:state -eq "boot") { $script:state = "ok"; $script:orders = @([pscustomobject]@{ id = 1042; codes = @("2999901866007", "2999901866007", "2999901863006"); svc = @("2999901868001"); summary = "말론S 블랙, 빌런 자두 x2, 메가킥 샤인 외"; total = 147000; cust = [pscustomobject]@{ nm = "클로드98"; ph = "01012341234" } }); Draw
       if ($env:VF_SNAP) { $bm = New-Object Drawing.Bitmap($f.Width, $f.Height); $f.DrawToBitmap($bm, (New-Object Drawing.Rectangle(0, 0, $f.Width, $f.Height))); $bm.Save($env:VF_SNAP); $f.Close() } }; return }
@@ -129,5 +129,7 @@ $t.Add_Tick({
     if ($before -ne $after -or $was -ne "ok") { if ($script:idx -ge $list.Count) { $script:idx = 0 }; Draw; if ($list.Count -and $before -ne $after) { [System.Media.SystemSounds]::Asterisk.Play(); $f.Activate() } }
   } catch { $m = "$($_.Exception.Message)"; if ($m.Length -gt 60) { $m = $m.Substring(0, 60) }; if ($script:state -ne "err" -or $script:errMsg -ne $m) { $script:errMsg = $m; $script:state = "err"; Draw } }
 })
+$script:updating = $false
 $t.Start(); Draw
 [Windows.Forms.Application]::Run($f)
+if (-not $script:updating) { exit 9 }   # 직원이 창을 닫으면 진짜 끔 (실행.cmd가 다시 안 켬)
