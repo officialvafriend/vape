@@ -18,6 +18,7 @@ vfFit();addEventListener('orientationchange',function(){setTimeout(vfFit,60);});
 <script src="lung_img.js"></script>
 <script src="../menu/goods.js"></script>
 <script src="../menu/devinfo.js"></script>
+<script src="dev_img.js"></script>
 <style>
 /* menu-director: 새 상담패드. 이 폴더 안에서만 고친다 (menu, menu-b는 손대지 않음)
    11/16 첫 화면: 플랜핏 온보딩 참고 = 위에 큰 질문 한 줄 + 작은 설명, 아래에 둥근 선택 카드를 쌓음.
@@ -118,8 +119,8 @@ body.land .newres .grid{grid-column:2;grid-row:3;margin-top:24px;grid-template-c
 body.land .newres .item .nm{font-size:17px}body.land .newres .item .pr{font-size:17px}
 .dgrid{grid-template-columns:repeat(4,1fr)}
 .dcard{border:0;background:#fff;color:#15120f;border-radius:20px;overflow:hidden;display:flex;flex-direction:column;text-align:left}
-.dcard .ph{aspect-ratio:4/5;background:#f2f2f4;position:relative}
-.dcard .ph img{width:100%;height:100%;object-fit:cover;display:block}
+.dcard .ph{aspect-ratio:4/5;background:#f2f2f4;position:relative;overflow:hidden;min-height:0}
+.dcard .ph img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
 .dcard b{padding:10px 12px 12px;font-size:17px;line-height:1.3}
 .dtl{margin-top:28px;display:flex;gap:28px;background:#fff;color:#15120f;border-radius:var(--r);padding:24px;min-height:0;overflow:auto}
 .dtl .ph{flex:none;width:260px;aspect-ratio:4/5;border-radius:18px;overflow:hidden;background:#f2f2f4;position:relative}
@@ -135,6 +136,11 @@ body.land .newres .item .nm{font-size:17px}body.land .newres .item .pr{font-size
 .tipbox li:last-child{margin-bottom:0}
 body.land .dgrid{grid-template-columns:repeat(6,1fr)}
 body.land .dtl .ph{width:220px}
+.colors{display:flex;flex-wrap:wrap;gap:8px}
+.colors button{padding:8px 16px;border-radius:999px;border:2px solid #e6e6ea;background:#fff;color:#15120f;font-size:17px;font-weight:700}
+.colors button.on{border-color:#d81f2a;color:#d81f2a}
+.dcard .pr{padding:0 12px 12px;font-size:17px;font-weight:800;color:#d81f2a}
+.dcard b{padding-bottom:4px}
 .empty{grid-column:1/-1;padding:48px 0;text-align:center;font-size:22px;color:var(--sub)}
 
 .toast{position:fixed;left:50%;top:40px;transform:translate(-50%,-20px);opacity:0;padding:18px 28px;border-radius:999px;
@@ -393,13 +399,60 @@ function fixPane(){
     '<div class="acts" style="margin-top:auto"><button data-act="back">다른 증상</button><button class="main" data-act="help-call">그래도 안 돼요, 직원 부르기</button></div></div>';
 }
 
+/* ---------- 3번 기기 보러 왔어요: 지점 포스에 재고 있는 기기 (menu/goods.js) ---------- */
+var DEV_ALIAS = {"발라맥스프로":"발라리안 맥스프로"};
+var MODELS = (function(){
+  var src = (BRANCH && window.GOODS_BY && window.GOODS_BY[BRANCH]) || GD, by = {}, out = [];
+  src.filter(function(g){return g.c==='dev'}).forEach(function(g){ (by[g.model]=by[g.model]||[]).push(g); });
+  Object.keys(by).forEach(function(m){
+    var dn = m.replace(/ 기계$| 기기$/,'').replace(/ (블랙|네이비|화이트|실버)$/,'');
+    var imgs = (window.DEV_IMG||{})[m] || (window.DEV_IMG||{})[dn] || (window.DEV_IMG||{})[m.split(' ')[0]] || {};
+    var key = dn.replace(/\s/g,''), info = (window.DEVINFO||[]).filter(function(d){ var k=d.n.replace(/\s/g,''); return k===key || k===(DEV_ALIAS[dn]||'').replace(/\s/g,''); })[0];
+    var opts = by[m].map(function(g){ return {opt:g.opt||'', price:g.price, img:imgs[g.opt]||''}; });
+    var first = opts.filter(function(o){return o.img})[0] || opts[0];
+    out.push({id:'M'+out.length, model:m, dn:dn, opts:opts, price:Math.min.apply(null,opts.map(function(o){return o.price})),
+      img:first.img || Object.values(imgs)[0] || '', info:info});
+  });
+  var top = ["말론","말론S","하복2"];
+  return out.sort(function(a,b){ var x=top.indexOf(a.dn), y=top.indexOf(b.dn); return (x<0?9:x)-(y<0?9:y) || b.price-a.price; });
+})();
+function devPacks(M){
+  if (/^말론/.test(M.dn)) return [[M.dn+' + 액상 5병', M.price+40000],[M.dn+' + 액상 10병', M.price+75000]];
+  if (M.dn==='하복2') return [['하복2 + 액상 5병',129000],['하복2 + 액상 10병',164000],['하복2 + 폐호흡 3병',M.price+40000]];
+  return [];
+}
+function modelCards(){ return MODELS.length ? MODELS.map(function(M,i){
+    return '<button class="dcard" data-act="mpick" data-i="'+i+'"><div class="ph">'+devTile({img:M.img,n:M.dn})+(i<3?'<span class="rk" style="position:absolute;left:10px;top:10px;padding:5px 11px;border-radius:999px;background:#d81f2a;color:#fff;font-size:15px;font-weight:800">추천</span>':'')+'</div><b>'+esc(M.dn)+'</b><span class="pr">'+won(M.price)+'~</span></button>';
+  }).join('') : '<div class="empty">지금 보여 드릴 기기 자료가 없어요. 직원에게 물어봐 주세요.</div>'; }
+function modelListPane(){
+  return '<div class="pane res">'+topBar('기기 보기',1,2)+
+    '<section class="q"><h1>어떤 기기가<br>마음에 드세요?</h1><p>'+(BRANCH?esc(BRANCH)+'에 지금 있는 기기예요.':'매장에 있는 기기예요.')+' 눌러서 자세히 보세요.</p></section>'+
+    '<section class="grid dgrid">'+modelCards()+'</section></div>';
+}
+function modelDetail(){
+  var M=MODELS[state.model], o=M.opts[state.mopt||0]||M.opts[0], I=M.info||DEVL.filter(function(d){return d.n===M.dn})[0]||{}, pk=devPacks(M);
+  var img = o.img || M.img;
+  var row=function(k,v,c){return v?'<dt>'+k+'</dt><dd'+(c?' class="red"':'')+'>'+esc(v)+'</dd>':''};
+  return '<div class="pane res">'+topBar('기기 보기',2,2)+
+    '<section class="q"><h1>이런 기기예요</h1></section>'+
+    '<section class="dtl"><div class="ph">'+devTile({img:img,n:M.dn})+'</div><div class="info"><h2>'+esc(M.dn)+'</h2>'+
+      (M.opts.length>1||M.opts[0].opt ? '<div class="colors">'+M.opts.map(function(x,i){return '<button data-act="mopt" data-i="'+i+'" class="'+(i===(state.mopt||0)?'on':'')+'">'+esc(x.opt||'기본')+'</button>'}).join('')+'</div>' : '')+
+      '<dl>'+row('기기 값',won(o.price),1)+row('팟·코일',I.cp)+row('저항',I.o)+row('팟',I.f)+row('배터리',I.b)+'</dl>'+
+      (pk.length?pk.map(function(k,i){return '<div class="pk'+(i?' alt':'')+'"><span>'+esc(k[0])+'</span><b>'+won(k[1])+'</b></div>'}).join(''):'')+
+      (I.desc?'<p>'+esc(I.desc)+'</p>':'')+'<div class="small">'+(pk.length?'팟은 따로예요. ':'')+'색상과 재고는 직원이 확인해 드려요.</div></div></section>'+
+    '<div class="acts" style="margin-top:auto;padding-top:20px"><button data-act="back">다른 기기 보기</button><button class="main" data-act="mcall">이 기기 보여 주세요</button></div></div>';
+}
+
 function render(){
   var v=state.view, h='';
   if (v==='home') h = ask({h:'어서 오세요!<br>무엇을 도와드릴까요?', p:'골라 주시면 딱 맞게 안내해 드릴게요.', opts:[
     {t:'처음 오셨을까요?',d:'전자담배가 처음이거나 매장 방문이 처음이에요',act:'new'},
     {t:'입호흡 액상을 찾으실까요?',d:'연초처럼 입으로 머금었다 들이마셔요',act:'mtl'},
+    {t:'기기 보러 왔어요!',d:'말론, 말론S, 하복2 등 매장 기기 구경하기',act:'dev'},
     {t:'폐호흡 액상을 찾으실까요?',d:'바로 폐로 깊게 들이마셔요',act:'dl'},
     {t:'아니면 필요하신 도움이 있으실까요?',d:'기기 고장, 코일 교체, 그 밖의 문의',act:'help'}]});
+  else if (v==='dev') h = modelListPane();
+  else if (v==='dev-dtl') h = modelDetail();
   else if (v==='help') h = ask({title:'필요하신 도움',step:1,total:3,h:'어떤 도움이<br>필요하세요?',p:'골라 주시면 바로 안내해 드릴게요.', opts:[
     {t:'코일 · 팟 사러 왔어요',d:'쓰시는 기기에 맞는 팟을 찾아 드려요',act:'h-pod'},
     {t:'기기가 이상해요',d:'탄 맛, 액상 샘, 전원, 연기 문제',act:'h-fix'},
@@ -410,7 +463,7 @@ function render(){
   else if (v==='help-dev-dtl') h = devDetail();
   else if (v==='help-fix') h = ask({title:'필요하신 도움',step:2,total:3,h:'어떤 증상인가요?',p:'제일 비슷한 걸 골라 주세요.', opts:FIX.map(function(f){return {t:f.t,d:f.d,act:'fixpick'}})});
   else if (v==='help-fix-res') h = fixPane();
-  else if (v==='help-staff') h = staffPane('필요하신 도움', state.staffH||'직원이 바로<br>도와드릴게요!', state.staffP||'카운터 쪽 직원에게 이 화면을 보여 주시거나<br>잠깐만 기다려 주세요.');
+  else if (v==='help-staff') h = staffPane(state.staffT||'필요하신 도움', state.staffH||'직원이 바로<br>도와드릴게요!', state.staffP||'카운터 쪽 직원에게 이 화면을 보여 주시거나<br>잠깐만 기다려 주세요.');
   else if (v==='new-res') h = newResult();
   else if (v.indexOf('new-')===0) { var k=v.slice(4), Q=NEWQ[k], st=newSteps(), A=state.ans||{};
     h = ask({title:'처음 오신 분', step:st.indexOf(k)+1, total:st.length+1, h:Q.h, p:Q.p,
@@ -462,7 +515,12 @@ document.getElementById('app').addEventListener('click',function(e){
   if (a==='back') return back();
   if (a==='home') return home();
   if (a==='soon') return toast('"'+b.querySelector('.t').textContent+'" 화면은 준비 중이에요');
-  if (a==='help') return on('help');
+  if (a==='dev') return on('dev');
+  if (a==='mpick') { state.model=i; state.mopt=0; return go('dev-dtl'); }
+  if (a==='mopt') { state.mopt=i; return render(); }
+  if (a==='mcall') { var M=MODELS[state.model], op=(M.opts[state.mopt||0]||{}).opt;
+    state.staffT='기기 보기'; state.staffH='직원이 바로<br>보여 드릴게요!'; state.staffP='"'+esc(M.dn+(op?' '+op:''))+'" 보러 오셨다고 전해 드릴게요.<br>잠깐만 기다려 주세요.'; return go('help-staff'); }
+  if (a==='help') { state.staffT=null; return on('help'); }
   if (a==='h-pod' || a==='h-use') { state.helpMode=a==='h-pod'?'pod':'use'; state.dq=''; return on('help-dev'); }
   if (a==='h-fix') return on('help-fix');
   if (a==='h-mem' || a==='h-etc') { state.staffH='직원이 바로<br>도와드릴게요!'; state.staffP=a==='h-mem'?'회원 조회, 적립, 결제는 직원이 포스에서 바로 해 드려요.<br>카운터로 와 주시거나 잠깐만 기다려 주세요.':'카운터 쪽 직원에게 이 화면을 보여 주시거나<br>잠깐만 기다려 주세요.'; return on('help-staff'); }
