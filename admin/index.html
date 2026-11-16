@@ -89,6 +89,8 @@
   /* ── PC 배치 (10/12, 900px 이상): 폰 화면은 그대로, 넓은 화면에서는 왼쪽 메뉴 + 요약 + 두 열 ── */
   .warn{color:var(--red);font-weight:600;background:var(--red-soft);border-radius:12px;padding:10px 14px;margin-top:8px;font-size:14px;line-height:1.5}
   .okline{color:var(--green);font-weight:700;margin-top:14px;font-size:15px}
+  /* 1116 특이건 */ .spbox{background:var(--blue-soft);border-radius:12px;padding:12px 14px;margin-top:8px;font-size:14px;line-height:1.6}.spbox b{color:var(--blue);font-size:15px}.spbox b small{font-weight:600;color:var(--sub);margin-left:8px;font-size:13px}.spbox p{margin:2px 0 0;color:var(--ink)}.spbox>small{display:block;color:var(--sub);font-size:13px;margin-top:4px}
+  .sptag{flex:none;font-size:12px;font-weight:700;padding:2px 7px;border-radius:8px;background:var(--blue-soft);color:var(--blue);white-space:nowrap}.dot.sp{background:var(--blue)}.clfix{margin-top:10px;font-size:13px;font-weight:600;color:var(--sub);background:none;text-decoration:underline;padding:6px 0}
   .pchead{margin-bottom:16px}.pchead h1{font-size:22px;font-weight:800;letter-spacing:-.6px;line-height:1.3}.pchead .caption{margin:4px 0 0}
   .av svg{width:22px;height:22px}
   .stk{--pb:calc(22px + env(safe-area-inset-bottom));position:sticky;bottom:calc(0px - var(--pb));z-index:2;margin:16px -22px calc(0px - var(--pb));padding:12px 22px var(--pb);background:var(--card);box-shadow:0 -1px 0 var(--line2)}@media (min-width:900px){.stk{--pb:26px}}.panel .stk{--pb:28px;margin-left:-28px;margin-right:-28px;padding-left:28px;padding-right:28px}
@@ -671,6 +673,15 @@ function markEmb() { const f = $("#app .emb"); if (f) f.dataset.k = tab + staffB
 // PC 홈: 요약 4칸 + 지점별 마감 목록(왼쪽) + 상세 패널(오른쪽)
 const closingOf = (b) => (D.closings || []).find((c) => c.b === b && c.date === D.d);
 const warnsOf = (c) => c?.warnFull || c?.warn || [];
+/* 1116 특이건: 사유가 확인된 마감 차액(c.resolved, 운영봇 closingResolve)은 틀림이 아니라 특이건. clSt = ok / sp(특이건) / bad(틀림, 사유 없음) */
+const clSt = (c) => (!c || !(warnsOf(c).length || +c.diff) ? "ok" : c.resolved ? "sp" : "bad");
+const clDiffTxt = (c) => (+c.diff ? `${c.diff > 0 ? "+" : ""}${Math.round(+c.diff).toLocaleString("ko-KR")}원` : "");
+const clMD = (c) => c.date.slice(5).replace("-", "/");
+const clYest = () => { const t = new Date(D.d + "T00:00:00Z"); t.setUTCDate(t.getUTCDate() - 1); return t.toISOString().slice(0, 10); };
+const spBox = (c) => { const r = c.resolved || {}, df = clDiffTxt(c), w = warnsOf(c).filter((x) => !/^돈통 차액/.test(x)); return `<div class="spbox"><b>특이건${df ? `<small>차액 ${df}</small>` : ""}</b><p>${esc(r.why || "확인")}</p>${r.fill ? `<p>${esc(r.fill)}</p>` : ""}<small>${esc(r.by || "관리자")} 확인, ${esc(r.at || "")}</small>${w.length ? `<small>처음 경고: ${esc(w.join(" | "))}</small>` : ""}</div>`; };
+/* 마감 상세의 차액 칸: 맞음 = 초록 한 줄, 특이건 = 차분한 칸 + [틀림으로 되돌리기], 틀림 = 빨간 줄 + [사유 적고 닫기] */
+const clBody = (c) => { const st = clSt(c), k = esc(c.b + "¦" + c.date); return st === "sp" ? spBox(c) + `<button class="clfix" data-clundo="${k}">틀림으로 되돌리기</button>` : st === "bad" ? warnsOf(c).map((w) => `<div class="warn">⚠️ ${esc(w)}</div>`).join("") + (warnsOf(c).length ? "" : `<div class="warn">⚠️ 돈통 차액 ${clDiffTxt(c)}</div>`) + `<button class="btn sec2" data-clres="${k}" style="height:46px;font-size:15px;margin-top:10px">사유 적고 닫기</button>` : '<div class="okline">✅ 돈통 차액 없음</div>'; };
+const spList = () => { const y = clYest(); return (D.closings || []).map((c, i) => [c, i]).filter(([c]) => (c.date === D.d || c.date === y) && clSt(c) === "sp"); };
 // 10/26 블로그 발행: 지시문 날짜별로 8지점 발행 여부, 누르면 글 열기
 /* 11/5 블로그 탭: 네이버 대시보드 기록(순위감지봇, ../naver/data.json)으로 지점별 추천 키워드. 점유 = 블로그 상위 30개 중 우리 글 수 */
 let NV = null, NV_AT = 0, NV_ERR = false, nvB = ls.get("vf-admin-nvb") || "전체", enterOnce = false;
@@ -957,12 +968,12 @@ function opsHtml() {
   if (!D.ops) return "";
   const td = (v, cls = "") => `<td class="${cls}">${v}</td>`, NO = td("-", "n");
   const rows = D.ops.map((o) => {
-    const c = o.close, L = !c && o.live ? o.live : null, vs = c && o.avgPrev ? Math.round(((c.총 - o.avgPrev) / o.avgPrev) * 100) : null;
+    const c = o.close, sp = clSt(closingOf(o.b)) === "sp" /* 1116 특이건 */, L = !c && o.live ? o.live : null, vs = c && o.avgPrev ? Math.round(((c.총 - o.avgPrev) / o.avgPrev) * 100) : null;
     return `<tr data-brpc="${esc(o.b)}" style="cursor:pointer">${td(`<b>${BR.indexOf(o.b) + 1} ${esc(o.b)}</b>`)}
       ${o.open ? td(`${o.open}${o.vsAvg != null && Math.abs(o.vsAvg) >= 5 ? `<small>평소보다 ${Math.abs(o.vsAvg)}분 ${o.vsAvg > 0 ? "늦음" : "빠름"}</small>` : ""}${o.prepDiff ? `<small>준비금 ${o.prepDiff > 0 ? "+" : ""}${won(o.prepDiff)}</small>` : ""}${o.prepTr ? `<small title="${esc(o.prepTr)}">이체 미입력</small>` : ""}`, o.late || o.prepDiff || o.prepTr ? "r" : "") : td("안 함", "n")}
-      ${c ? td(`${c.at}${c.warn ? `<small>확인 ${c.warn}건</small>` : ""}`, c.warn ? "r" : "g") : td("안 함", "n")}
+      ${c ? td(`${c.at}${sp ? "<small>특이건</small>" : c.warn ? `<small>확인 ${c.warn}건</small>` : ""}`, sp ? "" : c.warn ? "r" : "g") : td("안 함", "n")}
       ${c ? td(`${won(c.총)}${vs != null ? `<small>지난달 평균 ${vs > 0 ? "+" : ""}${vs}%</small>` : ""}`) : L ? td(won(L.sales)) : NO}
-      ${c && c.diff != null ? td(c.diff ? (c.diff > 0 ? "+" : "") + won(c.diff) : "0", c.diff ? "r" : "g") : NO}
+      ${c && c.diff != null ? td((c.diff ? (c.diff > 0 ? "+" : "") + won(c.diff) : "0") + (sp ? "<small>특이건</small>" : ""), sp ? "n" : c.diff ? "r" : "g") : NO}
       ${c ? td(`${c.bills}<small>객단가 ${won(c.객단가)}</small>`) : L ? td(`${L.bills}${L.bills ? `<small>객단가 ${won(Math.round(L.sales / L.bills))}</small>` : ""}`) : NO}
       ${c ? td(c.지정판매율 != null ? c.지정판매율 + "%" : "-") : L ? td(L.prem ? Math.round((L.des / L.prem) * 100) + "%" : "-") : NO}
       ${c ? td(c.rev ?? "-") : o.revLive && o.revLive.rev != null ? td(`${o.revLive.rev}${o.revLive.vrev ? `<small>영상 ${o.revLive.vrev}</small>` : ""}`) : NO}</tr>`;
@@ -977,8 +988,9 @@ function issues(done) {
   const L = [], late = new Date().getHours() >= 22, lateOpen = [], seen = (id) => !!done && done.has(id);
   for (const o of D.ops || []) {
     const n = BR.indexOf(o.b) + 1, c = closingOf(o.b);
-    if (c) { const w = (c.warn && c.warn.length ? c.warn : warnsOf(c)), full = warnsOf(c); if (w.length) L.push({ ids: [`close|${o.b}|${c.at || ""}`], lv: 1, b: o.b, t: w.length === 1 ? `${n}호 ${o.b} 마감, ${w[0]}` : `${n}호 ${o.b} 마감, 확인 ${w.length}건: ${w.join(", ")}`, d: full.join(" | ") }); }
+    if (c) { const w = (c.warn && c.warn.length ? c.warn : warnsOf(c)), full = warnsOf(c); if (w.length && clSt(c) !== "sp") L.push({ ids: [`close|${o.b}|${c.at || ""}`], lv: 1, b: o.b, t: w.length === 1 ? `${n}호 ${o.b} 마감, ${w[0]}` : `${n}호 ${o.b} 마감, 확인 ${w.length}건: ${w.join(", ")}`, d: full.join(" | ") }); }
     else if (late) L.push({ ids: [`noclose|${o.b}`], lv: 3, b: o.b, t: `${n}호 ${o.b}, 마감 보고 아직`, d: "22시가 지났는데 마감 보고가 없어요" });
+    { const yd = clYest(), yi = (D.closings || []).findIndex((x) => x.b === o.b && x.date === yd), y = yi >= 0 ? D.closings[yi] : null; if (y && clSt(y) === "bad") { const yw = warnsOf(y); L.push({ ids: [`closey|${o.b}|${yd}`], lv: 1, cl: yi, t: `${n}호 ${o.b} 어제 마감, ${yw.length === 1 ? yw[0] : yw.length ? `확인 ${yw.length}건` : "돈통 차액 " + clDiffTxt(y)}`, d: yw.length > 1 ? yw.join(" | ") : "사유를 적으면 특이건으로 넘어가요" }); } } /* 1116 특이건 */
     if (o.prepDiff) L.push({ ids: [`prep|${o.b}|${o.prepDiff}`], lv: 1, b: o.b, t: `${n}호 ${o.b}, 준비금 ${o.prepDiff > 0 ? "+" : ""}${won(o.prepDiff)}원`, d: `돈통 준비금이 어제보다 ${o.prepDiff > 0 ? "+" : ""}${won(o.prepDiff)}원` });
     if (o.prepTr) L.push({ ids: [`preptr|${o.b}`], lv: 1, b: o.b, t: `${n}호 ${o.b}, 포스에 이체 미입력`, d: String(o.prepTr) }); /* 1113 이체 미입력 */
     if (o.late && !seen(`lateopen|${o.b}`)) lateOpen.push(o);
@@ -1010,10 +1022,13 @@ const issDoneSave = (s) => { try { localStorage.setItem("vf-admin-issok-" + D.d,
 const issuesLeft = () => { const done = issDone(); return issues(done).filter((x) => !issIds(x).every((id) => done.has(id)) && !done.has(`${x.t}|${x.d}`)); };
 function issuesHtml() {
   const all = issues(), L = issuesLeft(), hid = all.length - L.length;
-  const row = (x) => { const go = x.b ? `data-brpc="${esc(x.b)}"` : x.go ? `data-tab="${x.go}"` : "", tag = go ? "button" : "div";
+  const row = (x) => { const go = x.cl != null ? `data-cl="${x.cl}"` : x.b ? `data-brpc="${esc(x.b)}"` : x.go ? `data-tab="${x.go}"` : "", tag = go ? "button" : "div";
     return `<div style="display:flex;align-items:center"><${tag} class="item iss" style="flex:1;min-width:0" ${go}><i class="dot lv${x.lv}"></i><div class="tx"><b>${esc(x.t)}</b><span>${esc(x.d)}</span></div>${go ? '<span class="chev">›</span>' : ""}</${tag}><button class="issok" data-issok="${esc(issKey(x))}" title="확인했어요" style="flex:0 0 auto;margin:0 12px 0 4px;height:40px;padding:0 14px;border-radius:10px;background:var(--line2);color:var(--ink2);font-size:14px;font-weight:600">확인</button></div>`; };
-  return `<div class="sec" style="margin-top:0">확인할 것 <small>${L.length ? L.length + "건" : ""}</small>${hid ? `<button class="issundo" data-issundo="1" style="margin-left:auto;font-size:13px;color:var(--sub);background:none">숨긴 것 ${hid}건 되돌리기</button>` : ""}</div><div class="list">${L.length ? L.map(row).join("") : '<div class="item"><i class="dot ok"></i><div class="tx"><b>오늘은 확인할 게 없어요</b></div></div>'}</div>`;
+  return `<div class="sec" style="margin-top:0">확인할 것 <small>${L.length ? L.length + "건" : ""}</small>${hid ? `<button class="issundo" data-issundo="1" style="margin-left:auto;font-size:13px;color:var(--sub);background:none">숨긴 것 ${hid}건 되돌리기</button>` : ""}</div><div class="list">${L.length ? L.map(row).join("") : '<div class="item"><i class="dot ok"></i><div class="tx"><b>오늘은 확인할 게 없어요</b></div></div>'}</div>${spHomeHtml()}`;
 }
+/* 1116 특이건: 홈에는 오늘, 어제 마감 중 사유가 확인된 것만 따로. 0건이면 안 보임 */
+function spHomeHtml() { const L = spList(); if (!L.length) return "";
+  return `<div class="sec">특이건 <small>${L.length}건, 사유 확인됨</small></div><div class="list">${L.map(([c, i]) => { const df = clDiffTxt(c), r = c.resolved || {}; return `<button class="item iss" data-cl="${i}"><i class="dot sp"></i><div class="tx"><b>${esc(ho(c.b))} ${clMD(c)}${df ? ` <span class="t-sub" style="display:inline;font-size:14px;font-weight:600">${df}</span>` : ""}</b><span>${esc(r.why || "확인")}</span><span>${esc(r.by || "관리자")} 확인, ${esc(r.at || "")}</span></div><span class="chev">›</span></button>`; }).join("")}</div>`; }
 const homeHead = () => `<div class="pchead"><h1>오늘 한눈에</h1><div class="caption">${esc(D.d)}, ${esc(D.at.slice(-5))} 기준</div></div>`;
 function botBad() { if (!BOT) return false; const m = BOT.master || {}; return agoMin(BOT.at) > 10 || BOT.ops.s === "에러" || !(m.ok && m.login) || (BOT.adj && !(BOT.adj.ok && Object.values(BOT.adj.br || {}).every((v) => v.login))); }
 const botWarn = () => (botBad() ? '<button class="botwarn" data-tab="office">● 봇에 문제가 있어요, 눌러서 사무실에서 확인</button>' : "");
@@ -1031,9 +1046,9 @@ function panelBranch(b, g) {
   const c = closingOf(b), n = c?.nums || {};
   const cl = !c ? `<div class="eyebrow">${esc(ho(b))}, 오늘 마감</div><h3>아직 마감 보고가 없어요</h3><div class="caption">직원웹에서 마감 보고를 보내면 여기에 바로 떠요</div>`
     : c.status !== "done" ? `<div class="eyebrow">${esc(ho(b))}, ${esc(c.at)} 보냄</div><h3>${c.status === "error" ? "보고문을 못 만들었어요" : "보고문 만드는 중"}</h3><div class="caption">${esc(c.err || "1~2분 뒤 다시 열어 주세요")}</div>`
-    : `<div class="eyebrow">${esc(ho(b))}, ${esc(c.at)} 보냄, ${esc(c.by)}</div><h3>총매출 ${won(n.총)}원 ${warnsOf(c).length ? '<span class="t-bad">,  확인 필요</span>' : '<span class="t-good">,  이상 없음</span>'}</h3>
+    : `<div class="eyebrow">${esc(ho(b))}, ${esc(c.at)} 보냄, ${esc(c.by)}</div><h3>총매출 ${won(n.총)}원 ${clSt(c) === "sp" ? '<span class="t-sub" style="white-space:nowrap">,  특이건</span>' : clSt(c) === "bad" ? '<span class="t-bad">,  확인 필요</span>' : '<span class="t-good">,  이상 없음</span>'}</h3>
       <div class="caption">현금 ${won(n.현)}, 카드 ${won(n.카)}, 이체 ${won(n.입)}, 시재 ${won(c.sijae)}${c.drawer != null ? `, 돈통 ${won(c.drawer)}` : ""}, 영수 ${n.영수객수}건</div>
-      ${warnsOf(c).length ? warnsOf(c).map((w) => `<div class="warn">⚠️ ${esc(w)}</div>`).join("") : '<div class="okline">✅ 돈통 차액 없음</div>'}
+      ${clBody(c)}
       <div class="btns" style="margin-top:14px"><button class="btn gray" data-cltoday="${esc(b)}" style="height:46px;font-size:15px">보고문 전체 보기</button></div>`;
   openSheet(cl + `<div style="height:1px;background:var(--line2);margin:22px -28px 8px"></div>` + branchHtml(b, g || "프리미엄 A"));
   bindSparks();
@@ -1183,11 +1198,11 @@ function closingAllHtml() {
   const chips = ["전체", ...BR].map((b, i) => `<button class="chip ${clB === b ? "on" : ""}" data-clb="${b}">${b === "전체" ? "전 지점" : i + "호 " + b}</button>`).join("");
   return `<div class="pchead"><h1>마감 보고</h1><div class="caption">지점별 최근 마감, 누르면 보고문 전체</div></div><div class="chips hs" style="margin-bottom:12px">${chips}</div>${all.length ? (clB === "전체" ? closingByBranchHtml() : closingBranchListHtml(clB)) : '<div class="empty">아직 마감 보고가 없어요</div>'}`;
 }
-const clRow = (c, i) => { const w = warnsOf(c).length; return `<button class="clrow" data-cl="${i}"><b class="${w ? "t-bad" : ""}">${c.date.slice(5).replace("-", "/")}</b><span class="m">${c.status === "done" ? `총 ${won(c.nums.총)}<small>시재 ${won(c.sijae)}</small>` : c.status === "error" ? `<span class="t-bad">${esc(c.err || "실패")}</span>` : "만드는 중"}</span><small>${esc(c.by)}</small>${w ? `<span class="t-bad">⚠️${w}</span>` : ""}<span class="chev">›</span></button>`; };
+const clRow = (c, i) => { const st = clSt(c), w = st === "bad" ? warnsOf(c).length || 1 : 0; return `<button class="clrow" data-cl="${i}"><b class="${w ? "t-bad" : ""}">${c.date.slice(5).replace("-", "/")}</b><span class="m">${c.status === "done" ? `총 ${won(c.nums.총)}<small>시재 ${won(c.sijae)}${st === "sp" && clDiffTxt(c) ? ", 차액 " + clDiffTxt(c) : ""}</small>` : c.status === "error" ? `<span class="t-bad">${esc(c.err || "실패")}</span>` : "만드는 중"}</span><small>${esc(c.by)}</small>${w ? `<span class="t-bad">⚠️${w}</span>` : st === "sp" ? '<span class="sptag">특이건</span>' : ""}<span class="chev">›</span></button>`; };
 function closingByBranchHtml() {
   const all = D.closings || [];
-  return `<div class="clgrid">${BR.map((b, bi) => { const L = all.map((c, i) => [c, i]).filter(([c]) => c.b === b).slice(0, 7), last = L[0]?.[0], wn = L.reduce((a, [c]) => a + warnsOf(c).length, 0);
-    return `<div class="clcard"><div class="clhead"><div class="av ${!last ? "" : wn ? "bad" : "good"}">${bi + 1}</div><b>${esc(b)}</b><small>${last ? "마지막 " + last.date.slice(5).replace("-", "/") + (wn ? `, <span class="t-bad">⚠️ ${wn}</span>` : "") : "마감 보고 없음"}</small></div>${L.map(([c, i]) => clRow(c, i)).join("") || '<div class="caption">최근 기록이 없어요</div>'}</div>`; }).join("")}</div>`;
+  return `<div class="clgrid">${BR.map((b, bi) => { const L = all.map((c, i) => [c, i]).filter(([c]) => c.b === b).slice(0, 7), last = L[0]?.[0], wn = L.reduce((a, [c]) => a + (clSt(c) === "bad" ? warnsOf(c).length || 1 : 0), 0), spn = L.filter(([c]) => clSt(c) === "sp").length;
+    return `<div class="clcard"><div class="clhead"><div class="av ${!last ? "" : wn ? "bad" : "good"}">${bi + 1}</div><b>${esc(b)}</b><small>${last ? "마지막 " + last.date.slice(5).replace("-", "/") + (wn ? `, <span class="t-bad">⚠️ ${wn}</span>` : "") + (spn ? `, 특이건 ${spn}` : "") : "마감 보고 없음"}</small></div>${L.map(([c, i]) => clRow(c, i)).join("") || '<div class="caption">최근 기록이 없어요</div>'}</div>`; }).join("")}</div>`;
 }
 function closingBranchListHtml(b) {
   const L = (D.closings || []).map((c, i) => [c, i]).filter(([c]) => c.b === b);
@@ -1196,14 +1211,14 @@ function closingBranchListHtml(b) {
 function closingListHtml(max = 8) {
   const L = (D.closings || []).slice(0, max);
   if (!L.length) return "";
-  return `<div class="sec">마감 보고 <small>최근</small></div><div class="list">${L.map((c, i) => `<button class="item" data-cl="${i}"><div class="av ${c.status === "done" ? (warnsOf(c).length ? "bad" : "good") : c.status === "error" ? "bad" : "blue"}">${BR.indexOf(c.b) + 1}</div>
-    <div class="tx"><b>${esc(c.b)}, ${c.date.slice(5).replace("-", "/")}${warnsOf(c).length ? ` <span class="t-bad">⚠️ ${warnsOf(c).length}</span>` : ""}</b><span>${c.status === "done" ? `총 ${won(c.nums.총)}, 시재 ${won(c.sijae)}` : c.status === "error" ? esc(c.err || "실패") : "만드는 중"}, ${esc(c.by)}</span></div><span class="chev">›</span></button>`).join("")}</div>`;
+  return `<div class="sec">마감 보고 <small>최근</small></div><div class="list">${L.map((c, i) => `<button class="item" data-cl="${i}"><div class="av ${c.status === "done" ? (clSt(c) === "bad" ? "bad" : "good") : c.status === "error" ? "bad" : "blue"}">${BR.indexOf(c.b) + 1}</div>
+    <div class="tx"><b>${esc(c.b)}, ${c.date.slice(5).replace("-", "/")}${clSt(c) === "bad" ? ` <span class="t-bad">⚠️ ${warnsOf(c).length || 1}</span>` : clSt(c) === "sp" ? ' <span class="sptag">특이건</span>' : ""}</b><span>${c.status === "done" ? `총 ${won(c.nums.총)}, 시재 ${won(c.sijae)}` : c.status === "error" ? esc(c.err || "실패") : "만드는 중"}, ${esc(c.by)}</span></div><span class="chev">›</span></button>`).join("")}</div>`;
 }
 function sheetClosing(i) {
   const c = D.closings[i], n = c.nums || {};
   openSheet(`<div class="eyebrow">${esc(ho(c.b))}, ${c.date}, ${esc(c.at)} 보냄</div><h3>${c.status === "done" ? `총매출 ${won(n.총)}원` : c.status === "error" ? "보고문을 못 만들었어요" : "보고문 만드는 중"}</h3>
     ${c.status === "done" ? `<div class="caption">영수 ${n.영수객수}건, 객단가 ${won(n.객단가)}원, 일회용 ${n.kpi?.일회용 ?? "-"}, 프리미엄 ${n.kpi?.프리미엄 ?? "-"}, 지정 ${n.kpi?.지정 ?? "-"}, 발맥프로 ${n.kpi?.발맥프로 ?? "-"}, 택배 ${n.kpi?.택배 ?? "-"}</div>
-      ${warnsOf(c).length ? warnsOf(c).map((w) => `<div class="warn">⚠️ ${esc(w)}</div>`).join("") : '<div class="okline">✅ 돈통 차액 없음</div>'}
+      ${clBody(c)}
       <div class="report" id="rpt">${esc(c.text)}</div>
       <div class="caption">시재 = 5만원권 ${c.n50}장 + 1만원권 ${c.n10}장 − 만원권 10장${(n.otherAcc || []).length ? `, 금전현황: ${n.otherAcc.map((x) => `${esc(x.계정)} ${won(x.금액)}`).join(", ")}` : ""}</div>
       <div class="btns"><button class="btn gray" data-x>닫기</button><button class="btn" data-act="copyrpt">보고문 복사</button></div>`
@@ -1257,6 +1272,23 @@ document.addEventListener("click", async (e) => {
   const a = (insOf(b) || []).find((x) => x.name === name), out0 = a?.out, sent = D?.at || "";
   try { c.disabled = true; await sendOp("clockundo", { b, name, by }); if (a) a.out = null; const el = $("#insbox"); if (el) el.outerHTML = insHtml(b); toast(`${name} 퇴근을 취소했어요`); const chk = async (k) => { await loadToday(); try { await reload(true); } catch {} const hasOps = Array.isArray((D?.ops || []).find((y) => y.b === b)?.ins), fresh = hasOps && (D?.at || "") > sent, a2 = (insOf(b) || []).find((x) => x.name === name); const el2 = $("#insbox"); if (el2) el2.outerHTML = insHtml(b); if (fresh) { if (a2?.out) toast(`${name} 퇴근 취소가 안 됐어요. 다시 눌러 주세요`, 5000); return; } if (k < 3) setTimeout(() => chk(k + 1), 50e3); }; setTimeout(() => chk(1), 20e3); }
   catch (er) { if (a) a.out = out0; c.disabled = false; toast("못 보냈어요. 다시 눌러 주세요"); }
+});
+/* 1116 특이건: [사유 적고 닫기] = closingResolve { b, d, why, by }, [틀림으로 되돌리기] = { b, d, undo, by }. 보낸 뒤 화면을 먼저 바꾸고 30초, 90초, 150초에 새 자료로 확인 */
+let CL_PEND = null;
+document.addEventListener("click", async (e) => {
+  const r = e.target.closest?.("[data-clres],[data-clundo]"); if (!r) return;
+  const undo = r.dataset.clundo !== undefined, [b, d] = (undo ? r.dataset.clundo : r.dataset.clres).split("¦"), find = () => (D.closings || []).findIndex((x) => x.b === b && x.date === d), c = D.closings[find()]; if (!c) return;
+  const md = d.slice(5).replace("-", "/"); let why = "";
+  if (undo) { if (!(await askConfirm("틀림으로 되돌릴까요?", `${ho(b)} ${md} 마감이 다시 확인할 것에 떠요`, "되돌리기"))) return; }
+  else { why = await askText("왜 차액이 났나요?", `${ho(b)} ${md} 마감${clDiffTxt(c) ? ", 차액 " + clDiffTxt(c) : ""}. 적으면 특이건으로 넘어가요`, "예: 팟 5,500원을 현금으로 잘못 찍음", "", "특이건으로 넘기기"); if (!why) return; }
+  const by = await adminName(); if (!by) return;
+  const old = c.resolved, t = new Date(Date.now() + 9 * 3600e3), at = `${String(t.getUTCMonth() + 1).padStart(2, "0")}/${String(t.getUTCDate()).padStart(2, "0")} ${String(t.getUTCHours()).padStart(2, "0")}:${String(t.getUTCMinutes()).padStart(2, "0")}`;
+  const show = () => { const keep = !usePanel() && $("#dim").classList.contains("on"); render(); const i = find(); if (i >= 0 && (keep || usePanel())) sheetClosing(i); };
+  try { r.disabled = true; await sendOp("closingResolve", undo ? { b, d, undo: true, by } : { b, d, why, by });
+    const want = undo ? null : { at, by, why }; if (want) c.resolved = want; else delete c.resolved; CL_PEND = { b, d, want }; show(); toast(undo ? "틀림으로 되돌렸어요" : "특이건으로 넘겼어요");
+    const chk = async (k) => { if (!CL_PEND || CL_PEND.b !== b || CL_PEND.d !== d) return; try { await reload(true); } catch {} const c2 = D.closings[find()]; if (!c2) return; if (!!c2.resolved === !!want) { CL_PEND = null; return; } if (k < 3) { if (want) c2.resolved = want; else delete c2.resolved; render(); setTimeout(() => chk(k + 1), 60e3); } else { CL_PEND = null; render(); toast(undo ? "되돌리기가 안 됐어요. 다시 눌러 주세요" : "사유가 저장 안 됐어요. 다시 적어 주세요", 5000); } };
+    setTimeout(() => chk(1), 30e3); }
+  catch (er) { if (old) c.resolved = old; r.disabled = false; toast("못 보냈어요. 다시 눌러 주세요"); }
 });
 function sheetBranch(b, g) { openSheet(branchHtml(b, g)); bindSparks(); }
 function sheetTaskStatus(id) {
@@ -1374,9 +1406,10 @@ function oldSurveyHtml() {
 function opsMobileHtml() {
   if (!D.ops) return "";
   const rows = D.ops.map((o) => { const c = o.close, L = !c && o.live ? o.live : null, s = c ? +c.총 || 0 : L ? L.sales : 0, n = c ? +c.bills || 0 : L ? L.bills : 0;
-    const warn = [o.prepDiff ? `준비금 ${o.prepDiff > 0 ? "+" : ""}${won(o.prepDiff)}` : "", o.prepTr ? "이체 미입력" : "", c && c.diff ? `현금 차액 ${c.diff > 0 ? "+" : ""}${won(c.diff)}` : "", c && c.warn ? `확인 ${c.warn}건` : ""].filter(Boolean);
-    const right = c ? `<b class="${c.warn ? "t-bad" : "t-good"}">마감 ${esc(c.at)}</b>` : o.open ? `<b class="${o.late ? "t-bad" : ""}">오픈 ${esc(o.open)}</b>${o.late ? `<span class="t-bad">${o.late}분 늦음</span>` : ""}` : '<b class="t-sub">오픈 안 함</b>';
-    return `<button class="item opm" data-brpc="${esc(o.b)}"><div class="tx"><b>${BR.indexOf(o.b) + 1} ${esc(o.b)}</b><span>${s ? `${m1(s)}, ${n}명` : "아직 매출 없음"}${warn.length ? `<em class="t-bad">, ${warn.join(", ")}</em>` : ""}</span></div><div class="val">${right}</div><span class="chev">›</span></button>`; }).join("");
+    const sp = clSt(closingOf(o.b)) === "sp"; /* 1116 특이건 */
+    const warn = [o.prepDiff ? `준비금 ${o.prepDiff > 0 ? "+" : ""}${won(o.prepDiff)}` : "", o.prepTr ? "이체 미입력" : "", !sp && c && c.diff ? `현금 차액 ${c.diff > 0 ? "+" : ""}${won(c.diff)}` : "", !sp && c && c.warn ? `확인 ${c.warn}건` : ""].filter(Boolean);
+    const right = c ? `<b class="${sp ? "" : c.warn ? "t-bad" : "t-good"}">마감 ${esc(c.at)}</b>` : o.open ? `<b class="${o.late ? "t-bad" : ""}">오픈 ${esc(o.open)}</b>${o.late ? `<span class="t-bad">${o.late}분 늦음</span>` : ""}` : '<b class="t-sub">오픈 안 함</b>';
+    return `<button class="item opm" data-brpc="${esc(o.b)}"><div class="tx"><b>${BR.indexOf(o.b) + 1} ${esc(o.b)}</b><span>${s ? `${m1(s)}, ${n}명` : "아직 매출 없음"}${warn.length ? `<em class="t-bad">, ${warn.join(", ")}</em>` : ""}${sp ? `<em class="t-sub">, 특이건${c.diff ? ` ${c.diff > 0 ? "+" : ""}${won(c.diff)}` : ""}</em>` : ""}</span></div><div class="val">${right}</div><span class="chev">›</span></button>`; }).join("");
   const done = D.ops.filter((o) => o.close).length;
   return `<div class="sec">지점 한눈에 <small>${done}/${D.ops.length}곳 마감 보고, 누르면 상세</small></div><div class="list">${rows}</div>`;
 }
