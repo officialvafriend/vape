@@ -81,6 +81,16 @@ button{font-family:inherit;color:inherit;cursor:pointer}
 .item .nm{font-size:20px;font-weight:800;line-height:1.3;letter-spacing:-.02em}
 .item .pr{margin-top:auto;padding-top:6px;font-size:20px;font-weight:800;color:#d81f2a}
 .item .lc{font-size:14px;color:#6c675f}
+.sq{margin-top:22px;width:100%;height:76px;border:0;border-radius:22px;padding:0 28px;font:700 26px var(--kr);color:#15120f;background:#fff;outline:none;-webkit-user-select:text;user-select:text}
+.grid.list{grid-template-columns:1fr;gap:12px}
+.row{display:flex;align-items:center;gap:20px;width:100%;padding:12px 24px 12px 12px;border:0;border-radius:20px;background:var(--card);text-align:left}
+.row img{width:72px;height:72px;border-radius:14px;object-fit:cover;background:#fff;flex:none}
+.row span{flex:1;display:flex;flex-direction:column;gap:4px}.row b{font-size:23px}.row small{font-size:17px;color:var(--sub)}
+.row i{font-style:normal;font-size:34px;color:var(--sub)}
+.call{display:flex;align-items:center;justify-content:center;height:200px;border-radius:var(--r);background:#fff;color:var(--bg);font-size:52px;font-weight:800;animation:pulse 1.6s ease-in-out infinite}
+@keyframes pulse{50%{transform:scale(.97);opacity:.85}}
+body.land .grid.list{grid-template-columns:1fr 1fr}
+body.land .call{height:150px;font-size:44px}
 .empty{grid-column:1/-1;padding:48px 0;text-align:center;font-size:22px;color:var(--sub)}
 
 .toast{position:fixed;left:50%;top:40px;transform:translate(-50%,-20px);opacity:0;padding:18px 28px;border-radius:999px;
@@ -116,7 +126,7 @@ if (params.get('branch')) try{localStorage.setItem('vfDirBranch',BRANCH)}catch(e
 fetch('../menu/rank.json?t='+Date.now()).then(function(r){return r.json()}).then(function(j){
   var bs = j.branches||{}, list = BRANCH && bs[BRANCH] ? [bs[BRANCH]] : Object.values(bs);  // 지점 모르면 전 지점 합계
   list.forEach(function(b){(b.liq||[]).forEach(function(x){RANK[x[0]]=(RANK[x[0]]||0)+(+x[1]||0)})});
-  if (state.view==='mtl-res') render();
+  if (/^mtl-(res|rank|like|pack-res)/.test(state.view)) render();
 }).catch(function(){});
 
 /* ---------- 화면 정의 ---------- */
@@ -138,7 +148,7 @@ function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {"&":"&amp
 function won(n){return n.toLocaleString('ko-KR')+'원'}
 function go(v){state.hist.push(state.view); state.view=v; render();}
 function back(){state.view=state.hist.pop()||'home'; render();}
-function home(){state={view:'home',hist:[],flavor:null,cool:null}; render();}
+function home(){state={view:'home',hist:[],flavor:null,cool:null,q:'',base:null,pack:null}; render();}
 
 function topBar(title, step, total){
   return '<div class="top">'+
@@ -159,25 +169,62 @@ function pick(f,c){ return LIQ.filter(function(x){
     if (f && x.g!==f) return false;
     if (c && (x.t||[]).indexOf(c)<0) return false;
     return true; }); }
-function results(){
-  var f=state.flavor, c=state.cool;
-  var list = pick(f,c).map(function(x,i){return {x:x, s:RANK[x.n]||0, i:i}})
-    .sort(function(a,b){return b.s-a.s || (a.x.line===b.x.line?0:a.x.line==="프리미엄"?-1:1) || a.i-b.i});
-  var hot = list.filter(function(o){return o.s>0}).slice(0,3).map(function(o){return o.x.id});
-  var chips = [f||'모든 맛', c?COOL.filter(function(o){return o.v===c})[0].t:'멘솔 상관없음'];
-  return '<div class="pane res">'+topBar('입호흡 액상',3,3)+
-    '<section class="q"><h1>이런 맛 어떠세요?</h1>'+
-      '<div class="chips">'+chips.map(function(t){return '<span>'+esc(t)+'</span>'}).join('')+'<span>'+list.length+'개</span></div>'+
-      '<div class="ev"><b>프리미엄</b> 1병 15,000원 · 5병 49,500원 · 11병 90,000원 &nbsp;|&nbsp; <b>프라임</b> 1병 20,000원 · 3병 50,000원</div>'+
-    '</section>'+
-    '<section class="grid">'+(list.length ? list.slice(0,60).map(function(o){
-      var x=o.x, tag=(x.t||[]).filter(function(t){return t!=="일반"}).join(' · '), r=hot.indexOf(x.id);
-      return '<div class="item"><div class="ph"><img loading="lazy" src="../img/'+esc(x.img)+'" alt="" onerror="this.style.visibility=\'hidden\'">'+
-        (r>=0?'<span class="rk">인기 '+(r+1)+'위</span>':'')+(tag?'<span class="tg">'+esc(tag)+'</span>':'')+'</div>'+
-        '<div class="bd"><span class="br">'+esc(x.br)+' · '+esc(x.f||'')+'</span><span class="nm">'+esc(x.n)+'</span>'+
-        '<span class="pr">'+(PRICE[x.line]?won(PRICE[x.line]):'')+'</span><span class="lc">'+esc(x.line)+(x.loc?' · 위치 '+esc(x.loc.split('|')[0]):'')+'</span></div></div>';
-    }).join('') : '<div class="empty">조건에 맞는 액상이 없어요. 뒤로 가서 다시 골라 주세요.</div>')+'</section></div>';
+function byRank(arr){ return arr.map(function(x,i){return {x:x, s:RANK[x.n]||0, i:i}})
+    .sort(function(a,b){return b.s-a.s || (a.x.line===b.x.line?0:a.x.line==="프리미엄"?-1:1) || a.i-b.i}).map(function(o){return o.x}); }
+var EV = '<div class="ev"><b>프리미엄</b> 1병 15,000원 · 5병 49,500원 · 11병 90,000원 &nbsp;|&nbsp; <b>프라임</b> 1병 20,000원 · 3병 50,000원 · 10병 160,000원</div>';
+function card(x, badge){
+  var tag=(x.t||[]).filter(function(t){return t!=="일반"}).join(' · ');
+  return '<div class="item"><div class="ph"><img loading="lazy" src="../img/'+esc(x.img)+'" alt="" onerror="this.style.visibility=\'hidden\'">'+
+    (badge?'<span class="rk">'+esc(badge)+'</span>':'')+(tag?'<span class="tg">'+esc(tag)+'</span>':'')+'</div>'+
+    '<div class="bd"><span class="br">'+esc(x.br)+' · '+esc(x.f||'')+'</span><span class="nm">'+esc(x.n)+'</span>'+
+    '<span class="pr">'+(PRICE[x.line]?won(PRICE[x.line]):'')+'</span><span class="lc">'+esc(x.line)+(x.loc?' · 위치 '+esc(x.loc.split('|')[0]):'')+'</span></div></div>';
 }
+/* 목록 한 화면: o = {step,total,h,chips,list,top(인기 표시 몇 위까지),note(위 안내),empty} */
+function listPane(o){
+  var n=o.top||3, rk=0;
+  return '<div class="pane res">'+topBar('입호흡 액상',o.step,o.total)+
+    '<section class="q"><h1>'+o.h+'</h1>'+
+      '<div class="chips">'+(o.chips||[]).map(function(t){return '<span>'+esc(t)+'</span>'}).join('')+'<span>'+o.list.length+'개</span></div>'+
+      (o.note||EV)+
+    '</section>'+
+    '<section class="grid">'+(o.list.length ? o.list.slice(0,60).map(function(x){
+      var hot = (RANK[x.n]||0)>0 && rk<n; if (hot) rk++;
+      return card(x, hot?'인기 '+rk+'위':'');
+    }).join('') : '<div class="empty">'+(o.empty||'조건에 맞는 액상이 없어요. 뒤로 가서 다시 골라 주세요.')+'</div>')+'</section></div>';
+}
+
+/* 3번: 전에 피던 액상 비슷한 거 = 같은 맛 계열 + 맛 이름 겹침 + 노멘솔/무니코틴 같음 + 같은 브랜드 */
+function similar(base){
+  var words=(base.f||'').split(/[+·,\s]+/).filter(function(w){return w.length>1});
+  return byRank(LIQ.filter(function(x){return x.id!==base.id})).map(function(x){
+    var sc=0; if (x.g===base.g) sc+=2;
+    words.forEach(function(w){ if ((x.f||'').indexOf(w)>=0 || x.n.indexOf(w)>=0) sc+=3; });
+    (base.t||[]).forEach(function(t){ if (t!=="일반" && (x.t||[]).indexOf(t)>=0) sc+=2; });
+    if (x.br===base.br) sc+=1;
+    return {x:x,sc:sc};
+  }).filter(function(o){return o.sc>=3}).sort(function(a,b){return b.sc-a.sc}).map(function(o){return o.x});
+}
+function searchList(){
+  var q=(state.q||'').replace(/\s/g,'');
+  var list = q ? LIQ.filter(function(x){return (x.n+x.br+(x.f||'')).replace(/\s/g,'').indexOf(q)>=0}) : LIQ;
+  list = byRank(list).slice(0,30);
+  return list.length?list.map(function(x){
+      return '<button class="row" data-act="base" data-id="'+esc(x.id)+'"><img loading="lazy" src="../img/'+esc(x.img)+'" alt="" onerror="this.style.visibility=\'hidden\'"><span><b>'+esc(x.n)+'</b><small>'+esc(x.br)+' · '+esc(x.f||'')+'</small></span><i>›</i></button>';
+    }).join(''):'<div class="empty">찾는 액상이 없어요. 다른 글자로 찾아 보세요.</div>';
+}
+function searchPane(){
+  return '<div class="pane res">'+topBar('입호흡 액상',2,3)+
+    '<section class="q"><h1>전에 피시던 액상이<br>뭐였나요?</h1><p>이름이나 맛을 한두 글자만 쳐도 찾아요.</p>'+
+      '<input id="sq" class="sq" type="search" placeholder="예: 빌런, 청포도, 메가킥" value="'+esc(state.q||'')+'" autocomplete="off">'+
+    '</section><section class="grid list" id="sres">'+searchList()+'</section></div>';
+}
+
+var PACKS = [
+  {line:"프리미엄",n:5,price:49500,t:"프리미엄 5병 49,500원",d:"1병에 9,900원꼴, 처음 사시는 분께 추천"},
+  {line:"프리미엄",n:11,price:90000,t:"프리미엄 11병 90,000원",d:"1병에 8,182원꼴, 제일 많이 아껴요"},
+  {line:"프라임",n:3,price:50000,t:"프라임 3병 50,000원",d:"1병에 16,667원꼴, 프라임 라인"},
+  {line:"프라임",n:10,price:160000,t:"프라임 10병 160,000원",d:"1병에 16,000원꼴, 프라임 단골용"}
+];
 
 function render(){
   var v=state.view, h='';
@@ -186,15 +233,39 @@ function render(){
     {t:'입호흡 액상을 찾으실까요?',d:'연초처럼 입으로 머금었다 들이마셔요',act:'mtl'},
     {t:'폐호흡 액상을 찾으실까요?',d:'바로 폐로 깊게 들이마셔요',act:'soon'},
     {t:'아니면 필요하신 도움이 있으실까요?',d:'기기 고장, 코일 교체, 그 밖의 문의',act:'soon'}]});
-  else if (v==='mtl-flavor') h = ask({title:'입호흡 액상',step:1,total:3,h:'어떤 맛을 좋아하세요?',p:'제일 끌리는 걸 하나 골라 주세요.',
+  else if (v==='mtl') h = ask({title:'입호흡 액상',step:1,total:4,h:'어떻게 골라 드릴까요?',p:'편하신 방법을 골라 주세요.', opts:[
+    {t:'내가 고르고 싶다!',d:'맛이랑 멘솔을 골라서 직접 찾아요',act:'m-self'},
+    {t:'귀찮다! 직원이 알아서 추천',d:'직원이 바로 와서 골라 드려요',act:'m-staff'},
+    {t:'전에 피던 거랑 비슷한 걸로',d:'피시던 액상을 알려 주시면 비슷한 맛을 찾아요',act:'m-like'},
+    {t:'액상 랭킹 보기',d:'이번 주 우리 매장에서 많이 나간 순서',act:'m-rank'},
+    {t:'패키지 추천',d:'여러 병 사면 더 싸요',act:'m-pack'}]});
+  else if (v==='mtl-flavor') h = ask({title:'입호흡 액상',step:2,total:4,h:'어떤 맛을 좋아하세요?',p:'제일 끌리는 걸 하나 골라 주세요.',
     sel:state.flavor==null?null:FLAVOR.map(function(o){return o.v}).indexOf(state.flavor),
     opts:FLAVOR.map(function(o){return {t:o.t,d:o.d,act:'flavor'}})});
-  else if (v==='mtl-cool') h = ask({title:'입호흡 액상',step:2,total:3,h:'멘솔이나 니코틴은<br>어떻게 할까요?',p:'고르신 맛 안에서 골라 드릴게요.',
+  else if (v==='mtl-cool') h = ask({title:'입호흡 액상',step:3,total:4,h:'멘솔이나 니코틴은<br>어떻게 할까요?',p:'고르신 맛 안에서 골라 드릴게요.',
     sel:state.cool==null?null:COOL.map(function(o){return o.v}).indexOf(state.cool),
     opts:COOL.map(function(o,i){var n=pick(state.flavor,o.v).length; return n?{t:o.t,d:o.d+' ('+n+'개)',act:'cool',i:i}:null}).filter(Boolean)});
-  else if (v==='mtl-res') h = results();
+  else if (v==='mtl-res') h = listPane({step:4,total:4,h:'이런 맛 어떠세요?',list:byRank(pick(state.flavor,state.cool)),
+    chips:[state.flavor||'모든 맛', state.cool?COOL.filter(function(o){return o.v===state.cool})[0].t:'멘솔 상관없음']});
+  else if (v==='mtl-staff') h = '<div class="pane ask">'+topBar('입호흡 액상',2,2)+
+    '<section class="q"><h1>직원이 바로<br>도와드릴게요!</h1><p>카운터 쪽 직원에게 이 화면을 보여 주시거나<br>잠깐만 기다려 주세요.</p></section>'+
+    '<section class="opts"><div class="call">직원 호출</div>'+
+    '<button class="opt" data-act="m-rank"><span class="n">↗</span><span><span class="t">기다리면서 랭킹 구경하기</span><span class="d">이번 주 많이 나간 액상</span></span></button></section></div>';
+  else if (v==='mtl-like') h = searchPane();
+  else if (v==='mtl-like-res') { var base=LIQ.filter(function(x){return x.id===state.base})[0];
+    h = listPane({step:3,total:3,h:'"'+esc(base.n)+'"랑<br>비슷한 맛이에요',list:similar(base),chips:[base.g, base.f||''].filter(Boolean),
+      empty:'비슷한 맛을 못 찾았어요. 직원에게 물어봐 주세요.'}); }
+  else if (v==='mtl-rank') h = listPane({step:2,total:2,h:'이번 주 액상 랭킹',top:10,
+    list:byRank(LIQ).filter(function(x){return (RANK[x.n]||0)>0}).slice(0,30),
+    chips:[BRANCH?BRANCH+' 기준':'전 지점 합계'], empty:'랭킹 자료를 불러오는 중이에요.'});
+  else if (v==='mtl-pack') h = ask({title:'입호흡 액상',step:2,total:3,h:'여러 병 사면<br>더 싸요!',p:'1병 값은 프리미엄 15,000원, 프라임 20,000원이에요.',
+    opts:PACKS.map(function(o){return {t:o.t,d:o.d,act:'pack'}})});
+  else if (v==='mtl-pack-res') { var pk=PACKS[state.pack];
+    h = listPane({step:3,total:3,h:pk.line+' 액상에서<br>'+pk.n+'병 골라 주세요',list:byRank(LIQ.filter(function(x){return x.line===pk.line})),
+      chips:[pk.t], note:'<div class="ev"><b>'+esc(pk.t)+'</b> · 1병씩 사면 '+won(PRICE[pk.line]*pk.n)+' → <b>'+won(PRICE[pk.line]*pk.n-pk.price)+' 아껴요</b></div>'}); }
   var app=document.getElementById('app'); app.innerHTML=h; app.className='screen';
   var g=app.querySelector('.grid'); if(g) g.scrollTop=0;
+  var sq=document.getElementById('sq'); if(sq) sq.addEventListener('input',function(){ state.q=sq.value; document.getElementById('sres').innerHTML=searchList(); });
 }
 
 var toastT;
@@ -203,12 +274,20 @@ function toast(msg){var t=document.getElementById('toast');t.textContent=msg;t.c
 document.getElementById('app').addEventListener('click',function(e){
   var b=e.target.closest('[data-act]'); if(!b) return;
   var a=b.dataset.act, i=+b.dataset.i;
+  function on(next){ b.classList.add('on'); setTimeout(function(){go(next)},150); }
   if (a==='back') return back();
   if (a==='home') return home();
   if (a==='soon') return toast('"'+b.querySelector('.t').textContent+'" 화면은 준비 중이에요');
-  if (a==='mtl') { state.flavor=null; state.cool=null; return go('mtl-flavor'); }
-  if (a==='flavor') { state.flavor=FLAVOR[i].v; b.classList.add('on'); return setTimeout(function(){go('mtl-cool')},150); }
-  if (a==='cool') { state.cool=COOL[i].v; b.classList.add('on'); return setTimeout(function(){go('mtl-res')},150); }
+  if (a==='mtl') return on('mtl');
+  if (a==='m-self') { state.flavor=null; state.cool=null; return on('mtl-flavor'); }
+  if (a==='m-staff') return on('mtl-staff');
+  if (a==='m-like') { state.q=''; return on('mtl-like'); }
+  if (a==='m-rank') return on('mtl-rank');
+  if (a==='m-pack') return on('mtl-pack');
+  if (a==='flavor') { state.flavor=FLAVOR[i].v; return on('mtl-cool'); }
+  if (a==='cool') { state.cool=COOL[i].v; return on('mtl-res'); }
+  if (a==='base') { state.base=b.dataset.id; return go('mtl-like-res'); }
+  if (a==='pack') { state.pack=i; return on('mtl-pack-res'); }
 });
 
 /* 2분 동안 아무도 안 만지면 첫 화면으로 */
