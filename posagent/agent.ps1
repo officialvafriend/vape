@@ -15,6 +15,7 @@ public class W32 {
   [DllImport("user32.dll")] public static extern IntPtr GetForegroundWindow();
   [DllImport("user32.dll")] public static extern void keybd_event(byte vk, byte scan, uint flags, UIntPtr extra);
   [DllImport("user32.dll")] public static extern uint MapVirtualKey(uint code, uint type);
+  [DllImport("user32.dll")] public static extern uint GetWindowThreadProcessId(IntPtr h, out uint pid);
   public static void Key(byte vk, int ms) {
     byte sc = (byte)MapVirtualKey(vk, 0);
     keybd_event(vk, sc, 0, UIntPtr.Zero); System.Threading.Thread.Sleep(ms);
@@ -27,7 +28,7 @@ public class W32 {
 }
 "@
 $HERE = Split-Path -Parent $MyInvocation.MyCommand.Path
-$VER = "1116g"
+$VER = "1116h"
 $WEB = "https://officialvafriend.github.io/vape/posagent/"
 $SB = "https://bjjlmnkyhedtutogzliq.supabase.co/rest/v1/rpc/"; $KEY = "sb_publishable_i8rfcm_zAnwV75joN58FCw_8tHgFUKr"
 $cfgPath = Join-Path $HERE "설정.json"
@@ -91,15 +92,18 @@ function Draw {
 $SKIP = 'explorer|cmd|powershell|pwsh|conhost|notepad|chrome|msedge|whale|firefox|iexplore|kakaotalk|code|cursor'
 function PosWindow { Get-Process | Where-Object { $_.MainWindowHandle -ne 0 -and $_.Id -ne $PID -and $_.ProcessName -notmatch "^($SKIP)$" -and ($_.MainWindowTitle -match $TITLE -or $_.ProcessName -match 'okpos') } | Sort-Object { if ($_.ProcessName -match 'okpos') { 0 } else { 1 } } | Select-Object -First 1 }
 function IsLocked($p) { try { $null = $p.Handle; $false } catch { $true } }   # 포스가 관리자 권한이면 손이 안 닿음
+function FgName($h) { try { $pid2 = [uint32]0; [W32]::GetWindowThreadProcessId($h, [ref]$pid2) | Out-Null; (Get-Process -Id $pid2).ProcessName } catch { "?" } }
+# 무선 바코드처럼: 3초 세는 동안 직원이 포스 판매 화면을 누르고, 그때 눌려 있는 화면에 그대로 침
 function TypeCodes($codes) {
-  $p = PosWindow
-  if (-not $p) { [Windows.Forms.MessageBox]::Show("오케이포스 판매 화면을 찾지 못했어요.`n포스 판매 화면을 열어 주세요.", "포스 입력") | Out-Null; return $false }
-  if (IsLocked $p) { [Windows.Forms.MessageBox]::Show("포스가 관리자 권한으로 켜져 있어서 넣을 수 없어요.`n이 창을 X로 닫고, 실행.cmd를 마우스 오른쪽 → [관리자 권한으로 실행] 해 주세요.`n(찾은 창: $($p.ProcessName) / $($p.MainWindowTitle))", "포스 입력") | Out-Null; return $false }
-  [W32]::ShowWindow($p.MainWindowHandle, 9) | Out-Null; [W32]::SetForegroundWindow($p.MainWindowHandle) | Out-Null; Start-Sleep -Milliseconds 400
+  for ($k = 3; $k -ge 1; $k--) { $lbMain.Text = "$k 초 뒤에 넣어요`n지금 포스 판매 화면을 한 번 눌러 주세요"; $f.Refresh(); $e = [DateTime]::Now.AddSeconds(1); while ([DateTime]::Now -lt $e) { [Windows.Forms.Application]::DoEvents(); Start-Sleep -Milliseconds 30 } }
+  $fg = [W32]::GetForegroundWindow()
+  if ($fg -eq $f.Handle) { [Windows.Forms.MessageBox]::Show("포스 판매 화면을 안 눌렀어요.`n다시 [포스에 넣기]를 누르고, 3초 안에 포스 화면을 눌러 주세요.", "포스 입력") | Out-Null; return $false }
+  $script:fgName = FgName $fg
+  if ($script:fgName -match "^($SKIP)$") { [Windows.Forms.MessageBox]::Show("포스가 아닌 창($($script:fgName))이 눌려 있어서 멈췄어요.`n다시 [포스에 넣기]를 누르고, 3초 안에 포스 화면을 눌러 주세요.", "포스 입력") | Out-Null; return $false }
   $i = 0
   foreach ($c in $codes) {
     if (-not ("$c" -match '^[0-9]{4,20}$')) { continue }   # 숫자 바코드만
-    if ([W32]::GetForegroundWindow() -ne $p.MainWindowHandle) { [Windows.Forms.MessageBox]::Show("포스 창이 바뀌어서 멈췄어요. $i 개 넣었어요.", "포스 입력") | Out-Null; return $false }
+    if ([W32]::GetForegroundWindow() -ne $fg) { [Windows.Forms.MessageBox]::Show("화면이 바뀌어서 멈췄어요. $i 개 넣었어요.", "포스 입력") | Out-Null; return $false }
     [W32]::Scan("$c", $KEYMS); $i++; $lbMain.Text = "넣는 중 $i / $(@($codes).Count)`n마우스, 키보드 잠시 그대로"; $f.Refresh(); Start-Sleep -Milliseconds $GAP
   }
   return $true
@@ -108,17 +112,14 @@ function Finish($o, $msg) { if (-not $Test) { Rpc "qr_done" @{ p_dev = $DEV; p_i
 $btnGo.Add_Click({
   if ($script:busy) { return }; $o = Cur; if (-not $o) { return }; $script:busy = $true
   try {
-    if ($script:svcLeft -ne $null -and $script:svcLeft.id -eq $o.id) {
-      if (TypeCodes @($o.svc)) { Finish $o "다 넣었어요. 마지막 $(@($o.svc).Count)개를 서비스로 바꾸고, 포스 금액이 $(Won $o.total) 인지 확인해 주세요." }
-    } else {
-      $pw = PosWindow; $pn = if ($pw) { "$($pw.ProcessName) / $($pw.MainWindowTitle)" } else { "못 찾음" }
-      $ok = [Windows.Forms.MessageBox]::Show("포스 판매 화면이 비어 있나요?`n다른 손님 결제 중이면 [아니요]를 누르고 먼저 끝내 주세요.`n`n넣을 창: $pn", "포스 입력", "YesNo")
-      if ($ok -eq "Yes" -and (TypeCodes @($o.codes))) {
-        if (@($o.svc).Count) { $script:svcLeft = $o } else { Finish $o "다 넣었어요. 포스 금액이 $(Won $o.total) 인지 확인해 주세요." }
-      }
+    $ok = [Windows.Forms.MessageBox]::Show("포스 판매 화면이 비어 있나요?`n다른 손님 결제 중이면 [아니요]를 누르고 먼저 끝내 주세요.`n`n[예]를 누르고 3초 안에 포스 판매 화면을 한 번 눌러 주세요.", "포스 입력", "YesNo")
+    $all = @(@($o.codes) + @($o.svc) | Where-Object { $_ })
+    if ($ok -eq "Yes" -and (TypeCodes $all)) {
+      $sv = @($o.svc).Count
+      Finish $o ("다 넣었어요 ($(@($all).Count)개, 넣은 곳: $($script:fgName))." + $(if ($sv) { "`n마지막 $sv 개를 서비스로 바꿔 주세요." } else { "" }) + "`n포스 금액이 $(Won $o.total) 인지 확인해 주세요.")
     }
   } catch { [Windows.Forms.MessageBox]::Show("넣다가 멈췄어요: $($_.Exception.Message)", "포스 입력") | Out-Null }
-  $script:busy = $false; $f.Activate(); Draw
+  $script:busy = $false; Draw
 })
 $btnNext.Add_Click({ if ($script:orders.Count) { $script:idx = ($script:idx + 1) % $script:orders.Count; $script:svcLeft = $null; Draw } })
 $btnDone.Add_Click({ $o = Cur; if (-not $o) { return }
