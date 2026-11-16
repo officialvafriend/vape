@@ -12,17 +12,20 @@ vfFit();addEventListener('orientationchange',function(){setTimeout(vfFit,60);});
 <meta name="theme-color" content="#6E1F2A">
 <title>베이프렌드 상담패드 director</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<!-- 입호흡 액상 목록은 정식 menu 폴더 자료를 읽기만 함 (고치지 않음) -->
+<script src="../menu/data.js"></script>
 <style>
 /* menu-director: 새 상담패드. 이 폴더 안에서만 고친다 (menu, menu-b는 손대지 않음)
    11/16 첫 화면: 플랜핏 온보딩 참고 = 위에 큰 질문 한 줄 + 작은 설명, 아래에 둥근 선택 카드를 쌓음.
-   바탕은 VAFRIEND 빨강보다 차분한 버건디 */
+   바탕은 VAFRIEND 빨강보다 차분한 버건디.
+   11/16 2번 입호흡: 맛 계열 → 멘솔/니코틴 → 추천 목록(이번 주 판매 많은 순) */
 :root{
   --bg:#6E1F2A;            /* 버건디 바탕 */
   --bg2:#5A1822;           /* 아래쪽 살짝 진하게 */
   --card:rgba(255,255,255,.10);
   --card-on:rgba(255,255,255,.22);
   --ink:#fff; --sub:rgba(255,255,255,.72);
-  --accent:#FFB4B9;        /* 연한 빨강: 번호, 눌렀을 때 테두리 */
+  --accent:#FFB4B9;        /* 연한 빨강: 번호, 진행 막대, 눌렀을 때 테두리 */
   --r:28px; --pad:48px;
   --kr:"Pretendard","Malgun Gothic",sans-serif;
 }
@@ -30,60 +33,188 @@ vfFit();addEventListener('orientationchange',function(){setTimeout(vfFit,60);});
 html,body{height:100%}
 body{background:linear-gradient(180deg,var(--bg) 0%,var(--bg2) 100%);color:var(--ink);font-family:var(--kr);
   -webkit-user-select:none;user-select:none;overflow:hidden}
-.screen{height:100%;display:flex;flex-direction:column;padding:72px var(--pad) 56px}
+button{font-family:inherit;color:inherit;cursor:pointer}
+.screen{height:100%;padding:56px var(--pad) 48px}
+.pane{height:100%;display:flex;flex-direction:column}
+
+/* 맨 위: 뒤로 / 제목 / 처음으로 + 진행 막대 */
+.top{display:flex;align-items:center;justify-content:space-between;height:56px}
+.top .ttl{font-size:24px;font-weight:700;color:var(--sub)}
 .brand{font-size:22px;font-weight:800;letter-spacing:.18em;color:var(--sub)}
-.q{margin-top:96px}
-.q h1{font-size:58px;font-weight:800;line-height:1.25;letter-spacing:-.03em}
+.ib{width:56px;height:56px;border:0;border-radius:50%;background:var(--card);font-size:28px;line-height:1;display:flex;align-items:center;justify-content:center}
+.ib.txt{width:auto;padding:0 22px;border-radius:999px;font-size:19px;font-weight:700}
+.ib.hide{visibility:hidden}
+.bar{margin-top:24px;height:8px;border-radius:8px;background:rgba(255,255,255,.14);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent);border-radius:8px;transition:width .3s}
+
+.q{margin-top:72px}
+.q h1{font-size:56px;font-weight:800;line-height:1.25;letter-spacing:-.03em}
 .q p{margin-top:20px;font-size:24px;color:var(--sub);line-height:1.5}
 .opts{margin-top:auto;display:flex;flex-direction:column;gap:20px}
-.opt{display:flex;align-items:center;gap:28px;width:100%;min-height:132px;padding:28px 36px;
-  background:var(--card);border:2px solid transparent;border-radius:var(--r);color:var(--ink);
-  font-family:inherit;text-align:left;cursor:pointer;transition:background .15s,border-color .15s,transform .1s}
+.opt{display:flex;align-items:center;gap:28px;width:100%;min-height:120px;padding:26px 36px;
+  background:var(--card);border:2px solid transparent;border-radius:var(--r);
+  text-align:left;transition:background .15s,border-color .15s,transform .1s}
 .opt:active{transform:scale(.985)}
 .opt.on{background:var(--card-on);border-color:var(--accent)}
 .opt .n{flex:none;width:56px;height:56px;border-radius:50%;background:rgba(255,255,255,.14);
   display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800;color:var(--accent)}
-.opt .t{display:block;font-size:32px;font-weight:800;letter-spacing:-.02em}
+.opt .t{display:block;font-size:31px;font-weight:800;letter-spacing:-.02em}
 .opt .d{display:block;margin-top:8px;font-size:21px;color:var(--sub)}
+
+/* 추천 목록 */
+.res .q{margin-top:40px}
+.res .q h1{font-size:44px}
+.chips{margin-top:18px;display:flex;flex-wrap:wrap;gap:10px}
+.chips span{padding:8px 16px;border-radius:999px;background:var(--card);font-size:18px;font-weight:700}
+.ev{margin-top:20px;padding:16px 22px;border-radius:18px;background:rgba(255,180,185,.16);font-size:19px;line-height:1.45}
+.ev b{color:var(--accent)}
+.grid{margin-top:24px;flex:1;overflow-y:auto;display:grid;grid-template-columns:repeat(3,1fr);gap:16px;align-content:start;grid-auto-rows:max-content;
+  padding-bottom:8px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.grid::-webkit-scrollbar{display:none}
+.item{background:#fff;color:#15120f;border-radius:22px;overflow:hidden;display:flex;flex-direction:column}
+.item .ph{position:relative;aspect-ratio:1/1;background:#f2f2f4}
+.item .ph img{width:100%;height:100%;object-fit:cover;display:block}
+.item .rk{position:absolute;left:10px;top:10px;padding:5px 11px;border-radius:999px;background:#d81f2a;color:#fff;font-size:15px;font-weight:800}
+.item .tg{position:absolute;right:10px;top:10px;padding:5px 10px;border-radius:999px;background:rgba(21,18,15,.75);color:#fff;font-size:14px;font-weight:700}
+.item .bd{padding:14px 16px 16px;display:flex;flex-direction:column;gap:4px;flex:1}
+.item .br{font-size:15px;color:#6c675f;font-weight:700}
+.item .nm{font-size:20px;font-weight:800;line-height:1.3;letter-spacing:-.02em}
+.item .pr{margin-top:auto;padding-top:6px;font-size:20px;font-weight:800;color:#d81f2a}
+.item .lc{font-size:14px;color:#6c675f}
+.empty{grid-column:1/-1;padding:48px 0;text-align:center;font-size:22px;color:var(--sub)}
+
 .toast{position:fixed;left:50%;top:40px;transform:translate(-50%,-20px);opacity:0;padding:18px 28px;border-radius:999px;
-  background:#fff;color:var(--bg);font-size:20px;font-weight:700;white-space:nowrap;transition:.2s;pointer-events:none}
+  background:#fff;color:var(--bg);font-size:20px;font-weight:700;white-space:nowrap;transition:.2s;pointer-events:none;z-index:9}
 .toast.show{opacity:1;transform:translate(-50%,0)}
+
 /* 가로로 돌리면: 질문은 왼쪽, 선택 카드는 오른쪽 */
-body.land .screen{flex-direction:row;flex-wrap:wrap;align-content:flex-start;column-gap:64px;padding:56px 72px}
-body.land .brand{width:100%}
-body.land .q{flex:1;margin-top:120px}
-body.land .opts{flex:1.1;margin-top:40px}
-body.land .opts{gap:16px}
-body.land .opt{min-height:0;padding:22px 30px}
-body.land .opt .t{font-size:27px}
-body.land .opt .d{font-size:19px}
+body.land .screen{padding:40px 72px}
+body.land .ask{display:grid;grid-template-columns:1fr 1.1fr;grid-template-rows:auto auto 1fr;column-gap:64px;align-items:start}
+body.land .ask .top,body.land .ask .bar{grid-column:1/-1}
+body.land .ask .q{margin-top:64px}
+body.land .ask .opts{margin-top:32px;gap:12px;align-self:start}
+body.land .opt{min-height:0;padding:14px 26px;gap:22px}
+body.land .opt .n{width:46px;height:46px;font-size:22px}
+body.land .opt .t{font-size:25px}
+body.land .opt .d{font-size:18px;margin-top:4px}
+body.land .res .q{margin-top:24px}
+body.land .res .q h1{font-size:38px}
+body.land .grid{grid-template-columns:repeat(5,1fr)}
 </style>
 </head>
 <body>
-<main class="screen">
-  <div class="brand">VAFRIEND</div>
-  <section class="q">
-    <h1>어서 오세요!<br>무엇을 도와드릴까요?</h1>
-    <p>골라 주시면 딱 맞게 안내해 드릴게요.</p>
-  </section>
-  <section class="opts" id="opts">
-    <button class="opt" data-go="first"><span class="n">1</span><span><span class="t">처음 오셨을까요?</span><span class="d">전자담배가 처음이거나 매장 방문이 처음이에요</span></span></button>
-    <button class="opt" data-go="mtl"><span class="n">2</span><span><span class="t">입호흡 액상을 찾으실까요?</span><span class="d">연초처럼 입으로 머금었다 들이마셔요</span></span></button>
-    <button class="opt" data-go="dl"><span class="n">3</span><span><span class="t">폐호흡 액상을 찾으실까요?</span><span class="d">바로 폐로 깊게 들이마셔요</span></span></button>
-    <button class="opt" data-go="help"><span class="n">4</span><span><span class="t">아니면 필요하신 도움이 있으실까요?</span><span class="d">기기 고장, 코일 교체, 그 밖의 문의</span></span></button>
-  </section>
-</main>
+<main class="screen" id="app"></main>
 <div class="toast" id="toast"></div>
 <script>
-/* 지금은 고른 것만 표시. 다음 화면은 고른 값(data-go)별로 이어서 만든다 */
+/* ---------- 자료 ---------- */
+var LIQ = window.LIQ || [];
+var PRICE = {"프리미엄":15000,"프라임":20000};           // menu-b 기준 1병 가격
+var RANK = {};                                             // 이름 → 이번 주 판매 수
+var params = new URLSearchParams(location.search);
+var BRANCH = params.get('branch') || (function(){try{return localStorage.getItem('vfDirBranch')}catch(e){return null}})() || '';
+if (params.get('branch')) try{localStorage.setItem('vfDirBranch',BRANCH)}catch(e){}
+fetch('../menu/rank.json?t='+Date.now()).then(function(r){return r.json()}).then(function(j){
+  var bs = j.branches||{}, list = BRANCH && bs[BRANCH] ? [bs[BRANCH]] : Object.values(bs);  // 지점 모르면 전 지점 합계
+  list.forEach(function(b){(b.liq||[]).forEach(function(x){RANK[x[0]]=(RANK[x[0]]||0)+(+x[1]||0)})});
+  if (state.view==='mtl-res') render();
+}).catch(function(){});
+
+/* ---------- 화면 정의 ---------- */
+var FLAVOR = [
+  {v:"과일",t:"과일",d:"청포도, 자두, 자몽처럼 상큼달달"},
+  {v:"멘솔·민트",t:"멘솔 · 민트",d:"쿨하고 깔끔하게"},
+  {v:"디저트·음료",t:"디저트 · 음료",d:"소다, 커피, 아이스크림처럼 달콤하게"},
+  {v:"시가·타바코",t:"시가 · 타바코",d:"연초랑 비슷한 묵직한 맛"},
+  {v:"",t:"잘 모르겠어요",d:"요즘 많이 찾는 맛으로 보여드릴게요"}
+];
+var COOL = [
+  {v:"",t:"상관없어요",d:"시원한 것도, 아닌 것도 다 보여드려요"},
+  {v:"노멘솔",t:"시원한 건 싫어요",d:"멘솔 없는 노멘솔 액상"},
+  {v:"무니코틴",t:"니코틴 없이",d:"무니코틴 액상"}
+];
+var state = {view:'home', hist:[], flavor:null, cool:null};
+
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+function won(n){return n.toLocaleString('ko-KR')+'원'}
+function go(v){state.hist.push(state.view); state.view=v; render();}
+function back(){state.view=state.hist.pop()||'home'; render();}
+function home(){state={view:'home',hist:[],flavor:null,cool:null}; render();}
+
+function topBar(title, step, total){
+  return '<div class="top">'+
+    (state.view==='home' ? '<div class="brand">VAFRIEND</div>' : '<button class="ib" data-act="back" aria-label="뒤로">‹</button>')+
+    '<div class="ttl">'+esc(title||'')+'</div>'+
+    (state.view==='home' ? '<span class="ib hide"></span>' : '<button class="ib txt" data-act="home">처음으로</button>')+
+  '</div>'+(total ? '<div class="bar"><i style="width:'+Math.round(step/total*100)+'%"></i></div>' : '');
+}
+function ask(o){ // 질문 한 화면: o = {title, step, total, h, p, opts:[{t,d,act}], sel}
+  return '<div class="pane ask">'+topBar(o.title,o.step,o.total)+
+    '<section class="q"><h1>'+o.h+'</h1>'+(o.p?'<p>'+o.p+'</p>':'')+'</section>'+
+    '<section class="opts">'+o.opts.map(function(x,i){
+      return '<button class="opt'+(o.sel===(x.i!=null?x.i:i)?' on':'')+'" data-act="'+x.act+'" data-i="'+(x.i!=null?x.i:i)+'"><span class="n">'+(i+1)+'</span><span><span class="t">'+esc(x.t)+'</span><span class="d">'+esc(x.d)+'</span></span></button>';
+    }).join('')+'</section></div>';
+}
+
+function pick(f,c){ return LIQ.filter(function(x){
+    if (f && x.g!==f) return false;
+    if (c && (x.t||[]).indexOf(c)<0) return false;
+    return true; }); }
+function results(){
+  var f=state.flavor, c=state.cool;
+  var list = pick(f,c).map(function(x,i){return {x:x, s:RANK[x.n]||0, i:i}})
+    .sort(function(a,b){return b.s-a.s || (a.x.line===b.x.line?0:a.x.line==="프리미엄"?-1:1) || a.i-b.i});
+  var hot = list.filter(function(o){return o.s>0}).slice(0,3).map(function(o){return o.x.id});
+  var chips = [f||'모든 맛', c?COOL.filter(function(o){return o.v===c})[0].t:'멘솔 상관없음'];
+  return '<div class="pane res">'+topBar('입호흡 액상',3,3)+
+    '<section class="q"><h1>이런 맛 어떠세요?</h1>'+
+      '<div class="chips">'+chips.map(function(t){return '<span>'+esc(t)+'</span>'}).join('')+'<span>'+list.length+'개</span></div>'+
+      '<div class="ev"><b>프리미엄</b> 1병 15,000원 · 5병 49,500원 · 11병 90,000원 &nbsp;|&nbsp; <b>프라임</b> 1병 20,000원 · 3병 50,000원</div>'+
+    '</section>'+
+    '<section class="grid">'+(list.length ? list.slice(0,60).map(function(o){
+      var x=o.x, tag=(x.t||[]).filter(function(t){return t!=="일반"}).join(' · '), r=hot.indexOf(x.id);
+      return '<div class="item"><div class="ph"><img loading="lazy" src="../img/'+esc(x.img)+'" alt="" onerror="this.style.visibility=\'hidden\'">'+
+        (r>=0?'<span class="rk">인기 '+(r+1)+'위</span>':'')+(tag?'<span class="tg">'+esc(tag)+'</span>':'')+'</div>'+
+        '<div class="bd"><span class="br">'+esc(x.br)+' · '+esc(x.f||'')+'</span><span class="nm">'+esc(x.n)+'</span>'+
+        '<span class="pr">'+(PRICE[x.line]?won(PRICE[x.line]):'')+'</span><span class="lc">'+esc(x.line)+(x.loc?' · 위치 '+esc(x.loc.split('|')[0]):'')+'</span></div></div>';
+    }).join('') : '<div class="empty">조건에 맞는 액상이 없어요. 뒤로 가서 다시 골라 주세요.</div>')+'</section></div>';
+}
+
+function render(){
+  var v=state.view, h='';
+  if (v==='home') h = ask({h:'어서 오세요!<br>무엇을 도와드릴까요?', p:'골라 주시면 딱 맞게 안내해 드릴게요.', opts:[
+    {t:'처음 오셨을까요?',d:'전자담배가 처음이거나 매장 방문이 처음이에요',act:'soon'},
+    {t:'입호흡 액상을 찾으실까요?',d:'연초처럼 입으로 머금었다 들이마셔요',act:'mtl'},
+    {t:'폐호흡 액상을 찾으실까요?',d:'바로 폐로 깊게 들이마셔요',act:'soon'},
+    {t:'아니면 필요하신 도움이 있으실까요?',d:'기기 고장, 코일 교체, 그 밖의 문의',act:'soon'}]});
+  else if (v==='mtl-flavor') h = ask({title:'입호흡 액상',step:1,total:3,h:'어떤 맛을 좋아하세요?',p:'제일 끌리는 걸 하나 골라 주세요.',
+    sel:state.flavor==null?null:FLAVOR.map(function(o){return o.v}).indexOf(state.flavor),
+    opts:FLAVOR.map(function(o){return {t:o.t,d:o.d,act:'flavor'}})});
+  else if (v==='mtl-cool') h = ask({title:'입호흡 액상',step:2,total:3,h:'멘솔이나 니코틴은<br>어떻게 할까요?',p:'고르신 맛 안에서 골라 드릴게요.',
+    sel:state.cool==null?null:COOL.map(function(o){return o.v}).indexOf(state.cool),
+    opts:COOL.map(function(o,i){var n=pick(state.flavor,o.v).length; return n?{t:o.t,d:o.d+' ('+n+'개)',act:'cool',i:i}:null}).filter(Boolean)});
+  else if (v==='mtl-res') h = results();
+  var app=document.getElementById('app'); app.innerHTML=h; app.className='screen';
+  var g=app.querySelector('.grid'); if(g) g.scrollTop=0;
+}
+
 var toastT;
-document.getElementById('opts').addEventListener('click',function(e){
-  var b=e.target.closest('.opt'); if(!b) return;
-  document.querySelectorAll('.opt').forEach(function(x){x.classList.toggle('on',x===b);});
-  var t=document.getElementById('toast');
-  t.textContent='"'+b.querySelector('.t').textContent+'" 다음 화면은 준비 중이에요';
-  t.classList.add('show'); clearTimeout(toastT); toastT=setTimeout(function(){t.classList.remove('show');},1800);
+function toast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(function(){t.classList.remove('show')},1800);}
+
+document.getElementById('app').addEventListener('click',function(e){
+  var b=e.target.closest('[data-act]'); if(!b) return;
+  var a=b.dataset.act, i=+b.dataset.i;
+  if (a==='back') return back();
+  if (a==='home') return home();
+  if (a==='soon') return toast('"'+b.querySelector('.t').textContent+'" 화면은 준비 중이에요');
+  if (a==='mtl') { state.flavor=null; state.cool=null; return go('mtl-flavor'); }
+  if (a==='flavor') { state.flavor=FLAVOR[i].v; b.classList.add('on'); return setTimeout(function(){go('mtl-cool')},150); }
+  if (a==='cool') { state.cool=COOL[i].v; b.classList.add('on'); return setTimeout(function(){go('mtl-res')},150); }
 });
+
+/* 2분 동안 아무도 안 만지면 첫 화면으로 */
+var idleT; function idle(){clearTimeout(idleT); idleT=setTimeout(function(){ if(state.view!=='home') home(); },120000);}
+['pointerdown','scroll'].forEach(function(ev){addEventListener(ev,idle,true)}); idle();
+render();
 </script>
 </body>
 </html>
