@@ -9,28 +9,81 @@ function vfFit(){var land=matchMedia("(orientation: landscape)").matches,a=scree
   if(document.body)document.body.classList.toggle('land',land);}
 vfFit();addEventListener('orientationchange',function(){setTimeout(vfFit,60);});addEventListener('resize',function(){clearTimeout(window.__vft);window.__vft=setTimeout(vfFit,120);});</script>
 <meta name="robots" content="noindex">
+<meta name="theme-color" content="#6E1F2A">
 <title>베이프렌드 상담패드 director</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
 <style>
-/* menu-director: 새 상담패드. 이 폴더 안에서만 고친다 (menu, menu-b는 손대지 않음) */
+/* menu-director: 새 상담패드. 이 폴더 안에서만 고친다 (menu, menu-b는 손대지 않음)
+   11/16 첫 화면: 플랜핏 온보딩 참고 = 위에 큰 질문 한 줄 + 작은 설명, 아래에 둥근 선택 카드를 쌓음.
+   바탕은 VAFRIEND 빨강보다 차분한 버건디 */
 :root{
-  --bg:#F2F2F4; --card:#fff; --ink:#15120f; --grey:#6c675f; --line:#e6e6ea;
-  --red:#d81f2a; --r:24px; --pad:24px;
+  --bg:#6E1F2A;            /* 버건디 바탕 */
+  --bg2:#5A1822;           /* 아래쪽 살짝 진하게 */
+  --card:rgba(255,255,255,.10);
+  --card-on:rgba(255,255,255,.22);
+  --ink:#fff; --sub:rgba(255,255,255,.72);
+  --accent:#FFB4B9;        /* 연한 빨강: 번호, 눌렀을 때 테두리 */
+  --r:28px; --pad:48px;
   --kr:"Pretendard","Malgun Gothic",sans-serif;
 }
-*{box-sizing:border-box;margin:0;padding:0}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{height:100%}
-body{background:var(--bg);color:var(--ink);font-family:var(--kr);display:flex;align-items:center;justify-content:center;padding:var(--pad)}
-.card{background:var(--card);border-radius:var(--r);padding:56px 48px;max-width:640px;width:100%;text-align:center;box-shadow:0 1px 0 var(--line)}
-h1{font-size:40px;font-weight:800;letter-spacing:-.02em}
-h1 b{color:var(--red)}
-p{margin-top:16px;font-size:20px;color:var(--grey);line-height:1.5}
+body{background:linear-gradient(180deg,var(--bg) 0%,var(--bg2) 100%);color:var(--ink);font-family:var(--kr);
+  -webkit-user-select:none;user-select:none;overflow:hidden}
+.screen{height:100%;display:flex;flex-direction:column;padding:72px var(--pad) 56px}
+.brand{font-size:22px;font-weight:800;letter-spacing:.18em;color:var(--sub)}
+.q{margin-top:96px}
+.q h1{font-size:58px;font-weight:800;line-height:1.25;letter-spacing:-.03em}
+.q p{margin-top:20px;font-size:24px;color:var(--sub);line-height:1.5}
+.opts{margin-top:auto;display:flex;flex-direction:column;gap:20px}
+.opt{display:flex;align-items:center;gap:28px;width:100%;min-height:132px;padding:28px 36px;
+  background:var(--card);border:2px solid transparent;border-radius:var(--r);color:var(--ink);
+  font-family:inherit;text-align:left;cursor:pointer;transition:background .15s,border-color .15s,transform .1s}
+.opt:active{transform:scale(.985)}
+.opt.on{background:var(--card-on);border-color:var(--accent)}
+.opt .n{flex:none;width:56px;height:56px;border-radius:50%;background:rgba(255,255,255,.14);
+  display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800;color:var(--accent)}
+.opt .t{display:block;font-size:32px;font-weight:800;letter-spacing:-.02em}
+.opt .d{display:block;margin-top:8px;font-size:21px;color:var(--sub)}
+.toast{position:fixed;left:50%;top:40px;transform:translate(-50%,-20px);opacity:0;padding:18px 28px;border-radius:999px;
+  background:#fff;color:var(--bg);font-size:20px;font-weight:700;white-space:nowrap;transition:.2s;pointer-events:none}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+/* 가로로 돌리면: 질문은 왼쪽, 선택 카드는 오른쪽 */
+body.land .screen{flex-direction:row;flex-wrap:wrap;align-content:flex-start;column-gap:64px;padding:56px 72px}
+body.land .brand{width:100%}
+body.land .q{flex:1;margin-top:120px}
+body.land .opts{flex:1.1;margin-top:40px}
+body.land .opts{gap:16px}
+body.land .opt{min-height:0;padding:22px 30px}
+body.land .opt .t{font-size:27px}
+body.land .opt .d{font-size:19px}
 </style>
 </head>
 <body>
-<div class="card">
-  <h1>베이프렌드 <b>상담패드</b></h1>
-  <p>새 상담패드(menu-director) 시작 화면이에요.<br>여기서부터 화면을 만들어 갑니다.</p>
-</div>
+<main class="screen">
+  <div class="brand">VAFRIEND</div>
+  <section class="q">
+    <h1>어서 오세요!<br>무엇을 도와드릴까요?</h1>
+    <p>골라 주시면 딱 맞게 안내해 드릴게요.</p>
+  </section>
+  <section class="opts" id="opts">
+    <button class="opt" data-go="first"><span class="n">1</span><span><span class="t">처음 오셨을까요?</span><span class="d">전자담배가 처음이거나 매장 방문이 처음이에요</span></span></button>
+    <button class="opt" data-go="mtl"><span class="n">2</span><span><span class="t">입호흡 액상을 찾으실까요?</span><span class="d">연초처럼 입으로 머금었다 들이마셔요</span></span></button>
+    <button class="opt" data-go="dl"><span class="n">3</span><span><span class="t">폐호흡 액상을 찾으실까요?</span><span class="d">바로 폐로 깊게 들이마셔요</span></span></button>
+    <button class="opt" data-go="help"><span class="n">4</span><span><span class="t">아니면 필요하신 도움이 있으실까요?</span><span class="d">기기 고장, 코일 교체, 그 밖의 문의</span></span></button>
+  </section>
+</main>
+<div class="toast" id="toast"></div>
+<script>
+/* 지금은 고른 것만 표시. 다음 화면은 고른 값(data-go)별로 이어서 만든다 */
+var toastT;
+document.getElementById('opts').addEventListener('click',function(e){
+  var b=e.target.closest('.opt'); if(!b) return;
+  document.querySelectorAll('.opt').forEach(function(x){x.classList.toggle('on',x===b);});
+  var t=document.getElementById('toast');
+  t.textContent='"'+b.querySelector('.t').textContent+'" 다음 화면은 준비 중이에요';
+  t.classList.add('show'); clearTimeout(toastT); toastT=setTimeout(function(){t.classList.remove('show');},1800);
+});
+</script>
 </body>
 </html>
