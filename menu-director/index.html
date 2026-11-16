@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=800, viewport-fit=cover">
+<script>/* 패드 크기 맞추기: 세로 폭 800, 가로 폭 1280 기준 (menu-b와 같은 방식) */
+function vfFit(){var land=matchMedia("(orientation: landscape)").matches,a=screen.width,b=screen.height,w=land?Math.max(a,b):Math.min(a,b),base=land?1280:800,s=Math.round(w/base*1000)/1000,m=document.querySelector('meta[name=viewport]');
+  m.setAttribute('content',!w||Math.abs(s-1)<.02?'width='+base+',viewport-fit=cover':'width='+base+',initial-scale='+s+',minimum-scale='+s+',maximum-scale='+s+',user-scalable=no,viewport-fit=cover');
+  if(document.body)document.body.classList.toggle('land',land);}
+vfFit();addEventListener('orientationchange',function(){setTimeout(vfFit,60);});addEventListener('resize',function(){clearTimeout(window.__vft);window.__vft=setTimeout(vfFit,120);});</script>
+<meta name="robots" content="noindex">
+<title>베이프렌드 상담패드 director</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+/* menu-director: 새 상담패드. 이 폴더 안에서만 고친다 (menu, menu-b는 손대지 않음) */
+:root{
+  --bg:#F2F2F4; --card:#fff; --ink:#15120f; --grey:#6c675f; --line:#e6e6ea;
+  --red:#d81f2a; --r:24px; --pad:24px;
+  --kr:"Pretendard","Malgun Gothic",sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--kr);display:flex;align-items:center;justify-content:center;padding:var(--pad)}
+.card{background:var(--card);border-radius:var(--r);padding:56px 48px;max-width:640px;width:100%;text-align:center;box-shadow:0 1px 0 var(--line)}
+h1{font-size:40px;font-weight:800;letter-spacing:-.02em}
+h1 b{color:var(--red)}
+p{margin-top:16px;font-size:20px;color:var(--grey);line-height:1.5}
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>베이프렌드 <b>상담패드</b></h1>
+  <p>새 상담패드(menu-director) 시작 화면이에요.<br>여기서부터 화면을 만들어 갑니다.</p>
+</div>
+</body>
+</html>
