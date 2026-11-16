@@ -141,6 +141,41 @@ body.land .dtl .ph{width:220px}
 .colors button.on{border-color:#d81f2a;color:#d81f2a}
 .dcard .pr{padding:0 12px 12px;font-size:17px;font-weight:800;color:#d81f2a}
 .dcard b{padding-bottom:4px}
+/* 입호흡 맛 지도 (커피 취향 탐색 참고) */
+.mapf{margin-top:18px;display:flex;gap:10px}
+.mapf button{padding:10px 20px;border-radius:999px;border:0;background:var(--card);font-size:19px;font-weight:700}
+.mapf button.on{background:#fff;color:var(--bg)}
+.tmap{position:relative;margin:24px auto 0;width:100%;max-width:704px;aspect-ratio:1/1;border-radius:24px;background:rgba(0,0,0,.22);padding:44px}
+.tmap .qd{position:absolute;display:grid;grid-template-columns:repeat(4,1fr);gap:8px;align-content:center;justify-items:center;padding:30px 18px;
+  border:1.5px dashed rgba(255,255,255,.35);border-radius:16px;background:rgba(255,255,255,.04);transition:background .15s}
+.tmap .qd:active,.tmap .qd.on{background:rgba(255,180,185,.22);border-color:var(--accent)}
+.tmap .qd.tl{left:44px;top:44px;right:calc(50% + 10px);bottom:calc(50% + 10px)}
+.tmap .qd.tr{right:44px;top:44px;left:calc(50% + 10px);bottom:calc(50% + 10px)}
+.tmap .qd.bl{left:44px;bottom:44px;right:calc(50% + 10px);top:calc(50% + 10px)}
+.tmap .qd.br{right:44px;bottom:44px;left:calc(50% + 10px);top:calc(50% + 10px)}
+.tmap .qd.dim{opacity:.35}
+.tmap .qd.dim::after{content:"없어요";grid-column:1/-1;font-size:18px;font-weight:700}
+.tmap .qd i{display:block;width:58px;height:58px;border-radius:50%;overflow:hidden;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.3)}
+.tmap .qd i img{width:100%;height:100%;object-fit:cover;object-position:50% 30%}
+.tmap .qd .ql{position:absolute;left:12px;top:8px;font-size:15px;font-weight:800;color:rgba(255,255,255,.85)}
+.tmap .ax{position:absolute;width:96px;height:96px;border-radius:50%;background:#fff;color:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;
+  font-size:19px;font-weight:800;box-shadow:0 4px 14px rgba(0,0,0,.25);z-index:2;pointer-events:none}
+.tmap .ax small{font-size:13px;font-weight:700;color:#8a5a60}
+.tmap .ax.t{left:50%;top:0;transform:translate(-50%,-30%)}
+.tmap .ax.b{left:50%;bottom:0;transform:translate(-50%,30%)}
+.tmap .ax.l{left:0;top:50%;transform:translate(-30%,-50%)}
+.tmap .ax.r{right:0;top:50%;transform:translate(30%,-50%)}
+.tmap .hint{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:2;pointer-events:none;padding:10px 18px;border-radius:999px;
+  background:rgba(40,10,15,.75);font-size:18px;font-weight:800;white-space:nowrap}
+body.land .pane.res:has(.mapwrap){display:grid;grid-template-columns:1fr auto;grid-template-rows:auto auto 1fr;column-gap:40px}
+body.land .pane.res:has(.mapwrap) .top,body.land .pane.res:has(.mapwrap) .bar{grid-column:1/-1}
+body.land .mapwrap{grid-column:2;grid-row:3;min-height:0;padding:28px 0 8px}
+body.land .mapwrap .tmap{margin:0;height:calc(100vh - 190px);width:calc(100vh - 190px);max-width:none;padding:40px}
+body.land .tmap .qd i{width:46px;height:46px}
+body.land .tmap .qd{padding:26px 12px 10px;gap:6px}
+.pksz{margin-top:16px;display:flex;gap:12px}
+.pksz button{flex:1;height:64px;border-radius:18px;border:2px solid transparent;background:var(--card);font-size:21px;font-weight:800}
+.pksz button.on{background:#fff;color:var(--bg);border-color:var(--accent)}
 .empty{grid-column:1/-1;padding:48px 0;text-align:center;font-size:22px;color:var(--sub)}
 
 .toast{position:fixed;left:50%;top:40px;transform:translate(-50%,-20px);opacity:0;padding:18px 28px;border-radius:999px;
@@ -443,6 +478,53 @@ function modelDetail(){
     '<div class="acts" style="margin-top:auto;padding-top:20px"><button data-act="back">다른 기기 보기</button><button class="main" data-act="mcall">이 기기 보여 주세요</button></div></div>';
 }
 
+/* ---------- 입호흡 '내가 고르고 싶다' 맛 지도 ----------
+   위 시원한 / 아래 진한, 왼쪽 깔끔한 / 오른쪽 달콤한.
+   왼위 멘솔·민트, 오른위 과일, 왼아래 시가·타바코, 오른아래 디저트·음료 */
+var QUADS = [{c:'tl',g:'멘솔·민트'},{c:'tr',g:'과일'},{c:'bl',g:'시가·타바코'},{c:'br',g:'디저트·음료'}];
+var MAPF = [{v:'',t:'전체'},{v:'노멘솔',t:'노멘솔만'},{v:'무니코틴',t:'무니코틴만'}];
+function mapPane(){
+  var f=state.mapf||'';
+  return '<div class="pane res">'+topBar('입호흡 액상',2,3)+
+    '<section class="q" style="margin-top:28px"><h1>맛 지도에서<br>끌리는 곳을 눌러 보세요</h1>'+
+      '<div class="mapf">'+MAPF.map(function(o){return '<button data-act="mapf" data-v="'+o.v+'" class="'+(o.v===f?'on':'')+'">'+o.t+'</button>'}).join('')+'</div></section>'+
+    '<div class="mapwrap"><div class="tmap">'+
+      QUADS.map(function(q){ var l=byRank(pick(q.g,f));
+        return '<button class="qd '+q.c+(l.length?'':' dim')+'" '+(l.length?'data-act="quad" ':'disabled ')+'data-g="'+q.g+'"><span class="ql">'+esc(q.g.replace('·',' · '))+' '+l.length+'</span>'+
+          l.slice(0,12).map(function(x){return '<i><img loading="lazy" src="../img/'+esc(x.img)+'" alt="" onerror="this.parentNode.style.visibility=\'hidden\'"></i>'}).join('')+'</button>';
+      }).join('')+
+      '<span class="ax t">시원한<small>멘솔</small></span><span class="ax b">진한<small>묵직</small></span><span class="ax l">깔끔한<small>단맛 적게</small></span><span class="ax r">달콤한<small>향 풍부</small></span>'+
+      '<span class="hint">취향에 맞는 영역을 눌러 보세요!</span>'+
+    '</div></div></div>';
+}
+
+/* ---------- 입호흡 패키지 추천: 프리미엄 5병 49,500원 / 11병 90,000원 ---------- */
+var STRONG = /블랙멘솔|파워멘솔|쿨멘솔|아이스샷|꽁꽁|멘솔마스터|아이스멘솔|툰드라|베이퍼 하이|슈퍼쿨|스노우/;
+var NOT_PLAIN = /라임|피치|자몽|사과|알로에|그레이프|망고|레몬|커런트|워터멜론|레드불|초코|그린티|티|캔디|사탕|바인|블루|프루아|체체|톨리|찰스|렘드|플로이|욜|모모|알로|말보루|라무네|소다/;
+var MPACKS = [
+  {t:'멘솔 쎈 패키지', d:'블랙멘솔, 쿨멘솔처럼 확 시원한 맛', pool:function(P){return P.filter(function(x){return STRONG.test(x.n)})}},
+  {t:'담배맛 패키지', d:'시가, 타바코처럼 구수하고 묵직한 맛', pool:function(P){return P.filter(function(x){return x.g==='시가·타바코'})}},
+  {t:'단일 멘솔 패키지', d:'다른 맛 없이 멘솔, 민트만', pool:function(P){return P.filter(function(x){return x.g==='멘솔·민트' && /멘솔|민트/.test(x.n) && !NOT_PLAIN.test(x.n) && !STRONG.test(x.n)})}},
+  {t:'처음이라 여러 가지 섞어서', d:'과일, 디저트, 멘솔, 담배맛 골고루', mix:true},
+  {t:'액상 랭킹으로 추천', d:'이번 주 많이 나간 순서대로', pool:function(P){return P}}
+];
+function mpackList(k, n){
+  var P = byRank(LIQ.filter(function(x){return x.line==='프리미엄'}));
+  if (!MPACKS[k].mix) return MPACKS[k].pool(P);
+  var want = n>=11 ? {'과일':4,'디저트·음료':3,'멘솔·민트':2,'시가·타바코':2} : {'과일':2,'디저트·음료':1,'멘솔·민트':1,'시가·타바코':1}, top=[], rest=[];
+  Object.keys(want).forEach(function(g){ var l=P.filter(function(x){return x.g===g}); top=top.concat(l.slice(0,want[g])); rest=rest.concat(l.slice(want[g],want[g]+4)); });
+  return top.concat(rest);
+}
+function mpackPane(){
+  var k=state.mpack, n=state.mpn||5, M=MPACKS[k], list=mpackList(k,n), price=n>=11?90000:49500, full=PRICE["프리미엄"]*n;
+  return '<div class="pane res">'+topBar('입호흡 액상',3,3)+
+    '<section class="q"><h1>'+esc(M.t)+'</h1>'+
+      '<div class="pksz"><button data-act="mpn" data-i="5" class="'+(n===5?'on':'')+'">5병 49,500원</button><button data-act="mpn" data-i="11" class="'+(n===11?'on':'')+'">11병 90,000원</button></div>'+
+      '<div class="ev">앞의 <b>'+Math.min(n,list.length)+'병</b>으로 추천해요 · 1병씩 사면 '+won(full)+' → <b>'+won(full-price)+' 아껴요</b> · 맛은 바꿔도 돼요</div>'+
+    '</section><section class="grid">'+(list.length?list.slice(0,Math.max(n+6,12)).map(function(x,i){return card(x, i<n?'추천 '+(i+1):'');}).join(''):'<div class="empty">맞는 액상이 없어요. 직원에게 물어봐 주세요.</div>')+'</section>'+
+    '<div class="acts"><button data-act="back">다른 패키지</button><button class="main" data-act="mpcall">이 패키지로 할게요</button></div></div>';
+}
+
 function render(){
   var v=state.view, h='';
   if (v==='home') h = ask({h:'어서 오세요!<br>무엇을 도와드릴까요?', p:'골라 주시면 딱 맞게 안내해 드릴게요.', opts:[
@@ -451,6 +533,8 @@ function render(){
     {t:'기기 보러 왔어요!',d:'말론, 말론S, 하복2 등 매장 기기 구경하기',act:'dev'},
     {t:'폐호흡 액상을 찾으실까요?',d:'바로 폐로 깊게 들이마셔요',act:'dl'},
     {t:'아니면 필요하신 도움이 있으실까요?',d:'기기 고장, 코일 교체, 그 밖의 문의',act:'help'}]});
+  else if (v==='mtl-map') h = mapPane();
+  else if (v==='mtl-mpack') h = mpackPane();
   else if (v==='dev') h = modelListPane();
   else if (v==='dev-dtl') h = modelDetail();
   else if (v==='help') h = ask({title:'필요하신 도움',step:1,total:3,h:'어떤 도움이<br>필요하세요?',p:'골라 주시면 바로 안내해 드릴게요.', opts:[
@@ -481,8 +565,8 @@ function render(){
   else if (v==='mtl-cool') h = ask({title:KT(),step:3,total:4,h:'멘솔이나 니코틴은<br>어떻게 할까요?',p:'고르신 맛 안에서 골라 드릴게요.',
     sel:state.cool==null?null:COOL.map(function(o){return o.v}).indexOf(state.cool),
     opts:COOL.map(function(o,i){var n=pick(state.flavor,o.v).length; return n?{t:o.t,d:o.d+' ('+n+'개)',act:'cool',i:i}:null}).filter(Boolean)});
-  else if (v==='mtl-res') h = listPane({step:4,total:4,h:'이런 맛 어떠세요?',list:byRank(pick(state.flavor,state.cool)),
-    chips:[state.flavor==='기타'?'샤크 · 홀리 · 오니 등':state.flavor||'모든 맛', state.cool?COOL.filter(function(o){return o.v===state.cool})[0].t:'멘솔 상관없음']});
+  else if (v==='mtl-res') h = listPane({step:state.kind==='dl'?4:3,total:state.kind==='dl'?4:3,h:'이런 맛 어떠세요?',list:byRank(pick(state.flavor,state.cool)),
+    chips:[state.flavor==='기타'?'샤크 · 홀리 · 오니 등':state.flavor||'모든 맛', state.cool?(state.cool==='노멘솔'?'노멘솔만':state.cool==='무니코틴'?'무니코틴만':state.cool):'전체']});
   else if (v==='mtl-staff') h = '<div class="pane ask">'+topBar(KT(),2,2)+
     '<section class="q"><h1>직원이 바로<br>도와드릴게요!</h1><p>카운터 쪽 직원에게 이 화면을 보여 주시거나<br>잠깐만 기다려 주세요.</p></section>'+
     '<section class="opts"><div class="call">직원 호출</div>'+
@@ -494,6 +578,8 @@ function render(){
   else if (v==='mtl-rank') h = listPane({step:2,total:2,h:'이번 주 액상 랭킹',top:10,
     list:byRank(DATA()).filter(function(x){return (RANK[x.n]||0)>0}).slice(0,30),
     chips:[BRANCH?BRANCH+' 기준':'전 지점 합계'], empty:'랭킹 자료를 불러오는 중이에요.'});
+  else if (v==='mtl-pack' && state.kind!=='dl') h = ask({title:KT(),step:2,total:3,h:'어떤 패키지로<br>드릴까요?',p:'프리미엄 5병 49,500원 · 11병 90,000원, 맛은 바꿔도 돼요.',
+    opts:MPACKS.map(function(o){return {t:o.t,d:o.d,act:'mpk'}})});
   else if (v==='mtl-pack') h = ask({title:KT(),step:2,total:3,h:'여러 병 사면<br>더 싸요!',p:state.kind==='dl'?'폐호흡 액상은 1병 30,000원이에요.':'1병 값은 프리미엄 15,000원, 프라임 20,000원이에요.',
     opts:PK().map(function(o){return {t:o.t,d:o.d,act:'pack'}})});
   else if (v==='mtl-pack-res') { var pk=PK()[state.pack];
@@ -534,7 +620,12 @@ document.getElementById('app').addEventListener('click',function(e){
     st=newSteps(); nx=st[st.indexOf(k)+1]; return on(nx ? 'new-'+nx : 'new-res'); }
   if (a==='new-more') { state.kind=b.dataset.k; return go('mtl'); }
   if (a==='mtl' || a==='dl') { state.kind=a; return on('mtl'); }
-  if (a==='m-self') { state.flavor=null; state.cool=null; return on('mtl-flavor'); }
+  if (a==='m-self') { state.flavor=null; state.cool=null; if (state.kind!=='dl') { state.mapf=''; return on('mtl-map'); } return on('mtl-flavor'); }
+  if (a==='mapf') { state.mapf=b.dataset.v; return render(); }
+  if (a==='quad') { state.flavor=b.dataset.g; state.cool=state.mapf||''; b.classList.add('on'); return setTimeout(function(){go('mtl-res')},150); }
+  if (a==='mpk') { state.mpack=i; state.mpn=5; return on('mtl-mpack'); }
+  if (a==='mpn') { state.mpn=i; return render(); }
+  if (a==='mpcall') { state.staffT='입호흡 액상'; state.staffH='직원이 바로<br>담아 드릴게요!'; state.staffP='"'+esc(MPACKS[state.mpack].t)+' '+(state.mpn||5)+'병" 하신다고 전해 드릴게요.<br>잠깐만 기다려 주세요.'; return go('help-staff'); }
   if (a==='m-staff') return on('mtl-staff');
   if (a==='m-like') { state.q=''; return on('mtl-like'); }
   if (a==='m-rank') return on('mtl-rank');
