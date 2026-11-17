@@ -470,6 +470,7 @@ body.land .cartp .ftc{grid-column:2;grid-row:3;display:flex}
 body.land .cartdock{top:16px;bottom:84px}
 body.land .cartp .save .pct{display:none}body.land .cartp .save .big{font-size:26px;white-space:nowrap}
 .allban{grid-column:1/-1}
+.memban.memoban{background:#FFF6D6}.memban.memoban b{color:#5c4400}.memban.memoban i{font-size:20px}
 .alltabs{margin-top:16px;flex:none}
 .alltabs button{padding:12px 20px;font-size:20px;background:rgba(255,255,255,.18)}
 .alltabs button.on{background:#fff;color:var(--deep)}
@@ -1732,6 +1733,7 @@ function render(){
     extra:chars('눌러 봐요 👆')+'<div class="banrow"><button class="memban" data-act="mem"><span class="em">🎁</span><span><b>회원등록하고 적립</b><small>AS 받을 때도 편해요</small></span><i>›</i></button>'+
       '<button class="memban cheap" data-act="cheap"><span class="em">💸</span><span><b>가장 저렴하게 사는 법</b><small>최대 75,000원 아껴요</small></span><i>›</i></button>'+
       '<button class="memban cheap" data-act="resv"><span class="em">🔔</span><span><b>예약 · 알림받기</b><small>신상품 · 행사 · 한정판 문자</small></span><i>›</i></button>'+
+      '<button class="memban cheap memoban" data-act="memo"><span class="em">📝</span><span><b>회원메모</b><small>직원 전용 · 비밀번호</small></span><i>🔒</i></button>'+
       '<button class="memban cheap allban" data-act="all"><span class="em">🗂️</span><span><b>전체 보기</b><small>액상 · 기기 · 팟 · 코일 · 일회용 전부</small></span><i>›</i></button></div>', opts:[
     {e:'👋',t:'처음 오셨을까요?',d:'전자담배가 처음이거나 매장 방문이 처음이에요',act:'new'},
     {e:'💨',t:'입호흡 액상을 찾으실까요?',d:'연초처럼 입으로 머금었다 들이마셔요',act:'mtl'},
@@ -1844,6 +1846,7 @@ document.getElementById('app').addEventListener('click',function(e){
   if (a==='pk11') { state.kind='mtl'; state.mpack=4; state.mpn=11; return go('mtl-mpack'); }
   if (a==='mem-new' || a==='mem-old') { state.memKind=a.slice(4); M_().bad=''; return on(a); }
   if (a==='pk') { pinKey(b.dataset.v); return; }
+  if (a==='memo') { state.pin=''; state.pinStep=1; state.pinBad=false; state.mq=''; state.mf='wait'; return go('memo'); }
   if (a==='mlock') { state.memoOK=false; return home(); }
   if (a==='mf') { state.mf=b.dataset.v; state.mdel=null; return render(); }
   if (a==='mnew') { state.mnew=true; render(); var nn=document.getElementById('nName'); if(nn) nn.focus(); return; }
