@@ -228,15 +228,18 @@ function dCnt(now, before) {
 }
 
 // ── 시트(열쇠) ──
+/* 11/17 "로딩시간 너무 많이 걸리는데": 지난번에 받은 시트 자료를 이 기기에 기억해 두고 먼저 보여 준다. 열쇠가 같을 때만 쓴다 */
+const SNAPK = "vf-naver-snap";
+const snapGet = () => { try { const s = JSON.parse(localStorage.getItem(SNAPK) || "null"); return s && key && s.k === key ? s.r : null; } catch { return null; } };
+const snapSet = (r) => { try { r ? localStorage.setItem(SNAPK, JSON.stringify({ k: key, r, at: Date.now() })) : localStorage.removeItem(SNAPK); } catch {} };
 async function loadRemote() {
-  R = null; remoteErr = "";
-  if (!APPS_URL) { remoteErr = "setup"; return; }
-  if (!key) { remoteErr = "nokey"; return; }
+  if (!APPS_URL) { R = null; remoteErr = "setup"; return; }
+  if (!key) { R = null; snapSet(null); remoteErr = "nokey"; return; }
   try {
     const r = await (await fetch(`${APPS_URL}?k=${encodeURIComponent(key)}&t=${Date.now()}`)).json();
-    if (!r.ok) { remoteErr = r.error === "key" ? "badkey" : "fail"; return; }
-    R = r;
-  } catch { remoteErr = "fail"; }
+    if (!r.ok) { if (r.error === "key") { R = null; snapSet(null); remoteErr = "badkey"; } else if (!R) remoteErr = "fail"; return; }
+    R = r; remoteErr = ""; snapSet(r);
+  } catch { if (!R) remoteErr = "fail"; }
 }
 async function post(body) {
   if (!APPS_URL || !key) { toast("열쇠를 먼저 넣어주세요"); return false; }
@@ -256,7 +259,7 @@ function placeKws(br) {
   const a = kwAddsOf(br.name);
   return a ? [...new Set([...(br.base || br.place), ...a])].slice(0, KW_MAX) : br.place;
 }
-const lockMsg = () => ({ setup: "시트 연결 준비 중 (Apps Script 배포 후 열림)", nokey: "열쇠를 넣으면 보여요", badkey: "열쇠가 맞지 않아요", fail: "시트를 불러오지 못했어요" }[remoteErr] || "");
+const lockMsg = () => ({ setup: "시트 연결 준비 중 (Apps Script 배포 후 열림)", nokey: "열쇠를 넣으면 보여요", badkey: "열쇠가 맞지 않아요", fail: "시트를 불러오지 못했어요", wait: "시트 자료를 불러오는 중이에요" }[remoteErr] || "");
 function weeklyFor(name) {
   if (!R || !R.weekly || !R.weekly.length) return null;
   const v = R.weekly, hi = v.findIndex((row) => row.some((c) => String(c).includes("지점명")));
@@ -609,7 +612,7 @@ function openKey() {
     <div class="btns"><button class="btn" onclick="key='';ls.set('vf-naver-key','');closeSheet();reload(true)">열쇠 빼기</button><button class="btn primary" onclick="saveKey()">저장</button></div>`;
   openSheet();
 }
-async function saveKey() { key = $("#kIn").value.trim(); ls.set("vf-naver-key", key); closeSheet(); await reload(true); toast(R ? "열렸어요" : lockMsg()); }
+async function saveKey() { key = $("#kIn").value.trim(); ls.set("vf-naver-key", key); R = null; closeSheet(); await reload(true); toast(R ? "열렸어요" : lockMsg()); }
 function toggleHide() { hide = !hide; ls.set("vf-naver-hide", hide ? "1" : "0"); render(); }
 
 function openSheet() { $("#dim").classList.add("on"); history.pushState({ v: VIEW, s: 1 }, ""); }
@@ -617,7 +620,15 @@ function closeSheet() { if ($("#dim").classList.contains("on")) history.back(); 
 $("#dim").addEventListener("click", (e) => { if (e.target.id === "dim") closeSheet(); });
 
 async function reload(remoteOnly) {
-  if (!remoteOnly) { D = await (await fetch("data.json?t=" + Date.now())).json(); setDates(); }
+  if (!remoteOnly) {
+    D = await (await fetch("data.json?t=" + Date.now())).json(); setDates();
+    /* 11/17: 구글 스크립트(1초 넘게 걸림)를 기다리지 않고 순위부터 그린다. 지난번 시트 자료가 있으면 같이 보여 주고, 새 자료가 오면 다시 그린다 */
+    R = snapGet(); remoteErr = R ? "" : !APPS_URL ? "setup" : key ? "wait" : "nokey";
+    render();
+    await loadRemote();
+    if (!$("#dim").classList.contains("on")) render();
+    return;
+  }
   await loadRemote();
   render();
 }
