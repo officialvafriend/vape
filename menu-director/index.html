@@ -618,6 +618,31 @@ body.land .fab.prev{bottom:8px!important;padding:5px 16px 5px 10px;font-size:16p
 .memo .mh{font-family:var(--jal);font-size:18px;color:#5c4400;margin-bottom:6px}
 .memo .mf{margin-top:8px;font-size:15px;color:#5c4400}
 body.land .rvk{grid-template-columns:repeat(4,1fr)}
+.brand{-webkit-touch-callout:none}
+.pdots{margin:30px auto 0;display:flex;gap:18px;justify-content:center}
+.pdots i{width:24px;height:24px;border-radius:50%;border:3px solid #fff;transition:background .15s}
+.pdots i.on{background:#fff}.pdots i.bad{border-color:#ff8a8a;animation:shake .4s}
+.pkeys{margin:30px auto 0;display:grid;grid-template-columns:repeat(3,110px);gap:14px;justify-content:center}
+.pkeys button{height:84px;border:0;border-radius:24px;background:rgba(255,255,255,.18);color:#fff;font-family:var(--jal);font-size:32px}
+.pkeys button:active{background:#fff;color:var(--deep)}
+.memop .mtop{margin-top:18px;display:flex;gap:10px;flex:none}
+.memop .mtop .rin{flex:1}
+.mnewb,.mlock{flex:none;height:60px;padding:0 18px;border:0;border-radius:16px;font-family:var(--jal);font-size:19px}
+.mnewb{background:#FFE14D;color:#191f28}.mlock{background:rgba(255,255,255,.2);color:#fff}
+.mtabs{margin-top:12px;flex:none}
+.mlist{flex:1;min-height:0;overflow-y:auto;margin-top:12px;display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:12px;align-content:start;scrollbar-width:none}.mlist::-webkit-scrollbar{display:none}
+.mcard{background:#fff;color:#191f28;border-radius:20px;padding:14px 16px;display:flex;flex-direction:column;gap:8px;animation:up .3s backwards}
+.mcard.done{opacity:.6}
+.mcard.mform{margin-top:12px;flex:none;border:3px solid #FFE14D}.mcard h3{font-family:var(--jal);font-weight:normal;font-size:20px}
+.mh2{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}.mh2 b{font-family:var(--jal);font-weight:normal;font-size:22px}
+.mh2 .mp{font-family:var(--jal);font-size:20px;color:var(--deep)}.mh2 .mt{margin-left:auto;font-size:14px;color:#8b95a1}
+.mk{display:flex;flex-wrap:wrap;gap:6px}.mk span{padding:4px 10px;border-radius:999px;background:var(--tint);color:var(--deep);font-size:14px;font-weight:800}.mk .ad{background:#E8F7EE;color:#0f7a3d}
+.mi{font-size:16px;color:#333d4b}.mi b{font-family:var(--jal);font-weight:normal}
+.mta{height:78px;padding:10px 14px;font-size:17px;resize:none;line-height:1.4}
+.mbtn{display:flex;gap:8px}.mbtn button{flex:1;height:48px;border:0;border-radius:14px;background:#f2f4f6;color:#4e5968;font-family:var(--jal);font-size:17px}
+.mbtn button.m{background:var(--deep);color:#fff}.mbtn button.x{background:#e5313b;color:#fff}
+.mfoot{margin-top:10px;font-size:14px;color:rgba(255,255,255,.75);text-align:center;flex:none}
+.done .memo .mf b{font-family:var(--jal);font-weight:normal}
 .empty{grid-column:1/-1;padding:48px 0;text-align:center;font-size:22px;color:var(--sub)}
 
 .toast{position:fixed;left:50%;top:40px;transform:translate(-50%,-20px);opacity:0;padding:18px 28px;border-radius:999px;
@@ -1633,8 +1658,60 @@ function resvDone(){
       row('이름',esc(r.name))+row('휴대폰',esc(ph))+row('신청',esc(kinds))+
       (r.k.book?row('예약 상품',esc(r.item)+' × '+r.qty)+row('찾는 날',esc(r.when)):'')+
       row('동의','개인정보 ✓'+(rvAlerts(r).length?' · 광고 문자 ✓':''))+
-      '<div class="mf">✍️ 직원: 예약 장부(노션)에 적고 "다 적었어요"를 눌러 주세요</div></div>'+
-    '</section><div class="acts"><button data-act="rvdone" data-to="back">‹ 결제 화면으로</button><button class="main" data-act="rvdone" data-to="home">✅ 다 적었어요</button></div></div>';
+      '<div class="mf">'+(state.rvSaved?'✅ 직원 <b>회원메모</b>에 자동으로 저장됐어요 (첫 화면 로고 꾹 → 비밀번호)':'⚠️ 저장이 안 됐어요. 직원이 직접 적어 주세요')+'</div></div>'+
+    '</section><div class="acts"><button data-act="rvdone" data-to="back">‹ 결제 화면으로</button><button class="main" data-act="rvdone" data-to="home">✅ 확인했어요</button></div></div>';
+}
+
+/* ---------- 📝 회원메모 (직원 전용): 첫 화면 VF 로고를 꾹(1초) 누르고 비밀번호 4자리.
+   이 패드 브라우저에만 저장(localStorage), 30일 지나면 자동 삭제, 처음으로 가면 다시 잠김 ---------- */
+var MEMO_KEY='vfDirMemo', PIN_KEY='vfDirPin', MEMO_DAYS=30;
+function lsGet(k,d){ try{ var v=localStorage.getItem(k); return v==null?d:JSON.parse(v); }catch(e){ return d; } }
+function lsSet(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)); return true; }catch(e){ return false; } }
+function memos(){ var cut=Date.now()-MEMO_DAYS*864e5, l=lsGet(MEMO_KEY,[]).filter(function(m){return m && m.t>cut}); return l; }
+function saveMemos(l){ return lsSet(MEMO_KEY,l); }
+function addMemo(m){ var l=memos(); m.id='m'+Date.now()+Math.floor(Math.random()*1000); m.t=Date.now(); l.unshift(m); return saveMemos(l); }
+async function pinHash(pin){ try{ var b=await crypto.subtle.digest('SHA-256', new TextEncoder().encode('vafriend-dir:'+pin)); return Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,'0')}).join(''); }catch(e){ return 'p'+pin; } }
+function pinPane(){
+  var has=!!lsGet(PIN_KEY,null), set=!has, p=state.pin||'', step=state.pinStep||1;
+  var title=set?(step===1?'처음이에요! 직원 비밀번호 4자리를 정해 주세요':'한 번 더 넣어 주세요'):'직원 비밀번호 4자리';
+  return '<div class="pane res pinp">'+topBar('직원 전용 🔒',1,1)+
+    '<section class="q" style="margin-top:40px;text-align:center"><h1>📝 회원메모</h1><p>'+title+'</p></section>'+
+    '<div class="pdots">'+[0,1,2,3].map(function(i){return '<i class="'+(i<p.length?'on':'')+(state.pinBad?' bad':'')+'"></i>'}).join('')+'</div>'+
+    '<div class="pkeys">'+['1','2','3','4','5','6','7','8','9','지움','0','닫기'].map(function(k){return '<button data-act="pk" data-v="'+k+'">'+k+'</button>'}).join('')+'</div></div>';
+}
+async function pinKey(k){
+  if (k==='닫기'){ state.pin=''; state.pinStep=1; return back(); }
+  if (k==='지움'){ state.pin=(state.pin||'').slice(0,-1); state.pinBad=false; return render(); }
+  state.pin=((state.pin||'')+k).slice(0,4); state.pinBad=false; render(); if (state.pin.length<4) return;
+  var h=await pinHash(state.pin), saved=lsGet(PIN_KEY,null);
+  if (!saved){ if ((state.pinStep||1)===1){ state.pin1=h; state.pin=''; state.pinStep=2; return render(); }
+    if (h!==state.pin1){ state.pin=''; state.pinStep=1; state.pinBad=true; toast('비밀번호가 달라요. 처음부터 다시 정해 주세요'); return render(); }
+    lsSet(PIN_KEY,h); }
+  else if (h!==saved){ state.pin=''; state.pinBad=true; toast('비밀번호가 틀렸어요'); if(navigator.vibrate) try{navigator.vibrate(80)}catch(e){} return render(); }
+  state.pin=''; state.pinStep=1; state.memoOK=true; state.view='memo'; return render();
+}
+function memoPane(){
+  if (!state.memoOK) return pinPane();
+  var all=memos(), f=state.mf||'wait', q=(state.mq||'').replace(/[\s-]/g,'');
+  var l=all.filter(function(m){ return (f==='all'||(f==='wait'?!m.done:m.done)) && (!q || (m.name+m.phone+(m.item||'')+(m.memo||'')).replace(/[\s-]/g,'').indexOf(q)>=0); });
+  var cnt={all:all.length, wait:all.filter(function(m){return !m.done}).length, done:all.filter(function(m){return m.done}).length};
+  var d=function(t){ var x=new Date(t); return (x.getMonth()+1)+'/'+x.getDate()+' '+String(x.getHours()).padStart(2,'0')+':'+String(x.getMinutes()).padStart(2,'0'); };
+  var ph=function(v){ return (v||'').replace(/(\d{3})(\d{3,4})(\d{4})/,'$1-$2-$3'); };
+  var nw=state.mnew;
+  return '<div class="pane res memop">'+topBar('회원메모 📝 (직원 전용)',1,1)+
+    '<div class="mtop"><input id="mq" class="rin" placeholder="🔍 이름, 번호, 상품, 메모로 찾기" value="'+esc(state.mq||'')+'" autocomplete="off">'+
+      '<button class="mnewb" data-act="mnew">＋ 새 메모</button><button class="mlock" data-act="mlock">🔒 잠그기</button></div>'+
+    '<div class="frow mtabs">'+[['wait','📞 연락 대기'],['done','✅ 연락 완료'],['all','📋 전체']].map(function(o){return '<button data-act="mf" data-v="'+o[0]+'" class="'+(f===o[0]?'on':'')+'">'+o[1]+' <small>'+cnt[o[0]]+'</small></button>'}).join('')+'</div>'+
+    (nw?'<div class="mcard mform"><h3>＋ 새 메모</h3><div class="rv2"><input id="nName" class="rin" placeholder="성함 또는 별명" autocomplete="off"><input id="nPhone" class="rin" type="tel" inputmode="numeric" maxlength="11" placeholder="휴대폰 번호 (없어도 돼요)"></div>'+
+      '<textarea id="nMemo" class="rin mta" placeholder="예: 말론S 블랙 입고되면 연락, 0.4옴 좋아함"></textarea><div class="mbtn"><button data-act="mnewx">취소</button><button class="m" data-act="mnewok">저장</button></div></div>':'')+
+    '<div class="mlist">'+(l.length?l.map(function(m){ var del=state.mdel===m.id;
+      return '<div class="mcard'+(m.done?' done':'')+'"><div class="mh2"><b>'+esc(m.name||'(이름 없음)')+'</b><span class="mp">'+esc(ph(m.phone))+'</span><span class="mt">'+d(m.t)+(m.br?' · '+esc(m.br):'')+'</span></div>'+
+        (m.kinds&&m.kinds.length?'<div class="mk">'+m.kinds.map(function(k){return '<span>'+esc(k)+'</span>'}).join('')+(m.ad?'<span class="ad">광고 문자 동의 ✓</span>':'')+'</div>':'')+
+        (m.item?'<div class="mi">📦 <b>'+esc(m.item)+'</b> × '+(m.qty||1)+' · '+esc(m.when||'')+'</div>':'')+
+        '<textarea class="rin mta" data-mid="'+m.id+'" placeholder="메모를 남겨 주세요">'+esc(m.memo||'')+'</textarea>'+
+        '<div class="mbtn"><button data-act="mdel" data-id="'+m.id+'" class="'+(del?'x':'')+'">'+(del?'정말 지울까요? 한 번 더':'🗑 지우기')+'</button><button class="m" data-act="mdone" data-id="'+m.id+'">'+(m.done?'↩️ 다시 대기로':'✅ 연락 완료')+'</button></div></div>'; }).join('')
+      :'<div class="empty" style="color:#fff">'+(all.length?'찾는 메모가 없어요':'아직 메모가 없어요. 손님이 예약 · 알림을 신청하면 여기에 쌓여요')+'</div>')+'</div>'+
+    '<div class="mfoot">🔒 이 패드에만 저장돼요 · '+MEMO_DAYS+'일 지나면 자동으로 지워져요 · 처음으로 가면 다시 잠겨요</div></div>';
 }
 
 function render(){
@@ -1656,6 +1733,7 @@ function render(){
   else if (v==='mem-old') h = memPane('old');
   else if (v==='mem-done') h = memDone();
   else if (v==='cheap') h = cheapPane();
+  else if (v==='memo') h = memoPane();
   else if (v==='resv') h = resvPane();
   else if (v==='resv-done') h = resvDone();
   else if (v==='all') h = allPane();
@@ -1725,6 +1803,9 @@ function render(){
   if (v==='mix') labBind();
   cartFab(false);
   if (fresh) countUp();
+  var mq=document.getElementById('mq'); if(mq){ mq.addEventListener('input',function(){ state.mq=mq.value; clearTimeout(window.__mqT); window.__mqT=setTimeout(function(){ var pos=mq.selectionStart; render(); var m2=document.getElementById('mq'); if(m2){ m2.focus(); try{m2.setSelectionRange(pos,pos)}catch(e){} } },350); }); }
+  [].forEach.call(document.querySelectorAll('textarea[data-mid]'),function(ta){ ta.addEventListener('input',function(){ clearTimeout(ta.__t); ta.__t=setTimeout(function(){ var L2=memos(); L2.forEach(function(m){ if(m.id===ta.dataset.mid) m.memo=ta.value; }); saveMemos(L2); },400); }); });
+  var np2=document.getElementById('nPhone'); if(np2) np2.addEventListener('input',function(){ np2.value=np2.value.replace(/\D/g,''); });
   ['rItem','rName','rPhone'].forEach(function(id){ var el=document.getElementById(id); if(!el) return; el.addEventListener('input',function(){ var r=RV(), k={rItem:'item',rName:'name',rPhone:'phone'}[id]; if(k==='phone') el.value=el.value.replace(/\D/g,''); r[k]=el.value; if(r.bad===k){ r.bad=''; el.classList.remove('bad'); } }); });
   ['mName','mYear','mPhone'].forEach(function(id){ var el=document.getElementById(id); if(!el) return; el.addEventListener('input',function(){
     var m=M_(), k={mName:'name',mYear:'year',mPhone:'phone'}[id]; if (k!=='name') el.value=el.value.replace(/\D/g,''); m[k]=el.value; if (m.bad===k) { m.bad=''; el.classList.remove('bad'); }
@@ -1750,6 +1831,16 @@ document.getElementById('app').addEventListener('click',function(e){
   if (a==='cheap') return go('cheap');
   if (a==='pk11') { state.kind='mtl'; state.mpack=4; state.mpn=11; return go('mtl-mpack'); }
   if (a==='mem-new' || a==='mem-old') { state.memKind=a.slice(4); M_().bad=''; return on(a); }
+  if (a==='pk') { pinKey(b.dataset.v); return; }
+  if (a==='mlock') { state.memoOK=false; return home(); }
+  if (a==='mf') { state.mf=b.dataset.v; state.mdel=null; return render(); }
+  if (a==='mnew') { state.mnew=true; render(); var nn=document.getElementById('nName'); if(nn) nn.focus(); return; }
+  if (a==='mnewx') { state.mnew=false; return render(); }
+  if (a==='mnewok') { var nm=document.getElementById('nName').value.trim(), np=document.getElementById('nPhone').value.replace(/\D/g,''), mm=document.getElementById('nMemo').value.trim();
+    if (!nm && !np) return toast('이름이나 번호 중 하나는 넣어 주세요');
+    addMemo({name:nm, phone:np, kinds:['📝 직원 메모'], memo:mm, br:BRANCH||'', done:false}); state.mnew=false; state.mf='wait'; toast('📝 저장했어요'); return render(); }
+  if (a==='mdone') { var L1=memos(); L1.forEach(function(m){ if(m.id===b.dataset.id) m.done=!m.done; }); saveMemos(L1); return render(); }
+  if (a==='mdel') { if (state.mdel!==b.dataset.id) { state.mdel=b.dataset.id; return render(); } saveMemos(memos().filter(function(m){return m.id!==b.dataset.id})); state.mdel=null; toast('🗑 지웠어요'); return render(); }
   if (a==='resv') { state.rv=null; RV(); return go('resv'); }
   if (a==='rvk') { var rr=RV(); rr.k[b.dataset.k]=!rr.k[b.dataset.k]; if(rr.bad==='k') rr.bad=''; return render(); }
   if (a==='rvitem') { RV().item=b.dataset.v; return render(); }
@@ -1763,7 +1854,7 @@ document.getElementById('app').addEventListener('click',function(e){
     if (!/^01\d{8,9}$/.test(r4.phone)) return fail('phone','휴대폰 번호를 다시 확인해 주세요');
     if (!r4.agree) return fail('agree','연락을 위한 동의가 필요해요');
     if (rvAlerts(r4).length && !r4.ad) return fail('ad','알림 문자를 받으려면 광고 문자 동의가 필요해요');
-    r4.bad=''; return go('resv-done'); }
+    r4.bad=''; state.rvSaved=addMemo({name:r4.name.trim(), phone:r4.phone, kinds:RV_KIND.filter(function(o){return r4.k[o[0]]}).map(function(o){return o[1]+' '+o[2]}), item:r4.k.book?r4.item.trim():'', qty:r4.qty, when:r4.k.book?r4.when:'', ad:!!r4.ad, br:BRANCH||'', memo:'', done:false}); return go('resv-done'); }
   if (a==='rvdone') { var to=b.dataset.to; state.rv=null; if (to==='home') return home(); back(); return back(); }
   if (a==='mck') { var mm=M_(); mm[b.dataset.k]=!mm[b.dataset.k]; if (mm.bad==='agree') mm.bad=''; return render(); }
   if (a==='mem-send') { var m=M_(), need=function(k,msg){ m.bad=k; render(); toast(msg); var el=document.querySelector('.bad'); if(el&&el.focus) el.focus(); };
@@ -1837,6 +1928,8 @@ document.getElementById('app').addEventListener('click',function(e){
 
 document.getElementById('fab').addEventListener('click',function(){ go('mem'); });
 document.getElementById('fabh').addEventListener('click',function(){ home(); });
+(function(){ var t=null; document.getElementById('app').addEventListener('pointerdown',function(e){ if(!e.target.closest('.brand')) return; clearTimeout(t); t=setTimeout(function(){ state.pin=''; state.pinStep=1; state.pinBad=false; state.mq=''; state.mf='wait'; state.mnew=false; go('memo'); if(navigator.vibrate) try{navigator.vibrate(30)}catch(_){} },1000); });
+  ['pointerup','pointerleave','pointercancel'].forEach(function(ev){ document.getElementById('app').addEventListener(ev,function(){ clearTimeout(t); }); }); })();
 document.getElementById('fabb').addEventListener('click',function(){ back(); });
 document.getElementById('app').addEventListener('click',function(e){ var ad=e.target.closest('[data-cadd]'); if(ad){ cartAdd(ad.dataset.cadd); render(); } });
 document.getElementById('app').addEventListener('change',function(e){ var sl=e.target.closest('.csel'); if(!sl||sl.value==='') return; if(sl.dataset.side==='A') state.cmpA=+sl.value; else state.cmpB=+sl.value; render(); });
