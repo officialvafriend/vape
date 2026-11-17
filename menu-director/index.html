@@ -470,6 +470,26 @@ body.land .cartp .ftc{grid-column:2;grid-row:3;display:flex}
 body.land .cartdock{top:16px;bottom:84px}
 body.land .cartp .save .pct{display:none}body.land .cartp .save .big{font-size:26px;white-space:nowrap}
 .allban{grid-column:1/-1}
+.mchip{width:100%;padding:8px 10px;border-radius:14px;background:#FFE14D;color:#191f28;font-size:15px;text-align:center;margin-bottom:6px}.mchip b{font-family:var(--jal);font-weight:normal}
+.sboard{display:grid;grid-template-columns:repeat(10,1fr);gap:4px;margin:8px 0}
+.sboard .st{aspect-ratio:1/1;border-radius:50%;border:2px dashed #d1d6db;display:flex;align-items:center;justify-content:center;font-size:12px;color:#b0b8c1;font-weight:800}
+.sboard .st.rw{border:2px solid #FFB020;background:#FFF6D6;font-size:15px}
+.sboard .st.on{border:2px solid #FFB020;background:#FFE14D;font-size:15px;animation:pop .3s}
+.snext{font-size:16px;color:#4e5968;text-align:center}.snext b{font-family:var(--jal);font-weight:normal;color:#e5313b}
+.scard{margin-top:14px;flex:none;background:#fff;color:#191f28;border-radius:22px;padding:14px 16px;border:3px solid #FFE14D}
+.scard .sh{display:flex;justify-content:space-between;align-items:center}.scard .sh b{font-family:var(--jal);font-weight:normal;font-size:20px}.scard .sh span{font-family:var(--jal);font-size:18px;color:#b45309}
+.sadd{margin-top:10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}.sadd span{font-size:16px;font-weight:700;color:#4e5968}
+.sadd button{width:44px;height:44px;border:0;border-radius:12px;background:var(--tint);color:var(--deep);font-family:var(--jal);font-size:22px}
+.sadd b{min-width:40px;text-align:center;font-family:var(--jal);font-weight:normal;font-size:22px;color:#b45309}
+.sadd input{width:110px;height:44px;border:2px solid #e5e8eb;border-radius:12px;padding:0 10px;font:700 18px var(--kr);-webkit-user-select:text;user-select:text}
+.sadd .go{width:auto;padding:0 16px;background:#FFE14D;color:#191f28;font-size:18px}
+.sok{margin-top:10px;padding:10px;border-radius:12px;background:#E8F7EE;color:#0f7a3d;font-family:var(--jal);text-align:center}
+.srw{margin-top:10px;display:flex;flex-wrap:wrap;gap:8px}.srw button{flex:1 1 40%;padding:10px;border:0;border-radius:14px;background:#e5313b;color:#fff;font-family:var(--jal);font-size:17px;animation:wig 2.6s ease-in-out infinite}.srw small{display:block;font-family:var(--kr);font-size:13px;opacity:.85}
+.stampban{background:#fff!important;animation:none!important}.stampban b{color:#b45309}
+body.land .cartp .scard{grid-column:1/-1}
+.done .sboard{max-width:520px}
+.scard .sboard{max-width:560px;margin:8px auto}
+body.land .scard{padding:10px 14px}body.land .scard .sboard{grid-template-columns:repeat(15,1fr);max-width:none;gap:3px;margin:6px 0}body.land .scard .sboard .st{font-size:10px}body.land .scard .sadd{margin-top:6px}
 .rvban{text-align:left!important}.rvban>span{align-items:flex-start;text-align:left}
 .rvpair{display:grid;grid-template-columns:1fr;gap:10px;flex:none;margin-top:14px}.rvpair .rvban{margin-top:0}
 body.land .cartp .rvpair{grid-column:1/-1;grid-template-columns:1fr 1.3fr}
@@ -694,7 +714,7 @@ h1,h2,.brand span,.ttl,.ib.txt,.opt .t,.opt .n,.memban b,.save .big,.save .pct,.
 <button class="fab" id="fab" hidden aria-label="회원등록"><span class="em">🎁</span>회원등록</button>
 <button class="fab home" id="fabh" hidden aria-label="처음으로"><span class="em">🏠</span>처음으로</button>
 <button class="fab prev" id="fabb" hidden aria-label="이전으로"><span class="em">◀</span>이전으로</button>
-<div class="cartdock" id="cartdock" hidden><button class="cartfab" id="cartfab" aria-label="장바구니"><span class="neck"></span><span class="body"><span class="liq" id="cliq"></span><span class="ct" id="cct">담기</span></span><span class="badge" id="cbadge"></span><span class="lb">장바구니</span></button><div class="cartlist" id="cartlist"></div></div>
+<div class="cartdock" id="cartdock" hidden><div id="mchipd"></div><button class="cartfab" id="cartfab" aria-label="장바구니"><span class="neck"></span><span class="body"><span class="liq" id="cliq"></span><span class="ct" id="cct">담기</span></span><span class="badge" id="cbadge"></span><span class="lb">장바구니</span></button><div class="cartlist" id="cartlist"></div></div>
 <script>
 /* ---------- 자료 ---------- */
 var LIQ = window.LIQ || [];
@@ -1083,7 +1103,8 @@ function memDone(){
       (state.memKind==='new'?'<div class="row2"><span>이름</span><b>'+esc(full)+'</b></div>':'')+
       '<div class="row2"><span>휴대폰</span><b>'+esc(ph)+'</b></div>'+
       (state.memKind==='new'?'<div class="row2"><span>쿠폰 문자</span><b>'+(m.mk?'받을래요 🎟️':'안 받아요')+'</b></div>':'')+
-    '</section>'+(state.hist.indexOf('cart-staff')>=0?'<div class="acts" style="margin-top:auto"><button data-act="cmemo2">📝 회원메모 쓰기</button><button class="main" data-act="tocart">‹ 결제 화면으로</button></div>':'<button class="cta" data-act="home">계속 둘러보기 👀</button>')+'</div>';
+      (function(){ var rec=stampRec(m.phone); return '<div class="row2"><span>🟡 도장</span><b>'+(rec?rec.stamps+'개'+(rec.name?' · '+esc(maskName(rec.name))+' 님':''):'이 패드엔 아직 없어요 (오늘부터 모아요)')+'</b></div>'+stampBoard(rec?rec.stamps:0)+'<div class="snext">'+nextReward(rec?rec.stamps:0)+'</div>'; })()+
+    '</section>'+(state.hist.indexOf('cart-staff')>=0?'<div class="acts" style="margin-top:auto"><button data-act="cmemo2">📝 회원메모 쓰기</button><button class="main" data-act="tocart">‹ 결제 화면으로</button></div>':'<div class="acts" style="margin-top:auto"><button data-act="memoff">회원 없이 둘러보기</button><button class="main" data-act="mshop">🛒 이 회원으로 담기 시작</button></div>')+'</div>';
 }
 
 /* 빨간 동글이 (만세) */
@@ -1465,6 +1486,7 @@ function cartFab(bump){ var f=document.getElementById('cartfab'), dk=document.ge
   document.body.classList.toggle('carton', !dk.hidden);
   document.getElementById('cbadge').textContent = n ? n+'개' : '';
   var cl=document.getElementById('cartlist'), keep=cl.scrollTop;
+  var mc=document.getElementById('mchipd'); if(mc) mc.innerHTML=memberChip();
   var dv=cartDevs(), cmpH=dv.length>=2?'<div class="dcmp"><div class="dct">⚖️ 담은 기기 비교</div>'+qcmp(dv[dv.length-2], dv[dv.length-1], true)+'</div>':(dv.length===1&&document.querySelector('#app .dcard')?'<div class="dhint">⚖️ 기기를 하나 더 끌어다 놓으면<br><b>'+esc(dv[0].dn)+'</b>랑 바로 비교해 드려요</div>':'');
   cl.innerHTML = cmpH + (n ? Object.keys(c).map(function(id){ var x=ITEM(id); if(!x) return ''; var src=x.src!=null?x.src:(x.img?'../img/'+x.img:'');
       return '<div class="cl">'+(src?'<img src="'+esc(src)+'" alt="">':'<span class="ph0">'+(x.em||'🧴')+'</span>')+'<span class="nm">'+esc(x.dn||x.n)+'</span><span class="q">×'+c[id]+'</span><button class="x" data-cx="'+esc(id)+'" aria-label="빼기">✕</button></div>'; }).join('')+
@@ -1523,7 +1545,7 @@ function cartStaffPane(){
     '<section class="q" style="margin-top:28px"><h1>직원이 바로<br>담아 드릴게요! 🙌</h1><p>이 화면을 카운터 직원에게 보여 주세요.</p>'+
       '<div class="save"><span class="em">🧾</span><div class="tx"><div class="l">'+cartN()+'개 · 패키지 적용</div><div class="big">'+won(S.pay)+'</div>'+(S.full>S.pay?'<div class="pr"><s>'+won(S.full)+'</s> → '+won(S.full-S.pay)+' 아껴요</div>':'')+'</div></div></section>'+
     '<section class="ftc"><div class="ftcard">'+rows+'</div></section>'+
-    '<div class="rvpair"><button class="rvban memo2" data-act="cmemo"><span class="em">📝</span><span><b>회원메모 쓰기 (직원)</b><small>담은 상품이 메모에 자동으로 들어가요 · 회원 조회하면서 바로 적기</small></span><i>🔒</i></button>'+
+    stampCard()+'<div class="rvpair"><button class="rvban memo2" data-act="cmemo"><span class="em">📝</span><span><b>회원메모 쓰기 (직원)</b><small>담은 상품이 메모에 자동으로 들어가요 · 회원 조회하면서 바로 적기</small></span><i>🔒</i></button>'+
     '<button class="rvban" data-act="resv"><span class="em">🔔</span><span><b>결제 전에 잠깐! 알림 받아 가세요</b><small>🆕 신상품 · 🎉 행사 · 💎 한정판 문자, 📦 상품 예약까지</small></span><i>›</i></button></div>'+
     '<div class="acts"><button data-act="back">‹ 장바구니 고치기</button><button class="main" data-act="mem">🎁 회원 적립하기</button></div></div>';
 }
@@ -1737,10 +1759,48 @@ function memoPane(){
     '</div><div class="mfoot">🔒 이 패드에만 저장돼요 · '+MEMO_DAYS+'일 지나면 자동으로 지워져요 · 처음으로 가면 다시 잠겨요</div></div>';
 }
 
+/* ---------- 🟡 도장 적립: 회원 조회 → 그 회원으로 담기 → 결제 직전에 직원 비밀번호로 도장. 이 패드에만 저장 ----------
+   보상: 5개 코일 1개 / 10개 액상 1병 / 20개 기기 / 30개 기기 패키지 (받으면 그만큼 도장을 씀). 기본 적립: 구매 1번에 1개 */
+var STAMP_KEY='vfDirStamp', STAMP_PER_BUY=1;
+var REWARDS=[[5,'🔧','코일 1개'],[10,'💧','액상 1병'],[20,'📱','기기'],[30,'🎁','기기 패키지']];
+function stampDB(){ return lsGet(STAMP_KEY,{}); }
+function stampRec(ph){ return stampDB()[ph]||null; }
+function stampSave(ph, rec){ var db=stampDB(); db[ph]=rec; return lsSet(STAMP_KEY,db); }
+function maskName(n){ n=(n||'').trim(); if(!n) return '회원'; return n.length<=1?n:n[0]+'*'+(n.length>2?n.slice(2):''); }
+function stampBoard(n, big){ var mx=30, h='';
+  for (var i=1;i<=mx;i++){ var rw=REWARDS.filter(function(r){return r[0]===i})[0];
+    h+='<span class="st'+(i<=n?' on':'')+(rw?' rw':'')+'">'+(i<=n?'🟡':(rw?rw[1]:i))+'</span>'; }
+  return '<div class="sboard'+(big?' big':'')+'">'+h+'</div>'; }
+function nextReward(n){ var r=REWARDS.filter(function(r){return r[0]>n})[0]; return r?'<b>'+(r[0]-n)+'개</b> 더 모으면 '+r[1]+' '+r[2]+'!':'🎉 모든 보상을 받을 수 있어요!'; }
+function memberChip(){ var M0=state.member; if(!M0) return ''; var rec=stampRec(M0.phone)||{stamps:0};
+  return '<div class="mchip">👤 <b>'+esc(maskName(M0.name||rec.name))+'</b> 님 · 🟡 도장 <b>'+(rec.stamps||0)+'</b>개</div>'; }
+function stampCard(){
+  var M0=state.member;
+  if (!M0) return '<button class="rvban stampban" data-act="mem"><span class="em">🟡</span><span><b>회원 조회하고 도장 받기</b><small>구매할 때마다 도장 · 5개 코일, 10개 액상 1병, 20개 기기, 30개 기기 패키지</small></span><i>›</i></button>';
+  var rec=stampRec(M0.phone)||{name:M0.name,stamps:0,log:[]}, n=rec.stamps||0, add=state.stAdd==null?STAMP_PER_BUY:state.stAdd;
+  var done=state.stDone, can=REWARDS.filter(function(r){return n>=r[0]});
+  return '<div class="scard"><div class="sh"><b>👤 '+esc(maskName(M0.name||rec.name))+' 님 도장</b><span>🟡 '+n+' / 30</span></div>'+stampBoard(n)+
+    '<div class="snext">'+nextReward(n)+'</div>'+
+    (done?'<div class="sok">✅ 이번 구매 도장 '+done+'개 적립했어요</div>':
+      '<div class="sadd"><span>이번 구매 도장</span><button data-act="sta" data-d="-1">−</button><b>+'+add+'</b><button data-act="sta" data-d="1">＋</button>'+
+      '<input id="stPin" type="password" inputmode="numeric" maxlength="4" placeholder="직원 비번" autocomplete="off"><button class="go" data-act="stgo">🟡 적립</button></div>')+
+    (can.length?'<div class="srw">'+can.map(function(r){return '<button data-act="strw" data-n="'+r[0]+'">'+r[1]+' '+r[2]+' 받기 <small>도장 '+r[0]+'개 사용</small></button>'}).join('')+'</div>':'')+'</div>';
+}
+async function stampGo(){ var pin=(document.getElementById('stPin')||{}).value||'', saved=lsGet(PIN_KEY,null);
+  if (!saved) return toast('먼저 회원메모에서 직원 비밀번호를 정해 주세요');
+  if (!state.stOK) { if ((await pinHash(pin))!==saved) return toast('직원 비밀번호가 틀렸어요'); state.stOK=true; }
+  var M0=state.member, rec=stampRec(M0.phone)||{name:M0.name||'',stamps:0,log:[]}, add=state.stAdd==null?STAMP_PER_BUY:state.stAdd;
+  rec.stamps=(rec.stamps||0)+add; rec.log=(rec.log||[]).concat([{t:Date.now(),d:add,note:'구매 '+won(cartSum().pay)}]).slice(-50); if(!rec.name&&M0.name) rec.name=M0.name;
+  stampSave(M0.phone, rec); state.stDone=add; toast('🟡 도장 '+add+'개 적립! 지금 '+rec.stamps+'개'); render(); }
+function stampUse(need){ if (!state.stOK) return toast('먼저 직원 비밀번호로 적립해 주세요');
+  var M0=state.member, rec=stampRec(M0.phone); if(!rec||rec.stamps<need) return;
+  var rw=REWARDS.filter(function(r){return r[0]===need})[0]; rec.stamps-=need; rec.log=(rec.log||[]).concat([{t:Date.now(),d:-need,note:rw[1]+' '+rw[2]+' 받음'}]).slice(-50);
+  stampSave(M0.phone, rec); toast('🎁 '+rw[2]+' 드렸어요 · 남은 도장 '+rec.stamps+'개'); render(); }
+
 function render(){
   var v=state.view, h='';
   if (v==='home') h = ask({h:'어서 오세요! 👋<br>무엇을 도와드릴까요?', p:'골라 주시면 딱 맞게 안내해 드릴게요.',
-    extra:chars('눌러 봐요 👆')+'<div class="banrow"><button class="memban" data-act="mem"><span class="em">🎁</span><span><b>회원등록하고 적립</b><small>AS 받을 때도 편해요</small></span><i>›</i></button>'+
+    extra:memberChip()+chars('눌러 봐요 👆')+'<div class="banrow"><button class="memban" data-act="mem"><span class="em">🎁</span><span><b>회원등록하고 적립</b><small>AS 받을 때도 편해요</small></span><i>›</i></button>'+
       '<button class="memban cheap" data-act="cheap"><span class="em">💸</span><span><b>가장 저렴하게 사는 법</b><small>최대 75,000원 아껴요</small></span><i>›</i></button>'+
       '<button class="memban cheap" data-act="resv"><span class="em">🔔</span><span><b>예약 · 알림받기</b><small>신상품 · 행사 · 한정판 문자</small></span><i>›</i></button>'+
       '<button class="memban cheap memoban" data-act="memo"><span class="em">📝</span><span><b>회원메모</b><small>직원 전용 · 비밀번호</small></span><i>🔒</i></button>'+
@@ -1859,6 +1919,11 @@ document.getElementById('app').addEventListener('click',function(e){
   if (a==='memo') { state.pin=''; state.pinStep=1; state.pinBad=false; state.mq=''; state.mf='wait'; return go('memo'); }
   if (a==='mlock') { state.memoOK=false; if (state.memoFrom) { state.memoFrom=null; state.mpre=''; return back(); } return home(); }
   if (a==='tocart' || a==='cmemo2') { while (state.hist.length && state.hist[state.hist.length-1]!=='cart-staff') state.hist.pop(); state.view=state.hist.pop()||'cart-staff'; if (a==='cmemo2') { var bb=document.createElement('button'); bb.dataset.act='cmemo'; render(); return document.querySelector('[data-act=cmemo]').click(); } return render(); }
+  if (a==='mshop') { state.memKind=null; state.hist=[]; state.view='home'; render(); return toast('👤 '+maskName(state.member.name||(stampRec(state.member.phone)||{}).name)+' 님 확인! 이제 골라 담아 주세요'); }
+  if (a==='memoff') { state.member=null; return home(); }
+  if (a==='sta') { state.stAdd=Math.max(1,Math.min(10,(state.stAdd==null?STAMP_PER_BUY:state.stAdd)+(+b.dataset.d))); return render(); }
+  if (a==='stgo') { stampGo(); return; }
+  if (a==='strw') { stampUse(+b.dataset.n); return; }
   if (a==='mback') { state.memoFrom=null; state.mpre=''; return back(); }
   if (a==='cmemo') { var cc=state.cart||{}, S0=cartSum(), mm0=M_(), d0=new Date();
     state.mpre='🧾 '+(d0.getMonth()+1)+'/'+d0.getDate()+' 구매: '+Object.keys(cc).map(function(id){ var x=ITEM(id); return x?(x.dn||x.n)+(cc[id]>1?' ×'+cc[id]:''):''; }).filter(Boolean).join(', ')+' · '+won(S0.pay)+' ';
@@ -1895,7 +1960,7 @@ document.getElementById('app').addEventListener('click',function(e){
     if (state.memKind==='new') { if (!/^[가-힣a-zA-Z ]{1,12}$/.test(m.name.trim())) return need('name','성함을 알려 주세요 🙏'); if (!/^\d{2}$/.test(m.year)) return need('year','몇 년생인지 알려 주세요 🙏'); }
     if (!/^01[016789]\d{7,8}$/.test(m.phone)) return need('phone','휴대폰 번호를 확인해 주세요 📱');
     if (state.memKind==='new' && !m.agree) return need('agree','(필수) 동의를 눌러 주세요');
-    m.bad=''; return go('mem-done'); }
+    m.bad=''; state.member={phone:m.phone, name:state.memKind==='new'?m.name.trim():''}; if (state.memKind==='new' && !stampRec(m.phone)) stampSave(m.phone,{name:m.name.trim(),stamps:0,log:[],t:Date.now()}); return go('mem-done'); }
   if (a==='ft' && state.view==='home') { var k=b.dataset.k;
     state.chat = k==='F' ? [{who:'F',text:'안녕하세요! 저는 빨강이(F)예요 🥰 예쁘고 기분 좋은 걸로 골라 드릴게요. 편하게 타자로 물어봐 주세요 💖'},{who:'T',text:'까망이(T)입니다. 🤖 저는 가격과 판매량으로만 답합니다. 맛은 취향이니까요.'}]
                          : [{who:'T',text:'까망이(T)입니다. 🤖 원하는 조건을 입력하십시오. 가격과 판매량 기준으로 답합니다.'},{who:'F',text:'저는 빨강이(F)! 🥰 까망이는 맨날 숫자 얘기만 해요~ 저는 기분 좋은 걸로 골라 드릴게요 💖'}];
