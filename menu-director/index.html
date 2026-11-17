@@ -399,6 +399,8 @@ body.land .labacts{grid-column:2}
 .item .add{margin-top:8px;height:44px;border:0;border-radius:14px;background:var(--tint);color:var(--deep);font-family:var(--jal);font-size:17px}
 .item .add.on,.item .add:active{background:var(--deep);color:#fff}
 .item.lift{opacity:.4}
+.item[data-id]{touch-action:pan-y;cursor:grab}
+.item img{-webkit-user-drag:none;user-drag:none}
 /* 떠 있는 장바구니 병: 오른쪽 가운데 */
 .cartfab{position:fixed;right:14px;top:42%;z-index:9;width:118px;height:150px;border:0;background:none;padding:0;color:#fff;animation:fabin .4s cubic-bezier(.2,1.6,.4,1);transition:transform .2s}
 .cartfab[hidden]{display:none}
@@ -1137,13 +1139,20 @@ function cartFab(bump){ var f=document.getElementById('cartfab'), n=cartN(), v=s
 /* 카드를 꾹 누르고 끌어서 병에 놓기 (짧게 밀면 그냥 스크롤) */
 var drag=null;
 document.addEventListener('touchmove',function(e){ if(drag && drag.on) e.preventDefault(); },{passive:false});
+document.addEventListener('dragstart',function(e){ if(e.target.closest && e.target.closest('.item')) e.preventDefault(); });
 document.getElementById('app').addEventListener('pointerdown',function(e){
   var it=e.target.closest('.item[data-id]'); if(!it || e.target.closest('button') || !it.querySelector('.add')) return;
-  var x0=e.clientX, y0=e.clientY;
-  drag={it:it, on:false, t:setTimeout(function(){ if(!drag) return; drag.on=true; it.classList.add('lift');
+  var x0=e.clientX, y0=e.clientY, mouse=e.pointerType==='mouse';
+  if (mouse) e.preventDefault();
+  function start(x,y){ if(!drag||drag.on) return; clearTimeout(drag.t); drag.on=true; it.classList.add('lift');
     var img=it.querySelector('img'), sc=bodyScale(), g=document.createElement('div'); g.className='ghost'; g.innerHTML=img?'<img src="'+img.src+'" alt="">':'🧴';
-    g.style.left=x0/sc+'px'; g.style.top=y0/sc+'px'; document.body.appendChild(g); drag.g=g; if(navigator.vibrate) navigator.vibrate(20); }, 260)};
-  function mv(ev){ if(!drag) return; if(!drag.on){ if(Math.abs(ev.clientX-x0)+Math.abs(ev.clientY-y0)>10){ clearTimeout(drag.t); end(); } return; }
+    g.style.left=x/sc+'px'; g.style.top=y/sc+'px'; document.body.appendChild(g); drag.g=g; try{ if(!mouse&&navigator.vibrate) navigator.vibrate(20); }catch(_){} }
+  /* 마우스: 바로 끌기 / 손가락: 옆으로 밀거나 꾹 누르면 끌기, 위아래로 밀면 스크롤 */
+  drag={it:it, on:false, t:setTimeout(function(){ start(x0,y0); }, 260)};
+  function mv(ev){ if(!drag) return; if(!drag.on){ var dx=ev.clientX-x0, dy=ev.clientY-y0, d=Math.abs(dx)+Math.abs(dy);
+      if (d>6 && (mouse || Math.abs(dx)>Math.abs(dy)*1.2)) start(ev.clientX,ev.clientY);
+      else if (d>10) { clearTimeout(drag.t); end(); return; }
+      if (!drag || !drag.on) return; }
     var sc=bodyScale(); drag.g.style.left=ev.clientX/sc+'px'; drag.g.style.top=ev.clientY/sc+'px';
     var f=document.getElementById('cartfab'), r=f.getBoundingClientRect(); f.classList.toggle('hot', ev.clientX>r.left-20&&ev.clientX<r.right+20&&ev.clientY>r.top-20&&ev.clientY<r.bottom+20); }
   function up(ev){ if(drag && drag.on){ var f=document.getElementById('cartfab'), r=f.getBoundingClientRect(), id=drag.it.dataset.id;
