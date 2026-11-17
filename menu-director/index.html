@@ -625,7 +625,8 @@ body.land .fab.prev{bottom:8px!important;padding:5px 16px 5px 10px;font-size:16p
 .memo{width:100%;margin-top:8px;padding:14px 16px;border-radius:18px;background:#FFFBEA;border:2px dashed #e0c25a}
 .memo .mh{font-family:var(--jal);font-size:18px;color:#5c4400;margin-bottom:6px}
 .memo .mf{margin-top:8px;font-size:15px;color:#5c4400}
-body.land .rvk{grid-template-columns:repeat(4,1fr)}
+body.land .rvk{grid-template-columns:repeat(5,1fr)}
+.rvk .rvc:last-child:nth-child(odd){grid-column:1/-1}body.land .rvk .rvc:last-child{grid-column:auto}
 .brand{-webkit-touch-callout:none}
 .pdots{margin:30px auto 0;display:flex;gap:18px;justify-content:center}
 .pdots i{width:24px;height:24px;border-radius:50%;border:3px solid #fff;transition:background .15s}
@@ -1646,9 +1647,9 @@ function cmpPane(){
 }
 
 /* ---------- 🔔 예약 · 알림받기: 서버로 보내지 않고, 직원이 보고 적는 화면까지만. 처음으로 가면 지움 ---------- */
-var RV_KIND = [['new','🆕','신상품 알림','새 액상, 새 기기 들어오면 문자'],['ev','🎉','행사 알림','5+1, 대량 이벤트, 할인 소식'],['ltd','💎','한정판 알림','한정판, 콜라보 입고되면 먼저 문자'],['book','📦','상품 예약','없는 상품, 한정판을 미리 찜']];
+var RV_KIND = [['new','🆕','신상품 알림','새 액상, 새 기기 들어오면 문자'],['ev','🎉','행사 알림','5+1, 대량 이벤트, 할인 소식'],['ltd','💎','한정판 알림','한정판, 콜라보 입고되면 먼저 문자'],['book','📦','상품 예약','없는 상품, 한정판을 미리 찜'],['etc','💬','기타','그 밖에 받고 싶은 소식, 부탁']];
 var RV_WHEN = ['오늘','내일','이번 주','입고되면 연락 주세요'];
-function RV(){ return state.rv || (state.rv={k:{}, item:'', qty:1, when:'입고되면 연락 주세요', name:'', phone:'', agree:false, ad:false, bad:''}); }
+function RV(){ return state.rv || (state.rv={k:{}, item:'', etc:'', qty:1, when:'입고되면 연락 주세요', name:'', phone:'', agree:false, ad:false, bad:''}); }
 function rvAlerts(r){ return ['new','ev','ltd'].filter(function(k){return r.k[k]}); }
 function resvPane(){
   var r=RV(), bad=function(k){return r.bad===k?' bad':''}, al=rvAlerts(r).length>0;
@@ -1661,6 +1662,7 @@ function resvPane(){
       '<input id="rItem" class="rin'+bad('item')+'" placeholder="상품 이름 (예: 말론 라일락 한정판)" value="'+esc(r.item)+'" autocomplete="off">'+
       '<div class="rvrow"><span>수량</span><button data-act="rvq" data-d="-1">−</button><b>'+r.qty+'</b><button data-act="rvq" data-d="1">＋</button></div>'+
       '<div class="rvrow"><span>언제 찾으러 오세요?</span></div><div class="rvchips">'+RV_WHEN.map(function(w){return '<button data-act="rvw" data-v="'+w+'" class="'+(r.when===w?'on':'')+'">'+w+'</button>'}).join('')+'</div></div>':'')+
+    (r.k.etc?'<div class="rvsec"><h3>💬 어떤 걸 알려 드릴까요?</h3><input id="rEtc" class="rin'+bad('etc')+'" placeholder="예: 무니코틴 액상 들어오면, 매장 이벤트 날짜" value="'+esc(r.etc||'')+'" autocomplete="off"></div>':'')+
     '<div class="rvsec"><h3>📱 연락받을 곳</h3><div class="rv2"><input id="rName" class="rin'+bad('name')+'" placeholder="성함 또는 별명" value="'+esc(r.name)+'" autocomplete="off">'+
       '<input id="rPhone" class="rin'+bad('phone')+'" type="tel" inputmode="numeric" maxlength="11" placeholder="휴대폰 번호 (숫자만)" value="'+esc(r.phone)+'"></div>'+
       '<button class="ck'+(r.agree?' on':'')+bad('agree')+'" data-act="rvck" data-k="agree"><i></i>(필수) 연락을 위해 이름, 번호를 받는 데 동의해요 · 예약, 알림이 끝나면 지워요</button>'+
@@ -1675,7 +1677,7 @@ function resvDone(){
     '<section class="done pop"><div class="bob" style="align-self:flex-start">'+chRed(110)+'</div><div class="big">신청 완료! 🙌<br>이 화면을 직원에게 보여 주세요</div>'+
     '<div class="memo"><div class="mh">📝 직원 메모용 · '+t+(BRANCH?' · '+esc(BRANCH):'')+'</div>'+
       row('이름',esc(r.name))+row('휴대폰',esc(ph))+row('신청',esc(kinds))+
-      (r.k.book?row('예약 상품',esc(r.item)+' × '+r.qty)+row('찾는 날',esc(r.when)):'')+
+      (r.k.book?row('예약 상품',esc(r.item)+' × '+r.qty)+row('찾는 날',esc(r.when)):'')+(r.k.etc?row('기타',esc(r.etc)):'')+
       row('동의','개인정보 ✓'+(rvAlerts(r).length?' · 광고 문자 ✓':''))+
       '<div class="mf">'+(state.rvSaved?'✅ 직원 <b>회원메모</b>에 자동으로 저장됐어요 (첫 화면 로고 꾹 → 비밀번호)':'⚠️ 저장이 안 됐어요. 직원이 직접 적어 주세요')+'</div></div>'+
     '</section><div class="acts"><button data-act="rvdone" data-to="back">‹ 결제 화면으로</button><button class="main" data-act="rvdone" data-to="home">✅ 확인했어요</button></div></div>';
@@ -1828,7 +1830,7 @@ function render(){
   var mq=document.getElementById('mq'); if(mq){ mq.addEventListener('input',function(){ state.mq=mq.value; clearTimeout(window.__mqT); window.__mqT=setTimeout(function(){ var pos=mq.selectionStart; render(); var m2=document.getElementById('mq'); if(m2){ m2.focus(); try{m2.setSelectionRange(pos,pos)}catch(e){} } },350); }); }
   [].forEach.call(document.querySelectorAll('textarea[data-mid]'),function(ta){ ta.addEventListener('input',function(){ clearTimeout(ta.__t); ta.__t=setTimeout(function(){ var L2=memos(); L2.forEach(function(m){ if(m.id===ta.dataset.mid) m.memo=ta.value; }); saveMemos(L2); },400); }); });
   var np2=document.getElementById('nPhone'); if(np2) np2.addEventListener('input',function(){ np2.value=np2.value.replace(/\D/g,''); });
-  ['rItem','rName','rPhone'].forEach(function(id){ var el=document.getElementById(id); if(!el) return; el.addEventListener('input',function(){ var r=RV(), k={rItem:'item',rName:'name',rPhone:'phone'}[id]; if(k==='phone') el.value=el.value.replace(/\D/g,''); r[k]=el.value; if(r.bad===k){ r.bad=''; el.classList.remove('bad'); } }); });
+  ['rItem','rName','rPhone','rEtc'].forEach(function(id){ var el=document.getElementById(id); if(!el) return; el.addEventListener('input',function(){ var r=RV(), k={rItem:'item',rName:'name',rPhone:'phone',rEtc:'etc'}[id]; if(k==='phone') el.value=el.value.replace(/\D/g,''); r[k]=el.value; if(r.bad===k){ r.bad=''; el.classList.remove('bad'); } }); });
   ['mName','mYear','mPhone'].forEach(function(id){ var el=document.getElementById(id); if(!el) return; el.addEventListener('input',function(){
     var m=M_(), k={mName:'name',mYear:'year',mPhone:'phone'}[id]; if (k!=='name') el.value=el.value.replace(/\D/g,''); m[k]=el.value; if (m.bad===k) { m.bad=''; el.classList.remove('bad'); }
     var pv=document.getElementById('mPv'), full=m.name.trim()?m.name.trim()+(m.year||''):''; if (pv) pv.innerHTML=full?'<b>'+esc(full)+'</b> 님으로 가입돼요 🙌':''; }); });
@@ -1881,11 +1883,12 @@ document.getElementById('app').addEventListener('click',function(e){
   if (a==='rvsend') { var r4=RV(), fail=function(k,msg){ r4.bad=k; render(); toast(msg); };
     if (!Object.keys(r4.k).some(function(k){return r4.k[k]})) return fail('k','받을 소식을 하나 이상 골라 주세요');
     if (r4.k.book && !r4.item.trim()) return fail('item','예약할 상품 이름을 넣어 주세요');
+    if (r4.k.etc && !(r4.etc||'').trim()) return fail('etc','기타에 받고 싶은 소식을 적어 주세요');
     if (!r4.name.trim()) return fail('name','성함이나 별명을 넣어 주세요');
     if (!/^01\d{8,9}$/.test(r4.phone)) return fail('phone','휴대폰 번호를 다시 확인해 주세요');
     if (!r4.agree) return fail('agree','연락을 위한 동의가 필요해요');
     if (rvAlerts(r4).length && !r4.ad) return fail('ad','알림 문자를 받으려면 광고 문자 동의가 필요해요');
-    r4.bad=''; state.rvSaved=addMemo({name:r4.name.trim(), phone:r4.phone, kinds:RV_KIND.filter(function(o){return r4.k[o[0]]}).map(function(o){return o[1]+' '+o[2]}), item:r4.k.book?r4.item.trim():'', qty:r4.qty, when:r4.k.book?r4.when:'', ad:!!r4.ad, br:BRANCH||'', memo:'', done:false}); return go('resv-done'); }
+    r4.bad=''; state.rvSaved=addMemo({name:r4.name.trim(), phone:r4.phone, kinds:RV_KIND.filter(function(o){return r4.k[o[0]]}).map(function(o){return o[1]+' '+o[2]}), item:r4.k.book?r4.item.trim():'', qty:r4.qty, memo:r4.k.etc?'💬 기타: '+r4.etc.trim():'', when:r4.k.book?r4.when:'', ad:!!r4.ad, br:BRANCH||'', done:false}); return go('resv-done'); }
   if (a==='rvdone') { var to=b.dataset.to; state.rv=null; if (to==='home') return home(); back(); return back(); }
   if (a==='mck') { var mm=M_(); mm[b.dataset.k]=!mm[b.dataset.k]; if (mm.bad==='agree') mm.bad=''; return render(); }
   if (a==='mem-send') { var m=M_(), need=function(k,msg){ m.bad=k; render(); toast(msg); var el=document.querySelector('.bad'); if(el&&el.focus) el.focus(); };
