@@ -21,6 +21,7 @@ vfFit();document.addEventListener('DOMContentLoaded',vfFit);addEventListener('or
 <script src="../menu/goods.js"></script>
 <script src="../menu/devinfo.js"></script>
 <script src="dev_img.js"></script>
+<script src="dev_pros.js"></script>
 <style>
 /* 11/16 글씨체: 여기어때 잘난체 (굵기 하나뿐이라 제목, 버튼, 가격, 이름에만. 작은 설명은 Pretendard) */
 @font-face{font-family:'Jalnan';src:url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_four@1.2/JalnanOTF00.woff') format('woff');font-weight:normal;font-display:swap}
@@ -477,6 +478,55 @@ body.land .cartp .save .pct{display:none}body.land .cartp .save .big{font-size:2
 .item.gd .ph{aspect-ratio:16/9}
 .item.gd .tile{flex-direction:column;gap:6px;font-size:19px}
 .item.gd .ge{font-size:40px;line-height:1}
+.dcard .hk{display:block;padding:0 12px 4px;font-size:14px;color:#4e5968;line-height:1.35}
+/* 기기 조합하기 */
+.buildp{gap:0}
+.bwrap{flex:1;min-height:0;margin-top:20px;display:grid;grid-template-columns:1fr;gap:16px;overflow:hidden}
+.bl{background:#fff;color:#191f28;border-radius:24px;padding:18px;display:flex;gap:18px;min-height:0}
+.bimg{flex:none;width:170px;aspect-ratio:1/1;border-radius:18px;overflow:hidden;background:#f2f2f4;position:relative}
+.bimg img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.bln{flex:1;min-width:0}
+.bln h2{font-family:var(--jal);font-weight:normal;font-size:32px}
+.bhook{margin-top:4px;font-size:19px;color:var(--deep);font-weight:800}
+.bspec{margin-top:10px;display:flex;flex-wrap:wrap;gap:6px}.bspec span{padding:5px 10px;border-radius:999px;background:var(--tint);color:var(--deep);font-size:15px;font-weight:800}
+.bpros{margin-top:10px;list-style:none;display:flex;flex-direction:column;gap:5px}
+.bpros li{font-size:17px;line-height:1.4;color:#333d4b;padding-left:26px;position:relative}.bpros li::before{content:'✅';position:absolute;left:0;font-size:15px}
+.bwho{margin-top:10px;padding:8px 12px;border-radius:12px;background:#FFF6D6;color:#5c4400;font-size:16px}.bwho b{font-family:var(--jal);font-weight:normal}
+.br{min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:14px;scrollbar-width:none;padding-bottom:8px}.br::-webkit-scrollbar{display:none}
+.bsec{background:#fff;color:#191f28;border-radius:24px;padding:18px 20px;flex:none;animation:up .4s backwards}
+.bsec h3{display:flex;align-items:center;gap:10px;font-family:var(--jal);font-weight:normal;font-size:24px;margin-bottom:12px}
+.bsec h3 span{width:32px;height:32px;border-radius:10px;background:var(--deep);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px}
+.bnote{margin:-4px 0 12px;font-size:16px;color:#4e5968;line-height:1.45}.bnote b{color:var(--deep)}
+.bchips{display:flex;flex-wrap:wrap;gap:8px}
+.bchips button{padding:10px 16px;border-radius:14px;border:2px solid #e5e8eb;background:#fff;font-family:var(--jal);font-size:18px;color:#191f28}
+.bchips button small{font-family:var(--kr);font-size:14px;color:#8b95a1}
+.bchips button.on{border-color:var(--deep);background:var(--tint);color:var(--deep)}
+.bopts{display:flex;flex-direction:column;gap:8px}
+.bopt{display:grid;grid-template-columns:28px 1fr auto;grid-template-rows:auto auto;column-gap:10px;align-items:center;width:100%;padding:14px 16px;border-radius:16px;border:2px solid #e5e8eb;background:#fff;text-align:left;color:#191f28;transition:border-color .15s,background .15s,transform .1s}
+.bopt:active{transform:scale(.99)}
+.bopt .r{grid-row:1/3;width:24px;height:24px;border-radius:50%;border:3px solid #c9cdd2;transition:all .15s}
+.bopt.chk .r{border-radius:7px}
+.bopt.on{border-color:var(--deep);background:var(--tint)}
+.bopt.on .r{border-color:var(--deep);background:var(--deep);box-shadow:inset 0 0 0 4px #fff}
+.bopt.chk.on .r{box-shadow:none;background:var(--deep) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M5 12l5 5 9-10' stroke='white' stroke-width='3' fill='none'/%3E%3C/svg%3E") center/16px no-repeat}
+.bt1{font-family:var(--jal);font-size:19px}.bt1 .hot{font-style:normal;margin-left:6px;padding:2px 8px;border-radius:999px;background:#e5313b;color:#fff;font-size:13px;vertical-align:2px}
+.bp{grid-row:1/3;grid-column:3;text-align:right;font-family:var(--jal);font-size:19px;color:var(--deep)}.bp s{display:block;font-family:var(--kr);font-size:14px;color:#b0b8c1}
+.bsv{grid-column:2;font-size:15px;font-weight:800;color:#e5313b}
+.bqty{margin-top:12px;display:flex;align-items:center;gap:10px}
+.bqty button{width:48px;height:48px;border:0;border-radius:14px;background:var(--tint);color:var(--deep);font-family:var(--jal);font-size:26px}
+.bqty b{min-width:50px;text-align:center;font-family:var(--jal);font-weight:normal;font-size:22px}.bqty span{font-size:16px;color:#4e5968}
+.bsum{margin-top:14px;display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:24px;background:#fff;color:#191f28;box-shadow:0 -4px 18px rgba(0,0,0,.15);flex:none}
+.bsum .bt{flex:1;min-width:0;display:flex;flex-direction:column}
+.bsum .bt small{font-size:14px;color:#4e5968}.bsum .bt b{font-family:var(--jal);font-weight:normal;font-size:32px;color:var(--deep)}
+.bsum .bo{font-size:15px}.bsum .bo s{color:#b0b8c1}.bsum .bo em{font-style:normal;font-weight:800;color:#e5313b}
+.bsum button{flex:none;height:64px;border:0;border-radius:18px;font-family:var(--jal);font-size:20px;padding:0 18px}
+.bcall{background:var(--tint);color:var(--deep)}.bgo{background:var(--deep);color:#fff}
+.pulse{animation:pls .45s}@keyframes pls{40%{transform:scale(1.08)}}
+.bt b.pulse{display:inline-block;transform-origin:left center}
+body.land .bwrap{grid-template-columns:minmax(0,1fr) minmax(0,1.15fr)}
+body.land .bl{flex-direction:column;overflow-y:auto}
+body.land .bimg{width:100%;aspect-ratio:auto;height:170px}
+body.land .bimg img{object-fit:contain;background:#f2f2f4}
 .empty{grid-column:1/-1;padding:48px 0;text-align:center;font-size:22px;color:var(--sub)}
 
 .toast{position:fixed;left:50%;top:40px;transform:translate(-50%,-20px);opacity:0;padding:18px 28px;border-radius:999px;
@@ -796,7 +846,7 @@ function devTabs(){ var c=state.devcat||'';
     return '<button data-act="devcat" data-v="'+o.k+'" class="'+(o.k===c?'on':'')+'">'+o.t+' <small>'+n+'</small></button>'; }).join('')+'</div>'; }
 function modelCards(){ var C=DEVCAT.filter(function(o){return o.k===(state.devcat||'')})[0]||DEVCAT[0];
   return MODELS.length ? MODELS.map(function(M,i){ if(!C.f(M)) return '';
-    return '<button class="dcard" data-act="mpick" data-i="'+i+'" data-gid="'+esc((M.opts.filter(function(o){return o.img})[0]||M.opts[0]).id||'')+'"><div class="ph">'+devTile({img:M.img,n:M.dn})+(i<3?'<span class="rk" style="position:absolute;left:10px;top:10px;padding:5px 11px;border-radius:999px;background:var(--deep);color:#fff;font-size:15px;font-weight:800">추천</span>':'')+'</div><b>'+esc(M.dn)+'</b><span class="pr">'+won(M.price)+'~</span></button>';
+    return '<button class="dcard" data-act="mpick" data-i="'+i+'" data-gid="'+esc((M.opts.filter(function(o){return o.img})[0]||M.opts[0]).id||'')+'"><div class="ph">'+devTile({img:M.img,n:M.dn})+(i<3?'<span class="rk" style="position:absolute;left:10px;top:10px;padding:5px 11px;border-radius:999px;background:var(--deep);color:#fff;font-size:15px;font-weight:800">추천</span>':'')+'</div><b>'+esc(M.dn)+'</b>'+((window.DEV_PROS||{})[M.dn]?'<small class="hk">'+esc(DEV_PROS[M.dn].hook)+'</small>':'')+'<span class="pr">'+won(M.price)+'~</span></button>';
   }).join('') : '<div class="empty">지금 보여 드릴 기기 자료가 없어요. 직원에게 물어봐 주세요.</div>'; }
 function modelListPane(){
   return '<div class="pane res">'+topBar('기기 보기',1,2)+
@@ -1220,7 +1270,7 @@ function fly(img){ var r=img.getBoundingClientRect(), f=document.getElementById(
   g.className='ghost'; g.innerHTML='<img src="'+img.src+'" alt="">'; g.style.left=(r.left+r.width/2)/sc+'px'; g.style.top=(r.top+r.height/2)/sc+'px'; document.body.appendChild(g);
   requestAnimationFrame(function(){ requestAnimationFrame(function(){ g.classList.add('fly'); g.style.left=(f.left+f.width/2)/sc+'px'; g.style.top=(f.top+f.height/2)/sc+'px'; }); });
   setTimeout(function(){ g.remove(); }, 600); }
-var CART_OFF = /^(home|mem|cart|mix$)/;
+var CART_OFF = /^(home|mem|cart|mix$|dev-dtl)/;
 function cartFab(bump){ var f=document.getElementById('cartfab'), dk=document.getElementById('cartdock'), n=cartN(), v=state.view, c=state.cart||{};
   dk.hidden = CART_OFF.test(v) || (!n && !document.querySelector('#app .item .add'));
   document.body.classList.toggle('carton', !dk.hidden);
@@ -1317,6 +1367,47 @@ function allPane(){
     bar+'<section class="grid'+(t==='dev'?' dgrid':'')+'">'+body+'</section></div>';
 }
 
+/* ---------- 기기 조합하기: 자동차 옵션처럼 색상, 액상 패키지, 여분 팟, 케이스를 골라서 제일 싸게 ---------- */
+function bInfo(){ var M=MODELS[state.model], o=M.opts[state.mopt||0]||M.opts[0], P=(window.DEV_PROS||{})[M.dn]||{};
+  var pods=P.pod?GSRC.filter(function(g){return g.c==='pod'&&g.sub==='팟·코일'&&P.pod.test(g.n)}):[], accs=P.acc?GSRC.filter(function(g){return g.c==='pod'&&g.sub!=='팟·코일'&&P.acc.test(g.n)}):[];
+  var bund=BUNDLE_DEV.test(M.dn), packs=bund ? [['0','기기만','',0,0],['5','+ 프리미엄 액상 5병','💧',40000,75000],['10','+ 프리미엄 액상 10병','💧',75000,150000]].concat(M.dn==='하복2'?[['L3','+ 폐호흡 액상 3병','☁️',40000,90000]]:[])
+      : [['0','기기만','',0,0],['5','+ 프리미엄 액상 5병','💧',49500,75000],['11','+ 프리미엄 액상 11병','💧',90000,165000]];
+  var pk=packs.filter(function(x){return x[0]===(state.bpk||'0')})[0]||packs[0], pod=pods[state.bpodi||0], pn=pod?(state.bpod||0):0, A=state.bacc||{};
+  var accSum=accs.filter(function(g){return A[g.id]}).reduce(function(a,g){return a+g.price},0);
+  var total=o.price+pk[3]+(pod?pod.price*pn:0)+accSum, full=o.price+pk[4]+(pod?pod.price*pn:0)+accSum;
+  return {M:M,o:o,P:P,pods:pods,accs:accs,packs:packs,pk:pk,pod:pod,pn:pn,A:A,bund:bund,total:total,full:full}; }
+function bSum(I){ return '<div class="bsum"><div class="bt"><small>내 조합 합계</small><b><span class="cnt2">'+won(I.total)+'</span></b>'+(I.full>I.total?'<span class="bo"><s>'+won(I.full)+'</s> <em>'+won(I.full-I.total)+' 아껴요 🎉</em></span>':'')+'</div>'+
+  '<button class="bcall" data-act="mcall">💁 직원 호출</button><button class="bgo" data-act="bgo">🛒 이 조합 담기</button></div>'; }
+function buildPane(){
+  var I=bInfo(), M=I.M, P=I.P, img=I.o.img||M.img;
+  var left='<section class="bl"><div class="bimg">'+devTile({img:img,n:M.dn})+'</div><div class="bln"><h2>'+esc(M.dn)+'</h2>'+(P.hook?'<p class="bhook">'+esc(P.hook)+'</p>':'')+
+    (P.spec?'<div class="bspec">'+P.spec.map(function(t){return '<span>'+esc(t)+'</span>'}).join('')+'</div>':'')+
+    (P.pros?'<ul class="bpros">'+P.pros.map(function(t){return '<li>'+esc(t)+'</li>'}).join('')+'</ul>':'')+(P.who?'<div class="bwho">👤 이런 분께 추천 · <b>'+esc(P.who)+'</b></div>':'')+'</div></section>';
+  var sec=function(n,t,body,note){ return '<div class="bsec"><h3><span>'+n+'</span>'+t+'</h3>'+(note?'<p class="bnote">'+note+'</p>':'')+body+'</div>'; };
+  var colors=(I.M.opts.length>1||I.M.opts[0].opt)?sec('1','🎨 색상','<div class="bchips">'+M.opts.map(function(x,i){return '<button data-act="mopt" data-i="'+i+'" class="'+(i===(state.mopt||0)?'on':'')+'">'+esc(x.opt||'기본')+(x.price!==M.price?' <small>+'+won(x.price-M.price)+'</small>':'')+'</button>'}).join('')+'</div>'):'';
+  var packs=sec(colors?'2':'1','💧 액상 패키지','<div class="bopts">'+I.packs.map(function(x){ var on=x[0]===I.pk[0], sv=x[4]-x[3];
+      return '<button class="bopt'+(on?' on':'')+'" data-act="bpk" data-v="'+x[0]+'"><span class="r"></span><span class="bt1">'+x[2]+' '+esc(x[1])+(x[0]==='5'?' <i class="hot">인기</i>':'')+'</span>'+
+        (x[3]?'<span class="bp">+'+won(x[3])+(sv>0?' <s>+'+won(x[4])+'</s>':'')+'</span>'+(sv>0?'<span class="bsv">💸 '+won(sv)+' 아껴요</span>':''):'<span class="bp">+0원</span>')+'</button>'; }).join('')+'</div>',
+      I.bund?'🎁 <b>'+esc(M.dn)+'</b>는 액상이랑 같이 사면 기기 패키지 값이 돼요. 맛은 담을 때 직접 골라요.':'액상은 패키지로 사면 1병씩보다 싸요. 맛은 담을 때 직접 골라요.');
+  var n=(colors?2:1)+1;
+  var pods=I.pods.length?sec(String(n++),'🔧 여분 팟 · 코일','<div class="bchips">'+I.pods.map(function(g,i){return '<button data-act="bpodi" data-i="'+i+'" class="'+(i===(state.bpodi||0)&&I.pn?'on':'')+'">'+esc(g.n)+' <small>'+won(g.price)+'</small></button>'}).join('')+'</div>'+
+      '<div class="bqty"><button data-act="bpod" data-d="-1">−</button><b>'+I.pn+'개</b><button data-act="bpod" data-d="1">＋</button>'+(I.pn?'<span>+'+won(I.pod.price*I.pn)+'</span>':'<span>팟은 2~3주마다 바꿔요</span>')+'</div>'):'';
+  var accs=I.accs.length?sec(String(n++),'🧰 케이스 · 드립팁','<div class="bopts">'+I.accs.map(function(g){ var on=!!I.A[g.id];
+      return '<button class="bopt chk'+(on?' on':'')+'" data-act="bacc" data-id="'+esc(g.id)+'"><span class="r"></span><span class="bt1">'+esc(g.n)+'</span><span class="bp">+'+won(g.price)+'</span></button>'; }).join('')+'</div>'):'';
+  return '<div class="pane res buildp">'+topBar('기기 조합하기 🚗',2,2)+'<div class="bwrap">'+left+'<section class="br">'+colors+packs+pods+accs+'</section></div>'+bSum(I)+'</div>';
+}
+function bRender(){ var br=document.querySelector('.br'), y=br?br.scrollTop:0, old=bInfo().total; render(); br=document.querySelector('.br'); if(br) br.scrollTop=y;
+  var el=document.querySelector('.cnt2'), nw=bInfo().total; if(el && old!==nw){ var t0=performance.now(); (function f(t){ var p=Math.min(1,(t-t0)/450), e=1-Math.pow(1-p,3); el.textContent=won(Math.round((old+(nw-old)*e)/100)*100); if(p<1) requestAnimationFrame(f); })(t0); el.parentNode.classList.remove('pulse'); void el.offsetWidth; el.parentNode.classList.add('pulse'); } }
+function bAdd(){ var I=bInfo(), c=state.cart=state.cart||{};
+  if (I.o.id) c[I.o.id]=(c[I.o.id]||0)+1;
+  if (I.pod && I.pn) c[I.pod.id]=(c[I.pod.id]||0)+I.pn;
+  I.accs.forEach(function(g){ if(I.A[g.id]) c[g.id]=(c[g.id]||0)+1; });
+  var k=I.pk[0];
+  if (k==='0') { toast('🛒 '+I.M.dn+' 조합을 담았어요'); return go('cart'); }
+  var need=k==='L3'?3:+k; state.kind=k==='L3'?'dl':'mtl';
+  go('mtl-rank'); setTimeout(function(){ toast('💧 이제 '+(k==='L3'?'폐호흡':'프리미엄')+' 액상 '+need+'병을 골라 담아 주세요 · 다 담으면 패키지 값이 자동으로 돼요'); },300);
+}
+
 function render(){
   var v=state.view, h='';
   if (v==='home') h = ask({h:'어서 오세요! 👋<br>무엇을 도와드릴까요?', p:'골라 주시면 딱 맞게 안내해 드릴게요.',
@@ -1345,7 +1436,7 @@ function render(){
   else if (v==='mtl-map') h = mapPane();
   else if (v==='mtl-mpack') h = mpackPane();
   else if (v==='dev') h = modelListPane();
-  else if (v==='dev-dtl') h = modelDetail();
+  else if (v==='dev-dtl') h = buildPane();
   else if (v==='help') h = ask({title:'필요하신 도움',step:1,total:3,h:'어떤 도움이<br>필요하세요? 🙋',p:'골라 주시면 바로 안내해 드릴게요.', opts:[
     {e:'🔧',t:'코일 · 팟 사러 왔어요',d:'쓰시는 기기에 맞는 팟을 찾아 드려요',act:'h-pod'},
     {e:'🚨',t:'기기가 이상해요',d:'탄 맛, 액상 샘, 전원, 연기 문제',act:'h-fix'},
@@ -1441,8 +1532,13 @@ document.getElementById('app').addEventListener('click',function(e){
   if (a==='ftdev') { var mi=MODELS.map(function(m){return m.dn}).indexOf(b.dataset.dn); if (mi<0) return; state.model=mi; state.mopt=0; return go('dev-dtl'); }
   if (a==='ft11') { state.kind='mtl'; state.mpack=4; state.mpn=11; return go('mtl-mpack'); }
   if (a==='dev') { state.devcat=''; return on('dev'); }
-  if (a==='mpick') { state.model=i; state.mopt=0; return go('dev-dtl'); }
-  if (a==='mopt') { state.mopt=i; return render(); }
+  if (a==='mpick') { state.model=i; state.mopt=0; state.bpk='0'; state.bpod=0; state.bpodi=0; state.bacc={}; return go('dev-dtl'); }
+  if (a==='mopt') { state.mopt=i; return bRender(); }
+  if (a==='bpk') { state.bpk=b.dataset.v; return bRender(); }
+  if (a==='bpodi') { state.bpodi=i; if(!state.bpod) state.bpod=1; return bRender(); }
+  if (a==='bpod') { state.bpod=Math.max(0,Math.min(5,(state.bpod||0)+(+b.dataset.d))); return bRender(); }
+  if (a==='bacc') { var A=state.bacc=state.bacc||{}; if(A[b.dataset.id]) delete A[b.dataset.id]; else A[b.dataset.id]=1; return bRender(); }
+  if (a==='bgo') return bAdd();
   if (a==='mcall') { var M=MODELS[state.model], op=(M.opts[state.mopt||0]||{}).opt;
     state.staffT='기기 보기'; state.staffH='직원이 바로<br>보여 드릴게요!'; state.staffP='"'+esc(M.dn+(op?' '+op:''))+'" 보러 오셨다고 전해 드릴게요.<br>잠깐만 기다려 주세요.'; return go('help-staff'); }
   if (a==='help') { state.staffT=null; return on('help'); }
