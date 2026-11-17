@@ -522,6 +522,19 @@ body.land .cartp .scard{grid-column:1/-1}
 .sp.new{animation:stampIn .5s cubic-bezier(.2,1.4,.4,1) both;animation-delay:var(--d)}
 @keyframes stampIn{0%{transform:scale(2.6) rotate(-35deg);opacity:0}60%{transform:scale(.85) rotate(-6deg);opacity:1}100%{transform:scale(1) rotate(-10deg)}}
 body:not(.land) .cstaff{overflow-y:auto;scrollbar-width:none}body:not(.land) .cstaff::-webkit-scrollbar{display:none}body:not(.land) .cstaff .ftc{flex:none;overflow:visible}body:not(.land) .cstaff .acts{margin-bottom:4px}
+.pflow{margin-top:10px}
+.pfd{display:flex;align-items:flex-start;justify-content:space-between;padding:6px 4px}
+.pfs{display:flex;flex-direction:column;align-items:center;gap:4px;width:70px;text-align:center}
+.pfs span{width:42px;height:42px;border-radius:50%;background:#f2f4f6;border:3px solid #e5e8eb;display:flex;align-items:center;justify-content:center;font-size:20px;transition:all .3s}
+.pfs small{font-size:12px;font-weight:800;color:#8b95a1;line-height:1.25}
+.pfs.now span{border-color:#FFB020;background:#FFF6D6;animation:nextp 1s ease-in-out infinite}.pfs.now small{color:#b45309}
+.pfs.ok span{border-color:#0f7a3d;background:#0f7a3d;color:#fff;font-weight:900;animation:pop .35s}.pfs.ok small{color:#0f7a3d}
+.pfl{flex:1;height:4px;margin-top:20px;border-radius:4px;background:#e5e8eb;position:relative;overflow:hidden}
+.pfl.ok::after{content:'';position:absolute;inset:0;background:#0f7a3d;animation:fillx .5s ease-out both}
+@keyframes fillx{from{transform:translateX(-100%)}to{transform:none}}
+.pfgo{margin-top:8px;width:100%;height:60px;border:0;border-radius:16px;background:var(--deep);color:#fff;font-family:var(--jal);font-size:22px}.pfgo small{font-family:var(--kr);font-size:14px;opacity:.8}
+.pfnote{margin-top:6px;text-align:center;font-size:15px;color:#4e5968}.pfnote.wait{font-family:var(--jal);font-size:17px;color:#b45309;animation:pulse 1.4s ease-in-out infinite}
+.pfdemo{margin-top:6px;text-align:center;font-size:12px;color:#8b95a1}
 .srule{margin-top:8px;padding:8px 12px;border-radius:12px;background:#FFF6D6;color:#5c4400;font-size:15px;text-align:center}.srule b{font-family:var(--jal);font-weight:normal;color:#e5313b}
 .srule.ok{background:#E8F7EE;color:#0f7a3d}
 .sadd .go:disabled{opacity:.4}
@@ -1846,12 +1859,25 @@ function stampCard(){
   var done=state.stDone, can=REWARDS.filter(function(r){return n>=r[0]});
   return '<div class="scard"><div class="sh"><b>🗺️ '+esc(maskName(M0.name||rec.name))+' 님 도장 지도</b><span>🟡 '+n+' / 30</span></div>'+stampMap(n, state.stNew)+
     '<div class="snext">'+nextReward(n)+'</div>'+
-    (done?'<div class="sok">✅ 이번 구매 도장 '+done+'개 적립했어요</div>':
+    (done!=null&&state.pf===4?posFlow(0).replace('<div class="pfdemo">','<div class="sok">'+(done?'✅ 포스봇이 결제를 확인해서 도장 '+done+'개 찍었어요':'✅ 결제 확인 · 이번엔 도장 없음 (액상 5병 미만)')+'</div><div class="pfdemo">'):
       (nb<STAMP_MIN_BOTTLES?'<div class="srule">💧 액상 <b>5병 이상</b> 사면 도장 1개! 지금 '+nb+'병 · <b>'+(STAMP_MIN_BOTTLES-nb)+'병</b> 더 담으면 도장 받아요</div>':'<div class="srule ok">💧 액상 '+nb+'병 구매 · 도장 1개 받을 수 있어요 🎉</div>')+
-      '<div class="sadd"><span>이번 구매 도장</span><button data-act="sta" data-d="-1">−</button><b>+'+add+'</b><button data-act="sta" data-d="1">＋</button>'+
-      '<input id="stPin" type="password" inputmode="numeric" maxlength="4" placeholder="직원 비번" autocomplete="off"><button class="go" data-act="stgo"'+(add<1?' disabled':'')+'>🟡 적립</button></div>')+
+      posFlow(add))+
     (can.length?'<div class="srw">'+can.map(function(r){return '<button data-act="strw" data-n="'+r[0]+'">'+r[1]+' '+r[2]+' 받기 <small>도장 '+r[0]+'개 사용</small></button>'}).join('')+'</div>':'')+'</div>';
 }
+/* 포스로 보내기 → 결제 → 포스봇 확인 → 도장 자동 적립 (지금은 예시: 실제로 보내지 않고 몇 초 뒤 결제된 것처럼) */
+var PF_STEPS=[['📤','포스로 보냄'],['💳','포스에서 결제'],['🤖','포스봇 결제 확인'],['🟡','도장 자동 적립']];
+function posFlow(add){ var st=state.pf||0, cls=function(i){ return i<st?' ok':(i===st&&st>0?' now':''); };
+  return '<div class="pflow"><div class="pfd">'+PF_STEPS.map(function(x,i){ return '<div class="pfs'+cls(i)+'"><span>'+(i<st?'✓':x[0])+'</span><small>'+x[1]+'</small></div>'+(i<3?'<i class="pfl'+(i<st-1?' ok':'')+'"></i>':''); }).join('')+'</div>'+
+    (st===0?'<button class="pfgo" data-act="pfsend">📤 포스로 보내기 <small>(예시)</small></button><div class="pfnote">'+(add>0?'결제가 확인되면 도장 '+add+'개가 자동으로 찍혀요':'액상 5병 미만이라 이번엔 도장 없이 결제만 돼요')+' · 직원이 따로 찍을 수 없어요</div>':
+     st<4?'<div class="pfnote wait">'+(st===1?'⏳ 포스에서 결제를 기다리고 있어요…':st===2?'🤖 포스봇이 OKPOS 영수증을 확인하고 있어요…':'🟡 도장을 찍고 있어요…')+'</div>':'')+
+    '<div class="pfdemo">🧪 예시 화면이에요 · 실제 포스로 보내지 않고 몇 초 뒤 결제된 것처럼 보여 줘요</div></div>'; }
+function pfSend(){ if (state.pf) return; var add=state.stAdd==null?stampDefault():state.stAdd; state.pf=1; render(); toast('📤 포스로 보냈어요 (예시)');
+  setTimeout(function(){ if(state.view!=='cart-staff') return; state.pf=2; render(); toast('💳 결제 완료! (예시)'); }, 2600);
+  setTimeout(function(){ if(state.view!=='cart-staff') return; state.pf=3; render(); }, 4400);
+  setTimeout(function(){ if(state.view!=='cart-staff') return; state.pf=4; state.stOK=true;
+    if (add>0) { var M0=state.member, rec=stampRec(M0.phone)||{name:M0.name||'',stamps:0,log:[]}; rec.stamps=(rec.stamps||0)+add; rec.log=(rec.log||[]).concat([{t:Date.now(),d:add,note:'포스 결제 확인(예시) '+won(cartSum().pay)}]).slice(-50); if(!rec.name&&M0.name) rec.name=M0.name;
+      stampSave(M0.phone, rec); state.stDone=add; state.stNew={from:rec.stamps-add, to:rec.stamps}; toast('🤖 결제 확인! 도장 '+add+'개 쾅 · 지금 '+rec.stamps+'개'); render(); stampBoom(); }
+    else { state.stDone=0; toast('🤖 결제 확인 · 액상 5병 미만이라 도장은 없어요'); render(); } }, 5600); }
 async function stampGo(){ var pin=(document.getElementById('stPin')||{}).value||'', saved=lsGet(PIN_KEY,null);
   if (!saved) return toast('먼저 회원메모에서 직원 비밀번호를 정해 주세요');
   if (!state.stOK) { if ((await pinHash(pin))!==saved) return toast('직원 비밀번호가 틀렸어요'); state.stOK=true; }
@@ -1946,7 +1972,8 @@ function render(){
   else if (v==='mtl-pack-res') { var pk=PK()[state.pack];
     h = listPane({step:3,total:3,h:pk.line+' 액상에서<br>'+pk.n+'병 골라 주세요',list:byRank(DATA().filter(function(x){return x.line===pk.line})),
       chips:[pk.t], note:saveBox(pk.t, PRICE[pk.line]*pk.n, pk.price)}); }
-  var app=document.getElementById('app'); app.innerHTML=h; app.className='screen'+(v!==lastView?' enter':''); var fresh=v!==lastView; lastView=v;
+  var oldC=document.querySelector('.cstaff'), oldY=oldC?oldC.scrollTop:0;
+  var app=document.getElementById('app'); app.innerHTML=h; app.className='screen'+(v!==lastView?' enter':''); var fresh=v!==lastView; lastView=v; if(!fresh){ var nc=document.querySelector('.cstaff'); if(nc) nc.scrollTop=oldY; }
   var fab=document.getElementById('fab'); fab.hidden = v==='home' || v.indexOf('mem')===0; fab.classList.toggle('up', !!app.querySelector('.acts,.cta,.askbar')); var fh=document.getElementById('fabh'); fh.hidden = v==='home'; fh.classList.toggle('up', fab.classList.contains('up')); var fb=document.getElementById('fabb'); fb.hidden = v==='home' || !state.hist.length;
   document.body.classList.toggle('fabon', !fab.hidden || !fh.hidden);
   var g=app.querySelector('.grid'); if(g) g.scrollTop=0;
@@ -1990,6 +2017,7 @@ document.getElementById('app').addEventListener('click',function(e){
   if (a==='memclr') { state.member=null; M_().phone=''; toast('회원 선택을 풀었어요'); return render(); }
   if (a==='sta') { state.stAdd=Math.max(0,Math.min(10,(state.stAdd==null?stampDefault():state.stAdd)+(+b.dataset.d))); return render(); }
   if (a==='stgo') { stampGo(); return; }
+  if (a==='pfsend') { pfSend(); return; }
   if (a==='strw') { stampUse(+b.dataset.n); return; }
   if (a==='mback') { state.memoFrom=null; state.mpre=''; return back(); }
   if (a==='cmemo') { var cc=state.cart||{}, S0=cartSum(), mm0=M_(), d0=new Date();
