@@ -2782,8 +2782,13 @@ ${live() ? "" : `<div class="mstabs">${tabs.map(([k, n, c, cl]) => `<button clas
 .hmstamp{font-size:13px;color:var(--sub);line-height:1.6;margin:10px 2px 0}
 .hmon{margin:8px 0 10px}
 .hmbh a{color:var(--blue);font-weight:700}
-.hmboard{display:block;width:100%;height:calc(100vh - 250px);min-height:420px;border:0;border-radius:16px;background:var(--card)}
-@media (min-width:900px){.hmboard{height:calc(100vh - 110px);min-height:560px}}
+.hmboard{display:block;width:100%;height:calc(100vh - 230px);border:0;border-radius:16px;background:var(--card)}
+.hmstrip{display:flex;align-items:stretch;gap:8px;margin:8px 0}.hmstrip a{flex:none;display:grid;place-items:center;min-width:56px;padding:0 10px;border-radius:14px;background:var(--card);color:var(--blue);font-size:13px;font-weight:700;text-decoration:none}
+.hmsb{flex:1;min-width:0;display:flex;align-items:center;gap:6px;min-height:56px;padding:6px 12px;border-radius:14px;background:var(--card);text-align:left}.hmsb:hover{background:var(--press)}
+.hmsb span{flex:1;min-width:0;font-size:12px;font-weight:600;color:var(--sub);white-space:nowrap}.hmsb span b{display:block;font-size:17px;font-weight:800;color:var(--ink);letter-spacing:-.3px}.hmsb span b small{font-size:11px;font-weight:600;color:var(--sub);margin-left:1px}
+.hmsb i{flex:none;font-style:normal;font-size:12px;font-weight:700;color:var(--blue)}.hmstrip.old .hmsb i{color:var(--amber)}
+.hmdet{margin-top:12px}.hmdet .hmk{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media (max-width:599px){.hmsb span.x{display:none}.hmsb{padding:6px 10px}.hmsb span b{font-size:16px}}
 `;
   document.head.appendChild(st);
   const HM = { v: ls.get("vf-hm-v") === "online" ? "online" : "vf" };
@@ -2828,7 +2833,7 @@ ${live() ? "" : `<div class="mstabs">${tabs.map(([k, n, c, cl]) => `<button clas
     if (tab !== "home" || HM.v !== "online") return;
     /* 화면 짜임이 그대로면 매출 칸만 바꾼다(보드와 스크롤을 건드리지 않게). 처음 받았거나 거절로 바뀌면 통째로 다시 그림 */
     const s = $("#hmsales"), bd = $("#hmboard");
-    if (ON.st === "ok" && ((s && s.dataset.ok === "1") || (!s && bd))) { if (s) s.innerHTML = salesHtml(); } else fullH();
+    if (ON.st === "ok" && ((s && s.dataset.ok === "1") || (!s && bd))) { if (s) { s.innerHTML = stripHtml(); fitBoard(); } } else fullH();
   }
   /* 1분마다 새 숫자를 받는다(온라인 홈이 보일 때만). 이 PC가 1분마다 창고에 올려 둔 것을 받아 오는 것이다 */
   setInterval(() => { if (D && tab === "home" && HM.v === "online" && document.visibilityState === "visible" && ON.st === "ok") onLoad(); }, 60e3);
@@ -2853,20 +2858,31 @@ ${cmp == null ? "" : `<div class="hmcmp">워드프레스 이번 달 <b>${w(wp.mo
 <table class="hmtbl"><thead><tr><th>날짜</th><th>워드프레스</th><th>아임웹</th><th>합계</th></tr></thead><tbody>${rows}</tbody></table>
 <div class="hmstamp">${ageT} 올라온 자료예요. 1분마다 새로 받아요. 워드프레스는 입금 확인된 주문만 세요.<button class="hmre" data-hm="onre">다시 받기</button></div>`;
   }
+  /* 온라인 홈 = 화면 전체가 온라인팀 보드. 액상덕후 매출은 맨 위 한 줄로 두고, 누르면 자세히 뜬다 */
+  function stripHtml() {
+    const d = ON.d; if (!onOk() || !d) return salesHtml();
+    const wp = d.wp || {}, iw = d.iw || {}, mAll = (+wp.month || 0) + (+iw.month || 0), tAll = (+wp.today || 0) + (+iw.today || 0), nAll = (+wp.todayN || 0) + (+iw.todayN || 0), aov = nAll ? Math.round(tAll / nAll) : 0;
+    const now = new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10), day = d.today === now ? "오늘" : `${+String(d.today).slice(5, 7)}/${+String(d.today).slice(8)}`;
+    const age = Math.max(0, Math.round((Date.now() + 9 * 3600e3 - Date.parse(String(d.made || "").replace(" ", "T") + ":00Z")) / 60e3)), old = d.today !== now || age > 5;
+    return `<div class="hmstrip ${old ? "old" : ""}"><button class="hmsb" data-hm="ondet" aria-label="액상덕후 매출 자세히 보기"><span>이번 달<b>${man(mAll)}</b></span><span>${day} 매출<b>${man(tAll)}</b></span><span>${day} 주문<b>${nAll}<small>건</small></b></span><span class="x">객단가<b>${w(aov)}<small>원</small></b></span><i>${old ? (d.today !== now ? "어제 자료" : age + "분째 멈춤") : "자세히"}</i></button><a href="../../online-team/" target="_blank" rel="noopener" aria-label="온라인팀 보드를 새 창으로 열기">새 창</a></div>`;
+  }
+  function fitBoard() { /* 보드가 남은 화면을 꼭 채우게(페이지가 따로 스크롤되지 않게) */
+    const f = $("#hmboard"); if (!f) return; const nav = $("#nav"), nh = nav && nav.style.display !== "none" ? nav.getBoundingClientRect().height : 0;
+    f.style.height = Math.max(320, Math.floor(innerHeight - f.getBoundingClientRect().top - scrollY - nh - (isPC() ? 14 : 6))) + "px";
+  }
+  addEventListener("resize", fitBoard);
   function onlineHtml() {
-    onLoad();
-    const ok = onOk(), sales = `<div id="hmsales" data-ok="${ok ? 1 : 0}">${salesHtml()}</div>`;
-    const board = ok ? `<div class="hmh hmbh">온라인팀 보드 <small><a href="../../online-team/" target="_blank" rel="noopener">새 창으로 열기</a></small></div><iframe id="hmboard" class="hmboard" src="../../online-team/" title="온라인팀 보드"></iframe>` : "";
-    if (isPC() || !ok) return sales + board;
-    return `<div class="hmseg hmon" role="tablist"><button class="${ON.v === "sales" ? "on" : ""}" data-hm="onsales">매출</button><button class="${ON.v === "board" ? "on" : ""}" data-hm="onboard">온라인팀 보드</button></div>${ON.v === "board" ? board : sales}`;
+    onLoad(); requestAnimationFrame(fitBoard);
+    const ok = onOk();
+    return `<div id="hmsales" data-ok="${ok ? 1 : 0}">${stripHtml()}</div>${ok ? '<iframe id="hmboard" class="hmboard" src="../../online-team/" title="온라인팀 보드"></iframe>' : ""}`;
   }
   /* 보드를 띄워 둔 동안에는 3분마다 도는 자동 새로고침이 보드를 처음으로 되돌리지 않게, 매출 칸만 새로 그린다 */
   const render1 = render;
   render = function () {
-    if (!ownH && tab === "home" && HM.v === "online" && $("#hmboard") && ON.pc === isPC()) { const s = $("#hmsales"); if (s) s.innerHTML = salesHtml(); onLoad(); return; }
+    if (!ownH && tab === "home" && HM.v === "online" && $("#hmboard") && ON.pc === isPC()) { const s = $("#hmsales"); if (s) { s.innerHTML = stripHtml(); fitBoard(); } onLoad(); return; }
     ON.pc = isPC(); return render1.apply(this, arguments);
   };
-  document.addEventListener("click", (e) => { const s = e.target.closest("[data-hm]"); if (!s) return; const k = s.dataset.hm; if (k === "onsales" || k === "onboard") { ON.v = k === "onboard" ? "board" : "sales"; ls.set("vf-hm-on", ON.v); fullH(); return scrollTo(0, 0); } if (k === "onre") { s.disabled = true; onLoad(true); } });
+  document.addEventListener("click", (e) => { const s = e.target.closest("[data-hm]"); if (!s) return; const k = s.dataset.hm; if (k === "onsales" || k === "onboard") { ON.v = k === "onboard" ? "board" : "sales"; ls.set("vf-hm-on", ON.v); fullH(); return scrollTo(0, 0); } if (k === "onre") { s.disabled = true; onLoad(true); } if (k === "ondet") openSheet(`<h3>액상덕후 매출</h3><div class="hmdet">${salesHtml()}</div><div class="btns"><button class="btn gray" data-x>닫기</button></div>`); });
   const home = () => `<div class="hmwrap">${top()}${HM.v === "online" ? onlineHtml() : vfHtml()}</div>`;
   homeHtml = home; homePC = home;
   document.addEventListener("click", (e) => {
