@@ -515,6 +515,22 @@ body[data-theme=dark] .hero .ph{background:#e9e9ec}
 body[data-theme=dark] .it .im{background:#f4f4f6}
 body[data-theme=dark] .dim{background:rgba(0,0,0,.6)}
 body[data-theme=dark] .scan svg{background:#fff;border-radius:8px}
+
+/* 11/17 검색 결과 가로 넘기기 */
+.sres{bottom:auto;overflow:visible;padding:8px 0 16px;box-shadow:0 10px 24px rgba(0,0,0,.14);border-radius:0 0 24px 24px}
+.hzpad{padding:0 var(--pad)}
+.hzhd{padding:4px var(--pad) 8px;font-size:14px;color:var(--grey);font-weight:700}
+.hzrow{display:flex;gap:12px;overflow-x:auto;overflow-y:hidden;padding:2px var(--pad) 6px;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;touch-action:pan-x pan-y;overscroll-behavior-x:contain;cursor:grab}
+.hzrow.drag{cursor:grabbing;scroll-snap-type:none}
+.hzrow::-webkit-scrollbar{height:0}
+.hzrow .sr{flex:none;width:196px;flex-direction:column;align-items:stretch;gap:6px;margin:0;padding:12px;position:relative;scroll-snap-align:start}
+.hzrow .sr .im{width:100%;height:150px;border-radius:14px;font-size:44px}
+.hzrow .sr .n b{white-space:normal;font-size:16px;line-height:1.25;height:2.5em;overflow:hidden}
+.hzrow .sr .n span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hzrow .sr .price{font-size:19px;color:var(--red);padding-right:52px}
+.hzrow .sr .add{position:absolute;right:12px;bottom:10px}
+.hzrow .sr .askb{font-size:13px;padding:8px 0}
+.sres .soldmore{margin:8px var(--pad) 0;width:calc(100% - var(--pad) * 2)}
 </style>
 </head>
 <body data-v="home"><script>vfFit()</script>
@@ -1417,8 +1433,11 @@ function searchItems(qs) {
   const byNo = /^#?\d{1,3}$/.test(q) ? IDX.filter((o) => o.t === "liq" && noOf(o.x.n) === +q.replace("#", "")) : []; /* 11/3 시연번호로 찾기 ("27" 또는 "#27") */
   if (q.startsWith("#")) return byNo; /* 11/13 숫자만 넣으면 시연번호 + 이름에 그 숫자가 든 상품(시가812 등)도 같이 */
   const onlyCho = /^[ㄱ-ㅎ]+$/.test(q), noNo = !q.includes("노멘솔") && q.includes("멘솔");
+  const toks = String(qs).trim().split(/\s+/).map(norm).filter(Boolean); /* 11/17 포스처럼 "런 청"(빌런 청포도) 조각 검색 */
+  const inOrder = (s0) => { let i = 0; for (const t of toks) { const j = s0.indexOf(t, i); if (j < 0) return false; i = j + t.length; } return true; };
   return IDX.map((o0) => { const o = noNo ? { ...o0, nm: o0.nm.replace(/노멘솔/g, ""), all: o0.all.replace(/노멘솔/g, "") } : o0; let sc = 0;
     if (onlyCho) { if (o.cho.startsWith(q)) sc = 3; else if (o.cho.includes(q)) sc = 2; } else if (o.nm.startsWith(q)) sc = 4; else if (o.nm.includes(q)) sc = 3; else if (o.all.includes(q)) sc = 1;
+    if (!sc && toks.length > 1 && inOrder(o.nm)) sc = 2;
     return [sc, o]; }).filter(([sc, o]) => sc && !byNo.includes(o)).concat(byNo.map((o) => [9, o])).sort((a, b) => (outOf(a[1].x.n) ? 1 : 0) - (outOf(b[1].x.n) ? 1 : 0) || b[0] - a[0]).slice(0, 40).map(([, o]) => o); /* 11/13 검색도 품절은 아래로 */
 }
 const liqPrice = (x) => x.line === "프라임" ? 20000 : 15000;
@@ -1435,9 +1454,9 @@ function drawSearch() {
   if (!q.trim()) return;
   const r = searchItems(q);
   if (r.length && r.every((o) => outOf(o.x.n))) $('sres').classList.add('showsold'); /* 11/13 전부 품절이면 접지 않음 */
-  $('sres').innerHTML = (cart.size ? srchCartBar() : "") + (r.length ? r.map((o) => { const x = o.x, liq = o.t === "liq", key = x.id, have = (cart.get(key) || {}).qty || 0, out = outOf(x.n);
+  $('sres').innerHTML = (cart.size ? `<div class="hzpad">${srchCartBar()}</div>` : "") + (r.length ? `<div class="hzhd">검색 결과 ${r.length}개${r.length > 3 ? ", 옆으로 넘겨 보세요 →" : ""}</div><div class="hzrow">` + r.map((o) => { const x = o.x, liq = o.t === "liq", key = x.id, have = (cart.get(key) || {}).qty || 0, out = outOf(x.n);
     const img = liq ? imgOf(x) : o.t === "lung" ? "" : gImg2(x), price = liq ? liqPrice(x) : x.price;
-    return `<div class="sr ${out ? "sold" : ""}"${liq ? ` data-lid="${x.id}"` : ""}><div class="im" style="background:${liq ? tintOf(x) : "#f4f4f6"}">${img ? `<img src="${img}" alt="" loading="lazy">` : { dev: "🔋", pod: "🧩", dsp: "🚬" }[x.c] || "💧"}</div><div class="n"><b>${esc(liq ? short(x.n) : x.n)}${liq ? noTag(x.n) : ""}</b><span>${esc(liq ? [x.br, x.line, x.f].filter(Boolean).join(", ") : { dev: "기기", pod: "팟, 코일", dsp: "일회용" }[x.c] || "")}${out ? ", 품절" : ""}</span>${have ? `<span class="q"> 담음 ${have}</span>` : ""}</div><b class="price">${won(price)}</b>${out && !canSell(x.n) ? `<button class="askb" data-ask="${esc(x.n)}">다른 지점 확인</button>` : `<button class="add" data-s="${key}" data-t="${o.t}">+</button>`}</div>`; }).join("")
+    return `<div class="sr ${out ? "sold" : ""}"${liq ? ` data-lid="${x.id}"` : ""}><div class="im" style="background:${liq ? tintOf(x) : "#f4f4f6"}">${img ? `<img src="${img}" alt="" loading="lazy">` : { dev: "🔋", pod: "🧩", dsp: "🚬" }[x.c] || "💧"}</div><div class="n"><b>${esc(liq ? short(x.n) : x.n)}${liq ? noTag(x.n) : ""}</b><span>${esc(liq ? [x.br, x.line, x.f].filter(Boolean).join(", ") : { dev: "기기", pod: "팟, 코일", dsp: "일회용" }[x.c] || "")}${out ? ", 품절" : ""}</span>${have ? `<span class="q"> 담음 ${have}</span>` : ""}</div><b class="price">${won(price)}</b>${out && !canSell(x.n) ? `<button class="askb" data-ask="${esc(x.n)}">다른 지점 확인</button>` : `<button class="add" data-s="${key}" data-t="${o.t}">+</button>`}</div>`; }).join("") + "</div>"
     + soldMore(r.filter((o) => outOf(o.x.n)).length, r.every((o) => outOf(o.x.n)))
     : '<div style="padding:40px 0;text-align:center;color:var(--grey);line-height:1.7">찾는 상품이 없어요<br>초성(ㅂㄹ)이나 시연번호 숫자로도 찾을 수 있어요<br><button class="cta" style="max-width:320px;margin-top:14px" onclick="qzStart()">나에게 맞는 전자담배 찾기</button></div>');
 }
@@ -2175,5 +2194,29 @@ if (ORDER_CODE) loadOrder();
 // 오프라인 저장 + 앱 설치 (sw-b.js)
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw-b.js").catch(() => {});
 </script>
+<script>/* 11/17 담기 누르면 사진이 장바구니로 쏙 */
+(() => { const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  document.addEventListener("click", (e) => { const b = e.target.closest(".add"); if (!b || still) return;
+    const card = b.closest(".sr, .it, .card, [data-lid], div"), img = card && card.querySelector("img");
+    const to = document.querySelector(".cart .show") || document.querySelector(".cart"); if (!to) return;
+    const a = (img || b).getBoundingClientRect(), z = to.getBoundingClientRect();
+    const g = document.createElement(img ? "img" : "div");
+    if (img) g.src = img.currentSrc || img.src; else g.textContent = "+";
+    const sz = Math.min(96, Math.max(48, a.width));
+    g.style.cssText = `position:fixed;left:${a.left + a.width / 2 - sz / 2}px;top:${a.top + a.height / 2 - sz / 2}px;width:${sz}px;height:${sz}px;object-fit:contain;border-radius:16px;background:#fff;box-shadow:0 8px 20px rgba(0,0,0,.25);z-index:999;pointer-events:none;will-change:transform,opacity`;
+    document.body.append(g);
+    const dx = z.left + z.width / 2 - (a.left + a.width / 2), dy = z.top + z.height / 2 - (a.top + a.height / 2);
+    const fl = g.animate([{ transform: "translate(0,0) scale(1)", opacity: 1 }, { transform: `translate(${dx * .5}px,${dy * .5 - 80}px) scale(.7)`, opacity: 1, offset: .5 }, { transform: `translate(${dx}px,${dy}px) scale(.18)`, opacity: .3 }], { duration: 520, easing: "cubic-bezier(.5,0,.75,0)" });
+    fl.onfinish = () => { g.remove(); to.animate([{ transform: "scale(1)" }, { transform: "scale(1.12)" }, { transform: "scale(1)" }], { duration: 260, easing: "cubic-bezier(.2,.8,.2,1)" }); };
+  }, true);
+})();
+/* 11/17 가로 줄은 손가락 말고 마우스로도 넘기기 (휠, 끌기) */
+(() => { let d = null, eat = 0;
+  document.addEventListener("wheel", (e) => { const r = e.target.closest(".hzrow"); if (!r || Math.abs(e.deltaX) > Math.abs(e.deltaY)) return; e.preventDefault(); r.scrollLeft += e.deltaY; }, { passive: false });
+  document.addEventListener("pointerdown", (e) => { if (e.pointerType !== "mouse") return; const r = e.target.closest(".hzrow"); if (!r) return; d = { r, x: e.clientX, s: r.scrollLeft, moved: false }; });
+  addEventListener("pointermove", (e) => { if (!d) return; const dx = e.clientX - d.x; if (!d.moved && Math.abs(dx) < 6) return; d.moved = true; d.r.classList.add("drag"); d.r.scrollLeft = d.s - dx; });
+  addEventListener("pointerup", () => { if (d && d.moved) eat = Date.now(); if (d) d.r.classList.remove("drag"); d = null; });
+  addEventListener("click", (e) => { if (Date.now() - eat < 300 && e.target.closest(".hzrow")) { e.stopPropagation(); e.preventDefault(); } }, true);
+})();</script>
 </body>
 </html>
