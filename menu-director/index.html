@@ -439,6 +439,15 @@ body.land .cartp .q{grid-column:1;grid-row:3;overflow:auto}
 body.land .cartp .ftc{grid-column:2;grid-row:3;display:flex}
 body.land .cartfab{top:38%}
 body.land .cartp .save .pct{display:none}body.land .cartp .save .big{font-size:26px;white-space:nowrap}
+.allban{grid-column:1/-1}
+.alltabs{margin-top:16px;flex:none}
+.alltabs button{padding:12px 20px;font-size:20px;background:rgba(255,255,255,.18)}
+.alltabs button.on{background:#fff;color:var(--deep)}
+.allp .fbar{margin-top:10px}
+.allp .dtabs{margin-top:10px}
+.item.gd .ph{aspect-ratio:16/9}
+.item.gd .tile{flex-direction:column;gap:6px;font-size:19px}
+.item.gd .ge{font-size:40px;line-height:1}
 .empty{grid-column:1/-1;padding:48px 0;text-align:center;font-size:22px;color:var(--sub)}
 
 .toast{position:fixed;left:50%;top:40px;transform:translate(-50%,-20px);opacity:0;padding:18px 28px;border-radius:999px;
@@ -1189,11 +1198,42 @@ function cartStaffPane(){
     '<div class="acts"><button data-act="back">‹ 장바구니 고치기</button><button class="main" data-act="mem">🎁 회원 적립하기</button></div></div>';
 }
 
+/* ---------- 전체 보기: 액상, 기기, 팟·코일, 케이스·기타, 일회용 ---------- */
+var GSRC = (BRANCH && window.GOODS_BY && window.GOODS_BY[BRANCH]) || GD;
+var ALLT = [
+  {k:'liq',e:'💧',t:'입호흡 액상',n:function(){return LIQ.length}},
+  {k:'dl',e:'☁️',t:'폐호흡 액상',n:function(){return LUNGL.length}},
+  {k:'dev',e:'📱',t:'기기',n:function(){return MODELS.length}},
+  {k:'pod',e:'🔧',t:'팟 · 코일',n:function(){return GSRC.filter(function(g){return g.c==='pod'&&g.sub==='팟·코일'}).length}},
+  {k:'acc',e:'🧰',t:'케이스 · 기타',n:function(){return GSRC.filter(function(g){return g.c==='pod'&&g.sub!=='팟·코일'}).length}},
+  {k:'dsp',e:'🚬',t:'일회용',n:function(){return GSRC.filter(function(g){return g.c==='dsp'}).length}}];
+function gTile(g, em){ return '<div class="item gd"><div class="ph"><span class="tile"><span class="ge">'+em+'</span>'+esc(g.opt||g.n)+'</span></div><div class="bd">'+
+  '<span class="br">'+esc([g.model||'',g.pos].filter(Boolean).join(' · '))+'</span><span class="nm">'+esc(g.n)+'</span><span class="pr">'+won(g.price)+'</span></div></div>'; }
+function gBar(list, key, label){ var cnt={}; list.forEach(function(g){ var k=key(g); cnt[k]=(cnt[k]||0)+1; });
+  var ks=Object.keys(cnt).sort(function(a,b){return cnt[b]-cnt[a]}); if (ks.length<2) return '';
+  return '<div class="fbar"><div class="frow ser"><span class="lb">'+label+'</span><button data-act="fs" data-v="" class="'+(!state.fs?'on':'')+'">전체 <small>'+list.length+'</small></button>'+
+    ks.map(function(k){return '<button data-act="fs" data-v="'+esc(k)+'" class="'+(state.fs===k?'on':'')+'">'+esc(k)+' <small>'+cnt[k]+'</small></button>'}).join('')+'</div></div>'; }
+function allPane(){
+  var t=state.allt||'liq', body='', bar='';
+  if (t==='liq' || t==='dl') { var L=byRank(t==='liq'?LIQ:LUNGL), f=filt(L); bar=filterBar(L);
+    body=f.slice(0,120).map(function(x){return card(x,'')}).join('') || '<div class="empty">맞는 액상이 없어요.</div>'; }
+  else if (t==='dev') { bar=devTabs(); body=modelCards(); }
+  else { var em={pod:'🔧',acc:'🧰',dsp:'🚬'}[t], G=GSRC.filter(function(g){ return t==='dsp'?g.c==='dsp':g.c==='pod'&&(t==='pod'?g.sub==='팟·코일':g.sub!=='팟·코일'); }),
+      key=t==='dsp'?function(g){return g.model||'기타'}:function(g){return g.pos||'기타'};
+    bar=gBar(G,key,t==='dsp'?'제품':'종류'); var F=G.filter(function(g){return !state.fs||key(g)===state.fs});
+    body=F.map(function(g){return gTile(g,em)}).join('') || '<div class="empty">지금 보여 드릴 상품이 없어요.</div>'; }
+  return '<div class="pane res allp">'+topBar('전체 보기 🗂️',1,1)+
+    '<section class="q" style="margin-top:24px"><h1>매장에 있는 거 전부 🗂️</h1></section>'+
+    '<div class="frow alltabs">'+ALLT.map(function(o){ var n=o.n(); if(!n) return ''; return '<button data-act="allt" data-v="'+o.k+'" class="'+(o.k===t?'on':'')+'">'+o.e+' '+o.t+' <small>'+n+'</small></button>'; }).join('')+'</div>'+
+    bar+'<section class="grid'+(t==='dev'?' dgrid':'')+'">'+body+'</section></div>';
+}
+
 function render(){
   var v=state.view, h='';
   if (v==='home') h = ask({h:'어서 오세요! 👋<br>무엇을 도와드릴까요?', p:'골라 주시면 딱 맞게 안내해 드릴게요.',
     extra:chars('눌러 봐요 👆')+'<div class="banrow"><button class="memban" data-act="mem"><span class="em">🎁</span><span><b>회원등록하고 적립</b><small>AS 받을 때도 편해요</small></span><i>›</i></button>'+
-      '<button class="memban cheap" data-act="cheap"><span class="em">💸</span><span><b>가장 저렴하게 사는 법</b><small>최대 75,000원 아껴요</small></span><i>›</i></button></div>', opts:[
+      '<button class="memban cheap" data-act="cheap"><span class="em">💸</span><span><b>가장 저렴하게 사는 법</b><small>최대 75,000원 아껴요</small></span><i>›</i></button>'+
+      '<button class="memban cheap allban" data-act="all"><span class="em">🗂️</span><span><b>전체 보기</b><small>액상 · 기기 · 팟 · 코일 · 일회용 전부</small></span><i>›</i></button></div>', opts:[
     {e:'👋',t:'처음 오셨을까요?',d:'전자담배가 처음이거나 매장 방문이 처음이에요',act:'new'},
     {e:'💨',t:'입호흡 액상을 찾으실까요?',d:'연초처럼 입으로 머금었다 들이마셔요',act:'mtl'},
     {e:'📱',t:'기기 보러 왔어요!',d:'말론, 말론S, 하복2 등 매장 기기 구경하기',act:'dev'},
@@ -1206,6 +1246,7 @@ function render(){
   else if (v==='mem-old') h = memPane('old');
   else if (v==='mem-done') h = memDone();
   else if (v==='cheap') h = cheapPane();
+  else if (v==='all') h = allPane();
   else if (v==='cart') h = cartPane();
   else if (v==='cart-staff') h = cartStaffPane();
   else if (v==='mix') h = labPane();
@@ -1331,6 +1372,8 @@ document.getElementById('app').addEventListener('click',function(e){
   if (a==='mtl' || a==='dl') { state.kind=a; return on('mtl'); }
   if (a==='m-self') { state.flavor=null; state.cool=null; if (state.kind!=='dl') { state.mapf=''; return on('mtl-map'); } return on('mtl-flavor'); }
   if (a==='mapf') { state.mapf=b.dataset.v; return render(); }
+  if (a==='all') { state.allt='liq'; state.devcat=''; return go('all'); }
+  if (a==='allt') { state.allt=b.dataset.v; state.fg=''; state.fs=''; state.devcat=''; render(); var g2=document.querySelector('.grid'); if(g2) g2.scrollTop=0; return; }
   if (a==='add') { var im=b.closest('.item'); im=im&&im.querySelector('img'); return cartAdd(b.dataset.id, im&&im.style.visibility!=='hidden'?im:null); }
   if (a==='cq') { var cc=state.cart||{}, id=b.dataset.id; cc[id]=(cc[id]||0)+(+b.dataset.d); if(cc[id]<=0) delete cc[id]; var ft=document.querySelector('.ftc'), y=ft?ft.scrollTop:0; render(); ft=document.querySelector('.ftc'); if(ft) ft.scrollTop=y; return; }
   if (a==='cartgo') return go('cart-staff');
