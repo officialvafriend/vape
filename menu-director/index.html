@@ -527,6 +527,12 @@ body.land .bwrap{grid-template-columns:minmax(0,1fr) minmax(0,1.15fr)}
 body.land .bl{flex-direction:column;overflow-y:auto}
 body.land .bimg{width:100%;aspect-ratio:auto;height:170px}
 body.land .bimg img{object-fit:contain;background:#f2f2f4}
+.bsv .per{color:var(--deep);font-family:var(--jal);font-weight:normal}.bsv s{color:#b0b8c1;font-weight:600}
+.perb{margin-left:6px;padding:2px 8px;border-radius:999px;background:var(--tint);color:var(--deep);font-size:15px;font-weight:800}
+.perbig{margin-bottom:8px;padding:10px 14px;border-radius:14px;background:var(--tint);font-size:19px;color:#333d4b}.perbig b{font-family:var(--jal);font-weight:normal;color:var(--deep);font-size:23px}.perbig s{color:#b0b8c1;font-size:15px;margin-left:4px}
+.clft .perd{margin-top:2px;font-size:15px;color:#333d4b}.clft .perd b{display:inline;font-size:16px}
+.pksz button small{display:block;font-family:var(--kr);font-size:15px;font-weight:700;opacity:.8}
+.mpp .pksz button{height:auto;padding:8px 0}
 .empty{grid-column:1/-1;padding:48px 0;text-align:center;font-size:22px;color:var(--sub)}
 
 .toast{position:fixed;left:50%;top:40px;transform:translate(-50%,-20px);opacity:0;padding:18px 28px;border-radius:999px;
@@ -910,7 +916,7 @@ function mpackPane(){
     shown=(state.fg||state.fs) ? filt(P).slice(0,80) : list.slice(0,Math.max(n+6,12));
   return '<div class="pane res mpp">'+topBar('입호흡 액상',3,3)+
     '<section class="q"><h1>'+esc(M.t)+'</h1>'+
-      '<div class="pksz"><button data-act="mpn" data-i="5" class="'+(n===5?'on':'')+'">5병 49,500원</button><button data-act="mpn" data-i="11" class="'+(n===11?'on':'')+'">11병 90,000원</button></div>'+
+      '<div class="pksz"><button data-act="mpn" data-i="5" class="'+(n===5?'on':'')+'">5병 49,500원<small>병당 9,900원</small></button><button data-act="mpn" data-i="11" class="'+(n===11?'on':'')+'">11병 90,000원<small>병당 8,182원</small></button></div>'+
       saveBox('프리미엄 '+n+'병을 패키지로 사면', full, price)+'<div class="ev">👇 앞의 <b>'+Math.min(n,list.length)+'병</b>으로 추천해요 · 맛은 바꿔도 돼요</div>'+
     '</section>'+filterBar(P)+'<section class="grid">'+(shown.length?shown.map(function(x){var r=rec.indexOf(x.id); return card(x, r>=0?'추천 '+(r+1):'');}).join(''):'<div class="empty">맞는 액상이 없어요. 직원에게 물어봐 주세요.</div>')+'</section>'+
     '<div class="acts"><button data-act="back">다른 패키지</button><button class="main" data-act="mpcall">🛒 이 '+n+'병 담기</button></div></div>';
@@ -1234,7 +1240,9 @@ function priceOf(c){
   var noB=devs.reduce(function(a,d){return a+d.price},0)+best('프리미엄',prem)+best('폐호흡',lung)+base;
   return {full:full, pay:bestPay, noBundle:noB, packs:bestPk, prem:prem, lung:lung, devs:devs};
 }
-function cartSum(){ var r=priceOf(state.cart||{}); r.L=cartLines(); return r; }
+function cartSum(){ var r=priceOf(state.cart||{}), c=state.cart||{}, gs=0, nb=0; r.L=cartLines();
+  Object.keys(c).forEach(function(id){ var x=ITEM(id); if(!x) return; if(x.goods) gs+=(x.price||0)*c[id]; else nb+=c[id]; });
+  r.bottles=nb; r.per=nb?Math.round((r.pay-gs)/nb/10)*10:0; return r; }
 function devGid(dn){ var M=MODELS.filter(function(m){return m.dn===dn})[0]; return M ? (M.opts.filter(function(o){return o.img})[0]||M.opts[0]).id : null; }
 function upsells(){
   var c=state.cart||{}, cur=priceOf(c), out=[], n=cartN(); if(!n) return out;
@@ -1278,7 +1286,7 @@ function cartFab(bump){ var f=document.getElementById('cartfab'), dk=document.ge
   var cl=document.getElementById('cartlist'), keep=cl.scrollTop;
   cl.innerHTML = n ? Object.keys(c).map(function(id){ var x=ITEM(id); if(!x) return ''; var src=x.src!=null?x.src:(x.img?'../img/'+x.img:'');
       return '<div class="cl">'+(src?'<img src="'+esc(src)+'" alt="">':'<span class="ph0">'+(x.em||'🧴')+'</span>')+'<span class="nm">'+esc(x.dn||x.n)+'</span><span class="q">×'+c[id]+'</span><button class="x" data-cx="'+esc(id)+'" aria-label="빼기">✕</button></div>'; }).join('')+
-    '<div class="ups">'+upsHtml(2)+'</div><div class="clft"><b>'+won(cartSum().pay)+'</b>'+(cartSum().full>cartSum().pay?'<small>패키지 적용 · '+won(cartSum().full-cartSum().pay)+' 아껴요</small>':'')+'<button data-cgo="1">장바구니 보기 ›</button></div>' : '<div class="cempty">🛒 상품을 끌어다<br><b>이 칸 아무 데나</b> 놓아 보세요<br><small>담기 버튼을 눌러도 돼요</small></div>';
+    '<div class="ups">'+upsHtml(2)+'</div><div class="clft"><b>'+won(cartSum().pay)+'</b>'+(cartSum().bottles?'<small class="perd">💧 액상 병당 <b>'+won(cartSum().per)+'</b></small>':'')+(cartSum().full>cartSum().pay?'<small>패키지 적용 · '+won(cartSum().full-cartSum().pay)+' 아껴요</small>':'')+'<button data-cgo="1">장바구니 보기 ›</button></div>' : '<div class="cempty">🛒 상품을 끌어다<br><b>이 칸 아무 데나</b> 놓아 보세요<br><small>담기 버튼을 눌러도 돼요</small></div>';
   cl.scrollTop = keep;
   document.getElementById('cct').innerHTML = n ? won(cartSum().pay).replace('원','<br>원') : '여기로<br>쏙! 👇';
   document.getElementById('cliq').style.height = Math.min(90, n ? 22+n*7 : 0)+'%';
@@ -1315,13 +1323,13 @@ function cartPane(){
   if (!n) return '<div class="pane res">'+topBar('장바구니 🛒',1,1)+'<section class="q"><h1>장바구니가<br>비어 있어요 🫙</h1><p>상품 카드의 <b>🛒 담기</b>를 누르거나,<br>카드를 꾹 눌러서 오른쪽 병에 끌어다 놓아 보세요.</p></section>'+
     '<div class="acts" style="margin-top:auto"><button data-act="back">돌아가기</button><button class="main" data-act="mtl">🗺️ 액상 고르러 가기</button></div></div>';
   var lines=Object.keys(S.L).map(function(l){ var o=S.L[l], r=lineSum(l,o), f=r.full, b=r.pay;
-      return '<div class="cline"><span>'+esc(l)+' '+o.n+'병</span><span>'+(f>b?'<s>'+won(f)+'</s>':'')+'<b>'+won(b)+'</b></span></div>'+(PRICE[l]&&nudge(l,o.n)?'<div class="nudge">'+nudge(l,o.n)+'</div>':'')+(l==='일회용'?'<div class="nudge">🎁 일회용 3+1, 5+1 행사는 직원이 계산할 때 적용해 드려요</div>':''); }).join('');
+      return '<div class="cline"><span>'+esc(l)+' '+o.n+(PRICE[l]?'병 <small class="perb">병당 '+won(Math.round(b/o.n/10)*10)+'</small>':'개')+'</span><span>'+(f>b?'<s>'+won(f)+'</s>':'')+'<b>'+won(b)+'</b></span></div>'+(PRICE[l]&&nudge(l,o.n)?'<div class="nudge">'+nudge(l,o.n)+'</div>':'')+(l==='일회용'?'<div class="nudge">🎁 일회용 3+1, 5+1 행사는 직원이 계산할 때 적용해 드려요</div>':''); }).join('');
   var rows=Object.keys(c).map(function(id){ var x=ITEM(id); if(!x) return ''; var src=x.src!=null?x.src:(x.img?'../img/'+x.img:'');
       return '<div class="crow">'+(src?'<img src="'+esc(src)+'" alt="">':'<span class="ph0">'+(x.em||'🧴')+'</span>')+'<div class="tx"><b>'+esc(x.dn||x.n)+'</b><small>'+esc([x.br,x.line].filter(Boolean).join(' · '))+'</small></div>'+
         '<div class="qty"><button data-act="cq" data-id="'+esc(id)+'" data-d="-1" aria-label="빼기">−</button><span>'+c[id]+'</span><button data-act="cq" data-id="'+esc(id)+'" data-d="1" aria-label="더하기">＋</button></div></div>'; }).join('');
   return '<div class="pane res cartp">'+topBar('장바구니 🛒',1,2)+
     '<section class="q" style="margin-top:28px"><h1>담은 상품 '+n+'개 🛒</h1>'+(S.full>S.pay?saveBox('패키지 값으로 자동 계산했어요', S.full, S.pay):'<div class="save"><span class="em">🧾</span><div class="tx"><div class="l">합계</div><div class="big">'+won(S.pay)+'</div></div></div>')+
-      '<div class="ftcard" style="margin-top:14px">'+lines+(S.noBundle>S.pay?'<div class="cline"><span>📦 '+esc(S.packs.join(', '))+'</span><b>−'+won(S.noBundle-S.pay)+'</b></div>':'')+'</div>'+'<div class="ups">'+upsHtml(3)+'</div></section>'+
+      '<div class="ftcard" style="margin-top:14px">'+(S.bottles?'<div class="perbig">💧 액상 <b>병당 '+won(S.per)+'</b> <s>'+won(15000)+'</s></div>':'')+lines+(S.noBundle>S.pay?'<div class="cline"><span>📦 '+esc(S.packs.join(', '))+'</span><b>−'+won(S.noBundle-S.pay)+'</b></div>':'')+'</div>'+'<div class="ups">'+upsHtml(3)+'</div></section>'+
     '<section class="ftc"><div class="ftcard">'+rows+'</div></section>'+
     '<div class="acts"><button data-act="back">＋ 더 고르기</button><button class="main" data-act="cartgo">💁 이대로 주세요</button></div></div>';
 }
@@ -1376,6 +1384,7 @@ function bInfo(){ var M=MODELS[state.model], o=M.opts[state.mopt||0]||M.opts[0],
   var accSum=accs.filter(function(g){return A[g.id]}).reduce(function(a,g){return a+g.price},0);
   var total=o.price+pk[3]+(pod?pod.price*pn:0)+accSum, full=o.price+pk[4]+(pod?pod.price*pn:0)+accSum;
   return {M:M,o:o,P:P,pods:pods,accs:accs,packs:packs,pk:pk,pod:pod,pn:pn,A:A,bund:bund,total:total,full:full}; }
+function bottles(k){ return k==='L3'?3:(+k||1); }
 function bSum(I){ return '<div class="bsum"><div class="bt"><small>내 조합 합계</small><b><span class="cnt2">'+won(I.total)+'</span></b>'+(I.full>I.total?'<span class="bo"><s>'+won(I.full)+'</s> <em>'+won(I.full-I.total)+' 아껴요 🎉</em></span>':'')+'</div>'+
   '<button class="bcall" data-act="mcall">💁 직원 호출</button><button class="bgo" data-act="bgo">🛒 이 조합 담기</button></div>'; }
 function buildPane(){
@@ -1387,7 +1396,7 @@ function buildPane(){
   var colors=(I.M.opts.length>1||I.M.opts[0].opt)?sec('1','🎨 색상','<div class="bchips">'+M.opts.map(function(x,i){return '<button data-act="mopt" data-i="'+i+'" class="'+(i===(state.mopt||0)?'on':'')+'">'+esc(x.opt||'기본')+(x.price!==M.price?' <small>+'+won(x.price-M.price)+'</small>':'')+'</button>'}).join('')+'</div>'):'';
   var packs=sec(colors?'2':'1','💧 액상 패키지','<div class="bopts">'+I.packs.map(function(x){ var on=x[0]===I.pk[0], sv=x[4]-x[3];
       return '<button class="bopt'+(on?' on':'')+'" data-act="bpk" data-v="'+x[0]+'"><span class="r"></span><span class="bt1">'+x[2]+' '+esc(x[1])+(x[0]==='5'?' <i class="hot">인기</i>':'')+'</span>'+
-        (x[3]?'<span class="bp">+'+won(x[3])+(sv>0?' <s>+'+won(x[4])+'</s>':'')+'</span>'+(sv>0?'<span class="bsv">💸 '+won(sv)+' 아껴요</span>':''):'<span class="bp">+0원</span>')+'</button>'; }).join('')+'</div>',
+        (x[3]?'<span class="bp">+'+won(x[3])+(sv>0?' <s>+'+won(x[4])+'</s>':'')+'</span>'+'<span class="bsv">'+(sv>0?'💸 '+won(sv)+' 아껴요 · ':'')+'<b class="per">병당 '+won(Math.round(x[3]/bottles(x[0])/10)*10)+'</b> <s>'+won(x[0]==='L3'?30000:15000)+'</s></span>':'<span class="bp">+0원</span>')+'</button>'; }).join('')+'</div>',
       I.bund?'🎁 <b>'+esc(M.dn)+'</b>는 액상이랑 같이 사면 기기 패키지 값이 돼요. 맛은 담을 때 직접 골라요.':'액상은 패키지로 사면 1병씩보다 싸요. 맛은 담을 때 직접 골라요.');
   var n=(colors?2:1)+1;
   var pods=I.pods.length?sec(String(n++),'🔧 여분 팟 · 코일','<div class="bchips">'+I.pods.map(function(g,i){return '<button data-act="bpodi" data-i="'+i+'" class="'+(i===(state.bpodi||0)&&I.pn?'on':'')+'">'+esc(g.n)+' <small>'+won(g.price)+'</small></button>'}).join('')+'</div>'+
