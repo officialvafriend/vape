@@ -7,7 +7,7 @@
 function vfFit(){var land=matchMedia("(orientation: landscape)").matches,a=screen.width,b=screen.height,w=land?Math.max(a,b):Math.min(a,b),base=land?1440:900,s=Math.round(w/base*1000)/1000,m=document.querySelector('meta[name=viewport]');
   m.setAttribute('content',!w||Math.abs(s-1)<.02?'width='+base+',viewport-fit=cover':'width='+base+',initial-scale='+s+',minimum-scale='+s+',maximum-scale='+s+',user-scalable=no,viewport-fit=cover');
   if(document.body)document.body.classList.toggle('land',land);
-  document.documentElement.style.zoom=matchMedia('(pointer:fine)').matches?'.85':'';}
+  document.documentElement.classList.toggle('pc',matchMedia('(pointer:fine)').matches);}
 vfFit();document.addEventListener('DOMContentLoaded',vfFit);addEventListener('orientationchange',function(){setTimeout(vfFit,60);});addEventListener('resize',function(){clearTimeout(window.__vft);window.__vft=setTimeout(vfFit,120);});</script>
 <meta name="robots" content="noindex">
 <meta name="theme-color" content="#3B5F8F">
@@ -44,6 +44,9 @@ vfFit();document.addEventListener('DOMContentLoaded',vfFit);addEventListener('or
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{height:100%}
+/* PC 브라우저: 화면 전체를 85%로 줄여서 한눈에 (zoom은 브라우저마다 달라서 transform으로) */
+html.pc{overflow:hidden}
+html.pc body{position:absolute;left:0;top:0;width:calc(100vw / .85);height:calc(100vh / .85);transform:scale(.85);transform-origin:0 0}
 body{background:var(--bg);color:var(--ink);font-family:var(--kr);
   -webkit-user-select:none;user-select:none;overflow:hidden}
 button{font-family:inherit;color:inherit;cursor:pointer}
@@ -1030,9 +1033,9 @@ function labAdd(k){ var m=state.mix=state.mix||[]; if(m.indexOf(k)>=0) return;
 function labBind(){
   [].forEach.call(document.querySelectorAll('.ing'),function(b){
     b.addEventListener('pointerdown',function(e){
-      var x0=e.clientX, y0=e.clientY, moved=false, fl=document.getElementById('flask');
+      var x0=e.clientX, y0=e.clientY, moved=false, fl=document.getElementById('flask'), sc=(b.getBoundingClientRect().width/b.offsetWidth)||1;
       b.setPointerCapture(e.pointerId);
-      function mv(ev){ var dx=ev.clientX-x0, dy=ev.clientY-y0; if(!moved && Math.abs(dx)+Math.abs(dy)>10){ moved=true; b.classList.add('drag'); }
+      function mv(ev){ var dx=(ev.clientX-x0)/sc, dy=(ev.clientY-y0)/sc; if(!moved && Math.abs(dx)+Math.abs(dy)>10){ moved=true; b.classList.add('drag'); }
         if(!moved) return; b.style.transform='translate('+dx+'px,'+dy+'px) scale(1.12) rotate(-6deg)';
         var r=fl.getBoundingClientRect(); fl.classList.toggle('hot', ev.clientX>r.left&&ev.clientX<r.right&&ev.clientY>r.top&&ev.clientY<r.bottom); }
       function upf(ev){ b.removeEventListener('pointermove',mv); b.removeEventListener('pointerup',upf); b.removeEventListener('pointercancel',upf);
