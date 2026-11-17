@@ -38,3 +38,19 @@ window.DEV_PROS = {
     pros:["액상이 이미 들어 있는 팟만 갈아 끼우면 끝","하카 팟과 호환돼요","기기값이 싸고 맛 종류가 다양해요"],
     spec:["🔋 충전식","💧 팟 교체","🎯 하카 호환"], pod:/^에어릭스/, acc:null}
 };
+
+/* 비교표 (⚖️ 기기 비교): 모르는 칸은 '—' */
+window.DEV_CMP = {
+  "말론":            {vs:"말론S", bat:2000, ml:5,   ohm:"0.4 / 0.6Ω", body:"각진 사각, 큼직", screen:"있음 (1.02인치)", draw:"오토 + 버튼", breath:"입호흡"},
+  "말론S":           {vs:"말론",  bat:2300, ml:4,   ohm:"0.4 / 0.6Ω", body:"원통형, 작고 가벼움", screen:"있음", draw:"오토 + 버튼", breath:"입호흡"},
+  "하복2":           {vs:"하복SE", bat:null, ml:null, ohm:"0.6Ω · 0.15Ω", body:"메탈 패턴, 묵직", screen:"있음", draw:"오토 + 버튼", breath:"입호흡 + 폐호흡 (최대 80W)"},
+  "하복SE":          {vs:"하복2", bat:1800, ml:4,   ohm:"0.6Ω · 0.25Ω (코일 교체)", body:"한 손에 쏙", screen:"있음", draw:"버튼", breath:"입호흡 + 폐호흡"},
+  "맥스프로 스티그마": {vs:"발라맥스프로", bat:2600, ml:6, ohm:"0.5 / 0.6Ω", body:"메탈, 상어 한정판 디자인", screen:"있음", draw:"오토 + 버튼", breath:"입호흡"},
+  "발라맥스프로":     {vs:"조바", bat:2600, ml:6,   ohm:"0.5 / 0.6Ω", body:"메탈, 색상 5가지", screen:"있음", draw:"오토 + 버튼", breath:"입호흡"},
+  "프릭스킷":         {vs:"발라맥스프로", bat:2600, ml:null, ohm:"0.6 / 0.8Ω", body:"알루미늄 114g, 패널 교체", screen:"있음", draw:"오토 + 버튼", breath:"입호흡"},
+  "후카에어":         {vs:"하복2", bat:3200, ml:6,   ohm:"0.4Ω", body:"투명 바디 137g, 물담배 감성", screen:"LED", draw:"오토", breath:"폐호흡"},
+  "조바":            {vs:"발라맥스프로", bat:2500, ml:4.5, ohm:"0.7Ω 하나", body:"케이스 기본 포함", screen:"있음", draw:"오토 + 버튼", breath:"입호흡"},
+  "플러키":          {vs:"썬더Q2", bat:1600, ml:4.5, ohm:"0.6Ω", body:"80g 초경량, 손바닥 크기", screen:"LED", draw:"오토 + 버튼", breath:"입호흡"},
+  "썬더Q2":          {vs:"플러키", bat:1350, ml:3,   ohm:"0.4~1.2Ω", body:"스틱형, 색상 10가지", screen:"LED", draw:"오토 + 버튼", breath:"입호흡"},
+  "에어릭스":         {vs:"썬더Q2", bat:null, ml:2.15, ohm:"액상 든 팟 교체", body:"작고 가벼움, 하카 팟 호환", screen:"LED", draw:"오토", breath:"입호흡"}
+};
