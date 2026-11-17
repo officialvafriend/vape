@@ -2159,6 +2159,17 @@ function loadOrder() { for (const t of ORDER_CODE.split("_")) { const [a, q0] = 
   document.body.classList.add('open'); qrView(); }
 if (ORDER_CODE) loadOrder();
 
+/* 11/17 액상덕후 "패드도 자동 새로고침": 5분마다 이 화면 파일이 바뀌었는지 보고, 장바구니가 비고 1분 넘게 아무도 안 만질 때만 새로고침 */
+(() => { let base = null, newer = false, lastTouch = Date.now();
+  ["pointerdown", "keydown", "touchstart"].forEach((t) => document.addEventListener(t, () => { lastTouch = Date.now(); }, { capture: true, passive: true }));
+  const hash = (s) => { let h = 5381; for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0; return s.length + ":" + h; };
+  const check = async () => { try { const r = await fetch(location.pathname + "?v=" + Date.now(), { cache: "no-store" }); if (!r.ok) return; const h = hash(await r.text()); if (base === null) base = h; else if (h !== base) newer = true; } catch (e) {} };
+  const calm = () => !cart.size && !document.body.classList.contains("open") && !document.getElementById("payNote") && !(document.getElementById("brp") || {}).classList?.contains("on") && Date.now() - lastTouch > 60000;
+  if (ORDER_CODE) return;
+  check(); setInterval(check, 5 * 60000);
+  setInterval(() => { if (newer && calm()) location.reload(); }, 15000);
+})();
+
 // 오프라인 저장 + 앱 설치 (sw-b.js)
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw-b.js").catch(() => {});
 </script>
