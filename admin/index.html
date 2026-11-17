@@ -2218,6 +2218,11 @@ ${miss.length ? `<div class="plnote" style="background:var(--amber-soft);color:v
     if (a === "spgo") { const m = T(PT.sp.id), n = PT.sp.pick.length; for (const b of BR) if (PT.sp.pick.includes(b)) m.kids.push({ b, st: "no" }); m.kids.sort((p, q) => BR.indexOf(p.b) - BR.indexOf(q.b)); PT.sp = null; toast(`${n}곳에 보냈어요 (예시라 직원웹에는 안 가요)`, 3400); if (tab === "tasks") render(); return detail(m.id); }
     if (a === "share") { PT.sh = null; return shareSheet(id); }
     if (a === "shr") { PT.sh.room = t.dataset.r; const v = $("#ptShTxt").value; shareSheet(PT.sh.id); $("#ptShTxt").value = v; return; }
+    if (a === "shgo" && window.admLive && window.admLive() && window.msgShare) { /* 메신저가 켜져 있으면 진짜 방에 올린다 */
+      const m = T(PT.sh.id), txt = $("#ptShTxt").value.trim(), room = PT.sh.room; t.disabled = true;
+      window.msgShare({ room, title: m.title, sub: `맡은 사람 ${m.owner}, ${dueTxt(m)}`, txt }).then((ok) => { if (!ok) { t.disabled = false; return toast("방에 못 올렸어요. 다시 눌러 주세요"); } if (!m.share.includes(room)) m.share.push(room); if (txt) m.talk.push({ who: PT.me, txt }); toast(`${room}에 올렸어요`); PT.sh = null; detail(m.id); });
+      return;
+    }
     if (a === "shgo") { const m = T(PT.sh.id), txt = $("#ptShTxt").value.trim(); if (!m.share.includes(PT.sh.room)) m.share.push(PT.sh.room); if (txt) m.talk.push({ who: PT.me, txt }); toast(`${PT.sh.room}에 올렸어요 (예시)`); PT.sh = null; return detail(m.id); }
     if (a === "new") { PT.nw = null; return newSheet(); }
     if (a === "nwo") { const v = $("#ptNwT").value, dd = $("#ptNwD").value; PT.nw.owner = t.dataset.n; PT.nw.due = dd || PT.nw.due; newSheet(); $("#ptNwT").value = v; return; }
@@ -2289,6 +2294,21 @@ ${miss.length ? `<div class="plnote" style="background:var(--amber-soft);color:v
 .msmore{display:block;margin:0 auto 12px;height:40px;padding:0 16px;border-radius:20px;background:var(--card);font-size:14px;font-weight:700;color:var(--ink2)}.msmore:disabled{opacity:.5}
 .mscomp{position:relative}.msnew{position:absolute;left:50%;top:-48px;transform:translateX(-50%);height:38px;padding:0 16px;border-radius:19px;background:var(--blue);color:#fff;font-size:14px;font-weight:700;box-shadow:0 4px 14px rgba(0,0,0,.18)}.msnew[hidden]{display:none}
 .msmem div{display:flex;align-items:center;gap:10px;min-height:44px;font-size:15px;font-weight:600}.msmem .av{width:32px;height:32px;border-radius:50%;font-size:14px}
+.msg .mm button.u{font-size:12px;padding:0;min-height:20px}
+.mstk.done b{text-decoration:line-through;color:var(--sub)}.mstk.done i{background:var(--green-soft,#e6f4ea);color:var(--green)}button.mscard{cursor:pointer}
+.mstkr span{flex:1;min-width:0}.mstkr b{display:block;font-size:15px;font-weight:700}.mstkr em{display:block;font-style:normal;font-size:13px;color:var(--sub);margin-top:1px}.mstkr.done b{text-decoration:line-through;color:var(--sub)}.mstkr.open small{color:var(--blue)}
+.mstks{background:var(--bg);border-radius:12px;padding:12px 14px;margin-top:12px;font-size:14px;font-weight:600;color:var(--ink2)}.mstks.done{color:var(--green)}
+.mstkbox{margin:0 0 14px}
+.msav{flex:none;align-self:flex-start;width:34px;height:34px;border-radius:50%;background:var(--card);display:grid;place-items:center;font-size:19px;line-height:1;box-shadow:inset 0 0 0 1px var(--line2)}.msg.av .nm{margin-left:46px}.msg.av .bw{gap:6px}
+.msav.big{width:64px;height:64px;font-size:36px}.msprof{display:flex;align-items:center;gap:14px;margin-top:14px}.msprof b{font-size:20px;font-weight:800}
+.msemo{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:6px;margin-top:8px}.msemo button{aspect-ratio:1;border-radius:12px;background:var(--bg);font-size:22px;line-height:1}.msemo button.on{box-shadow:inset 0 0 0 2px var(--blue);background:var(--blue-soft)}
+.mspin small{flex:none;font-size:12px;font-weight:600;opacity:.8}
+.mspr{display:flex;gap:6px;align-items:stretch;margin:0 0 8px}.mspr .msdec{flex:1;min-width:0;margin:0}.mspr .msdec b{font-weight:700}.mspx{flex:none;width:56px;border-radius:14px;background:var(--line2);color:var(--ink2);font-size:14px;font-weight:700}
+.msalim .msab{display:flex;gap:8px;margin-top:12px}.msalim .msab button{flex:1;height:48px;border-radius:14px;background:var(--blue);color:#fff;font-size:15px;font-weight:700}.msalim .msab button.g{flex:0 0 96px;background:var(--line2);color:var(--ink2)}
+.msalrow{display:flex;align-items:center;gap:10px;background:var(--bg);border-radius:14px;padding:10px 12px;margin-top:14px;font-size:15px}.msalrow span{flex:1}.msalrow b{margin-left:4px}.msalrow button{height:40px;padding:0 14px;border-radius:12px;background:var(--blue);color:#fff;font-size:14px;font-weight:700}
+textarea.msin{height:48px;min-height:48px;max-height:132px;padding:12px 16px;line-height:1.5;resize:none;border-radius:22px;font-family:inherit;overflow-y:auto;display:block}.msrw{align-items:flex-end}.msrw .msic,.msrw .mssend{margin-bottom:2px}
+@media (hover:hover) and (pointer:fine){.msg .bb{-webkit-user-select:text;user-select:text;cursor:text}.msg .bb button{cursor:pointer}}
+.mssel{background:var(--bg);border-radius:14px;padding:14px;margin-top:12px;font-size:16px;line-height:1.6;white-space:pre-wrap;word-break:break-word;max-height:46vh;overflow:auto;-webkit-user-select:text;user-select:text;-webkit-touch-callout:default}
 .mstray{display:flex;gap:8px;align-items:center;overflow-x:auto;padding:0 2px}.mstray:not(:empty){padding:2px 2px 8px}
 .mstf{position:relative;flex:none;height:64px;min-width:64px;max-width:150px;border-radius:12px;background:var(--bg);overflow:hidden;display:flex;flex-direction:column;justify-content:center;padding:0 10px}.mstf img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}.mstf span{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:18px}.mstf small{position:relative;font-size:11px;color:var(--sub)}.mstf img+small{position:absolute;left:4px;bottom:3px;color:#fff;text-shadow:0 0 3px #000}
 .mstf button{position:absolute;right:2px;top:2px;width:24px;height:24px;border-radius:50%;background:rgba(0,0,0,.55);color:#fff;font-size:15px;line-height:1}.mstray em{font-style:normal;font-size:13px;font-weight:700;color:var(--blue);flex:none;padding:0 6px}
@@ -2314,13 +2334,15 @@ ${miss.length ? `<div class="plnote" style="background:var(--amber-soft);color:v
   const SB = { url: "https://bjjlmnkyhedtutogzliq.supabase.co", key: "sb_publishable_i8rfcm_zAnwV75joN58FCw_8tHgFUKr" };
   const P0 = ["한섭이사", "보혜", "민혁팀장", "동재팀장"];
   /* st: idle 아직 안 물어봄, check 물어보는 중, off 창고에 열쇠가 없음(예시를 보임), who 이름을 골라야 함, load 불러오는 중, ok 진짜, nokey 열쇠가 다름, err 못 닿음 */
-  const LV = { st: "idle", k: "", kFor: null, who: ls.get("vf-msg-who") || "", people: P0, seen: {}, since: 0, timer: 0, busy: false, sending: false, fast: false, found: [], foundQ: "", ft: 0, hidAt: 0, urls: {}, miss: {}, hy: false, up: "" };
+  const LV = { st: "idle", k: "", kFor: null, who: ls.get("vf-msg-who") || "", people: P0, seen: {}, since: 0, timer: 0, busy: false, sending: false, fast: false, found: [], foundQ: "", ft: 0, hidAt: 0, urls: {}, miss: {}, hy: false, up: "", tasks: [], emoji: {} };
+  const DEF = { 한섭이사: "🦁", 보혜: "🐰", 민혁팀장: "🐻", 동재팀장: "🐯" }, EMO = ["🦁", "🐰", "🐻", "🐯", "🦊", "🐶", "🐱", "🐼", "🐨", "🐸", "🐵", "🐧", "🦄", "🐷", "🐮", "🐹", "🦉", "🐳", "🐢", "🦖", "🐝", "🌵", "🍀", "🌸", "🔥", "⭐", "🌙", "⚡", "🍑", "🍊", "🍉", "☕"];
+  const em = (n) => (LV.st === "ok" && (LV.emoji[n] || DEF[n])) || String(n || "?")[0];
   const EDGE = SB.url + "/functions/v1/adm-file", FMAX = 20 * 1024 * 1024, FN = 5, SIGN = SB.url + "/storage/v1/object/sign/adm-files/";
   const live = () => LV.st === "ok";
   const demo = () => LV.st === "off";
   const me = () => (demo() ? ls.get("vf-pt-me") || "민혁팀장" : LV.who);
   const P = () => (live() ? LV.people : P0);
-  const MS = { room: "", v: "all", side: true, q: null, draft: "", re: "", flash: "", mk: null, nr: [], nrName: "", files: [] };
+  const MS = { room: "", v: "all", side: true, q: null, draft: "", re: "", flash: "", mk: null, nr: [], nrName: "", files: [], tk: null };
   let ROOMS = [], MSGS = [], DEC = [], seq = 0;
   const addD = (d, n) => new Date(Date.parse(d + "T00:00:00Z") + n * 864e5).toISOString().slice(0, 10);
   const today = () => (live() ? new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10) : D.d);
@@ -2354,7 +2376,8 @@ ${miss.length ? `<div class="plnote" style="background:var(--amber-soft);color:v
   const drafts = (id) => (live() ? [] : rmsgs(id).filter((m) => m.ai && m.ai.st !== "drop"));
   const dl = (d) => `${+d.slice(5, 7)}/${+d.slice(8)}(${"일월화수목금토"[new Date(d + "T00:00:00Z").getUTCDay()]})`;
   const pinOf = (r) => (r.pin ? MSGS.find((m) => m.id === r.pin) || r.pinmsg || null : null);
-  const anyMsg = (id) => MSGS.find((x) => x.id === id) || LV.found.find((x) => x.id === id) || ROOMS.map((r) => r.pinmsg).find((x) => x && x.id === id);
+  const anyMsg = (id) => MSGS.find((x) => x.id === id) || LV.found.find((x) => x.id === id) || ROOMS.map((r) => r.pinmsg).find((x) => x && x.id === id) || ROOMS.flatMap((r) => (r.pins || []).map((p) => p.m)).find((x) => x.id === id);
+  const isPin = (r, id) => (live() ? (r.pins || []).some((p) => p.m.id === id) : r.pin === id);
 
   /* ── 창고와 주고받기 ── */
   async function rpc(fn, args) {
@@ -2374,17 +2397,22 @@ ${miss.length ? `<div class="plnote" style="background:var(--amber-soft);color:v
   /* 온라인 홈 같은 다른 화면이 같은 열쇠와 이름으로 창고를 부를 때 쓰는 창구 */
   window.admCall = (fn, a) => call(fn, a || {}); window.admLive = () => live(); window.admWho = () => LV.who;
   const mapM = (x) => ({ id: "m" + Number(x.id), n: Number(x.id), room: "r" + Number(x.room), who: String(x.who), at: String(x.at), txt: String(x.txt), re: x.re ? "m" + Number(x.re) : "", card: x.card && typeof x.card === "object" ? x.card : null });
+  const mapT = (x) => ({ id: Number(x.id), room: "r" + Number(x.room), msg: x.msg ? "m" + Number(x.msg) : "", title: String(x.title || ""), owner: String(x.owner || ""), by: String(x.by || ""), st: x.st === "done" ? "done" : "open", due: x.due ? String(x.due) : "" });
+  const T = (id) => LV.tasks.find((t) => t.id === +id);
+  const openT = (rid) => LV.tasks.filter((t) => t.room === rid && t.st === "open");
   function addMsgs(list) { const have = new Set(MSGS.map((m) => m.id)); let add = 0; for (const x of list) { const m = mapM(x); if (!have.has(m.id)) { MSGS.push(m); have.add(m.id); add++; } } if (add) MSGS.sort((a, b) => a.n - b.n); return add; }
   function take(s) {
     LV.people = s.people || P0;
-    ROOMS = s.rooms.map((r) => ({ id: "r" + Number(r.id), n: Number(r.id), name: String(r.name || ""), mem: (r.mem || []).map(String), imp: !!r.imp, pin: r.pin ? "m" + Number(r.pin) : "", pinmsg: r.pinmsg ? mapM(r.pinmsg) : null, first: r.first || 0 }));
+    ROOMS = s.rooms.map((r) => ({ id: "r" + Number(r.id), n: Number(r.id), name: String(r.name || ""), mem: (r.mem || []).map(String), imp: !!r.imp, pin: r.pin ? "m" + Number(r.pin) : "", pinmsg: r.pinmsg ? mapM(r.pinmsg) : null, first: r.first || 0, pins: Array.isArray(r.pins) ? r.pins.filter((p) => p && p.msg).map((p) => ({ m: mapM(p.msg), who: String(p.who || ""), at: String(p.at || "") })) : r.pinmsg ? [{ m: mapM(r.pinmsg), who: "", at: "" }] : [] }));
+    if (s.emoji && typeof s.emoji === "object") LV.emoji = s.emoji;
     const add = addMsgs(s.msgs), old = LV.seen; LV.seen = {};
     for (const x of s.seen) (LV.seen["r" + x.room] ||= {})[x.who] = x.last;
     for (const k in old) { const v = (old[k] || {})[LV.who] || 0; if (v > ((LV.seen[k] || {})[LV.who] || 0)) (LV.seen[k] ||= {})[LV.who] = v; }
     LV.since = MSGS.length ? MSGS.at(-1).n : 0;
+    if (Array.isArray(s.tasks)) LV.tasks = s.tasks.map(mapT);
     return add;
   }
-  const sig = () => JSON.stringify([ROOMS.map((r) => [r.id, r.name, r.mem, r.pin]), LV.seen]);
+  const sig = () => JSON.stringify([ROOMS.map((r) => [r.id, r.name, r.mem, r.pin, (r.pins || []).map((p) => p.m.id)]), LV.emoji, LV.seen, LV.tasks.map((t) => [t.id, t.st])]);
   /* 메신저가 스스로 다시 그릴 때는 full(), 바깥(3분마다 도는 자동 새로고침 등)이 대화방을 다시 그리려 하면 글 칸만 바꿔 치던 글과 커서를 지킨다 */
   let own = false, lastPc = null;
   const full = () => { own = true; try { render(); } finally { own = false; } };
@@ -2409,7 +2437,7 @@ ${miss.length ? `<div class="plnote" style="background:var(--amber-soft);color:v
     try {
       const s = await call("adm_state", { p_since: 0 });
       if (!s.ok) { LV.st = s.why === "who" ? "who" : "nokey"; return rr(); }
-      take(s); LV.st = "ok"; ls.set("vf-msg-live", "1"); LV.fast = false; sched(); updBadge(); rr();
+      take(s); LV.st = "ok"; ls.set("vf-msg-live", "1"); LV.fast = false; sched(); updBadge(); rr(); pushSync();
     } catch { LV.st = "err"; rr(); }
   }
   function sched(ms) { clearTimeout(LV.timer); if (!live()) return; LV.timer = setTimeout(poll, ms ?? (tab === "msg" ? 3000 : 30000)); }
@@ -2442,7 +2470,7 @@ ${miss.length ? `<div class="plnote" style="background:var(--amber-soft);color:v
       const bottom = b.scrollHeight - b.scrollTop - b.clientHeight < 90, top = b.scrollTop;
       readAll(r.id, true);
       b.innerHTML = bodyHtml(r); b.scrollTop = bottom ? b.scrollHeight : top;
-      const p = $("#mspinw"); if (p) p.innerHTML = pinHtml(r);
+      const p = $("#mspinw"); if (p) p.innerHTML = pinHtml(r); const th = $("#mstkh"); if (th) th.innerHTML = tkhHtml(r);
       const nb = $("#msnew"); if (nb && add && !bottom) nb.hidden = false; hydrate();
     }
     if (isPC() && MS.q === null) { const l = $(".mslistw"); if (l) l.innerHTML = listHtml(); const s = $(".msside"); if (s) s.outerHTML = sideHtml(); }
@@ -2472,6 +2500,38 @@ ${miss.length ? `<div class="plnote" style="background:var(--amber-soft);color:v
     if (live() && !MSGS.some((x) => x.id === m.id)) { try { if (!(await ensure(m))) return toast("그 글을 못 불러왔어요"); } catch { return toast("그 글을 못 불러왔어요"); } }
     tab = "msg"; MS.room = m.room; MS.q = null; MS.v = "all"; MS.flash = m.id; readAll(m.room); full();
   }
+
+  /* ── 알림 ── 이 기기가 [알림 켜기]를 누르면 알림 주소를 창고에 적어 두고, 글이나 업무가 생기면 서버 함수가 그 방 사람들 기기에 알림을 쏜다.
+     알림에는 글 내용이 실리지 않는다("새 글이나 업무가 있어요"만 뜸). 아이폰은 홈 화면에 추가한 아이콘으로 열었을 때만 된다. */
+  const EDGE_PUSH = SB.url + "/functions/v1/adm-push";
+  const pushCan = () => "serviceWorker" in navigator && "PushManager" in window && "Notification" in window;
+  const pushIsOn = () => ls.get("vf-msg-push") === "1" && pushCan() && Notification.permission === "granted";
+  const isIos = () => /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  const b64uToU8 = (t) => Uint8Array.from(atob(t.replace(/-/g, "+").replace(/_/g, "/") + "===".slice((t.length + 3) % 4)), (c) => c.charCodeAt(0));
+  const edgePush = async (b) => (await fetch(EDGE_PUSH, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(b), keepalive: true })).json();
+  async function pushOn() {
+    if (!pushCan()) return toast(isIos() ? "아이폰은 홈 화면에 추가한 아이콘으로 열어야 알림을 켤 수 있어요" : "이 브라우저에서는 알림을 켤 수 없어요", 5000);
+    try {
+      if ((await Notification.requestPermission()) !== "granted") return toast("알림이 막혀 있어요. 폰 설정에서 이 앱의 알림을 허용해 주세요", 5000);
+      const reg = await navigator.serviceWorker.register("sw.js"); await navigator.serviceWorker.ready;
+      const v = await edgePush({ type: "vapid" }); if (!v.ok || !v.pub) throw new Error("vapid");
+      let sub = await reg.pushManager.getSubscription();
+      try { if (!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64uToU8(v.pub) }); }
+      catch (e6) { const old = await reg.pushManager.getSubscription(); if (old) await old.unsubscribe(); sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64uToU8(v.pub) }); }
+      const o = await call("adm_push_sub", { p_endpoint: sub.endpoint, p_on: true }); if (!o.ok) throw new Error(o.why || "sub");
+      ls.set("vf-msg-push", "1"); toast("알림을 켰어요. 새 글이 오면 이 기기에 떠요"); if ($("#sheet .msprof")) profSheet(); rr();
+    } catch (e7) { toast("알림을 못 켰어요. 다시 눌러 주세요"); }
+  }
+  async function pushOff() {
+    try { const reg = await navigator.serviceWorker.getRegistration(), sub = reg && (await reg.pushManager.getSubscription()); if (sub) { await call("adm_push_sub", { p_endpoint: sub.endpoint, p_on: false }).catch(() => {}); await sub.unsubscribe(); } } catch (e8) { /* 이미 꺼진 것 */ }
+    ls.set("vf-msg-push", null); toast("이 기기의 알림을 껐어요"); if ($("#sheet .msprof")) profSheet(); rr();
+  }
+  async function pushSync() { /* 켜 둔 기기는 열 때마다 주소를 다시 알려 준다(주소가 바뀌었거나 이름을 바꿨을 때) */
+    if (ls.get("vf-msg-push") !== "1" || !pushCan()) return;
+    try { const reg = await navigator.serviceWorker.register("sw.js"), sub = await reg.pushManager.getSubscription(); if (!sub || Notification.permission !== "granted") return ls.set("vf-msg-push", null); await call("adm_push_sub", { p_endpoint: sub.endpoint, p_on: true }); } catch (e9) { /* 다음에 다시 */ }
+  }
+  const notify = (r) => { if (!r || !live()) return; mkey().then((k) => edgePush({ type: "notify", k, who: LV.who, room: r.n })).catch(() => {}); };
+  const pushBanner = () => { if (!live() || pushIsOn() || MS.pushHide) return ""; if (pushCan()) return `<div class="mson msalim"><b>알림을 켤까요?</b><span>새 글이나 업무가 오면 이 기기에 알림이 떠요.</span><div class="msab"><button data-ms="pushon">알림 켜기</button><button class="g" data-ms="pushhide">나중에</button></div></div>`; return isIos() ? `<div class="mson msalim"><b>아이폰 알림</b><span>사파리의 공유 단추에서 "홈 화면에 추가"를 한 뒤, 그 아이콘으로 열면 알림을 켤 수 있어요.</span><div class="msab"><button class="g" data-ms="pushhide">알겠어요</button></div></div>` : ""; };
 
   /* ── 첨부파일 ── 파일은 비공개 저장소에 들어가고, 서버 함수가 열쇠와 방을 확인한 뒤 한 시간짜리 주소를 내준다 */
   const fsz = (n) => (n >= 1048576 ? (n / 1048576).toFixed(1) + "MB" : Math.max(1, Math.round(n / 1024)) + "KB");
@@ -2546,6 +2606,24 @@ ${miss.length ? `<div class="plnote" style="background:var(--amber-soft);color:v
     try { const u = await urlOf(m, fl); if (!u) throw 0; const a = document.createElement("a"), nm = String(fl.n || "파일"); if (u.startsWith("blob:")) { a.href = u; a.download = nm; } else a.href = u + "&download=" + encodeURIComponent(nm); a.rel = "noopener"; document.body.appendChild(a); a.click(); a.remove(); } catch { toast("파일을 못 받았어요. 다시 눌러 주세요"); }
   }
 
+  /* ── 글을 바로 업무로 ── 업무는 창고(adm_tasks)에 저장되고 그 방에 카드 글로 올라간다. 맡은 사람이나 만든 사람이 끝낸다 */
+  function taskCard(m) { const c = m.card, t = T(c.tid), done = t ? t.st === "done" : !!c.done, due = (t ? t.due : c.due) || ""; return `<button class="mscard mstk ${done ? "done" : ""}" data-ms="task" data-tid="${Number(c.tid)}"><small>${c.done ? "끝난 업무" : "업무"}</small><b>${esc(t ? t.title : c.title || "")}</b><span>맡은 사람 ${esc(t ? t.owner : c.owner || "")}${due ? ", " + dl(due) + "까지" : ""}</span><i>${done ? "끝" : "할 일"}</i></button>`; }
+  const tkhHtml = (r) => (live() && openT(r.id).length ? `<button class="mswho" data-ms="tklist">할 일 ${openT(r.id).length}</button>` : "");
+  const tkRow = (t) => `<button class="msdec mstkr ${t.st}" data-ms="task" data-tid="${t.id}"><small>${t.st === "done" ? "끝" : "할 일"}</small><span><b>${esc(t.title)}</b><em>${esc(t.owner)}${t.due ? ", " + dl(t.due) + "까지" : ""}</em></span></button>`;
+  function tkSheet() {
+    const k = MS.tk, r = R(k.room);
+    openSheet(`${nodock}<h3>업무로 만들기</h3><div class="caption">글에서 가져왔어요. 고쳐서 보내세요.</div><div class="ptlab">무엇을 하나요?</div><input class="ptin" id="msTkT" maxlength="60" value="${esc(k.title)}"><div class="ptlab">누가 맡나요?</div><div class="ptpick">${r.mem.map((n) => `<button class="chip ${k.owner === n ? "on" : ""}" data-ms="tko" data-n="${esc(n)}">${n === me() ? "나 (" + esc(n) + ")" : esc(n)}</button>`).join("")}</div><div class="ptlab">언제까지인가요? (안 골라도 돼요)</div><input class="ptin" type="date" id="msTkD" value="${esc(k.due)}"><div class="btns"><button class="btn gray" data-x style="flex:0 0 96px">닫기</button><button class="btn" data-ms="tkgo">업무로 보내기</button></div>`);
+  }
+  function tkView(id) {
+    const t = T(id); if (!t) return toast("이 업무는 목록에서 내려갔어요");
+    const can = t.owner === me() || t.by === me();
+    openSheet(`${nodock}<h3>${esc(t.title)}</h3><div class="caption">맡은 사람 ${esc(t.owner)}${t.due ? ", " + dl(t.due) + "까지" : ""}. 만든 사람 ${esc(t.by)}</div><div class="mstks ${t.st}">${t.st === "done" ? "끝난 업무예요" : can ? "끝나면 [끝냈어요]를 눌러 주세요" : "맡은 사람이 끝내면 이 방에 올라와요"}</div><div class="btns"><button class="btn gray" data-x style="flex:0 0 84px">닫기</button>${t.msg ? `<button class="btn gray" data-ms="jump" data-id="${t.msg}" data-room="${t.room}">원래 글</button>` : ""}${can ? `<button class="btn" data-ms="tkset" data-tid="${t.id}" data-done="${t.st === "done" ? 0 : 1}">${t.st === "done" ? "다시 열기" : "끝냈어요"}</button>` : ""}</div>`);
+  }
+  function tkList(rid) { const L = LV.tasks.filter((t) => t.room === rid), a = L.filter((t) => t.st === "open"), b = L.filter((t) => t.st === "done"); openSheet(`${nodock}<h3>이 방 할 일</h3><div style="margin-top:12px">${a.map(tkRow).join("") || '<div class="empty">할 일이 없어요</div>'}</div>${b.length ? `<div class="msgrp">끝난 것</div>${b.map(tkRow).join("")}` : ""}<div class="btns"><button class="btn gray" data-x>닫기</button></div>`); }
+  /* 업무 탭 맨 위에 "메신저에서 온 업무"를 보여 준다(내가 맡았거나 내가 만든 것 가운데 안 끝난 것) */
+  window.msgMyTasks = () => (live() ? LV.tasks.filter((t) => t.st === "open" && (t.owner === me() || t.by === me())) : []);
+  if (typeof tasksHtml === "function") { const th0 = tasksHtml; tasksHtml = function () { const base = th0.apply(this, arguments), L = window.msgMyTasks(); return L.length ? `<div class="mstkbox"><div class="msgrp" style="margin-top:4px">메신저에서 온 업무 <small>${L.length}개</small></div>${L.map((t) => tkRow(t).replace("</em>", `, ${esc(rname(R(t.room) || { name: "", mem: [] }))}</em>`)).join("")}</div>` + base : base; }; }
+
   /* ── 화면 ── */
   function aiHtml(m, wide) {
     const a = m.ai; if (!a || a.st === "drop") return "";
@@ -2554,9 +2632,9 @@ ${miss.length ? `<div class="plnote" style="background:var(--amber-soft);color:v
   }
   function bubble(m, noai) {
     const I = m.who === me(), r = R(m.room), src = m.re && MSGS.find((x) => x.id === m.re), left = r.mem.filter((n) => n !== m.who && !seenBy(m, n)).length;
-    const txt = m.card && m.card.kind === "file" && m.card.auto ? "" : esc(m.txt).replace(new RegExp("@(" + P().join("|") + ")", "g"), "<b>@$1</b>");
-    const card = m.card && m.card.kind === "file" ? filesHtml(m) : m.card ? `<span class="mscard" role="group"><small>${esc(m.card.kind || "")}</small><b>${esc(m.card.title || "")}</b><span>${esc(m.card.sub || "")}</span>${m.card.tag ? `<i>${esc(m.card.tag)}</i>` : ""}</span>` : "";
-    return `<div class="msg ${I ? "me" : ""} ${MS.flash === m.id ? "flash" : ""}" data-mid="${m.id}">${I ? "" : `<small class="nm">${esc(m.who)}</small>`}<div class="bw"><div class="bb" data-msb="${m.id}">${src ? `<span class="msq">${esc(src.who)}: ${esc(src.txt)}</span>` : ""}${card}${txt}</div><div class="mm"><button class="mo" data-ms="act" data-id="${m.id}" aria-label="이 글로 할 일">⋯</button>${I && left ? `<span class="u">안 읽음 ${left}</span>` : ""}<span>${hm(m)}</span></div></div>${noai || live() ? "" : aiHtml(m)}</div>`;
+    const txt = m.card && ((m.card.kind === "file" && m.card.auto) || m.card.kind === "task") ? "" : esc(m.txt).replace(new RegExp("@(" + P().join("|") + ")", "g"), "<b>@$1</b>");
+    const card = m.card && m.card.kind === "file" ? filesHtml(m) : m.card && m.card.kind === "task" ? taskCard(m) : m.card ? `<span class="mscard" role="group"><small>${esc(m.card.kind || "")}</small><b>${esc(m.card.title || "")}</b><span>${esc(m.card.sub || "")}</span>${m.card.tag ? `<i>${esc(m.card.tag)}</i>` : ""}</span>` : "";
+    return `<div class="msg ${I ? "me" : live() ? "av" : ""} ${MS.flash === m.id ? "flash" : ""}" data-mid="${m.id}">${I ? "" : `<small class="nm">${esc(m.who)}</small>`}<div class="bw">${I || !live() ? "" : `<span class="msav" aria-hidden="true">${esc(em(m.who))}</span>`}<div class="bb" data-msb="${m.id}">${src ? `<span class="msq">${esc(src.who)}: ${esc(src.txt)}</span>` : ""}${card}${txt}</div><div class="mm"><button class="mo" data-ms="act" data-id="${m.id}" aria-label="이 글로 할 일">⋯</button>${I && left ? `<button class="u" data-ms="who" data-id="${m.id}" aria-label="아직 안 읽은 사람 보기">안 읽음 ${left}</button>` : ""}<span>${hm(m)}</span></div></div>${noai || live() ? "" : aiHtml(m)}</div>`;
   }
   function gateHtml() {
     if (LV.st === "who") return `<div class="mson"><b>누구신가요?</b><span>이 기기에서 쓸 이름을 골라 주세요. 한 번만 고르면 돼요.</span><div class="msnames">${P0.map((n) => `<button data-ms="mepick" data-n="${n}">${n}</button>`).join("")}</div></div>`;
@@ -2566,17 +2644,17 @@ ${miss.length ? `<div class="plnote" style="background:var(--amber-soft);color:v
   }
   function listHtml() {
     const L = mine(), un = L.reduce((a, r) => a + unread(r.id), 0), at = MSGS.filter((m) => L.some((r) => r.id === m.room) && called(m) && m.who !== me() && !seenBy(m, me())).length, dr = L.reduce((a, r) => a + drafts(r.id).filter((m) => m.ai.st === "draft").length, 0);
-    const row = (r) => { const M = rmsgs(r.id), last = M.at(-1), n = unread(r.id); return `<button class="msrow ${MS.room === r.id && isPC() ? "on" : ""}" data-ms="room" data-id="${r.id}"><div class="av ${r.imp ? "blue" : ""}">${esc(rname(r)[0])}</div><div class="tx"><b>${esc(rname(r))}</b><span>${last ? esc((last.who === me() ? "나" : last.who) + ": " + last.txt) : "아직 글이 없어요"}</span></div><div class="mt"><small>${last ? (last.at.slice(0, 10) === today() ? hm(last) : md(last)) : ""}</small>${n ? `<i>${n > 99 ? "99+" : n}</i>` : ""}</div></button>`; };
+    const row = (r) => { const M = rmsgs(r.id), last = M.at(-1), n = unread(r.id); return `<button class="msrow ${MS.room === r.id && isPC() ? "on" : ""}" data-ms="room" data-id="${r.id}"><div class="av ${r.imp ? "blue" : ""}">${esc(live() && !r.name && r.mem.length === 2 ? em(r.mem.find((n) => n !== me()) || "") : rname(r)[0])}</div><div class="tx"><b>${esc(rname(r))}</b><span>${last ? esc((last.who === me() ? "나" : last.who) + ": " + last.txt) : "아직 글이 없어요"}</span></div><div class="mt"><small>${last ? (last.at.slice(0, 10) === today() ? hm(last) : md(last)) : ""}</small>${n ? `<i>${n > 99 ? "99+" : n}</i>` : ""}</div></button>`; };
     const imp = L.filter((r) => r.imp), rest = L.filter((r) => !r.imp);
-    const head = live() ? `<div class="mshd"><b>메신저</b><span class="sp"></span><button class="mswho" data-ms="me" aria-label="이름 바꾸기">${esc(me())}</button><button class="msic" data-ms="newroom" aria-label="새 방">${IC.plus}</button><button class="msic" data-ms="search" aria-label="찾기">${IC.search}</button></div>`
+    const head = live() ? `<div class="mshd"><b>메신저</b><span class="sp"></span><button class="mswho" data-ms="me" aria-label="내 프로필">${esc(em(me()))} ${esc(me())}</button><button class="msic" data-ms="newroom" aria-label="새 방">${IC.plus}</button><button class="msic" data-ms="search" aria-label="찾기">${IC.search}</button></div>`
       : `<div class="mshd"><b>메신저</b><span class="sp"></span><button class="msic" data-ms="search" aria-label="찾기">${IC.search}</button></div><div class="mson"><b>메신저를 켤까요?</b><span>켜면 글이 저장되고, 다른 기기와 오가요. 처음 한 번만 누르면 돼요. 아래는 예시 대화예요.</span><button data-ms="on">메신저 켜기</button></div><div class="msex"><span>예시 대화예요. 저장은 안 돼요. ${esc(me())} 화면이에요.</span><button data-ms="me">바꾸기</button><button data-ms="reset">처음으로</button></div>`;
-    return `${head}
+    return `${head}${pushBanner()}
 <div class="msmiss"><button data-ms="miss" data-k="un">안 읽은 글<b class="${un ? "n" : ""}">${un}</b></button><button data-ms="miss" data-k="at">나를 부른 글<b class="${at ? "n" : ""}">${at}</b></button>${live() ? "" : `<button data-ms="miss" data-k="dr">할 일 초안<b class="${dr ? "n" : ""}">${dr}</b></button>`}</div>
 ${imp.length ? `<div class="msgrp">중요</div><div class="msrows">${imp.map(row).join("")}</div>` : ""}<div class="msgrp">전체</div><div class="msrows">${rest.map(row).join("") || `<div class="empty">${live() ? "다른 방이 없어요. 위의 + 로 만들 수 있어요." : "다른 방이 없어요"}</div>`}</div>`;
   }
   const todoList = (id) => { const L = drafts(id); return L.map((m) => aiHtml(m, true)).join("") || '<div class="none empty">이 방에서 나온 할 일이 없어요</div>'; };
   const decList = (id) => DEC.filter((x) => x.room === id).map((x) => `<button class="msdec" data-ms="jump" data-id="${x.src}"><small>정함</small><span>${esc(x.txt)}</span></button>`).join("") || '<div class="none empty">아직 정한 것이 없어요</div>';
-  const pinHtml = (r) => { const pin = pinOf(r); return pin ? `<button class="mspin" data-ms="jump" data-id="${pin.id}"><b>공지</b><span>${esc(pin.txt)}</span></button>` : ""; };
+  const pinHtml = (r) => { if (live()) { const L = r.pins || []; if (!L.length) return ""; const p = L[0]; return `<button class="mspin" data-ms="${L.length > 1 ? "pins" : "jump"}" data-id="${p.m.id}" data-room="${r.id}"><b>공지${L.length > 1 ? " " + L.length : ""}</b><span>${esc(p.m.txt)}</span><small>${md(p.m)}</small></button>`; } const pin = pinOf(r); return pin ? `<button class="mspin" data-ms="jump" data-id="${pin.id}"><b>공지</b><span>${esc(pin.txt)}</span></button>` : ""; };
   function bodyHtml(r) {
     if (MS.v === "todo") return `<div class="mslist2">${todoList(r.id)}</div>`;
     if (MS.v === "dec") return `<div class="mslist2">${decList(r.id)}</div>`;
@@ -2590,16 +2668,16 @@ ${imp.length ? `<div class="msgrp">중요</div><div class="msrows">${imp.map(row
     const r = R(MS.room), dn = drafts(r.id).filter((m) => m.ai.st === "draft").length, dc = DEC.filter((x) => x.room === r.id).length, re = MS.re && MSGS.find((m) => m.id === MS.re);
     const tabs = [["all", "전체", 0, ""], ["chat", "대화", 0, ""], ["todo", "할 일", dn, "sideonly"], ["dec", "정한 것", dc, "sideonly"]];
     if (live() || (isPC() && MS.side && (MS.v === "todo" || MS.v === "dec"))) MS.v = "all";
-    const comp = MS.v === "todo" || MS.v === "dec" ? "" : `<div class="mscomp"><button class="msnew" id="msnew" data-ms="bottom" hidden>새 글 보기</button>${re ? `<div class="msre"><span><b>${esc(re.who)}</b>에게 답장: ${esc(re.txt)}</span><button class="msic" data-ms="reoff" aria-label="답장 취소" style="width:32px;height:32px">×</button></div>` : ""}<div class="mstray" id="mstray">${trayHtml()}</div><div class="msrw"><button class="msic" data-ms="plus" aria-label="사진, 파일 붙이기">${IC.plus}</button>${live() ? '<input type="file" id="msfile" multiple hidden>' : ""}<input class="msin" id="msin" placeholder="메시지" autocomplete="off" maxlength="1000"><button class="mssend" data-ms="send" aria-label="보내기">${IC.send}</button></div></div>`;
-    requestAnimationFrame(() => { const b = $("#msbody"), i = $("#msin"); if (i) i.value = MS.draft; if (!b) return; const f = MS.flash && b.querySelector(`[data-mid="${MS.flash}"]`); if (f) { f.scrollIntoView({ block: "center" }); const k = MS.flash; setTimeout(() => { if (MS.flash === k) { MS.flash = ""; document.querySelector(`[data-mid="${k}"]`)?.classList.remove("flash"); } }, 1800); } else b.scrollTop = b.scrollHeight; hydrate(); });
-    return `<section class="msroom"><div class="msrh"><button class="msic msback" data-ms="back" aria-label="방 목록으로">${IC.back}</button><b>${esc(rname(r))}</b><small>${r.mem.length}명</small><span class="sp"></span><button class="msic" data-ms="search" aria-label="찾기">${IC.search}</button>${isPC() ? `<button class="msic" data-ms="side" aria-label="정리 칸 ${MS.side ? "접기" : "펴기"}">${IC.side}</button>` : ""}</div>
+    const comp = MS.v === "todo" || MS.v === "dec" ? "" : `<div class="mscomp"><button class="msnew" id="msnew" data-ms="bottom" hidden>새 글 보기</button>${re ? `<div class="msre"><span><b>${esc(re.who)}</b>에게 답장: ${esc(re.txt)}</span><button class="msic" data-ms="reoff" aria-label="답장 취소" style="width:32px;height:32px">×</button></div>` : ""}<div class="mstray" id="mstray">${trayHtml()}</div><div class="msrw"><button class="msic" data-ms="plus" aria-label="사진, 파일 붙이기">${IC.plus}</button>${live() ? '<input type="file" id="msfile" multiple hidden>' : ""}<textarea class="msin" id="msin" rows="1" placeholder="메시지" autocomplete="off" maxlength="2000"></textarea><button class="mssend" data-ms="send" aria-label="보내기">${IC.send}</button></div></div>`;
+    requestAnimationFrame(() => { const b = $("#msbody"), i = $("#msin"); if (i) { i.value = MS.draft; grow(i); } if (!b) return; const f = MS.flash && b.querySelector(`[data-mid="${MS.flash}"]`); if (f) { f.scrollIntoView({ block: "center" }); const k = MS.flash; setTimeout(() => { if (MS.flash === k) { MS.flash = ""; document.querySelector(`[data-mid="${k}"]`)?.classList.remove("flash"); } }, 1800); } else b.scrollTop = b.scrollHeight; hydrate(); });
+    return `<section class="msroom"><div class="msrh"><button class="msic msback" data-ms="back" aria-label="방 목록으로">${IC.back}</button><b>${esc(rname(r))}</b><small>${r.mem.length}명</small><span class="sp"></span><span id="mstkh">${tkhHtml(r)}</span>${live() ? `<button class="msic" data-ms="rmenu" aria-label="방 메뉴">⋯</button>` : ""}<button class="msic" data-ms="search" aria-label="찾기">${IC.search}</button>${isPC() ? `<button class="msic" data-ms="side" aria-label="정리 칸 ${MS.side ? "접기" : "펴기"}">${IC.side}</button>` : ""}</div>
 ${live() ? "" : `<div class="mstabs">${tabs.map(([k, n, c, cl]) => `<button class="${MS.v === k ? "on" : ""} ${isPC() && MS.side ? cl : ""}" data-ms="tabv" data-v="${k}">${n}${c ? `<i>${c}</i>` : ""}</button>`).join("")}</div>`}
 <div id="mspinw">${pinHtml(r)}</div><div class="msbody" id="msbody">${bodyHtml(r)}</div>${comp}</section>`;
   }
   const sideHtml = () => {
     const r = R(MS.room); if (!r) return '<aside class="msside"></aside>';
     const pin = pinOf(r), pinBox = pin ? `<button class="msdec" data-ms="jump" data-id="${pin.id}"><small>공지</small><span>${esc(pin.txt)}</span></button>` : '<div class="none">고정한 글이 없어요</div>';
-    if (live()) return `<aside class="msside"><h4>이 방 사람<small>${r.mem.length}명</small></h4><div class="msmem">${r.mem.map((n) => `<div><span class="av ${n === me() ? "blue" : ""}">${esc(n[0])}</span>${esc(n)}${n === me() ? " (나)" : ""}</div>`).join("")}</div><h4>고정한 공지</h4>${pinBox}</aside>`;
+    if (live()) return `<aside class="msside"><h4>이 방 할 일<small>${openT(r.id).length}개</small></h4>${openT(r.id).map(tkRow).join("") || '<div class="none">할 일이 없어요. 글을 누르면 업무로 만들 수 있어요.</div>'}<h4>이 방 사람<small>${r.mem.length}명</small></h4><div class="msmem">${r.mem.map((n) => `<div><span class="av ${n === me() ? "blue" : ""}">${esc(em(n))}</span>${esc(n)}${n === me() ? " (나)" : ""}</div>`).join("")}</div><h4>고정한 공지<small>${(r.pins || []).length}개</small></h4>${(r.pins || []).map((p) => `<button class="msdec" data-ms="jump" data-id="${p.m.id}" data-room="${r.id}"><small>${md(p.m)}</small><span>${esc(p.m.txt)}</span></button>`).join("") || '<div class="none">고정한 글이 없어요</div>'}</aside>`;
     return `<aside class="msside"><h4>할 일 초안<small>AI가 대화에서 뽑았어요</small></h4>${todoList(r.id)}<h4>정한 것</h4>${decList(r.id)}<h4>고정한 공지</h4>${pinBox}</aside>`;
   };
   const hi = (s, q) => { const e = esc(s); if (!q) return e; const i = s.toLowerCase().indexOf(q.toLowerCase()); if (i < 0) return e; return esc(s.slice(0, i)) + "<mark>" + esc(s.slice(i, i + q.length)) + "</mark>" + esc(s.slice(i + q.length)); };
@@ -2630,11 +2708,24 @@ ${live() ? "" : `<div class="mstabs">${tabs.map(([k, n, c, cl]) => `<button clas
   window.msgAuto = (x) => { if (!D || !demo()) return; if (!ROOMS.length) seed(); const t = new Date(Date.now() + 9 * 3600e3).toISOString().slice(11, 16); MSGS.push({ id: "g" + ++seq, room: "r1", who: x.who, at: D.d + " " + t, txt: "업무를 끝냈어요.", seen: [x.who], card: { kind: "끝난 업무", title: x.title, sub: x.sub, tag: "끝" } }); };
   window.msgReply = (id) => { if (!MSGS.some((x) => x.id === id)) return; MS.re = id; rr(); requestAnimationFrame(() => $("#msin")?.focus()); };
   const nodock = '<div class="nodock"></div>';
-  function actSheet(id) { const m = MSGS.find((x) => x.id === id); if (!m) return; openSheet(`${nodock}<div class="caption" style="margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(m.who)}: ${esc(m.txt)}</div><div class="msact"><button data-ms="re" data-id="${id}">답장</button>${live() ? "" : `<button data-ms="mk" data-k="업무" data-id="${id}">업무로 만들기</button><button data-ms="mk" data-k="일정" data-id="${id}">일정으로 만들기</button>`}<button data-ms="pin" data-id="${id}">${R(m.room).pin === id ? "공지 고정 풀기" : "공지로 고정"}</button><button data-ms="copy" data-id="${id}">복사</button></div><div class="btns"><button class="btn gray" data-x>닫기</button></div>`); }
+  function actSheet(id) { const m = MSGS.find((x) => x.id === id); if (!m) return; openSheet(`${nodock}<div class="caption" style="margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(m.who)}: ${esc(m.txt)}</div><div class="msact"><button data-ms="re" data-id="${id}">답장</button>${live() ? `<button data-ms="tk" data-id="${id}">업무로 만들기</button>` : `<button data-ms="mk" data-k="업무" data-id="${id}">업무로 만들기</button><button data-ms="mk" data-k="일정" data-id="${id}">일정으로 만들기</button>`}<button data-ms="pin" data-id="${id}">${isPin(R(m.room), id) ? "공지 고정 풀기" : "공지로 고정"}</button><button data-ms="copy" data-id="${id}">전체 복사</button><button data-ms="selcopy" data-id="${id}">글자 골라서 복사</button></div><div class="btns"><button class="btn gray" data-x>닫기</button></div>`); }
   function mkSheet() {
     const k = MS.mk, task = k.kind === "업무";
     openSheet(`${nodock}<h3>${task ? "업무로 만들기" : "일정으로 만들기"}</h3><div class="caption">글에서 가져왔어요. 고쳐서 보내세요.</div><div class="ptlab">${task ? "무엇을 하나요?" : "무슨 일정인가요?"}</div><input class="ptin" id="msMkT" maxlength="60" value="${esc(k.title)}">${task ? `<div class="ptlab">누가 맡나요?</div><div class="ptpick">${P0.map((n) => `<button class="chip ${k.owner === n ? "on" : ""}" data-ms="mko" data-n="${n}">${n === me() ? "나 (" + n + ")" : n}</button>`).join("")}</div>` : ""}<div class="ptlab">${task ? "언제까지인가요?" : "언제인가요?"}</div><input class="ptin" type="date" id="msMkD" value="${k.due}">${task ? "" : `<input class="ptin" type="time" id="msMkH" value="${k.time || "14:00"}">`}<div class="btns"><button class="btn gray" data-x style="flex:0 0 96px">닫기</button><button class="btn" data-ms="mkgo">${task ? "업무로 보내기" : "일정에 넣기"}</button></div>`);
   }
+  function pinsSheet(rid) { const r = R(rid); if (!r) return; openSheet(`${nodock}<h3>공지 ${r.pins.length}개</h3><div class="caption">방마다 10개까지 고정할 수 있어요. 누르면 그 글로 가요.</div><div style="margin-top:12px">${r.pins.map((p) => `<div class="mspr"><button class="msdec" data-ms="jump" data-id="${p.m.id}" data-room="${r.id}"><small>${md(p.m)}</small><span><b>${esc(p.m.who)}</b> ${esc(p.m.txt)}</span></button><button class="mspx" data-ms="unpin" data-id="${p.m.id}" aria-label="이 공지 풀기">풀기</button></div>`).join("")}</div><div class="btns"><button class="btn gray" data-x>닫기</button></div>`); }
+  function profSheet() { openSheet(`${nodock}<h3>내 프로필</h3><div class="msprof"><span class="msav big">${esc(em(me()))}</span><b>${esc(me())}</b></div><div class="msalrow"><span>이 기기 알림 <b>${pushIsOn() ? "켜짐" : "꺼짐"}</b></span><button data-ms="${pushIsOn() ? "pushoff" : "pushon"}">${pushIsOn() ? "끄기" : "알림 켜기"}</button></div><div class="ptlab">내 이모지를 골라 주세요</div><div class="msemo">${EMO.map((e) => `<button class="${em(me()) === e ? "on" : ""}" data-ms="emo" data-e="${e}" aria-label="이모지 ${e}">${e}</button>`).join("")}</div><div class="btns"><button class="btn gray" data-ms="mechg" style="flex:0 0 130px">다른 이름으로</button><button class="btn" data-x>닫기</button></div>`); }
+  /* 업무 탭의 [방에 올리기]가 부른다: 진짜 방에 업무 카드 글을 올린다. 방 이름이 사람 이름이면 그 사람과의 방(없으면 만듦) */
+  window.msgShare = async ({ room, title, sub, txt }) => {
+    if (!live()) return false;
+    try {
+      let r = ROOMS.find((x) => x.name === room) || ROOMS.find((x) => !x.name && x.mem.length === 2 && x.mem.includes(room) && x.mem.includes(LV.who));
+      if (!r) { if (!P().includes(room) || room === LV.who) return false; const o = await call("adm_room_new", { p_mem: [room], p_name: "" }); if (!o.ok) return false; const s = await call("adm_state", { p_since: Math.max(0, LV.since - 20) }); if (s.ok) take(s); r = R("r" + o.id); if (!r) return false; }
+      const o2 = await call("adm_send", { p_room: r.n, p_body: String(txt || "업무를 올렸어요: " + title).slice(0, 1000), p_re: null, p_card: { kind: "업무", title: String(title || "").slice(0, 80), sub: String(sub || "").slice(0, 120), tag: "할 일" } });
+      if (!o2.ok) return false;
+      addMsgs([o2.msg]); LV.since = Math.max(LV.since, o2.msg.id); (LV.seen[r.id] ||= {})[LV.who] = Math.max((LV.seen[r.id] || {})[LV.who] || 0, o2.msg.id); updBadge(); notify(r); return true;
+    } catch { return false; }
+  };
   function newRoomSheet() {
     const others = P().filter((n) => n !== me());
     openSheet(`${nodock}<h3>새 방 만들기</h3><div class="caption">같이 얘기할 사람을 골라 주세요.</div><div class="ptpick" style="margin-top:12px">${others.map((n) => `<button class="chip ${MS.nr.includes(n) ? "on" : ""}" data-ms="nrp" data-n="${esc(n)}">${esc(n)}</button>`).join("")}</div><div class="ptlab">방 이름 (안 적어도 돼요)</div><input class="ptin" id="msNrN" maxlength="20" placeholder="예: 회의 준비" value="${esc(MS.nrName)}"><div class="btns"><button class="btn gray" data-x style="flex:0 0 96px">닫기</button><button class="btn" data-ms="nrgo">만들기</button></div>`);
@@ -2644,7 +2735,7 @@ ${live() ? "" : `<div class="mstabs">${tabs.map(([k, n, c, cl]) => `<button clas
     if (!live()) { const t = new Date(Date.now() + 9 * 3600e3).toISOString().slice(11, 16); MSGS.push({ id: "g" + ++seq, room: MS.room, who: me(), at: D.d + " " + t, txt, seen: [me()], re: MS.re || "" }); MS.draft = ""; MS.re = ""; if (MS.v !== "chat") MS.v = "all"; rr(); return requestAnimationFrame(() => $("#msin")?.focus()); }
     if (LV.sending) return; LV.sending = true;
     const room = MS.room, re = MS.re, r = R(room), files = MS.files.slice();
-    MS.draft = ""; MS.re = ""; if (i) i.value = ""; document.querySelector(".msre")?.remove();
+    MS.draft = ""; MS.re = ""; if (i) { i.value = ""; grow(i); } document.querySelector(".msre")?.remove();
     try {
       let card = null, body = txt;
       if (files.length) {
@@ -2657,6 +2748,7 @@ ${live() ? "" : `<div class="mstabs">${tabs.map(([k, n, c, cl]) => `<button clas
       const o = await call("adm_send", { p_room: r.n, p_body: body, p_re: re ? +re.slice(1) : null, p_card: card });
       if (!o.ok) throw new Error(o.why || "");
       if (files.length) clearFiles();
+      notify(r);
       addMsgs([o.msg]); LV.since = Math.max(LV.since, o.msg.id); (LV.seen[room] ||= {})[LV.who] = Math.max((LV.seen[room] || {})[LV.who] || 0, o.msg.id);
       if (MS.room === room) { soft(0); const b = $("#msbody"); if (b) b.scrollTop = b.scrollHeight; const nb = $("#msnew"); if (nb) nb.hidden = true; }
       sched(1500);
@@ -2666,19 +2758,21 @@ ${live() ? "" : `<div class="mstabs">${tabs.map(([k, n, c, cl]) => `<button clas
       toast(e && e.message === "len" ? "글이 너무 길어요. 나눠서 보내 주세요" : e && e.message === "size" ? "파일이 너무 커요" : files.length ? "못 보냈어요. 파일은 그대로 있으니 다시 눌러 주세요" : "못 보냈어요. 다시 눌러 주세요"); if (re) rr();
     } finally { LV.sending = false; }
   }
-  document.addEventListener("input", (e) => { if (e.target.id === "msin") MS.draft = e.target.value; if (e.target.id === "msq") { MS.q = e.target.value; const r = $("#msres"); if (r) r.innerHTML = resHtml(); findMore(); } if (e.target.id === "msNrN") MS.nrName = e.target.value; });
+  /* 입력 칸은 글 줄 수에 맞춰 다섯 줄쯤까지 커진다 */
+  const grow = (el) => { if (!el) return; el.style.height = "auto"; el.style.height = Math.min(132, Math.max(48, el.scrollHeight)) + "px"; };
+  document.addEventListener("input", (e) => { if (e.target.id === "msin") { MS.draft = e.target.value; grow(e.target); } if (e.target.id === "msq") { MS.q = e.target.value; const r = $("#msres"); if (r) r.innerHTML = resHtml(); findMore(); } if (e.target.id === "msNrN") MS.nrName = e.target.value; });
   document.addEventListener("change", (e) => { if (e.target.id === "msfile") { const L = [...e.target.files]; e.target.value = ""; addFiles(L); } });
   document.addEventListener("paste", (e) => { if (e.target.id !== "msin" || !live()) return; const L = [...((e.clipboardData && e.clipboardData.files) || [])]; if (L.length) { e.preventDefault(); addFiles(L); } });
   document.addEventListener("dragover", (e) => { if (live() && e.target.closest && e.target.closest(".msroom") && e.dataTransfer && [...e.dataTransfer.types].includes("Files")) e.preventDefault(); });
   document.addEventListener("drop", (e) => { if (!live() || !e.target.closest || !e.target.closest(".msroom") || !e.dataTransfer || !e.dataTransfer.files.length) return; e.preventDefault(); addFiles(e.dataTransfer.files); });
   document.addEventListener("click", (e) => { const v = $("#msview"); if (v && !v.hidden && (e.target === v || e.target.tagName === "IMG" && e.target.parentElement === v)) { v.hidden = true; v.innerHTML = ""; } });
   document.addEventListener("keydown", (e) => { const v = $("#msview"); if (e.key === "Escape" && v && !v.hidden) { v.hidden = true; v.innerHTML = ""; } });
-  document.addEventListener("keydown", (e) => { if (e.target.id === "msin" && e.key === "Enter" && !e.isComposing && e.keyCode !== 229) { e.preventDefault(); send(); } });
+  document.addEventListener("keydown", (e) => { /* Enter 는 줄바꿈이다. 보내기는 전송 단추(또는 PC 에서 Ctrl+Enter) */ if (e.target.id === "msin" && e.key === "Enter" && (e.ctrlKey || e.metaKey) && !e.isComposing) { e.preventDefault(); send(); } });
   /* 길게 누르기(폰), 오른쪽 단추(PC) */
   let lp = 0, lpAt = 0;
-  document.addEventListener("pointerdown", (e) => { const b = e.target.closest("[data-msb]"); if (!b) return; clearTimeout(lp); lp = setTimeout(() => { lpAt = Date.now(); actSheet(b.dataset.msb); }, 480); });
+  document.addEventListener("pointerdown", (e) => { const b = e.target.closest("[data-msb]"); if (!b || e.pointerType === "mouse") return; /* 마우스는 끌어서 글자를 고를 수 있게, 길게 누르기는 손가락만 */ clearTimeout(lp); lp = setTimeout(() => { lpAt = Date.now(); actSheet(b.dataset.msb); }, 480); });
   for (const ev of ["pointerup", "pointercancel", "pointermove", "scroll"]) document.addEventListener(ev, (e) => { if (ev === "pointermove" && Math.abs(e.movementX) + Math.abs(e.movementY) < 6) return; clearTimeout(lp); }, true);
-  document.addEventListener("contextmenu", (e) => { const b = e.target.closest("[data-msb]"); if (!b) return; e.preventDefault(); if (Date.now() - lpAt > 600) actSheet(b.dataset.msb); });
+  document.addEventListener("contextmenu", (e) => { const b = e.target.closest("[data-msb]"); if (!b) return; const sel = window.getSelection ? window.getSelection() : null; if (sel && String(sel) && sel.anchorNode && b.contains(sel.anchorNode)) return; /* 글자를 골라 둔 채 오른쪽 단추를 누르면 브라우저의 복사 메뉴가 뜬다 */ e.preventDefault(); if (Date.now() - lpAt > 600) actSheet(b.dataset.msb); });
   document.addEventListener("click", async (e) => {
     const t = e.target.closest("[data-ms]"); if (!t || t.disabled) return;
     const a = t.dataset.ms, id = t.dataset.id, m = id && MSGS.find((x) => x.id === id);
@@ -2695,7 +2789,8 @@ ${live() ? "" : `<div class="mstabs">${tabs.map(([k, n, c, cl]) => `<button clas
     if (a === "searchoff") { MS.q = null; return rr(); }
     if (a === "bottom") { const b = $("#msbody"); if (b) b.scrollTop = b.scrollHeight; t.hidden = true; return; }
     if (a === "reset") { seed(); MS.room = ""; MS.v = "all"; MS.q = null; MS.re = ""; MS.draft = ""; rr(); return toast("예시 대화를 처음으로 되돌렸어요"); }
-    if (a === "me") return openSheet(`${nodock}<h3>${live() ? "누구 이름으로 쓸까요?" : "누구 화면으로 볼까요?"}</h3><div class="caption">${live() ? "이 기기에서 쓰는 이름이에요." : "시제품에서만 바꿔 볼 수 있어요."}</div><div class="list" style="margin-top:12px">${P().map((n) => `<button class="item" data-ms="mepick" data-n="${esc(n)}"><div class="av ${n === me() ? "blue" : ""}">${esc(n[0])}</div><div class="tx"><b>${esc(n)}</b></div></button>`).join("")}</div><div class="btns"><button class="btn gray" data-x>닫기</button></div>`);
+    if (a === "me" && live()) return profSheet();
+    if (a === "me" || a === "mechg") return openSheet(`${nodock}<h3>${live() ? "누구 이름으로 쓸까요?" : "누구 화면으로 볼까요?"}</h3><div class="caption">${live() ? "이 기기에서 쓰는 이름이에요." : "시제품에서만 바꿔 볼 수 있어요."}</div><div class="list" style="margin-top:12px">${P().map((n) => `<button class="item" data-ms="mepick" data-n="${esc(n)}"><div class="av ${n === me() ? "blue" : ""}">${esc(n[0])}</div><div class="tx"><b>${esc(n)}</b></div></button>`).join("")}</div><div class="btns"><button class="btn gray" data-x>닫기</button></div>`);
     if (a === "mepick") {
       ls.set("vf-pt-me", t.dataset.n); MS.room = ""; MS.q = null; MS.re = ""; MS.draft = "";
       if (demo()) { closeSheet(true); return rr(); }
@@ -2703,7 +2798,22 @@ ${live() ? "" : `<div class="mstabs">${tabs.map(([k, n, c, cl]) => `<button clas
       LV.who = t.dataset.n; ls.set("vf-msg-who", LV.who); return load();
     }
     if (a === "miss") { const k = t.dataset.k, L = mine(); const isAt = (y) => called(y) && y.who !== me() && !seenBy(y, me()); const r = k === "un" ? L.find((x) => unread(x.id)) : k === "at" ? L.find((x) => rmsgs(x.id).some(isAt)) : L.find((x) => drafts(x.id).some((y) => y.ai.st === "draft")); if (!r) return toast(k === "un" ? "안 읽은 글이 없어요" : k === "at" ? "나를 부른 글이 없어요" : "할 일 초안이 없어요"); MS.room = r.id; MS.v = k === "dr" && !(isPC() && MS.side) ? "todo" : "all"; if (k === "at") { const y = rmsgs(r.id).find(isAt); MS.flash = y ? y.id : ""; } readAll(r.id); return rr(); }
-    if (a === "jump") { const x = anyMsg(id); if (x) return openMsg(x); return; }
+    if (a === "jump") { const x = anyMsg(id) || (live() && t.dataset.room && /^m\d+$/.test(id) ? { id, n: +id.slice(1), room: t.dataset.room } : null); if (!x) return; if (t.closest("#sheet, #panel")) closeSheet(true); return openMsg(x); }
+    if (a === "who" && m) { const r = R(m.room); return toast("아직 안 읽음: " + r.mem.filter((n) => n !== m.who && !seenBy(m, n)).join(", "), 3500); }
+    if (a === "tk" && m) { const at = (m.txt.match(new RegExp("@(" + P().join("|") + ")")) || [])[1] || ""; MS.tk = { src: id, room: m.room, title: m.txt.replace(/@\S+\s*/g, "").replace(/\s+/g, " ").trim().slice(0, 40), owner: R(m.room).mem.includes(at) ? at : "", due: "" }; return tkSheet(); }
+    if (a === "tko") { const k = MS.tk; k.title = $("#msTkT").value; k.due = $("#msTkD").value; k.owner = t.dataset.n; return tkSheet(); }
+    if (a === "tkgo") {
+      const k = MS.tk, title = $("#msTkT").value.trim(), due = $("#msTkD").value; if (!title) return toast("할 일을 적어 주세요"); if (!k.owner) return toast("맡을 사람을 골라 주세요"); t.disabled = true;
+      try { const o = await call("adm_task_new", { p_room: R(k.room).n, p_msg: +k.src.slice(1), p_title: title, p_owner: k.owner, p_due: due || null }); if (!o.ok) throw new Error(o.why || ""); addMsgs([o.msg]); LV.tasks = LV.tasks.filter((x) => x.id !== +o.task.id).concat(mapT(o.task)); LV.since = Math.max(LV.since, o.msg.id); (LV.seen[k.room] ||= {})[LV.who] = Math.max((LV.seen[k.room] || {})[LV.who] || 0, o.msg.id); MS.tk = null; closeSheet(true); toast(`${k.owner}에게 업무로 보냈어요`); notify(R(k.room)); return rr(); }
+      catch (e3) { t.disabled = false; return toast("업무를 못 만들었어요. 다시 눌러 주세요"); }
+    }
+    if (a === "task") return tkView(t.dataset.tid);
+    if (a === "tklist") return tkList(MS.room);
+    if (a === "tkset") {
+      t.disabled = true;
+      try { const o = await call("adm_task_set", { p_id: +t.dataset.tid, p_done: t.dataset.done === "1" }); if (!o.ok) throw new Error(o.why || ""); const nt = mapT(o.task); LV.tasks = LV.tasks.filter((x) => x.id !== nt.id).concat(nt).sort((x, y) => x.id - y.id); if (o.msg) { addMsgs([o.msg]); LV.since = Math.max(LV.since, o.msg.id); (LV.seen[nt.room] ||= {})[LV.who] = Math.max((LV.seen[nt.room] || {})[LV.who] || 0, o.msg.id); } closeSheet(true); toast(nt.st === "done" ? "끝냈어요. 방에 알렸어요" : "다시 열었어요"); if (o.msg) notify(R(nt.room)); if (tab === "msg" || tab === "tasks") full(); return; }
+      catch (e3) { t.disabled = false; return toast(e3 && e3.message === "mine" ? "맡은 사람이나 만든 사람만 끝낼 수 있어요" : "못 바꿨어요. 다시 눌러 주세요"); }
+    }
     if (a === "send") return send();
     if (a === "plus") { if (!live()) return toast("메신저를 켜면 사진과 파일을 붙일 수 있어요"); return $("#msfile")?.click(); }
     if (a === "fx") { const f = MS.files[+t.dataset.i]; if (f && !LV.sending) { if (f.url) URL.revokeObjectURL(f.url); MS.files.splice(+t.dataset.i, 1); trayUpd(); } return; }
@@ -2714,6 +2824,25 @@ ${live() ? "" : `<div class="mstabs">${tabs.map(([k, n, c, cl]) => `<button clas
     if (a === "re" && m) { MS.re = id; closeSheet(true); rr(); return requestAnimationFrame(() => $("#msin")?.focus()); }
     if (a === "reoff") { MS.re = ""; return rr(); }
     if (a === "copy" && m) { try { await navigator.clipboard.writeText(m.txt); toast("복사했어요"); } catch { toast("복사를 못 했어요"); } return closeSheet(true); }
+    if ((a === "pin" || a === "unpin") && live()) {
+      const x = m || anyMsg(id); if (!x) return; const r = R(x.room), off = isPin(r, id);
+      try { const o = await call("adm_pin_set", { p_room: r.n, p_msg: x.n, p_on: !off }); if (!o.ok) throw new Error(o.why || ""); } catch (e4) { closeSheet(true); return toast(e4 && e4.message === "many" ? "공지는 10개까지예요. 하나를 풀고 다시 해 주세요" : "고정을 못 했어요. 다시 눌러 주세요", 3500); }
+      r.pins = off ? (r.pins || []).filter((p) => p.m.id !== id) : [{ m: x, who: LV.who, at: "" }, ...(r.pins || [])]; r.pin = r.pins[0] ? r.pins[0].m.id : "";
+      toast(off ? "고정을 풀었어요" : "공지로 고정했어요"); closeSheet(true); rr(); if (a === "unpin" && r.pins.length) pinsSheet(r.id); return;
+    }
+    if (a === "pins") return pinsSheet(t.dataset.room);
+    if (a === "selcopy" && m) return openSheet(`${nodock}<h3>글자 골라서 복사</h3><div class="caption">복사할 곳을 길게 눌러 골라 주세요.</div><div class="mssel">${esc(m.txt)}</div><div class="btns"><button class="btn gray" data-ms="copy" data-id="${id}">전체 복사</button><button class="btn" data-x>닫기</button></div>`);
+    if (a === "rmenu") { const r = R(MS.room); if (!r) return; return openSheet(`${nodock}<h3>${esc(rname(r))}</h3><div class="caption">${r.mem.map(esc).join(", ")}</div><div class="msact">${(r.pins || []).length ? '<button data-ms="pins" data-room="' + r.id + '">공지 보기</button>' : ""}<button data-ms="tklist">이 방 할 일</button>${r.imp ? "" : '<button data-ms="leave" style="color:var(--red)">방 나가기</button>'}</div><div class="btns"><button class="btn gray" data-x>닫기</button></div>`); }
+    if (a === "leave") {
+      const r = R(MS.room); if (!r) return; closeSheet(true);
+      if (!(await askConfirm("이 방에서 나갈까요?", "나가면 이 방 글을 더 볼 수 없어요. 방에는 나갔다는 글이 남아요.", "나가기", true))) return;
+      try { const o = await call("adm_room_leave", { p_room: r.n }); if (!o.ok) throw new Error(o.why || ""); notify(r); ROOMS = ROOMS.filter((x) => x.id !== r.id); MSGS = MSGS.filter((x) => x.room !== r.id); LV.tasks = LV.tasks.filter((x) => x.room !== r.id); MS.room = ""; toast("방에서 나왔어요"); return rr(); }
+      catch (e10) { return toast(e10 && e10.message === "imp" ? "이 방은 나갈 수 없어요" : "못 나갔어요. 다시 눌러 주세요"); }
+    }
+    if (a === "pushon") return pushOn();
+    if (a === "pushoff") return pushOff();
+    if (a === "pushhide") { MS.pushHide = true; return rr(); }
+    if (a === "emo") { const e5 = t.dataset.e; try { const o = await call("adm_emoji_set", { p_emoji: e5 }); if (!o.ok) throw 0; LV.emoji = { ...LV.emoji, [LV.who]: e5 }; profSheet(); return rr(); } catch { return toast("이모지를 못 바꿨어요. 다시 눌러 주세요"); } }
     if (a === "pin" && m) {
       const r = R(m.room), off = r.pin === id;
       if (live()) { try { const o = await call("adm_pin", { p_room: r.n, p_msg: off ? null : m.n }); if (!o.ok) throw 0; } catch { closeSheet(true); return toast("고정을 못 했어요. 다시 눌러 주세요"); } r.pinmsg = off ? null : m; }
@@ -2783,6 +2912,7 @@ ${live() ? "" : `<div class="mstabs">${tabs.map(([k, n, c, cl]) => `<button clas
 .hmon{margin:8px 0 10px}
 .hmbh a{color:var(--blue);font-weight:700}
 .hmboard{display:block;width:100%;height:calc(100vh - 230px);border:0;border-radius:16px;background:var(--card)}
+body.hmfull #nav{display:none!important}body.hmfull .hmboard{border-radius:16px 16px 0 0}
 .hmstrip{display:flex;align-items:stretch;gap:8px;margin:8px 0}.hmstrip a{flex:none;display:grid;place-items:center;min-width:56px;padding:0 10px;border-radius:14px;background:var(--card);color:var(--blue);font-size:13px;font-weight:700;text-decoration:none}
 .hmsb{flex:1;min-width:0;display:flex;align-items:center;gap:6px;min-height:56px;padding:6px 12px;border-radius:14px;background:var(--card);text-align:left}.hmsb:hover{background:var(--press)}
 .hmsb span{flex:1;min-width:0;font-size:12px;font-weight:600;color:var(--sub);white-space:nowrap}.hmsb span b{display:block;font-size:17px;font-weight:800;color:var(--ink);letter-spacing:-.3px}.hmsb span b small{font-size:11px;font-weight:600;color:var(--sub);margin-left:1px}
@@ -2866,8 +2996,10 @@ ${cmp == null ? "" : `<div class="hmcmp">워드프레스 이번 달 <b>${w(wp.mo
     const age = Math.max(0, Math.round((Date.now() + 9 * 3600e3 - Date.parse(String(d.made || "").replace(" ", "T") + ":00Z")) / 60e3)), old = d.today !== now || age > 5;
     return `<div class="hmstrip ${old ? "old" : ""}"><button class="hmsb" data-hm="ondet" aria-label="액상덕후 매출 자세히 보기"><span>이번 달<b>${man(mAll)}</b></span><span>${day} 매출<b>${man(tAll)}</b></span><span>${day} 주문<b>${nAll}<small>건</small></b></span><span class="x">객단가<b>${w(aov)}<small>원</small></b></span><i>${old ? (d.today !== now ? "어제 자료" : age + "분째 멈춤") : "자세히"}</i></button><a href="../../online-team/" target="_blank" rel="noopener" aria-label="온라인팀 보드를 새 창으로 열기">새 창</a></div>`;
   }
+  /* 폰에서 온라인 홈일 때는 관리자웹 아래 메뉴를 숨긴다. 보드에도 아래 메뉴가 있어서 두 줄로 겹쳐 보였다. 돌아올 때는 맨 위 [VF 홈] */
+  function syncFull() { document.body.classList.toggle("hmfull", !!D && tab === "home" && HM.v === "online" && !!$("#hmboard") && !isPC()); }
   function fitBoard() { /* 보드가 남은 화면을 꼭 채우게(페이지가 따로 스크롤되지 않게) */
-    const f = $("#hmboard"); if (!f) return; const nav = $("#nav"), nh = nav && nav.style.display !== "none" ? nav.getBoundingClientRect().height : 0;
+    syncFull(); const f = $("#hmboard"); if (!f) return; const nav = $("#nav"), nh = nav && getComputedStyle(nav).display !== "none" ? nav.getBoundingClientRect().height : 0;
     f.style.height = Math.max(320, Math.floor(innerHeight - f.getBoundingClientRect().top - scrollY - nh - (isPC() ? 14 : 6))) + "px";
   }
   addEventListener("resize", fitBoard);
@@ -2880,7 +3012,7 @@ ${cmp == null ? "" : `<div class="hmcmp">워드프레스 이번 달 <b>${w(wp.mo
   const render1 = render;
   render = function () {
     if (!ownH && tab === "home" && HM.v === "online" && $("#hmboard") && ON.pc === isPC()) { const s = $("#hmsales"); if (s) { s.innerHTML = stripHtml(); fitBoard(); } onLoad(); return; }
-    ON.pc = isPC(); return render1.apply(this, arguments);
+    ON.pc = isPC(); const out = render1.apply(this, arguments); syncFull(); return out;
   };
   document.addEventListener("click", (e) => { const s = e.target.closest("[data-hm]"); if (!s) return; const k = s.dataset.hm; if (k === "onsales" || k === "onboard") { ON.v = k === "onboard" ? "board" : "sales"; ls.set("vf-hm-on", ON.v); fullH(); return scrollTo(0, 0); } if (k === "onre") { s.disabled = true; onLoad(true); } if (k === "ondet") openSheet(`<h3>액상덕후 매출</h3><div class="hmdet">${salesHtml()}</div><div class="btns"><button class="btn gray" data-x>닫기</button></div>`); });
   const home = () => `<div class="hmwrap">${top()}${HM.v === "online" ? onlineHtml() : vfHtml()}</div>`;
