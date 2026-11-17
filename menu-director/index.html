@@ -641,6 +641,16 @@ body.land .rvk{grid-template-columns:repeat(4,1fr)}
 .mta{height:78px;padding:10px 14px;font-size:17px;resize:none;line-height:1.4}
 .mbtn{display:flex;gap:8px}.mbtn button{flex:1;height:48px;border:0;border-radius:14px;background:#f2f4f6;color:#4e5968;font-family:var(--jal);font-size:17px}
 .mbtn button.m{background:var(--deep);color:#fff}.mbtn button.x{background:#e5313b;color:#fff}
+.mbody{flex:1;min-height:0;margin-top:12px;display:flex;flex-direction:column;gap:12px}
+.mbody .mform{margin-top:0;flex:none}
+.mbody .mlist{margin-top:0}
+.mhint{font-size:15px;color:#4e5968;margin-top:-4px}
+.mta.big{height:120px;font-size:19px}
+.mquick{display:flex;flex-wrap:wrap;gap:6px}.mquick button{padding:8px 12px;border-radius:12px;border:2px solid #e5e8eb;background:#fff;font-family:var(--jal);font-size:15px;color:#191f28}
+.mquick button:active{background:var(--tint);border-color:var(--deep)}
+body.land .mbody{display:grid;grid-template-columns:420px 1fr;align-items:start}
+body.land .mbody .mform{height:100%;max-height:100%;overflow:auto}
+body.land .mbody .mlist{height:100%}
 .mfoot{margin-top:10px;font-size:14px;color:rgba(255,255,255,.75);text-align:center;flex:none}
 .done .memo .mf b{font-family:var(--jal);font-weight:normal}
 .empty{grid-column:1/-1;padding:48px 0;text-align:center;font-size:22px;color:var(--sub)}
@@ -1700,10 +1710,12 @@ function memoPane(){
   var nw=state.mnew;
   return '<div class="pane res memop">'+topBar('회원메모 📝 (직원 전용)',1,1)+
     '<div class="mtop"><input id="mq" class="rin" placeholder="🔍 이름, 번호, 상품, 메모로 찾기" value="'+esc(state.mq||'')+'" autocomplete="off">'+
-      '<button class="mnewb" data-act="mnew">＋ 새 메모</button><button class="mlock" data-act="mlock">🔒 잠그기</button></div>'+
+      '<button class="mlock" data-act="mlock">🔒 잠그기</button></div>'+
     '<div class="frow mtabs">'+[['wait','📞 연락 대기'],['done','✅ 연락 완료'],['all','📋 전체']].map(function(o){return '<button data-act="mf" data-v="'+o[0]+'" class="'+(f===o[0]?'on':'')+'">'+o[1]+' <small>'+cnt[o[0]]+'</small></button>'}).join('')+'</div>'+
-    (nw?'<div class="mcard mform"><h3>＋ 새 메모</h3><div class="rv2"><input id="nName" class="rin" placeholder="성함 또는 별명" autocomplete="off"><input id="nPhone" class="rin" type="tel" inputmode="numeric" maxlength="11" placeholder="휴대폰 번호 (없어도 돼요)"></div>'+
-      '<textarea id="nMemo" class="rin mta" placeholder="예: 말론S 블랙 입고되면 연락, 0.4옴 좋아함"></textarea><div class="mbtn"><button data-act="mnewx">취소</button><button class="m" data-act="mnewok">저장</button></div></div>':'')+
+    '<div class="mbody">'+'<div class="mcard mform"><h3>✍️ 메모 쓰기</h3><p class="mhint">손님 이름이나 번호, 좋아하는 맛, 연락할 일을 적어 두세요</p><div class="rv2"><input id="nName" class="rin" placeholder="성함 또는 별명" autocomplete="off"><input id="nPhone" class="rin" type="tel" inputmode="numeric" maxlength="11" placeholder="휴대폰 번호 (없어도 돼요)"></div>'+
+      '<textarea id="nMemo" class="rin mta big" placeholder="예: 말론S 블랙 입고되면 연락, 0.4옴 좋아함"></textarea>'+
+      '<div class="mquick">'+['📦 입고되면 연락','💧 액상 예약','📱 기기 예약','🔧 AS 접수','💎 한정판 찜'].map(function(t){return '<button data-act="mtag" data-v="'+t+'">'+t+'</button>'}).join('')+'</div>'+
+      '<div class="mbtn"><button data-act="mnewx">지우기</button><button class="m" data-act="mnewok">💾 저장</button></div></div>'+
     '<div class="mlist">'+(l.length?l.map(function(m){ var del=state.mdel===m.id;
       return '<div class="mcard'+(m.done?' done':'')+'"><div class="mh2"><b>'+esc(m.name||'(이름 없음)')+'</b><span class="mp">'+esc(ph(m.phone))+'</span><span class="mt">'+d(m.t)+(m.br?' · '+esc(m.br):'')+'</span></div>'+
         (m.kinds&&m.kinds.length?'<div class="mk">'+m.kinds.map(function(k){return '<span>'+esc(k)+'</span>'}).join('')+(m.ad?'<span class="ad">광고 문자 동의 ✓</span>':'')+'</div>':'')+
@@ -1711,7 +1723,7 @@ function memoPane(){
         '<textarea class="rin mta" data-mid="'+m.id+'" placeholder="메모를 남겨 주세요">'+esc(m.memo||'')+'</textarea>'+
         '<div class="mbtn"><button data-act="mdel" data-id="'+m.id+'" class="'+(del?'x':'')+'">'+(del?'정말 지울까요? 한 번 더':'🗑 지우기')+'</button><button class="m" data-act="mdone" data-id="'+m.id+'">'+(m.done?'↩️ 다시 대기로':'✅ 연락 완료')+'</button></div></div>'; }).join('')
       :'<div class="empty" style="color:#fff">'+(all.length?'찾는 메모가 없어요':'아직 메모가 없어요. 손님이 예약 · 알림을 신청하면 여기에 쌓여요')+'</div>')+'</div>'+
-    '<div class="mfoot">🔒 이 패드에만 저장돼요 · '+MEMO_DAYS+'일 지나면 자동으로 지워져요 · 처음으로 가면 다시 잠겨요</div></div>';
+    '</div><div class="mfoot">🔒 이 패드에만 저장돼요 · '+MEMO_DAYS+'일 지나면 자동으로 지워져요 · 처음으로 가면 다시 잠겨요</div></div>';
 }
 
 function render(){
@@ -1835,10 +1847,11 @@ document.getElementById('app').addEventListener('click',function(e){
   if (a==='mlock') { state.memoOK=false; return home(); }
   if (a==='mf') { state.mf=b.dataset.v; state.mdel=null; return render(); }
   if (a==='mnew') { state.mnew=true; render(); var nn=document.getElementById('nName'); if(nn) nn.focus(); return; }
-  if (a==='mnewx') { state.mnew=false; return render(); }
+  if (a==='mnewx') { ['nName','nPhone','nMemo'].forEach(function(id){ var e=document.getElementById(id); if(e) e.value=''; }); return; }
+  if (a==='mtag') { var ta=document.getElementById('nMemo'); ta.value=(ta.value?ta.value.replace(/\s*$/,' '):'')+b.dataset.v+' '; ta.focus(); return; }
   if (a==='mnewok') { var nm=document.getElementById('nName').value.trim(), np=document.getElementById('nPhone').value.replace(/\D/g,''), mm=document.getElementById('nMemo').value.trim();
     if (!nm && !np) return toast('이름이나 번호 중 하나는 넣어 주세요');
-    addMemo({name:nm, phone:np, kinds:['📝 직원 메모'], memo:mm, br:BRANCH||'', done:false}); state.mnew=false; state.mf='wait'; toast('📝 저장했어요'); return render(); }
+    addMemo({name:nm, phone:np, kinds:['📝 직원 메모'], memo:mm, br:BRANCH||'', done:false}); state.mf='wait'; toast('📝 저장했어요'); return render(); }
   if (a==='mdone') { var L1=memos(); L1.forEach(function(m){ if(m.id===b.dataset.id) m.done=!m.done; }); saveMemos(L1); return render(); }
   if (a==='mdel') { if (state.mdel!==b.dataset.id) { state.mdel=b.dataset.id; return render(); } saveMemos(memos().filter(function(m){return m.id!==b.dataset.id})); state.mdel=null; toast('🗑 지웠어요'); return render(); }
   if (a==='resv') { state.rv=null; RV(); return go('resv'); }
