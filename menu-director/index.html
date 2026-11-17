@@ -396,6 +396,47 @@ body.land .flask{grid-row:1/4;grid-column:1}
 body.land .labmsg{grid-column:2}
 body.land .ings{grid-column:2;margin-top:0}
 body.land .labacts{grid-column:2}
+.item .add{margin-top:8px;height:44px;border:0;border-radius:14px;background:var(--tint);color:var(--deep);font-family:var(--jal);font-size:17px}
+.item .add.on,.item .add:active{background:var(--deep);color:#fff}
+.item.lift{opacity:.4}
+/* 떠 있는 장바구니 병: 오른쪽 가운데 */
+.cartfab{position:fixed;right:14px;top:42%;z-index:9;width:118px;height:150px;border:0;background:none;padding:0;color:#fff;animation:fabin .4s cubic-bezier(.2,1.6,.4,1);transition:transform .2s}
+.cartfab[hidden]{display:none}
+.cartfab .neck{position:absolute;left:50%;top:0;width:40px;height:34px;margin-left:-20px;border:4px solid #fff;border-bottom:0;border-radius:8px 8px 0 0;background:rgba(43,86,137,.9)}
+.cartfab .body{position:absolute;left:4px;right:4px;top:30px;height:96px;border:4px solid #fff;border-radius:50% 50% 46% 46%/40% 40% 60% 60%;overflow:hidden;background:rgba(43,86,137,.92);box-shadow:0 8px 22px rgba(0,0,0,.35)}
+.cartfab .liq{position:absolute;left:0;right:0;bottom:0;height:0;background:linear-gradient(180deg,#FFB38A,#FF4D6D);transition:height .5s cubic-bezier(.3,1.4,.5,1)}
+.cartfab .liq::before{content:'';position:absolute;left:-50%;top:-8px;width:200%;height:16px;background:inherit;border-radius:45%;animation:wave2 3s linear infinite}
+.cartfab .ct{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--jal);font-size:19px;text-shadow:0 1px 3px rgba(0,0,0,.4);line-height:1.1;text-align:center}
+.cartfab .badge{position:absolute;right:0;top:20px;min-width:36px;height:36px;padding:0 8px;border-radius:18px;background:#FFE14D;color:#191f28;font-family:var(--jal);font-size:19px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,.3)}
+.cartfab .badge:empty{display:none}
+.cartfab .lb{position:absolute;left:0;right:0;bottom:0;font-family:var(--jal);font-size:16px;text-align:center;text-shadow:0 1px 3px rgba(0,0,0,.5)}
+.cartfab.hot{transform:scale(1.15)}
+.cartfab.shake{animation:shake .45s}
+.ghost{position:fixed;z-index:30;width:110px;height:110px;border-radius:20px;overflow:hidden;background:#fff;box-shadow:0 14px 30px rgba(0,0,0,.4);pointer-events:none;transform:translate(-50%,-50%) rotate(-6deg)}
+.ghost img{width:100%;height:100%;object-fit:cover}
+.ghost.fly{transition:left .55s cubic-bezier(.5,0,.7,.4),top .55s cubic-bezier(.3,-.4,.6,1),transform .55s,opacity .55s;transform:translate(-50%,-50%) scale(.25);opacity:.6}
+body.carton .grid{padding-right:118px}
+/* 장바구니 화면 */
+.crow{display:flex;align-items:center;gap:14px;padding:12px 0;border-top:1px solid #eef0f3}
+.crow:first-of-type{border-top:0}
+.crow img,.crow .ph0{flex:none;width:72px;height:72px;border-radius:16px;object-fit:cover;background:#f2f2f4}
+.crow .tx{flex:1;min-width:0}.crow b{display:block;font-family:var(--jal);font-weight:normal;font-size:21px}
+.crow small{display:block;margin-top:2px;font-size:17px;color:#4e5968}
+.qty{flex:none;display:flex;align-items:center;gap:6px}
+.qty button{width:46px;height:46px;border:0;border-radius:14px;background:var(--tint);color:var(--deep);font-family:var(--jal);font-size:24px}
+.qty span{min-width:34px;text-align:center;font-family:var(--jal);font-size:22px}
+.cline{display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-size:20px;padding:6px 0}
+.cline b{font-family:var(--jal);font-weight:normal;color:var(--deep)}
+.cline s{color:#b0b8c1;font-size:16px;margin-right:6px}
+.nudge{margin-top:10px;padding:12px 16px;border-radius:14px;background:#FFF6D6;color:#5c4400;font-size:18px;line-height:1.45}
+.nudge b{font-family:var(--jal);font-weight:normal}
+.cstaff .crow b{font-size:24px}.cstaff .loc{flex:none;padding:8px 14px;border-radius:12px;background:var(--deep);color:#fff;font-family:var(--jal);font-size:20px}
+body.land .cartp{display:grid;grid-template-columns:440px 1fr;grid-template-rows:auto auto 1fr auto;column-gap:28px}
+body.land .cartp .top,body.land .cartp .bar,body.land .cartp .acts{grid-column:1/-1}
+body.land .cartp .q{grid-column:1;grid-row:3;overflow:auto}
+body.land .cartp .ftc{grid-column:2;grid-row:3;display:flex}
+body.land .cartfab{top:38%}
+body.land .cartp .save .pct{display:none}body.land .cartp .save .big{font-size:26px;white-space:nowrap}
 .empty{grid-column:1/-1;padding:48px 0;text-align:center;font-size:22px;color:var(--sub)}
 
 .toast{position:fixed;left:50%;top:40px;transform:translate(-50%,-20px);opacity:0;padding:18px 28px;border-radius:999px;
@@ -427,6 +468,7 @@ h1,h2,.brand span,.ttl,.ib.txt,.opt .t,.opt .n,.memban b,.save .big,.save .pct,.
 <div class="toast" id="toast"></div>
 <button class="fab" id="fab" hidden aria-label="회원등록"><span class="em">🎁</span>회원등록</button>
 <button class="fab home" id="fabh" hidden aria-label="처음으로"><span class="em">🏠</span>처음으로</button>
+<button class="cartfab" id="cartfab" hidden aria-label="장바구니"><span class="neck"></span><span class="body"><span class="liq" id="cliq"></span><span class="ct" id="cct">담기</span></span><span class="badge" id="cbadge"></span><span class="lb">장바구니</span></button>
 <script>
 /* ---------- 자료 ---------- */
 var LIQ = window.LIQ || [];
@@ -515,10 +557,10 @@ function pkRow(name, price, full, alt){ var off=(full||0)-price;
 function card(x, badge){
   var tag=(x.t||[]).filter(function(t){return t!=="일반"}).join(' · ');
   var src = x.src!=null ? x.src : '../img/'+x.img;
-  return '<div class="item"><div class="ph">'+(src?'<img loading="lazy" src="'+esc(src)+'" alt="" onerror="this.style.visibility=\'hidden\'">':'<span class="tile">'+esc(x.dn||x.n)+'</span>')+
+  return '<div class="item" data-id="'+esc(x.id||'')+'"><div class="ph">'+(src?'<img loading="lazy" src="'+esc(src)+'" alt="" onerror="this.style.visibility=\'hidden\'">':'<span class="tile">'+esc(x.dn||x.n)+'</span>')+
     (badge?'<span class="rk">'+esc(badge)+'</span>':'')+(tag?'<span class="tg">'+esc(tag)+'</span>':'')+'</div>'+
     '<div class="bd"><span class="br">'+esc([x.br,x.f].filter(Boolean).join(' · '))+'</span><span class="nm">'+esc(x.dn||x.n)+'</span>'+
-    '<span class="pr">'+(PRICE[x.line]?won(PRICE[x.line]):'')+'</span>'+(UNIT[x.line]?'<span class="unit">'+UNIT[x.line]+'</span>':'')+'<span class="lc">'+esc(x.line)+(x.loc?' · 위치 '+esc(x.loc.split('|')[0]):'')+'</span></div></div>';
+    '<span class="pr">'+(PRICE[x.line]?won(PRICE[x.line]):'')+'</span>'+(UNIT[x.line]?'<span class="unit">'+UNIT[x.line]+'</span>':'')+'<span class="lc">'+esc(x.line)+(x.loc?' · 위치 '+esc(x.loc.split('|')[0]):'')+'</span>'+(x.id&&PRICE[x.line]?'<button class="add" data-act="add" data-id="'+esc(x.id)+'">'+((state.cart||{})[x.id]?'✓ '+state.cart[x.id]+'병 담음 · 하나 더':'🛒 담기')+'</button>':'')+'</div></div>';
 }
 /* 목록 한 화면: o = {step,total,h,chips,list,top(인기 표시 몇 위까지),note(위 안내),empty} */
 /* ---------- 맛 분류 + 시리즈(브랜드)로 나눠 보기: 액상 목록, 패키지 담기 화면 공통 ---------- */
@@ -781,7 +823,7 @@ function mpackPane(){
       '<div class="pksz"><button data-act="mpn" data-i="5" class="'+(n===5?'on':'')+'">5병 49,500원</button><button data-act="mpn" data-i="11" class="'+(n===11?'on':'')+'">11병 90,000원</button></div>'+
       saveBox('프리미엄 '+n+'병을 패키지로 사면', full, price)+'<div class="ev">👇 앞의 <b>'+Math.min(n,list.length)+'병</b>으로 추천해요 · 맛은 바꿔도 돼요</div>'+
     '</section>'+filterBar(P)+'<section class="grid">'+(shown.length?shown.map(function(x){var r=rec.indexOf(x.id); return card(x, r>=0?'추천 '+(r+1):'');}).join(''):'<div class="empty">맞는 액상이 없어요. 직원에게 물어봐 주세요.</div>')+'</section>'+
-    '<div class="acts"><button data-act="back">다른 패키지</button><button class="main" data-act="mpcall">이 패키지로 할게요</button></div></div>';
+    '<div class="acts"><button data-act="back">다른 패키지</button><button class="main" data-act="mpcall">🛒 이 '+n+'병 담기</button></div></div>';
 }
 
 /* ---------- 회원등록: menu-b와 같은 항목 (성함, 년생, 번호, 필수 동의, 선택 쿠폰 문자).
@@ -1059,6 +1101,85 @@ function countUp(){
 }
 var lastView='';
 
+/* ---------- 장바구니: 액상 카드를 병에 끌어다 놓거나 '담기'를 누르면 담겨요. 패키지 값은 제일 싸게 자동 계산 ---------- */
+var PACKS = {"프리미엄":[[1,15000],[5,49500],[11,90000]], "프라임":[[1,20000],[3,50000],[10,160000]], "폐호흡":[[1,30000],[3,40000]]};
+function best(line, n){ var P=PACKS[line]||[[1,PRICE[line]||0]], d=[0];
+  for (var i=1;i<=n;i++){ d[i]=Infinity; P.forEach(function(k){ if(k[0]<=i && d[i-k[0]]+k[1]<d[i]) d[i]=d[i-k[0]]+k[1]; }); }
+  return d[n]; }
+function ITEM(id){ return LIQ.concat(LUNGL).filter(function(x){return x.id===id})[0]; }
+function cartN(){ var c=state.cart||{}; return Object.keys(c).reduce(function(a,k){return a+c[k]},0); }
+function cartLines(){ var c=state.cart||{}, L={};
+  Object.keys(c).forEach(function(id){ var x=ITEM(id); if(!x) return; (L[x.line]=L[x.line]||{n:0,items:[]}); L[x.line].n+=c[id]; L[x.line].items.push(x); });
+  return L; }
+function cartSum(){ var L=cartLines(), full=0, pay=0; Object.keys(L).forEach(function(l){ full+=(PRICE[l]||0)*L[l].n; pay+=best(l,L[l].n); }); return {full:full, pay:pay, L:L}; }
+function nudge(l, n){ var now=best(l,n)/n;
+  for (var k=1;k<=4;k++){ var per=best(l,n+k)/(n+k); if (per<now*0.92) return '💡 <b>'+l+' '+k+'병</b>만 더 담으면 1병에 <b>'+won(Math.round(per/10)*10)+'</b>이에요! (지금 1병 '+won(Math.round(now/10)*10)+')'; }
+  return ''; }
+function cartAdd(id, from){
+  var c=state.cart=state.cart||{}, x=ITEM(id); if(!x) return; c[id]=(c[id]||0)+1;
+  if (from) fly(from);
+  setTimeout(function(){ cartFab(true); [].forEach.call(document.querySelectorAll('.add[data-id="'+id+'"]'),function(b){ b.textContent='✓ '+c[id]+'병 담음 · 하나 더'; b.classList.add('on'); setTimeout(function(){b.classList.remove('on')},400); }); }, from?450:0);
+  toast('🛒 '+(x.dn||x.n)+' 담았어요 · 지금 '+cartN()+'병');
+}
+function bodyScale(){ var b=document.body; return (b.getBoundingClientRect().width/b.offsetWidth)||1; }
+function fly(img){ var r=img.getBoundingClientRect(), f=document.getElementById('cartfab').getBoundingClientRect(), sc=bodyScale(), g=document.createElement('div');
+  g.className='ghost'; g.innerHTML='<img src="'+img.src+'" alt="">'; g.style.left=(r.left+r.width/2)/sc+'px'; g.style.top=(r.top+r.height/2)/sc+'px'; document.body.appendChild(g);
+  requestAnimationFrame(function(){ requestAnimationFrame(function(){ g.classList.add('fly'); g.style.left=(f.left+f.width/2)/sc+'px'; g.style.top=(f.top+f.height/2)/sc+'px'; }); });
+  setTimeout(function(){ g.remove(); }, 600); }
+var CART_OFF = /^(home|mem|cart|mix$)/;
+function cartFab(bump){ var f=document.getElementById('cartfab'), n=cartN(), v=state.view;
+  f.hidden = CART_OFF.test(v) || (!n && !document.querySelector('#app .item .add'));
+  document.body.classList.toggle('carton', !f.hidden);
+  document.getElementById('cbadge').textContent = n ? n+'병' : '';
+  document.getElementById('cct').innerHTML = n ? won(cartSum().pay).replace('원','<br>원') : '여기로<br>쏙! 👇';
+  document.getElementById('cliq').style.height = Math.min(90, n ? 22+n*7 : 0)+'%';
+  if (bump){ f.classList.remove('shake'); void f.offsetWidth; f.classList.add('shake'); } }
+/* 카드를 꾹 누르고 끌어서 병에 놓기 (짧게 밀면 그냥 스크롤) */
+var drag=null;
+document.addEventListener('touchmove',function(e){ if(drag && drag.on) e.preventDefault(); },{passive:false});
+document.getElementById('app').addEventListener('pointerdown',function(e){
+  var it=e.target.closest('.item[data-id]'); if(!it || e.target.closest('button') || !it.querySelector('.add')) return;
+  var x0=e.clientX, y0=e.clientY;
+  drag={it:it, on:false, t:setTimeout(function(){ if(!drag) return; drag.on=true; it.classList.add('lift');
+    var img=it.querySelector('img'), sc=bodyScale(), g=document.createElement('div'); g.className='ghost'; g.innerHTML=img?'<img src="'+img.src+'" alt="">':'🧴';
+    g.style.left=x0/sc+'px'; g.style.top=y0/sc+'px'; document.body.appendChild(g); drag.g=g; if(navigator.vibrate) navigator.vibrate(20); }, 260)};
+  function mv(ev){ if(!drag) return; if(!drag.on){ if(Math.abs(ev.clientX-x0)+Math.abs(ev.clientY-y0)>10){ clearTimeout(drag.t); end(); } return; }
+    var sc=bodyScale(); drag.g.style.left=ev.clientX/sc+'px'; drag.g.style.top=ev.clientY/sc+'px';
+    var f=document.getElementById('cartfab'), r=f.getBoundingClientRect(); f.classList.toggle('hot', ev.clientX>r.left-20&&ev.clientX<r.right+20&&ev.clientY>r.top-20&&ev.clientY<r.bottom+20); }
+  function up(ev){ if(drag && drag.on){ var f=document.getElementById('cartfab'), r=f.getBoundingClientRect(), id=drag.it.dataset.id;
+      var inF=ev.type==='pointerup' && ev.clientX>r.left-20&&ev.clientX<r.right+20&&ev.clientY>r.top-20&&ev.clientY<r.bottom+20; f.classList.remove('hot');
+      if (inF) cartAdd(id); drag.suppress=true; } end(); }
+  function end(){ if(!drag) return; clearTimeout(drag.t); if(drag.g) drag.g.remove(); drag.it.classList.remove('lift'); var sup=drag.suppress; drag=null;
+    removeEventListener('pointermove',mv); removeEventListener('pointerup',up); removeEventListener('pointercancel',up);
+    if (sup) addEventListener('click',function k(ev){ ev.stopPropagation(); ev.preventDefault(); removeEventListener('click',k,true); },true); }
+  addEventListener('pointermove',mv); addEventListener('pointerup',up); addEventListener('pointercancel',up);
+});
+function cartPane(){
+  var c=state.cart||{}, S=cartSum(), n=cartN();
+  if (!n) return '<div class="pane res">'+topBar('장바구니 🛒',1,1)+'<section class="q"><h1>장바구니가<br>비어 있어요 🫙</h1><p>액상 카드의 <b>🛒 담기</b>를 누르거나,<br>카드를 꾹 눌러서 오른쪽 병에 끌어다 놓아 보세요.</p></section>'+
+    '<div class="acts" style="margin-top:auto"><button data-act="back">돌아가기</button><button class="main" data-act="mtl">🗺️ 액상 고르러 가기</button></div></div>';
+  var lines=Object.keys(S.L).map(function(l){ var o=S.L[l], f=(PRICE[l]||0)*o.n, b=best(l,o.n);
+      return '<div class="cline"><span>'+esc(l)+' '+o.n+'병</span><span>'+(f>b?'<s>'+won(f)+'</s>':'')+'<b>'+won(b)+'</b></span></div>'+(nudge(l,o.n)?'<div class="nudge">'+nudge(l,o.n)+'</div>':''); }).join('');
+  var rows=Object.keys(c).map(function(id){ var x=ITEM(id); if(!x) return ''; var src=x.src!=null?x.src:'../img/'+x.img;
+      return '<div class="crow">'+(src?'<img src="'+esc(src)+'" alt="">':'<span class="ph0"></span>')+'<div class="tx"><b>'+esc(x.dn||x.n)+'</b><small>'+esc([x.br,x.line].filter(Boolean).join(' · '))+'</small></div>'+
+        '<div class="qty"><button data-act="cq" data-id="'+esc(id)+'" data-d="-1" aria-label="빼기">−</button><span>'+c[id]+'</span><button data-act="cq" data-id="'+esc(id)+'" data-d="1" aria-label="더하기">＋</button></div></div>'; }).join('');
+  return '<div class="pane res cartp">'+topBar('장바구니 🛒',1,2)+
+    '<section class="q" style="margin-top:28px"><h1>담은 액상 '+n+'병 🛒</h1>'+(S.full>S.pay?saveBox('패키지 값으로 자동 계산했어요', S.full, S.pay):'<div class="save"><span class="em">🧾</span><div class="tx"><div class="l">합계</div><div class="big">'+won(S.pay)+'</div></div></div>')+
+      '<div class="ftcard" style="margin-top:14px">'+lines+'</div></section>'+
+    '<section class="ftc"><div class="ftcard">'+rows+'</div></section>'+
+    '<div class="acts"><button data-act="back">＋ 더 고르기</button><button class="main" data-act="cartgo">💁 이대로 주세요</button></div></div>';
+}
+function cartStaffPane(){
+  var c=state.cart||{}, S=cartSum();
+  var rows=Object.keys(c).map(function(id){ var x=ITEM(id); if(!x) return ''; var src=x.src!=null?x.src:'../img/'+x.img;
+    return '<div class="crow">'+(src?'<img src="'+esc(src)+'" alt="">':'<span class="ph0"></span>')+'<div class="tx"><b>'+esc(x.dn||x.n)+' × '+c[id]+'</b><small>'+esc(x.line)+'</small></div>'+(x.loc?'<span class="loc">📍 '+esc(x.loc.split('|')[0])+'</span>':'')+'</div>'; }).join('');
+  return '<div class="pane res cartp cstaff">'+topBar('장바구니 🛒',2,2)+
+    '<section class="q" style="margin-top:28px"><h1>직원이 바로<br>담아 드릴게요! 🙌</h1><p>이 화면을 카운터 직원에게 보여 주세요.</p>'+
+      '<div class="save"><span class="em">🧾</span><div class="tx"><div class="l">'+cartN()+'병 · 패키지 적용</div><div class="big">'+won(S.pay)+'</div>'+(S.full>S.pay?'<div class="pr"><s>'+won(S.full)+'</s> → '+won(S.full-S.pay)+' 아껴요</div>':'')+'</div></div></section>'+
+    '<section class="ftc"><div class="ftcard">'+rows+'</div></section>'+
+    '<div class="acts"><button data-act="back">‹ 장바구니 고치기</button><button class="main" data-act="mem">🎁 회원 적립하기</button></div></div>';
+}
+
 function render(){
   var v=state.view, h='';
   if (v==='home') h = ask({h:'어서 오세요! 👋<br>무엇을 도와드릴까요?', p:'골라 주시면 딱 맞게 안내해 드릴게요.',
@@ -1076,6 +1197,8 @@ function render(){
   else if (v==='mem-old') h = memPane('old');
   else if (v==='mem-done') h = memDone();
   else if (v==='cheap') h = cheapPane();
+  else if (v==='cart') h = cartPane();
+  else if (v==='cart-staff') h = cartStaffPane();
   else if (v==='mix') h = labPane();
   else if (v==='mix-res') h = listPane({step:3,total:3,h:(state.mix||[]).map(function(k){return ING(k).e}).join(' + ')+((state.mix||[]).length>1?' 섞은 맛':' 들어간 맛')+'이에요 😋',list:mixList(),chips:(state.mix||[]).map(function(k){return ING(k).t}),empty:'이 조합은 아직 없어요. 직원에게 물어봐 주세요.'});
   else if (v==='chat') h = chatPane();
@@ -1137,6 +1260,7 @@ function render(){
   document.body.classList.toggle('fabon', !fab.hidden || !fh.hidden);
   var g=app.querySelector('.grid'); if(g) g.scrollTop=0;
   if (v==='mix') labBind();
+  cartFab(false);
   if (fresh) countUp();
   ['mName','mYear','mPhone'].forEach(function(id){ var el=document.getElementById(id); if(!el) return; el.addEventListener('input',function(){
     var m=M_(), k={mName:'name',mYear:'year',mPhone:'phone'}[id]; if (k!=='name') el.value=el.value.replace(/\D/g,''); m[k]=el.value; if (m.bad===k) { m.bad=''; el.classList.remove('bad'); }
@@ -1198,6 +1322,9 @@ document.getElementById('app').addEventListener('click',function(e){
   if (a==='mtl' || a==='dl') { state.kind=a; return on('mtl'); }
   if (a==='m-self') { state.flavor=null; state.cool=null; if (state.kind!=='dl') { state.mapf=''; return on('mtl-map'); } return on('mtl-flavor'); }
   if (a==='mapf') { state.mapf=b.dataset.v; return render(); }
+  if (a==='add') { var im=b.closest('.item'); im=im&&im.querySelector('img'); return cartAdd(b.dataset.id, im&&im.style.visibility!=='hidden'?im:null); }
+  if (a==='cq') { var cc=state.cart||{}, id=b.dataset.id; cc[id]=(cc[id]||0)+(+b.dataset.d); if(cc[id]<=0) delete cc[id]; var ft=document.querySelector('.ftc'), y=ft?ft.scrollTop:0; render(); ft=document.querySelector('.ftc'); if(ft) ft.scrollTop=y; return; }
+  if (a==='cartgo') return go('cart-staff');
   if (a==='fg' || a==='fs') { state[a]=b.dataset.v; var sr=document.querySelector('.frow.ser'); state.serx=sr?sr.scrollLeft:0; render(); var s2=document.querySelector('.frow.ser'); if(s2) s2.scrollLeft=a==='fs'?state.serx:0; return; }
   if (a==='devcat') { state.devcat=b.dataset.v; return render(); }
   if (a==='lab') { state.mix=[]; return go('mix'); }
@@ -1207,7 +1334,8 @@ document.getElementById('app').addEventListener('click',function(e){
   if (a==='quad') { state.flavor=b.dataset.g; state.cool=state.mapf||''; b.classList.add('on'); return setTimeout(function(){go('mtl-res')},150); }
   if (a==='mpk') { state.mpack=i; state.mpn=5; return on('mtl-mpack'); }
   if (a==='mpn') { state.mpn=i; return render(); }
-  if (a==='mpcall') { state.staffT='입호흡 액상'; state.staffH='직원이 바로<br>담아 드릴게요!'; state.staffP='"'+esc(MPACKS[state.mpack].t)+' '+(state.mpn||5)+'병" 하신다고 전해 드릴게요.<br>잠깐만 기다려 주세요.'; return go('help-staff'); }
+  if (a==='mpcall') { var L=mpackList(state.mpack,state.mpn||5).slice(0,state.mpn||5); state.cart=state.cart||{}; L.forEach(function(x){ state.cart[x.id]=(state.cart[x.id]||0)+1; }); return go('cart'); }
+  if (a==='mpcall-old') { state.staffT='입호흡 액상'; state.staffH='직원이 바로<br>담아 드릴게요!'; state.staffP='"'+esc(MPACKS[state.mpack].t)+' '+(state.mpn||5)+'병" 하신다고 전해 드릴게요.<br>잠깐만 기다려 주세요.'; return go('help-staff'); }
   if (a==='m-staff') return on('mtl-staff');
   if (a==='m-like') { state.q=''; return on('mtl-like'); }
   if (a==='m-rank') return on('mtl-rank');
@@ -1220,6 +1348,7 @@ document.getElementById('app').addEventListener('click',function(e){
 
 document.getElementById('fab').addEventListener('click',function(){ go('mem'); });
 document.getElementById('fabh').addEventListener('click',function(){ home(); });
+document.getElementById('cartfab').addEventListener('click',function(){ if(state.view!=='cart') go('cart'); });
 /* 2분 동안 아무도 안 만지면 첫 화면으로 */
 var idleT; function idle(){clearTimeout(idleT); idleT=setTimeout(function(){ if(state.view!=='home') home(); },120000);}
 ['pointerdown','scroll'].forEach(function(ev){addEventListener(ev,idle,true)}); idle();
