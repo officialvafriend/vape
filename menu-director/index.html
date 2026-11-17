@@ -558,6 +558,26 @@ body.land .bimg img{object-fit:contain;background:#f2f2f4}
 .cwho{font-size:15px;color:#5c4400;background:#FFF6D6;border-radius:10px;padding:6px 8px}
 .cacts button{font-size:20px}
 body.land .chimg{width:96px;height:96px}
+.qblock{grid-column:1/-1;margin-top:10px}
+.qblock h3{font-family:var(--jal);font-weight:normal;font-size:26px;margin:4px 0 12px}
+.qlist{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px}
+.qc{background:#fff;color:#191f28;border-radius:22px;padding:14px;animation:up .4s backwards}
+.qh{display:grid;grid-template-columns:1fr 46px 1fr;align-items:center;margin-bottom:6px}
+.qd{border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:4px;color:#191f28}
+.qd b{font-family:var(--jal);font-weight:normal;font-size:21px}
+.qi{width:76px;height:76px;border-radius:14px;overflow:hidden;background:#f2f2f4;position:relative;display:block}.qi img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.qvs{justify-self:center;width:40px;height:40px;border-radius:50%;background:#e5313b;color:#fff;font-family:var(--jal);font-size:16px;display:flex;align-items:center;justify-content:center}
+.qr{display:grid;grid-template-columns:1fr 76px 1fr;align-items:center;gap:6px;padding:6px 0;border-top:1px solid #eef0f3;text-align:center}
+.qr span{font-size:16px;font-weight:700;padding:5px 4px;border-radius:10px}
+.qr span.w{background:#E8F7EE;color:#0f7a3d;font-family:var(--jal);font-weight:normal;font-size:17px}
+.qr em{font-style:normal;font-size:13px;font-weight:800;color:#8b95a1}
+.qr.who span{font-size:13px;font-weight:600;color:#5c4400;background:#FFF6D6}
+.qa{display:flex;gap:6px;margin-top:8px}
+.qa button{flex:1;height:46px;border:0;border-radius:12px;background:var(--tint);color:var(--deep);font-family:var(--jal);font-size:15px}
+.qa button.m{background:var(--deep);color:#fff}
+.qc.mini{margin-top:12px;border:2px solid var(--deep);padding:10px 12px}
+.qc.mini .qd b{font-size:19px}
+.qc.mini .qa button{height:48px;font-size:17px}
 .empty{grid-column:1/-1;padding:48px 0;text-align:center;font-size:22px;color:var(--sub)}
 
 .toast{position:fixed;left:50%;top:40px;transform:translate(-50%,-20px);opacity:0;padding:18px 28px;border-radius:999px;
@@ -882,7 +902,7 @@ function modelCards(){ var C=DEVCAT.filter(function(o){return o.k===(state.devca
 function modelListPane(){
   return '<div class="pane res">'+topBar('기기 보기',1,2)+
     '<section class="q" style="margin-top:32px"><h1>어떤 기기가 마음에 드세요? 📱</h1><p>'+(BRANCH?esc(BRANCH)+'에 지금 있는 기기예요.':'매장에 있는 기기예요.')+' 눌러서 자세히 보세요.</p>'+devTabs()+'</section>'+
-    '<section class="grid dgrid">'+modelCards()+'</section></div>';
+    '<section class="grid dgrid">'+modelCards()+qcmpBlock()+'</section></div>';
 }
 function modelDetail(){
   var M=MODELS[state.model], o=M.opts[state.mopt||0]||M.opts[0], I=M.info||DEVL.filter(function(d){return d.n===M.dn})[0]||{}, pk=devPacks(M);
@@ -1439,7 +1459,7 @@ function allPane(){
   var t=state.allt||'liq', body='', bar='';
   if (t==='liq' || t==='dl') { var L=byRank(t==='liq'?LIQ:LUNGL), f=filt(L); bar=filterBar(L);
     body=f.slice(0,120).map(function(x){return card(x,'')}).join('') || '<div class="empty">맞는 액상이 없어요.</div>'; }
-  else if (t==='dev') { bar=devTabs(); body=modelCards(); }
+  else if (t==='dev') { bar=devTabs(); body=modelCards()+qcmpBlock(); }
   else { var em={pod:'🔧',acc:'🧰',dsp:'🚬'}[t], G=GSRC.filter(function(g){ return t==='dsp'?g.c==='dsp':g.c==='pod'&&(t==='pod'?g.sub==='팟·코일':g.sub!=='팟·코일'); }),
       key=t==='dsp'?function(g){return g.model||'기타'}:function(g){return g.pos||'기타'};
     bar=gBar(G,key,t==='dsp'?'제품':'종류'); var F=G.filter(function(g){return !state.fs||key(g)===state.fs});
@@ -1466,7 +1486,7 @@ function buildPane(){
   var I=bInfo(), M=I.M, P=I.P, img=I.o.img||M.img;
   var left='<section class="bl"><div class="bimg">'+devTile({img:img,n:M.dn})+'</div><div class="bln"><h2>'+esc(M.dn)+'</h2>'+(P.hook?'<p class="bhook">'+esc(P.hook)+'</p>':'')+
     (P.spec?'<div class="bspec">'+P.spec.map(function(t){return '<span>'+esc(t)+'</span>'}).join('')+'</div>':'')+
-    (P.pros?'<ul class="bpros">'+P.pros.map(function(t){return '<li>'+esc(t)+'</li>'}).join('')+'</ul>':'')+(P.who?'<div class="bwho">👤 이런 분께 추천 · <b>'+esc(P.who)+'</b></div>':'')+(cmpVs(M.dn)?'<button class="bvs" data-act="cmp">⚖️ <b>'+esc(M.dn)+'</b> VS <b>'+esc(cmpVs(M.dn).dn)+'</b> 비교하기 ›</button>':'')+'</div></section>';
+    (P.pros?'<ul class="bpros">'+P.pros.map(function(t){return '<li>'+esc(t)+'</li>'}).join('')+'</ul>':'')+(P.who?'<div class="bwho">👤 이런 분께 추천 · <b>'+esc(P.who)+'</b></div>':'')+(cmpVs(M.dn)?qcmp(M, cmpVs(M.dn), true):'')+'</div></section>';
   var sec=function(n,t,body,note){ return '<div class="bsec"><h3><span>'+n+'</span>'+t+'</h3>'+(note?'<p class="bnote">'+note+'</p>':'')+body+'</div>'; };
   var colors=(I.M.opts.length>1||I.M.opts[0].opt)?sec('1','🎨 색상','<div class="bchips">'+M.opts.map(function(x,i){return '<button data-act="mopt" data-i="'+i+'" class="'+(i===(state.mopt||0)?'on':'')+'">'+esc(x.opt||'기본')+(x.price!==M.price?' <small>+'+won(x.price-M.price)+'</small>':'')+'</button>'}).join('')+'</div>'):'';
   var packs=sec(colors?'2':'1','💧 액상 패키지','<div class="bopts">'+I.packs.map(function(x){ var on=x[0]===I.pk[0], sv=x[4]-x[3];
@@ -1496,6 +1516,22 @@ function bAdd(){ var I=bInfo(), c=state.cart=state.cart||{};
 function mIdx(dn){ for (var i=0;i<MODELS.length;i++) if (MODELS[i].dn===dn) return i; return -1; }
 function cmpVs(dn){ var C=(window.DEV_CMP||{})[dn], i=C?mIdx(C.vs):-1; if (i<0) i=MODELS.length>1?(mIdx(dn)===0?1:0):-1; return i>=0?MODELS[i]:null; }
 function podOf(dn){ var P=(window.DEV_PROS||{})[dn]; if(!P||!P.pod) return null; var l=GSRC.filter(function(g){return g.c==='pod'&&g.sub==='팟·코일'&&P.pod.test(g.n)}); return l.length?Math.min.apply(null,l.map(function(g){return g.price})):null; }
+/* 한눈에 비교 카드: 숫자로 비교되는 것만 골라 👍 */
+function qcmp(A, B, mini){
+  var CA=(window.DEV_CMP||{})[A.dn]||{}, CB=(window.DEV_CMP||{})[B.dn]||{}, PA=(window.DEV_PROS||{})[A.dn]||{}, PB=(window.DEV_PROS||{})[B.dn]||{};
+  var rows=[['💰 기기',A.price,B.price,-1,'원'],['🔋 배터리',CA.bat,CB.bat,1,'mAh'],['💧 팟',CA.ml,CB.ml,1,'mL'],['🔧 팟 값',podOf(A.dn),podOf(B.dn),-1,'원']];
+  var f=function(v,u){ return v==null?'—':(u==='원'?won(v):v.toLocaleString('ko-KR')+u); }, sa=0, sb=0;
+  var body=rows.filter(function(r){return r[1]!=null||r[2]!=null}).map(function(r){ var wa=false, wb=false;
+      if (r[1]!=null && r[2]!=null && r[1]!==r[2]){ wa=r[3]>0?r[1]>r[2]:r[1]<r[2]; wb=!wa; wa?sa++:sb++; }
+      return '<div class="qr"><span class="'+(wa?'w':'')+'">'+f(r[1],r[4])+(wa?' 👍':'')+'</span><em>'+r[0]+'</em><span class="'+(wb?'w':'')+'">'+f(r[2],r[4])+(wb?' 👍':'')+'</span></div>'; }).join('');
+  var ia=mIdx(A.dn), ib=mIdx(B.dn);
+  return '<div class="qc'+(mini?' mini':'')+'"><div class="qh"><button class="qd" data-act="cpick" data-i="'+ia+'">'+(mini?'':'<span class="qi">'+devTile({img:A.img,n:A.dn})+'</span>')+'<b>'+esc(A.dn)+'</b></button><span class="qvs">VS</span><button class="qd" data-act="cpick" data-i="'+ib+'">'+(mini?'':'<span class="qi">'+devTile({img:B.img,n:B.dn})+'</span>')+'<b>'+esc(B.dn)+'</b></button></div>'+body+
+    (mini?'':'<div class="qr who"><span>'+esc(PA.who||'')+'</span><em>👤</em><span>'+esc(PB.who||'')+'</span></div>')+
+    '<div class="qa"><button data-act="qcmp" data-a="'+ia+'" data-b="'+ib+'">⚖️ 자세히 비교</button>'+(mini?'':'<button class="m" data-act="cpick" data-i="'+ia+'">🚗 '+esc(A.dn)+' 조합</button><button class="m" data-act="cpick" data-i="'+ib+'">🚗 '+esc(B.dn)+' 조합</button>')+'</div></div>'; }
+var QPAIRS = [['말론','말론S'],['하복2','하복SE'],['발라맥스프로','조바'],['플러키','썬더Q2'],['프릭스킷','발라맥스프로']];
+function qcmpBlock(){ var ps=QPAIRS.filter(function(p){return mIdx(p[0])>=0&&mIdx(p[1])>=0});
+  if (!ps.length) return '';
+  return '<div class="qblock"><h3>⚖️ 뭐가 달라요? 한눈에 비교</h3><div class="qlist">'+ps.map(function(p){return qcmp(MODELS[mIdx(p[0])],MODELS[mIdx(p[1])])}).join('')+'</div></div>'; }
 function cmpPane(){
   var A=MODELS[state.cmpA], B=MODELS[state.cmpB]; if(!A||!B) return modelListPane();
   var CA=(window.DEV_CMP||{})[A.dn]||{}, CB=(window.DEV_CMP||{})[B.dn]||{}, PA=(window.DEV_PROS||{})[A.dn]||{}, PB=(window.DEV_PROS||{})[B.dn]||{};
@@ -1654,6 +1690,7 @@ document.getElementById('app').addEventListener('click',function(e){
   if (a==='bacc') { var A=state.bacc=state.bacc||{}; if(A[b.dataset.id]) delete A[b.dataset.id]; else A[b.dataset.id]=1; return bRender(); }
   if (a==='bgo') return bAdd();
   if (a==='cmp') { var vs=cmpVs(MODELS[state.model].dn); state.cmpA=state.model; state.cmpB=mIdx(vs.dn); return go('cmp'); }
+  if (a==='qcmp') { state.cmpA=+b.dataset.a; state.cmpB=+b.dataset.b; return go('cmp'); }
   if (a==='cpick') { state.model=i; state.mopt=0; state.bpk='0'; state.bpod=0; state.bpodi=0; state.bacc={}; if (state.hist[state.hist.length-1]==='dev-dtl') { state.view='dev-dtl'; state.hist.pop(); return render(); } return go('dev-dtl'); }
   if (a==='mcall') { var M=MODELS[state.model], op=(M.opts[state.mopt||0]||{}).opt;
     state.staffT='기기 보기'; state.staffH='직원이 바로<br>보여 드릴게요!'; state.staffP='"'+esc(M.dn+(op?' '+op:''))+'" 보러 오셨다고 전해 드릴게요.<br>잠깐만 기다려 주세요.'; return go('help-staff'); }
