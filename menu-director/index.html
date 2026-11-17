@@ -470,6 +470,9 @@ body.land .cartp .ftc{grid-column:2;grid-row:3;display:flex}
 body.land .cartdock{top:16px;bottom:84px}
 body.land .cartp .save .pct{display:none}body.land .cartp .save .big{font-size:26px;white-space:nowrap}
 .allban{grid-column:1/-1}
+.rvban.memo2{background:#fff;animation:none}.rvban.memo2 b{color:var(--deep)}.rvban.memo2 i{font-size:22px}
+.mcard.mform.pre{border-color:var(--deep)}
+.mback{flex:none;height:60px;padding:0 18px;border:0;border-radius:16px;background:#fff;color:var(--deep);font-family:var(--jal);font-size:19px}
 .memban.memoban{background:#FFF6D6}.memban.memoban b{color:#5c4400}.memban.memoban i{font-size:20px}
 .alltabs{margin-top:16px;flex:none}
 .alltabs button{padding:12px 20px;font-size:20px;background:rgba(255,255,255,.18)}
@@ -1075,7 +1078,7 @@ function memDone(){
       (state.memKind==='new'?'<div class="row2"><span>이름</span><b>'+esc(full)+'</b></div>':'')+
       '<div class="row2"><span>휴대폰</span><b>'+esc(ph)+'</b></div>'+
       (state.memKind==='new'?'<div class="row2"><span>쿠폰 문자</span><b>'+(m.mk?'받을래요 🎟️':'안 받아요')+'</b></div>':'')+
-    '</section><button class="cta" data-act="home">계속 둘러보기 👀</button></div>';
+    '</section>'+(state.hist.indexOf('cart-staff')>=0?'<div class="acts" style="margin-top:auto"><button data-act="cmemo2">📝 회원메모 쓰기</button><button class="main" data-act="tocart">‹ 결제 화면으로</button></div>':'<button class="cta" data-act="home">계속 둘러보기 👀</button>')+'</div>';
 }
 
 /* 빨간 동글이 (만세) */
@@ -1515,6 +1518,7 @@ function cartStaffPane(){
     '<section class="q" style="margin-top:28px"><h1>직원이 바로<br>담아 드릴게요! 🙌</h1><p>이 화면을 카운터 직원에게 보여 주세요.</p>'+
       '<div class="save"><span class="em">🧾</span><div class="tx"><div class="l">'+cartN()+'개 · 패키지 적용</div><div class="big">'+won(S.pay)+'</div>'+(S.full>S.pay?'<div class="pr"><s>'+won(S.full)+'</s> → '+won(S.full-S.pay)+' 아껴요</div>':'')+'</div></div></section>'+
     '<section class="ftc"><div class="ftcard">'+rows+'</div></section>'+
+    '<button class="rvban memo2" data-act="cmemo"><span class="em">📝</span><span><b>회원메모 쓰기 (직원)</b><small>담은 상품이 메모에 자동으로 들어가요 · 회원 조회하면서 바로 적기</small></span><i>🔒</i></button>'+
     '<button class="rvban" data-act="resv"><span class="em">🔔</span><span><b>결제 전에 잠깐! 알림 받아 가세요</b><small>🆕 신상품 · 🎉 행사 · 💎 한정판 문자, 📦 상품 예약까지</small></span><i>›</i></button>'+
     '<div class="acts"><button data-act="back">‹ 장바구니 고치기</button><button class="main" data-act="mem">🎁 회원 적립하기</button></div></div>';
 }
@@ -1711,10 +1715,10 @@ function memoPane(){
   var nw=state.mnew;
   return '<div class="pane res memop">'+topBar('회원메모 📝 (직원 전용)',1,1)+
     '<div class="mtop"><input id="mq" class="rin" placeholder="🔍 이름, 번호, 상품, 메모로 찾기" value="'+esc(state.mq||'')+'" autocomplete="off">'+
-      '<button class="mlock" data-act="mlock">🔒 잠그기</button></div>'+
+      (state.memoFrom?'<button class="mback" data-act="mback">‹ 결제 화면으로</button>':'')+'<button class="mlock" data-act="mlock">🔒 잠그기</button></div>'+
     '<div class="frow mtabs">'+[['wait','📞 연락 대기'],['done','✅ 연락 완료'],['all','📋 전체']].map(function(o){return '<button data-act="mf" data-v="'+o[0]+'" class="'+(f===o[0]?'on':'')+'">'+o[1]+' <small>'+cnt[o[0]]+'</small></button>'}).join('')+'</div>'+
-    '<div class="mbody">'+'<div class="mcard mform"><h3>✍️ 메모 쓰기</h3><p class="mhint">손님 이름이나 번호, 좋아하는 맛, 연락할 일을 적어 두세요</p><div class="rv2"><input id="nName" class="rin" placeholder="성함 또는 별명" autocomplete="off"><input id="nPhone" class="rin" type="tel" inputmode="numeric" maxlength="11" placeholder="휴대폰 번호 (없어도 돼요)"></div>'+
-      '<textarea id="nMemo" class="rin mta big" placeholder="예: 말론S 블랙 입고되면 연락, 0.4옴 좋아함"></textarea>'+
+    '<div class="mbody">'+'<div class="mcard mform'+(state.mpre?' pre':'')+'"><h3>'+(state.mpre?'🧾 이번 구매 메모':'✍️ 메모 쓰기')+'</h3><p class="mhint">손님 이름이나 번호, 좋아하는 맛, 연락할 일을 적어 두세요</p><div class="rv2"><input id="nName" class="rin" placeholder="성함 또는 별명" autocomplete="off" value="'+esc((state.mpreN||''))+'"><input id="nPhone" class="rin" type="tel" inputmode="numeric" maxlength="11" placeholder="휴대폰 번호 (없어도 돼요)" value="'+esc((state.mpreP||''))+'"></div>'+
+      '<textarea id="nMemo" class="rin mta big" placeholder="예: 말론S 블랙 입고되면 연락, 0.4옴 좋아함">'+esc(state.mpre||'')+'</textarea>'+
       '<div class="mquick">'+['📦 입고되면 연락','💧 액상 예약','📱 기기 예약','🔧 AS 접수','💎 한정판 찜'].map(function(t){return '<button data-act="mtag" data-v="'+t+'">'+t+'</button>'}).join('')+'</div>'+
       '<div class="mbtn"><button data-act="mnewx">지우기</button><button class="m" data-act="mnewok">💾 저장</button></div></div>'+
     '<div class="mlist">'+(l.length?l.map(function(m){ var del=state.mdel===m.id;
@@ -1847,14 +1851,21 @@ document.getElementById('app').addEventListener('click',function(e){
   if (a==='mem-new' || a==='mem-old') { state.memKind=a.slice(4); M_().bad=''; return on(a); }
   if (a==='pk') { pinKey(b.dataset.v); return; }
   if (a==='memo') { state.pin=''; state.pinStep=1; state.pinBad=false; state.mq=''; state.mf='wait'; return go('memo'); }
-  if (a==='mlock') { state.memoOK=false; return home(); }
+  if (a==='mlock') { state.memoOK=false; if (state.memoFrom) { state.memoFrom=null; state.mpre=''; return back(); } return home(); }
+  if (a==='tocart' || a==='cmemo2') { while (state.hist.length && state.hist[state.hist.length-1]!=='cart-staff') state.hist.pop(); state.view=state.hist.pop()||'cart-staff'; if (a==='cmemo2') { var bb=document.createElement('button'); bb.dataset.act='cmemo'; render(); return document.querySelector('[data-act=cmemo]').click(); } return render(); }
+  if (a==='mback') { state.memoFrom=null; state.mpre=''; return back(); }
+  if (a==='cmemo') { var cc=state.cart||{}, S0=cartSum(), mm0=M_(), d0=new Date();
+    state.mpre='🧾 '+(d0.getMonth()+1)+'/'+d0.getDate()+' 구매: '+Object.keys(cc).map(function(id){ var x=ITEM(id); return x?(x.dn||x.n)+(cc[id]>1?' ×'+cc[id]:''):''; }).filter(Boolean).join(', ')+' · '+won(S0.pay)+' ';
+    state.mpreN=(mm0.name||'').trim(); state.mpreP=mm0.phone||''; state.memoFrom='cart-staff';
+    state.pin=''; state.pinStep=1; state.pinBad=false; state.mq=''; state.mf='wait'; return go('memo'); }
   if (a==='mf') { state.mf=b.dataset.v; state.mdel=null; return render(); }
   if (a==='mnew') { state.mnew=true; render(); var nn=document.getElementById('nName'); if(nn) nn.focus(); return; }
   if (a==='mnewx') { ['nName','nPhone','nMemo'].forEach(function(id){ var e=document.getElementById(id); if(e) e.value=''; }); return; }
   if (a==='mtag') { var ta=document.getElementById('nMemo'); ta.value=(ta.value?ta.value.replace(/\s*$/,' '):'')+b.dataset.v+' '; ta.focus(); return; }
   if (a==='mnewok') { var nm=document.getElementById('nName').value.trim(), np=document.getElementById('nPhone').value.replace(/\D/g,''), mm=document.getElementById('nMemo').value.trim();
     if (!nm && !np) return toast('이름이나 번호 중 하나는 넣어 주세요');
-    addMemo({name:nm, phone:np, kinds:['📝 직원 메모'], memo:mm, br:BRANCH||'', done:false}); state.mf='wait'; toast('📝 저장했어요'); return render(); }
+    addMemo({name:nm, phone:np, kinds:[state.mpre?'🧾 구매 메모':'📝 직원 메모'], memo:mm, br:BRANCH||'', done:!!state.mpre});
+    if (state.memoFrom) { state.mpre=''; state.mpreN=''; state.mpreP=''; state.memoFrom=null; state.memoOK=false; toast('📝 회원메모에 저장했어요'); return back(); } state.mf='wait'; toast('📝 저장했어요'); return render(); }
   if (a==='mdone') { var L1=memos(); L1.forEach(function(m){ if(m.id===b.dataset.id) m.done=!m.done; }); saveMemos(L1); return render(); }
   if (a==='mdel') { if (state.mdel!==b.dataset.id) { state.mdel=b.dataset.id; return render(); } saveMemos(memos().filter(function(m){return m.id!==b.dataset.id})); state.mdel=null; toast('🗑 지웠어요'); return render(); }
   if (a==='resv') { state.rv=null; RV(); return go('resv'); }
