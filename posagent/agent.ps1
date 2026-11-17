@@ -30,7 +30,7 @@ public class W32 {
 }
 "@
 $HERE = Split-Path -Parent $MyInvocation.MyCommand.Path
-$VER = "1116k"
+$VER = "1117a"
 $WEB = "https://officialvafriend.github.io/vape/posagent/"
 $SB = "https://bjjlmnkyhedtutogzliq.supabase.co/rest/v1/rpc/"; $KEY = "sb_publishable_i8rfcm_zAnwV75joN58FCw_8tHgFUKr"
 $cfgPath = Join-Path $HERE "설정.json"
@@ -174,7 +174,7 @@ $t.Add_Tick({
   try {
     $h = Rpc "qr_hello" @{ p_dev = $DEV; p_branch = $BRANCH; p_label = "포스PC $env:COMPUTERNAME" }
     if (-not ("$h".StartsWith("ok:"))) { if ($script:state -ne "wait") { $script:state = "wait"; Draw }; return }
-    $sb = "$h".Substring(3); if ($sb -and $sb -ne $script:BRANCH) { $script:BRANCH = $sb; Draw }   # 지점은 서버에 등록된 값으로 표시
+    $srvBranch = "$h".Substring(3); if ($srvBranch -and $srvBranch -ne $script:BRANCH) { $script:BRANCH = $srvBranch; Draw }   # 지점은 서버에 등록된 값으로 표시
     $list = @(Rpc "qr_pending" @{ p_dev = $DEV } | ForEach-Object { $_ })
     $before = ($script:orders | ForEach-Object { $_.id }) -join ","; $script:orders = $list; $after = ($list | ForEach-Object { $_.id }) -join ","
     $was = $script:state; $script:state = "ok"
