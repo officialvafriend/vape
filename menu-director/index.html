@@ -533,6 +533,7 @@ body.land .bimg img{object-fit:contain;background:#f2f2f4}
 .clft .perd{margin-top:2px;font-size:15px;color:#333d4b}.clft .perd b{display:inline;font-size:16px}
 .pksz button small{display:block;font-family:var(--kr);font-size:15px;font-weight:700;opacity:.8}
 .mpp .pksz button{height:auto;padding:8px 0}
+.item .unit.evt{background:#FFF0F0;color:#e5313b}
 .empty{grid-column:1/-1;padding:48px 0;text-align:center;font-size:22px;color:var(--sub)}
 
 .toast{position:fixed;left:50%;top:40px;transform:translate(-50%,-20px);opacity:0;padding:18px 28px;border-radius:999px;
@@ -644,7 +645,7 @@ function pick(f,c){ return DATA().filter(function(x){
 function byRank(arr){ return arr.map(function(x,i){return {x:x, s:RANK[x.n]||0, i:i}})
     .sort(function(a,b){return b.s-a.s || (a.x.line===b.x.line?0:a.x.line==="프리미엄"?-1:1) || a.i-b.i}).map(function(o){return o.x}); }
 var EV_DL = '<div class="ev">💡 <b>폐호흡 3병 40,000원</b> · 1병씩 사는 것보다 <b>50,000원 아껴요</b> · 맛 섞어도 돼요</div>';
-var EV = '<div class="ev">💡 <b>프리미엄</b> 5병 49,500원 → <b>25,500원 아껴요</b> · 11병 90,000원 → <b>75,000원 아껴요</b> &nbsp;|&nbsp; <b>프라임</b> 3병 50,000원 → <b>10,000원 아껴요</b></div>';
+var EV = '<div class="ev">💡 <b>프리미엄</b> 5병 49,500원 → <b>25,500원 아껴요</b> · 11병 90,000원 → <b>75,000원 아껴요</b> &nbsp;|&nbsp; <b>프라임</b> 3병 50,000원 → <b>10,000원 아껴요</b><br>🎁 <b>빌런 · 릭 · 제이코리아</b> 5+1 6병 <b>49,600원</b> · 대량 30+1 <b>220,100원</b> · 50+3 <b>360,300원</b></div>';
 var UNIT = {"프리미엄":"💸 5병 패키지면 1병 9,900원","프라임":"💸 3병이면 1병 16,667원","폐호흡":"💸 3병이면 1병 13,333원"};
 function saveBox(label, full, price){ var off=full-price, pct=Math.round(off/full*100);
   return '<div class="save pop"><span class="em">🎉</span><div class="tx"><div class="l">'+esc(label)+'</div><div class="big"><span class="cnt" data-n="'+off+'">'+won(off)+'</span> 아껴요</div><div class="pr"><s>'+won(full)+'</s> → <b>'+won(price)+'</b></div></div><span class="pct">-'+pct+'%</span></div>'; }
@@ -656,7 +657,7 @@ function card(x, badge){
   return '<div class="item" data-id="'+esc(x.id||'')+'"><div class="ph">'+(src?'<img loading="lazy" src="'+esc(src)+'" alt="" onerror="this.style.visibility=\'hidden\'">':'<span class="tile">'+esc(x.dn||x.n)+'</span>')+
     (badge?'<span class="rk">'+esc(badge)+'</span>':'')+(tag?'<span class="tg">'+esc(tag)+'</span>':'')+'</div>'+
     '<div class="bd"><span class="br">'+esc([x.br,x.f].filter(Boolean).join(' · '))+'</span><span class="nm">'+esc(x.dn||x.n)+'</span>'+
-    '<span class="pr">'+(PRICE[x.line]?won(PRICE[x.line]):'')+'</span>'+(UNIT[x.line]?'<span class="unit">'+UNIT[x.line]+'</span>':'')+'<span class="lc">'+esc(x.line)+(x.loc?' · 위치 '+esc(x.loc.split('|')[0]):'')+'</span>'+(x.id&&PRICE[x.line]?'<button class="add" data-act="add" data-id="'+esc(x.id)+'">'+((state.cart||{})[x.id]?'✓ '+state.cart[x.id]+'병 담음 · 하나 더':'🛒 담기')+'</button>':'')+'</div></div>';
+    '<span class="pr">'+(PRICE[x.line]?won(PRICE[x.line]):'')+'</span>'+(isE(x)?'<span class="unit evt">🎁 5+1 이벤트 · 6병 49,600원</span>':UNIT[x.line]?'<span class="unit">'+UNIT[x.line]+'</span>':'')+'<span class="lc">'+esc(x.line)+(x.loc?' · 위치 '+esc(x.loc.split('|')[0]):'')+'</span>'+(x.id&&PRICE[x.line]?'<button class="add" data-act="add" data-id="'+esc(x.id)+'">'+((state.cart||{})[x.id]?'✓ '+state.cart[x.id]+'병 담음 · 하나 더':'🛒 담기')+'</button>':'')+'</div></div>';
 }
 /* 목록 한 화면: o = {step,total,h,chips,list,top(인기 표시 몇 위까지),note(위 안내),empty} */
 /* ---------- 맛 분류 + 시리즈(브랜드)로 나눠 보기: 액상 목록, 패키지 담기 화면 공통 ---------- */
@@ -1117,7 +1118,7 @@ function cheapPane(){
     '<section class="q" style="margin-top:28px"><h1>이 순서대로만 하면<br>제일 싸요! 💸</h1>'+saveBox('말론 + 액상 10병을 기기 패키지로 사면', mp+150000, mp+75000)+'</section>'+
     '<section class="ftc">'+
       st(1,'🎁','회원등록부터 해요','구매할 때마다 적립되고, 다음부터는 <b>번호만</b> 말하면 돼요. AS 받을 때도 구매 기록이 남아서 편해요.','mem','회원등록하기')+
-      st(2,'💧','액상은 11병 패키지가 제일 싸요','1병씩 사면 15,000원인데 11병 90,000원이면 <b>병당 8,182원</b>이에요. 1병씩보다 <b>75,000원 (45%)</b> 아껴요. 5병만 사도 병당 9,900원!','pk11','11병 패키지 보기')+
+      st(2,'💧','액상은 11병 패키지가 제일 싸요','1병씩 사면 15,000원인데 11병 90,000원이면 <b>병당 8,182원</b>이에요. 1병씩보다 <b>75,000원 (45%)</b> 아껴요. 5병만 사도 병당 9,900원!<br>🎁 <b>빌런 · 릭 · 제이코리아</b>는 5+1로 <b>6병 49,600원</b>, 대량은 <b>30+1 220,100원</b>, <b>50+3 360,300원</b> (일회용 제외)','pk11','11병 패키지 보기')+
       st(3,'📱','기기는 액상이랑 같이 사요','말론, 말론S + 액상 10병이면 <b>'+won(mp+75000)+'</b> (따로 사면 '+won(mp+150000)+'). 하복2 + 10병은 <b>164,000원</b>이에요.','dev','기기 보러 가기')+
       st(4,'☁️','폐호흡은 3병씩 사요','1병 30,000원인데 3병 묶음이면 <b>40,000원</b>, 병당 13,333원이에요. 맛 섞어도 돼요. <b>50,000원</b> 아껴요.','dl','폐호흡 보러 가기')+
       st(5,'💵','기기 패키지 20만원 넘으면 현금이 이득','기기 패키지 20만원 이상을 현금이나 계좌이체로 사면 <b>2,000원</b> 더 빼 드려요. (직원에게 확인해 주세요)','','')+
@@ -1215,30 +1216,42 @@ function cartN(){ var c=state.cart||{}; return Object.keys(c).reduce(function(a,
 function cartLines(){ var c=state.cart||{}, L={};
   Object.keys(c).forEach(function(id){ var x=ITEM(id); if(!x) return; (L[x.line]=L[x.line]||{n:0,items:[]}); L[x.line].n+=c[id]; L[x.line].items.push(x); });
   return L; }
+/* 빌런 · 릭 · 제이코리아 액상(일회용 말고) 이벤트: 5+1 = 6병 49,600원 / 30+1 = 31병 220,100원 / 50+3 = 53병 360,300원
+   일반 프리미엄 패키지(5병 49,500원, 11병 90,000원)와 섞어서 제일 싸게 계산 */
+var EVT_NAME = '빌런·릭·제이코리아';
+function isE(x){ return !!x && x.line==='프리미엄' && (x.br==='제이코리아' || /빌런|(^|\s)릭\s/.test(x.n||'')); }
+var EPK = [[6,49600,'5+1'],[31,220100,'30+1'],[53,360300,'50+3']], _be=[{c:0,k:[]}];
+function bestE(n){ for (var i=_be.length;i<=n;i++){ var b={c:Infinity,k:[]}; EPK.forEach(function(p){ if(p[0]<=i && _be[i-p[0]].c+p[1]<b.c) b={c:_be[i-p[0]].c+p[1], k:_be[i-p[0]].k.concat(p[2])}; }); _be[i]=b; } return _be[n]; }
+function premPlan(e, o){ var m={c:Infinity,k:[]}; for (var x=0;x<=e;x++){ var be=bestE(x); if(!isFinite(be.c)) continue; var t=be.c+best('프리미엄',e-x+o); if (t<m.c) m={c:t,k:be.k}; } return m; }
+function premCost(e, o){ return premPlan(e,o).c; }
+function evLabel(k){ var cnt={}; k.forEach(function(t){cnt[t]=(cnt[t]||0)+1}); return Object.keys(cnt).map(function(t){return EVT_NAME+' '+t+(cnt[t]>1?' ×'+cnt[t]:'')}).join(', '); }
 function lineSum(l, o){ var c=state.cart||{};
+  if (l==='프리미엄') { var e=0, n=0; o.items.forEach(function(x){ var q=c[x.id]||0; if(isE(x)) e+=q; else n+=q; }); return {full:PRICE[l]*o.n, pay:premCost(e,n)}; }
   if (PRICE[l]) return {full:PRICE[l]*o.n, pay:best(l,o.n)};
   var t=o.items.reduce(function(a,x){return a+(x.price||0)*(c[x.id]||0)},0); return {full:t, pay:t}; }
 /* 말론, 말론S, 하복2: 기기 + 프리미엄 5병 = 기기값 + 40,000원, + 10병 = + 75,000원, 하복2 + 폐호흡 3병 = + 40,000원 */
 var BUNDLE_DEV = /^(말론|말론S|하복2)$/;
 function devDn(x){ return (x && x.goods && x.line==='기기') ? (x.dev||'') : ''; }
 function priceOf(c){
-  var prem=0, prime=0, lung=0, other=0, full=0, devs=[];
+  var prem=0, premE=0, prime=0, lung=0, other=0, full=0, devs=[];
   Object.keys(c).forEach(function(id){ var x=ITEM(id), q=c[id]; if(!x||q<=0) return;
-    if (x.line==='프리미엄') prem+=q; else if (x.line==='프라임') prime+=q; else if (x.line==='폐호흡') lung+=q;
+    if (x.line==='프리미엄') { prem+=q; if (isE(x)) premE+=q; } else if (x.line==='프라임') prime+=q; else if (x.line==='폐호흡') lung+=q;
     else if (BUNDLE_DEV.test(devDn(x))) { for (var k=0;k<q;k++) devs.push({dn:devDn(x), price:x.price}); }
     else other+=(x.price||0)*q;
     full += (PRICE[x.line]||x.price||0)*q; });
   var base=best('프라임',prime)+other, bestPay=Infinity, bestPk=[];
-  (function dfs(i, pr, lu, cost, pk){
-    if (i===devs.length){ var t=cost+best('프리미엄',pr)+best('폐호흡',lu)+base; if (t<bestPay){ bestPay=t; bestPk=pk.slice(); } return; }
+  /* e: 이벤트 액상, o: 그 밖의 프리미엄. 기기 패키지에 넣을 병은 일반 쪽 먼저 / 이벤트 쪽 먼저 둘 다 따져 봄 */
+  function takes(e,o,k){ if (e+o<k) return []; var a=Math.min(o,k), b=Math.min(e,k); return [[e-(k-a), o-a],[e-b, o-(k-b)]]; }
+  (function dfs(i, e, o, lu, cost, pk){
+    if (i===devs.length){ var pp=premPlan(e,o), t=cost+pp.c+best('폐호흡',lu)+base; if (t<bestPay){ bestPay=t; bestPk=pk.concat(pp.k.length?[evLabel(pp.k)]:[]); } return; }
     var d=devs[i];
-    dfs(i+1, pr, lu, cost+d.price, pk);
-    if (pr>=5) dfs(i+1, pr-5, lu, cost+d.price+40000, pk.concat(d.dn+' + 액상 5병'));
-    if (pr>=10) dfs(i+1, pr-10, lu, cost+d.price+75000, pk.concat(d.dn+' + 액상 10병'));
-    if (d.dn==='하복2' && lu>=3) dfs(i+1, pr, lu-3, cost+d.price+40000, pk.concat('하복2 + 폐호흡 3병'));
-  })(0, prem, lung, 0, []);
+    dfs(i+1, e, o, lu, cost+d.price, pk);
+    takes(e,o,5).forEach(function(r){ dfs(i+1, r[0], r[1], lu, cost+d.price+40000, pk.concat(d.dn+' + 액상 5병')); });
+    takes(e,o,10).forEach(function(r){ dfs(i+1, r[0], r[1], lu, cost+d.price+75000, pk.concat(d.dn+' + 액상 10병')); });
+    if (d.dn==='하복2' && lu>=3) dfs(i+1, e, o, lu-3, cost+d.price+40000, pk.concat('하복2 + 폐호흡 3병'));
+  })(0, premE, prem-premE, lung, 0, []);
   var noB=devs.reduce(function(a,d){return a+d.price},0)+best('프리미엄',prem)+best('폐호흡',lung)+base;
-  return {full:full, pay:bestPay, noBundle:noB, packs:bestPk, prem:prem, lung:lung, devs:devs};
+  return {full:full, pay:bestPay, noBundle:noB, packs:bestPk, prem:prem, premE:premE, lung:lung, devs:devs};
 }
 function cartSum(){ var r=priceOf(state.cart||{}), c=state.cart||{}, gs=0, nb=0; r.L=cartLines();
   Object.keys(c).forEach(function(id){ var x=ITEM(id); if(!x) return; if(x.goods) gs+=(x.price||0)*c[id]; else nb+=c[id]; });
@@ -1248,7 +1261,9 @@ function upsells(){
   var c=state.cart||{}, cur=priceOf(c), out=[], n=cartN(); if(!n) return out;
   function tryAdd(add, normal, msg, btn){ var c2={}; Object.keys(c).forEach(function(k){c2[k]=c[k]}); add(c2); var r=priceOf(c2), extra=r.pay-cur.pay, save=normal-extra;
     if (save>0) out.push({save:save, html:msg(extra, normal), btn:btn}); }
-  var anyPrem = LIQ.filter(function(x){return x.line==='프리미엄'})[0], anyLung=LUNGL[0];
+  var anyPrem = LIQ.filter(function(x){return x.line==='프리미엄' && !isE(x)})[0], anyE = LIQ.filter(isE)[0], anyLung=LUNGL[0];
+  if (anyE && cur.premE>0) [6,12,31,53].forEach(function(t){ var k=t-cur.premE; if (k>0 && k<=6) tryAdd(function(c2){ c2[anyE.id]=(c2[anyE.id]||0)+k; }, k*15000,
+      function(ex){ return '🎁 <b>'+EVT_NAME+' '+k+'병</b> 더 담으면 <b>+'+won(ex)+'</b>'+(t===6||t===12?' (5+1 이벤트)':t===31?' (30+1 대량 이벤트)':' (50+3 대량 이벤트)')+' · 원래 '+won(k*15000); }); });
   [5,10,11].forEach(function(t){ var k=t-cur.prem; if (k>0 && k<=6 && anyPrem) tryAdd(function(c2){ c2[anyPrem.id]=(c2[anyPrem.id]||0)+k; }, k*15000,
       function(ex){ return '💧 <b>프리미엄 '+k+'병</b> 더 담으면 <b>+'+won(ex)+'</b>만 더 내면 돼요 (원래 '+won(k*15000)+')'; }); });
   if (anyLung && cur.lung>0 && cur.lung<3) { var k2=3-cur.lung; tryAdd(function(c2){ c2[anyLung.id]=(c2[anyLung.id]||0)+k2; }, k2*30000,
