@@ -399,10 +399,11 @@ body.land .labacts{grid-column:2}
 .item .add{margin-top:8px;height:44px;border:0;border-radius:14px;background:var(--tint);color:var(--deep);font-family:var(--jal);font-size:17px}
 .item .add.on,.item .add:active{background:var(--deep);color:#fff}
 .item.lift{opacity:.4}
-.item[data-id]{touch-action:pan-y;cursor:grab}
+.item[data-id],.dcard[data-gid]{touch-action:pan-y;cursor:grab}
+.dcard.lift{opacity:.4}
 .item img{-webkit-user-drag:none;user-drag:none}
 /* 떠 있는 장바구니 병: 오른쪽 가운데 */
-.cartdock{position:fixed;right:10px;top:150px;bottom:120px;z-index:9;width:196px;display:flex;flex-direction:column;align-items:center;gap:8px}
+.cartdock{position:fixed;right:12px;top:20px;bottom:100px;z-index:9;width:calc(33% - 12px);padding:12px;border-radius:26px;background:rgba(0,30,70,.28);display:flex;flex-direction:column;align-items:center;gap:8px}
 .cartdock[hidden]{display:none}
 .cartfab{position:relative;flex:none;width:118px;height:150px;border:0;background:none;padding:0;color:#fff;animation:fabin .4s cubic-bezier(.2,1.6,.4,1);transition:transform .2s}
 .cartfab[hidden]{display:none}
@@ -419,20 +420,27 @@ body.land .labacts{grid-column:2}
 .ghost{position:fixed;z-index:30;width:110px;height:110px;border-radius:20px;overflow:hidden;background:#fff;box-shadow:0 14px 30px rgba(0,0,0,.4);pointer-events:none;transform:translate(-50%,-50%) rotate(-6deg)}
 .ghost img{width:100%;height:100%;object-fit:cover}
 .ghost.fly{transition:left .55s cubic-bezier(.5,0,.7,.4),top .55s cubic-bezier(.3,-.4,.6,1),transform .55s,opacity .55s;transform:translate(-50%,-50%) scale(.25);opacity:.6}
-body.carton .grid{padding-right:200px}
-.cartlist{width:100%;min-height:0;flex:0 1 auto;overflow-y:auto;background:#fff;color:#191f28;border-radius:18px;padding:6px 8px 8px;box-shadow:0 8px 22px rgba(0,0,0,.3);scrollbar-width:thin}
+body.carton .screen{padding-right:calc(33% + 14px)!important}
+.cartlist{width:100%;min-height:0;flex:1 1 auto;overflow-y:auto;background:#fff;color:#191f28;border-radius:18px;padding:6px 8px 8px;box-shadow:0 8px 22px rgba(0,0,0,.3);scrollbar-width:thin}
 .cartlist:empty{display:none}
+.cartlist:has(.cempty){background:none;box-shadow:none}
+.cempty{color:#fff;text-align:center;font-size:17px;line-height:1.5;opacity:.9}
+.ups{margin:6px 0 2px;display:flex;flex-direction:column;gap:6px}
+.up1{padding:10px 12px;border-radius:14px;background:#FFF6D6;color:#5c4400;font-size:15px;line-height:1.4;animation:up .35s backwards}
+.up1 b{font-family:var(--jal);font-weight:normal;color:#b45309}
+.up1 button{display:block;margin-top:6px;width:100%;height:38px;border:0;border-radius:10px;background:#FFE14D;color:#191f28;font-family:var(--jal);font-size:16px}
+.cartp .up1{font-size:18px}
 .cl{display:flex;align-items:center;gap:6px;padding:6px 0;border-top:1px solid #eef0f3;animation:up .3s backwards}
 .cl:first-child{border-top:0}
-.cl img,.cl .ph0{flex:none;width:38px;height:38px;border-radius:10px;object-fit:cover;background:#f2f2f4;display:flex;align-items:center;justify-content:center;font-size:20px}
-.cl .nm{flex:1;min-width:0;font-size:14px;font-weight:700;line-height:1.25;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.cl .q{flex:none;margin:0;font-family:var(--jal);font-size:15px;color:var(--deep)}
-.cl .x{flex:none;width:30px;height:30px;border:0;border-radius:50%;background:#ffe9ea;color:#e5313b;font-size:16px;font-weight:900;line-height:1}
+.cl img,.cl .ph0{flex:none;width:52px;height:52px;border-radius:12px;object-fit:cover;background:#f2f2f4;display:flex;align-items:center;justify-content:center;font-size:20px}
+.cl .nm{flex:1;min-width:0;font-size:17px;font-weight:700;line-height:1.25;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.cl .q{flex:none;margin:0;font-family:var(--jal);font-size:18px;color:var(--deep)}
+.cl .x{flex:none;width:38px;height:38px;border:0;border-radius:50%;background:#ffe9ea;color:#e5313b;font-size:16px;font-weight:900;line-height:1}
 .cl .x:active{background:#e5313b;color:#fff}
 .clft{position:sticky;bottom:-8px;margin:4px -8px -8px;padding:8px;background:#fff;border-top:2px solid #eef0f3;border-radius:0 0 18px 18px}
-.clft b{display:block;text-align:center;font-family:var(--jal);font-weight:normal;font-size:19px;color:var(--deep)}
-.clft small{display:block;text-align:center;font-size:12px;color:#8b95a1}
-.clft button{margin-top:6px;width:100%;height:40px;border:0;border-radius:12px;background:var(--deep);color:#fff;font-family:var(--jal);font-size:16px}
+.clft b{display:block;text-align:center;font-family:var(--jal);font-weight:normal;font-size:24px;color:var(--deep)}
+.clft small{display:block;text-align:center;font-size:14px;color:#8b95a1}
+.clft button{margin-top:8px;width:100%;height:50px;font-size:19px!important;border:0;border-radius:12px;background:var(--deep);color:#fff;font-family:var(--jal);font-size:16px}
 .devadd{margin:4px 0 6px;height:56px;border:0;border-radius:16px;background:var(--deep);color:#fff;font-family:var(--jal);font-size:20px}
 .item.gd .add{margin-top:8px}
 .crow .ph0{display:flex;align-items:center;justify-content:center;font-size:32px}
@@ -455,7 +463,7 @@ body.land .cartp{display:grid;grid-template-columns:440px 1fr;grid-template-rows
 body.land .cartp .top,body.land .cartp .bar,body.land .cartp .acts{grid-column:1/-1}
 body.land .cartp .q{grid-column:1;grid-row:3;overflow:auto}
 body.land .cartp .ftc{grid-column:2;grid-row:3;display:flex}
-body.land .cartdock{top:120px;bottom:100px}
+body.land .cartdock{top:16px;bottom:84px}
 body.land .cartp .save .pct{display:none}body.land .cartp .save .big{font-size:26px;white-space:nowrap}
 .allban{grid-column:1/-1}
 .alltabs{margin-top:16px;flex:none}
@@ -785,7 +793,7 @@ function devTabs(){ var c=state.devcat||'';
     return '<button data-act="devcat" data-v="'+o.k+'" class="'+(o.k===c?'on':'')+'">'+o.t+' <small>'+n+'</small></button>'; }).join('')+'</div>'; }
 function modelCards(){ var C=DEVCAT.filter(function(o){return o.k===(state.devcat||'')})[0]||DEVCAT[0];
   return MODELS.length ? MODELS.map(function(M,i){ if(!C.f(M)) return '';
-    return '<button class="dcard" data-act="mpick" data-i="'+i+'"><div class="ph">'+devTile({img:M.img,n:M.dn})+(i<3?'<span class="rk" style="position:absolute;left:10px;top:10px;padding:5px 11px;border-radius:999px;background:var(--deep);color:#fff;font-size:15px;font-weight:800">추천</span>':'')+'</div><b>'+esc(M.dn)+'</b><span class="pr">'+won(M.price)+'~</span></button>';
+    return '<button class="dcard" data-act="mpick" data-i="'+i+'" data-gid="'+esc((M.opts.filter(function(o){return o.img})[0]||M.opts[0]).id||'')+'"><div class="ph">'+devTile({img:M.img,n:M.dn})+(i<3?'<span class="rk" style="position:absolute;left:10px;top:10px;padding:5px 11px;border-radius:999px;background:var(--deep);color:#fff;font-size:15px;font-weight:800">추천</span>':'')+'</div><b>'+esc(M.dn)+'</b><span class="pr">'+won(M.price)+'~</span></button>';
   }).join('') : '<div class="empty">지금 보여 드릴 기기 자료가 없어요. 직원에게 물어봐 주세요.</div>'; }
 function modelListPane(){
   return '<div class="pane res">'+topBar('기기 보기',1,2)+
@@ -1139,7 +1147,9 @@ var GCAT = function(g){ return g.c==='dev'?'기기':g.c==='dsp'?'일회용':g.su
 var GEM = {"기기":"📱","일회용":"🚬","팟·코일":"🔧","케이스·기타":"🧰"};
 var GITEMS_ = null; function GITEMS(){ if (GITEMS_) return GITEMS_; var m={}, dimg={};
   MODELS.forEach(function(M){ M.opts.forEach(function(o){ if(o.id) dimg[o.id]=o.img||M.img; }); });
-  GSRC.forEach(function(g){ var c=GCAT(g); m[g.id]={id:g.id, n:g.n, line:c, price:g.price, em:GEM[c], br:g.model||g.pos||'', src:dimg[g.id]||'', goods:true}; });
+  var ddn={}; MODELS.forEach(function(M){ M.opts.forEach(function(o){ if(o.id) ddn[o.id]=M.dn+(o.opt?' '+o.opt:''); }); });
+  var dmod={}; MODELS.forEach(function(M){ M.opts.forEach(function(o){ if(o.id) dmod[o.id]=M.dn; }); });
+  GSRC.forEach(function(g){ var c=GCAT(g); m[g.id]={id:g.id, n:g.n, dn:ddn[g.id], dev:dmod[g.id], line:c, price:g.price, em:GEM[c], br:g.model||g.pos||'', src:dimg[g.id]||'', goods:true}; });
   return (GITEMS_=m); }
 function ITEM(id){ return GITEMS()[id] || LIQ.concat(LUNGL).filter(function(x){return x.id===id})[0]; }
 function cartN(){ var c=state.cart||{}; return Object.keys(c).reduce(function(a,k){return a+c[k]},0); }
@@ -1149,7 +1159,50 @@ function cartLines(){ var c=state.cart||{}, L={};
 function lineSum(l, o){ var c=state.cart||{};
   if (PRICE[l]) return {full:PRICE[l]*o.n, pay:best(l,o.n)};
   var t=o.items.reduce(function(a,x){return a+(x.price||0)*(c[x.id]||0)},0); return {full:t, pay:t}; }
-function cartSum(){ var L=cartLines(), full=0, pay=0; Object.keys(L).forEach(function(l){ var r=lineSum(l,L[l]); full+=r.full; pay+=r.pay; }); return {full:full, pay:pay, L:L}; }
+/* 말론, 말론S, 하복2: 기기 + 프리미엄 5병 = 기기값 + 40,000원, + 10병 = + 75,000원, 하복2 + 폐호흡 3병 = + 40,000원 */
+var BUNDLE_DEV = /^(말론|말론S|하복2)$/;
+function devDn(x){ return (x && x.goods && x.line==='기기') ? (x.dev||'') : ''; }
+function priceOf(c){
+  var prem=0, prime=0, lung=0, other=0, full=0, devs=[];
+  Object.keys(c).forEach(function(id){ var x=ITEM(id), q=c[id]; if(!x||q<=0) return;
+    if (x.line==='프리미엄') prem+=q; else if (x.line==='프라임') prime+=q; else if (x.line==='폐호흡') lung+=q;
+    else if (BUNDLE_DEV.test(devDn(x))) { for (var k=0;k<q;k++) devs.push({dn:devDn(x), price:x.price}); }
+    else other+=(x.price||0)*q;
+    full += (PRICE[x.line]||x.price||0)*q; });
+  var base=best('프라임',prime)+other, bestPay=Infinity, bestPk=[];
+  (function dfs(i, pr, lu, cost, pk){
+    if (i===devs.length){ var t=cost+best('프리미엄',pr)+best('폐호흡',lu)+base; if (t<bestPay){ bestPay=t; bestPk=pk.slice(); } return; }
+    var d=devs[i];
+    dfs(i+1, pr, lu, cost+d.price, pk);
+    if (pr>=5) dfs(i+1, pr-5, lu, cost+d.price+40000, pk.concat(d.dn+' + 액상 5병'));
+    if (pr>=10) dfs(i+1, pr-10, lu, cost+d.price+75000, pk.concat(d.dn+' + 액상 10병'));
+    if (d.dn==='하복2' && lu>=3) dfs(i+1, pr, lu-3, cost+d.price+40000, pk.concat('하복2 + 폐호흡 3병'));
+  })(0, prem, lung, 0, []);
+  var noB=devs.reduce(function(a,d){return a+d.price},0)+best('프리미엄',prem)+best('폐호흡',lung)+base;
+  return {full:full, pay:bestPay, noBundle:noB, packs:bestPk, prem:prem, lung:lung, devs:devs};
+}
+function cartSum(){ var r=priceOf(state.cart||{}); r.L=cartLines(); return r; }
+function devGid(dn){ var M=MODELS.filter(function(m){return m.dn===dn})[0]; return M ? (M.opts.filter(function(o){return o.img})[0]||M.opts[0]).id : null; }
+function upsells(){
+  var c=state.cart||{}, cur=priceOf(c), out=[], n=cartN(); if(!n) return out;
+  function tryAdd(add, normal, msg, btn){ var c2={}; Object.keys(c).forEach(function(k){c2[k]=c[k]}); add(c2); var r=priceOf(c2), extra=r.pay-cur.pay, save=normal-extra;
+    if (save>0) out.push({save:save, html:msg(extra, normal), btn:btn}); }
+  var anyPrem = LIQ.filter(function(x){return x.line==='프리미엄'})[0], anyLung=LUNGL[0];
+  [5,10,11].forEach(function(t){ var k=t-cur.prem; if (k>0 && k<=6 && anyPrem) tryAdd(function(c2){ c2[anyPrem.id]=(c2[anyPrem.id]||0)+k; }, k*15000,
+      function(ex){ return '💧 <b>프리미엄 '+k+'병</b> 더 담으면 <b>+'+won(ex)+'</b>만 더 내면 돼요 (원래 '+won(k*15000)+')'; }); });
+  if (anyLung && cur.lung>0 && cur.lung<3) { var k2=3-cur.lung; tryAdd(function(c2){ c2[anyLung.id]=(c2[anyLung.id]||0)+k2; }, k2*30000,
+      function(ex){ return '☁️ <b>폐호흡 '+k2+'병</b> 더 담으면 <b>+'+won(ex)+'</b> (원래 '+won(k2*30000)+')'; }); }
+  ['말론','하복2'].forEach(function(dn){ var gid=devGid(dn), x=gid&&ITEM(gid); if (!x || cur.prem<1) return;
+    tryAdd(function(c2){ c2[gid]=(c2[gid]||0)+1; }, x.price,
+      function(ex){ return '📱 <b>+'+won(ex)+'</b>만 더 내면 <b>'+dn+'</b> 기기까지 나가요! (원래 '+won(x.price)+')'; }, {id:gid, t:'📱 '+dn+' 담기'}); });
+  if (!cur.devs.length && cur.prem>=1 && cur.prem<5 && anyPrem) { var kf=5-cur.prem; ['말론','하복2'].forEach(function(dn){ var gid=devGid(dn), x=gid&&ITEM(gid); if(!x) return;
+    tryAdd(function(c2){ c2[gid]=(c2[gid]||0)+1; c2[anyPrem.id]=(c2[anyPrem.id]||0)+kf; }, x.price+kf*15000,
+      function(ex){ return '📱 액상 <b>'+kf+'병</b> 더 + <b>'+dn+'</b> 기기까지 <b>+'+won(ex)+'</b>이면 나가요! (원래 '+won(x.price+kf*15000)+')'; }, {id:gid, t:'📱 '+dn+' 담기'}); }); }
+  if (cur.devs.length && cur.prem<5 && anyPrem) { var k3=5-cur.prem; tryAdd(function(c2){ c2[anyPrem.id]=(c2[anyPrem.id]||0)+k3; }, k3*15000,
+      function(ex){ return '🎁 기기 패키지! 액상 <b>'+k3+'병</b> 더 담으면 <b>+'+won(ex)+'</b> (원래 '+won(k3*15000)+')'; }); }
+  var seen={}; return out.sort(function(a,b){return b.save-a.save}).filter(function(o){ var k=o.html.slice(0,12); if(seen[k]) return false; seen[k]=1; return true; });
+}
+function upsHtml(max){ return upsells().slice(0,max).map(function(u){ return '<div class="up1">'+u.html+'<br>➜ <b>'+won(u.save)+' 아껴요</b>'+(u.btn?'<button data-cadd="'+esc(u.btn.id)+'">'+u.btn.t+'</button>':'')+'</div>'; }).join(''); }
 function nudge(l, n){ var now=best(l,n)/n;
   for (var k=1;k<=4;k++){ var per=best(l,n+k)/(n+k); if (per<now*0.92) return '💡 <b>'+l+' '+k+'병</b>만 더 담으면 1병에 <b>'+won(Math.round(per/10)*10)+'</b>이에요! (지금 1병 '+won(Math.round(now/10)*10)+')'; }
   return ''; }
@@ -1172,7 +1225,7 @@ function cartFab(bump){ var f=document.getElementById('cartfab'), dk=document.ge
   var cl=document.getElementById('cartlist'), keep=cl.scrollTop;
   cl.innerHTML = n ? Object.keys(c).map(function(id){ var x=ITEM(id); if(!x) return ''; var src=x.src!=null?x.src:(x.img?'../img/'+x.img:'');
       return '<div class="cl">'+(src?'<img src="'+esc(src)+'" alt="">':'<span class="ph0">'+(x.em||'🧴')+'</span>')+'<span class="nm">'+esc(x.dn||x.n)+'</span><span class="q">×'+c[id]+'</span><button class="x" data-cx="'+esc(id)+'" aria-label="빼기">✕</button></div>'; }).join('')+
-    '<div class="clft"><b>'+won(cartSum().pay)+'</b>'+(cartSum().full>cartSum().pay?'<small>패키지 적용 · '+won(cartSum().full-cartSum().pay)+' 아껴요</small>':'')+'<button data-cgo="1">장바구니 보기 ›</button></div>' : '';
+    '<div class="ups">'+upsHtml(2)+'</div><div class="clft"><b>'+won(cartSum().pay)+'</b>'+(cartSum().full>cartSum().pay?'<small>패키지 적용 · '+won(cartSum().full-cartSum().pay)+' 아껴요</small>':'')+'<button data-cgo="1">장바구니 보기 ›</button></div>' : '<div class="cempty">상품을 끌어다<br>위 병에 넣어 보세요 👆<br><small>담기 버튼을 눌러도 돼요</small></div>';
   cl.scrollTop = keep;
   document.getElementById('cct').innerHTML = n ? won(cartSum().pay).replace('원','<br>원') : '여기로<br>쏙! 👇';
   document.getElementById('cliq').style.height = Math.min(90, n ? 22+n*7 : 0)+'%';
@@ -1182,7 +1235,7 @@ var drag=null;
 document.addEventListener('touchmove',function(e){ if(drag && drag.on) e.preventDefault(); },{passive:false});
 document.addEventListener('dragstart',function(e){ if(e.target.closest && e.target.closest('.item')) e.preventDefault(); });
 document.getElementById('app').addEventListener('pointerdown',function(e){
-  var it=e.target.closest('.item[data-id]'); if(!it || e.target.closest('button') || !it.querySelector('.add')) return;
+  var it=e.target.closest('.item[data-id], .dcard[data-gid]'); if(!it) return; var bt=e.target.closest('button'); if(bt && bt!==it) return; if(it.classList.contains('item') && !it.querySelector('.add')) return;
   var x0=e.clientX, y0=e.clientY, mouse=e.pointerType==='mouse';
   if (mouse) e.preventDefault();
   function start(x,y){ if(!drag||drag.on) return; clearTimeout(drag.t); drag.on=true; it.classList.add('lift');
@@ -1196,7 +1249,7 @@ document.getElementById('app').addEventListener('pointerdown',function(e){
       if (!drag || !drag.on) return; }
     var sc=bodyScale(); drag.g.style.left=ev.clientX/sc+'px'; drag.g.style.top=ev.clientY/sc+'px';
     var f=document.getElementById('cartfab'), r=f.getBoundingClientRect(); f.classList.toggle('hot', ev.clientX>r.left-20&&ev.clientX<r.right+20&&ev.clientY>r.top-20&&ev.clientY<r.bottom+20); }
-  function up(ev){ if(drag && drag.on){ var f=document.getElementById('cartfab'), r=f.getBoundingClientRect(), id=drag.it.dataset.id;
+  function up(ev){ if(drag && drag.on){ var f=document.getElementById('cartfab'), r=f.getBoundingClientRect(), id=drag.it.dataset.id||drag.it.dataset.gid;
       var inF=ev.type==='pointerup' && ev.clientX>r.left-20&&ev.clientX<r.right+20&&ev.clientY>r.top-20&&ev.clientY<r.bottom+20; f.classList.remove('hot');
       if (inF) cartAdd(id); drag.suppress=true; } end(); }
   function end(){ if(!drag) return; clearTimeout(drag.t); if(drag.g) drag.g.remove(); drag.it.classList.remove('lift'); var sup=drag.suppress; drag=null;
@@ -1215,7 +1268,7 @@ function cartPane(){
         '<div class="qty"><button data-act="cq" data-id="'+esc(id)+'" data-d="-1" aria-label="빼기">−</button><span>'+c[id]+'</span><button data-act="cq" data-id="'+esc(id)+'" data-d="1" aria-label="더하기">＋</button></div></div>'; }).join('');
   return '<div class="pane res cartp">'+topBar('장바구니 🛒',1,2)+
     '<section class="q" style="margin-top:28px"><h1>담은 상품 '+n+'개 🛒</h1>'+(S.full>S.pay?saveBox('패키지 값으로 자동 계산했어요', S.full, S.pay):'<div class="save"><span class="em">🧾</span><div class="tx"><div class="l">합계</div><div class="big">'+won(S.pay)+'</div></div></div>')+
-      '<div class="ftcard" style="margin-top:14px">'+lines+'</div></section>'+
+      '<div class="ftcard" style="margin-top:14px">'+lines+(S.noBundle>S.pay?'<div class="cline"><span>📦 '+esc(S.packs.join(', '))+'</span><b>−'+won(S.noBundle-S.pay)+'</b></div>':'')+'</div>'+'<div class="ups">'+upsHtml(3)+'</div></section>'+
     '<section class="ftc"><div class="ftcard">'+rows+'</div></section>'+
     '<div class="acts"><button data-act="back">＋ 더 고르기</button><button class="main" data-act="cartgo">💁 이대로 주세요</button></div></div>';
 }
@@ -1433,9 +1486,11 @@ document.getElementById('app').addEventListener('click',function(e){
 
 document.getElementById('fab').addEventListener('click',function(){ go('mem'); });
 document.getElementById('fabh').addEventListener('click',function(){ home(); });
+document.getElementById('app').addEventListener('click',function(e){ var ad=e.target.closest('[data-cadd]'); if(ad){ cartAdd(ad.dataset.cadd); render(); } });
 document.getElementById('cartfab').addEventListener('click',function(){ if(state.view!=='cart') go('cart'); });
-document.getElementById('cartlist').addEventListener('click',function(e){ var x=e.target.closest('[data-cx]'), g=e.target.closest('[data-cgo]');
+document.getElementById('cartlist').addEventListener('click',function(e){ var x=e.target.closest('[data-cx]'), g=e.target.closest('[data-cgo]'), ad=e.target.closest('[data-cadd]');
   if (g) return go('cart');
+  if (ad) { cartAdd(ad.dataset.cadd); if (state.view==='cart') render(); return; }
   if (!x) return; var c=state.cart||{}, id=x.dataset.cx, it=ITEM(id); c[id]=(c[id]||0)-1; if(c[id]<=0) delete c[id];
   cartFab(false); toast('➖ '+(it?(it.dn||it.n):'')+' 뺐어요 · 지금 '+cartN()+'개');
   [].forEach.call(document.querySelectorAll('.add[data-id="'+id+'"]'),function(b){ b.textContent=c[id]?'✓ '+c[id]+(it&&it.goods?'개':'병')+' 담음 · 하나 더':'🛒 담기'; }); });
