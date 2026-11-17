@@ -30,7 +30,7 @@ public class W32 {
 }
 "@
 $HERE = Split-Path -Parent $MyInvocation.MyCommand.Path
-$VER = "1117a"
+$VER = "1117b"
 $WEB = "https://officialvafriend.github.io/vape/posagent/"
 $SB = "https://bjjlmnkyhedtutogzliq.supabase.co/rest/v1/rpc/"; $KEY = "sb_publishable_i8rfcm_zAnwV75joN58FCw_8tHgFUKr"
 $cfgPath = Join-Path $HERE "설정.json"
@@ -57,7 +57,7 @@ function Won($n) { "{0:N0}원" -f [int]$n }
 
 # ── 작은 창 ──
 $wa0 = [Windows.Forms.Screen]::PrimaryScreen.WorkingArea
-$W = [Math]::Min(300, [int]($wa0.Width * 0.22))
+$W = [Math]::Min(240, [int]($wa0.Width * 0.22)); $WS = 160   # 11/17 펼친 창, 띠 폭
 $f = New-Object Windows.Forms.Form
 $f.Text = "포스 입력"; $f.TopMost = $true; $f.FormBorderStyle = "FixedToolWindow"; $f.ShowInTaskbar = $true
 $f.ClientSize = New-Object Drawing.Size($W, 70); $f.StartPosition = "Manual"; $f.BackColor = [Drawing.Color]::White
@@ -65,8 +65,8 @@ $wa = [Windows.Forms.Screen]::PrimaryScreen.WorkingArea
 function Place { $f.Left = $wa.Right - $f.Width - 6; $f.Top = $wa.Top + [int]($wa.Height * 0.09) }   # 포스 결제 버튼(오른쪽 아래)을 안 가리게 오른쪽 위
 $font = { param($s, $b) New-Object Drawing.Font("Malgun Gothic", $s, $(if ($b) { [Drawing.FontStyle]::Bold } else { [Drawing.FontStyle]::Regular })) }
 $lbTop = New-Object Windows.Forms.Label; $lbTop.SetBounds(8, 4, ($W - 16), 16); $lbTop.Font = & $font 8 $false; $lbTop.ForeColor = [Drawing.Color]::Gray
-$lbMain = New-Object Windows.Forms.Label; $lbMain.SetBounds(8, 22, ($W - 16), 44); $lbMain.Font = & $font 9.5 $true
-$btnGo = New-Object Windows.Forms.Button; $btnGo.Font = & $font 11 $true; $btnGo.BackColor = [Drawing.Color]::FromArgb(216, 31, 42); $btnGo.ForeColor = [Drawing.Color]::White; $btnGo.FlatStyle = "Flat"
+$lbMain = New-Object Windows.Forms.Label; $lbMain.SetBounds(8, 22, ($W - 16), 44); $lbMain.Font = & $font 9 $true
+$btnGo = New-Object Windows.Forms.Button; $btnGo.Font = & $font 10 $true; $btnGo.BackColor = [Drawing.Color]::FromArgb(216, 31, 42); $btnGo.ForeColor = [Drawing.Color]::White; $btnGo.FlatStyle = "Flat"
 $btnNext = New-Object Windows.Forms.Button; $btnNext.Font = & $font 8 $false
 $btnDone = New-Object Windows.Forms.Button; $btnDone.Font = & $font 8 $false; $btnDone.Text = "이 주문 지우기"
 $btnMini = New-Object Windows.Forms.Button; $btnMini.Font = & $font 8 $false; $btnMini.Text = "접기"; $btnMini.FlatStyle = "Flat"
@@ -74,16 +74,16 @@ $f.Controls.AddRange(@($lbTop, $lbMain, $btnGo, $btnNext, $btnDone, $btnMini))
 $script:mini = $false
 function MiniView {
   $n = @($script:orders).Count
-  $lbTop.Text = $(if ($n) { "주문 $n 개 있어요, 펼치기" } else { "포스 입력, 펼치기" }); $lbTop.SetBounds(8, 4, ($W - 16), 18); $lbTop.ForeColor = $(if ($n) { [Drawing.Color]::FromArgb(216, 31, 42) } else { [Drawing.Color]::Gray })
+  $lbTop.Text = $(if ($n) { "주문 $n 개, 눌러서 펼치기" } else { "$BRANCH 포스 입력 대기" }); $lbTop.SetBounds(8, 5, ($WS - 16), 18); $lbTop.ForeColor = $(if ($n) { [Drawing.Color]::FromArgb(216, 31, 42) } else { [Drawing.Color]::Gray })
   $lbMain.Visible = $false; $btnGo.Visible = $false; $btnNext.Visible = $false; $btnDone.Visible = $false; $btnMini.Visible = $false
-  $f.ClientSize = New-Object Drawing.Size($W, 26); Place
+  $f.ClientSize = New-Object Drawing.Size($WS, 26); Place
 }
 $btnMini.Add_Click({ $script:mini = $true; Draw })
 $lbTop.Add_Click({ if ($script:mini) { $script:mini = $false; Draw } })
 $f.Add_FormClosing({ param($s2, $e2)
   if ($script:updating -or $env:VF_SNAP) { return }
-  $r = [Windows.Forms.MessageBox]::Show("포스 입력을 끌까요?`n`n[예] 끄기 (주문이 와도 안 떠요)`n[아니요] 작게 접기 (주문 오면 다시 펼쳐져요)", "포스 입력", "YesNo")
-  if ($r -ne "Yes") { $e2.Cancel = $true; $script:mini = $true; Draw }
+  if ($e2.CloseReason -eq [Windows.Forms.CloseReason]::WindowsShutDown -or $e2.CloseReason -eq [Windows.Forms.CloseReason]::TaskManagerClosing) { return }
+  $e2.Cancel = $true; $script:mini = $true; Draw   # 11/17 X는 접기만 (끄기는 폴더의 끄기.cmd)
 })
 function Small($txt) { $lbMain.Visible = $true; $btnMini.Visible = $false; $lbMain.Text = $txt; $lbMain.Height = 44; $btnGo.Visible = $false; $btnNext.Visible = $false; $btnDone.Visible = $false; $f.ClientSize = New-Object Drawing.Size($W, 70); Place }
 
@@ -95,21 +95,21 @@ function Draw {
   if ($script:state -eq "wait") { Small "승인 기다리는 중`n기기 코드 $SHORT 를 관리자에게 알려 주세요"; return }
   if ($script:state -eq "err") { Small "연결 안 됨, 다시 시도 중`n$($script:errMsg)"; return }
   $o = Cur
-  if (-not $o) { Small "주문 기다리는 중"; return }
+  if (-not $o) { MiniView; return }   # 11/17 주문 다 끝나면 다시 띠
   $who = ""; if ($o.cust) { $p = "$($o.cust.ph)"; if ($p.Length -ge 4) { $who = " $($o.cust.nm) ****$($p.Substring($p.Length - 4))" } }
   $sv = @($o.svc).Count
   if ($script:svcLeft -ne $null -and $script:svcLeft.id -eq $o.id) {
     $lbMain.Text = "결제 상품 넣었어요. 서비스 $sv 개 남음`n넣은 뒤 마지막 $sv 개를 서비스로 바꿔 주세요"
     $btnGo.Text = "서비스 $sv 개 넣기"
   } else {
-    $lbMain.Text = "$([int]$o.id % 1000)번$who`n$($o.summary)`n합계 $(Won $o.total)" + $(if ($sv) { " (서비스 $sv 개 따로)" } else { "" })
+    $lbMain.Text = "$([int]$o.id % 1000)번$who`n합계 $(Won $o.total)" + $(if ($sv) { ", 서비스 $sv 개" } else { "" }) + "`n$($o.summary)"   # 11/17 합계를 위로 (긴 상품 목록은 잘려도 됨)
     $btnGo.Text = "포스에 넣기 ($(@($o.codes).Count + $sv)개)"
   }
-  $lbMain.Visible = $true; $lbMain.Height = 62; $btnGo.SetBounds(8, 88, ($W - 16), 40); $btnGo.Visible = $true; $btnMini.SetBounds(($W - 50), 2, 44, 20); $btnMini.Visible = $true
+  $lbMain.Visible = $true; $lbMain.Height = 56; $btnGo.SetBounds(8, 82, ($W - 16), 34); $btnGo.Visible = $true; $btnMini.SetBounds(($W - 50), 2, 44, 20); $btnMini.Visible = $true
   $half = [int](($W - 22) / 2)
-  if ($script:orders.Count -gt 1) { $btnNext.Text = "다음 ($($script:idx + 1)/$($script:orders.Count))"; $btnNext.SetBounds(8, 132, $half, 26); $btnNext.Visible = $true; $btnDone.SetBounds((14 + $half), 132, $half, 26) }
-  else { $btnNext.Visible = $false; $btnDone.SetBounds(8, 132, ($W - 16), 26) }
-  $btnDone.Visible = $true; $f.ClientSize = New-Object Drawing.Size($W, 164); Place
+  if ($script:orders.Count -gt 1) { $btnNext.Text = "다음 ($($script:idx + 1)/$($script:orders.Count))"; $btnNext.SetBounds(8, 120, $half, 24); $btnNext.Visible = $true; $btnDone.SetBounds((14 + $half), 120, $half, 24) }
+  else { $btnNext.Visible = $false; $btnDone.SetBounds(8, 120, ($W - 16), 24) }
+  $btnDone.Visible = $true; $f.ClientSize = New-Object Drawing.Size($W, 150); Place
 }
 $SKIP = 'explorer|cmd|powershell|pwsh|conhost|notepad|chrome|msedge|whale|firefox|iexplore|kakaotalk|code|cursor'
 function PosWindow { Get-Process | Where-Object { $_.MainWindowHandle -ne 0 -and $_.Id -ne $PID -and $_.ProcessName -notmatch "^($SKIP)$" -and ($_.MainWindowTitle -match $TITLE -or $_.ProcessName -match 'okpos') } | Sort-Object { if ($_.ProcessName -match 'okpos') { 0 } else { 1 } } | Select-Object -First 1 }
