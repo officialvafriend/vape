@@ -7,9 +7,9 @@
 function vfFit(){var land=matchMedia("(orientation: landscape)").matches,a=screen.width,b=screen.height,w=land?Math.max(a,b):Math.min(a,b),base=land?1280:800,s=Math.round(w/base*1000)/1000,m=document.querySelector('meta[name=viewport]');
   m.setAttribute('content',!w||Math.abs(s-1)<.02?'width='+base+',viewport-fit=cover':'width='+base+',initial-scale='+s+',minimum-scale='+s+',maximum-scale='+s+',user-scalable=no,viewport-fit=cover');
   if(document.body)document.body.classList.toggle('land',land);}
-vfFit();addEventListener('orientationchange',function(){setTimeout(vfFit,60);});addEventListener('resize',function(){clearTimeout(window.__vft);window.__vft=setTimeout(vfFit,120);});</script>
+vfFit();document.addEventListener('DOMContentLoaded',vfFit);addEventListener('orientationchange',function(){setTimeout(vfFit,60);});addEventListener('resize',function(){clearTimeout(window.__vft);window.__vft=setTimeout(vfFit,120);});</script>
 <meta name="robots" content="noindex">
-<meta name="theme-color" content="#4A6F9C">
+<meta name="theme-color" content="#3B5F8F">
 <link rel="icon" href="vf_logo.png">
 <title>베이프렌드 상담패드 director</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
@@ -29,8 +29,8 @@ vfFit();addEventListener('orientationchange',function(){setTimeout(vfFit,60);});
    11/16 2번 입호흡: 맛 계열 → 멘솔/니코틴 → 추천 목록(이번 주 판매 많은 순) */
 :root{
   /* 11/16 차분한 블루그레이 + 흰색 투톤. 밝은 하늘색은 눈이 피곤해서 채도를 낮춤 */
-  --bg:#4A6F9C;            /* 차분한 블루그레이 바탕 */
-  --bg2:#4A6F9C;
+  --bg:#3B5F8F;            /* 차분한 블루그레이 바탕 */
+  --bg2:#3B5F8F;
   --deep:#2B5689;          /* 흰 카드 위 강조 글씨, 가격, 아끼는 금액 */
   --tint:#EDF2F8;          /* 흰 카드 안 연한 하늘색 */
   --card:rgba(255,255,255,.16);
@@ -51,10 +51,10 @@ button{font-family:inherit;color:inherit;cursor:pointer}
 
 /* 맨 위: 뒤로 / 제목 / 처음으로 + 진행 막대 */
 .top{display:flex;align-items:center;justify-content:space-between;height:56px}
-.top .ttl{font-size:24px;font-weight:700;color:var(--sub)}
+.top .ttl{font-size:24px;font-weight:700;color:#fff}
 .brand{display:flex;align-items:center;gap:12px;font-size:26px;font-weight:900;font-style:italic;letter-spacing:.02em;color:#fff}
 .brand img{height:44px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.25)}
-.ib{width:56px;height:56px;border:0;border-radius:50%;background:var(--card);font-size:28px;line-height:1;display:flex;align-items:center;justify-content:center}
+.ib{width:56px;height:56px;border:0;border-radius:50%;background:rgba(255,255,255,.22);font-size:28px;line-height:1;display:flex;align-items:center;justify-content:center}
 .ib.txt{width:auto;padding:0 22px;border-radius:999px;font-size:19px;font-weight:700}
 .ib.hide{visibility:hidden}
 .bar{margin-top:24px;height:8px;border-radius:8px;background:rgba(255,255,255,.14);overflow:hidden}
@@ -73,7 +73,7 @@ button{font-family:inherit;color:inherit;cursor:pointer}
 .opt .n{flex:none;width:68px;height:68px;border-radius:22px;background:var(--tint);
   display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:800;color:var(--deep)}
 .opt .t{display:block;font-size:29px;font-weight:800;letter-spacing:-.03em;color:#191f28}
-.opt .d{display:block;margin-top:6px;font-size:20px;color:#6b7684}
+.opt .d{display:block;margin-top:6px;font-size:21px;color:#4e5968}
 
 /* 추천 목록 */
 .res .q{margin-top:40px}
@@ -118,7 +118,8 @@ body.land .call{height:150px;font-size:44px}
 .small{font-size:16px;color:#6c675f}
 .sec{grid-column:1/-1;font-size:24px;font-weight:800}
 .acts{display:flex;gap:14px;margin-top:16px}
-.acts button{flex:1;height:72px;border:0;border-radius:20px;background:var(--card);font-size:22px;font-weight:800}
+.acts button{flex:1;height:72px;border:2px solid rgba(255,255,255,.6);border-radius:20px;background:transparent;color:#fff;font-size:22px;font-weight:800}
+.acts button.main{border-color:#fff}
 .acts button.main{background:#fff;color:var(--deep)}
 body.land .rec .dv{width:170px}
 body.land .newres{display:grid;grid-template-columns:1.15fr 1fr;grid-template-rows:auto auto 1fr auto;column-gap:32px}
@@ -188,7 +189,7 @@ body.land .tmap .qd{padding:26px 12px 10px;gap:6px}
 .save{margin-top:18px;display:flex;align-items:center;gap:18px;background:#fff;color:#191f28;border-radius:24px;padding:20px 24px;box-shadow:0 4px 14px rgba(0,50,110,.18)}
 .save .em{font-size:46px;line-height:1}
 .save .tx{flex:1;min-width:0}
-.save .l{font-size:18px;font-weight:700;color:#6b7684}
+.save .l{font-size:19px;font-weight:700;color:#4e5968}
 .save .big{margin-top:2px;font-size:34px;font-weight:800;letter-spacing:-.03em;color:var(--deep)}
 .save .pr{margin-top:4px;font-size:18px;color:#6b7684}.save .pr s{color:#b0b8c1}.save .pr b{color:#191f28}
 .save .pct{flex:none;padding:8px 14px;border-radius:999px;background:var(--tint);color:var(--deep);font-size:22px;font-weight:800}
@@ -240,14 +241,14 @@ body.land .chars .bub{position:relative;right:auto;top:auto;align-self:flex-star
 .fthero .say b{font-family:var(--jal);font-weight:normal;color:var(--deep)}
 .ftc{margin-top:18px;flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:16px;padding-bottom:8px;scrollbar-width:none}
 .ftc::-webkit-scrollbar{display:none}
-.ftcard{background:#fff;color:#191f28;border-radius:24px;padding:20px 22px;flex:none}
-.ftcard h3{font-family:var(--jal);font-weight:normal;font-size:25px;margin-bottom:12px}
+.ftcard{background:#fff;color:#191f28;border-radius:24px;padding:24px 26px;flex:none;box-shadow:0 6px 18px rgba(0,30,70,.18)}
+.ftcard h3{font-family:var(--jal);font-weight:normal;font-size:27px;margin-bottom:12px}
 .ftcard .note{font-size:18px;color:#6b7684;margin:-4px 0 12px}
 .ftrow{display:flex;align-items:center;gap:16px;padding:12px 0;border-top:1px solid #eef0f3;width:100%;border-left:0;border-right:0;border-bottom:0;background:none;text-align:left;color:inherit}
 .ftrow:first-of-type{border-top:0}
 .ftrow img,.ftrow .ph0{flex:none;width:84px;height:84px;border-radius:18px;object-fit:cover;background:#f2f2f4}
 .ftrow .tx{flex:1;min-width:0}.ftrow b{display:block;font-family:var(--jal);font-weight:normal;font-size:22px}
-.ftrow small{display:block;margin-top:4px;font-size:18px;color:#4e5968;line-height:1.4}
+.ftrow small{display:block;margin-top:4px;font-size:19px;color:#333d4b;line-height:1.45}
 .ftrow .rt{flex:none;text-align:right;font-family:var(--jal);font-size:21px;color:var(--deep)}.ftrow .rt s{display:block;font-family:var(--kr);font-size:15px;color:#b0b8c1}
 .ftrow i{font-style:normal;font-size:30px;color:#b0b8c1}
 .moods{display:flex;gap:10px;margin-bottom:6px;flex-wrap:wrap}
@@ -260,6 +261,7 @@ body.land .chars .bub{position:relative;right:auto;top:auto;align-self:flex-star
 .ftc .grid3 .item{box-shadow:0 0 0 1px #eef0f3}
 body.land .fthero svg{height:140px}
 body.land .ftc{display:grid;grid-template-columns:1fr 1fr;align-content:start}
+body.land .ftc .step:last-child:nth-child(odd){grid-column:1/-1}
 /* 빨강이, 까망이에게 타자로 물어보기 */
 .chat{margin-top:14px;flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:14px;padding:4px 0 10px;scrollbar-width:none}
 .chat::-webkit-scrollbar{display:none}
@@ -284,18 +286,20 @@ body.land .ftc{display:grid;grid-template-columns:1fr 1fr;align-content:start}
 @keyframes tp{50%{transform:translateY(-6px);opacity:.5}}
 body.land .msg .its{grid-template-columns:repeat(5,1fr)}
 /* 떠 있는 회원등록 버튼: 첫 화면, 회원등록 화면 말고 어디서든 */
-.fab{position:fixed;right:24px;bottom:36px;z-index:8;display:flex;align-items:center;gap:10px;padding:14px 22px 14px 16px;border:3px solid #fff;border-radius:999px;
+.fab{position:fixed;right:24px;bottom:24px;z-index:8;display:flex;align-items:center;gap:10px;padding:14px 22px 14px 16px;border:3px solid #fff;border-radius:999px;
   background:var(--deep);color:#fff;font-family:var(--jal);font-size:22px;box-shadow:0 8px 24px rgba(0,0,0,.35);animation:fabin .4s cubic-bezier(.2,1.6,.4,1)}
 .fab .em{font-size:28px;animation:bob 2.4s ease-in-out infinite}
 .fab:active{transform:scale(.95)}
-.fab.up{bottom:128px}
+.fab.up{bottom:24px}
+body.fabon .screen{padding-bottom:108px}
 .fab[hidden]{display:none}
 .fab.home{right:auto;left:24px;background:#fff;color:var(--deep);border-color:var(--deep)}
 .fab.home .em{animation:none}
 @keyframes fabin{0%{transform:scale(.5);opacity:0}100%{transform:scale(1);opacity:1}}
-body.land .fab.up{bottom:108px}
-body.fabon:not(.land) .pane.ask .opts{margin-bottom:84px}
-body.fabon .grid,body.fabon .chat,body.fabon .ftc{padding-bottom:96px}
+body.land .fab.up{bottom:20px}
+body.land .fab{bottom:20px;padding:10px 20px 10px 14px;font-size:20px}
+body.land.fabon .screen{padding-bottom:92px}
+
 .banrow{margin-top:24px;display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .banrow .memban{margin-top:0;padding:16px 18px;gap:12px}
 .banrow .memban .em{font-size:32px}.banrow .memban b{font-size:21px}.banrow .memban small{font-size:16px}
@@ -303,9 +307,70 @@ body.fabon .grid,body.fabon .chat,body.fabon .ftc{padding-bottom:96px}
 .step{display:flex;gap:16px;align-items:flex-start}
 .step .sn{flex:none;width:44px;height:44px;border-radius:14px;background:var(--tint);color:var(--deep);display:flex;align-items:center;justify-content:center;font-family:var(--jal);font-size:22px}
 .step .sb{flex:1;min-width:0}.step h3{margin-bottom:6px}
-.step p{font-size:19px;line-height:1.5;color:#4e5968}.step p b{color:var(--deep);font-family:var(--jal);font-weight:normal}
+.step p{font-size:21px;line-height:1.55;color:#333d4b}.step p b{color:var(--deep);font-family:var(--jal);font-weight:normal}
 .step .go{margin-top:12px;padding:12px 18px;border:0;border-radius:14px;background:var(--tint);color:var(--deep);font-family:var(--jal);font-size:19px}
 body.land .banrow{grid-template-columns:1fr}
+.save{position:relative}
+/* 화면 들어올 때 아래에서 톡톡 올라오기 (마지막 모양은 안 붙잡아서 눌림 효과는 그대로) */
+.enter .q,.enter .opt,.enter .ftcard,.enter .item,.enter .save,.enter .acts,.enter .tmap,.enter .row,.enter .dcard,.enter .lab{animation:up .5s cubic-bezier(.2,.9,.3,1.15) backwards}
+.enter .opt:nth-child(2),.enter .ftcard:nth-child(2),.enter .item:nth-child(2){animation-delay:.06s}
+.enter .opt:nth-child(3),.enter .ftcard:nth-child(3),.enter .item:nth-child(3){animation-delay:.12s}
+.enter .opt:nth-child(4),.enter .ftcard:nth-child(4),.enter .item:nth-child(4){animation-delay:.18s}
+.enter .opt:nth-child(5),.enter .ftcard:nth-child(5),.enter .item:nth-child(5){animation-delay:.24s}
+.enter .opt:nth-child(n+6),.enter .ftcard:nth-child(n+6),.enter .item:nth-child(n+6){animation-delay:.3s}
+.enter .acts{animation-delay:.25s}
+@keyframes up{0%{opacity:0;transform:translateY(36px)}100%{opacity:1;transform:none}}
+button:active{filter:brightness(.96)}
+/* 아끼는 금액 나올 때 폭죽 */
+.boom{position:absolute;left:46px;top:50%;font-size:30px;pointer-events:none;animation:boom .9s cubic-bezier(.1,.8,.3,1) forwards}
+@keyframes boom{0%{transform:translate(0,0) scale(.3);opacity:1}70%{opacity:1}100%{transform:translate(var(--x),var(--y)) scale(1) rotate(var(--r));opacity:0}}
+.mapf .labbtn{margin-left:auto;background:#fff;color:var(--deep);animation:wig 2.6s ease-in-out infinite}
+@keyframes wig{0%,80%,100%{transform:none}85%{transform:rotate(-5deg) scale(1.05)}90%{transform:rotate(5deg) scale(1.05)}95%{transform:rotate(-3deg)}}
+/* 맛 섞기 실험실 */
+.lab{flex:1;min-height:0;margin-top:18px;display:flex;flex-direction:column;align-items:center;gap:16px}
+.flask{position:relative;width:300px;height:330px;flex:none;transition:transform .2s}
+.flask.hot{transform:scale(1.06)}
+.flask .neck{position:absolute;left:50%;top:0;width:110px;height:90px;margin-left:-55px;border:6px solid #fff;border-bottom:0;border-radius:14px 14px 0 0;background:rgba(255,255,255,.08)}
+.flask .body{position:absolute;left:0;right:0;bottom:0;height:250px;border:6px solid #fff;border-radius:50% 50% 46% 46%/38% 38% 62% 62%;overflow:hidden;background:rgba(255,255,255,.1)}
+.flask .liq{position:absolute;left:0;right:0;bottom:0;height:0;transition:height .6s cubic-bezier(.3,1.4,.5,1),background .6s}
+.flask .liq::before{content:'';position:absolute;left:-50%;top:-16px;width:200%;height:32px;background:inherit;border-radius:45%;animation:wave2 3s linear infinite;opacity:.8}
+@keyframes wave2{100%{transform:translateX(25%)}}
+.flask .bub{position:absolute;bottom:10px;width:14px;height:14px;border-radius:50%;background:rgba(255,255,255,.7);animation:rise 2.4s ease-in infinite}
+@keyframes rise{0%{transform:translateY(0) scale(.5);opacity:0}20%{opacity:1}100%{transform:translateY(-200px) scale(1.1);opacity:0}}
+.flask .in{position:absolute;inset:auto 0 30px 0;display:flex;justify-content:center;gap:6px;z-index:2}
+.flask .in button{border:0;background:#fff;border-radius:50%;width:66px;height:66px;font-size:38px;box-shadow:0 4px 12px rgba(0,0,0,.25);animation:drop .55s cubic-bezier(.3,1.6,.5,1)}
+@keyframes drop{0%{transform:translateY(-160px) scale(.6)}100%{transform:none}}
+.flask .empty0{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding-top:90px;font-family:var(--jal);font-size:22px;color:rgba(255,255,255,.85);text-align:center;line-height:1.4}
+.flask.shake{animation:shake .45s}
+@keyframes shake{20%{transform:rotate(-7deg)}40%{transform:rotate(6deg)}60%{transform:rotate(-4deg)}80%{transform:rotate(2deg)}}
+.labmsg{font-family:var(--jal);font-size:26px;text-align:center;min-height:36px}
+.labmsg b{color:#FFE14D;font-weight:normal}
+.ings{width:100%;display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-top:auto}
+.ing{touch-action:none;display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 4px;border:0;border-radius:22px;background:#fff;color:#191f28;font-family:var(--jal);font-size:18px;box-shadow:0 4px 12px rgba(0,30,70,.2);transition:opacity .2s,transform .2s}
+.ing .e{font-size:44px;line-height:1}
+.ing.used{opacity:.35;transform:scale(.92)}
+.ing.drag{position:relative;z-index:20;transition:none;box-shadow:0 18px 36px rgba(0,0,0,.35);transform:scale(1.12) rotate(-6deg)}
+.labacts{width:100%;display:flex;gap:12px}
+.labacts button{height:76px;border:0;border-radius:22px;font-family:var(--jal);font-size:24px}
+.labacts .clr{flex:none;width:150px;background:transparent;border:2px solid rgba(255,255,255,.6);color:#fff}
+.labacts .go2{flex:1;background:#fff;color:var(--deep)}
+.labacts .go2:disabled{opacity:.45}
+body.land .cheapp .save .big{font-size:30px}body.land .cheapp .save .pct{display:none}
+body.land .cheapp{display:grid;grid-template-columns:520px 1fr;grid-template-rows:auto auto 1fr auto;column-gap:28px}
+body.land .cheapp .top,body.land .cheapp .bar,body.land .cheapp .acts{grid-column:1/-1}
+body.land .cheapp .q{grid-column:1;grid-row:3;margin-top:24px!important}
+body.land .cheapp .ftc{grid-column:2;grid-row:3;display:flex;min-height:0}
+body.land .labp .q{margin-top:14px!important}body.land .labp .q h1{font-size:36px}body.land .labp .q p{margin-top:8px;font-size:20px}
+body.land .labp .lab{margin-top:10px}
+body.land .labp .flask{transform:scale(.72);transform-origin:center}
+body.land .labp .flask.hot{transform:scale(.78)}
+body.land .ing{padding:8px 4px}body.land .ing .e{font-size:36px}
+body.land .labacts button{height:64px}
+body.land .lab{display:grid;grid-template-columns:330px 1fr;grid-template-rows:auto 1fr auto;column-gap:36px;align-items:center}
+body.land .flask{grid-row:1/4;grid-column:1}
+body.land .labmsg{grid-column:2}
+body.land .ings{grid-column:2;margin-top:0}
+body.land .labacts{grid-column:2}
 .empty{grid-column:1/-1;padding:48px 0;text-align:center;font-size:22px;color:var(--sub)}
 
 .toast{position:fixed;left:50%;top:40px;transform:translate(-50%,-20px);opacity:0;padding:18px 28px;border-radius:999px;
@@ -419,7 +484,7 @@ var EV_DL = '<div class="ev">💡 <b>폐호흡 3병 40,000원</b> · 1병씩 사
 var EV = '<div class="ev">💡 <b>프리미엄</b> 5병 49,500원 → <b>25,500원 아껴요</b> · 11병 90,000원 → <b>75,000원 아껴요</b> &nbsp;|&nbsp; <b>프라임</b> 3병 50,000원 → <b>10,000원 아껴요</b></div>';
 var UNIT = {"프리미엄":"💸 5병 패키지면 1병 9,900원","프라임":"💸 3병이면 1병 16,667원","폐호흡":"💸 3병이면 1병 13,333원"};
 function saveBox(label, full, price){ var off=full-price, pct=Math.round(off/full*100);
-  return '<div class="save pop"><span class="em">🎉</span><div class="tx"><div class="l">'+esc(label)+'</div><div class="big">'+won(off)+' 아껴요</div><div class="pr"><s>'+won(full)+'</s> → <b>'+won(price)+'</b></div></div><span class="pct">-'+pct+'%</span></div>'; }
+  return '<div class="save pop"><span class="em">🎉</span><div class="tx"><div class="l">'+esc(label)+'</div><div class="big"><span class="cnt" data-n="'+off+'">'+won(off)+'</span> 아껴요</div><div class="pr"><s>'+won(full)+'</s> → <b>'+won(price)+'</b></div></div><span class="pct">-'+pct+'%</span></div>'; }
 function pkRow(name, price, full, alt){ var off=(full||0)-price;
   return '<div class="pk'+(alt?' alt':'')+'"><span>'+esc(name)+(off>0?'<em>💸 '+won(off)+' 아껴요</em>':'')+'</span><span class="pp">'+(off>0?'<s>'+won(full)+'</s>':'')+'<b>'+won(price)+'</b></span></div>'; }
 function card(x, badge){
@@ -629,7 +694,7 @@ function mapPane(){
   var f=state.mapf||'';
   return '<div class="pane res">'+topBar('입호흡 액상',2,3)+
     '<section class="q" style="margin-top:28px"><h1>맛 지도에서<br>끌리는 곳을 눌러 보세요</h1>'+
-      '<div class="mapf">'+MAPF.map(function(o){return '<button data-act="mapf" data-v="'+o.v+'" class="'+(o.v===f?'on':'')+'">'+o.t+'</button>'}).join('')+'</div></section>'+
+      '<div class="mapf">'+MAPF.map(function(o){return '<button data-act="mapf" data-v="'+o.v+'" class="'+(o.v===f?'on':'')+'">'+o.t+'</button>'}).join('')+'<button class="labbtn" data-act="lab">🧪 맛 섞어 보기</button></div></section>'+
     '<div class="mapwrap"><div class="tmap">'+
       QUADS.map(function(q){ var l=byRank(pick(q.g,f));
         return '<button class="qd '+q.c+(l.length?'':' dim')+'" '+(l.length?'data-act="quad" ':'disabled ')+'data-g="'+q.g+'"><span class="ql">'+esc(q.g.replace('·',' · '))+' '+l.length+'</span>'+
@@ -858,7 +923,7 @@ function chatSend(q){
 function cheapPane(){
   var mp = (MODELS.filter(function(m){return m.dn==='말론'})[0]||{price:72000}).price;
   var st = function(n, e, t, body, act, btn){ return '<div class="ftcard step"><span class="sn">'+n+'</span><div class="sb"><h3>'+e+' '+t+'</h3><p>'+body+'</p>'+(act?'<button class="go" data-act="'+act+'">'+btn+' ›</button>':'')+'</div></div>'; };
-  return '<div class="pane res">'+topBar('가장 저렴하게 사는 법 💸',1,1)+
+  return '<div class="pane res cheapp">'+topBar('가장 저렴하게 사는 법 💸',1,1)+
     '<section class="q" style="margin-top:28px"><h1>이 순서대로만 하면<br>제일 싸요! 💸</h1>'+saveBox('말론 + 액상 10병을 기기 패키지로 사면', mp+150000, mp+75000)+'</section>'+
     '<section class="ftc">'+
       st(1,'🎁','회원등록부터 해요','구매할 때마다 적립되고, 다음부터는 <b>번호만</b> 말하면 돼요. AS 받을 때도 구매 기록이 남아서 편해요.','mem','회원등록하기')+
@@ -869,6 +934,78 @@ function cheapPane(){
     '</section>'+
     '<div class="acts"><button data-act="m-staff">💁 직원에게 물어보기</button><button class="main" data-act="mem">🎁 회원등록하기</button></div></div>';
 }
+
+/* ---------- 맛 섞기 실험실: 재료를 끌어다 병에 넣으면 그 맛이 다 들어간 액상을 찾아요 ---------- */
+var INGS = [
+  {k:'peach',e:'🍑',t:'복숭아',c:'#FFB38A',re:/복숭아|피치|백도|살구/},
+  {k:'grape',e:'🍇',t:'포도',c:'#9B6BE0',re:/포도|머스캣|머스켓/},
+  {k:'lemon',e:'🍋',t:'레몬',c:'#FFE14D',re:/레몬|라임|유자|시트러스|자몽|오렌지|한라봉|만다린/},
+  {k:'berry',e:'🍓',t:'베리',c:'#FF4D6D',re:/딸기|베리|체리|복분자|석류/},
+  {k:'melon',e:'🍉',t:'수박·멜론',c:'#FF7A7A',re:/수박|워터멜론|멜론|메론/},
+  {k:'mango',e:'🥭',t:'열대과일',c:'#FFB020',re:/망고|파인|패션|백향과|열대|구아바|리치|키위|바나나|코코넛/},
+  {k:'apple',e:'🍎',t:'사과',c:'#E8402C',re:/사과|애플|배\b/},
+  {k:'aloe',e:'🌿',t:'알로에',c:'#9BE07A',re:/알로에/},
+  {k:'soda',e:'🫧',t:'탄산',c:'#9AD7FF',re:/소다|사이다|콜라|이온|포카리|에너지|레드불|스프라이트|환타/},
+  {k:'cool',e:'🧊',t:'멘솔',c:'#C9F6FF',re:/멘솔|민트|쿨|아이스|박하|고드름|얼음/},
+  {k:'sweet',e:'🍫',t:'디저트',c:'#B07848',re:/초코|커피|크림|요거트|요구르트|아이스크림|치즈|껌|사탕|야쿠르트|땅콩|스콘/},
+  {k:'tob',e:'🚬',t:'담배맛',c:'#8B6B4A',re:/시가|타바코|토바코|담배|에쎄|마일드/}];
+function ING(k){ return INGS.filter(function(x){return x.k===k})[0]; }
+function mixList(){ var m=state.mix||[]; if(!m.length) return [];
+  return byRank(DATA().filter(function(x){ var s=x.n+' '+(x.f||'');
+    return m.every(function(k){ var g=ING(k); return g.re.test(s) || (k==='cool' && x.cool===true); }); })); }
+function labPane(){
+  return '<div class="pane res labp">'+topBar(KT(),2,3)+
+    '<section class="q" style="margin-top:24px"><h1>맛을 끌어다<br>병에 넣어 보세요! 🧪</h1><p>3개까지 섞을 수 있어요. 눌러서 넣어도 돼요.</p></section>'+
+    '<div class="lab"><div class="flask" id="flask"><div class="neck"></div><div class="body"><div class="liq" id="liq"></div>'+
+      '<i class="bub" style="left:30%"></i><i class="bub" style="left:55%;animation-delay:.8s"></i><i class="bub" style="left:72%;animation-delay:1.5s"></i></div>'+
+      '<div class="in" id="fin"></div><div class="empty0" id="f0">여기에<br>쏙! 👇</div></div>'+
+      '<div class="labmsg" id="lmsg"></div>'+
+      '<div class="ings">'+INGS.map(function(g){return '<button class="ing" data-k="'+g.k+'"><span class="e">'+g.e+'</span>'+esc(g.t)+'</button>'}).join('')+'</div>'+
+      '<div class="labacts"><button class="clr" data-act="labclr">🔄 비우기</button><button class="go2" id="lgo" data-act="labgo" disabled>결과 보기</button></div></div></div>';
+}
+function labPaint(added){
+  var m=state.mix||[], fin=document.getElementById('fin'); if(!fin) return;
+  var n=mixList().length, cs=m.map(function(k){return ING(k).c});
+  fin.innerHTML=m.map(function(k){return '<button data-act="labrm" data-k="'+k+'" aria-label="빼기">'+ING(k).e+'</button>'}).join('');
+  document.getElementById('f0').style.display=m.length?'none':'';
+  var liq=document.getElementById('liq'); liq.style.height=(m.length?28+m.length*20:0)+'%';
+  liq.style.background=cs.length>1?'linear-gradient(180deg,'+cs.join(',')+')':(cs[0]||'transparent');
+  [].forEach.call(document.querySelectorAll('.ing'),function(b){ b.classList.toggle('used', m.indexOf(b.dataset.k)>=0); });
+  document.getElementById('lmsg').innerHTML=!m.length?'':n?m.map(function(k){return ING(k).e}).join(' + ')+' 조합 <b>'+n+'개</b> 있어요!':'이 조합은 아직 없어요 😢 하나 빼 볼까요?';
+  var go2=document.getElementById('lgo'); go2.disabled=!n; go2.textContent=n?'🎉 결과 보기 ('+n+'개)':'결과 보기';
+  if(added){ var f=document.getElementById('flask'); f.classList.remove('shake'); void f.offsetWidth; f.classList.add('shake'); }
+}
+function labAdd(k){ var m=state.mix=state.mix||[]; if(m.indexOf(k)>=0) return;
+  if(m.length>=3){ toast('3개까지만 섞을 수 있어요. 병 안의 맛을 눌러 빼 주세요'); return; }
+  m.push(k); labPaint(true); }
+function labBind(){
+  [].forEach.call(document.querySelectorAll('.ing'),function(b){
+    b.addEventListener('pointerdown',function(e){
+      var x0=e.clientX, y0=e.clientY, moved=false, fl=document.getElementById('flask');
+      b.setPointerCapture(e.pointerId);
+      function mv(ev){ var dx=ev.clientX-x0, dy=ev.clientY-y0; if(!moved && Math.abs(dx)+Math.abs(dy)>10){ moved=true; b.classList.add('drag'); }
+        if(!moved) return; b.style.transform='translate('+dx+'px,'+dy+'px) scale(1.12) rotate(-6deg)';
+        var r=fl.getBoundingClientRect(); fl.classList.toggle('hot', ev.clientX>r.left&&ev.clientX<r.right&&ev.clientY>r.top&&ev.clientY<r.bottom); }
+      function upf(ev){ b.removeEventListener('pointermove',mv); b.removeEventListener('pointerup',upf); b.removeEventListener('pointercancel',upf);
+        var r=fl.getBoundingClientRect(), inF=ev.clientX>r.left&&ev.clientX<r.right&&ev.clientY>r.top&&ev.clientY<r.bottom;
+        fl.classList.remove('hot'); b.classList.remove('drag'); b.style.transform='';
+        if(!moved || inF) labAdd(b.dataset.k); }
+      b.addEventListener('pointermove',mv); b.addEventListener('pointerup',upf); b.addEventListener('pointercancel',upf);
+    });
+  });
+  labPaint(false);
+}
+/* 아낀 금액: 0원부터 올라가고 폭죽 */
+function countUp(){
+  [].forEach.call(document.querySelectorAll('.save .cnt'),function(el){
+    var n=+el.dataset.n, t0=performance.now(), box=el.closest('.save');
+    (function f(t){ var p=Math.min(1,(t-t0)/800), e=1-Math.pow(1-p,3); el.textContent=won(Math.round(n*e/100)*100); if(p<1) requestAnimationFrame(f); else el.textContent=won(n); })(t0);
+    ['🎉','💸','✨','💰','⭐','💸','✨','🎊'].forEach(function(em,i){ var s=document.createElement('span'); s.className='boom'; s.textContent=em;
+      var a=(i/8)*Math.PI*2, d=90+Math.random()*60; s.style.setProperty('--x',Math.round(Math.cos(a)*d)+'px'); s.style.setProperty('--y',Math.round(Math.sin(a)*d*.7)+'px'); s.style.setProperty('--r',(Math.random()*80-40)+'deg');
+      box.appendChild(s); setTimeout(function(){s.remove()},1000); });
+  });
+}
+var lastView='';
 
 function render(){
   var v=state.view, h='';
@@ -887,6 +1024,8 @@ function render(){
   else if (v==='mem-old') h = memPane('old');
   else if (v==='mem-done') h = memDone();
   else if (v==='cheap') h = cheapPane();
+  else if (v==='mix') h = labPane();
+  else if (v==='mix-res') h = listPane({step:3,total:3,h:(state.mix||[]).map(function(k){return ING(k).e}).join(' + ')+((state.mix||[]).length>1?' 섞은 맛':' 들어간 맛')+'이에요 😋',list:mixList(),chips:(state.mix||[]).map(function(k){return ING(k).t}),empty:'이 조합은 아직 없어요. 직원에게 물어봐 주세요.'});
   else if (v==='chat') h = chatPane();
   else if (v==='ft') h = ftPane();
   else if (v==='mtl-map') h = mapPane();
@@ -941,10 +1080,12 @@ function render(){
   else if (v==='mtl-pack-res') { var pk=PK()[state.pack];
     h = listPane({step:3,total:3,h:pk.line+' 액상에서<br>'+pk.n+'병 골라 주세요',list:byRank(DATA().filter(function(x){return x.line===pk.line})),
       chips:[pk.t], note:saveBox(pk.t, PRICE[pk.line]*pk.n, pk.price)}); }
-  var app=document.getElementById('app'); app.innerHTML=h; app.className='screen';
+  var app=document.getElementById('app'); app.innerHTML=h; app.className='screen'+(v!==lastView?' enter':''); var fresh=v!==lastView; lastView=v;
   var fab=document.getElementById('fab'); fab.hidden = v==='home' || v.indexOf('mem')===0; fab.classList.toggle('up', !!app.querySelector('.acts,.cta,.askbar')); var fh=document.getElementById('fabh'); fh.hidden = v==='home'; fh.classList.toggle('up', fab.classList.contains('up'));
   document.body.classList.toggle('fabon', !fab.hidden || !fh.hidden);
   var g=app.querySelector('.grid'); if(g) g.scrollTop=0;
+  if (v==='mix') labBind();
+  if (fresh) countUp();
   ['mName','mYear','mPhone'].forEach(function(id){ var el=document.getElementById(id); if(!el) return; el.addEventListener('input',function(){
     var m=M_(), k={mName:'name',mYear:'year',mPhone:'phone'}[id]; if (k!=='name') el.value=el.value.replace(/\D/g,''); m[k]=el.value; if (m.bad===k) { m.bad=''; el.classList.remove('bad'); }
     var pv=document.getElementById('mPv'), full=m.name.trim()?m.name.trim()+(m.year||''):''; if (pv) pv.innerHTML=full?'<b>'+esc(full)+'</b> 님으로 가입돼요 🙌':''; }); });
@@ -1005,6 +1146,10 @@ document.getElementById('app').addEventListener('click',function(e){
   if (a==='mtl' || a==='dl') { state.kind=a; return on('mtl'); }
   if (a==='m-self') { state.flavor=null; state.cool=null; if (state.kind!=='dl') { state.mapf=''; return on('mtl-map'); } return on('mtl-flavor'); }
   if (a==='mapf') { state.mapf=b.dataset.v; return render(); }
+  if (a==='lab') { state.mix=[]; return go('mix'); }
+  if (a==='labrm') { state.mix=(state.mix||[]).filter(function(k){return k!==b.dataset.k}); return labPaint(false); }
+  if (a==='labclr') { state.mix=[]; return labPaint(false); }
+  if (a==='labgo') return go('mix-res');
   if (a==='quad') { state.flavor=b.dataset.g; state.cool=state.mapf||''; b.classList.add('on'); return setTimeout(function(){go('mtl-res')},150); }
   if (a==='mpk') { state.mpack=i; state.mpn=5; return on('mtl-mpack'); }
   if (a==='mpn') { state.mpn=i; return render(); }
