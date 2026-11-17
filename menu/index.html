@@ -459,6 +459,7 @@ body[data-theme=dark] .srcart{background:#f1f1f3;color:#15120f}body[data-theme=d
 .podbig{display:block;width:100%;min-height:76px;border-radius:16px;background:var(--red);color:#fff;text-align:center;padding:10px 14px;margin-bottom:8px}.podbig b{display:block;font-size:21px}.podbig span{display:block;font-size:15px;opacity:.9;margin-top:2px}
 .podbig.on{background:var(--black)}
 .podmore{display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--gap)}.podmore>button{font-size:16px;color:var(--grey);text-decoration:underline;padding:8px 2px}
+.posgo{margin:0 0 14px!important;height:72px!important;font-size:24px!important;background:var(--ink)!important;color:var(--bg)!important}
 .staffsend{background:var(--card)!important;color:var(--grey)!important;border:1.5px solid var(--line);font-size:15px!important;height:48px!important}
 .srcart{position:sticky;top:0;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;margin:0 0 8px;padding:12px 16px;border-radius:14px;background:var(--black);color:#fff;text-align:left;font-size:15px}.srcart b{font-size:17px;margin-right:6px}.srcart i{font-style:normal;font-weight:800;color:#fff;white-space:nowrap;background:var(--red);border-radius:10px;padding:6px 10px}
 /* 11/13 기기 사용 영상 */
@@ -1175,7 +1176,7 @@ let qrSep = (() => { try { return localStorage.getItem("vf-qr-sep") || "cr"; } c
 // ② 서비스 QR = 묶음에 든 액상, 이벤트 서비스분 → 찍고 그 줄들만 포스에서 서비스(0원) 처리 (재고 빼기용). 서비스는 결제 QR에 안 섞음(사장님 10/27 지금 판 규칙)
 /* 11/12 공기계 주문 QR: [포스 옆 휴대폰으로 보내기] → 온라인팀 슈파베이스 qr_send (상품 바코드와 이름, 동의한 손님은 성함+년생과 번호). 공개 키, 표는 잠겨 있고 함수로만 씀 */
 const SB_URL = "https://bjjlmnkyhedtutogzliq.supabase.co", SB_KEY = "sb_publishable_i8rfcm_zAnwV75joN58FCw_8tHgFUKr";
-const QR_SEND_ON = BRANCH === "본점"; /* 시험 지점 */
+const QR_SEND_ON = ["본점", "동성로", "율하", "수성", "반월당", "상인", "광장코아", "현풍", "동성로2"].includes(BRANCH); /* 11/17 전 지점 (포스 입력 프로그램 지점별 설치) */
 async function qrSend(codes, svc, total, btn) { btn.disabled = true; btn.textContent = "보내는 중...";
   const sum = [...cart.values()].map((x) => (x.label || x.n) + (x.qty > 1 ? " x" + x.qty : "")).join(", ");
   /* 11/12 액상덕후 "주문이 여러 건이면 클로드98 010-1234-1234님의 주문": 회원 칸에 넣은 성함+년생, 번호를 같이 (동의한 것만, 폰에서 [완료]하면 지움) */
@@ -1215,7 +1216,7 @@ function qrView() {
     <div style="margin-top:10px;font-size:14px;color:var(--grey)">하나만 찍히면 구분 문자를 바꿔 보세요 <select id="qrSep">${Object.keys(QR_SEPS).map((k) => `<option value="${k}" ${k === qrSep ? "selected" : ""}>${{ cr: "Enter (CR)", crlf: "Enter (CR+LF)", lf: "줄바꿈 (LF)", tab: "Tab" }[k]}</option>`).join("")}</select></div>${memLine()}`;
   $('qrSep').onchange = (e) => { qrSep = e.target.value; try { localStorage.setItem("vf-qr-sep", qrSep); } catch (er) {} qrView(); };
   setFoot("qr");
-  if (QR_SEND_ON) { const sb = document.createElement("button"); sb.className = "cta staffsend"; sb.style.marginTop = "16px"; sb.textContent = "직원용: 포스로 보내기"; sb.onclick = () => qrSend(codes, svcCodes, t, sb); $('lines').append(sb); } /* 11/13 손님이 먼저 누르지 않게 맨 아래, 회색 */
+  if (QR_SEND_ON) { const sb = document.createElement("button"); sb.className = "cta posgo"; sb.textContent = "포스로 보내기"; sb.onclick = () => qrSend(codes, svcCodes, t, sb); $('lines').prepend(sb); } /* 11/17 액상덕후 "너무 숨겨져 있음": 맨 위, 크게 */
 }
 
 // ── 포스터 누르면 이벤트 구매 화면 (10/27 사장님 "A안처럼 구매 페이지") ──
