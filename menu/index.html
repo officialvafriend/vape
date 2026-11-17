@@ -1016,12 +1016,13 @@ const memLine = () => member.type ? `<div class="memline"><b>${member.reg ? (mem
 })();
 function setFoot(mode) {
   const has = cart.size > 0; $('shClear').hidden = !(mode === "cart" && has);
-  $('shBtns').innerHTML = mode === "cart" ? `<button class="b1" data-f="qr" ${has ? "" : "disabled"}>QR 보기</button>` /* 11/12 액상덕후: 직원에게 보여주기 뺌 (QR 화면의 [바코드로 보기]는 남김) */
+  const sendOn = ["본점", "동성로", "율하", "수성", "반월당", "상인", "광장코아", "현풍", "동성로2"].includes(BRANCH); /* 11/17 액상덕후 "포스로 보내기가 먼저 보이게" */
+  $('shBtns').innerHTML = mode === "cart" ? (sendOn ? `<button class="rd" data-f="send" ${has ? "" : "disabled"}>포스로 보내기</button><button class="b2" data-f="qr" ${has ? "" : "disabled"}>QR 보기</button>` : `<button class="b1" data-f="qr" ${has ? "" : "disabled"}>QR 보기</button>`) /* 11/12 액상덕후: 직원에게 보여주기 뺌 (QR 화면의 [바코드로 보기]는 남김) */
     : mode === "staff" ? `<button class="b2" data-f="cart">← 수정</button><button class="b2" data-f="qr">QR 보기</button><button class="rd" data-f="done">결제 완료</button>`
     : `<button class="b2" data-f="staff">바코드로 보기</button><button class="rd" data-f="done">결제 완료</button>`;
 }
 $('shBtns').onclick = (e) => { const b = e.target.closest('[data-f]'); if (!b) return; const f = b.dataset.f;
-  if (f === "cart") cartViewBack(); if (f === "staff") staffView(); if (f === "qr") qrView(); if (f === "done") doneSale(); };
+  if (f === "cart") cartViewBack(); if (f === "staff") staffView(); if (f === "qr") qrView(); if (f === "send") { qrView(); const pb = document.querySelector("#lines .posgo"); if (pb) pb.click(); } if (f === "done") doneSale(); };
 function resetSale() { myDevOpen = false; qzPkMore = false; cart.clear(); PERK = null; Object.assign(member, { type: null, name: "", year: "", phone: "", agree: false, mk: false, sex: "", reg: null, bad: "", okd: false }); goalN = 0; engrave = null; scanDone.clear(); qz = { i: 0, ans: {} }; Object.assign(ledger, { name: "", gu: "", etc: "" }); airxGift = "pod"; }
 let shClrT = 0; const shClrOff = () => { clearTimeout(shClrT); $('shClear').classList.remove('arm'); $('shClear').textContent = "비우기"; };
 $('shClear').onclick = () => { const b = $('shClear'); if (!b.classList.contains('arm')) { b.classList.add('arm'); b.textContent = "한 번 더 누르면 비워요"; shClrT = setTimeout(shClrOff, 3000); return; } shClrOff(); resetSale(); document.body.classList.remove('open'); cartViewBack(); drawLiq(); drawGoal(); if (typeof drawDspList === "function") { drawDspList(); drawPodView(); } toast("비웠어요"); };
