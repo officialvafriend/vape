@@ -534,6 +534,10 @@ body.land .bimg img{object-fit:contain;background:#f2f2f4}
 .pksz button small{display:block;font-family:var(--kr);font-size:15px;font-weight:700;opacity:.8}
 .mpp .pksz button{height:auto;padding:8px 0}
 .item .unit.evt{background:#FFF0F0;color:#e5313b}
+.pksz.evz{flex-wrap:wrap;margin-top:10px}
+.pksz.evz .evl{flex-basis:100%;font-family:var(--jal);font-size:17px;color:#FFE14D}
+.pksz.evz button{flex:1 1 30%;font-size:18px}
+.pksz.evz button.on{background:#FFE14D;color:#191f28;border-color:#FFE14D}
 .empty{grid-column:1/-1;padding:48px 0;text-align:center;font-size:22px;color:var(--sub)}
 
 .toast{position:fixed;left:50%;top:40px;transform:translate(-50%,-20px);opacity:0;padding:18px 28px;border-radius:999px;
@@ -911,14 +915,17 @@ function mpackList(k, n){
   Object.keys(want).forEach(function(g){ var l=P.filter(function(x){return x.g===g}); top=top.concat(l.slice(0,want[g])); rest=rest.concat(l.slice(want[g],want[g]+4)); });
   return top.concat(rest);
 }
+var MPEV = {6:['5+1',49600], 31:['30+1',220100], 53:['50+3',360300]};
+function mpackEv(k){ var E=byRank(LIQ.filter(isE)), M=MPACKS[k]; if (M.mix||!M.pool) return E; var f=M.pool(E); return f.length>=6?f.concat(E.filter(function(x){return f.indexOf(x)<0})):E; }
 function mpackPane(){
-  var k=state.mpack, n=state.mpn||5, M=MPACKS[k], list=mpackList(k,n), price=n>=11?90000:49500, full=PRICE["프리미엄"]*n;
+  var k=state.mpack, n=state.mpn||5, M=MPACKS[k], evp=MPEV[n], list=evp?mpackEv(k):mpackList(k,n), price=evp?evp[1]:n>=11?90000:49500, full=PRICE["프리미엄"]*n;
   var P=byRank(LIQ.filter(function(x){return x.line==='프리미엄'})), rec=list.slice(0,n).map(function(x){return x.id}),
     shown=(state.fg||state.fs) ? filt(P).slice(0,80) : list.slice(0,Math.max(n+6,12));
   return '<div class="pane res mpp">'+topBar('입호흡 액상',3,3)+
     '<section class="q"><h1>'+esc(M.t)+'</h1>'+
       '<div class="pksz"><button data-act="mpn" data-i="5" class="'+(n===5?'on':'')+'">5병 49,500원<small>병당 9,900원</small></button><button data-act="mpn" data-i="11" class="'+(n===11?'on':'')+'">11병 90,000원<small>병당 8,182원</small></button></div>'+
-      saveBox('프리미엄 '+n+'병을 패키지로 사면', full, price)+'<div class="ev">👇 앞의 <b>'+Math.min(n,list.length)+'병</b>으로 추천해요 · 맛은 바꿔도 돼요</div>'+
+      '<div class="pksz evz"><span class="evl">🎁 빌런 · 릭 · 제이코리아만</span>'+[6,31,53].map(function(m){ var e=MPEV[m]; return '<button data-act="mpn" data-i="'+m+'" class="'+(n===m?'on':'')+'">'+e[0]+' · '+m+'병 '+won(e[1])+'<small>병당 '+won(Math.round(e[1]/m/10)*10)+'</small></button>'; }).join('')+'</div>'+
+      saveBox((evp?'빌런·릭·제이코리아 '+evp[0]+' ('+n+'병)':'프리미엄 '+n+'병')+'을 패키지로 사면', full, price)+'<div class="ev">👇 앞의 <b>'+Math.min(n,list.length)+'병</b>으로 추천해요'+(n>list.length?' · 같은 맛을 더 담아요':'')+' · 맛은 바꿔도 돼요</div>'+
     '</section>'+filterBar(P)+'<section class="grid">'+(shown.length?shown.map(function(x){var r=rec.indexOf(x.id); return card(x, r>=0?'추천 '+(r+1):'');}).join(''):'<div class="empty">맞는 액상이 없어요. 직원에게 물어봐 주세요.</div>')+'</section>'+
     '<div class="acts"><button data-act="back">다른 패키지</button><button class="main" data-act="mpcall">🛒 이 '+n+'병 담기</button></div></div>';
 }
@@ -1209,7 +1216,7 @@ var GITEMS_ = null; function GITEMS(){ if (GITEMS_) return GITEMS_; var m={}, di
   MODELS.forEach(function(M){ M.opts.forEach(function(o){ if(o.id) dimg[o.id]=o.img||M.img; }); });
   var ddn={}; MODELS.forEach(function(M){ M.opts.forEach(function(o){ if(o.id) ddn[o.id]=M.dn+(o.opt?' '+o.opt:''); }); });
   var dmod={}; MODELS.forEach(function(M){ M.opts.forEach(function(o){ if(o.id) dmod[o.id]=M.dn; }); });
-  GSRC.forEach(function(g){ var c=GCAT(g); m[g.id]={id:g.id, n:g.n, dn:ddn[g.id], dev:dmod[g.id], line:c, price:g.price, em:GEM[c], br:g.model||g.pos||'', src:dimg[g.id]||'', goods:true}; });
+  GSRC.forEach(function(g){ var c=GCAT(g); m[g.id]={id:g.id, n:g.n, dn:ddn[g.id], dev:dmod[g.id], ev:g.ev||'', model:g.model||'', line:c, price:g.price, em:GEM[c], br:g.model||g.pos||'', src:dimg[g.id]||'', goods:true}; });
   return (GITEMS_=m); }
 function ITEM(id){ return GITEMS()[id] || LIQ.concat(LUNGL).filter(function(x){return x.id===id})[0]; }
 function cartN(){ var c=state.cart||{}; return Object.keys(c).reduce(function(a,k){return a+c[k]},0); }
@@ -1226,20 +1233,48 @@ function premPlan(e, o){ var m={c:Infinity,k:[]}; for (var x=0;x<=e;x++){ var be
 function premCost(e, o){ return premPlan(e,o).c; }
 function evLabel(k){ var cnt={}; k.forEach(function(t){cnt[t]=(cnt[t]||0)+1}); return Object.keys(cnt).map(function(t){return EVT_NAME+' '+t+(cnt[t]>1?' ×'+cnt[t]:'')}).join(', '); }
 function lineSum(l, o){ var c=state.cart||{};
+  if (l==='일회용') { var arr=[]; o.items.forEach(function(x){ for (var q=0;q<(c[x.id]||0);q++) arr.push(x); }); var ev=arr.filter(function(x){return x.ev}), r=dspPlan(ev), plain=arr.filter(function(x){return !x.ev}).reduce(function(a,x){return a+x.price},0); return {full:r.full+plain, pay:r.pay+plain}; }
   if (l==='프리미엄') { var e=0, n=0; o.items.forEach(function(x){ var q=c[x.id]||0; if(isE(x)) e+=q; else n+=q; }); return {full:PRICE[l]*o.n, pay:premCost(e,n)}; }
   if (PRICE[l]) return {full:PRICE[l]*o.n, pay:best(l,o.n)};
   var t=o.items.reduce(function(a,x){return a+(x.price||0)*(c[x.id]||0)},0); return {full:t, pay:t}; }
 /* 말론, 말론S, 하복2: 기기 + 프리미엄 5병 = 기기값 + 40,000원, + 10병 = + 75,000원, 하복2 + 폐호흡 3병 = + 40,000원 */
 var BUNDLE_DEV = /^(말론|말론S|하복2)$/;
 function devDn(x){ return (x && x.goods && x.line==='기기') ? (x.dev||'') : ''; }
+/* 일회용 이벤트: 팜팜바·모스바 3+1(같은 제품끼리), 둘이 합쳐 10+5(15개마다 싼 5개 서비스),
+   립클링·인피 5+1(5+1 제품끼리 섞어도 됨), 에어릭스 팟 10+2(기기 증정은 직원이 골라 줌) */
+function dspPlan(list){
+  var out={pay:0, full:0, notes:[], free:0, airxMore:0}, g={};
+  list.forEach(function(x){ out.full+=x.price; var k=x.ev==='DSP-3+1'?x.ev+'|'+x.model:x.ev; (g[k]=g[k]||[]).push(x.price); });
+  function nPlus(arr, buy, free){ arr=arr.slice().sort(function(a,b){return b-a}); var sets=Math.floor(arr.length/(buy+free)), nf=sets*free;
+    return {pay:arr.slice(0, arr.length-nf).reduce(function(a,b){return a+b},0), sets:sets, free:nf}; }
+  // 3+1 / 10+5
+  var k31=Object.keys(g).filter(function(k){return k.indexOf('DSP-3+1')===0}), tot=k31.reduce(function(a,k){return a+g[k].length},0), best31=null;
+  var kk=Math.floor(tot/15);
+  for (var kb=0; kb<=kk; kb++){ var take=kb*15;
+    // 15개 묶음에 넣을 개수를 제품별로 나눠 보기 (제품 2개까지는 전부, 그 이상은 앞에서부터)
+    var splits=[]; if (k31.length<=1) splits=[[take]]; else if (k31.length===2){ for (var x=Math.max(0,take-g[k31[1]].length); x<=Math.min(g[k31[0]].length,take); x++) splits.push([x,take-x]); } else { var left=take; splits=[k31.map(function(k){ var v=Math.min(g[k].length,left); left-=v; return v; })]; }
+    splits.forEach(function(sp){ var bulk=[], pay=0, fr=0, sets3=0;
+      k31.forEach(function(k,i){ var a=g[k].slice().sort(function(a,b){return b-a}); bulk=bulk.concat(a.slice(0,sp[i])); var r=nPlus(a.slice(sp[i]),3,1); pay+=r.pay; fr+=r.free; sets3+=r.sets; });
+      bulk.sort(function(a,b){return a-b}); bulk.forEach(function(v,i){ if (i<kb*5) fr++; else pay+=v; });
+      if (!best31 || pay<best31.pay) best31={pay:pay, fr:fr, kb:kb, sets3:sets3}; }); }
+  if (best31){ out.pay+=best31.pay; out.free+=best31.fr; if (best31.kb) out.notes.push('팜팜바·모스바 10+5 ×'+best31.kb); if (best31.sets3) out.notes.push('팜팜바·모스바 3+1 ×'+best31.sets3); }
+  // 5+1
+  if (g['DSP-5+1']){ var r5=nPlus(g['DSP-5+1'],5,1); out.pay+=r5.pay; out.free+=r5.free; if (r5.sets) out.notes.push('립클링·인피 5+1 ×'+r5.sets); }
+  // 에어릭스 10+2: 10개마다 팟 2개 더 (10, 11개만 담아도 서비스는 진열대에서 골라 가요)
+  if (g['DSP-AIRX']){ var a=g['DSP-AIRX'].slice().sort(function(a,b){return b-a}), sets=Math.floor(a.length/10), cov=Math.min(a.length, sets*12), pay=0;
+    for (var i=0;i<a.length;i++){ if (i<cov){ if ((i%12)<10) pay+=a[i]; } else pay+=a[i]; }
+    out.pay+=pay; out.free+=cov-sets*10; out.airxMore=sets*12-cov; if (sets) out.notes.push('에어릭스 10+2 ×'+sets+(out.airxMore?' (팟 '+out.airxMore+'개 더 골라 가세요)':'')); }
+  return out;
+}
 function priceOf(c){
-  var prem=0, premE=0, prime=0, lung=0, other=0, full=0, devs=[];
+  var prem=0, premE=0, prime=0, lung=0, other=0, full=0, devs=[], dsps=[];
   Object.keys(c).forEach(function(id){ var x=ITEM(id), q=c[id]; if(!x||q<=0) return;
     if (x.line==='프리미엄') { prem+=q; if (isE(x)) premE+=q; } else if (x.line==='프라임') prime+=q; else if (x.line==='폐호흡') lung+=q;
     else if (BUNDLE_DEV.test(devDn(x))) { for (var k=0;k<q;k++) devs.push({dn:devDn(x), price:x.price}); }
+    else if (x.goods && x.line==='일회용' && x.ev) { for (var k2=0;k2<q;k2++) dsps.push(x); }
     else other+=(x.price||0)*q;
     full += (PRICE[x.line]||x.price||0)*q; });
-  var base=best('프라임',prime)+other, bestPay=Infinity, bestPk=[];
+  var dp=dspPlan(dsps), base=best('프라임',prime)+other+dp.pay, bestPay=Infinity, bestPk=[];
   /* e: 이벤트 액상, o: 그 밖의 프리미엄. 기기 패키지에 넣을 병은 일반 쪽 먼저 / 이벤트 쪽 먼저 둘 다 따져 봄 */
   function takes(e,o,k){ if (e+o<k) return []; var a=Math.min(o,k), b=Math.min(e,k); return [[e-(k-a), o-a],[e-b, o-(k-b)]]; }
   (function dfs(i, e, o, lu, cost, pk){
@@ -1251,7 +1286,8 @@ function priceOf(c){
     if (d.dn==='하복2' && lu>=3) dfs(i+1, e, o, lu-3, cost+d.price+40000, pk.concat('하복2 + 폐호흡 3병'));
   })(0, premE, prem-premE, lung, 0, []);
   var noB=devs.reduce(function(a,d){return a+d.price},0)+best('프리미엄',prem)+best('폐호흡',lung)+base;
-  return {full:full, pay:bestPay, noBundle:noB, packs:bestPk, prem:prem, premE:premE, lung:lung, devs:devs};
+  bestPk=bestPk.concat(dp.notes); noB=noB-dp.pay+dp.full;
+  return {full:full, pay:bestPay, noBundle:noB, packs:bestPk, prem:prem, premE:premE, lung:lung, devs:devs, dsp:dp};
 }
 function cartSum(){ var r=priceOf(state.cart||{}), c=state.cart||{}, gs=0, nb=0; r.L=cartLines();
   Object.keys(c).forEach(function(id){ var x=ITEM(id); if(!x) return; if(x.goods) gs+=(x.price||0)*c[id]; else nb+=c[id]; });
@@ -1262,6 +1298,10 @@ function upsells(){
   function tryAdd(add, normal, msg, btn){ var c2={}; Object.keys(c).forEach(function(k){c2[k]=c[k]}); add(c2); var r=priceOf(c2), extra=r.pay-cur.pay, save=normal-extra;
     if (save>0) out.push({save:save, html:msg(extra, normal), btn:btn}); }
   var anyPrem = LIQ.filter(function(x){return x.line==='프리미엄' && !isE(x)})[0], anyE = LIQ.filter(isE)[0], anyLung=LUNGL[0];
+  var c3={}, dl=[]; Object.keys(c).forEach(function(id){ var x=ITEM(id); if(x&&x.goods&&x.ev){ var k=x.ev==='DSP-3+1'?x.ev+'|'+x.model:x.ev; if(!c3[k]) dl.push({k:k,x:x}); c3[k]=(c3[k]||0)+c[id]; } });
+  dl.forEach(function(d){ var cyc=d.x.ev==='DSP-3+1'?4:d.x.ev==='DSP-5+1'?6:12, buyN=cyc===12?10:cyc-1, n0=c3[d.k], need=(n0%cyc)<buyN?buyN-(n0%cyc):cyc-(n0%cyc);
+    if (need>0 && need<=4) tryAdd(function(c2){ c2[d.x.id]=(c2[d.x.id]||0)+need; }, need*d.x.price,
+      function(ex){ var nm=d.x.ev==='DSP-3+1'?d.x.model+' 3+1':d.x.ev==='DSP-5+1'?'립클링·인피 5+1':'에어릭스 10+2'; return '🚬 <b>'+esc(nm)+'</b> '+need+'개 더 담으면 <b>+'+won(ex)+'</b> (원래 '+won(need*d.x.price)+')'; }); });
   if (anyE && cur.premE>0) [6,12,31,53].forEach(function(t){ var k=t-cur.premE; if (k>0 && k<=6) tryAdd(function(c2){ c2[anyE.id]=(c2[anyE.id]||0)+k; }, k*15000,
       function(ex){ return '🎁 <b>'+EVT_NAME+' '+k+'병</b> 더 담으면 <b>+'+won(ex)+'</b>'+(t===6||t===12?' (5+1 이벤트)':t===31?' (30+1 대량 이벤트)':' (50+3 대량 이벤트)')+' · 원래 '+won(k*15000); }); });
   [5,10,11].forEach(function(t){ var k=t-cur.prem; if (k>0 && k<=6 && anyPrem) tryAdd(function(c2){ c2[anyPrem.id]=(c2[anyPrem.id]||0)+k; }, k*15000,
@@ -1338,7 +1378,7 @@ function cartPane(){
   if (!n) return '<div class="pane res">'+topBar('장바구니 🛒',1,1)+'<section class="q"><h1>장바구니가<br>비어 있어요 🫙</h1><p>상품 카드의 <b>🛒 담기</b>를 누르거나,<br>카드를 꾹 눌러서 오른쪽 병에 끌어다 놓아 보세요.</p></section>'+
     '<div class="acts" style="margin-top:auto"><button data-act="back">돌아가기</button><button class="main" data-act="mtl">🗺️ 액상 고르러 가기</button></div></div>';
   var lines=Object.keys(S.L).map(function(l){ var o=S.L[l], r=lineSum(l,o), f=r.full, b=r.pay;
-      return '<div class="cline"><span>'+esc(l)+' '+o.n+(PRICE[l]?'병 <small class="perb">병당 '+won(Math.round(b/o.n/10)*10)+'</small>':'개')+'</span><span>'+(f>b?'<s>'+won(f)+'</s>':'')+'<b>'+won(b)+'</b></span></div>'+(PRICE[l]&&nudge(l,o.n)?'<div class="nudge">'+nudge(l,o.n)+'</div>':'')+(l==='일회용'?'<div class="nudge">🎁 일회용 3+1, 5+1 행사는 직원이 계산할 때 적용해 드려요</div>':''); }).join('');
+      return '<div class="cline"><span>'+esc(l)+' '+o.n+(PRICE[l]?'병 <small class="perb">병당 '+won(Math.round(b/o.n/10)*10)+'</small>':'개')+'</span><span>'+(f>b?'<s>'+won(f)+'</s>':'')+'<b>'+won(b)+'</b></span></div>'+(PRICE[l]&&nudge(l,o.n)?'<div class="nudge">'+nudge(l,o.n)+'</div>':'')+(l==='일회용'?'<div class="nudge">🎁 팜팜바·모스바 3+1 (둘이 합쳐 10+5) · 립클링·인피 5+1 · 에어릭스 10+2 자동 적용'+(S.dsp&&S.dsp.airxMore?' · 에어릭스 팟 <b>'+S.dsp.airxMore+'개</b> 더 골라 가세요':'')+'</div>':''); }).join('');
   var rows=Object.keys(c).map(function(id){ var x=ITEM(id); if(!x) return ''; var src=x.src!=null?x.src:(x.img?'../img/'+x.img:'');
       return '<div class="crow">'+(src?'<img src="'+esc(src)+'" alt="">':'<span class="ph0">'+(x.em||'🧴')+'</span>')+'<div class="tx"><b>'+esc(x.dn||x.n)+'</b><small>'+esc([x.br,x.line].filter(Boolean).join(' · '))+'</small></div>'+
         '<div class="qty"><button data-act="cq" data-id="'+esc(id)+'" data-d="-1" aria-label="빼기">−</button><span>'+c[id]+'</span><button data-act="cq" data-id="'+esc(id)+'" data-d="1" aria-label="더하기">＋</button></div></div>'; }).join('');
@@ -1369,7 +1409,7 @@ var ALLT = [
   {k:'acc',e:'🧰',t:'케이스 · 기타',n:function(){return GSRC.filter(function(g){return g.c==='pod'&&g.sub!=='팟·코일'}).length}},
   {k:'dsp',e:'🚬',t:'일회용',n:function(){return GSRC.filter(function(g){return g.c==='dsp'}).length}}];
 function gTile(g, em){ return '<div class="item gd" data-id="'+esc(g.id)+'"><div class="ph"><span class="tile"><span class="ge">'+em+'</span>'+esc(g.opt||g.n)+'</span></div><div class="bd">'+
-  '<span class="br">'+esc([g.model||'',g.pos].filter(Boolean).join(' · '))+'</span><span class="nm">'+esc(g.n)+'</span><span class="pr">'+won(g.price)+'</span>'+
+  '<span class="br">'+esc([g.model||'',g.pos].filter(Boolean).join(' · '))+'</span><span class="nm">'+esc(g.n)+'</span><span class="pr">'+won(g.price)+'</span>'+(g.ev?'<span class="unit evt">🎁 '+({'DSP-3+1':'3+1 · 팜팜바+모스바 15개면 10+5','DSP-5+1':'5+1 (립클링·인피끼리)','DSP-AIRX':'팟 10+2'}[g.ev]||'')+'</span>':'')+
   '<button class="add" data-act="add" data-id="'+esc(g.id)+'">'+((state.cart||{})[g.id]?'✓ '+state.cart[g.id]+'개 담음 · 하나 더':'🛒 담기')+'</button></div></div>'; }
 function gBar(list, key, label){ var cnt={}; list.forEach(function(g){ var k=key(g); cnt[k]=(cnt[k]||0)+1; });
   var ks=Object.keys(cnt).sort(function(a,b){return cnt[b]-cnt[a]}); if (ks.length<2) return '';
@@ -1595,7 +1635,7 @@ document.getElementById('app').addEventListener('click',function(e){
   if (a==='quad') { state.flavor=b.dataset.g; state.cool=state.mapf||''; b.classList.add('on'); return setTimeout(function(){go('mtl-res')},150); }
   if (a==='mpk') { state.mpack=i; state.mpn=5; return on('mtl-mpack'); }
   if (a==='mpn') { state.mpn=i; return render(); }
-  if (a==='mpcall') { var L=mpackList(state.mpack,state.mpn||5).slice(0,state.mpn||5); state.cart=state.cart||{}; L.forEach(function(x){ state.cart[x.id]=(state.cart[x.id]||0)+1; }); return go('cart'); }
+  if (a==='mpcall') { var nn=state.mpn||5, LL=MPEV[nn]?mpackEv(state.mpack):mpackList(state.mpack,nn); state.cart=state.cart||{}; for (var q=0;q<nn && LL.length;q++){ var xx=LL[q%LL.length]; state.cart[xx.id]=(state.cart[xx.id]||0)+1; } return go('cart'); }
   if (a==='mpcall-old') { state.staffT='입호흡 액상'; state.staffH='직원이 바로<br>담아 드릴게요!'; state.staffP='"'+esc(MPACKS[state.mpack].t)+' '+(state.mpn||5)+'병" 하신다고 전해 드릴게요.<br>잠깐만 기다려 주세요.'; return go('help-staff'); }
   if (a==='m-staff') return on('mtl-staff');
   if (a==='m-like') { state.q=''; return on('mtl-like'); }
