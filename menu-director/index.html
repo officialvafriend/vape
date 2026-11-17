@@ -362,12 +362,22 @@ body.land .cheapp .save .big{font-size:30px}body.land .cheapp .save .pct{display
 .mpp .save{margin-top:14px;padding:14px 20px}.mpp .save .em{font-size:36px}.mpp .save .big{font-size:28px}
 .mpp .ev{margin-top:12px;padding:10px 16px;font-size:18px}
 .mpp .pksz button{height:56px}
-body.land .mpp{display:grid;grid-template-columns:420px 1fr;grid-template-rows:auto auto 1fr auto;column-gap:28px}
+body.land .mpp{display:grid;grid-template-columns:420px 1fr;grid-template-rows:auto auto auto 1fr auto;column-gap:28px}
 body.land .mpp .top,body.land .mpp .bar,body.land .mpp .acts{grid-column:1/-1}
-body.land .mpp .q{grid-column:1;grid-row:3;overflow:auto}
+body.land .mpp .q{grid-column:1;grid-row:3/5;overflow:auto}
 body.land .mpp .q h1{font-size:30px}body.land .mpp .save .pct{display:none}body.land .mpp .save .big{font-size:26px;white-space:nowrap}
 body.land .mpp .pksz{flex-direction:column}
-body.land .mpp .grid{grid-column:2;grid-row:3;min-height:0;margin-top:28px}
+body.land .mpp .grid{grid-column:2;grid-row:4;min-height:0;margin-top:12px}
+.fbar{margin-top:14px;display:flex;flex-direction:column;gap:8px;flex:none}
+.frow{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}.frow::-webkit-scrollbar{display:none}
+.frow button{flex:none;padding:9px 16px;border-radius:999px;border:0;background:rgba(255,255,255,.18);color:#fff;font-family:var(--jal);font-size:18px;white-space:nowrap}
+.frow button small{opacity:.7;font-size:.82em}
+.frow button.on{background:#fff;color:var(--deep)}
+.frow.ser button{background:transparent;border:2px solid rgba(255,255,255,.35);padding:7px 14px;font-size:17px}
+.frow.ser button.on{background:#FFE14D;border-color:#FFE14D;color:#191f28}
+.frow .lb{flex:none;align-self:center;font-family:var(--jal);font-size:16px;opacity:.8;margin-right:2px}
+.fbar+.grid{margin-top:14px}
+body.land .mpp .fbar{grid-column:2;grid-row:3;margin-top:24px;min-width:0}
 body.land .cheapp{display:grid;grid-template-columns:520px 1fr;grid-template-rows:auto auto 1fr auto;column-gap:28px}
 body.land .cheapp .top,body.land .cheapp .bar,body.land .cheapp .acts{grid-column:1/-1}
 body.land .cheapp .q{grid-column:1;grid-row:3;margin-top:24px!important}
@@ -466,8 +476,8 @@ function KT(){ return state.view.indexOf('new')===0 ? '처음 오신 분' : stat
 
 function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
 function won(n){return n.toLocaleString('ko-KR')+'원'}
-function go(v){state.hist.push(state.view); state.view=v; var t=document.getElementById('toast'); if(t) t.classList.remove('show'); render();}
-function back(){state.view=state.hist.pop()||'home'; render();}
+function go(v){state.hist.push(state.view); state.view=v; state.fg=''; state.fs=''; var t=document.getElementById('toast'); if(t) t.classList.remove('show'); render();}
+function back(){state.view=state.hist.pop()||'home'; state.fg=''; state.fs=''; render();}
 function home(){state={view:'home',hist:[],flavor:null,cool:null,q:'',base:null,pack:null,kind:'mtl',ans:{}}; render();}
 
 function topBar(title, step, total){
@@ -508,13 +518,26 @@ function card(x, badge){
     '<span class="pr">'+(PRICE[x.line]?won(PRICE[x.line]):'')+'</span>'+(UNIT[x.line]?'<span class="unit">'+UNIT[x.line]+'</span>':'')+'<span class="lc">'+esc(x.line)+(x.loc?' · 위치 '+esc(x.loc.split('|')[0]):'')+'</span></div></div>';
 }
 /* 목록 한 화면: o = {step,total,h,chips,list,top(인기 표시 몇 위까지),note(위 안내),empty} */
+/* ---------- 맛 분류 + 시리즈(브랜드)로 나눠 보기: 액상 목록, 패키지 담기 화면 공통 ---------- */
+var FGS = [['','✨ 전체'],['과일','🍑 과일'],['멘솔·민트','🧊 멘솔·민트'],['시가·타바코','🚬 담배맛'],['디저트·음료','🥤 디저트·음료']];
+function filt(list){ return list.filter(function(x){ return (!state.fg||x.g===state.fg) && (!state.fs||x.br===state.fs); }); }
+function filterBar(list){
+  var byG=list.filter(function(x){return !state.fs||x.br===state.fs}), byS=list.filter(function(x){return !state.fg||x.g===state.fg}), cnt={};
+  byS.forEach(function(x){ if(x.br) cnt[x.br]=(cnt[x.br]||0)+1; });
+  var ser=Object.keys(cnt).sort(function(a,b){ return (a==='기타')-(b==='기타') || cnt[b]-cnt[a] || a.localeCompare(b); });
+  if (state.fs && ser.indexOf(state.fs)<0) ser.unshift(state.fs);
+  return '<div class="fbar"><div class="frow">'+FGS.map(function(o){ var n=o[0]?byG.filter(function(x){return x.g===o[0]}).length:byG.length; if(o[0]&&!n&&state.fg!==o[0]) return '';
+      return '<button data-act="fg" data-v="'+o[0]+'" class="'+((state.fg||'')===o[0]?'on':'')+'">'+o[1]+' <small>'+n+'</small></button>'; }).join('')+'</div>'+
+    (Object.keys(cnt).length>1||state.fs ? '<div class="frow ser"><span class="lb">시리즈</span><button data-act="fs" data-v="" class="'+(!state.fs?'on':'')+'">전체 <small>'+byS.length+'</small></button>'+
+      ser.map(function(b){ return '<button data-act="fs" data-v="'+esc(b)+'" class="'+(state.fs===b?'on':'')+'">'+esc(b)+' <small>'+(cnt[b]||0)+'</small></button>'; }).join('')+'</div>' : '')+'</div>';
+}
 function listPane(o){
-  var n=o.top||3, rk=0;
-  return '<div class="pane res">'+topBar(KT(),o.step,o.total)+
+  var n=o.top||3, rk=0, all=o.list; o.list=filt(all);
+  return '<div class="pane res lp">'+topBar(KT(),o.step,o.total)+
     '<section class="q"><h1>'+o.h+'</h1>'+
       '<div class="chips">'+(o.chips||[]).map(function(t){return '<span>'+esc(t)+'</span>'}).join('')+'<span>'+o.list.length+'개</span></div>'+
       (o.note||(state.kind==='dl'?EV_DL:EV))+
-    '</section>'+
+    '</section>'+filterBar(all)+
     '<section class="grid">'+(o.list.length ? o.list.slice(0,60).map(function(x){
       var hot = (RANK[x.n]||0)>0 && rk<n; if (hot) rk++;
       return card(x, hot?'인기 '+rk+'위':'');
@@ -748,11 +771,13 @@ function mpackList(k, n){
 }
 function mpackPane(){
   var k=state.mpack, n=state.mpn||5, M=MPACKS[k], list=mpackList(k,n), price=n>=11?90000:49500, full=PRICE["프리미엄"]*n;
+  var P=byRank(LIQ.filter(function(x){return x.line==='프리미엄'})), rec=list.slice(0,n).map(function(x){return x.id}),
+    shown=(state.fg||state.fs) ? filt(P).slice(0,80) : list.slice(0,Math.max(n+6,12));
   return '<div class="pane res mpp">'+topBar('입호흡 액상',3,3)+
     '<section class="q"><h1>'+esc(M.t)+'</h1>'+
       '<div class="pksz"><button data-act="mpn" data-i="5" class="'+(n===5?'on':'')+'">5병 49,500원</button><button data-act="mpn" data-i="11" class="'+(n===11?'on':'')+'">11병 90,000원</button></div>'+
       saveBox('프리미엄 '+n+'병을 패키지로 사면', full, price)+'<div class="ev">👇 앞의 <b>'+Math.min(n,list.length)+'병</b>으로 추천해요 · 맛은 바꿔도 돼요</div>'+
-    '</section><section class="grid">'+(list.length?list.slice(0,Math.max(n+6,12)).map(function(x,i){return card(x, i<n?'추천 '+(i+1):'');}).join(''):'<div class="empty">맞는 액상이 없어요. 직원에게 물어봐 주세요.</div>')+'</section>'+
+    '</section>'+filterBar(P)+'<section class="grid">'+(shown.length?shown.map(function(x){var r=rec.indexOf(x.id); return card(x, r>=0?'추천 '+(r+1):'');}).join(''):'<div class="empty">맞는 액상이 없어요. 직원에게 물어봐 주세요.</div>')+'</section>'+
     '<div class="acts"><button data-act="back">다른 패키지</button><button class="main" data-act="mpcall">이 패키지로 할게요</button></div></div>';
 }
 
@@ -1170,6 +1195,7 @@ document.getElementById('app').addEventListener('click',function(e){
   if (a==='mtl' || a==='dl') { state.kind=a; return on('mtl'); }
   if (a==='m-self') { state.flavor=null; state.cool=null; if (state.kind!=='dl') { state.mapf=''; return on('mtl-map'); } return on('mtl-flavor'); }
   if (a==='mapf') { state.mapf=b.dataset.v; return render(); }
+  if (a==='fg' || a==='fs') { state[a]=b.dataset.v; var sr=document.querySelector('.frow.ser'); state.serx=sr?sr.scrollLeft:0; render(); var s2=document.querySelector('.frow.ser'); if(s2) s2.scrollLeft=a==='fs'?state.serx:0; return; }
   if (a==='devcat') { state.devcat=b.dataset.v; return render(); }
   if (a==='lab') { state.mix=[]; return go('mix'); }
   if (a==='labrm') { state.mix=(state.mix||[]).filter(function(k){return k!==b.dataset.k}); return labPaint(false); }
