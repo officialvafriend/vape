@@ -2191,5 +2191,21 @@ if (ORDER_CODE) loadOrder();
 // 오프라인 저장 + 앱 설치 (sw-b.js)
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw-b.js").catch(() => {});
 </script>
+<script>/* 11/17 시안: 담기 누르면 사진이 장바구니로 쏙 */
+(() => { const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  document.addEventListener("click", (e) => { const b = e.target.closest(".add"); if (!b || still) return;
+    const card = b.closest(".sr, .it, .card, [data-lid], div"), img = card && card.querySelector("img");
+    const to = document.querySelector(".cart .show") || document.querySelector(".cart"); if (!to) return;
+    const a = (img || b).getBoundingClientRect(), z = to.getBoundingClientRect();
+    const g = document.createElement(img ? "img" : "div");
+    if (img) g.src = img.currentSrc || img.src; else g.textContent = "+";
+    const sz = Math.min(96, Math.max(48, a.width));
+    g.style.cssText = `position:fixed;left:${a.left + a.width / 2 - sz / 2}px;top:${a.top + a.height / 2 - sz / 2}px;width:${sz}px;height:${sz}px;object-fit:contain;border-radius:16px;background:#fff;box-shadow:0 8px 20px rgba(0,0,0,.25);z-index:999;pointer-events:none;will-change:transform,opacity`;
+    document.body.append(g);
+    const dx = z.left + z.width / 2 - (a.left + a.width / 2), dy = z.top + z.height / 2 - (a.top + a.height / 2);
+    const fl = g.animate([{ transform: "translate(0,0) scale(1)", opacity: 1 }, { transform: `translate(${dx * .5}px,${dy * .5 - 80}px) scale(.7)`, opacity: 1, offset: .5 }, { transform: `translate(${dx}px,${dy}px) scale(.18)`, opacity: .3 }], { duration: 520, easing: "cubic-bezier(.5,0,.75,0)" });
+    fl.onfinish = () => { g.remove(); to.animate([{ transform: "scale(1)" }, { transform: "scale(1.12)" }, { transform: "scale(1)" }], { duration: 260, easing: "cubic-bezier(.2,.8,.2,1)" }); };
+  }, true);
+})();</script>
 </body>
 </html>
