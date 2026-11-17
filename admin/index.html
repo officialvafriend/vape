@@ -2820,14 +2820,18 @@ ${live() ? "" : `<div class="mstabs">${tabs.map(([k, n, c, cl]) => `<button clas
   const onOk = () => ON.st === "ok" || (ON.st === "load" && ON.t > 0);
   let ownH = false; const fullH = () => { ownH = true; try { render(); } finally { ownH = false; } };
   async function onLoad(force) {
-    if (ON.st === "load") return; if (!force && ON.tt && Date.now() - ON.tt < 5 * 60e3) return; /* 받았든 거절됐든 5분 안에는 다시 안 물음 */
+    if (ON.st === "load") return; if (!force && ON.tt && Date.now() - ON.tt < (ON.st === "ok" ? 50e3 : 5 * 60e3)) return; /* 잘 받는 동안은 1분마다, 거절됐으면 5분 안에는 다시 안 물음 */
     if (!window.admLive || !window.admLive()) { ON.st = "nolive"; if (ON.tries++ < 5) setTimeout(() => { if (tab === "home" && HM.v === "online") onLoad(true); }, 1500); return; }
     ON.st = "load"; ON.tries = 0;
     try { const o = await window.admCall("adm_online_get", {}); if (!o.ok) ON.st = o.why === "who" ? "who" : "nokey"; else { ON.d = o.sales; ON.at = o.at || ""; ON.t = Date.now(); ON.st = "ok"; } } catch (e) { ON.st = ON.t ? "ok" : "err"; }
     ON.tt = Date.now();
     if (tab !== "home" || HM.v !== "online") return;
-    if ($("#hmboard")) { const s = $("#hmsales"); if (s) s.innerHTML = salesHtml(); } else fullH();
+    /* 화면 짜임이 그대로면 매출 칸만 바꾼다(보드와 스크롤을 건드리지 않게). 처음 받았거나 거절로 바뀌면 통째로 다시 그림 */
+    const s = $("#hmsales"), bd = $("#hmboard");
+    if (ON.st === "ok" && ((s && s.dataset.ok === "1") || (!s && bd))) { if (s) s.innerHTML = salesHtml(); } else fullH();
   }
+  /* 1분마다 새 숫자를 받는다(온라인 홈이 보일 때만). 이 PC가 1분마다 창고에 올려 둔 것을 받아 오는 것이다 */
+  setInterval(() => { if (D && tab === "home" && HM.v === "online" && document.visibilityState === "visible" && ON.st === "ok") onLoad(); }, 60e3);
   function salesHtml() {
     const note = (t, btn) => `<div class="hmex">${t}${btn ? ' <button class="hmre" data-hm="onre">다시 받기</button>' : ""}</div>`;
     if (ON.st === "nolive" || ON.st === "idle") return note("메신저 탭에서 메신저를 켜고 이름을 고르면 여기에 액상덕후 매출이 보여요.");
@@ -2838,7 +2842,8 @@ ${live() ? "" : `<div class="mstabs">${tabs.map(([k, n, c, cl]) => `<button clas
     const now = new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10), day = d.today === now ? "오늘" : `${+String(d.today).slice(5, 7)}/${+String(d.today).slice(8)}`, wpPct = mAll ? Math.round(((+wp.month || 0) / mAll) * 100) : 100;
     const iwL = (v, u) => (hasIw ? `<b>${v}${u}</b>` : "<b>못 받음</b>"), cmp = +wp.lastMonthToDate ? Math.round((((+wp.month || 0) - wp.lastMonthToDate) / wp.lastMonthToDate) * 1000) / 10 : null;
     const rows = (d.days || []).slice(-7).reverse().map((x) => `<tr><td>${+String(x.d).slice(5, 7)}/${+String(x.d).slice(8)}</td><td>${w(x.wp)}<small> ${+x.wpN || 0}건</small></td><td>${hasIw ? `${w(x.iw)}<small> ${+x.iwN || 0}건</small>` : "-"}</td><td><b>${w((+x.wp || 0) + (+x.iw || 0))}</b></td></tr>`).join("");
-    return `${d.today === now ? "" : note(`마지막으로 올라온 자료가 ${day} 것이에요. 오늘 숫자는 아직 안 올라왔어요.`)}
+    const age = Math.max(0, Math.round((Date.now() + 9 * 3600e3 - Date.parse(String(d.made || "").replace(" ", "T") + ":00Z")) / 60e3)), ageT = !isFinite(age) ? esc(d.made || "") + "에" : age <= 1 ? "방금" : age < 90 ? `${age}분 전에` : esc(d.made) + "에";
+    return `${d.today === now ? "" : note(`마지막으로 올라온 자료가 ${day} 것이에요. 오늘 숫자는 아직 안 올라왔어요.`)}${d.today === now && age > 5 ? note(`매출이 ${age}분째 새로 안 올라오고 있어요. 올리는 PC가 꺼져 있는지 봐 주세요.`) : ""}
 <div class="hmk"><div class="c"><span>이번 달 매출</span><b>${man(mAll)}</b><div class="hmsplit"><i style="width:${wpPct}%"></i><i style="width:${100 - wpPct}%"></i></div><p>워드프레스 <b>${w(wp.month)}</b><br>아임웹 ${iwL(w(iw.month), "")}</p></div>
 <div class="c"><span>${day} 매출</span><b>${man(tAll)}</b><p>워드프레스 <b>${w(wp.today)}</b><br>아임웹 ${iwL(w(iw.today), "")}</p></div>
 <div class="c"><span>${day} 주문</span><b>${nAll}<small>건</small></b><p>워드프레스 <b>${+wp.todayN || 0}건</b><br>아임웹 ${iwL(+iw.todayN || 0, "건")}</p></div>
@@ -2846,11 +2851,11 @@ ${live() ? "" : `<div class="mstabs">${tabs.map(([k, n, c, cl]) => `<button clas
 ${cmp == null ? "" : `<div class="hmcmp">워드프레스 이번 달 <b>${w(wp.month)}</b>, 지난달 같은 날까지 <b>${w(wp.lastMonthToDate)}</b> <i class="${cmp >= 0 ? "up" : "dn"}">${cmp >= 0 ? "+" : ""}${cmp}%</i></div>`}
 <div class="hmh">최근 7일 <small>액상덕후, 원</small></div>
 <table class="hmtbl"><thead><tr><th>날짜</th><th>워드프레스</th><th>아임웹</th><th>합계</th></tr></thead><tbody>${rows}</tbody></table>
-<div class="hmstamp">${esc(d.made || ON.at)}에 올라온 자료예요. 워드프레스는 ${esc(d.wpAt || "")} 기준, 입금 확인된 주문만 세요.<button class="hmre" data-hm="onre">다시 받기</button></div>`;
+<div class="hmstamp">${ageT} 올라온 자료예요. 1분마다 새로 받아요. 워드프레스는 입금 확인된 주문만 세요.<button class="hmre" data-hm="onre">다시 받기</button></div>`;
   }
   function onlineHtml() {
     onLoad();
-    const ok = onOk(), sales = `<div id="hmsales">${salesHtml()}</div>`;
+    const ok = onOk(), sales = `<div id="hmsales" data-ok="${ok ? 1 : 0}">${salesHtml()}</div>`;
     const board = ok ? `<div class="hmh hmbh">온라인팀 보드 <small><a href="../../online-team/" target="_blank" rel="noopener">새 창으로 열기</a></small></div><iframe id="hmboard" class="hmboard" src="../../online-team/" title="온라인팀 보드"></iframe>` : "";
     if (isPC() || !ok) return sales + board;
     return `<div class="hmseg hmon" role="tablist"><button class="${ON.v === "sales" ? "on" : ""}" data-hm="onsales">매출</button><button class="${ON.v === "board" ? "on" : ""}" data-hm="onboard">온라인팀 보드</button></div>${ON.v === "board" ? board : sales}`;
