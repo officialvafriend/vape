@@ -470,6 +470,13 @@ body.land .cartp .ftc{grid-column:2;grid-row:3;display:flex}
 body.land .cartdock{top:16px;bottom:84px}
 body.land .cartp .save .pct{display:none}body.land .cartp .save .big{font-size:26px;white-space:nowrap}
 .allban{grid-column:1/-1}
+.mfind{margin-top:22px;width:100%;display:flex;align-items:center;gap:14px;padding:18px 20px;border:0;border-radius:24px;background:#FFE14D;color:#191f28;text-align:left;box-shadow:0 6px 18px rgba(0,0,0,.18);animation:wig 3.4s ease-in-out infinite}
+.mfind .em{font-size:40px}.mfind>span:nth-child(2){flex:1;display:flex;flex-direction:column;gap:3px;min-width:0}
+.mfind b{font-family:var(--jal);font-weight:normal;font-size:24px}.mfind small{font-size:16px;color:#5c4400}.mfind small b{font-size:16px;color:#e5313b}
+.mfind i{font-style:normal;font-size:32px}
+.mfind.on{animation:none;background:#fff}.mfind.on b{color:var(--deep)}
+.mfind.on button{flex:none;height:46px;padding:0 14px;border:0;border-radius:12px;background:var(--tint);color:var(--deep);font-family:var(--jal);font-size:16px}
+body.land .mfind{margin-top:16px;padding:12px 16px}body.land .mfind b{font-size:20px}body.land .mfind small{font-size:14px}body.land .mfind .em{font-size:32px}
 .mchip{width:100%;padding:8px 10px;border-radius:14px;background:#FFE14D;color:#191f28;font-size:15px;text-align:center;margin-bottom:6px}.mchip b{font-family:var(--jal);font-weight:normal}
 .sboard{display:grid;grid-template-columns:repeat(10,1fr);gap:4px;margin:8px 0}
 .sboard .st{aspect-ratio:1/1;border-radius:50%;border:2px dashed #d1d6db;display:flex;align-items:center;justify-content:center;font-size:12px;color:#b0b8c1;font-weight:800}
@@ -1126,7 +1133,7 @@ function memPane(kind){
       '<button class="ck'+(m.mk?' on':'')+'" data-act="mck" data-k="mk"><i></i>(선택) 쿠폰 문자 받을래요 🎟️</button>'+
     '</section><button class="cta" data-act="mem-send">회원 등록하기</button></div>';
   return '<div class="pane res">'+topBar('회원등록',2,3)+
-    '<section class="q" style="margin-top:36px"><h1>가입하신 번호를<br>알려 주세요 📱</h1><p>직원이 포스에서 찾아서 적립해 드려요.</p></section>'+
+    '<section class="q" style="margin-top:36px"><h1>회원 조회 👤</h1><p>휴대폰 번호를 넣으면 도장 지도가 바로 나와요.</p></section>'+
     '<section class="form"><label>휴대폰 번호</label><input id="mPhone" class="'+bad('phone')+'" type="tel" inputmode="numeric" maxlength="11" placeholder="숫자만 넣어 주세요" value="'+esc(m.phone)+'"></section>'+
     '<button class="cta" data-act="mem-send">확인</button></div>';
 }
@@ -1823,6 +1830,11 @@ function stampBoom(){ var nw=state.stNew; if(!nw) return; setTimeout(function(){
   REWARDS.forEach(function(r){ if (r[0]>nw.from && r[0]<=nw.to){ var el=document.querySelectorAll('.smap .sp')[ (function(i){ var row=Math.floor((i-1)/10), c=(i-1)%10; return row*10+c; })(r[0]) ];
     if(!el) return; setTimeout(function(){ ['🎉','✨','🎁','⭐','🎊','💛'].forEach(function(em,k){ var s2=document.createElement('span'); s2.className='boom'; s2.textContent=em; s2.style.left='50%'; var a=k/6*Math.PI*2; s2.style.setProperty('--x',Math.round(Math.cos(a)*70)+'px'); s2.style.setProperty('--y',Math.round(Math.sin(a)*60)+'px'); s2.style.setProperty('--r','20deg'); el.appendChild(s2); setTimeout(function(){s2.remove()},1000); }); toast('🎁 '+r[2]+' 받을 수 있어요!'); }, (r[0]-nw.from)*250+400); } }); }
 function nextReward(n){ var r=REWARDS.filter(function(r){return r[0]>n})[0]; return r?'<b>'+(r[0]-n)+'개</b> 더 모으면 '+r[1]+' '+r[2]+'!':'🎉 모든 보상을 받을 수 있어요!'; }
+/* 첫 화면 맨 위: 회원 조회 (회원이 정해지면 이름과 도장 지도 요약) */
+function memberBox(){ var M0=state.member;
+  if (!M0) return '<button class="mfind" data-act="mem-old"><span class="em">👤</span><span><b>회원 조회하고 시작하기</b><small>휴대폰 번호만 넣으면 도장 지도가 바로 나와요 🟡</small></span><i>›</i></button>';
+  var rec=stampRec(M0.phone)||{stamps:0}, n=rec.stamps||0;
+  return '<div class="mfind on"><span class="em">👤</span><span><b>'+esc(maskName(M0.name||rec.name))+' 님 · 🟡 도장 '+n+'개</b><small>'+nextReward(n)+'</small></span><button data-act="mem-old">바꾸기</button><button data-act="memclr">해제</button></div>'; }
 function memberChip(){ var M0=state.member; if(!M0) return ''; var rec=stampRec(M0.phone)||{stamps:0};
   return '<div class="mchip">👤 <b>'+esc(maskName(M0.name||rec.name))+'</b> 님 · 🟡 도장 <b>'+(rec.stamps||0)+'</b>개</div>'; }
 function stampBottles(){ return cartSum().bottles||0; }
@@ -1854,7 +1866,7 @@ function stampUse(need){ if (!state.stOK) return toast('먼저 직원 비밀번�
 function render(){
   var v=state.view, h='';
   if (v==='home') h = ask({h:'어서 오세요! 👋<br>무엇을 도와드릴까요?', p:'골라 주시면 딱 맞게 안내해 드릴게요.',
-    extra:memberChip()+chars('눌러 봐요 👆')+'<div class="banrow"><button class="memban" data-act="mem"><span class="em">🎁</span><span><b>회원등록하고 적립</b><small>AS 받을 때도 편해요</small></span><i>›</i></button>'+
+    extra:chars('눌러 봐요 👆')+memberBox()+'<div class="banrow"><button class="memban" data-act="mem-new"><span class="em">🎁</span><span><b>처음이면 회원등록</b><small>1분이면 끝 · 도장 바로 시작</small></span><i>›</i></button>'+
       '<button class="memban cheap" data-act="cheap"><span class="em">💸</span><span><b>가장 저렴하게 사는 법</b><small>최대 75,000원 아껴요</small></span><i>›</i></button>'+
       '<button class="memban cheap" data-act="resv"><span class="em">🔔</span><span><b>예약 · 알림받기</b><small>신상품 · 행사 · 한정판 문자</small></span><i>›</i></button>'+
       '<button class="memban cheap memoban" data-act="memo"><span class="em">📝</span><span><b>회원메모</b><small>직원 전용 · 비밀번호</small></span><i>🔒</i></button>'+
@@ -1975,6 +1987,7 @@ document.getElementById('app').addEventListener('click',function(e){
   if (a==='tocart' || a==='cmemo2') { while (state.hist.length && state.hist[state.hist.length-1]!=='cart-staff') state.hist.pop(); state.view=state.hist.pop()||'cart-staff'; if (a==='cmemo2') { var bb=document.createElement('button'); bb.dataset.act='cmemo'; render(); return document.querySelector('[data-act=cmemo]').click(); } return render(); }
   if (a==='mshop') { state.memKind=null; state.hist=[]; state.view='home'; render(); return toast('👤 '+maskName(state.member.name||(stampRec(state.member.phone)||{}).name)+' 님 확인! 이제 골라 담아 주세요'); }
   if (a==='memoff') { state.member=null; return home(); }
+  if (a==='memclr') { state.member=null; M_().phone=''; toast('회원 선택을 풀었어요'); return render(); }
   if (a==='sta') { state.stAdd=Math.max(0,Math.min(10,(state.stAdd==null?stampDefault():state.stAdd)+(+b.dataset.d))); return render(); }
   if (a==='stgo') { stampGo(); return; }
   if (a==='strw') { stampUse(+b.dataset.n); return; }
