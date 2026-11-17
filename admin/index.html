@@ -2289,6 +2289,14 @@ ${miss.length ? `<div class="plnote" style="background:var(--amber-soft);color:v
 .msmore{display:block;margin:0 auto 12px;height:40px;padding:0 16px;border-radius:20px;background:var(--card);font-size:14px;font-weight:700;color:var(--ink2)}.msmore:disabled{opacity:.5}
 .mscomp{position:relative}.msnew{position:absolute;left:50%;top:-48px;transform:translateX(-50%);height:38px;padding:0 16px;border-radius:19px;background:var(--blue);color:#fff;font-size:14px;font-weight:700;box-shadow:0 4px 14px rgba(0,0,0,.18)}.msnew[hidden]{display:none}
 .msmem div{display:flex;align-items:center;gap:10px;min-height:44px;font-size:15px;font-weight:600}.msmem .av{width:32px;height:32px;border-radius:50%;font-size:14px}
+.mstray{display:flex;gap:8px;align-items:center;overflow-x:auto;padding:0 2px}.mstray:not(:empty){padding:2px 2px 8px}
+.mstf{position:relative;flex:none;height:64px;min-width:64px;max-width:150px;border-radius:12px;background:var(--bg);overflow:hidden;display:flex;flex-direction:column;justify-content:center;padding:0 10px}.mstf img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}.mstf span{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:18px}.mstf small{position:relative;font-size:11px;color:var(--sub)}.mstf img+small{position:absolute;left:4px;bottom:3px;color:#fff;text-shadow:0 0 3px #000}
+.mstf button{position:absolute;right:2px;top:2px;width:24px;height:24px;border-radius:50%;background:rgba(0,0,0,.55);color:#fff;font-size:15px;line-height:1}.mstray em{font-style:normal;font-size:13px;font-weight:700;color:var(--blue);flex:none;padding:0 6px}
+.msfiles{display:flex;flex-direction:column;gap:6px;margin:0 0 4px;white-space:normal}.msfiles:last-child{margin:0}
+.msimg{display:block;width:240px;max-width:100%;border-radius:12px;overflow:hidden;background:var(--line2);padding:0}.msimg img{display:block;width:100%;height:100%;object-fit:cover}.msimg img:not([src]){visibility:hidden}
+.msfile{display:block;text-align:left;min-width:180px;max-width:100%;background:var(--bg);color:var(--ink);border-radius:12px;padding:10px 12px}.msg.me .msfile{background:rgba(255,255,255,.94)}.msfile b{display:block;font-size:15px;font-weight:700;word-break:break-all}.msfile small{display:block;font-size:12px;color:var(--sub);margin-top:2px}
+#msview{position:fixed;inset:0;z-index:90;background:rgba(0,0,0,.92);display:flex;flex-direction:column;align-items:center;justify-content:center}#msview[hidden]{display:none}#msview>img{max-width:100%;max-height:calc(100% - 56px);object-fit:contain}
+.msvbar{position:absolute;top:0;left:0;right:0;height:56px;display:flex;align-items:center;gap:8px;padding:0 10px;padding-top:env(safe-area-inset-top);color:#fff}.msvbar span{flex:1;min-width:0;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.msvbar button{height:40px;min-width:44px;padding:0 12px;border-radius:10px;background:rgba(255,255,255,.16);color:#fff;font-size:15px;font-weight:700}
 @media (min-width:900px){
 .ms{display:grid;grid-template-columns:300px minmax(0,1fr) 320px;flex:1;min-height:0;height:100vh}.ms.noside{grid-template-columns:300px minmax(0,1fr)}
 .mslistw{border-right:1px solid var(--line2);background:var(--bg);overflow:auto;padding:22px 14px}
@@ -2306,12 +2314,13 @@ ${miss.length ? `<div class="plnote" style="background:var(--amber-soft);color:v
   const SB = { url: "https://bjjlmnkyhedtutogzliq.supabase.co", key: "sb_publishable_i8rfcm_zAnwV75joN58FCw_8tHgFUKr" };
   const P0 = ["한섭이사", "보혜", "민혁팀장", "동재팀장"];
   /* st: idle 아직 안 물어봄, check 물어보는 중, off 창고에 열쇠가 없음(예시를 보임), who 이름을 골라야 함, load 불러오는 중, ok 진짜, nokey 열쇠가 다름, err 못 닿음 */
-  const LV = { st: "idle", k: "", kFor: null, who: ls.get("vf-msg-who") || "", people: P0, seen: {}, since: 0, timer: 0, busy: false, sending: false, fast: false, found: [], foundQ: "", ft: 0, hidAt: 0 };
+  const LV = { st: "idle", k: "", kFor: null, who: ls.get("vf-msg-who") || "", people: P0, seen: {}, since: 0, timer: 0, busy: false, sending: false, fast: false, found: [], foundQ: "", ft: 0, hidAt: 0, urls: {}, miss: {}, hy: false, up: "" };
+  const EDGE = SB.url + "/functions/v1/adm-file", FMAX = 20 * 1024 * 1024, FN = 5, SIGN = SB.url + "/storage/v1/object/sign/adm-files/";
   const live = () => LV.st === "ok";
   const demo = () => LV.st === "off";
   const me = () => (demo() ? ls.get("vf-pt-me") || "민혁팀장" : LV.who);
   const P = () => (live() ? LV.people : P0);
-  const MS = { room: "", v: "all", side: true, q: null, draft: "", re: "", flash: "", mk: null, nr: [], nrName: "" };
+  const MS = { room: "", v: "all", side: true, q: null, draft: "", re: "", flash: "", mk: null, nr: [], nrName: "", files: [] };
   let ROOMS = [], MSGS = [], DEC = [], seq = 0;
   const addD = (d, n) => new Date(Date.parse(d + "T00:00:00Z") + n * 864e5).toISOString().slice(0, 10);
   const today = () => (live() ? new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10) : D.d);
@@ -2362,6 +2371,8 @@ ${miss.length ? `<div class="plnote" style="background:var(--amber-soft);color:v
     return LV.k;
   }
   const call = async (fn, args) => rpc(fn, { p_k: await mkey(), p_who: LV.who, ...args });
+  /* 온라인 홈 같은 다른 화면이 같은 열쇠와 이름으로 창고를 부를 때 쓰는 창구 */
+  window.admCall = (fn, a) => call(fn, a || {}); window.admLive = () => live(); window.admWho = () => LV.who;
   const mapM = (x) => ({ id: "m" + Number(x.id), n: Number(x.id), room: "r" + Number(x.room), who: String(x.who), at: String(x.at), txt: String(x.txt), re: x.re ? "m" + Number(x.re) : "", card: x.card && typeof x.card === "object" ? x.card : null });
   function addMsgs(list) { const have = new Set(MSGS.map((m) => m.id)); let add = 0; for (const x of list) { const m = mapM(x); if (!have.has(m.id)) { MSGS.push(m); have.add(m.id); add++; } } if (add) MSGS.sort((a, b) => a.n - b.n); return add; }
   function take(s) {
@@ -2432,7 +2443,7 @@ ${miss.length ? `<div class="plnote" style="background:var(--amber-soft);color:v
       readAll(r.id, true);
       b.innerHTML = bodyHtml(r); b.scrollTop = bottom ? b.scrollHeight : top;
       const p = $("#mspinw"); if (p) p.innerHTML = pinHtml(r);
-      const nb = $("#msnew"); if (nb && add && !bottom) nb.hidden = false;
+      const nb = $("#msnew"); if (nb && add && !bottom) nb.hidden = false; hydrate();
     }
     if (isPC() && MS.q === null) { const l = $(".mslistw"); if (l) l.innerHTML = listHtml(); const s = $(".msside"); if (s) s.outerHTML = sideHtml(); }
     updBadge();
@@ -2462,6 +2473,79 @@ ${miss.length ? `<div class="plnote" style="background:var(--amber-soft);color:v
     tab = "msg"; MS.room = m.room; MS.q = null; MS.v = "all"; MS.flash = m.id; readAll(m.room); full();
   }
 
+  /* ── 첨부파일 ── 파일은 비공개 저장소에 들어가고, 서버 함수가 열쇠와 방을 확인한 뒤 한 시간짜리 주소를 내준다 */
+  const fsz = (n) => (n >= 1048576 ? (n / 1048576).toFixed(1) + "MB" : Math.max(1, Math.round(n / 1024)) + "KB");
+  const edge = async (b) => (await fetch(EDGE, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ k: await mkey(), who: LV.who, ...b }) })).json();
+  const fresh = (p) => { const c = LV.urls[p]; return c && Date.now() - c.at < 50 * 60e3 ? c.u : ""; };
+  async function prep(f) { /* 사진은 긴 쪽 1600 으로 줄여 JPEG 로. 못 읽는 그림은 그냥 파일로 보냄 */
+    const o = { name: String(f.name || "파일").slice(0, 80), mime: f.type || "application/octet-stream", blob: f, size: f.size, w: 0, h: 0, img: false, url: "", meta: null };
+    if (/^image\/(jpeg|png|webp|heic|heif|bmp|gif)$/.test(o.mime)) {
+      try {
+        const bm = await createImageBitmap(f, { imageOrientation: "from-image" }), k = Math.min(1, 1600 / Math.max(bm.width, bm.height));
+        o.w = Math.round(bm.width * k); o.h = Math.round(bm.height * k); o.img = o.w > 0 && o.h > 0;
+        if (o.img && o.mime !== "image/gif" && (k < 1 || f.size > 700 * 1024 || !/jpeg|png|webp/.test(o.mime))) {
+          const c = document.createElement("canvas"); c.width = o.w; c.height = o.h; const x = c.getContext("2d"); x.fillStyle = "#fff"; x.fillRect(0, 0, o.w, o.h); x.drawImage(bm, 0, 0, o.w, o.h);
+          const b = await new Promise((r) => c.toBlob(r, "image/jpeg", 0.85));
+          if (b) { o.blob = b; o.size = b.size; o.mime = "image/jpeg"; o.name = o.name.replace(/\.[A-Za-z0-9]+$/, "") + ".jpg"; }
+        }
+        if (bm.close) bm.close();
+      } catch { o.img = false; o.w = o.h = 0; }
+    }
+    if (o.img) o.url = URL.createObjectURL(o.blob);
+    return o;
+  }
+  function trayHtml() { if (!live() || (!MS.files.length && !LV.up)) return ""; return MS.files.map((f, i) => `<div class="mstf">${f.img ? `<img src="${f.url}" alt="">` : `<span>${esc(f.name)}</span>`}<small>${fsz(f.size)}</small><button data-ms="fx" data-i="${i}" aria-label="빼기">×</button></div>`).join("") + (LV.up ? `<em>${esc(LV.up)}</em>` : ""); }
+  const trayUpd = () => { const t = $("#mstray"); if (t) t.innerHTML = trayHtml(); };
+  function clearFiles() { for (const f of MS.files) if (f.url && !Object.values(LV.urls).some((c) => c.u === f.url)) URL.revokeObjectURL(f.url); MS.files = []; LV.up = ""; trayUpd(); }
+  async function addFiles(list) {
+    if (!live() || !MS.room || LV.sending) return; const L = [...(list || [])]; if (!L.length) return;
+    for (const f of L) {
+      if (MS.files.length >= FN) { toast(`한 번에 ${FN}개까지 보낼 수 있어요`); break; }
+      if (!f.size) continue;
+      const o = await prep(f);
+      if (o.size > FMAX) { toast(`${o.name} 은 20MB가 넘어서 못 보내요`, 4000); continue; }
+      MS.files.push(o); trayUpd();
+    }
+    $("#msin")?.focus();
+  }
+  async function upload(r, f) { /* 한 번 올린 파일은 다시 안 올림(보내기가 실패해 다시 누를 때) */
+    if (f.meta) return f.meta;
+    const u = await edge({ room: r.n, type: "up", size: f.size });
+    if (!u.ok || !String(u.url || "").startsWith(SB.url + "/storage/v1/")) throw new Error(u.error || "up");
+    const put = await fetch(u.url, { method: "PUT", headers: { "Content-Type": f.mime }, body: f.blob });
+    if (!put.ok) throw new Error("put");
+    f.meta = { p: u.path, n: f.name, m: f.mime, s: f.size, ...(f.img ? { w: f.w, h: f.h } : {}) };
+    if (f.img) LV.urls[u.path] = { u: f.url, at: Date.now() }; /* 내가 보낸 사진은 바로 보이게 */
+    return f.meta;
+  }
+  function filesHtml(m) {
+    const F = Array.isArray(m.card.files) ? m.card.files.slice(0, FN) : [];
+    return `<span class="msfiles">${F.map((f, i) => { const p = String(f.p || ""); if (+f.w > 0 && +f.h > 0) { const src = fresh(p); return `<button class="msimg" data-ms="img" data-id="${m.id}" data-i="${i}" style="aspect-ratio:${+f.w}/${+f.h}" aria-label="사진 크게 보기"><img data-fp="${esc(p)}"${src ? ` src="${esc(src)}"` : ""} alt="${esc(f.n || "사진")}" draggable="false"></button>`; } return `<button class="msfile" data-ms="file" data-id="${m.id}" data-i="${i}"><b>${esc(f.n || "파일")}</b><small>${fsz(+f.s || 0)}, 눌러서 받기</small></button>`; }).join("")}</span>`;
+  }
+  async function getUrls(rn, paths) { /* 서버 함수에 볼 주소를 40개씩 물어 캐시에 넣음 */
+    for (let i = 0; i < paths.length; i += 40) {
+      const part = paths.slice(i, i + 40), o = await edge({ room: rn, type: "get", paths: part });
+      if (!o.ok) throw new Error(o.error || "get");
+      for (const p of part) { const u = String((o.urls || {})[p] || ""); if (u.startsWith(SIGN)) LV.urls[p] = { u, at: Date.now() }; else LV.miss[p] = true; }
+    }
+  }
+  async function hydrate() { /* 화면에 나온 사진 가운데 주소가 없는 것만 받아 옴 */
+    if (!live() || LV.hy) return; const need = {};
+    for (const im of document.querySelectorAll("img[data-fp]:not([src])")) { const p = im.dataset.fp, u = fresh(p); if (u) { im.src = u; continue; } if (LV.miss[p]) continue; const rn = +((p.match(/^r(\d+)\//) || [])[1] || 0); if (rn) (need[rn] ||= new Set()).add(p); }
+    if (!Object.keys(need).length) return; LV.hy = true;
+    try { for (const rn in need) await getUrls(+rn, [...need[rn]]); for (const im of document.querySelectorAll("img[data-fp]:not([src])")) { const u = fresh(im.dataset.fp); if (u) im.src = u; } } catch { /* 다음에 다시 */ } finally { LV.hy = false; }
+  }
+  async function urlOf(m, fl) { const p = String(fl.p || ""); if (!fresh(p)) { delete LV.miss[p]; await getUrls(R(m.room).n, [p]); } return fresh(p); }
+  function view(m, i) {
+    const fl = (m.card.files || [])[i]; if (!fl) return; let v = $("#msview"); if (!v) { v = document.createElement("div"); v.id = "msview"; document.body.appendChild(v); }
+    v.innerHTML = `<div class="msvbar"><span>${esc(fl.n || "사진")}</span><button data-ms="file" data-id="${m.id}" data-i="${i}">받기</button><button data-ms="viewx" aria-label="닫기">×</button></div><img alt="${esc(fl.n || "사진")}">`; v.hidden = false;
+    urlOf(m, fl).then((u) => { const im = v.querySelector("img"); if (im && u) im.src = u; else toast("사진을 못 불러왔어요"); }).catch(() => toast("사진을 못 불러왔어요"));
+  }
+  async function download(m, i) {
+    const fl = (m.card.files || [])[i]; if (!fl) return;
+    try { const u = await urlOf(m, fl); if (!u) throw 0; const a = document.createElement("a"), nm = String(fl.n || "파일"); if (u.startsWith("blob:")) { a.href = u; a.download = nm; } else a.href = u + "&download=" + encodeURIComponent(nm); a.rel = "noopener"; document.body.appendChild(a); a.click(); a.remove(); } catch { toast("파일을 못 받았어요. 다시 눌러 주세요"); }
+  }
+
   /* ── 화면 ── */
   function aiHtml(m, wide) {
     const a = m.ai; if (!a || a.st === "drop") return "";
@@ -2470,8 +2554,8 @@ ${miss.length ? `<div class="plnote" style="background:var(--amber-soft);color:v
   }
   function bubble(m, noai) {
     const I = m.who === me(), r = R(m.room), src = m.re && MSGS.find((x) => x.id === m.re), left = r.mem.filter((n) => n !== m.who && !seenBy(m, n)).length;
-    const txt = esc(m.txt).replace(new RegExp("@(" + P().join("|") + ")", "g"), "<b>@$1</b>");
-    const card = m.card ? `<span class="mscard" role="group"><small>${esc(m.card.kind || "")}</small><b>${esc(m.card.title || "")}</b><span>${esc(m.card.sub || "")}</span>${m.card.tag ? `<i>${esc(m.card.tag)}</i>` : ""}</span>` : "";
+    const txt = m.card && m.card.kind === "file" && m.card.auto ? "" : esc(m.txt).replace(new RegExp("@(" + P().join("|") + ")", "g"), "<b>@$1</b>");
+    const card = m.card && m.card.kind === "file" ? filesHtml(m) : m.card ? `<span class="mscard" role="group"><small>${esc(m.card.kind || "")}</small><b>${esc(m.card.title || "")}</b><span>${esc(m.card.sub || "")}</span>${m.card.tag ? `<i>${esc(m.card.tag)}</i>` : ""}</span>` : "";
     return `<div class="msg ${I ? "me" : ""} ${MS.flash === m.id ? "flash" : ""}" data-mid="${m.id}">${I ? "" : `<small class="nm">${esc(m.who)}</small>`}<div class="bw"><div class="bb" data-msb="${m.id}">${src ? `<span class="msq">${esc(src.who)}: ${esc(src.txt)}</span>` : ""}${card}${txt}</div><div class="mm"><button class="mo" data-ms="act" data-id="${m.id}" aria-label="이 글로 할 일">⋯</button>${I && left ? `<span class="u">안 읽음 ${left}</span>` : ""}<span>${hm(m)}</span></div></div>${noai || live() ? "" : aiHtml(m)}</div>`;
   }
   function gateHtml() {
@@ -2506,8 +2590,8 @@ ${imp.length ? `<div class="msgrp">중요</div><div class="msrows">${imp.map(row
     const r = R(MS.room), dn = drafts(r.id).filter((m) => m.ai.st === "draft").length, dc = DEC.filter((x) => x.room === r.id).length, re = MS.re && MSGS.find((m) => m.id === MS.re);
     const tabs = [["all", "전체", 0, ""], ["chat", "대화", 0, ""], ["todo", "할 일", dn, "sideonly"], ["dec", "정한 것", dc, "sideonly"]];
     if (live() || (isPC() && MS.side && (MS.v === "todo" || MS.v === "dec"))) MS.v = "all";
-    const comp = MS.v === "todo" || MS.v === "dec" ? "" : `<div class="mscomp"><button class="msnew" id="msnew" data-ms="bottom" hidden>새 글 보기</button>${re ? `<div class="msre"><span><b>${esc(re.who)}</b>에게 답장: ${esc(re.txt)}</span><button class="msic" data-ms="reoff" aria-label="답장 취소" style="width:32px;height:32px">×</button></div>` : ""}<div class="msrw">${live() ? "" : `<button class="msic" data-ms="plus" aria-label="사진, 파일">${IC.plus}</button>`}<input class="msin" id="msin" placeholder="메시지" autocomplete="off" maxlength="1000"><button class="mssend" data-ms="send" aria-label="보내기">${IC.send}</button></div></div>`;
-    requestAnimationFrame(() => { const b = $("#msbody"), i = $("#msin"); if (i) i.value = MS.draft; if (!b) return; const f = MS.flash && b.querySelector(`[data-mid="${MS.flash}"]`); if (f) { f.scrollIntoView({ block: "center" }); const k = MS.flash; setTimeout(() => { if (MS.flash === k) { MS.flash = ""; document.querySelector(`[data-mid="${k}"]`)?.classList.remove("flash"); } }, 1800); } else b.scrollTop = b.scrollHeight; });
+    const comp = MS.v === "todo" || MS.v === "dec" ? "" : `<div class="mscomp"><button class="msnew" id="msnew" data-ms="bottom" hidden>새 글 보기</button>${re ? `<div class="msre"><span><b>${esc(re.who)}</b>에게 답장: ${esc(re.txt)}</span><button class="msic" data-ms="reoff" aria-label="답장 취소" style="width:32px;height:32px">×</button></div>` : ""}<div class="mstray" id="mstray">${trayHtml()}</div><div class="msrw"><button class="msic" data-ms="plus" aria-label="사진, 파일 붙이기">${IC.plus}</button>${live() ? '<input type="file" id="msfile" multiple hidden>' : ""}<input class="msin" id="msin" placeholder="메시지" autocomplete="off" maxlength="1000"><button class="mssend" data-ms="send" aria-label="보내기">${IC.send}</button></div></div>`;
+    requestAnimationFrame(() => { const b = $("#msbody"), i = $("#msin"); if (i) i.value = MS.draft; if (!b) return; const f = MS.flash && b.querySelector(`[data-mid="${MS.flash}"]`); if (f) { f.scrollIntoView({ block: "center" }); const k = MS.flash; setTimeout(() => { if (MS.flash === k) { MS.flash = ""; document.querySelector(`[data-mid="${k}"]`)?.classList.remove("flash"); } }, 1800); } else b.scrollTop = b.scrollHeight; hydrate(); });
     return `<section class="msroom"><div class="msrh"><button class="msic msback" data-ms="back" aria-label="방 목록으로">${IC.back}</button><b>${esc(rname(r))}</b><small>${r.mem.length}명</small><span class="sp"></span><button class="msic" data-ms="search" aria-label="찾기">${IC.search}</button>${isPC() ? `<button class="msic" data-ms="side" aria-label="정리 칸 ${MS.side ? "접기" : "펴기"}">${IC.side}</button>` : ""}</div>
 ${live() ? "" : `<div class="mstabs">${tabs.map(([k, n, c, cl]) => `<button class="${MS.v === k ? "on" : ""} ${isPC() && MS.side ? cl : ""}" data-ms="tabv" data-v="${k}">${n}${c ? `<i>${c}</i>` : ""}</button>`).join("")}</div>`}
 <div id="mspinw">${pinHtml(r)}</div><div class="msbody" id="msbody">${bodyHtml(r)}</div>${comp}</section>`;
@@ -2556,23 +2640,39 @@ ${live() ? "" : `<div class="mstabs">${tabs.map(([k, n, c, cl]) => `<button clas
     openSheet(`${nodock}<h3>새 방 만들기</h3><div class="caption">같이 얘기할 사람을 골라 주세요.</div><div class="ptpick" style="margin-top:12px">${others.map((n) => `<button class="chip ${MS.nr.includes(n) ? "on" : ""}" data-ms="nrp" data-n="${esc(n)}">${esc(n)}</button>`).join("")}</div><div class="ptlab">방 이름 (안 적어도 돼요)</div><input class="ptin" id="msNrN" maxlength="20" placeholder="예: 회의 준비" value="${esc(MS.nrName)}"><div class="btns"><button class="btn gray" data-x style="flex:0 0 96px">닫기</button><button class="btn" data-ms="nrgo">만들기</button></div>`);
   }
   async function send() {
-    const i = $("#msin"), txt = (i ? i.value : MS.draft).trim(); if (!txt) return;
+    const i = $("#msin"), txt = (i ? i.value : MS.draft).trim(); if (!txt && !(live() && MS.files.length)) return;
     if (!live()) { const t = new Date(Date.now() + 9 * 3600e3).toISOString().slice(11, 16); MSGS.push({ id: "g" + ++seq, room: MS.room, who: me(), at: D.d + " " + t, txt, seen: [me()], re: MS.re || "" }); MS.draft = ""; MS.re = ""; if (MS.v !== "chat") MS.v = "all"; rr(); return requestAnimationFrame(() => $("#msin")?.focus()); }
     if (LV.sending) return; LV.sending = true;
-    const room = MS.room, re = MS.re, r = R(room);
+    const room = MS.room, re = MS.re, r = R(room), files = MS.files.slice();
     MS.draft = ""; MS.re = ""; if (i) i.value = ""; document.querySelector(".msre")?.remove();
     try {
-      const o = await call("adm_send", { p_room: r.n, p_body: txt, p_re: re ? +re.slice(1) : null, p_card: null });
+      let card = null, body = txt;
+      if (files.length) {
+        const metas = [];
+        for (let j = 0; j < files.length; j++) { LV.up = `올리는 중 ${j + 1}/${files.length}`; trayUpd(); metas.push(await upload(r, files[j])); }
+        const imgs = metas.filter((x) => x.w).length;
+        card = { kind: "file", files: metas };
+        if (!txt) { card.auto = true; body = imgs === metas.length ? `사진 ${imgs}장` : metas.length === 1 ? `파일: ${metas[0].n}` : `파일 ${metas.length}개`; }
+      }
+      const o = await call("adm_send", { p_room: r.n, p_body: body, p_re: re ? +re.slice(1) : null, p_card: card });
       if (!o.ok) throw new Error(o.why || "");
+      if (files.length) clearFiles();
       addMsgs([o.msg]); LV.since = Math.max(LV.since, o.msg.id); (LV.seen[room] ||= {})[LV.who] = Math.max((LV.seen[room] || {})[LV.who] || 0, o.msg.id);
       if (MS.room === room) { soft(0); const b = $("#msbody"); if (b) b.scrollTop = b.scrollHeight; const nb = $("#msnew"); if (nb) nb.hidden = true; }
       sched(1500);
     } catch (e) {
       MS.re = re; if (MS.room === room) { const j = $("#msin"); if (j && !j.value) { j.value = txt; MS.draft = txt; } else if (!j) MS.draft = txt; }
-      toast(e && e.message === "len" ? "글이 너무 길어요. 나눠서 보내 주세요" : "못 보냈어요. 다시 눌러 주세요"); if (re) rr();
+      LV.up = ""; trayUpd();
+      toast(e && e.message === "len" ? "글이 너무 길어요. 나눠서 보내 주세요" : e && e.message === "size" ? "파일이 너무 커요" : files.length ? "못 보냈어요. 파일은 그대로 있으니 다시 눌러 주세요" : "못 보냈어요. 다시 눌러 주세요"); if (re) rr();
     } finally { LV.sending = false; }
   }
   document.addEventListener("input", (e) => { if (e.target.id === "msin") MS.draft = e.target.value; if (e.target.id === "msq") { MS.q = e.target.value; const r = $("#msres"); if (r) r.innerHTML = resHtml(); findMore(); } if (e.target.id === "msNrN") MS.nrName = e.target.value; });
+  document.addEventListener("change", (e) => { if (e.target.id === "msfile") { const L = [...e.target.files]; e.target.value = ""; addFiles(L); } });
+  document.addEventListener("paste", (e) => { if (e.target.id !== "msin" || !live()) return; const L = [...((e.clipboardData && e.clipboardData.files) || [])]; if (L.length) { e.preventDefault(); addFiles(L); } });
+  document.addEventListener("dragover", (e) => { if (live() && e.target.closest && e.target.closest(".msroom") && e.dataTransfer && [...e.dataTransfer.types].includes("Files")) e.preventDefault(); });
+  document.addEventListener("drop", (e) => { if (!live() || !e.target.closest || !e.target.closest(".msroom") || !e.dataTransfer || !e.dataTransfer.files.length) return; e.preventDefault(); addFiles(e.dataTransfer.files); });
+  document.addEventListener("click", (e) => { const v = $("#msview"); if (v && !v.hidden && (e.target === v || e.target.tagName === "IMG" && e.target.parentElement === v)) { v.hidden = true; v.innerHTML = ""; } });
+  document.addEventListener("keydown", (e) => { const v = $("#msview"); if (e.key === "Escape" && v && !v.hidden) { v.hidden = true; v.innerHTML = ""; } });
   document.addEventListener("keydown", (e) => { if (e.target.id === "msin" && e.key === "Enter" && !e.isComposing && e.keyCode !== 229) { e.preventDefault(); send(); } });
   /* 길게 누르기(폰), 오른쪽 단추(PC) */
   let lp = 0, lpAt = 0;
@@ -2587,8 +2687,8 @@ ${live() ? "" : `<div class="mstabs">${tabs.map(([k, n, c, cl]) => `<button clas
       try { const o = await rpc("adm_setup", { p_k: await mkey() }); if (o === "no") { LV.st = "nokey"; return rr(); } if (o !== "new" && o !== "ok") return toast("메신저를 못 켰어요. 다시 눌러 주세요"); MS.room = ""; MS.q = null; if (!LV.who) { LV.st = "who"; return rr(); } return load(); } catch { return toast("메신저 창고에 못 닿았어요. 다시 눌러 주세요"); }
     }
     if (a === "retry") { LV.st = "idle"; boot(); return rr(); }
-    if (a === "room") { MS.room = id; MS.v = "all"; MS.re = ""; MS.draft = ""; readAll(id); return rr(); }
-    if (a === "back") { MS.room = ""; return rr(); }
+    if (a === "room") { if (id !== MS.room) clearFiles(); MS.room = id; MS.v = "all"; MS.re = ""; MS.draft = ""; readAll(id); return rr(); }
+    if (a === "back") { clearFiles(); MS.room = ""; return rr(); }
     if (a === "tabv") { MS.v = t.dataset.v; return rr(); }
     if (a === "side") { MS.side = !MS.side; return rr(); }
     if (a === "search") { MS.q = ""; return rr(); }
@@ -2605,7 +2705,11 @@ ${live() ? "" : `<div class="mstabs">${tabs.map(([k, n, c, cl]) => `<button clas
     if (a === "miss") { const k = t.dataset.k, L = mine(); const isAt = (y) => called(y) && y.who !== me() && !seenBy(y, me()); const r = k === "un" ? L.find((x) => unread(x.id)) : k === "at" ? L.find((x) => rmsgs(x.id).some(isAt)) : L.find((x) => drafts(x.id).some((y) => y.ai.st === "draft")); if (!r) return toast(k === "un" ? "안 읽은 글이 없어요" : k === "at" ? "나를 부른 글이 없어요" : "할 일 초안이 없어요"); MS.room = r.id; MS.v = k === "dr" && !(isPC() && MS.side) ? "todo" : "all"; if (k === "at") { const y = rmsgs(r.id).find(isAt); MS.flash = y ? y.id : ""; } readAll(r.id); return rr(); }
     if (a === "jump") { const x = anyMsg(id); if (x) return openMsg(x); return; }
     if (a === "send") return send();
-    if (a === "plus") return toast("사진, 파일 붙이기는 진짜를 만들 때 넣어요");
+    if (a === "plus") { if (!live()) return toast("메신저를 켜면 사진과 파일을 붙일 수 있어요"); return $("#msfile")?.click(); }
+    if (a === "fx") { const f = MS.files[+t.dataset.i]; if (f && !LV.sending) { if (f.url) URL.revokeObjectURL(f.url); MS.files.splice(+t.dataset.i, 1); trayUpd(); } return; }
+    if (a === "img" && m) return view(m, +t.dataset.i);
+    if (a === "file" && m) return download(m, +t.dataset.i);
+    if (a === "viewx") { const v = $("#msview"); if (v) { v.hidden = true; v.innerHTML = ""; } return; }
     if (a === "act") return actSheet(id);
     if (a === "re" && m) { MS.re = id; closeSheet(true); rr(); return requestAnimationFrame(() => $("#msin")?.focus()); }
     if (a === "reoff") { MS.re = ""; return rr(); }
@@ -2617,7 +2721,7 @@ ${live() ? "" : `<div class="mstabs">${tabs.map(([k, n, c, cl]) => `<button clas
     }
     if (a === "older") {
       const r = R(MS.room), M = rmsgs(r.id), b = $("#msbody"); if (!M.length) return; t.disabled = true;
-      try { const o = await call("adm_older", { p_room: r.n, p_before: M[0].n }); if (!o.ok) throw 0; addMsgs(o.msgs); if (!o.msgs.length) r.first = M[0].n; const h = b.scrollHeight, top = b.scrollTop; b.innerHTML = bodyHtml(r); b.scrollTop = top + (b.scrollHeight - h); } catch { t.disabled = false; toast("이전 글을 못 불러왔어요"); }
+      try { const o = await call("adm_older", { p_room: r.n, p_before: M[0].n }); if (!o.ok) throw 0; addMsgs(o.msgs); if (!o.msgs.length) r.first = M[0].n; const h = b.scrollHeight, top = b.scrollTop; b.innerHTML = bodyHtml(r); b.scrollTop = top + (b.scrollHeight - h); hydrate(); } catch { t.disabled = false; toast("이전 글을 못 불러왔어요"); }
       return;
     }
     if (a === "newroom") { MS.nr = []; MS.nrName = ""; return newRoomSheet(); }
@@ -2671,10 +2775,20 @@ ${live() ? "" : `<div class="mstabs">${tabs.map(([k, n, c, cl]) => `<button clas
 .hmbellbody .sec:first-child{margin-top:8px}
 .hmmore{margin-top:14px}.hmmore summary{display:inline-flex;align-items:center;height:44px;padding:0 14px;border-radius:12px;background:var(--card);box-shadow:inset 0 0 0 1px var(--line2);font-size:14px;font-weight:700;color:var(--ink2);cursor:pointer;list-style:none}.hmmore summary::-webkit-details-marker{display:none}.hmmore[open] summary{background:var(--ink);color:#fff;box-shadow:none}
 `;
+  st.textContent += `
+.hmre{height:32px;padding:0 10px;border-radius:9px;background:var(--card);color:var(--ink2);font-size:13px;font-weight:700;margin-left:8px;box-shadow:inset 0 0 0 1px var(--line2)}.hmre:disabled{opacity:.5}
+.hmcmp{background:var(--card);border-radius:14px;padding:12px 14px;margin-top:10px;font-size:14px;color:var(--sub);line-height:1.6}.hmcmp b{color:var(--ink)}.hmcmp i{font-style:normal;font-weight:800;margin-left:4px}.hmcmp i.up{color:var(--green)}.hmcmp i.dn{color:var(--red)}
+.hmtbl td small{color:var(--sub);font-size:12px}
+.hmstamp{font-size:13px;color:var(--sub);line-height:1.6;margin:10px 2px 0}
+.hmon{margin:8px 0 10px}
+.hmbh a{color:var(--blue);font-weight:700}
+.hmboard{display:block;width:100%;height:calc(100vh - 250px);min-height:420px;border:0;border-radius:16px;background:var(--card)}
+@media (min-width:900px){.hmboard{height:calc(100vh - 110px);min-height:560px}}
+`;
   document.head.appendChild(st);
   const HM = { v: ls.get("vf-hm-v") === "online" ? "online" : "vf" };
   const man = (n) => (n >= 10000 ? `${Math.round(n / 10000).toLocaleString("ko-KR")}<small>만</small>` : `${Math.round(n).toLocaleString("ko-KR")}<small>원</small>`);
-  const top = () => { const hm = String(D.at || "").slice(-5); return `<div class="hmtop"><div class="hmseg" role="tablist"><button class="${HM.v === "vf" ? "on" : ""}" data-hm="vf">VF 홈</button><button class="${HM.v === "online" ? "on" : ""}" data-hm="online">온라인 홈</button></div><span class="sp"></span><small>${hm ? hm + " 기준" : ""}</small>${HM.v === "vf" ? bell() : ""}</div>`; };
+  const top = () => { const hm = String(D.at || "").slice(-5); return `<div class="hmtop"><div class="hmseg" role="tablist"><button class="${HM.v === "vf" ? "on" : ""}" data-hm="vf">VF 홈</button><button class="${HM.v === "online" ? "on" : ""}" data-hm="online">온라인 홈</button></div><span class="sp"></span><small>${hm && HM.v === "vf" ? hm + " 기준" : ""}</small>${HM.v === "vf" ? bell() : ""}</div>`; };
   /* 확인할 것은 종 안으로: 많아져도 아래 숫자와 지점이 안 밀림. 있으면 빨강과 개수 */
   const BELL = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5a6.5 6.5 0 0 0-6.5 6.5v3.6L3.7 16a1 1 0 0 0 .9 1.5h14.8a1 1 0 0 0 .9-1.5l-1.8-3.4V9A6.5 6.5 0 0 0 12 2.5zM9.3 19a2.8 2.8 0 0 0 5.4 0z"/></svg>';
   const bell = () => { const n = issuesLeft().length; return `<button class="hmbell ${n ? "on" : ""}" data-hm="iss" aria-label="확인할 것 ${n}건">${BELL}${n ? `<i>${n}</i>` : ""}</button>`; };
@@ -2699,23 +2813,60 @@ ${live() ? "" : `<div class="mstabs">${tabs.map(([k, n, c, cl]) => `<button clas
     const tbl = `<details class="hmmore"><summary>지점 표로 자세히 보기</summary><div class="${isPC() ? "cols home" : ""}" style="display:block;margin-top:10px">${isPC() ? opsHtml() : opsMobileHtml()}</div></details>`;
     return `${botWarn()}<div class="hmh" style="margin-top:8px">지금 할 것</div>${tiles}${nx ? `<div style="margin-top:8px">${nx.html.replace('data-px="ev"', 'data-hm="next"')}</div>` : ""}<div class="hmh">오늘 숫자</div>${statHtml()}${br}${tbl}`;
   }
-  /* 온라인 홈: 아직 이어진 자료가 없어서 숫자는 전부 예시 */
-  function onlineHtml() {
-    const X = { wpM: 18400000, imM: 6200000, wpT: 14, imT: 5, wpTs: 742000, imTs: 268000, crmSend: 320, crmBuy: 41, crmRev: 2180000 };
-    const mAll = X.wpM + X.imM, tAll = X.wpT + X.imT, tS = X.wpTs + X.imTs, aov = Math.round(tS / tAll), w = (n) => n.toLocaleString("ko-KR");
-    return `<div class="hmex">숫자는 전부 예시예요. 워드프레스, 아임웹, CRM 자료를 이은 뒤에 진짜 숫자가 들어와요.</div>
-<div class="hmk"><div class="c"><span>이번 달 매출</span><b>${man(mAll)}</b><div class="hmsplit"><i style="width:${Math.round((X.wpM / mAll) * 100)}%"></i><i style="width:${100 - Math.round((X.wpM / mAll) * 100)}%"></i></div><p>워드프레스 <b>${w(X.wpM)}</b><br>아임웹 <b>${w(X.imM)}</b></p></div>
-<div class="c"><span>오늘 주문</span><b>${tAll}<small>건</small></b><p>워드프레스 <b>${X.wpT}건</b><br>아임웹 <b>${X.imT}건</b></p></div>
-<div class="c"><span>오늘 객단가</span><b>${w(aov)}<small>원</small></b><p>오늘 매출 <b>${w(tS)}</b><br>주문 <b>${tAll}건</b>으로 나눔</p></div>
-<div class="c"><span>CRM, 이번 달</span><b>${X.crmBuy}<small>건 구매</small></b><p>문자 보냄 <b>${X.crmSend}명</b><br>되돌아온 매출 <b>${w(X.crmRev)}</b></p></div></div>
-<div class="hmh">채널별 <small>오늘과 이번 달</small></div>
-<table class="hmtbl"><thead><tr><th>채널</th><th>오늘 주문</th><th>오늘 매출</th><th>이번 달 매출</th></tr></thead><tbody><tr><td>워드프레스</td><td>${X.wpT}건</td><td>${w(X.wpTs)}</td><td>${w(X.wpM)}</td></tr><tr><td>아임웹</td><td>${X.imT}건</td><td>${w(X.imTs)}</td><td>${w(X.imM)}</td></tr><tr><td>합계</td><td>${tAll}건</td><td>${w(tS)}</td><td>${w(mAll)}</td></tr></tbody></table>`;
+  /* 온라인 홈: 액상덕후 매출(열쇠 뒤 창고에서 받음, 공개 저장소에는 숫자가 없음)과 온라인팀 보드.
+     매출은 이 PC의 올리기 스크립트((보혜)\\온라인홈_자료\\온라인홈_매출올리기.mjs)가 올린 것까지만 보인다. */
+  const ON = { st: "idle", d: null, at: "", t: 0, tries: 0, v: ls.get("vf-hm-on") === "board" ? "board" : "sales", pc: null };
+  const w = (n) => Math.round(+n || 0).toLocaleString("ko-KR");
+  const onOk = () => ON.st === "ok" || (ON.st === "load" && ON.t > 0);
+  let ownH = false; const fullH = () => { ownH = true; try { render(); } finally { ownH = false; } };
+  async function onLoad(force) {
+    if (ON.st === "load") return; if (!force && ON.tt && Date.now() - ON.tt < 5 * 60e3) return; /* 받았든 거절됐든 5분 안에는 다시 안 물음 */
+    if (!window.admLive || !window.admLive()) { ON.st = "nolive"; if (ON.tries++ < 5) setTimeout(() => { if (tab === "home" && HM.v === "online") onLoad(true); }, 1500); return; }
+    ON.st = "load"; ON.tries = 0;
+    try { const o = await window.admCall("adm_online_get", {}); if (!o.ok) ON.st = o.why === "who" ? "who" : "nokey"; else { ON.d = o.sales; ON.at = o.at || ""; ON.t = Date.now(); ON.st = "ok"; } } catch (e) { ON.st = ON.t ? "ok" : "err"; }
+    ON.tt = Date.now();
+    if (tab !== "home" || HM.v !== "online") return;
+    if ($("#hmboard")) { const s = $("#hmsales"); if (s) s.innerHTML = salesHtml(); } else fullH();
   }
+  function salesHtml() {
+    const note = (t, btn) => `<div class="hmex">${t}${btn ? ' <button class="hmre" data-hm="onre">다시 받기</button>' : ""}</div>`;
+    if (ON.st === "nolive" || ON.st === "idle") return note("메신저 탭에서 메신저를 켜고 이름을 고르면 여기에 액상덕후 매출이 보여요.");
+    if (ON.st === "who") return note(`온라인 홈은 한섭이사와 보혜만 볼 수 있어요. 지금 고른 이름: ${esc(window.admWho ? window.admWho() : "")}`);
+    if (ON.st === "nokey" || ON.st === "err") return note("매출을 못 불러왔어요.", true);
+    const d = ON.d; if (!d) return note(ON.st === "load" ? "매출을 불러오는 중이에요" : "아직 올라온 매출이 없어요.", ON.st !== "load");
+    const wp = d.wp || {}, iw = d.iw || {}, hasIw = !!d.iw, mAll = (+wp.month || 0) + (+iw.month || 0), tAll = (+wp.today || 0) + (+iw.today || 0), nAll = (+wp.todayN || 0) + (+iw.todayN || 0), aov = nAll ? Math.round(tAll / nAll) : 0;
+    const now = new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10), day = d.today === now ? "오늘" : `${+String(d.today).slice(5, 7)}/${+String(d.today).slice(8)}`, wpPct = mAll ? Math.round(((+wp.month || 0) / mAll) * 100) : 100;
+    const iwL = (v, u) => (hasIw ? `<b>${v}${u}</b>` : "<b>못 받음</b>"), cmp = +wp.lastMonthToDate ? Math.round((((+wp.month || 0) - wp.lastMonthToDate) / wp.lastMonthToDate) * 1000) / 10 : null;
+    const rows = (d.days || []).slice(-7).reverse().map((x) => `<tr><td>${+String(x.d).slice(5, 7)}/${+String(x.d).slice(8)}</td><td>${w(x.wp)}<small> ${+x.wpN || 0}건</small></td><td>${hasIw ? `${w(x.iw)}<small> ${+x.iwN || 0}건</small>` : "-"}</td><td><b>${w((+x.wp || 0) + (+x.iw || 0))}</b></td></tr>`).join("");
+    return `${d.today === now ? "" : note(`마지막으로 올라온 자료가 ${day} 것이에요. 오늘 숫자는 아직 안 올라왔어요.`)}
+<div class="hmk"><div class="c"><span>이번 달 매출</span><b>${man(mAll)}</b><div class="hmsplit"><i style="width:${wpPct}%"></i><i style="width:${100 - wpPct}%"></i></div><p>워드프레스 <b>${w(wp.month)}</b><br>아임웹 ${iwL(w(iw.month), "")}</p></div>
+<div class="c"><span>${day} 매출</span><b>${man(tAll)}</b><p>워드프레스 <b>${w(wp.today)}</b><br>아임웹 ${iwL(w(iw.today), "")}</p></div>
+<div class="c"><span>${day} 주문</span><b>${nAll}<small>건</small></b><p>워드프레스 <b>${+wp.todayN || 0}건</b><br>아임웹 ${iwL(+iw.todayN || 0, "건")}</p></div>
+<div class="c"><span>${day} 객단가</span><b>${w(aov)}<small>원</small></b><p>매출 <b>${w(tAll)}</b>을<br>주문 <b>${nAll}건</b>으로 나눔</p></div></div>
+${cmp == null ? "" : `<div class="hmcmp">워드프레스 이번 달 <b>${w(wp.month)}</b>, 지난달 같은 날까지 <b>${w(wp.lastMonthToDate)}</b> <i class="${cmp >= 0 ? "up" : "dn"}">${cmp >= 0 ? "+" : ""}${cmp}%</i></div>`}
+<div class="hmh">최근 7일 <small>액상덕후, 원</small></div>
+<table class="hmtbl"><thead><tr><th>날짜</th><th>워드프레스</th><th>아임웹</th><th>합계</th></tr></thead><tbody>${rows}</tbody></table>
+<div class="hmstamp">${esc(d.made || ON.at)}에 올라온 자료예요. 워드프레스는 ${esc(d.wpAt || "")} 기준, 입금 확인된 주문만 세요.<button class="hmre" data-hm="onre">다시 받기</button></div>`;
+  }
+  function onlineHtml() {
+    onLoad();
+    const ok = onOk(), sales = `<div id="hmsales">${salesHtml()}</div>`;
+    const board = ok ? `<div class="hmh hmbh">온라인팀 보드 <small><a href="../../online-team/" target="_blank" rel="noopener">새 창으로 열기</a></small></div><iframe id="hmboard" class="hmboard" src="../../online-team/" title="온라인팀 보드"></iframe>` : "";
+    if (isPC() || !ok) return sales + board;
+    return `<div class="hmseg hmon" role="tablist"><button class="${ON.v === "sales" ? "on" : ""}" data-hm="onsales">매출</button><button class="${ON.v === "board" ? "on" : ""}" data-hm="onboard">온라인팀 보드</button></div>${ON.v === "board" ? board : sales}`;
+  }
+  /* 보드를 띄워 둔 동안에는 3분마다 도는 자동 새로고침이 보드를 처음으로 되돌리지 않게, 매출 칸만 새로 그린다 */
+  const render1 = render;
+  render = function () {
+    if (!ownH && tab === "home" && HM.v === "online" && $("#hmboard") && ON.pc === isPC()) { const s = $("#hmsales"); if (s) s.innerHTML = salesHtml(); onLoad(); return; }
+    ON.pc = isPC(); return render1.apply(this, arguments);
+  };
+  document.addEventListener("click", (e) => { const s = e.target.closest("[data-hm]"); if (!s) return; const k = s.dataset.hm; if (k === "onsales" || k === "onboard") { ON.v = k === "onboard" ? "board" : "sales"; ls.set("vf-hm-on", ON.v); fullH(); return scrollTo(0, 0); } if (k === "onre") { s.disabled = true; onLoad(true); } });
   const home = () => `<div class="hmwrap">${top()}${HM.v === "online" ? onlineHtml() : vfHtml()}</div>`;
   homeHtml = home; homePC = home;
   document.addEventListener("click", (e) => {
     const s = e.target.closest("[data-hm]");
-    if (s) { const a = s.dataset.hm; if (a === "vf" || a === "online") { HM.v = a; ls.set("vf-hm-v", a); render(); return scrollTo(0, 0); } if (a === "iss") return bellSheet(); if (a === "next" && window.ptOpenEvent) return window.ptOpenEvent(s.dataset.id); }
+    if (s) { const a = s.dataset.hm; if (a === "vf" || a === "online") { HM.v = a; ls.set("vf-hm-v", a); fullH(); return scrollTo(0, 0); } if (a === "iss") return bellSheet(); if (a === "next" && window.ptOpenEvent) return window.ptOpenEvent(s.dataset.id); }
     /* 종 창 안에서 [확인] 같은 것을 누르면 목록과 종 숫자를 새로 그림 */
     if (e.target.closest("#sheet") && $("#sheet [data-hmbell]")) setTimeout(() => { if ($("#dim").classList.contains("on") && $("#sheet [data-hmbell]")) { const y = $("#sheet").scrollTop; bellSheet(); $("#sheet").scrollTop = y; if (tab === "home") { const old = document.querySelector(".hmbell"); if (old) old.outerHTML = bell(); } } }, 60);
     const b = e.target.closest("[data-hmb]"); if (!b) return;
