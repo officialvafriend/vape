@@ -3090,6 +3090,15 @@ ${live() ? "" : `<div class="mstabs">${tabs.map(([k, n, c, cl]) => `<button clas
 .hmon{margin:8px 0 10px}
 .hmbh a{color:var(--blue);font-weight:700}
 .hmboard{display:block;width:100%;height:calc(100vh - 230px);border:0;border-radius:16px;background:var(--card)}
+body.hmonline{--blue:#0a7d5c;--blue-soft:#e0f5ec;--bg:#eef5f1;--line:#eef5f1}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) body.hmonline{--blue:#3fcf9e;--blue-soft:#17302a;--bg:#141c19;--line:#22302b}}
+:root[data-theme="dark"] body.hmonline{--blue:#3fcf9e;--blue-soft:#17302a;--bg:#141c19;--line:#22302b}
+body.hmonline .hmseg button.on{color:var(--blue)}body.hmonline .side,body.hmonline .top{box-shadow:inset 0 3px 0 var(--blue)}
+.logo[data-hm]{cursor:pointer;-webkit-user-select:none;user-select:none}.hmlgsw{display:inline-block;margin-left:8px;font-size:11px;font-weight:700;color:var(--blue);background:var(--blue-soft);border-radius:8px;padding:3px 7px;vertical-align:2px;letter-spacing:0}
+.hmlgsw .s{display:none}.top .hmlgsw .l{display:none}.top .hmlgsw .s{display:inline}.top .hmlgsw{margin-left:5px;padding:2px 6px;font-size:10px}.top .logo{white-space:nowrap}
+.hmml{background:var(--card);border-radius:18px;padding:4px 16px}.hmml div{display:flex;gap:12px;align-items:baseline;min-height:44px;padding:10px 0;border-bottom:1px solid var(--line2);font-size:15px}.hmml div:last-child{border-bottom:0}.hmml b{flex:none;min-width:44px;font-weight:700;color:var(--sub);font-size:13px}
+.hmil{margin-top:12px}.hmil div{padding:11px 0;border-bottom:1px solid var(--line2)}.hmil div:last-child{border-bottom:0}.hmil b{display:block;font-size:15px;font-weight:700;line-height:1.4}.hmil small{display:block;font-size:13px;color:var(--sub);margin-top:2px}
+.hmb .w{line-height:1.45}#hmbdw{margin-top:18px}#hmbdin{margin-top:10px}#hmbdw .hmboard{height:calc(100vh - 150px);min-height:480px}
 body.hmfull #nav{display:none!important}body.hmfull .hmboard{border-radius:16px 16px 0 0}
 .hmstrip{display:flex;align-items:stretch;gap:8px;margin:8px 0}.hmstrip a{flex:none;display:grid;place-items:center;min-width:56px;padding:0 10px;border-radius:14px;background:var(--card);color:var(--blue);font-size:13px;font-weight:700;text-decoration:none}
 .hmsb{flex:1;min-width:0;display:flex;align-items:center;gap:6px;min-height:56px;padding:6px 12px;border-radius:14px;background:var(--card);text-align:left}.hmsb:hover{background:var(--press)}
@@ -3138,6 +3147,7 @@ body.hmfull #nav{display:none!important}body.hmfull .hmboard{border-radius:16px 
     ON.st = "load"; ON.tries = 0;
     try { const o = await window.admCall("adm_online_get", {}); if (!o.ok) ON.st = o.why === "who" ? "who" : "nokey"; else { ON.d = o.sales; ON.at = o.at || ""; ON.t = Date.now(); ON.st = "ok"; } } catch (e) { ON.st = ON.t ? "ok" : "err"; }
     ON.tt = Date.now();
+    if (ON.st === "ok") { try { const bd = await window.admCall("adm_board_get", {}); ON.b = bd && bd.ok ? { items: Array.isArray(bd.items) ? bd.items : [], meetings: Array.isArray(bd.meetings) ? bd.meetings : [], done7: bd.done7 } : null; } catch (e) { ON.b = ON.b || null; } }
     if (tab !== "home" || HM.v !== "online") return;
     /* 화면 짜임이 그대로면 매출 칸만 바꾼다(보드와 스크롤을 건드리지 않게). 처음 받았거나 거절로 바뀌면 통째로 다시 그림 */
     const s = $("#hmsales"), bd = $("#hmboard");
@@ -3166,33 +3176,59 @@ ${cmp == null ? "" : `<div class="hmcmp">워드프레스 이번 달 <b>${w(wp.mo
 <table class="hmtbl"><thead><tr><th>날짜</th><th>워드프레스</th><th>아임웹</th><th>합계</th></tr></thead><tbody>${rows}</tbody></table>
 <div class="hmstamp">${ageT} 올라온 자료예요. 1분마다 새로 받아요. 워드프레스는 입금 확인된 주문만 세요.<button class="hmre" data-hm="onre">다시 받기</button></div>`;
   }
-  /* 온라인 홈 = 화면 전체가 온라인팀 보드. 액상덕후 매출은 맨 위 한 줄로 두고, 누르면 자세히 뜬다 */
+  /* 온라인 홈: VF 홈과 같은 칸 구성. 매출은 창고의 매출 자료, 할 일과 회의는 온라인팀 보드 자료(읽기만)에서 온다 */
+  const BN = { 한섭이사: "한섭", 보혜: "보혜" }, TEAM = ["한섭", "보혜", "시원", "진"];
+  const ownersOf = (it) => String(it.owners || "").split(/[,\s]+/).filter(Boolean);
+  const nowD = () => new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10), plusD = (n) => new Date(Date.now() + 9 * 3600e3 + n * 864e5).toISOString().slice(0, 10);
+  const dShort = (s) => (/^\d{4}-\d{2}-\d{2}/.test(String(s)) ? `${+String(s).slice(5, 7)}/${+String(s).slice(8, 10)}` : esc(s || ""));
+  const itemsOf = (k, n) => { const L = (ON.b && ON.b.items) || [], now = nowD(); return k === "over" ? L.filter((i) => i.due && i.due < now) : k === "week" ? L.filter((i) => i.due && i.due >= now && i.due <= plusD(7)) : k === "who" ? L.filter((i) => (n ? ownersOf(i).includes(n) : !ownersOf(i).length)) : L; };
+  const byDue = (L) => L.slice().sort((x, y) => (x.due || "9999").localeCompare(y.due || "9999"));
   function stripHtml() {
-    const d = ON.d; if (!onOk() || !d) return salesHtml();
-    const wp = d.wp || {}, iw = d.iw || {}, mAll = (+wp.month || 0) + (+iw.month || 0), tAll = (+wp.today || 0) + (+iw.today || 0), nAll = (+wp.todayN || 0) + (+iw.todayN || 0), aov = nAll ? Math.round(tAll / nAll) : 0;
-    const now = new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10), day = d.today === now ? "오늘" : `${+String(d.today).slice(5, 7)}/${+String(d.today).slice(8)}`;
-    const age = Math.max(0, Math.round((Date.now() + 9 * 3600e3 - Date.parse(String(d.made || "").replace(" ", "T") + ":00Z")) / 60e3)), old = d.today !== now || age > 5;
-    return `<div class="hmstrip ${old ? "old" : ""}"><button class="hmsb" data-hm="ondet" aria-label="액상덕후 매출 자세히 보기"><span>이번 달<b>${man(mAll)}</b></span><span>${day} 매출<b>${man(tAll)}</b></span><span>${day} 주문<b>${nAll}<small>건</small></b></span><span class="x">객단가<b>${w(aov)}<small>원</small></b></span><i>${old ? (d.today !== now ? "어제 자료" : age + "분째 멈춤") : "자세히"}</i></button><a href="../../online-team/" target="_blank" rel="noopener" aria-label="온라인팀 보드를 새 창으로 열기">새 창</a></div>`;
+    if (!onOk()) return salesHtml();
+    const d = ON.d, B = ON.b, now = nowD(), meN = BN[window.admWho ? window.admWho() : ""] || "", mu = window.msgUnread ? window.msgUnread() : 0;
+    const tile = (lab, html, cls, go) => `<button ${go}><span>${lab}</span><b class="${cls}">${html}</b></button>`, num = (n, unit, cls) => [`${n}<small>${unit}</small>`, n ? cls : "z"];
+    const mineN = itemsOf("who", meN).length, overN = itemsOf("over").length, weekN = itemsOf("week").length;
+    const todo = B ? `<div class="hmt">${tile("내 할 일", ...num(mineN, "건", "b"), `data-hm="onppl" data-n="${esc(meN)}"`)}${tile("기한 지난 것", ...num(overN, "건", "r"), 'data-hm="onlist" data-k="over"')}${tile("이번 주 기한", ...num(weekN, "건", "b"), 'data-hm="onlist" data-k="week"')}${tile("안 읽은 메시지", ...num(mu, "개", "b"), 'data-tab="msg"')}</div>` : `<div class="hmex">온라인팀 보드의 할 일을 못 불러왔어요.<button class="hmre" data-hm="onre">다시 받기</button></div>`;
+    let nums = `<div class="hmex">아직 올라온 매출이 없어요.<button class="hmre" data-hm="onre">다시 받기</button></div>`, chan = "", stamp = "";
+    if (d) {
+      const wp = d.wp || {}, iw = d.iw || {}, hasIw = !!d.iw, mAll = (+wp.month || 0) + (+iw.month || 0), tAll = (+wp.today || 0) + (+iw.today || 0), nAll = (+wp.todayN || 0) + (+iw.todayN || 0), aov = nAll ? Math.round(tAll / nAll) : 0;
+      const day = d.today === now ? "오늘" : dShort(d.today), age = Math.max(0, Math.round((Date.now() + 9 * 3600e3 - Date.parse(String(d.made || "").replace(" ", "T") + ":00Z")) / 60e3));
+      nums = `${d.today === now && age <= 5 ? "" : `<div class="hmex">${d.today !== now ? `마지막으로 올라온 매출이 ${day} 것이에요.` : `매출이 ${age}분째 새로 안 올라오고 있어요. 올리는 PC가 꺼져 있는지 봐 주세요.`}</div>`}<div class="hmt">${tile(day + " 매출", man(tAll), "", 'data-hm="ondet"')}${tile(day + " 주문", `${nAll}<small>건</small>`, nAll ? "" : "z", 'data-hm="ondet"')}${tile(day + " 객단가", `${w(aov)}<small>원</small>`, aov ? "" : "z", 'data-hm="ondet"')}${tile("이번 달 매출", man(mAll), "", 'data-hm="ondet"')}</div>`;
+      const ch = (i, name, o, ok) => `<button class="hmb ${ok && +o.todayN ? "on" : ""}" data-hm="ondet"><div class="n"><i>${i}</i>${name}</div><div class="s">${ok ? `${day} 주문 ${+o.todayN || 0}건` : "자료를 못 받았어요"}</div><div class="m">${ok ? (+o.today ? man(+o.today) : '<small style="margin:0">아직 매출 없음</small>') : ""}</div><div class="w">${ok ? `이번 달 ${w(o.month)}원, ${+o.monthN || 0}건` : ""}</div></button>`;
+      chan = `<div class="hmh">채널 한눈에 <small>액상덕후</small></div><div class="hmg">${ch(1, "워드프레스", wp, true)}${ch(2, "아임웹", iw, hasIw)}</div>`;
+      stamp = `${age <= 1 ? "방금" : age < 90 ? age + "분 전에" : esc(d.made) + "에"} 올라온 매출이에요. 1분마다 새로 받아요.`;
+    }
+    let ppl = "", meet = "";
+    if (B) {
+      const names = TEAM.concat([...new Set(B.items.flatMap(ownersOf))].filter((n) => !TEAM.includes(n)));
+      const card = (n, i) => { const L = byDue(itemsOf("who", n)), ov = L.filter((x) => x.due && x.due < now).length; return `<button class="hmb ${ov ? "bad" : L.length ? "on" : ""}" data-hm="onppl" data-n="${esc(n)}"><div class="n"><i>${i + 1}</i>${esc(n || "담당 없음")}</div><div class="s">${L.length ? `할 일 ${L.length}건${ov ? `, 기한 지남 ${ov}건` : ""}` : "할 일 없음"}</div><div class="w">${L.slice(0, 2).map((x) => esc(x.title) + (x.due ? " (" + dShort(x.due) + ")" : "")).join("<br>")}</div></button>`; };
+      ppl = `<div class="hmh">할 일 한눈에 <small>하는 중 ${B.items.length}건, 지난 7일에 끝난 것 ${+B.done7 || 0}건</small></div><div class="hmg">${names.map(card).join("")}${itemsOf("who", "").length ? card("", names.length) : ""}</div>`;
+      meet = `<div class="hmh">회의 <small>최근 것부터</small></div><div class="hmml">${(B.meetings || []).slice(0, 5).map((m) => `<div><b>${dShort(m.date)}</b><span>${esc(m.title)}</span></div>`).join("") || '<div><span>회의 기록이 없어요</span></div>'}</div>`;
+    }
+    return `<div class="hmh" style="margin-top:8px">지금 할 것</div>${todo}<div class="hmh">오늘 숫자 <small>액상덕후</small></div>${nums}${chan}${ppl}${meet}<div class="hmstamp">${stamp}<button class="hmre" data-hm="onre">다시 받기</button></div>`;
   }
-  /* 폰에서 온라인 홈일 때는 관리자웹 아래 메뉴를 숨긴다. 보드에도 아래 메뉴가 있어서 두 줄로 겹쳐 보였다. 돌아올 때는 맨 위 [VF 홈] */
-  function syncFull() { document.body.classList.toggle("hmfull", !!D && tab === "home" && HM.v === "online" && !!$("#hmboard") && !isPC()); }
-  function fitBoard() { /* 보드가 남은 화면을 꼭 채우게(페이지가 따로 스크롤되지 않게) */
-    syncFull(); const f = $("#hmboard"); if (!f) return; const nav = $("#nav"), nh = nav && getComputedStyle(nav).display !== "none" ? nav.getBoundingClientRect().height : 0;
-    f.style.height = Math.max(320, Math.floor(innerHeight - f.getBoundingClientRect().top - scrollY - nh - (isPC() ? 14 : 6))) + "px";
-  }
-  addEventListener("resize", fitBoard);
+  function onList(title, L) { openSheet(`<h3>${esc(title)} <small style="font-size:14px;color:var(--sub)">${L.length}건</small></h3><div class="hmil">${byDue(L).map((x) => `<div><b>${esc(x.title)}</b><small>${[ownersOf(x).join(", ") || "담당 없음", x.due ? dShort(x.due) + "까지" : "기한 없음", x.st, x.brand].filter(Boolean).map(esc).join(", ")}</small></div>`).join("") || '<div><small>해당하는 할 일이 없어요</small></div>'}</div><div class="caption" style="margin-top:12px">고치거나 끝내는 것은 온라인팀 보드에서 해요.</div><div class="btns"><button class="btn gray" data-x>닫기</button><a class="btn" href="../../online-team/" target="_blank" rel="noopener" style="display:grid;place-items:center;text-decoration:none">보드 열기</a></div>`); }
+  /* 폰에서 보드 화면을 펼쳤을 때만 관리자웹 아래 메뉴를 숨긴다(보드에도 아래 메뉴가 있어서) */
+  function syncFull() { document.body.classList.toggle("hmonline", !!D && HM.v === "online"); document.body.classList.toggle("hmfull", !!D && tab === "home" && HM.v === "online" && !!$("#hmboard") && !isPC()); }
+  function fitBoard() { syncFull(); }
   function onlineHtml() {
-    onLoad(); requestAnimationFrame(fitBoard);
+    onLoad();
     const ok = onOk();
-    return `<div id="hmsales" data-ok="${ok ? 1 : 0}">${stripHtml()}</div>${ok ? '<iframe id="hmboard" class="hmboard" src="../../online-team/" title="온라인팀 보드"></iframe>' : ""}`;
+    return `<div id="hmsales" data-ok="${ok ? 1 : 0}">${stripHtml()}</div>${ok ? '<details class="hmmore" id="hmbdw"><summary>온라인팀 보드를 여기서 펼쳐 보기</summary><div id="hmbdin"></div></details>' : ""}`;
   }
+  document.addEventListener("toggle", (e) => { const dt = e.target; if (!dt || dt.id !== "hmbdw") return; const box = $("#hmbdin"); if (dt.open && box && !$("#hmboard")) box.innerHTML = '<iframe id="hmboard" class="hmboard" src="../../online-team/" title="온라인팀 보드"></iframe>'; if (!dt.open && box) box.innerHTML = ""; syncFull(); }, true);
+  /* 로고 자리에서 VF 관리자와 온라인을 바꾼다 */
+  function decorLogo() { for (const el of document.querySelectorAll("#app .logo")) { el.innerHTML = `VAFRIEND <b>${HM.v === "online" ? "온라인" : "관리자"}</b><span class="hmlgsw"><span class="l">${HM.v === "online" ? "관리자로" : "온라인으로"}</span><span class="s">전환</span></span>`; el.dataset.hm = "swap"; el.setAttribute("role", "button"); el.setAttribute("aria-label", HM.v === "online" ? "VF 관리자 홈으로 바꾸기" : "온라인 홈으로 바꾸기"); } }
   /* 보드를 띄워 둔 동안에는 3분마다 도는 자동 새로고침이 보드를 처음으로 되돌리지 않게, 매출 칸만 새로 그린다 */
   const render1 = render;
   render = function () {
     if (!ownH && tab === "home" && HM.v === "online" && $("#hmboard") && ON.pc === isPC()) { const s = $("#hmsales"); if (s) { s.innerHTML = stripHtml(); fitBoard(); } onLoad(); return; }
-    ON.pc = isPC(); const out = render1.apply(this, arguments); syncFull(); return out;
+    ON.pc = isPC(); const out = render1.apply(this, arguments); syncFull(); decorLogo(); return out;
   };
-  document.addEventListener("click", (e) => { const s = e.target.closest("[data-hm]"); if (!s) return; const k = s.dataset.hm; if (k === "onsales" || k === "onboard") { ON.v = k === "onboard" ? "board" : "sales"; ls.set("vf-hm-on", ON.v); fullH(); return scrollTo(0, 0); } if (k === "onre") { s.disabled = true; onLoad(true); } if (k === "ondet") openSheet(`<h3>액상덕후 매출</h3><div class="hmdet">${salesHtml()}</div><div class="btns"><button class="btn gray" data-x>닫기</button></div>`); });
+  document.addEventListener("click", (e) => { const s = e.target.closest("[data-hm]"); if (!s) return; const k = s.dataset.hm; if (k === "onsales" || k === "onboard") { ON.v = k === "onboard" ? "board" : "sales"; ls.set("vf-hm-on", ON.v); fullH(); return scrollTo(0, 0); } if (k === "onre") { s.disabled = true; onLoad(true); }
+    if (k === "swap") { HM.v = HM.v === "online" ? "vf" : "online"; ls.set("vf-hm-v", HM.v); tab = "home"; fullH(); return scrollTo(0, 0); }
+    if (k === "onppl") { const n = s.dataset.n || ""; return onList((n || "담당 없음") + " 할 일", itemsOf("who", n)); }
+    if (k === "onlist") return onList(s.dataset.k === "over" ? "기한 지난 것" : "이번 주 기한", itemsOf(s.dataset.k)); if (k === "ondet") openSheet(`<h3>액상덕후 매출</h3><div class="hmdet">${salesHtml()}</div><div class="btns"><button class="btn gray" data-x>닫기</button></div>`); });
   const home = () => `<div class="hmwrap">${top()}${HM.v === "online" ? onlineHtml() : vfHtml()}</div>`;
   homeHtml = home; homePC = home;
   document.addEventListener("click", (e) => {
