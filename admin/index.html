@@ -2299,7 +2299,7 @@ ${miss.length ? `<div class="plnote" style="background:var(--amber-soft);color:v
 .mstkr span{flex:1;min-width:0}.mstkr b{display:block;font-size:15px;font-weight:700}.mstkr em{display:block;font-style:normal;font-size:13px;color:var(--sub);margin-top:1px}.mstkr.done b{text-decoration:line-through;color:var(--sub)}.mstkr.open small{color:var(--blue)}
 .mstks{background:var(--bg);border-radius:12px;padding:12px 14px;margin-top:12px;font-size:14px;font-weight:600;color:var(--ink2)}.mstks.done{color:var(--green)}
 .mstkbox{margin:0 0 14px}
-.msav{flex:none;align-self:flex-start;width:34px;height:34px;border-radius:50%;background:var(--card);display:grid;place-items:center;font-size:19px;line-height:1;box-shadow:inset 0 0 0 1px var(--line2)}.msg.av .nm{margin-left:46px}.msg.av .bw{gap:6px}
+.msav{flex:none;align-self:flex-start;width:34px;height:34px;border-radius:50%;background:var(--card);display:grid;place-items:center;font-size:19px;line-height:1;box-shadow:inset 0 0 0 1px var(--line2)}.msg.hav .nm{margin-left:46px}.msg.hav .bw{gap:6px}
 .msav.big{width:64px;height:64px;font-size:36px}.msprof{display:flex;align-items:center;gap:14px;margin-top:14px}.msprof b{font-size:20px;font-weight:800}
 .msemo{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:6px;margin-top:8px}.msemo button{aspect-ratio:1;border-radius:12px;background:var(--bg);font-size:22px;line-height:1}.msemo button.on{box-shadow:inset 0 0 0 2px var(--blue);background:var(--blue-soft)}
 .mspin small{flex:none;font-size:12px;font-weight:600;opacity:.8}
@@ -2612,8 +2612,9 @@ textarea.msin{height:48px;min-height:48px;max-height:132px;padding:12px 16px;lin
   const tkRow = (t) => `<button class="msdec mstkr ${t.st}" data-ms="task" data-tid="${t.id}"><small>${t.st === "done" ? "끝" : "할 일"}</small><span><b>${esc(t.title)}</b><em>${esc(t.owner)}${t.due ? ", " + dl(t.due) + "까지" : ""}</em></span></button>`;
   function tkSheet() {
     const k = MS.tk, r = R(k.room);
-    openSheet(`${nodock}<h3>업무로 만들기</h3><div class="caption">글에서 가져왔어요. 고쳐서 보내세요.</div><div class="ptlab">무엇을 하나요?</div><input class="ptin" id="msTkT" maxlength="60" value="${esc(k.title)}"><div class="ptlab">누가 맡나요?</div><div class="ptpick">${r.mem.map((n) => `<button class="chip ${k.owner === n ? "on" : ""}" data-ms="tko" data-n="${esc(n)}">${n === me() ? "나 (" + esc(n) + ")" : esc(n)}</button>`).join("")}</div><div class="ptlab">언제까지인가요? (안 골라도 돼요)</div><input class="ptin" type="date" id="msTkD" value="${esc(k.due)}"><div class="btns"><button class="btn gray" data-x style="flex:0 0 96px">닫기</button><button class="btn" data-ms="tkgo">업무로 보내기</button></div>`);
+    openSheet(`${nodock}<h3>${k.src ? "업무로 만들기" : "업무 만들기"}</h3><div class="caption">${k.src ? "글에서 가져왔어요. 고쳐서 보내세요." : "만들면 이 방에 업무 카드로 올라가요."}</div><div class="ptlab">무엇을 하나요?</div><input class="ptin" id="msTkT" maxlength="60" value="${esc(k.title)}"><div class="ptlab">누가 맡나요?</div><div class="ptpick">${r.mem.map((n) => `<button class="chip ${k.owner === n ? "on" : ""}" data-ms="tko" data-n="${esc(n)}">${n === me() ? "나 (" + esc(n) + ")" : esc(n)}</button>`).join("")}</div><div class="ptlab">언제까지인가요? (안 골라도 돼요)</div><input class="ptin" type="date" id="msTkD" value="${esc(k.due)}"><div class="btns"><button class="btn gray" data-x style="flex:0 0 96px">닫기</button><button class="btn" data-ms="tkgo">업무로 보내기</button></div>`);
   }
+  function evSheet() { const k = MS.ev; openSheet(`${nodock}<h3>${k.kind} 올리기</h3><div class="caption">이 방에 ${k.kind} 카드로 올라가요.</div><div class="ptlab">${k.kind === "회의" ? "무슨 회의인가요?" : "무슨 일정인가요?"}</div><input class="ptin" id="msEvT" maxlength="60" placeholder="${k.kind === "회의" ? "예: 관리자 회의" : "예: 수성 방문"}"><div class="ptlab">언제인가요?</div><input class="ptin" type="date" id="msEvD" value="${today()}"><input class="ptin" type="time" id="msEvH" value="14:00"><div class="ptlab">덧붙일 말 (안 적어도 돼요)</div><input class="ptin" id="msEvM" maxlength="100" placeholder="예: 본점 2층"><div class="btns"><button class="btn gray" data-x style="flex:0 0 96px">닫기</button><button class="btn" data-ms="evgo">올리기</button></div>`); }
   function tkView(id) {
     const t = T(id); if (!t) return toast("이 업무는 목록에서 내려갔어요");
     const can = t.owner === me() || t.by === me();
@@ -2634,7 +2635,7 @@ textarea.msin{height:48px;min-height:48px;max-height:132px;padding:12px 16px;lin
     const I = m.who === me(), r = R(m.room), src = m.re && MSGS.find((x) => x.id === m.re), left = r.mem.filter((n) => n !== m.who && !seenBy(m, n)).length;
     const txt = m.card && ((m.card.kind === "file" && m.card.auto) || m.card.kind === "task") ? "" : esc(m.txt).replace(new RegExp("@(" + P().join("|") + ")", "g"), "<b>@$1</b>");
     const card = m.card && m.card.kind === "file" ? filesHtml(m) : m.card && m.card.kind === "task" ? taskCard(m) : m.card ? `<span class="mscard" role="group"><small>${esc(m.card.kind || "")}</small><b>${esc(m.card.title || "")}</b><span>${esc(m.card.sub || "")}</span>${m.card.tag ? `<i>${esc(m.card.tag)}</i>` : ""}</span>` : "";
-    return `<div class="msg ${I ? "me" : live() ? "av" : ""} ${MS.flash === m.id ? "flash" : ""}" data-mid="${m.id}">${I ? "" : `<small class="nm">${esc(m.who)}</small>`}<div class="bw">${I || !live() ? "" : `<span class="msav" aria-hidden="true">${esc(em(m.who))}</span>`}<div class="bb" data-msb="${m.id}">${src ? `<span class="msq">${esc(src.who)}: ${esc(src.txt)}</span>` : ""}${card}${txt}</div><div class="mm"><button class="mo" data-ms="act" data-id="${m.id}" aria-label="이 글로 할 일">⋯</button>${I && left ? `<button class="u" data-ms="who" data-id="${m.id}" aria-label="아직 안 읽은 사람 보기">안 읽음 ${left}</button>` : ""}<span>${hm(m)}</span></div></div>${noai || live() ? "" : aiHtml(m)}</div>`;
+    return `<div class="msg ${I ? "me" : live() ? "hav" : ""} ${MS.flash === m.id ? "flash" : ""}" data-mid="${m.id}">${I ? "" : `<small class="nm">${esc(m.who)}</small>`}<div class="bw">${I || !live() ? "" : `<span class="msav" aria-hidden="true">${esc(em(m.who))}</span>`}<div class="bb" data-msb="${m.id}">${src ? `<span class="msq">${esc(src.who)}: ${esc(src.txt)}</span>` : ""}${card}${txt}</div><div class="mm"><button class="mo" data-ms="act" data-id="${m.id}" aria-label="이 글로 할 일">⋯</button>${left && (I || live()) ? `<button class="u" data-ms="who" data-id="${m.id}" aria-label="아직 안 읽은 사람 보기">안 읽음 ${left}</button>` : ""}<span>${hm(m)}</span></div></div>${noai || live() ? "" : aiHtml(m)}</div>`;
   }
   function gateHtml() {
     if (LV.st === "who") return `<div class="mson"><b>누구신가요?</b><span>이 기기에서 쓸 이름을 골라 주세요. 한 번만 고르면 돼요.</span><div class="msnames">${P0.map((n) => `<button data-ms="mepick" data-n="${n}">${n}</button>`).join("")}</div></div>`;
@@ -2804,7 +2805,7 @@ ${live() ? "" : `<div class="mstabs">${tabs.map(([k, n, c, cl]) => `<button clas
     if (a === "tko") { const k = MS.tk; k.title = $("#msTkT").value; k.due = $("#msTkD").value; k.owner = t.dataset.n; return tkSheet(); }
     if (a === "tkgo") {
       const k = MS.tk, title = $("#msTkT").value.trim(), due = $("#msTkD").value; if (!title) return toast("할 일을 적어 주세요"); if (!k.owner) return toast("맡을 사람을 골라 주세요"); t.disabled = true;
-      try { const o = await call("adm_task_new", { p_room: R(k.room).n, p_msg: +k.src.slice(1), p_title: title, p_owner: k.owner, p_due: due || null }); if (!o.ok) throw new Error(o.why || ""); addMsgs([o.msg]); LV.tasks = LV.tasks.filter((x) => x.id !== +o.task.id).concat(mapT(o.task)); LV.since = Math.max(LV.since, o.msg.id); (LV.seen[k.room] ||= {})[LV.who] = Math.max((LV.seen[k.room] || {})[LV.who] || 0, o.msg.id); MS.tk = null; closeSheet(true); toast(`${k.owner}에게 업무로 보냈어요`); notify(R(k.room)); return rr(); }
+      try { const o = await call("adm_task_new", { p_room: R(k.room).n, p_msg: k.src ? +k.src.slice(1) : null, p_title: title, p_owner: k.owner, p_due: due || null }); if (!o.ok) throw new Error(o.why || ""); addMsgs([o.msg]); LV.tasks = LV.tasks.filter((x) => x.id !== +o.task.id).concat(mapT(o.task)); LV.since = Math.max(LV.since, o.msg.id); (LV.seen[k.room] ||= {})[LV.who] = Math.max((LV.seen[k.room] || {})[LV.who] || 0, o.msg.id); MS.tk = null; closeSheet(true); toast(`${k.owner}에게 업무로 보냈어요`); notify(R(k.room)); return rr(); }
       catch (e3) { t.disabled = false; return toast("업무를 못 만들었어요. 다시 눌러 주세요"); }
     }
     if (a === "task") return tkView(t.dataset.tid);
@@ -2815,7 +2816,16 @@ ${live() ? "" : `<div class="mstabs">${tabs.map(([k, n, c, cl]) => `<button clas
       catch (e3) { t.disabled = false; return toast(e3 && e3.message === "mine" ? "맡은 사람이나 만든 사람만 끝낼 수 있어요" : "못 바꿨어요. 다시 눌러 주세요"); }
     }
     if (a === "send") return send();
-    if (a === "plus") { if (!live()) return toast("메신저를 켜면 사진과 파일을 붙일 수 있어요"); return $("#msfile")?.click(); }
+    if (a === "plus") { if (!live()) return toast("메신저를 켜면 사진과 파일을 붙일 수 있어요"); return openSheet(`${nodock}<h3>무엇을 올릴까요?</h3><div class="msact"><button data-ms="pickfile">사진, 파일</button><button data-ms="ev" data-k="일정">일정</button><button data-ms="ev" data-k="회의">회의</button><button data-ms="tknew">업무</button></div><div class="btns"><button class="btn gray" data-x>닫기</button></div>`); }
+    if (a === "pickfile") { closeSheet(true); return $("#msfile")?.click(); }
+    if (a === "ev") { MS.ev = { kind: t.dataset.k === "회의" ? "회의" : "일정", room: MS.room }; return evSheet(); }
+    if (a === "evgo") {
+      const k = MS.ev, r = R(k.room), title = $("#msEvT").value.trim(), d = $("#msEvD").value, h = $("#msEvH").value, memo = $("#msEvM").value.trim(); if (!title) return toast(k.kind === "회의" ? "회의 이름을 적어 주세요" : "일정 이름을 적어 주세요"); if (!d) return toast("날짜를 골라 주세요"); t.disabled = true;
+      const when = dl(d) + (h ? " " + h : "");
+      try { const o = await call("adm_send", { p_room: r.n, p_body: (`${k.kind}: ${title}, ${when}` + (memo ? "\n" + memo : "")).slice(0, 1900), p_re: null, p_card: { kind: k.kind, title: title.slice(0, 80), sub: (when + (memo ? ", " + memo : "")).slice(0, 120), tag: k.kind, d, h } }); if (!o.ok) throw 0; addMsgs([o.msg]); LV.since = Math.max(LV.since, o.msg.id); (LV.seen[k.room] ||= {})[LV.who] = Math.max((LV.seen[k.room] || {})[LV.who] || 0, o.msg.id); MS.ev = null; closeSheet(true); notify(r); toast(`${k.kind}을 올렸어요`.replace("회의을", "회의를")); return rr(); }
+      catch (e12) { t.disabled = false; return toast("못 올렸어요. 다시 눌러 주세요"); }
+    }
+    if (a === "tknew") { MS.tk = { src: "", room: MS.room, title: "", owner: "", due: "" }; return tkSheet(); }
     if (a === "fx") { const f = MS.files[+t.dataset.i]; if (f && !LV.sending) { if (f.url) URL.revokeObjectURL(f.url); MS.files.splice(+t.dataset.i, 1); trayUpd(); } return; }
     if (a === "img" && m) return view(m, +t.dataset.i);
     if (a === "file" && m) return download(m, +t.dataset.i);
@@ -2832,10 +2842,16 @@ ${live() ? "" : `<div class="mstabs">${tabs.map(([k, n, c, cl]) => `<button clas
     }
     if (a === "pins") return pinsSheet(t.dataset.room);
     if (a === "selcopy" && m) return openSheet(`${nodock}<h3>글자 골라서 복사</h3><div class="caption">복사할 곳을 길게 눌러 골라 주세요.</div><div class="mssel">${esc(m.txt)}</div><div class="btns"><button class="btn gray" data-ms="copy" data-id="${id}">전체 복사</button><button class="btn" data-x>닫기</button></div>`);
-    if (a === "rmenu") { const r = R(MS.room); if (!r) return; return openSheet(`${nodock}<h3>${esc(rname(r))}</h3><div class="caption">${r.mem.map(esc).join(", ")}</div><div class="msact">${(r.pins || []).length ? '<button data-ms="pins" data-room="' + r.id + '">공지 보기</button>' : ""}<button data-ms="tklist">이 방 할 일</button>${r.imp ? "" : '<button data-ms="leave" style="color:var(--red)">방 나가기</button>'}</div><div class="btns"><button class="btn gray" data-x>닫기</button></div>`); }
+    if (a === "rmenu") { const r = R(MS.room); if (!r) return; return openSheet(`${nodock}<h3>${esc(rname(r))}</h3><div class="caption">${r.mem.map(esc).join(", ")}</div><div class="msact">${(r.pins || []).length ? '<button data-ms="pins" data-room="' + r.id + '">공지 보기</button>' : ""}<button data-ms="tklist">이 방 할 일</button>${P().some((n) => !r.mem.includes(n)) ? '<button data-ms="invite">사람 부르기</button>' : ""}<button data-ms="leave" style="color:var(--red)">방 나가기</button></div><div class="btns"><button class="btn gray" data-x>닫기</button></div>`); }
+    if (a === "invite") { const r = R(MS.room); if (!r) return; return openSheet(`${nodock}<h3>누구를 부를까요?</h3><div class="caption">부르면 이 방의 예전 글도 같이 보여요.</div><div class="list" style="margin-top:12px">${P().filter((n) => !r.mem.includes(n)).map((n) => `<button class="item" data-ms="invgo" data-n="${esc(n)}"><div class="av">${esc(em(n))}</div><div class="tx"><b>${esc(n)}</b></div></button>`).join("")}</div><div class="btns"><button class="btn gray" data-x>닫기</button></div>`); }
+    if (a === "invgo") {
+      const r = R(MS.room); if (!r) return; t.disabled = true;
+      try { const o = await call("adm_room_invite", { p_room: r.n, p_target: t.dataset.n }); if (!o.ok) throw 0; const st = await call("adm_state", { p_since: Math.max(0, LV.since - 20) }); if (st.ok) take(st); notify(R(MS.room)); closeSheet(true); toast(`${t.dataset.n}님을 불렀어요`); return rr(); }
+      catch (e11) { t.disabled = false; return toast("못 불렀어요. 다시 눌러 주세요"); }
+    }
     if (a === "leave") {
       const r = R(MS.room); if (!r) return; closeSheet(true);
-      if (!(await askConfirm("이 방에서 나갈까요?", "나가면 이 방 글을 더 볼 수 없어요. 방에는 나갔다는 글이 남아요.", "나가기", true))) return;
+      if (!(await askConfirm("이 방에서 나갈까요?", "나가면 이 방 글을 더 볼 수 없어요. 방에는 나갔다는 글이 남아요. 다시 들어오려면 방에 있는 사람이 불러 줘야 해요.", "나가기", true))) return;
       try { const o = await call("adm_room_leave", { p_room: r.n }); if (!o.ok) throw new Error(o.why || ""); notify(r); ROOMS = ROOMS.filter((x) => x.id !== r.id); MSGS = MSGS.filter((x) => x.room !== r.id); LV.tasks = LV.tasks.filter((x) => x.room !== r.id); MS.room = ""; toast("방에서 나왔어요"); return rr(); }
       catch (e10) { return toast(e10 && e10.message === "imp" ? "이 방은 나갈 수 없어요" : "못 나갔어요. 다시 눌러 주세요"); }
     }
