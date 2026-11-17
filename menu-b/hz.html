@@ -368,6 +368,8 @@ body.land #vHome .go5{grid-template-rows:repeat(5,1fr);align-content:stretch}
 .rkr .mv.up{color:var(--red)}.rkr .mv.dn{color:#3b82f6}.rkr .mv.eq{color:var(--grey)}.rkr .mv.new{color:#ff7a00}
 .rkr .mv.hot{color:#fff;background:var(--red);border-radius:999px;padding:4px 6px;font-family:var(--kr,inherit);font-size:12px}.rkr .mv.hot u{display:inline-block;text-decoration:none;margin-right:2px;animation:rkbob .9s ease-in-out infinite}
 @media (prefers-reduced-motion:reduce){.rkin,.rkr.top > i,.rkr .mv.hot u{animation:none}}
+/* 11/17 액상덕후 "랭킹 애니메이션 너무 분답다": 줄 하나씩 날아오기, 1~3위 숫자 튀기, 급상승 화살표 통통 끔 */
+.rkin,.rkr.top > i,.rkr .mv.hot u{animation:none!important}
 /* 첫구매 혜택 */
 #perkBox{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:80}#perkBox.on{display:flex}
 #perkBox .pb{background:var(--card);color:var(--ink);border-radius:24px;padding:28px;width:min(440px,90vw);text-align:center}#perkBox .pb > b{font-size:22px}#perkBox p{color:var(--grey);margin:8px 0 14px}
@@ -518,7 +520,8 @@ body[data-theme=dark] .scan svg{background:#fff;border-radius:8px}
 .sres{bottom:auto;overflow:visible;padding:8px 0 16px;box-shadow:0 10px 24px rgba(0,0,0,.14);border-radius:0 0 24px 24px}
 .hzpad{padding:0 var(--pad)}
 .hzhd{padding:4px var(--pad) 8px;font-size:14px;color:var(--grey);font-weight:700}
-.hzrow{display:flex;gap:12px;overflow-x:auto;padding:2px var(--pad) 6px;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch}
+.hzrow{display:flex;gap:12px;overflow-x:auto;overflow-y:hidden;padding:2px var(--pad) 6px;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;touch-action:pan-x pan-y;overscroll-behavior-x:contain;cursor:grab}
+.hzrow.drag{cursor:grabbing;scroll-snap-type:none}
 .hzrow::-webkit-scrollbar{height:0}
 .hzrow .sr{flex:none;width:196px;flex-direction:column;align-items:stretch;gap:6px;margin:0;padding:12px;position:relative;scroll-snap-align:start}
 .hzrow .sr .im{width:100%;height:150px;border-radius:14px;font-size:44px}
@@ -2206,6 +2209,14 @@ if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw-b.js").ca
     const fl = g.animate([{ transform: "translate(0,0) scale(1)", opacity: 1 }, { transform: `translate(${dx * .5}px,${dy * .5 - 80}px) scale(.7)`, opacity: 1, offset: .5 }, { transform: `translate(${dx}px,${dy}px) scale(.18)`, opacity: .3 }], { duration: 520, easing: "cubic-bezier(.5,0,.75,0)" });
     fl.onfinish = () => { g.remove(); to.animate([{ transform: "scale(1)" }, { transform: "scale(1.12)" }, { transform: "scale(1)" }], { duration: 260, easing: "cubic-bezier(.2,.8,.2,1)" }); };
   }, true);
+})();
+/* 11/17 시안: 가로 줄은 손가락 말고 마우스로도 넘기기 (휠, 끌기) */
+(() => { let d = null, eat = 0;
+  document.addEventListener("wheel", (e) => { const r = e.target.closest(".hzrow"); if (!r || Math.abs(e.deltaX) > Math.abs(e.deltaY)) return; e.preventDefault(); r.scrollLeft += e.deltaY; }, { passive: false });
+  document.addEventListener("pointerdown", (e) => { if (e.pointerType !== "mouse") return; const r = e.target.closest(".hzrow"); if (!r) return; d = { r, x: e.clientX, s: r.scrollLeft, moved: false }; });
+  addEventListener("pointermove", (e) => { if (!d) return; const dx = e.clientX - d.x; if (!d.moved && Math.abs(dx) < 6) return; d.moved = true; d.r.classList.add("drag"); d.r.scrollLeft = d.s - dx; });
+  addEventListener("pointerup", () => { if (d && d.moved) eat = Date.now(); if (d) d.r.classList.remove("drag"); d = null; });
+  addEventListener("click", (e) => { if (Date.now() - eat < 300 && e.target.closest(".hzrow")) { e.stopPropagation(); e.preventDefault(); } }, true);
 })();</script>
 </body>
 </html>
