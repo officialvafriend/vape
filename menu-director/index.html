@@ -487,6 +487,41 @@ body.land .cartp .save .pct{display:none}body.land .cartp .save .big{font-size:2
 .srw{margin-top:10px;display:flex;flex-wrap:wrap;gap:8px}.srw button{flex:1 1 40%;padding:10px;border:0;border-radius:14px;background:#e5313b;color:#fff;font-family:var(--jal);font-size:17px;animation:wig 2.6s ease-in-out infinite}.srw small{display:block;font-family:var(--kr);font-size:13px;opacity:.85}
 .stampban{background:#fff!important;animation:none!important}.stampban b{color:#b45309}
 body.land .cartp .scard{grid-column:1/-1}
+/* 도장 지도 */
+.smap{position:relative;margin:10px auto 4px;max-width:640px;padding:6px 26px;border-radius:20px;background:repeating-linear-gradient(45deg,#FFF9E6 0 14px,#FFF4D1 14px 28px)}
+.srow{position:relative;display:flex;justify-content:space-between;align-items:center;padding:12px 0 18px}
+.srow.rev{flex-direction:row-reverse}
+.trk{position:absolute;left:22px;right:22px;top:calc(50% - 3px);height:6px;border-radius:6px;background:repeating-linear-gradient(90deg,#e8d9a8 0 8px,transparent 8px 14px)}
+.trk b{position:absolute;left:0;top:0;bottom:0;border-radius:6px;background:linear-gradient(90deg,#FFB020,#e5313b);transition:width .8s cubic-bezier(.3,1.2,.5,1)}
+.srow.rev .trk b{left:auto;right:0;background:linear-gradient(270deg,#FFB020,#e5313b)}
+.turn{position:absolute;width:26px;height:56px;border:6px dashed #e8d9a8;border-left:0;border-radius:0 30px 30px 0;margin-top:-30px;z-index:0}
+.turn.r{right:4px}.turn.l{left:4px;transform:scaleX(-1)}
+.turn.on{border-color:#e5313b;border-style:solid}
+.sp{position:relative;z-index:1;width:40px;height:40px;border-radius:50%;background:#fff;border:2px dashed #d9c78f;display:flex;align-items:center;justify-content:center}
+.sp small{font-size:12px;font-weight:800;color:#c4b27a}
+.sp.on{border:0;background:radial-gradient(circle at 35% 30%,#ff6b6b,#E01A19 60%,#b30f0f);box-shadow:0 2px 0 #8a0c0c,0 4px 8px rgba(224,26,25,.35);transform:rotate(-10deg)}
+.sp.on em{font-style:normal;font-family:var(--jal);font-size:13px;color:#fff;letter-spacing:-.02em;border:2px solid rgba(255,255,255,.8);border-radius:50%;width:30px;height:30px;display:flex;align-items:center;justify-content:center}
+.sp.rw{width:54px;height:54px;border:3px solid #FFB020;background:#FFF0C2;box-shadow:0 0 0 4px rgba(255,176,32,.2)}
+.sp.rw u{text-decoration:none;font-size:26px}
+.sp.rw label{position:absolute;bottom:-17px;left:50%;transform:translateX(-50%);white-space:nowrap;font-family:var(--jal);font-size:12px;color:#b45309}
+.sp.rw.on{transform:rotate(-8deg) scale(1.05)}.sp.rw.on em{width:40px;height:40px;font-size:16px}
+.sp.rw.got::after{content:'🎁';position:absolute;right:-8px;top:-10px;font-size:18px;animation:bob 1.6s ease-in-out infinite}
+.sp.rw:not(.on){animation:glow 2s ease-in-out infinite}
+@keyframes glow{50%{box-shadow:0 0 0 8px rgba(255,176,32,.35)}}
+.sp.next{border-color:#e5313b;border-style:solid;animation:nextp 1.2s ease-in-out infinite}
+@keyframes nextp{50%{transform:scale(1.12)}}
+.sp .walker{position:absolute;top:-38px;left:50%;transform:translateX(-50%);animation:hop .9s ease-in-out infinite;pointer-events:none}
+@keyframes hop{50%{transform:translate(-50%,-6px)}}
+.sp.new{animation:stampIn .5s cubic-bezier(.2,1.4,.4,1) both;animation-delay:var(--d)}
+@keyframes stampIn{0%{transform:scale(2.6) rotate(-35deg);opacity:0}60%{transform:scale(.85) rotate(-6deg);opacity:1}100%{transform:scale(1) rotate(-10deg)}}
+body:not(.land) .cstaff{overflow-y:auto;scrollbar-width:none}body:not(.land) .cstaff::-webkit-scrollbar{display:none}body:not(.land) .cstaff .ftc{flex:none;overflow:visible}body:not(.land) .cstaff .acts{margin-bottom:4px}
+.srule{margin-top:8px;padding:8px 12px;border-radius:12px;background:#FFF6D6;color:#5c4400;font-size:15px;text-align:center}.srule b{font-family:var(--jal);font-weight:normal;color:#e5313b}
+.srule.ok{background:#E8F7EE;color:#0f7a3d}
+.sadd .go:disabled{opacity:.4}
+body.land .scard .smap{max-width:none;padding:2px 22px}body.land .scard .srow{padding:8px 0 14px}
+body.land .scard .sp{width:32px;height:32px}body.land .scard .sp.rw{width:44px;height:44px}body.land .scard .sp.on em{width:24px;height:24px;font-size:11px}
+body.land .scard .sp .walker svg{height:30px}body.land .scard .sp .walker{top:-30px}
+.done .smap{max-width:560px;margin-left:0}
 .done .sboard{max-width:520px}
 .scard .sboard{max-width:560px;margin:8px auto}
 body.land .scard{padding:10px 14px}body.land .scard .sboard{grid-template-columns:repeat(15,1fr);max-width:none;gap:3px;margin:6px 0}body.land .scard .sboard .st{font-size:10px}body.land .scard .sadd{margin-top:6px}
@@ -1103,7 +1138,7 @@ function memDone(){
       (state.memKind==='new'?'<div class="row2"><span>이름</span><b>'+esc(full)+'</b></div>':'')+
       '<div class="row2"><span>휴대폰</span><b>'+esc(ph)+'</b></div>'+
       (state.memKind==='new'?'<div class="row2"><span>쿠폰 문자</span><b>'+(m.mk?'받을래요 🎟️':'안 받아요')+'</b></div>':'')+
-      (function(){ var rec=stampRec(m.phone); return '<div class="row2"><span>🟡 도장</span><b>'+(rec?rec.stamps+'개'+(rec.name?' · '+esc(maskName(rec.name))+' 님':''):'이 패드엔 아직 없어요 (오늘부터 모아요)')+'</b></div>'+stampBoard(rec?rec.stamps:0)+'<div class="snext">'+nextReward(rec?rec.stamps:0)+'</div>'; })()+
+      (function(){ var rec=stampRec(m.phone); return '<div class="row2"><span>🟡 도장</span><b>'+(rec?rec.stamps+'개'+(rec.name?' · '+esc(maskName(rec.name))+' 님':''):'이 패드엔 아직 없어요 (오늘부터 모아요)')+'</b></div>'+stampMap(rec?rec.stamps:0)+'<div class="snext">'+nextReward(rec?rec.stamps:0)+'</div>'; })()+
     '</section>'+(state.hist.indexOf('cart-staff')>=0?'<div class="acts" style="margin-top:auto"><button data-act="cmemo2">📝 회원메모 쓰기</button><button class="main" data-act="tocart">‹ 결제 화면으로</button></div>':'<div class="acts" style="margin-top:auto"><button data-act="memoff">회원 없이 둘러보기</button><button class="main" data-act="mshop">🛒 이 회원으로 담기 시작</button></div>')+'</div>';
 }
 
@@ -1761,8 +1796,8 @@ function memoPane(){
 
 /* ---------- 🟡 도장 적립: 회원 조회 → 그 회원으로 담기 → 결제 직전에 직원 비밀번호로 도장. 이 패드에만 저장 ----------
    보상: 5개 코일 1개 / 10개 액상 1병 / 20개 기기 / 30개 기기 패키지 (받으면 그만큼 도장을 씀). 기본 적립: 구매 1번에 1개 */
-var STAMP_KEY='vfDirStamp', STAMP_PER_BUY=1;
-var REWARDS=[[5,'🔧','코일 1개'],[10,'💧','액상 1병'],[20,'📱','기기'],[30,'🎁','기기 패키지']];
+var STAMP_KEY='vfDirStamp', STAMP_PER_BUY=1, STAMP_MIN_BOTTLES=5; /* 액상 5병 이상 사면 구매 1번에 도장 1개 */
+var REWARDS=[[5,'🔧','코일 1개','코일'],[10,'💧','액상 1병','액상'],[20,'📱','기기','기기'],[30,'🎁','기기 패키지','패키지']];
 function stampDB(){ return lsGet(STAMP_KEY,{}); }
 function stampRec(ph){ return stampDB()[ph]||null; }
 function stampSave(ph, rec){ var db=stampDB(); db[ph]=rec; return lsSet(STAMP_KEY,db); }
@@ -1771,27 +1806,46 @@ function stampBoard(n, big){ var mx=30, h='';
   for (var i=1;i<=mx;i++){ var rw=REWARDS.filter(function(r){return r[0]===i})[0];
     h+='<span class="st'+(i<=n?' on':'')+(rw?' rw':'')+'">'+(i<=n?'🟡':(rw?rw[1]:i))+'</span>'; }
   return '<div class="sboard'+(big?' big':'')+'">'+h+'</div>'; }
+/* 도장 지도: 10칸씩 3줄, 지그재그 길. 찍힌 칸은 빨간 VF 도장, 보상 칸은 큰 정거장, 다음 칸에 빨강이가 콩콩 */
+function stampMap(n, nw){
+  var h='<div class="smap">';
+  for (var r=0;r<3;r++){
+    var cnt=Math.max(0,Math.min(10,n-r*10)), fill=cnt<=1?0:(cnt-1)/9*100, rev=r%2===1;
+    h+='<div class="srow'+(rev?' rev':'')+'"><i class="trk"><b style="width:'+fill+'%"></b></i>';
+    for (var c=0;c<10;c++){ var i=r*10+c+1, rw=REWARDS.filter(function(x){return x[0]===i})[0], on=i<=n, isNew=nw&&i>nw.from&&i<=nw.to, nxt=i===n+1;
+      h+='<span class="sp'+(on?' on':'')+(rw?' rw':'')+(nxt?' next':'')+(isNew?' new':'')+(rw&&on?' got':'')+'" style="--d:'+(isNew?(i-nw.from-1)*.25:0)+'s">'+
+        (on?'<em>VF</em>':(rw?'<u>'+rw[1]+'</u>':'<small>'+i+'</small>'))+(rw?'<label>'+rw[3]+'</label>':'')+(nxt?'<span class="walker">'+chRed(40)+'</span>':'')+'</span>'; }
+    h+='</div>'+(r<2?'<i class="turn'+(rev?' l':' r')+(n>=(r+1)*10+1?' on':'')+'"></i>':'');
+  }
+  return h+'</div>';
+}
+function stampBoom(){ var nw=state.stNew; if(!nw) return; setTimeout(function(){ state.stNew=null; }, 50);
+  REWARDS.forEach(function(r){ if (r[0]>nw.from && r[0]<=nw.to){ var el=document.querySelectorAll('.smap .sp')[ (function(i){ var row=Math.floor((i-1)/10), c=(i-1)%10; return row*10+c; })(r[0]) ];
+    if(!el) return; setTimeout(function(){ ['🎉','✨','🎁','⭐','🎊','💛'].forEach(function(em,k){ var s2=document.createElement('span'); s2.className='boom'; s2.textContent=em; s2.style.left='50%'; var a=k/6*Math.PI*2; s2.style.setProperty('--x',Math.round(Math.cos(a)*70)+'px'); s2.style.setProperty('--y',Math.round(Math.sin(a)*60)+'px'); s2.style.setProperty('--r','20deg'); el.appendChild(s2); setTimeout(function(){s2.remove()},1000); }); toast('🎁 '+r[2]+' 받을 수 있어요!'); }, (r[0]-nw.from)*250+400); } }); }
 function nextReward(n){ var r=REWARDS.filter(function(r){return r[0]>n})[0]; return r?'<b>'+(r[0]-n)+'개</b> 더 모으면 '+r[1]+' '+r[2]+'!':'🎉 모든 보상을 받을 수 있어요!'; }
 function memberChip(){ var M0=state.member; if(!M0) return ''; var rec=stampRec(M0.phone)||{stamps:0};
   return '<div class="mchip">👤 <b>'+esc(maskName(M0.name||rec.name))+'</b> 님 · 🟡 도장 <b>'+(rec.stamps||0)+'</b>개</div>'; }
+function stampBottles(){ return cartSum().bottles||0; }
+function stampDefault(){ return stampBottles()>=STAMP_MIN_BOTTLES?STAMP_PER_BUY:0; }
 function stampCard(){
   var M0=state.member;
   if (!M0) return '<button class="rvban stampban" data-act="mem"><span class="em">🟡</span><span><b>회원 조회하고 도장 받기</b><small>구매할 때마다 도장 · 5개 코일, 10개 액상 1병, 20개 기기, 30개 기기 패키지</small></span><i>›</i></button>';
-  var rec=stampRec(M0.phone)||{name:M0.name,stamps:0,log:[]}, n=rec.stamps||0, add=state.stAdd==null?STAMP_PER_BUY:state.stAdd;
+  var rec=stampRec(M0.phone)||{name:M0.name,stamps:0,log:[]}, n=rec.stamps||0, add=state.stAdd==null?stampDefault():state.stAdd, nb=stampBottles();
   var done=state.stDone, can=REWARDS.filter(function(r){return n>=r[0]});
-  return '<div class="scard"><div class="sh"><b>👤 '+esc(maskName(M0.name||rec.name))+' 님 도장</b><span>🟡 '+n+' / 30</span></div>'+stampBoard(n)+
+  return '<div class="scard"><div class="sh"><b>🗺️ '+esc(maskName(M0.name||rec.name))+' 님 도장 지도</b><span>🟡 '+n+' / 30</span></div>'+stampMap(n, state.stNew)+
     '<div class="snext">'+nextReward(n)+'</div>'+
     (done?'<div class="sok">✅ 이번 구매 도장 '+done+'개 적립했어요</div>':
+      (nb<STAMP_MIN_BOTTLES?'<div class="srule">💧 액상 <b>5병 이상</b> 사면 도장 1개! 지금 '+nb+'병 · <b>'+(STAMP_MIN_BOTTLES-nb)+'병</b> 더 담으면 도장 받아요</div>':'<div class="srule ok">💧 액상 '+nb+'병 구매 · 도장 1개 받을 수 있어요 🎉</div>')+
       '<div class="sadd"><span>이번 구매 도장</span><button data-act="sta" data-d="-1">−</button><b>+'+add+'</b><button data-act="sta" data-d="1">＋</button>'+
-      '<input id="stPin" type="password" inputmode="numeric" maxlength="4" placeholder="직원 비번" autocomplete="off"><button class="go" data-act="stgo">🟡 적립</button></div>')+
+      '<input id="stPin" type="password" inputmode="numeric" maxlength="4" placeholder="직원 비번" autocomplete="off"><button class="go" data-act="stgo"'+(add<1?' disabled':'')+'>🟡 적립</button></div>')+
     (can.length?'<div class="srw">'+can.map(function(r){return '<button data-act="strw" data-n="'+r[0]+'">'+r[1]+' '+r[2]+' 받기 <small>도장 '+r[0]+'개 사용</small></button>'}).join('')+'</div>':'')+'</div>';
 }
 async function stampGo(){ var pin=(document.getElementById('stPin')||{}).value||'', saved=lsGet(PIN_KEY,null);
   if (!saved) return toast('먼저 회원메모에서 직원 비밀번호를 정해 주세요');
   if (!state.stOK) { if ((await pinHash(pin))!==saved) return toast('직원 비밀번호가 틀렸어요'); state.stOK=true; }
-  var M0=state.member, rec=stampRec(M0.phone)||{name:M0.name||'',stamps:0,log:[]}, add=state.stAdd==null?STAMP_PER_BUY:state.stAdd;
+  var M0=state.member, rec=stampRec(M0.phone)||{name:M0.name||'',stamps:0,log:[]}, add=state.stAdd==null?stampDefault():state.stAdd; if (add<1) return toast('액상 5병 이상 살 때 도장을 찍어요');
   rec.stamps=(rec.stamps||0)+add; rec.log=(rec.log||[]).concat([{t:Date.now(),d:add,note:'구매 '+won(cartSum().pay)}]).slice(-50); if(!rec.name&&M0.name) rec.name=M0.name;
-  stampSave(M0.phone, rec); state.stDone=add; toast('🟡 도장 '+add+'개 적립! 지금 '+rec.stamps+'개'); render(); }
+  stampSave(M0.phone, rec); state.stDone=add; state.stNew={from:rec.stamps-add, to:rec.stamps}; toast('🟡 쾅! 도장 '+add+'개 · 지금 '+rec.stamps+'개'); render(); stampBoom(); }
 function stampUse(need){ if (!state.stOK) return toast('먼저 직원 비밀번호로 적립해 주세요');
   var M0=state.member, rec=stampRec(M0.phone); if(!rec||rec.stamps<need) return;
   var rw=REWARDS.filter(function(r){return r[0]===need})[0]; rec.stamps-=need; rec.log=(rec.log||[]).concat([{t:Date.now(),d:-need,note:rw[1]+' '+rw[2]+' 받음'}]).slice(-50);
@@ -1921,7 +1975,7 @@ document.getElementById('app').addEventListener('click',function(e){
   if (a==='tocart' || a==='cmemo2') { while (state.hist.length && state.hist[state.hist.length-1]!=='cart-staff') state.hist.pop(); state.view=state.hist.pop()||'cart-staff'; if (a==='cmemo2') { var bb=document.createElement('button'); bb.dataset.act='cmemo'; render(); return document.querySelector('[data-act=cmemo]').click(); } return render(); }
   if (a==='mshop') { state.memKind=null; state.hist=[]; state.view='home'; render(); return toast('👤 '+maskName(state.member.name||(stampRec(state.member.phone)||{}).name)+' 님 확인! 이제 골라 담아 주세요'); }
   if (a==='memoff') { state.member=null; return home(); }
-  if (a==='sta') { state.stAdd=Math.max(1,Math.min(10,(state.stAdd==null?STAMP_PER_BUY:state.stAdd)+(+b.dataset.d))); return render(); }
+  if (a==='sta') { state.stAdd=Math.max(0,Math.min(10,(state.stAdd==null?stampDefault():state.stAdd)+(+b.dataset.d))); return render(); }
   if (a==='stgo') { stampGo(); return; }
   if (a==='strw') { stampUse(+b.dataset.n); return; }
   if (a==='mback') { state.memoFrom=null; state.mpre=''; return back(); }
