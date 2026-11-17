@@ -2309,6 +2309,8 @@ ${miss.length ? `<div class="plnote" style="background:var(--amber-soft);color:v
 textarea.msin{height:48px;min-height:48px;max-height:132px;padding:12px 16px;line-height:1.5;resize:none;border-radius:22px;font-family:inherit;overflow-y:auto;display:block}.msrw{align-items:flex-end}.msrw .msic,.msrw .mssend{margin-bottom:2px}
 @media (hover:hover) and (pointer:fine){.msg .bb{-webkit-user-select:text;user-select:text;cursor:text}.msg .bb button{cursor:pointer}}
 .mssel{background:var(--bg);border-radius:14px;padding:14px;margin-top:12px;font-size:16px;line-height:1.6;white-space:pre-wrap;word-break:break-word;max-height:46vh;overflow:auto;-webkit-user-select:text;user-select:text;-webkit-touch-callout:default}
+.msph{width:100%;height:100%;border-radius:50%;object-fit:cover;display:block}.msav{overflow:hidden}.msrow .av,.msmem .av{overflow:hidden}.mswho .msph{display:inline-block;width:22px;height:22px;vertical-align:-6px;margin-right:2px}
+.msphb{display:inline-flex;align-items:center;height:40px;padding:0 14px;border-radius:12px;background:var(--blue);color:#fff;font-size:14px;font-weight:700;cursor:pointer}.msalrow button.g{background:var(--line2);color:var(--ink2)}
 .mstray{display:flex;gap:8px;align-items:center;overflow-x:auto;padding:0 2px}.mstray:not(:empty){padding:2px 2px 8px}
 .mstf{position:relative;flex:none;height:64px;min-width:64px;max-width:150px;border-radius:12px;background:var(--bg);overflow:hidden;display:flex;flex-direction:column;justify-content:center;padding:0 10px}.mstf img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}.mstf span{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:18px}.mstf small{position:relative;font-size:11px;color:var(--sub)}.mstf img+small{position:absolute;left:4px;bottom:3px;color:#fff;text-shadow:0 0 3px #000}
 .mstf button{position:absolute;right:2px;top:2px;width:24px;height:24px;border-radius:50%;background:rgba(0,0,0,.55);color:#fff;font-size:15px;line-height:1}.mstray em{font-style:normal;font-size:13px;font-weight:700;color:var(--blue);flex:none;padding:0 6px}
@@ -2336,6 +2338,9 @@ textarea.msin{height:48px;min-height:48px;max-height:132px;padding:12px 16px;lin
   /* st: idle 아직 안 물어봄, check 물어보는 중, off 창고에 열쇠가 없음(예시를 보임), who 이름을 골라야 함, load 불러오는 중, ok 진짜, nokey 열쇠가 다름, err 못 닿음 */
   const LV = { st: "idle", k: "", kFor: null, who: ls.get("vf-msg-who") || "", people: P0, seen: {}, since: 0, timer: 0, busy: false, sending: false, fast: false, found: [], foundQ: "", ft: 0, hidAt: 0, urls: {}, miss: {}, hy: false, up: "", tasks: [], emoji: {} };
   const DEF = { 한섭이사: "🦁", 보혜: "🐰", 민혁팀장: "🐻", 동재팀장: "🐯" }, EMO = ["🦁", "🐰", "🐻", "🐯", "🦊", "🐶", "🐱", "🐼", "🐨", "🐸", "🐵", "🐧", "🦄", "🐷", "🐮", "🐹", "🦉", "🐳", "🐢", "🦖", "🐝", "🌵", "🍀", "🌸", "🔥", "⭐", "🌙", "⚡", "🍑", "🍊", "🍉", "☕"];
+  LV.photo = {};
+  const avH = (n) => { const p = LV.st === "ok" && LV.photo[n]; return p ? `<img class="msph" src="${p}" alt="">` : esc(em(n)); }; /* 사진이 있으면 사진, 없으면 이모지. 사진 주소는 받을 때 모양을 검사한 것만 넣는다 */
+  async function photoLoad() { LV.pt = Date.now(); try { const o = await call("adm_photos", {}); if (!o.ok || !o.photos) return; const P2 = {}; for (const k in o.photos) if (/^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(String(o.photos[k])) && String(o.photos[k]).length < 80000) P2[k] = String(o.photos[k]); const ch = JSON.stringify(Object.keys(P2).map((k) => [k, P2[k].length])) !== JSON.stringify(Object.keys(LV.photo).map((k) => [k, LV.photo[k].length])); LV.photo = P2; if (ch && tab === "msg" && !$("#msin")?.value) rr(); } catch (e19) { /* 다음에 다시 */ } }
   const em = (n) => (LV.st === "ok" && (LV.emoji[n] || DEF[n])) || String(n || "?")[0];
   const EDGE = SB.url + "/functions/v1/adm-file", FMAX = 20 * 1024 * 1024, FN = 5, SIGN = SB.url + "/storage/v1/object/sign/adm-files/";
   const live = () => LV.st === "ok";
@@ -2386,7 +2391,9 @@ textarea.msin{height:48px;min-height:48px;max-height:132px;padding:12px 16px;lin
     return r.json();
   }
   /* 메신저 열쇠: 로그인 열쇠에 꼬리 글자를 붙여 한 방향으로 섞은 값. 이 값으로 로그인 열쇠나 비밀번호를 되짚을 수 없다. */
-  async function mkey() {
+  const devTok = () => { let t = ls.get("vf-msg-tok"); if (!/^[0-9a-f]{48}$/.test(t || "")) { t = [...crypto.getRandomValues(new Uint8Array(24))].map((x) => x.toString(16).padStart(2, "0")).join(""); ls.set("vf-msg-tok", t); } return t; };
+  const mkey = async () => (await mkey0()) + "." + devTok();
+  async function mkey0() {
     if (LV.k && LV.kFor === KEY) return LV.k;
     const a = new Uint8Array(KEY), tag = new TextEncoder().encode("|vf-admin-messenger|1"), buf = new Uint8Array(a.length + tag.length);
     buf.set(a); buf.set(tag, a.length);
@@ -2403,8 +2410,10 @@ textarea.msin{height:48px;min-height:48px;max-height:132px;padding:12px 16px;lin
   function addMsgs(list) { const have = new Set(MSGS.map((m) => m.id)); let add = 0; for (const x of list) { const m = mapM(x); if (!have.has(m.id)) { MSGS.push(m); have.add(m.id); add++; } } if (add) MSGS.sort((a, b) => a.n - b.n); return add; }
   function take(s) {
     LV.people = s.people || P0;
-    ROOMS = s.rooms.map((r) => ({ id: "r" + Number(r.id), n: Number(r.id), name: String(r.name || ""), mem: (r.mem || []).map(String), imp: !!r.imp, pin: r.pin ? "m" + Number(r.pin) : "", pinmsg: r.pinmsg ? mapM(r.pinmsg) : null, first: r.first || 0, pins: Array.isArray(r.pins) ? r.pins.filter((p) => p && p.msg).map((p) => ({ m: mapM(p.msg), who: String(p.who || ""), at: String(p.at || "") })) : r.pinmsg ? [{ m: mapM(r.pinmsg), who: "", at: "" }] : [] }));
+    ROOMS = s.rooms.map((r) => ({ id: "r" + Number(r.id), n: Number(r.id), name: String(r.name || ""), mem: (r.mem || []).map(String), imp: !!r.imp, locked: !!r.locked, open: r.open !== false, pin: r.pin ? "m" + Number(r.pin) : "", pinmsg: r.pinmsg ? mapM(r.pinmsg) : null, first: r.first || 0, pins: Array.isArray(r.pins) ? r.pins.filter((p) => p && p.msg).map((p) => ({ m: mapM(p.msg), who: String(p.who || ""), at: String(p.at || "") })) : r.pinmsg ? [{ m: mapM(r.pinmsg), who: "", at: "" }] : [] }));
     if (s.emoji && typeof s.emoji === "object") LV.emoji = s.emoji;
+    LV.pinset = !!s.pinset;
+    { const ids = ROOMS.filter(shut).map((r) => r.id); if (ids.length) { MSGS = MSGS.filter((m) => !ids.includes(m.room)); LV.tasks = LV.tasks.filter((t) => !ids.includes(t.room)); } if (MS.room && shut(R(MS.room))) { MS.room = ""; LV.reflow = true; } }
     const add = addMsgs(s.msgs), old = LV.seen; LV.seen = {};
     for (const x of s.seen) (LV.seen["r" + x.room] ||= {})[x.who] = x.last;
     for (const k in old) { const v = (old[k] || {})[LV.who] || 0; if (v > ((LV.seen[k] || {})[LV.who] || 0)) (LV.seen[k] ||= {})[LV.who] = v; }
@@ -2412,7 +2421,8 @@ textarea.msin{height:48px;min-height:48px;max-height:132px;padding:12px 16px;lin
     if (Array.isArray(s.tasks)) LV.tasks = s.tasks.map(mapT);
     return add;
   }
-  const sig = () => JSON.stringify([ROOMS.map((r) => [r.id, r.name, r.mem, r.pin, (r.pins || []).map((p) => p.m.id)]), LV.emoji, LV.seen, LV.tasks.map((t) => [t.id, t.st])]);
+  const shut = (r) => !!r && r.locked && !r.open; /* 비밀번호가 걸렸고 이 기기가 아직 안 푼 방 */
+  const sig = () => JSON.stringify([LV.pinset, ROOMS.map((r) => [r.id, r.name, r.mem, r.pin, r.locked, r.open, (r.pins || []).map((p) => p.m.id)]), LV.emoji, LV.seen, LV.tasks.map((t) => [t.id, t.st])]);
   /* 메신저가 스스로 다시 그릴 때는 full(), 바깥(3분마다 도는 자동 새로고침 등)이 대화방을 다시 그리려 하면 글 칸만 바꿔 치던 글과 커서를 지킨다 */
   let own = false, lastPc = null;
   const full = () => { own = true; try { render(); } finally { own = false; } };
@@ -2437,31 +2447,35 @@ textarea.msin{height:48px;min-height:48px;max-height:132px;padding:12px 16px;lin
     try {
       const s = await call("adm_state", { p_since: 0 });
       if (!s.ok) { LV.st = s.why === "who" ? "who" : "nokey"; return rr(); }
-      take(s); LV.st = "ok"; ls.set("vf-msg-live", "1"); LV.fast = false; sched(); updBadge(); rr(); pushSync();
+      take(s); LV.st = "ok"; ls.set("vf-msg-live", "1"); LV.fast = false; sched(); updBadge(); rr(); pushSync(); photoLoad();
     } catch { LV.st = "err"; rr(); }
   }
-  function sched(ms) { clearTimeout(LV.timer); if (!live()) return; LV.timer = setTimeout(poll, ms ?? (tab === "msg" ? 3000 : 30000)); }
+  function sched(ms) { clearTimeout(LV.timer); if (!live()) return; LV.timer = setTimeout(poll, ms ?? (document.visibilityState !== "visible" ? 20000 : tab === "msg" ? 3000 : 30000)); }
   async function poll() {
     if (!live()) return;
     if (!KEY || !D) { LV.st = "idle"; ROOMS = []; MSGS = []; LV.k = ""; return; } /* 잠그면 멈춤. 다시 들어오면 처음부터 */
-    if (document.visibilityState !== "visible") return; /* 안 보이는 동안은 쉰다. 다시 보이면 바로 받음 */
+    const hid = document.visibilityState !== "visible";
+    if (hid && pushMode() !== "local") return; /* 안 보이는 동안은 쉰다. 다시 보이면 바로 받음. 직접 알림 방식만 가려져 있어도 20초마다 본다 */
     if (LV.busy) return sched();
     LV.busy = true; if (tab !== "msg") LV.fast = false;
     try {
       const before = sig(), s = await call("adm_state", { p_since: Math.max(0, LV.since - 20) });
-      if (!s.ok) { LV.st = "nokey"; return rr(); }
-      const add = take(s);
+      if (!s.ok) { LV.st = s.why === "who" ? "who" : "nokey"; LV.names = null; return rr(); }
+      const since0 = LV.since, add = take(s);
+      if (hid && add && MSGS.some((m) => m.n > since0 && m.who !== LV.who)) localNote();
       if (add || sig() !== before) soft(add);
     } catch { /* 잠깐 끊긴 것은 다음 차례에 다시 */ } finally { LV.busy = false; sched(); }
   }
   document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState !== "visible") { LV.hidAt = Date.now(); return; }
+    if (document.visibilityState !== "visible") { LV.hidAt = Date.now(); if (live() && pushMode() === "local") sched(20000); return; }
     if (!live()) return;
     if (LV.hidAt && Date.now() - LV.hidAt > 10 * 60e3) { const keep = MS.room; load().then(() => { if (keep && R(keep)) { MS.room = keep; rr(); } }); } else sched(200);
   });
   /* 치던 글이 끊기지 않게, 새 글이 오면 화면을 통째로 다시 그리지 않고 글 칸과 방 목록만 바꾼다 */
   function soft(add) {
     updBadge();
+    if (LV.reflow) { LV.reflow = false; if (tab === "msg") { closeSheet(true); return full(); } return; }
+    if (Date.now() - (LV.pt || 0) > 5 * 60e3) photoLoad();
     if (tab !== "msg") return;
     if (MS.room && !R(MS.room)) { MS.room = ""; return full(); }
     const b = $("#msbody"), r = MS.room && R(MS.room);
@@ -2505,7 +2519,9 @@ textarea.msin{height:48px;min-height:48px;max-height:132px;padding:12px 16px;lin
      알림에는 글 내용이 실리지 않는다("새 글이나 업무가 있어요"만 뜸). 아이폰은 홈 화면에 추가한 아이콘으로 열었을 때만 된다. */
   const EDGE_PUSH = SB.url + "/functions/v1/adm-push";
   const pushCan = () => "serviceWorker" in navigator && "PushManager" in window && "Notification" in window;
-  const pushIsOn = () => ls.get("vf-msg-push") === "1" && pushCan() && Notification.permission === "granted";
+  const pushMode = () => ("Notification" in window && Notification.permission === "granted" ? ls.get("vf-msg-push") || "" : ""); /* "1" 폰 알림, "local" 창이 열려 있을 때만 */
+  const pushIsOn = () => pushMode() === "1" || pushMode() === "local";
+  const localNote = () => { try { navigator.serviceWorker.getRegistration().then((reg) => (reg ? reg.showNotification("베이프렌드 관리자", { body: "새 글이나 업무가 있어요", tag: "adm-new", renotify: true }) : new Notification("베이프렌드 관리자", { body: "새 글이나 업무가 있어요", tag: "adm-new" }))).catch(() => {}); } catch (e) { /* 알림을 못 띄우는 브라우저 */ } };
   const isIos = () => /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
   const b64uToU8 = (t) => Uint8Array.from(atob(t.replace(/-/g, "+").replace(/_/g, "/") + "===".slice((t.length + 3) % 4)), (c) => c.charCodeAt(0));
   const edgePush = async (b) => (await fetch(EDGE_PUSH, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(b), keepalive: true })).json();
@@ -2520,7 +2536,11 @@ textarea.msin{height:48px;min-height:48px;max-height:132px;padding:12px 16px;lin
       catch (e6) { const old = await reg.pushManager.getSubscription(); if (old) await old.unsubscribe(); sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64uToU8(v.pub) }); }
       const o = await call("adm_push_sub", { p_endpoint: sub.endpoint, p_on: true }); if (!o.ok) throw new Error(o.why || "sub");
       ls.set("vf-msg-push", "1"); toast("알림을 켰어요. 새 글이 오면 이 기기에 떠요"); if ($("#sheet .msprof")) profSheet(); rr();
-    } catch (e7) { toast("알림을 못 켰어요. 다시 눌러 주세요"); }
+    } catch (e7) {
+      /* 알림 주소를 못 받는 브라우저: 허용은 받았으니, 이 창이 열려 있는 동안 새 글이 오면 직접 알림을 띄운다 */
+      if ("Notification" in window && Notification.permission === "granted") { ls.set("vf-msg-push", "local"); try { await navigator.serviceWorker.register("sw.js"); } catch (e13) { /* 없어도 됨 */ } toast("알림을 켰어요. 이 브라우저는 관리자웹 창이 열려 있을 때만 알림이 떠요", 5000); if ($("#sheet .msprof")) profSheet(); return rr(); }
+      toast("알림을 못 켰어요. 다시 눌러 주세요");
+    }
   }
   async function pushOff() {
     try { const reg = await navigator.serviceWorker.getRegistration(), sub = reg && (await reg.pushManager.getSubscription()); if (sub) { await call("adm_push_sub", { p_endpoint: sub.endpoint, p_on: false }).catch(() => {}); await sub.unsubscribe(); } } catch (e8) { /* 이미 꺼진 것 */ }
@@ -2528,10 +2548,10 @@ textarea.msin{height:48px;min-height:48px;max-height:132px;padding:12px 16px;lin
   }
   async function pushSync() { /* 켜 둔 기기는 열 때마다 주소를 다시 알려 준다(주소가 바뀌었거나 이름을 바꿨을 때) */
     if (ls.get("vf-msg-push") !== "1" || !pushCan()) return;
-    try { const reg = await navigator.serviceWorker.register("sw.js"), sub = await reg.pushManager.getSubscription(); if (!sub || Notification.permission !== "granted") return ls.set("vf-msg-push", null); await call("adm_push_sub", { p_endpoint: sub.endpoint, p_on: true }); } catch (e9) { /* 다음에 다시 */ }
+    try { const reg = await navigator.serviceWorker.register("sw.js"), sub = await reg.pushManager.getSubscription(); if (Notification.permission !== "granted") return ls.set("vf-msg-push", null); if (!sub) return pushOn(); /* 허용은 그대로인데 주소만 사라졌으면 묻지 않고 다시 받는다 */ await call("adm_push_sub", { p_endpoint: sub.endpoint, p_on: true }); } catch (e9) { /* 다음에 다시 */ }
   }
   const notify = (r) => { if (!r || !live()) return; mkey().then((k) => edgePush({ type: "notify", k, who: LV.who, room: r.n })).catch(() => {}); };
-  const pushBanner = () => { if (!live() || pushIsOn() || MS.pushHide) return ""; if (pushCan()) return `<div class="mson msalim"><b>알림을 켤까요?</b><span>새 글이나 업무가 오면 이 기기에 알림이 떠요.</span><div class="msab"><button data-ms="pushon">알림 켜기</button><button class="g" data-ms="pushhide">나중에</button></div></div>`; return isIos() ? `<div class="mson msalim"><b>아이폰 알림</b><span>사파리의 공유 단추에서 "홈 화면에 추가"를 한 뒤, 그 아이콘으로 열면 알림을 켤 수 있어요.</span><div class="msab"><button class="g" data-ms="pushhide">알겠어요</button></div></div>` : ""; };
+  const pushBanner = () => { if (!live() || pushIsOn() || MS.pushHide || Date.now() - (+ls.get("vf-msg-push-later") || 0) < 7 * 864e5) return ""; if (pushCan()) return `<div class="mson msalim"><b>알림을 켤까요?</b><span>새 글이나 업무가 오면 이 기기에 알림이 떠요.</span><div class="msab"><button data-ms="pushon">알림 켜기</button><button class="g" data-ms="pushhide">나중에</button></div></div>`; return isIos() ? `<div class="mson msalim"><b>아이폰 알림</b><span>사파리의 공유 단추에서 "홈 화면에 추가"를 한 뒤, 그 아이콘으로 열면 알림을 켤 수 있어요.</span><div class="msab"><button class="g" data-ms="pushhide">알겠어요</button></div></div>` : ""; };
 
   /* ── 첨부파일 ── 파일은 비공개 저장소에 들어가고, 서버 함수가 열쇠와 방을 확인한 뒤 한 시간짜리 주소를 내준다 */
   const fsz = (n) => (n >= 1048576 ? (n / 1048576).toFixed(1) + "MB" : Math.max(1, Math.round(n / 1024)) + "KB");
@@ -2635,21 +2655,21 @@ textarea.msin{height:48px;min-height:48px;max-height:132px;padding:12px 16px;lin
     const I = m.who === me(), r = R(m.room), src = m.re && MSGS.find((x) => x.id === m.re), left = r.mem.filter((n) => n !== m.who && !seenBy(m, n)).length;
     const txt = m.card && ((m.card.kind === "file" && m.card.auto) || m.card.kind === "task") ? "" : esc(m.txt).replace(new RegExp("@(" + P().join("|") + ")", "g"), "<b>@$1</b>");
     const card = m.card && m.card.kind === "file" ? filesHtml(m) : m.card && m.card.kind === "task" ? taskCard(m) : m.card ? `<span class="mscard" role="group"><small>${esc(m.card.kind || "")}</small><b>${esc(m.card.title || "")}</b><span>${esc(m.card.sub || "")}</span>${m.card.tag ? `<i>${esc(m.card.tag)}</i>` : ""}</span>` : "";
-    return `<div class="msg ${I ? "me" : live() ? "hav" : ""} ${MS.flash === m.id ? "flash" : ""}" data-mid="${m.id}">${I ? "" : `<small class="nm">${esc(m.who)}</small>`}<div class="bw">${I || !live() ? "" : `<span class="msav" aria-hidden="true">${esc(em(m.who))}</span>`}<div class="bb" data-msb="${m.id}">${src ? `<span class="msq">${esc(src.who)}: ${esc(src.txt)}</span>` : ""}${card}${txt}</div><div class="mm"><button class="mo" data-ms="act" data-id="${m.id}" aria-label="이 글로 할 일">⋯</button>${left && (I || live()) ? `<button class="u" data-ms="who" data-id="${m.id}" aria-label="아직 안 읽은 사람 보기">안 읽음 ${left}</button>` : ""}<span>${hm(m)}</span></div></div>${noai || live() ? "" : aiHtml(m)}</div>`;
+    return `<div class="msg ${I ? "me" : live() ? "hav" : ""} ${MS.flash === m.id ? "flash" : ""}" data-mid="${m.id}">${I ? "" : `<small class="nm">${esc(m.who)}</small>`}<div class="bw">${I || !live() ? "" : `<span class="msav" aria-hidden="true">${avH(m.who)}</span>`}<div class="bb" data-msb="${m.id}">${src ? `<span class="msq">${esc(src.who)}: ${esc(src.txt)}</span>` : ""}${card}${txt}</div><div class="mm"><button class="mo" data-ms="act" data-id="${m.id}" aria-label="이 글로 할 일">⋯</button>${left && (I || live()) ? `<button class="u" data-ms="who" data-id="${m.id}" aria-label="아직 안 읽은 사람 보기">안 읽음 ${left}</button>` : ""}<span>${hm(m)}</span></div></div>${noai || live() ? "" : aiHtml(m)}</div>`;
   }
   function gateHtml() {
-    if (LV.st === "who") return `<div class="mson"><b>누구신가요?</b><span>이 기기에서 쓸 이름을 골라 주세요. 한 번만 고르면 돼요.</span><div class="msnames">${P0.map((n) => `<button data-ms="mepick" data-n="${n}">${n}</button>`).join("")}</div></div>`;
+    if (LV.st === "who") return `<div class="mson"><b>누구신가요?</b><span>이 기기에서 쓸 이름을 골라 주세요. 한 번만 고르면 돼요.</span><div class="msnames">${(LV.names || (namesLoad(), P0.map((n) => ({ who: n })))).map((x) => `<button data-ms="mepick" data-n="${esc(x.who)}">${x.emoji ? esc(x.emoji) + " " : ""}${esc(x.who)}${x.set ? " 🔒" : ""}</button>`).join("")}</div></div>`;
     if (LV.st === "nokey") return `<div class="mson"><b>메신저 열쇠가 맞지 않아요</b><span>관리자웹 비밀번호가 바뀌었거나, 다른 열쇠로 켜져 있어요. 보혜에게 알려 주세요.</span></div>`;
     if (LV.st === "err") return `<div class="mson"><b>메신저 창고에 못 닿았어요</b><span>인터넷을 확인하고 다시 눌러 주세요.</span><button data-ms="retry">다시 해 보기</button></div>`;
     return `<div class="empty">메신저를 불러오는 중이에요</div>`;
   }
   function listHtml() {
     const L = mine(), un = L.reduce((a, r) => a + unread(r.id), 0), at = MSGS.filter((m) => L.some((r) => r.id === m.room) && called(m) && m.who !== me() && !seenBy(m, me())).length, dr = L.reduce((a, r) => a + drafts(r.id).filter((m) => m.ai.st === "draft").length, 0);
-    const row = (r) => { const M = rmsgs(r.id), last = M.at(-1), n = unread(r.id); return `<button class="msrow ${MS.room === r.id && isPC() ? "on" : ""}" data-ms="room" data-id="${r.id}"><div class="av ${r.imp ? "blue" : ""}">${esc(live() && !r.name && r.mem.length === 2 ? em(r.mem.find((n) => n !== me()) || "") : rname(r)[0])}</div><div class="tx"><b>${esc(rname(r))}</b><span>${last ? esc((last.who === me() ? "나" : last.who) + ": " + last.txt) : "아직 글이 없어요"}</span></div><div class="mt"><small>${last ? (last.at.slice(0, 10) === today() ? hm(last) : md(last)) : ""}</small>${n ? `<i>${n > 99 ? "99+" : n}</i>` : ""}</div></button>`; };
+    const row = (r) => { const M = rmsgs(r.id), last = M.at(-1), n = unread(r.id); return `<button class="msrow ${MS.room === r.id && isPC() ? "on" : ""}" data-ms="room" data-id="${r.id}"><div class="av ${r.imp ? "blue" : ""}">${live() && !r.name && r.mem.length === 2 ? avH(r.mem.find((n) => n !== me()) || "") : esc(rname(r)[0])}</div><div class="tx"><b>${esc(rname(r))}</b><span>${shut(r) ? "🔒 비밀번호가 걸린 방이에요" : last ? esc((last.who === me() ? "나" : last.who) + ": " + last.txt) : "아직 글이 없어요"}</span></div><div class="mt"><small>${last ? (last.at.slice(0, 10) === today() ? hm(last) : md(last)) : ""}</small>${n ? `<i>${n > 99 ? "99+" : n}</i>` : ""}</div></button>`; };
     const imp = L.filter((r) => r.imp), rest = L.filter((r) => !r.imp);
-    const head = live() ? `<div class="mshd"><b>메신저</b><span class="sp"></span><button class="mswho" data-ms="me" aria-label="내 프로필">${esc(em(me()))} ${esc(me())}</button><button class="msic" data-ms="newroom" aria-label="새 방">${IC.plus}</button><button class="msic" data-ms="search" aria-label="찾기">${IC.search}</button></div>`
+    const head = live() ? `<div class="mshd"><b>메신저</b><span class="sp"></span><button class="mswho" data-ms="me" aria-label="내 프로필">${avH(me())} ${esc(me())}</button><button class="msic" data-ms="newroom" aria-label="새 방">${IC.plus}</button><button class="msic" data-ms="search" aria-label="찾기">${IC.search}</button></div>`
       : `<div class="mshd"><b>메신저</b><span class="sp"></span><button class="msic" data-ms="search" aria-label="찾기">${IC.search}</button></div><div class="mson"><b>메신저를 켤까요?</b><span>켜면 글이 저장되고, 다른 기기와 오가요. 처음 한 번만 누르면 돼요. 아래는 예시 대화예요.</span><button data-ms="on">메신저 켜기</button></div><div class="msex"><span>예시 대화예요. 저장은 안 돼요. ${esc(me())} 화면이에요.</span><button data-ms="me">바꾸기</button><button data-ms="reset">처음으로</button></div>`;
-    return `${head}${pushBanner()}
+    return `${head}${live() && !LV.pinset ? `<div class="mson mslockme"><b>내 프로필을 잠가 주세요</b><span>비밀번호를 정하면 다른 사람이 ${esc(me())} 이름으로 못 들어와요.</span><button data-ms="lockme">비밀번호 정하기</button></div>` : ""}${pushBanner()}
 <div class="msmiss"><button data-ms="miss" data-k="un">안 읽은 글<b class="${un ? "n" : ""}">${un}</b></button><button data-ms="miss" data-k="at">나를 부른 글<b class="${at ? "n" : ""}">${at}</b></button>${live() ? "" : `<button data-ms="miss" data-k="dr">할 일 초안<b class="${dr ? "n" : ""}">${dr}</b></button>`}</div>
 ${imp.length ? `<div class="msgrp">중요</div><div class="msrows">${imp.map(row).join("")}</div>` : ""}<div class="msgrp">전체</div><div class="msrows">${rest.map(row).join("") || `<div class="empty">${live() ? "다른 방이 없어요. 위의 + 로 만들 수 있어요." : "다른 방이 없어요"}</div>`}</div>`;
   }
@@ -2671,14 +2691,14 @@ ${imp.length ? `<div class="msgrp">중요</div><div class="msrows">${imp.map(row
     if (live() || (isPC() && MS.side && (MS.v === "todo" || MS.v === "dec"))) MS.v = "all";
     const comp = MS.v === "todo" || MS.v === "dec" ? "" : `<div class="mscomp"><button class="msnew" id="msnew" data-ms="bottom" hidden>새 글 보기</button>${re ? `<div class="msre"><span><b>${esc(re.who)}</b>에게 답장: ${esc(re.txt)}</span><button class="msic" data-ms="reoff" aria-label="답장 취소" style="width:32px;height:32px">×</button></div>` : ""}<div class="mstray" id="mstray">${trayHtml()}</div><div class="msrw"><button class="msic" data-ms="plus" aria-label="사진, 파일 붙이기">${IC.plus}</button>${live() ? '<input type="file" id="msfile" multiple hidden>' : ""}<textarea class="msin" id="msin" rows="1" placeholder="메시지" autocomplete="off" maxlength="2000"></textarea><button class="mssend" data-ms="send" aria-label="보내기">${IC.send}</button></div></div>`;
     requestAnimationFrame(() => { const b = $("#msbody"), i = $("#msin"); if (i) { i.value = MS.draft; grow(i); } if (!b) return; const f = MS.flash && b.querySelector(`[data-mid="${MS.flash}"]`); if (f) { f.scrollIntoView({ block: "center" }); const k = MS.flash; setTimeout(() => { if (MS.flash === k) { MS.flash = ""; document.querySelector(`[data-mid="${k}"]`)?.classList.remove("flash"); } }, 1800); } else b.scrollTop = b.scrollHeight; hydrate(); });
-    return `<section class="msroom"><div class="msrh"><button class="msic msback" data-ms="back" aria-label="방 목록으로">${IC.back}</button><b>${esc(rname(r))}</b><small>${r.mem.length}명</small><span class="sp"></span><span id="mstkh">${tkhHtml(r)}</span>${live() ? `<button class="msic" data-ms="rmenu" aria-label="방 메뉴">⋯</button>` : ""}<button class="msic" data-ms="search" aria-label="찾기">${IC.search}</button>${isPC() ? `<button class="msic" data-ms="side" aria-label="정리 칸 ${MS.side ? "접기" : "펴기"}">${IC.side}</button>` : ""}</div>
+    return `<section class="msroom"><div class="msrh"><button class="msic msback" data-ms="back" aria-label="방 목록으로">${IC.back}</button><b>${r.locked ? "🔒 " : ""}${esc(rname(r))}</b><small>${r.mem.length}명</small><span class="sp"></span><span id="mstkh">${tkhHtml(r)}</span>${live() ? `<button class="msic" data-ms="rmenu" aria-label="방 메뉴">⋯</button>` : ""}<button class="msic" data-ms="search" aria-label="찾기">${IC.search}</button>${isPC() ? `<button class="msic" data-ms="side" aria-label="정리 칸 ${MS.side ? "접기" : "펴기"}">${IC.side}</button>` : ""}</div>
 ${live() ? "" : `<div class="mstabs">${tabs.map(([k, n, c, cl]) => `<button class="${MS.v === k ? "on" : ""} ${isPC() && MS.side ? cl : ""}" data-ms="tabv" data-v="${k}">${n}${c ? `<i>${c}</i>` : ""}</button>`).join("")}</div>`}
 <div id="mspinw">${pinHtml(r)}</div><div class="msbody" id="msbody">${bodyHtml(r)}</div>${comp}</section>`;
   }
   const sideHtml = () => {
     const r = R(MS.room); if (!r) return '<aside class="msside"></aside>';
     const pin = pinOf(r), pinBox = pin ? `<button class="msdec" data-ms="jump" data-id="${pin.id}"><small>공지</small><span>${esc(pin.txt)}</span></button>` : '<div class="none">고정한 글이 없어요</div>';
-    if (live()) return `<aside class="msside"><h4>이 방 할 일<small>${openT(r.id).length}개</small></h4>${openT(r.id).map(tkRow).join("") || '<div class="none">할 일이 없어요. 글을 누르면 업무로 만들 수 있어요.</div>'}<h4>이 방 사람<small>${r.mem.length}명</small></h4><div class="msmem">${r.mem.map((n) => `<div><span class="av ${n === me() ? "blue" : ""}">${esc(em(n))}</span>${esc(n)}${n === me() ? " (나)" : ""}</div>`).join("")}</div><h4>고정한 공지<small>${(r.pins || []).length}개</small></h4>${(r.pins || []).map((p) => `<button class="msdec" data-ms="jump" data-id="${p.m.id}" data-room="${r.id}"><small>${md(p.m)}</small><span>${esc(p.m.txt)}</span></button>`).join("") || '<div class="none">고정한 글이 없어요</div>'}</aside>`;
+    if (live()) return `<aside class="msside"><h4>이 방 할 일<small>${openT(r.id).length}개</small></h4>${openT(r.id).map(tkRow).join("") || '<div class="none">할 일이 없어요. 글을 누르면 업무로 만들 수 있어요.</div>'}<h4>이 방 사람<small>${r.mem.length}명</small></h4><div class="msmem">${r.mem.map((n) => `<div><span class="av ${n === me() ? "blue" : ""}">${avH(n)}</span>${esc(n)}${n === me() ? " (나)" : ""}</div>`).join("")}</div><h4>고정한 공지<small>${(r.pins || []).length}개</small></h4>${(r.pins || []).map((p) => `<button class="msdec" data-ms="jump" data-id="${p.m.id}" data-room="${r.id}"><small>${md(p.m)}</small><span>${esc(p.m.txt)}</span></button>`).join("") || '<div class="none">고정한 글이 없어요</div>'}</aside>`;
     return `<aside class="msside"><h4>할 일 초안<small>AI가 대화에서 뽑았어요</small></h4>${todoList(r.id)}<h4>정한 것</h4>${decList(r.id)}<h4>고정한 공지</h4>${pinBox}</aside>`;
   };
   const hi = (s, q) => { const e = esc(s); if (!q) return e; const i = s.toLowerCase().indexOf(q.toLowerCase()); if (i < 0) return e; return esc(s.slice(0, i)) + "<mark>" + esc(s.slice(i, i + q.length)) + "</mark>" + esc(s.slice(i + q.length)); };
@@ -2695,9 +2715,9 @@ ${live() ? "" : `<div class="mstabs">${tabs.map(([k, n, c, cl]) => `<button clas
     if (!live() && !demo()) return `<div class="ms noside"><div class="mslistw"><div class="mshd"><b>메신저</b></div>${gateHtml()}</div><div class="msempty"></div></div>`;
     if (demo() && !ROOMS.length) seed();
     if (live() && !LV.fast) { LV.fast = true; sched(400); }
-    if (MS.room && !mine().some((r) => r.id === MS.room)) MS.room = "";
+    if (MS.room && (!mine().some((r) => r.id === MS.room) || shut(R(MS.room)))) MS.room = "";
     if (isPC()) {
-      if (!MS.room && mine().length) { MS.room = mine()[0].id; readAll(MS.room, true); }
+      if (!MS.room && mine().some((r) => !shut(r))) { MS.room = mine().find((r) => !shut(r)).id; readAll(MS.room, true); }
       return `<div class="ms ${MS.side && MS.room ? "" : "noside"}"><div class="mslistw">${MS.q !== null ? searchHtml() : listHtml()}</div>${MS.room ? roomHtml() + sideHtml() : '<div class="msempty">방을 만들어 보세요</div>'}</div>`;
     }
     return `<div class="ms">${MS.q !== null ? searchHtml() : listHtml()}${MS.room && MS.q === null ? roomHtml() : ""}</div>`;
@@ -2715,7 +2735,7 @@ ${live() ? "" : `<div class="mstabs">${tabs.map(([k, n, c, cl]) => `<button clas
     openSheet(`${nodock}<h3>${task ? "업무로 만들기" : "일정으로 만들기"}</h3><div class="caption">글에서 가져왔어요. 고쳐서 보내세요.</div><div class="ptlab">${task ? "무엇을 하나요?" : "무슨 일정인가요?"}</div><input class="ptin" id="msMkT" maxlength="60" value="${esc(k.title)}">${task ? `<div class="ptlab">누가 맡나요?</div><div class="ptpick">${P0.map((n) => `<button class="chip ${k.owner === n ? "on" : ""}" data-ms="mko" data-n="${n}">${n === me() ? "나 (" + n + ")" : n}</button>`).join("")}</div>` : ""}<div class="ptlab">${task ? "언제까지인가요?" : "언제인가요?"}</div><input class="ptin" type="date" id="msMkD" value="${k.due}">${task ? "" : `<input class="ptin" type="time" id="msMkH" value="${k.time || "14:00"}">`}<div class="btns"><button class="btn gray" data-x style="flex:0 0 96px">닫기</button><button class="btn" data-ms="mkgo">${task ? "업무로 보내기" : "일정에 넣기"}</button></div>`);
   }
   function pinsSheet(rid) { const r = R(rid); if (!r) return; openSheet(`${nodock}<h3>공지 ${r.pins.length}개</h3><div class="caption">방마다 10개까지 고정할 수 있어요. 누르면 그 글로 가요.</div><div style="margin-top:12px">${r.pins.map((p) => `<div class="mspr"><button class="msdec" data-ms="jump" data-id="${p.m.id}" data-room="${r.id}"><small>${md(p.m)}</small><span><b>${esc(p.m.who)}</b> ${esc(p.m.txt)}</span></button><button class="mspx" data-ms="unpin" data-id="${p.m.id}" aria-label="이 공지 풀기">풀기</button></div>`).join("")}</div><div class="btns"><button class="btn gray" data-x>닫기</button></div>`); }
-  function profSheet() { openSheet(`${nodock}<h3>내 프로필</h3><div class="msprof"><span class="msav big">${esc(em(me()))}</span><b>${esc(me())}</b></div><div class="msalrow"><span>이 기기 알림 <b>${pushIsOn() ? "켜짐" : "꺼짐"}</b></span><button data-ms="${pushIsOn() ? "pushoff" : "pushon"}">${pushIsOn() ? "끄기" : "알림 켜기"}</button></div><div class="ptlab">내 이모지를 골라 주세요</div><div class="msemo">${EMO.map((e) => `<button class="${em(me()) === e ? "on" : ""}" data-ms="emo" data-e="${e}" aria-label="이모지 ${e}">${e}</button>`).join("")}</div><div class="btns"><button class="btn gray" data-ms="mechg" style="flex:0 0 130px">다른 이름으로</button><button class="btn" data-x>닫기</button></div>`); }
+  function profSheet() { openSheet(`${nodock}<h3>내 프로필</h3><div class="msprof"><span class="msav big">${avH(me())}</span><b>${esc(me())}</b></div><div class="msalrow"><span>이 기기 알림 <b>${pushIsOn() ? "켜짐" : "꺼짐"}</b></span><button data-ms="${pushIsOn() ? "pushoff" : "pushon"}">${pushIsOn() ? "끄기" : "알림 켜기"}</button></div><div class="msalrow"><span>프로필 사진 <b>${LV.photo[me()] ? "있음" : "없음"}</b></span>${LV.photo[me()] ? '<button class="g" data-ms="phdel">빼기</button>' : ""}<label class="msphb">사진 고르기<input type="file" id="msPhF" accept="image/*" hidden></label></div><div class="ptlab">사진이 없을 때 보일 이모지</div><div class="msemo">${EMO.map((e) => `<button class="${em(me()) === e ? "on" : ""}" data-ms="emo" data-e="${e}" aria-label="이모지 ${e}">${e}</button>`).join("")}</div><div class="msact" style="margin-top:14px">${LV.pinset ? '<button data-ms="pinchg">내 비밀번호 바꾸기</button>' : '<button data-ms="lockme">내 프로필 잠그기 (비밀번호 정하기)</button>'}${me() === "한섭이사" || me() === "보혜" ? '<button data-ms="resetlist">다른 사람 잠금 풀어 주기</button>' : ""}</div><div class="btns"><button class="btn gray" data-ms="mechg" style="flex:0 0 130px">다른 이름으로</button><button class="btn" data-x>닫기</button></div>`); }
   /* 업무 탭의 [방에 올리기]가 부른다: 진짜 방에 업무 카드 글을 올린다. 방 이름이 사람 이름이면 그 사람과의 방(없으면 만듦) */
   window.msgShare = async ({ room, title, sub, txt }) => {
     if (!live()) return false;
@@ -2727,6 +2747,12 @@ ${live() ? "" : `<div class="mstabs">${tabs.map(([k, n, c, cl]) => `<button clas
       addMsgs([o2.msg]); LV.since = Math.max(LV.since, o2.msg.id); (LV.seen[r.id] ||= {})[LV.who] = Math.max((LV.seen[r.id] || {})[LV.who] || 0, o2.msg.id); updBadge(); notify(r); return true;
     } catch { return false; }
   };
+  async function namesLoad() { try { const o = await rpc("adm_names", { p_k: await mkey() }); if (o.ok && Array.isArray(o.names)) { LV.names = o.names.map((x) => ({ who: String(x.who), set: !!x.set, emoji: x.emoji ? String(x.emoji) : "" })); if (LV.st === "who") rr(); } } catch (e18) { /* 이름 목록을 못 받으면 기본 명단으로 */ } }
+  async function claimSheet(n, chg) {
+    if (!LV.names) await namesLoad();
+    const set = !chg && (LV.names || []).some((x) => x.who === n && x.set); if (!chg) MS.cl = { n, set };
+    openSheet(`${nodock}<h3>${chg ? "내 비밀번호 바꾸기" : set ? esc(n) + "(으)로 들어가기" : esc(n) + " 프로필 잠그기"}</h3><div class="caption">${chg ? "새 비밀번호를 정해 주세요(4자 이상)." : set ? "이 이름의 비밀번호를 넣어 주세요. 이 기기에서는 한 번만 넣으면 돼요." : "이 이름으로 쓸 비밀번호를 정해 주세요(4자 이상). 다른 사람이 이 이름으로 못 들어오게 잠가요."}</div><input class="ptin" type="password" id="msClP" autocomplete="off" maxlength="30" placeholder="비밀번호">${set ? "" : '<input class="ptin" type="password" id="msClP2" autocomplete="off" maxlength="30" placeholder="한 번 더">'}<div class="btns"><button class="btn gray" data-x style="flex:0 0 96px">닫기</button><button class="btn" data-ms="clgo">${chg ? "바꾸기" : set ? "들어가기" : "잠그고 들어가기"}</button></div>`);
+  }
   function newRoomSheet() {
     const others = P().filter((n) => n !== me());
     openSheet(`${nodock}<h3>새 방 만들기</h3><div class="caption">같이 얘기할 사람을 골라 주세요.</div><div class="ptpick" style="margin-top:12px">${others.map((n) => `<button class="chip ${MS.nr.includes(n) ? "on" : ""}" data-ms="nrp" data-n="${esc(n)}">${esc(n)}</button>`).join("")}</div><div class="ptlab">방 이름 (안 적어도 돼요)</div><input class="ptin" id="msNrN" maxlength="20" placeholder="예: 회의 준비" value="${esc(MS.nrName)}"><div class="btns"><button class="btn gray" data-x style="flex:0 0 96px">닫기</button><button class="btn" data-ms="nrgo">만들기</button></div>`);
@@ -2762,6 +2788,19 @@ ${live() ? "" : `<div class="mstabs">${tabs.map(([k, n, c, cl]) => `<button clas
   /* 입력 칸은 글 줄 수에 맞춰 다섯 줄쯤까지 커진다 */
   const grow = (el) => { if (!el) return; el.style.height = "auto"; el.style.height = Math.min(132, Math.max(48, el.scrollHeight)) + "px"; };
   document.addEventListener("input", (e) => { if (e.target.id === "msin") { MS.draft = e.target.value; grow(e.target); } if (e.target.id === "msq") { MS.q = e.target.value; const r = $("#msres"); if (r) r.innerHTML = resHtml(); findMore(); } if (e.target.id === "msNrN") MS.nrName = e.target.value; });
+  /* 프로필 사진: 가운데를 정사각형으로 잘라 192px JPEG 로 줄여 올린다(온라인 보드와 같은 방식) */
+  document.addEventListener("change", (e) => {
+    if (e.target.id !== "msPhF" || !e.target.files[0] || !live()) return;
+    const img = new Image(), url = URL.createObjectURL(e.target.files[0]);
+    img.onerror = () => { URL.revokeObjectURL(url); toast("이 사진은 못 읽었어요. 다른 사진으로 해 주세요"); };
+    img.onload = async () => {
+      const S2 = 192, c = document.createElement("canvas"), z = Math.min(img.width, img.height), x = (img.width - z) / 2, y = img.height > img.width ? (img.height - z) * 0.3 : (img.height - z) / 2;
+      c.width = c.height = S2; const g = c.getContext("2d"); g.fillStyle = "#fff"; g.fillRect(0, 0, S2, S2); g.drawImage(img, x, y, z, z, 0, 0, S2, S2); URL.revokeObjectURL(url);
+      const d = c.toDataURL("image/jpeg", 0.85);
+      try { const o = await call("adm_photo_set", { p_img: d }); if (!o.ok) throw 0; LV.photo = { ...LV.photo, [LV.who]: d }; toast("프로필 사진을 넣었어요"); if ($("#sheet .msprof")) profSheet(); rr(); } catch (e20) { toast("사진을 못 넣었어요. 다시 해 주세요"); }
+    };
+    img.src = url;
+  });
   document.addEventListener("change", (e) => { if (e.target.id === "msfile") { const L = [...e.target.files]; e.target.value = ""; addFiles(L); } });
   document.addEventListener("paste", (e) => { if (e.target.id !== "msin" || !live()) return; const L = [...((e.clipboardData && e.clipboardData.files) || [])]; if (L.length) { e.preventDefault(); addFiles(L); } });
   document.addEventListener("dragover", (e) => { if (live() && e.target.closest && e.target.closest(".msroom") && e.dataTransfer && [...e.dataTransfer.types].includes("Files")) e.preventDefault(); });
@@ -2779,9 +2818,10 @@ ${live() ? "" : `<div class="mstabs">${tabs.map(([k, n, c, cl]) => `<button clas
     const a = t.dataset.ms, id = t.dataset.id, m = id && MSGS.find((x) => x.id === id);
     if (a === "on") {
       if (!(await askConfirm("메신저를 켤까요?", "처음 한 번만 누르면 돼요. 관리자웹에 로그인한 사람만 쓸 수 있게 잠가요.", "켜기"))) return;
-      try { const o = await rpc("adm_setup", { p_k: await mkey() }); if (o === "no") { LV.st = "nokey"; return rr(); } if (o !== "new" && o !== "ok") return toast("메신저를 못 켰어요. 다시 눌러 주세요"); MS.room = ""; MS.q = null; if (!LV.who) { LV.st = "who"; return rr(); } return load(); } catch { return toast("메신저 창고에 못 닿았어요. 다시 눌러 주세요"); }
+      try { const o = await rpc("adm_setup", { p_k: await mkey0() }); if (o === "no") { LV.st = "nokey"; return rr(); } if (o !== "new" && o !== "ok") return toast("메신저를 못 켰어요. 다시 눌러 주세요"); MS.room = ""; MS.q = null; if (!LV.who) { LV.st = "who"; return rr(); } return load(); } catch { return toast("메신저 창고에 못 닿았어요. 다시 눌러 주세요"); }
     }
     if (a === "retry") { LV.st = "idle"; boot(); return rr(); }
+    if (a === "room" && live() && shut(R(id))) { MS.ul = id; return openSheet(`${nodock}<h3>🔒 ${esc(rname(R(id)))}</h3><div class="caption">비밀번호가 걸린 방이에요. 이 기기에서는 한 번만 넣으면 돼요.</div><input class="ptin" type="password" id="msUlP" autocomplete="off" maxlength="30" placeholder="방 비밀번호"><div class="btns"><button class="btn gray" data-x style="flex:0 0 96px">닫기</button><button class="btn" data-ms="unlockgo">열기</button></div>`); }
     if (a === "room") { if (id !== MS.room) clearFiles(); MS.room = id; MS.v = "all"; MS.re = ""; MS.draft = ""; readAll(id); return rr(); }
     if (a === "back") { clearFiles(); MS.room = ""; return rr(); }
     if (a === "tabv") { MS.v = t.dataset.v; return rr(); }
@@ -2796,7 +2836,35 @@ ${live() ? "" : `<div class="mstabs">${tabs.map(([k, n, c, cl]) => `<button clas
       ls.set("vf-pt-me", t.dataset.n); MS.room = ""; MS.q = null; MS.re = ""; MS.draft = "";
       if (demo()) { closeSheet(true); return rr(); }
       if (t.closest("#sheet, #panel")) closeSheet(true);
-      LV.who = t.dataset.n; ls.set("vf-msg-who", LV.who); return load();
+      return claimSheet(t.dataset.n);
+    }
+    if (a === "lockme") return claimSheet(LV.who);
+    if (a === "clgo") {
+      const k = MS.cl, p = $("#msClP").value, p2 = $("#msClP2") ? $("#msClP2").value : p; if (p.length < 4) return toast("비밀번호는 4자 이상으로 해 주세요"); if (p !== p2) return toast("두 칸이 서로 달라요. 다시 넣어 주세요"); t.disabled = true;
+      try {
+        const o = k.chg ? await call("adm_pin_change", { p_pin: p }) : await rpc("adm_claim", { p_k: await mkey(), p_who: k.n, p_pin: p });
+        if (!o.ok) { t.disabled = false; return toast(o.why === "pin" ? "비밀번호가 달라요" : o.why === "wait" ? "여러 번 틀렸어요. 10분 뒤에 다시 해 주세요" : o.why === "short" ? "비밀번호는 4자 이상으로 해 주세요" : "못 했어요. 다시 눌러 주세요", 3500); }
+        MS.cl = null; LV.names = null; closeSheet(true);
+        if (k.chg) return toast("비밀번호를 바꿨어요. 다른 기기는 새 비밀번호로 다시 들어와야 해요", 4000);
+        toast(o.new ? `${k.n} 프로필을 잠갔어요` : `${k.n}(으)로 들어왔어요`); ls.set("vf-pt-me", k.n); LV.who = k.n; ls.set("vf-msg-who", LV.who); return load();
+      } catch (e14) { t.disabled = false; return toast("못 했어요. 다시 눌러 주세요"); }
+    }
+    if (a === "pinchg") { MS.cl = { n: LV.who, set: false, chg: true }; return claimSheet(LV.who, true); }
+    if (a === "resetlist") { await namesLoad(); return openSheet(`${nodock}<h3>누구의 잠금을 풀까요?</h3><div class="caption">비밀번호를 잊은 사람의 프로필 잠금을 풀어요. 그 사람이 다시 들어오면서 새 비밀번호를 정해요.</div><div class="list" style="margin-top:12px">${(LV.names || []).filter((x) => x.set && x.who !== LV.who).map((x) => `<button class="item" data-ms="resetgo" data-n="${esc(x.who)}"><div class="av">${esc(em(x.who))}</div><div class="tx"><b>${esc(x.who)}</b></div></button>`).join("") || '<div class="empty">잠근 사람이 없어요</div>'}</div><div class="btns"><button class="btn gray" data-x>닫기</button></div>`); }
+    if (a === "resetgo") { const n2 = t.dataset.n; closeSheet(true); if (!(await askConfirm(`${n2}의 잠금을 풀까요?`, "그 사람의 기기는 다시 비밀번호를 정해야 들어올 수 있어요.", "풀기", true))) return; try { const o = await call("adm_auth_reset", { p_target: n2 }); if (!o.ok) throw 0; LV.names = null; return toast(`${n2}의 잠금을 풀었어요`); } catch (e15) { return toast("못 풀었어요. 내 프로필을 먼저 잠가야 해요", 3500); } }
+    /* 방 비밀번호 */
+    if (a === "unlockgo") {
+      const r = R(MS.ul), pw = $("#msUlP").value; if (!r) return; if (!pw) return toast("비밀번호를 넣어 주세요"); t.disabled = true;
+      try { const o = await call("adm_room_unlock", { p_room: r.n, p_pw: pw }); if (!o.ok) { t.disabled = false; return toast(o.why === "pw" ? "비밀번호가 달라요" : o.why === "wait" ? "여러 번 틀렸어요. 10분 뒤에 다시 해 주세요" : "못 열었어요. 다시 눌러 주세요", 3500); }
+        const st = await call("adm_state", { p_since: 0 }); if (st.ok) take(st); closeSheet(true); MS.room = r.id; MS.v = "all"; readAll(r.id); return rr(); }
+      catch (e16) { t.disabled = false; return toast("못 열었어요. 다시 눌러 주세요"); }
+    }
+    if (a === "rlock") { if (!LV.pinset) { closeSheet(true); toast("먼저 내 프로필을 잠가 주세요", 3500); return claimSheet(LV.who); } const r = R(MS.room); return openSheet(`${nodock}<h3>${r.locked ? "방 비밀번호 바꾸기" : "방 비밀번호 걸기"}</h3><div class="caption">걸면 기기마다 이 비밀번호를 한 번 넣어야 이 방이 열려요. 4자 이상으로 정해 주세요.</div><input class="ptin" type="password" id="msRlP" autocomplete="off" maxlength="30" placeholder="방 비밀번호"><div class="btns"><button class="btn gray" data-x style="flex:0 0 96px">닫기</button><button class="btn" data-ms="rlockgo">${r.locked ? "바꾸기" : "걸기"}</button></div>`); }
+    if (a === "rlockgo" || a === "rlockoff") {
+      const r = R(MS.room), pw = a === "rlockoff" ? "" : $("#msRlP").value; if (!r) return; if (a === "rlockgo" && pw.length < 4) return toast("비밀번호는 4자 이상으로 해 주세요");
+      if (a === "rlockoff") { closeSheet(true); if (!(await askConfirm("방 비밀번호를 풀까요?", "풀면 이 방 사람은 비밀번호 없이 들어와요.", "풀기", true))) return; }
+      try { const o = await call("adm_room_lock", { p_room: r.n, p_pw: pw }); if (!o.ok) throw new Error(o.why || ""); r.locked = !!o.locked; r.open = true; closeSheet(true); toast(o.locked ? "방에 비밀번호를 걸었어요. 다른 기기는 비밀번호를 넣어야 열려요" : "방 비밀번호를 풀었어요", 4000); return rr(); }
+      catch (e17) { return toast(e17 && e17.message === "who" ? "방 비밀번호는 한섭이사만 걸 수 있어요" : "못 했어요. 다시 눌러 주세요", 3500); }
     }
     if (a === "miss") { const k = t.dataset.k, L = mine(); const isAt = (y) => called(y) && y.who !== me() && !seenBy(y, me()); const r = k === "un" ? L.find((x) => unread(x.id)) : k === "at" ? L.find((x) => rmsgs(x.id).some(isAt)) : L.find((x) => drafts(x.id).some((y) => y.ai.st === "draft")); if (!r) return toast(k === "un" ? "안 읽은 글이 없어요" : k === "at" ? "나를 부른 글이 없어요" : "할 일 초안이 없어요"); MS.room = r.id; MS.v = k === "dr" && !(isPC() && MS.side) ? "todo" : "all"; if (k === "at") { const y = rmsgs(r.id).find(isAt); MS.flash = y ? y.id : ""; } readAll(r.id); return rr(); }
     if (a === "jump") { const x = anyMsg(id) || (live() && t.dataset.room && /^m\d+$/.test(id) ? { id, n: +id.slice(1), room: t.dataset.room } : null); if (!x) return; if (t.closest("#sheet, #panel")) closeSheet(true); return openMsg(x); }
@@ -2842,7 +2910,7 @@ ${live() ? "" : `<div class="mstabs">${tabs.map(([k, n, c, cl]) => `<button clas
     }
     if (a === "pins") return pinsSheet(t.dataset.room);
     if (a === "selcopy" && m) return openSheet(`${nodock}<h3>글자 골라서 복사</h3><div class="caption">복사할 곳을 길게 눌러 골라 주세요.</div><div class="mssel">${esc(m.txt)}</div><div class="btns"><button class="btn gray" data-ms="copy" data-id="${id}">전체 복사</button><button class="btn" data-x>닫기</button></div>`);
-    if (a === "rmenu") { const r = R(MS.room); if (!r) return; return openSheet(`${nodock}<h3>${esc(rname(r))}</h3><div class="caption">${r.mem.map(esc).join(", ")}</div><div class="msact">${(r.pins || []).length ? '<button data-ms="pins" data-room="' + r.id + '">공지 보기</button>' : ""}<button data-ms="tklist">이 방 할 일</button>${P().some((n) => !r.mem.includes(n)) ? '<button data-ms="invite">사람 부르기</button>' : ""}<button data-ms="leave" style="color:var(--red)">방 나가기</button></div><div class="btns"><button class="btn gray" data-x>닫기</button></div>`); }
+    if (a === "rmenu") { const r = R(MS.room); if (!r) return; return openSheet(`${nodock}<h3>${esc(rname(r))}</h3><div class="caption">${r.mem.map(esc).join(", ")}</div><div class="msact">${(r.pins || []).length ? '<button data-ms="pins" data-room="' + r.id + '">공지 보기</button>' : ""}<button data-ms="tklist">이 방 할 일</button>${P().some((n) => !r.mem.includes(n)) ? '<button data-ms="invite">사람 부르기</button>' : ""}${me() === "한섭이사" ? '<button data-ms="rlock">' + (r.locked ? "방 비밀번호 바꾸기" : "방 비밀번호 걸기") + "</button>" + (r.locked ? '<button data-ms="rlockoff">방 비밀번호 풀기</button>' : "") : ""}<button data-ms="leave" style="color:var(--red)">방 나가기</button></div><div class="btns"><button class="btn gray" data-x>닫기</button></div>`); }
     if (a === "invite") { const r = R(MS.room); if (!r) return; return openSheet(`${nodock}<h3>누구를 부를까요?</h3><div class="caption">부르면 이 방의 예전 글도 같이 보여요.</div><div class="list" style="margin-top:12px">${P().filter((n) => !r.mem.includes(n)).map((n) => `<button class="item" data-ms="invgo" data-n="${esc(n)}"><div class="av">${esc(em(n))}</div><div class="tx"><b>${esc(n)}</b></div></button>`).join("")}</div><div class="btns"><button class="btn gray" data-x>닫기</button></div>`); }
     if (a === "invgo") {
       const r = R(MS.room); if (!r) return; t.disabled = true;
@@ -2855,9 +2923,10 @@ ${live() ? "" : `<div class="mstabs">${tabs.map(([k, n, c, cl]) => `<button clas
       try { const o = await call("adm_room_leave", { p_room: r.n }); if (!o.ok) throw new Error(o.why || ""); notify(r); ROOMS = ROOMS.filter((x) => x.id !== r.id); MSGS = MSGS.filter((x) => x.room !== r.id); LV.tasks = LV.tasks.filter((x) => x.room !== r.id); MS.room = ""; toast("방에서 나왔어요"); return rr(); }
       catch (e10) { return toast(e10 && e10.message === "imp" ? "이 방은 나갈 수 없어요" : "못 나갔어요. 다시 눌러 주세요"); }
     }
+    if (a === "phdel") { try { const o = await call("adm_photo_set", { p_img: "" }); if (!o.ok) throw 0; const P3 = { ...LV.photo }; delete P3[LV.who]; LV.photo = P3; toast("프로필 사진을 뺐어요"); profSheet(); return rr(); } catch (e21) { return toast("못 뺐어요. 다시 눌러 주세요"); } }
     if (a === "pushon") return pushOn();
     if (a === "pushoff") return pushOff();
-    if (a === "pushhide") { MS.pushHide = true; return rr(); }
+    if (a === "pushhide") { MS.pushHide = true; ls.set("vf-msg-push-later", String(Date.now())); return rr(); }
     if (a === "emo") { const e5 = t.dataset.e; try { const o = await call("adm_emoji_set", { p_emoji: e5 }); if (!o.ok) throw 0; LV.emoji = { ...LV.emoji, [LV.who]: e5 }; profSheet(); return rr(); } catch { return toast("이모지를 못 바꿨어요. 다시 눌러 주세요"); } }
     if (a === "pin" && m) {
       const r = R(m.room), off = r.pin === id;
