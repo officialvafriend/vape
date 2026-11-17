@@ -4,9 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=800, viewport-fit=cover">
 <script>/* 패드 크기 맞추기: 세로 폭 800, 가로 폭 1280 기준 (menu-b와 같은 방식) */
-function vfFit(){var land=matchMedia("(orientation: landscape)").matches,a=screen.width,b=screen.height,w=land?Math.max(a,b):Math.min(a,b),base=land?1280:800,s=Math.round(w/base*1000)/1000,m=document.querySelector('meta[name=viewport]');
+function vfFit(){var land=matchMedia("(orientation: landscape)").matches,a=screen.width,b=screen.height,w=land?Math.max(a,b):Math.min(a,b),base=land?1440:900,s=Math.round(w/base*1000)/1000,m=document.querySelector('meta[name=viewport]');
   m.setAttribute('content',!w||Math.abs(s-1)<.02?'width='+base+',viewport-fit=cover':'width='+base+',initial-scale='+s+',minimum-scale='+s+',maximum-scale='+s+',user-scalable=no,viewport-fit=cover');
-  if(document.body)document.body.classList.toggle('land',land);}
+  if(document.body)document.body.classList.toggle('land',land);
+  document.documentElement.style.zoom=matchMedia('(pointer:fine)').matches?'.85':'';}
 vfFit();document.addEventListener('DOMContentLoaded',vfFit);addEventListener('orientationchange',function(){setTimeout(vfFit,60);});addEventListener('resize',function(){clearTimeout(window.__vft);window.__vft=setTimeout(vfFit,120);});</script>
 <meta name="robots" content="noindex">
 <meta name="theme-color" content="#3B5F8F">
@@ -129,7 +130,8 @@ body.land .newres .grid{grid-column:2;grid-row:3;margin-top:24px;grid-template-c
 body.land .newres .item .nm{font-size:17px}body.land .newres .item .pr{font-size:17px}
 .dgrid{grid-template-columns:repeat(4,1fr)}
 .dcard{border:0;background:#fff;color:#15120f;border-radius:20px;overflow:hidden;display:flex;flex-direction:column;text-align:left}
-.dcard .ph{aspect-ratio:4/5;background:#f2f2f4;position:relative;overflow:hidden;min-height:0}
+.dtabs{flex-wrap:wrap}.dtabs small{opacity:.7;font-size:.85em}
+.dcard .ph{aspect-ratio:1/1;background:#f2f2f4;position:relative;overflow:hidden;min-height:0}
 .dcard .ph img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
 .dcard b{padding:10px 12px 12px;font-size:17px;line-height:1.3}
 .dtl{margin-top:28px;display:flex;gap:28px;background:#fff;color:#15120f;border-radius:var(--r);padding:24px;min-height:0;overflow:auto}
@@ -650,10 +652,11 @@ var MODELS = (function(){
     var dn = m.replace(/ 기계$| 기기$/,'').replace(/ (블랙|네이비|화이트|실버)$/,'');
     var imgs = (window.DEV_IMG||{})[m] || (window.DEV_IMG||{})[dn] || (window.DEV_IMG||{})[m.split(' ')[0]] || {};
     var key = dn.replace(/\s/g,''), info = (window.DEVINFO||[]).filter(function(d){ var k=d.n.replace(/\s/g,''); return k===key || k===(DEV_ALIAS[dn]||'').replace(/\s/g,''); })[0];
+    var pos = by[m][0].pos||'입호흡';
     var opts = by[m].map(function(g){ return {opt:g.opt||'', price:g.price, img:imgs[g.opt]||''}; });
     var first = opts.filter(function(o){return o.img})[0] || opts[0];
     out.push({id:'M'+out.length, model:m, dn:dn, opts:opts, price:Math.min.apply(null,opts.map(function(o){return o.price})),
-      img:first.img || Object.values(imgs)[0] || '', info:info});
+      img:first.img || Object.values(imgs)[0] || '', info:info, pos:pos});
   });
   var top = ["말론","말론S","하복2"];
   return out.sort(function(a,b){ var x=top.indexOf(a.dn), y=top.indexOf(b.dn); return (x<0?9:x)-(y<0?9:y) || b.price-a.price; });
@@ -663,12 +666,23 @@ function devPacks(M){
   if (M.dn==='하복2') return [['하복2 + 액상 5병',129000,M.price+75000],['하복2 + 액상 10병',164000,M.price+150000],['하복2 + 폐호흡 3병',M.price+40000,M.price+90000]];
   return [];
 }
-function modelCards(){ return MODELS.length ? MODELS.map(function(M,i){
+var DEVCAT = [
+  {k:'',t:'✨ 전체',f:function(){return true}},
+  {k:'hot',t:'⭐ 인기',f:function(M){return ["말론","말론S","하복2"].indexOf(M.dn)>=0}},
+  {k:'low',t:'💸 5만원 이하',d:'입문 · 가성비',f:function(M){return M.pos!=='폐호흡' && M.price<=50000}},
+  {k:'mid',t:'👍 5~7만원대',f:function(M){return M.pos!=='폐호흡' && M.price>50000 && M.price<75000}},
+  {k:'high',t:'💎 7만5천원 이상',d:'고급형',f:function(M){return M.pos!=='폐호흡' && M.price>=75000}},
+  {k:'dl',t:'☁️ 폐호흡',f:function(M){return M.pos==='폐호흡'}}];
+function devTabs(){ var c=state.devcat||'';
+  return '<div class="mapf dtabs">'+DEVCAT.map(function(o){ var n=MODELS.filter(o.f).length; if(!n) return '';
+    return '<button data-act="devcat" data-v="'+o.k+'" class="'+(o.k===c?'on':'')+'">'+o.t+' <small>'+n+'</small></button>'; }).join('')+'</div>'; }
+function modelCards(){ var C=DEVCAT.filter(function(o){return o.k===(state.devcat||'')})[0]||DEVCAT[0];
+  return MODELS.length ? MODELS.map(function(M,i){ if(!C.f(M)) return '';
     return '<button class="dcard" data-act="mpick" data-i="'+i+'"><div class="ph">'+devTile({img:M.img,n:M.dn})+(i<3?'<span class="rk" style="position:absolute;left:10px;top:10px;padding:5px 11px;border-radius:999px;background:var(--deep);color:#fff;font-size:15px;font-weight:800">추천</span>':'')+'</div><b>'+esc(M.dn)+'</b><span class="pr">'+won(M.price)+'~</span></button>';
   }).join('') : '<div class="empty">지금 보여 드릴 기기 자료가 없어요. 직원에게 물어봐 주세요.</div>'; }
 function modelListPane(){
   return '<div class="pane res">'+topBar('기기 보기',1,2)+
-    '<section class="q"><h1>어떤 기기가<br>마음에 드세요? 📱</h1><p>'+(BRANCH?esc(BRANCH)+'에 지금 있는 기기예요.':'매장에 있는 기기예요.')+' 눌러서 자세히 보세요.</p></section>'+
+    '<section class="q" style="margin-top:32px"><h1>어떤 기기가 마음에 드세요? 📱</h1><p>'+(BRANCH?esc(BRANCH)+'에 지금 있는 기기예요.':'매장에 있는 기기예요.')+' 눌러서 자세히 보세요.</p>'+devTabs()+'</section>'+
     '<section class="grid dgrid">'+modelCards()+'</section></div>';
 }
 function modelDetail(){
@@ -1125,7 +1139,7 @@ document.getElementById('app').addEventListener('click',function(e){
   if (a==='ftm') { state.ftm=i; return render(); }
   if (a==='ftdev') { var mi=MODELS.map(function(m){return m.dn}).indexOf(b.dataset.dn); if (mi<0) return; state.model=mi; state.mopt=0; return go('dev-dtl'); }
   if (a==='ft11') { state.kind='mtl'; state.mpack=4; state.mpn=11; return go('mtl-mpack'); }
-  if (a==='dev') return on('dev');
+  if (a==='dev') { state.devcat=''; return on('dev'); }
   if (a==='mpick') { state.model=i; state.mopt=0; return go('dev-dtl'); }
   if (a==='mopt') { state.mopt=i; return render(); }
   if (a==='mcall') { var M=MODELS[state.model], op=(M.opts[state.mopt||0]||{}).opt;
@@ -1146,6 +1160,7 @@ document.getElementById('app').addEventListener('click',function(e){
   if (a==='mtl' || a==='dl') { state.kind=a; return on('mtl'); }
   if (a==='m-self') { state.flavor=null; state.cool=null; if (state.kind!=='dl') { state.mapf=''; return on('mtl-map'); } return on('mtl-flavor'); }
   if (a==='mapf') { state.mapf=b.dataset.v; return render(); }
+  if (a==='devcat') { state.devcat=b.dataset.v; return render(); }
   if (a==='lab') { state.mix=[]; return go('mix'); }
   if (a==='labrm') { state.mix=(state.mix||[]).filter(function(k){return k!==b.dataset.k}); return labPaint(false); }
   if (a==='labclr') { state.mix=[]; return labPaint(false); }
