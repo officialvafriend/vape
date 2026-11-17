@@ -470,6 +470,10 @@ body.land .cartp .ftc{grid-column:2;grid-row:3;display:flex}
 body.land .cartdock{top:16px;bottom:84px}
 body.land .cartp .save .pct{display:none}body.land .cartp .save .big{font-size:26px;white-space:nowrap}
 .allban{grid-column:1/-1}
+.rvban{text-align:left!important}.rvban>span{align-items:flex-start;text-align:left}
+.rvpair{display:grid;grid-template-columns:1fr;gap:10px;flex:none;margin-top:14px}.rvpair .rvban{margin-top:0}
+body.land .cartp .rvpair{grid-column:1/-1;grid-template-columns:1fr 1.3fr}
+body.land .rvban{padding:10px 14px}body.land .rvban b{font-size:19px}body.land .rvban small{font-size:14px}body.land .rvban .em{font-size:28px}
 .rvban.memo2{background:#fff;animation:none}.rvban.memo2 b{color:var(--deep)}.rvban.memo2 i{font-size:22px}
 .mcard.mform.pre{border-color:var(--deep)}
 .mback{flex:none;height:60px;padding:0 18px;border:0;border-radius:16px;background:#fff;color:var(--deep);font-family:var(--jal);font-size:19px}
@@ -1518,8 +1522,8 @@ function cartStaffPane(){
     '<section class="q" style="margin-top:28px"><h1>직원이 바로<br>담아 드릴게요! 🙌</h1><p>이 화면을 카운터 직원에게 보여 주세요.</p>'+
       '<div class="save"><span class="em">🧾</span><div class="tx"><div class="l">'+cartN()+'개 · 패키지 적용</div><div class="big">'+won(S.pay)+'</div>'+(S.full>S.pay?'<div class="pr"><s>'+won(S.full)+'</s> → '+won(S.full-S.pay)+' 아껴요</div>':'')+'</div></div></section>'+
     '<section class="ftc"><div class="ftcard">'+rows+'</div></section>'+
-    '<button class="rvban memo2" data-act="cmemo"><span class="em">📝</span><span><b>회원메모 쓰기 (직원)</b><small>담은 상품이 메모에 자동으로 들어가요 · 회원 조회하면서 바로 적기</small></span><i>🔒</i></button>'+
-    '<button class="rvban" data-act="resv"><span class="em">🔔</span><span><b>결제 전에 잠깐! 알림 받아 가세요</b><small>🆕 신상품 · 🎉 행사 · 💎 한정판 문자, 📦 상품 예약까지</small></span><i>›</i></button>'+
+    '<div class="rvpair"><button class="rvban memo2" data-act="cmemo"><span class="em">📝</span><span><b>회원메모 쓰기 (직원)</b><small>담은 상품이 메모에 자동으로 들어가요 · 회원 조회하면서 바로 적기</small></span><i>🔒</i></button>'+
+    '<button class="rvban" data-act="resv"><span class="em">🔔</span><span><b>결제 전에 잠깐! 알림 받아 가세요</b><small>🆕 신상품 · 🎉 행사 · 💎 한정판 문자, 📦 상품 예약까지</small></span><i>›</i></button></div>'+
     '<div class="acts"><button data-act="back">‹ 장바구니 고치기</button><button class="main" data-act="mem">🎁 회원 적립하기</button></div></div>';
 }
 
