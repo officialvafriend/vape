@@ -402,7 +402,9 @@ body.land .labacts{grid-column:2}
 .item[data-id]{touch-action:pan-y;cursor:grab}
 .item img{-webkit-user-drag:none;user-drag:none}
 /* 떠 있는 장바구니 병: 오른쪽 가운데 */
-.cartfab{position:fixed;right:14px;top:42%;z-index:9;width:118px;height:150px;border:0;background:none;padding:0;color:#fff;animation:fabin .4s cubic-bezier(.2,1.6,.4,1);transition:transform .2s}
+.cartdock{position:fixed;right:10px;top:150px;bottom:120px;z-index:9;width:196px;display:flex;flex-direction:column;align-items:center;gap:8px}
+.cartdock[hidden]{display:none}
+.cartfab{position:relative;flex:none;width:118px;height:150px;border:0;background:none;padding:0;color:#fff;animation:fabin .4s cubic-bezier(.2,1.6,.4,1);transition:transform .2s}
 .cartfab[hidden]{display:none}
 .cartfab .neck{position:absolute;left:50%;top:0;width:40px;height:34px;margin-left:-20px;border:4px solid #fff;border-bottom:0;border-radius:8px 8px 0 0;background:rgba(43,86,137,.9)}
 .cartfab .body{position:absolute;left:4px;right:4px;top:30px;height:96px;border:4px solid #fff;border-radius:50% 50% 46% 46%/40% 40% 60% 60%;overflow:hidden;background:rgba(43,86,137,.92);box-shadow:0 8px 22px rgba(0,0,0,.35)}
@@ -417,7 +419,23 @@ body.land .labacts{grid-column:2}
 .ghost{position:fixed;z-index:30;width:110px;height:110px;border-radius:20px;overflow:hidden;background:#fff;box-shadow:0 14px 30px rgba(0,0,0,.4);pointer-events:none;transform:translate(-50%,-50%) rotate(-6deg)}
 .ghost img{width:100%;height:100%;object-fit:cover}
 .ghost.fly{transition:left .55s cubic-bezier(.5,0,.7,.4),top .55s cubic-bezier(.3,-.4,.6,1),transform .55s,opacity .55s;transform:translate(-50%,-50%) scale(.25);opacity:.6}
-body.carton .grid{padding-right:118px}
+body.carton .grid{padding-right:200px}
+.cartlist{width:100%;min-height:0;flex:0 1 auto;overflow-y:auto;background:#fff;color:#191f28;border-radius:18px;padding:6px 8px 8px;box-shadow:0 8px 22px rgba(0,0,0,.3);scrollbar-width:thin}
+.cartlist:empty{display:none}
+.cl{display:flex;align-items:center;gap:6px;padding:6px 0;border-top:1px solid #eef0f3;animation:up .3s backwards}
+.cl:first-child{border-top:0}
+.cl img,.cl .ph0{flex:none;width:38px;height:38px;border-radius:10px;object-fit:cover;background:#f2f2f4;display:flex;align-items:center;justify-content:center;font-size:20px}
+.cl .nm{flex:1;min-width:0;font-size:14px;font-weight:700;line-height:1.25;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.cl .q{flex:none;margin:0;font-family:var(--jal);font-size:15px;color:var(--deep)}
+.cl .x{flex:none;width:30px;height:30px;border:0;border-radius:50%;background:#ffe9ea;color:#e5313b;font-size:16px;font-weight:900;line-height:1}
+.cl .x:active{background:#e5313b;color:#fff}
+.clft{position:sticky;bottom:-8px;margin:4px -8px -8px;padding:8px;background:#fff;border-top:2px solid #eef0f3;border-radius:0 0 18px 18px}
+.clft b{display:block;text-align:center;font-family:var(--jal);font-weight:normal;font-size:19px;color:var(--deep)}
+.clft small{display:block;text-align:center;font-size:12px;color:#8b95a1}
+.clft button{margin-top:6px;width:100%;height:40px;border:0;border-radius:12px;background:var(--deep);color:#fff;font-family:var(--jal);font-size:16px}
+.devadd{margin:4px 0 6px;height:56px;border:0;border-radius:16px;background:var(--deep);color:#fff;font-family:var(--jal);font-size:20px}
+.item.gd .add{margin-top:8px}
+.crow .ph0{display:flex;align-items:center;justify-content:center;font-size:32px}
 /* 장바구니 화면 */
 .crow{display:flex;align-items:center;gap:14px;padding:12px 0;border-top:1px solid #eef0f3}
 .crow:first-of-type{border-top:0}
@@ -437,7 +455,7 @@ body.land .cartp{display:grid;grid-template-columns:440px 1fr;grid-template-rows
 body.land .cartp .top,body.land .cartp .bar,body.land .cartp .acts{grid-column:1/-1}
 body.land .cartp .q{grid-column:1;grid-row:3;overflow:auto}
 body.land .cartp .ftc{grid-column:2;grid-row:3;display:flex}
-body.land .cartfab{top:38%}
+body.land .cartdock{top:120px;bottom:100px}
 body.land .cartp .save .pct{display:none}body.land .cartp .save .big{font-size:26px;white-space:nowrap}
 .allban{grid-column:1/-1}
 .alltabs{margin-top:16px;flex:none}
@@ -479,7 +497,7 @@ h1,h2,.brand span,.ttl,.ib.txt,.opt .t,.opt .n,.memban b,.save .big,.save .pct,.
 <div class="toast" id="toast"></div>
 <button class="fab" id="fab" hidden aria-label="회원등록"><span class="em">🎁</span>회원등록</button>
 <button class="fab home" id="fabh" hidden aria-label="처음으로"><span class="em">🏠</span>처음으로</button>
-<button class="cartfab" id="cartfab" hidden aria-label="장바구니"><span class="neck"></span><span class="body"><span class="liq" id="cliq"></span><span class="ct" id="cct">담기</span></span><span class="badge" id="cbadge"></span><span class="lb">장바구니</span></button>
+<div class="cartdock" id="cartdock" hidden><button class="cartfab" id="cartfab" aria-label="장바구니"><span class="neck"></span><span class="body"><span class="liq" id="cliq"></span><span class="ct" id="cct">담기</span></span><span class="badge" id="cbadge"></span><span class="lb">장바구니</span></button><div class="cartlist" id="cartlist"></div></div>
 <script>
 /* ---------- 자료 ---------- */
 var LIQ = window.LIQ || [];
@@ -742,7 +760,7 @@ var MODELS = (function(){
     var imgs = (window.DEV_IMG||{})[m] || (window.DEV_IMG||{})[dn] || (window.DEV_IMG||{})[m.split(' ')[0]] || {};
     var key = dn.replace(/\s/g,''), info = (window.DEVINFO||[]).filter(function(d){ var k=d.n.replace(/\s/g,''); return k===key || k===(DEV_ALIAS[dn]||'').replace(/\s/g,''); })[0];
     var pos = by[m][0].pos||'입호흡';
-    var opts = by[m].map(function(g){ return {opt:g.opt||'', price:g.price, img:imgs[g.opt]||''}; });
+    var opts = by[m].map(function(g){ return {id:g.id, opt:g.opt||'', price:g.price, img:imgs[g.opt]||''}; });
     var first = opts.filter(function(o){return o.img})[0] || opts[0];
     out.push({id:'M'+out.length, model:m, dn:dn, opts:opts, price:Math.min.apply(null,opts.map(function(o){return o.price})),
       img:first.img || Object.values(imgs)[0] || '', info:info, pos:pos});
@@ -782,7 +800,7 @@ function modelDetail(){
     '<section class="q"><h1>이런 기기예요</h1></section>'+
     '<section class="dtl"><div class="ph">'+devTile({img:img,n:M.dn})+'</div><div class="info"><h2>'+esc(M.dn)+'</h2>'+
       (M.opts.length>1||M.opts[0].opt ? '<div class="colors">'+M.opts.map(function(x,i){return '<button data-act="mopt" data-i="'+i+'" class="'+(i===(state.mopt||0)?'on':'')+'">'+esc(x.opt||'기본')+'</button>'}).join('')+'</div>' : '')+
-      '<dl>'+row('기기 값',won(o.price),1)+row('팟·코일',I.cp)+row('저항',I.o)+row('팟',I.f)+row('배터리',I.b)+'</dl>'+
+      '<button class="devadd" data-act="add" data-id="'+esc(o.id||'')+'">🛒 이 기기 장바구니에 담기</button>'+'<dl>'+row('기기 값',won(o.price),1)+row('팟·코일',I.cp)+row('저항',I.o)+row('팟',I.f)+row('배터리',I.b)+'</dl>'+
       (pk.length?pk.map(function(k,i){return pkRow(k[0],k[1],k[2],i)}).join(''):'')+
       (I.desc?'<p>'+esc(I.desc)+'</p>':'')+'<div class="small">'+(pk.length?'팟은 따로예요. ':'')+'색상과 재고는 직원이 확인해 드려요.</div></div></section>'+
     '<div class="acts" style="margin-top:auto;padding-top:20px"><button data-act="back">다른 기기 보기</button><button class="main" data-act="mcall">이 기기 보여 주세요</button></div></div>';
@@ -1117,20 +1135,29 @@ var PACKS = {"프리미엄":[[1,15000],[5,49500],[11,90000]], "프라임":[[1,20
 function best(line, n){ var P=PACKS[line]||[[1,PRICE[line]||0]], d=[0];
   for (var i=1;i<=n;i++){ d[i]=Infinity; P.forEach(function(k){ if(k[0]<=i && d[i-k[0]]+k[1]<d[i]) d[i]=d[i-k[0]]+k[1]; }); }
   return d[n]; }
-function ITEM(id){ return LIQ.concat(LUNGL).filter(function(x){return x.id===id})[0]; }
+var GCAT = function(g){ return g.c==='dev'?'기기':g.c==='dsp'?'일회용':g.sub==='팟·코일'?'팟·코일':'케이스·기타'; };
+var GEM = {"기기":"📱","일회용":"🚬","팟·코일":"🔧","케이스·기타":"🧰"};
+var GITEMS_ = null; function GITEMS(){ if (GITEMS_) return GITEMS_; var m={}, dimg={};
+  MODELS.forEach(function(M){ M.opts.forEach(function(o){ if(o.id) dimg[o.id]=o.img||M.img; }); });
+  GSRC.forEach(function(g){ var c=GCAT(g); m[g.id]={id:g.id, n:g.n, line:c, price:g.price, em:GEM[c], br:g.model||g.pos||'', src:dimg[g.id]||'', goods:true}; });
+  return (GITEMS_=m); }
+function ITEM(id){ return GITEMS()[id] || LIQ.concat(LUNGL).filter(function(x){return x.id===id})[0]; }
 function cartN(){ var c=state.cart||{}; return Object.keys(c).reduce(function(a,k){return a+c[k]},0); }
 function cartLines(){ var c=state.cart||{}, L={};
   Object.keys(c).forEach(function(id){ var x=ITEM(id); if(!x) return; (L[x.line]=L[x.line]||{n:0,items:[]}); L[x.line].n+=c[id]; L[x.line].items.push(x); });
   return L; }
-function cartSum(){ var L=cartLines(), full=0, pay=0; Object.keys(L).forEach(function(l){ full+=(PRICE[l]||0)*L[l].n; pay+=best(l,L[l].n); }); return {full:full, pay:pay, L:L}; }
+function lineSum(l, o){ var c=state.cart||{};
+  if (PRICE[l]) return {full:PRICE[l]*o.n, pay:best(l,o.n)};
+  var t=o.items.reduce(function(a,x){return a+(x.price||0)*(c[x.id]||0)},0); return {full:t, pay:t}; }
+function cartSum(){ var L=cartLines(), full=0, pay=0; Object.keys(L).forEach(function(l){ var r=lineSum(l,L[l]); full+=r.full; pay+=r.pay; }); return {full:full, pay:pay, L:L}; }
 function nudge(l, n){ var now=best(l,n)/n;
   for (var k=1;k<=4;k++){ var per=best(l,n+k)/(n+k); if (per<now*0.92) return '💡 <b>'+l+' '+k+'병</b>만 더 담으면 1병에 <b>'+won(Math.round(per/10)*10)+'</b>이에요! (지금 1병 '+won(Math.round(now/10)*10)+')'; }
   return ''; }
 function cartAdd(id, from){
   var c=state.cart=state.cart||{}, x=ITEM(id); if(!x) return; c[id]=(c[id]||0)+1;
   if (from) fly(from);
-  setTimeout(function(){ cartFab(true); [].forEach.call(document.querySelectorAll('.add[data-id="'+id+'"]'),function(b){ b.textContent='✓ '+c[id]+'병 담음 · 하나 더'; b.classList.add('on'); setTimeout(function(){b.classList.remove('on')},400); }); }, from?450:0);
-  toast('🛒 '+(x.dn||x.n)+' 담았어요 · 지금 '+cartN()+'병');
+  setTimeout(function(){ cartFab(true); [].forEach.call(document.querySelectorAll('.add[data-id="'+id+'"]'),function(b){ b.textContent='✓ '+c[id]+(x.goods?'개':'병')+' 담음 · 하나 더'; b.classList.add('on'); setTimeout(function(){b.classList.remove('on')},400); }); }, from?450:0);
+  toast('🛒 '+(x.dn||x.n)+' 담았어요 · 지금 '+cartN()+'개');
 }
 function bodyScale(){ var b=document.body; return (b.getBoundingClientRect().width/b.offsetWidth)||1; }
 function fly(img){ var r=img.getBoundingClientRect(), f=document.getElementById('cartfab').getBoundingClientRect(), sc=bodyScale(), g=document.createElement('div');
@@ -1138,10 +1165,15 @@ function fly(img){ var r=img.getBoundingClientRect(), f=document.getElementById(
   requestAnimationFrame(function(){ requestAnimationFrame(function(){ g.classList.add('fly'); g.style.left=(f.left+f.width/2)/sc+'px'; g.style.top=(f.top+f.height/2)/sc+'px'; }); });
   setTimeout(function(){ g.remove(); }, 600); }
 var CART_OFF = /^(home|mem|cart|mix$)/;
-function cartFab(bump){ var f=document.getElementById('cartfab'), n=cartN(), v=state.view;
-  f.hidden = CART_OFF.test(v) || (!n && !document.querySelector('#app .item .add'));
-  document.body.classList.toggle('carton', !f.hidden);
-  document.getElementById('cbadge').textContent = n ? n+'병' : '';
+function cartFab(bump){ var f=document.getElementById('cartfab'), dk=document.getElementById('cartdock'), n=cartN(), v=state.view, c=state.cart||{};
+  dk.hidden = CART_OFF.test(v) || (!n && !document.querySelector('#app .item .add'));
+  document.body.classList.toggle('carton', !dk.hidden);
+  document.getElementById('cbadge').textContent = n ? n+'개' : '';
+  var cl=document.getElementById('cartlist'), keep=cl.scrollTop;
+  cl.innerHTML = n ? Object.keys(c).map(function(id){ var x=ITEM(id); if(!x) return ''; var src=x.src!=null?x.src:(x.img?'../img/'+x.img:'');
+      return '<div class="cl">'+(src?'<img src="'+esc(src)+'" alt="">':'<span class="ph0">'+(x.em||'🧴')+'</span>')+'<span class="nm">'+esc(x.dn||x.n)+'</span><span class="q">×'+c[id]+'</span><button class="x" data-cx="'+esc(id)+'" aria-label="빼기">✕</button></div>'; }).join('')+
+    '<div class="clft"><b>'+won(cartSum().pay)+'</b>'+(cartSum().full>cartSum().pay?'<small>패키지 적용 · '+won(cartSum().full-cartSum().pay)+' 아껴요</small>':'')+'<button data-cgo="1">장바구니 보기 ›</button></div>' : '';
+  cl.scrollTop = keep;
   document.getElementById('cct').innerHTML = n ? won(cartSum().pay).replace('원','<br>원') : '여기로<br>쏙! 👇';
   document.getElementById('cliq').style.height = Math.min(90, n ? 22+n*7 : 0)+'%';
   if (bump){ f.classList.remove('shake'); void f.offsetWidth; f.classList.add('shake'); } }
@@ -1174,26 +1206,26 @@ document.getElementById('app').addEventListener('pointerdown',function(e){
 });
 function cartPane(){
   var c=state.cart||{}, S=cartSum(), n=cartN();
-  if (!n) return '<div class="pane res">'+topBar('장바구니 🛒',1,1)+'<section class="q"><h1>장바구니가<br>비어 있어요 🫙</h1><p>액상 카드의 <b>🛒 담기</b>를 누르거나,<br>카드를 꾹 눌러서 오른쪽 병에 끌어다 놓아 보세요.</p></section>'+
+  if (!n) return '<div class="pane res">'+topBar('장바구니 🛒',1,1)+'<section class="q"><h1>장바구니가<br>비어 있어요 🫙</h1><p>상품 카드의 <b>🛒 담기</b>를 누르거나,<br>카드를 꾹 눌러서 오른쪽 병에 끌어다 놓아 보세요.</p></section>'+
     '<div class="acts" style="margin-top:auto"><button data-act="back">돌아가기</button><button class="main" data-act="mtl">🗺️ 액상 고르러 가기</button></div></div>';
-  var lines=Object.keys(S.L).map(function(l){ var o=S.L[l], f=(PRICE[l]||0)*o.n, b=best(l,o.n);
-      return '<div class="cline"><span>'+esc(l)+' '+o.n+'병</span><span>'+(f>b?'<s>'+won(f)+'</s>':'')+'<b>'+won(b)+'</b></span></div>'+(nudge(l,o.n)?'<div class="nudge">'+nudge(l,o.n)+'</div>':''); }).join('');
-  var rows=Object.keys(c).map(function(id){ var x=ITEM(id); if(!x) return ''; var src=x.src!=null?x.src:'../img/'+x.img;
-      return '<div class="crow">'+(src?'<img src="'+esc(src)+'" alt="">':'<span class="ph0"></span>')+'<div class="tx"><b>'+esc(x.dn||x.n)+'</b><small>'+esc([x.br,x.line].filter(Boolean).join(' · '))+'</small></div>'+
+  var lines=Object.keys(S.L).map(function(l){ var o=S.L[l], r=lineSum(l,o), f=r.full, b=r.pay;
+      return '<div class="cline"><span>'+esc(l)+' '+o.n+'병</span><span>'+(f>b?'<s>'+won(f)+'</s>':'')+'<b>'+won(b)+'</b></span></div>'+(PRICE[l]&&nudge(l,o.n)?'<div class="nudge">'+nudge(l,o.n)+'</div>':'')+(l==='일회용'?'<div class="nudge">🎁 일회용 3+1, 5+1 행사는 직원이 계산할 때 적용해 드려요</div>':''); }).join('');
+  var rows=Object.keys(c).map(function(id){ var x=ITEM(id); if(!x) return ''; var src=x.src!=null?x.src:(x.img?'../img/'+x.img:'');
+      return '<div class="crow">'+(src?'<img src="'+esc(src)+'" alt="">':'<span class="ph0">'+(x.em||'🧴')+'</span>')+'<div class="tx"><b>'+esc(x.dn||x.n)+'</b><small>'+esc([x.br,x.line].filter(Boolean).join(' · '))+'</small></div>'+
         '<div class="qty"><button data-act="cq" data-id="'+esc(id)+'" data-d="-1" aria-label="빼기">−</button><span>'+c[id]+'</span><button data-act="cq" data-id="'+esc(id)+'" data-d="1" aria-label="더하기">＋</button></div></div>'; }).join('');
   return '<div class="pane res cartp">'+topBar('장바구니 🛒',1,2)+
-    '<section class="q" style="margin-top:28px"><h1>담은 액상 '+n+'병 🛒</h1>'+(S.full>S.pay?saveBox('패키지 값으로 자동 계산했어요', S.full, S.pay):'<div class="save"><span class="em">🧾</span><div class="tx"><div class="l">합계</div><div class="big">'+won(S.pay)+'</div></div></div>')+
+    '<section class="q" style="margin-top:28px"><h1>담은 상품 '+n+'개 🛒</h1>'+(S.full>S.pay?saveBox('패키지 값으로 자동 계산했어요', S.full, S.pay):'<div class="save"><span class="em">🧾</span><div class="tx"><div class="l">합계</div><div class="big">'+won(S.pay)+'</div></div></div>')+
       '<div class="ftcard" style="margin-top:14px">'+lines+'</div></section>'+
     '<section class="ftc"><div class="ftcard">'+rows+'</div></section>'+
     '<div class="acts"><button data-act="back">＋ 더 고르기</button><button class="main" data-act="cartgo">💁 이대로 주세요</button></div></div>';
 }
 function cartStaffPane(){
   var c=state.cart||{}, S=cartSum();
-  var rows=Object.keys(c).map(function(id){ var x=ITEM(id); if(!x) return ''; var src=x.src!=null?x.src:'../img/'+x.img;
-    return '<div class="crow">'+(src?'<img src="'+esc(src)+'" alt="">':'<span class="ph0"></span>')+'<div class="tx"><b>'+esc(x.dn||x.n)+' × '+c[id]+'</b><small>'+esc(x.line)+'</small></div>'+(x.loc?'<span class="loc">📍 '+esc(x.loc.split('|')[0])+'</span>':'')+'</div>'; }).join('');
+  var rows=Object.keys(c).map(function(id){ var x=ITEM(id); if(!x) return ''; var src=x.src!=null?x.src:(x.img?'../img/'+x.img:'');
+    return '<div class="crow">'+(src?'<img src="'+esc(src)+'" alt="">':'<span class="ph0">'+(x.em||'🧴')+'</span>')+'<div class="tx"><b>'+esc(x.dn||x.n)+' × '+c[id]+'</b><small>'+esc(x.line)+'</small></div>'+(x.loc?'<span class="loc">📍 '+esc(x.loc.split('|')[0])+'</span>':'')+'</div>'; }).join('');
   return '<div class="pane res cartp cstaff">'+topBar('장바구니 🛒',2,2)+
     '<section class="q" style="margin-top:28px"><h1>직원이 바로<br>담아 드릴게요! 🙌</h1><p>이 화면을 카운터 직원에게 보여 주세요.</p>'+
-      '<div class="save"><span class="em">🧾</span><div class="tx"><div class="l">'+cartN()+'병 · 패키지 적용</div><div class="big">'+won(S.pay)+'</div>'+(S.full>S.pay?'<div class="pr"><s>'+won(S.full)+'</s> → '+won(S.full-S.pay)+' 아껴요</div>':'')+'</div></div></section>'+
+      '<div class="save"><span class="em">🧾</span><div class="tx"><div class="l">'+cartN()+'개 · 패키지 적용</div><div class="big">'+won(S.pay)+'</div>'+(S.full>S.pay?'<div class="pr"><s>'+won(S.full)+'</s> → '+won(S.full-S.pay)+' 아껴요</div>':'')+'</div></div></section>'+
     '<section class="ftc"><div class="ftcard">'+rows+'</div></section>'+
     '<div class="acts"><button data-act="back">‹ 장바구니 고치기</button><button class="main" data-act="mem">🎁 회원 적립하기</button></div></div>';
 }
@@ -1207,8 +1239,9 @@ var ALLT = [
   {k:'pod',e:'🔧',t:'팟 · 코일',n:function(){return GSRC.filter(function(g){return g.c==='pod'&&g.sub==='팟·코일'}).length}},
   {k:'acc',e:'🧰',t:'케이스 · 기타',n:function(){return GSRC.filter(function(g){return g.c==='pod'&&g.sub!=='팟·코일'}).length}},
   {k:'dsp',e:'🚬',t:'일회용',n:function(){return GSRC.filter(function(g){return g.c==='dsp'}).length}}];
-function gTile(g, em){ return '<div class="item gd"><div class="ph"><span class="tile"><span class="ge">'+em+'</span>'+esc(g.opt||g.n)+'</span></div><div class="bd">'+
-  '<span class="br">'+esc([g.model||'',g.pos].filter(Boolean).join(' · '))+'</span><span class="nm">'+esc(g.n)+'</span><span class="pr">'+won(g.price)+'</span></div></div>'; }
+function gTile(g, em){ return '<div class="item gd" data-id="'+esc(g.id)+'"><div class="ph"><span class="tile"><span class="ge">'+em+'</span>'+esc(g.opt||g.n)+'</span></div><div class="bd">'+
+  '<span class="br">'+esc([g.model||'',g.pos].filter(Boolean).join(' · '))+'</span><span class="nm">'+esc(g.n)+'</span><span class="pr">'+won(g.price)+'</span>'+
+  '<button class="add" data-act="add" data-id="'+esc(g.id)+'">'+((state.cart||{})[g.id]?'✓ '+state.cart[g.id]+'개 담음 · 하나 더':'🛒 담기')+'</button></div></div>'; }
 function gBar(list, key, label){ var cnt={}; list.forEach(function(g){ var k=key(g); cnt[k]=(cnt[k]||0)+1; });
   var ks=Object.keys(cnt).sort(function(a,b){return cnt[b]-cnt[a]}); if (ks.length<2) return '';
   return '<div class="fbar"><div class="frow ser"><span class="lb">'+label+'</span><button data-act="fs" data-v="" class="'+(!state.fs?'on':'')+'">전체 <small>'+list.length+'</small></button>'+
@@ -1401,6 +1434,11 @@ document.getElementById('app').addEventListener('click',function(e){
 document.getElementById('fab').addEventListener('click',function(){ go('mem'); });
 document.getElementById('fabh').addEventListener('click',function(){ home(); });
 document.getElementById('cartfab').addEventListener('click',function(){ if(state.view!=='cart') go('cart'); });
+document.getElementById('cartlist').addEventListener('click',function(e){ var x=e.target.closest('[data-cx]'), g=e.target.closest('[data-cgo]');
+  if (g) return go('cart');
+  if (!x) return; var c=state.cart||{}, id=x.dataset.cx, it=ITEM(id); c[id]=(c[id]||0)-1; if(c[id]<=0) delete c[id];
+  cartFab(false); toast('➖ '+(it?(it.dn||it.n):'')+' 뺐어요 · 지금 '+cartN()+'개');
+  [].forEach.call(document.querySelectorAll('.add[data-id="'+id+'"]'),function(b){ b.textContent=c[id]?'✓ '+c[id]+(it&&it.goods?'개':'병')+' 담음 · 하나 더':'🛒 담기'; }); });
 /* 2분 동안 아무도 안 만지면 첫 화면으로 */
 var idleT; function idle(){clearTimeout(idleT); idleT=setTimeout(function(){ if(state.view!=='home') home(); },120000);}
 ['pointerdown','scroll'].forEach(function(ev){addEventListener(ev,idle,true)}); idle();
