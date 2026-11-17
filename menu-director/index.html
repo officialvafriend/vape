@@ -578,6 +578,20 @@ body.land .chimg{width:96px;height:96px}
 .qc.mini{margin-top:12px;border:2px solid var(--deep);padding:10px 12px}
 .qc.mini .qd b{font-size:19px}
 .qc.mini .qa button{height:48px;font-size:17px}
+.dcmp{margin-bottom:8px;animation:pop .45s cubic-bezier(.2,1.6,.4,1)}
+.dct{font-family:var(--jal);font-size:17px;color:var(--deep);text-align:center;margin:2px 0 -4px}
+.dcmp .qc.mini{margin-top:8px}
+.dcmp .qc.mini{padding:8px}.dcmp .qh{grid-template-columns:1fr 34px 1fr}.dcmp .qvs{width:30px;height:30px;font-size:12px}.dcmp .qd b{font-size:16px}
+.dcmp .qr{grid-template-columns:1fr 40px 1fr;gap:3px}.dcmp .qr span{font-size:13px;padding:4px 2px;white-space:nowrap}.dcmp .qr span.w{font-size:13px}.dcmp .qr em{font-size:11px}
+.dhint{margin:4px 0 8px;padding:10px;border-radius:12px;background:#FFF6D6;color:#5c4400;font-size:15px;text-align:center;line-height:1.45}.dhint b{font-family:var(--jal);font-weight:normal}
+.cartlist:has(.dcmp),.cartlist:has(.dhint){background:#fff;box-shadow:0 8px 22px rgba(0,0,0,.3)}
+/* 처음으로 + 이전으로: 왼쪽 아래에 위아래로 */
+.fab.home{bottom:62px!important;padding:8px 18px 8px 12px;font-size:19px}
+.fab.home .em{font-size:22px}
+.fab.prev{right:auto;left:24px;bottom:12px!important;padding:7px 18px 7px 12px;font-size:18px;background:var(--deep);color:#fff;border-color:#fff}
+.fab.prev .em{font-size:20px;animation:none}
+body.land .fab.home{bottom:54px!important;padding:6px 16px 6px 10px;font-size:17px}
+body.land .fab.prev{bottom:8px!important;padding:5px 16px 5px 10px;font-size:16px}
 .empty{grid-column:1/-1;padding:48px 0;text-align:center;font-size:22px;color:var(--sub)}
 
 .toast{position:fixed;left:50%;top:40px;transform:translate(-50%,-20px);opacity:0;padding:18px 28px;border-radius:999px;
@@ -609,6 +623,7 @@ h1,h2,.brand span,.ttl,.ib.txt,.opt .t,.opt .n,.memban b,.save .big,.save .pct,.
 <div class="toast" id="toast"></div>
 <button class="fab" id="fab" hidden aria-label="회원등록"><span class="em">🎁</span>회원등록</button>
 <button class="fab home" id="fabh" hidden aria-label="처음으로"><span class="em">🏠</span>처음으로</button>
+<button class="fab prev" id="fabb" hidden aria-label="이전으로"><span class="em">◀</span>이전으로</button>
 <div class="cartdock" id="cartdock" hidden><button class="cartfab" id="cartfab" aria-label="장바구니"><span class="neck"></span><span class="body"><span class="liq" id="cliq"></span><span class="ct" id="cct">담기</span></span><span class="badge" id="cbadge"></span><span class="lb">장바구니</span></button><div class="cartlist" id="cartlist"></div></div>
 <script>
 /* ---------- 자료 ---------- */
@@ -902,7 +917,7 @@ function modelCards(){ var C=DEVCAT.filter(function(o){return o.k===(state.devca
 function modelListPane(){
   return '<div class="pane res">'+topBar('기기 보기',1,2)+
     '<section class="q" style="margin-top:32px"><h1>어떤 기기가 마음에 드세요? 📱</h1><p>'+(BRANCH?esc(BRANCH)+'에 지금 있는 기기예요.':'매장에 있는 기기예요.')+' 눌러서 자세히 보세요.</p>'+devTabs()+'</section>'+
-    '<section class="grid dgrid">'+modelCards()+qcmpBlock()+'</section></div>';
+    '<section class="grid dgrid">'+modelCards()+'</section></div>';
 }
 function modelDetail(){
   var M=MODELS[state.model], o=M.opts[state.mopt||0]||M.opts[0], I=M.info||DEVL.filter(function(d){return d.n===M.dn})[0]||{}, pk=devPacks(M);
@@ -1374,14 +1389,16 @@ function fly(img){ var r=img.getBoundingClientRect(), f=document.getElementById(
   requestAnimationFrame(function(){ requestAnimationFrame(function(){ g.classList.add('fly'); g.style.left=(f.left+f.width/2)/sc+'px'; g.style.top=(f.top+f.height/2)/sc+'px'; }); });
   setTimeout(function(){ g.remove(); }, 600); }
 var CART_OFF = /^(home|mem|cart|mix$|dev-dtl|cmp)/;
+function cartDevs(){ var c=state.cart||{}, out=[], seen={}; Object.keys(c).forEach(function(id){ var x=ITEM(id); if(!x||x.line!=='기기'||!x.dev||seen[x.dev]) return; var i=mIdx(x.dev); if(i<0) return; seen[x.dev]=1; out.push(MODELS[i]); }); return out; }
 function cartFab(bump){ var f=document.getElementById('cartfab'), dk=document.getElementById('cartdock'), n=cartN(), v=state.view, c=state.cart||{};
-  dk.hidden = CART_OFF.test(v) || (!n && !document.querySelector('#app .item .add'));
+  dk.hidden = CART_OFF.test(v) || (!n && !document.querySelector('#app .item .add, #app .dcard[data-gid]'));
   document.body.classList.toggle('carton', !dk.hidden);
   document.getElementById('cbadge').textContent = n ? n+'개' : '';
   var cl=document.getElementById('cartlist'), keep=cl.scrollTop;
-  cl.innerHTML = n ? Object.keys(c).map(function(id){ var x=ITEM(id); if(!x) return ''; var src=x.src!=null?x.src:(x.img?'../img/'+x.img:'');
+  var dv=cartDevs(), cmpH=dv.length>=2?'<div class="dcmp"><div class="dct">⚖️ 담은 기기 비교</div>'+qcmp(dv[dv.length-2], dv[dv.length-1], true)+'</div>':(dv.length===1&&document.querySelector('#app .dcard')?'<div class="dhint">⚖️ 기기를 하나 더 끌어다 놓으면<br><b>'+esc(dv[0].dn)+'</b>랑 바로 비교해 드려요</div>':'');
+  cl.innerHTML = cmpH + (n ? Object.keys(c).map(function(id){ var x=ITEM(id); if(!x) return ''; var src=x.src!=null?x.src:(x.img?'../img/'+x.img:'');
       return '<div class="cl">'+(src?'<img src="'+esc(src)+'" alt="">':'<span class="ph0">'+(x.em||'🧴')+'</span>')+'<span class="nm">'+esc(x.dn||x.n)+'</span><span class="q">×'+c[id]+'</span><button class="x" data-cx="'+esc(id)+'" aria-label="빼기">✕</button></div>'; }).join('')+
-    '<div class="ups">'+upsHtml(2)+'</div><div class="clft"><b>'+won(cartSum().pay)+'</b>'+(cartSum().bottles?'<small class="perd">💧 액상 병당 <b>'+won(cartSum().per)+'</b></small>':'')+(cartSum().full>cartSum().pay?'<small>패키지 적용 · '+won(cartSum().full-cartSum().pay)+' 아껴요</small>':'')+'<button data-cgo="1">장바구니 보기 ›</button></div>' : '<div class="cempty">🛒 상품을 끌어다<br><b>이 칸 아무 데나</b> 놓아 보세요<br><small>담기 버튼을 눌러도 돼요</small></div>';
+    '<div class="ups">'+upsHtml(2)+'</div><div class="clft"><b>'+won(cartSum().pay)+'</b>'+(cartSum().bottles?'<small class="perd">💧 액상 병당 <b>'+won(cartSum().per)+'</b></small>':'')+(cartSum().full>cartSum().pay?'<small>패키지 적용 · '+won(cartSum().full-cartSum().pay)+' 아껴요</small>':'')+'<button data-cgo="1">장바구니 보기 ›</button></div>' : '<div class="cempty">🛒 상품을 끌어다<br><b>이 칸 아무 데나</b> 놓아 보세요<br><small>'+(document.querySelector('#app .dcard')?'⚖️ 기기 2개를 넣으면 바로 비교해 드려요':'담기 버튼을 눌러도 돼요')+'</small></div>');
   cl.scrollTop = keep;
   document.getElementById('cct').innerHTML = n ? won(cartSum().pay).replace('원','<br>원') : '여기로<br>쏙! 👇';
   document.getElementById('cliq').style.height = Math.min(90, n ? 22+n*7 : 0)+'%';
@@ -1459,7 +1476,7 @@ function allPane(){
   var t=state.allt||'liq', body='', bar='';
   if (t==='liq' || t==='dl') { var L=byRank(t==='liq'?LIQ:LUNGL), f=filt(L); bar=filterBar(L);
     body=f.slice(0,120).map(function(x){return card(x,'')}).join('') || '<div class="empty">맞는 액상이 없어요.</div>'; }
-  else if (t==='dev') { bar=devTabs(); body=modelCards()+qcmpBlock(); }
+  else if (t==='dev') { bar=devTabs(); body=modelCards(); }
   else { var em={pod:'🔧',acc:'🧰',dsp:'🚬'}[t], G=GSRC.filter(function(g){ return t==='dsp'?g.c==='dsp':g.c==='pod'&&(t==='pod'?g.sub==='팟·코일':g.sub!=='팟·코일'); }),
       key=t==='dsp'?function(g){return g.model||'기타'}:function(g){return g.pos||'기타'};
     bar=gBar(G,key,t==='dsp'?'제품':'종류'); var F=G.filter(function(g){return !state.fs||key(g)===state.fs});
@@ -1636,7 +1653,7 @@ function render(){
     h = listPane({step:3,total:3,h:pk.line+' 액상에서<br>'+pk.n+'병 골라 주세요',list:byRank(DATA().filter(function(x){return x.line===pk.line})),
       chips:[pk.t], note:saveBox(pk.t, PRICE[pk.line]*pk.n, pk.price)}); }
   var app=document.getElementById('app'); app.innerHTML=h; app.className='screen'+(v!==lastView?' enter':''); var fresh=v!==lastView; lastView=v;
-  var fab=document.getElementById('fab'); fab.hidden = v==='home' || v.indexOf('mem')===0; fab.classList.toggle('up', !!app.querySelector('.acts,.cta,.askbar')); var fh=document.getElementById('fabh'); fh.hidden = v==='home'; fh.classList.toggle('up', fab.classList.contains('up'));
+  var fab=document.getElementById('fab'); fab.hidden = v==='home' || v.indexOf('mem')===0; fab.classList.toggle('up', !!app.querySelector('.acts,.cta,.askbar')); var fh=document.getElementById('fabh'); fh.hidden = v==='home'; fh.classList.toggle('up', fab.classList.contains('up')); var fb=document.getElementById('fabb'); fb.hidden = v==='home' || !state.hist.length;
   document.body.classList.toggle('fabon', !fab.hidden || !fh.hidden);
   var g=app.querySelector('.grid'); if(g) g.scrollTop=0;
   if (v==='mix') labBind();
@@ -1738,10 +1755,14 @@ document.getElementById('app').addEventListener('click',function(e){
 
 document.getElementById('fab').addEventListener('click',function(){ go('mem'); });
 document.getElementById('fabh').addEventListener('click',function(){ home(); });
+document.getElementById('fabb').addEventListener('click',function(){ back(); });
 document.getElementById('app').addEventListener('click',function(e){ var ad=e.target.closest('[data-cadd]'); if(ad){ cartAdd(ad.dataset.cadd); render(); } });
 document.getElementById('app').addEventListener('change',function(e){ var sl=e.target.closest('.csel'); if(!sl||sl.value==='') return; if(sl.dataset.side==='A') state.cmpA=+sl.value; else state.cmpB=+sl.value; render(); });
 document.getElementById('cartfab').addEventListener('click',function(){ if(state.view!=='cart') go('cart'); });
-document.getElementById('cartlist').addEventListener('click',function(e){ var x=e.target.closest('[data-cx]'), g=e.target.closest('[data-cgo]'), ad=e.target.closest('[data-cadd]');
+document.getElementById('cartlist').addEventListener('click',function(e){ var qa=e.target.closest('[data-act=qcmp]'), qp=e.target.closest('[data-act=cpick]');
+  if (qa) { state.cmpA=+qa.dataset.a; state.cmpB=+qa.dataset.b; return go('cmp'); }
+  if (qp) { state.model=+qp.dataset.i; state.mopt=0; state.bpk='0'; state.bpod=0; state.bpodi=0; state.bacc={}; return go('dev-dtl'); }
+  var x=e.target.closest('[data-cx]'), g=e.target.closest('[data-cgo]'), ad=e.target.closest('[data-cadd]');
   if (g) return go('cart');
   if (ad) { cartAdd(ad.dataset.cadd); if (state.view==='cart') render(); return; }
   if (!x) return; var c=state.cart||{}, id=x.dataset.cx, it=ITEM(id); c[id]=(c[id]||0)-1; if(c[id]<=0) delete c[id];
