@@ -512,7 +512,7 @@ function render() {
   if (!D) return;
   if (tab === "blog") tab = "tasks"; // 블로그는 업무 안으로 합침
   $("#app").classList.toggle("enter", enterOnce); enterOnce = false;
-  const pc = isPC(), tn = bdTodoN(), mn = window.msgUnread ? window.msgUnread() : 0;
+  const pc = isPC(), tn = navTodoN(), mn = window.msgUnread ? window.msgUnread() : 0;
   $("#nav").style.display = pc ? "none" : "";
   ls.set("vf-admin-sub-" + grpOf(tab)[0], tab);
   document.querySelectorAll("#nav button").forEach((b) => { if (b.dataset.g === "more") { b.classList.toggle("on", MORE.includes(tab) || grpOf(tab)[0] === "goods"); if (!b.dataset.ic) { b.dataset.ic = 1; b.innerHTML = ICON.more + "더보기"; } return; } const g = GROUPS.find((x) => x[0] === b.dataset.g); if (g) { b.dataset.tab = grpTab(g); b.classList.toggle("on", grpOf(tab) === g); if (!b.dataset.ic) { b.dataset.ic = 1; b.innerHTML = (g[0] === "goods" ? ICON.survey : ICON[g[0]]) + (g[0] === "note" ? "노트" : g[1]); } if (g[0] === "tasks") { b.querySelector(".nbadge")?.remove(); if (tn) b.insertAdjacentHTML("beforeend", `<span class="nbadge">${tn}</span>`); } if (g[0] === "msg") { b.querySelector(".nbadge")?.remove(); if (mn) b.insertAdjacentHTML("beforeend", `<span class="nbadge">${mn}</span>`); } } });
@@ -748,7 +748,7 @@ function blogTabHtml() {
   if (!BLOGLIST) loadBlogList();
   if (!NV && !NV_ERR && !NV_LD) { NV_LD = true; loadNaver().finally(() => (NV_LD = false)); }
   else if (NV && Date.now() - NV_AT > 10 * 60e3) { NV_AT = Date.now(); loadNaver(true); }
-  const d = NV ? nvStats("대구 전체").d : "", md = d ? `${+d.slice(5, 7)}/${+d.slice(8)}` : "", tn = bdTodoN();
+  const d = NV ? nvStats("대구 전체").d : "", md = d ? `${+d.slice(5, 7)}/${+d.slice(8)}` : "", tn = navTodoN();
   const head = `<div class="pchead" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><h1>블로그</h1><div class="caption" style="flex:1;min-width:150px;margin:0">${bgV === "kw" ? `지점별 추천 키워드${md ? `, 네이버 대시보드 ${md} 기록` : ""}` : "다음 월요일, 수요일 발행 준비"}</div><button class="chip" data-act="nvguide">보는 법</button></div>`;
   const seg = `<div class="chips" style="margin-top:12px;margin-bottom:12px"><button class="chip ${bgV === "plan" ? "on" : ""}" data-bgv="plan">발행 준비${tn ? `<span class="nbadge">${tn}</span>` : ""}</button><button class="chip ${bgV === "kw" ? "on" : ""}" data-bgv="kw">키워드 점유</button></div>`;
   if (bgV === "kw") {
@@ -1218,6 +1218,7 @@ function closingAllHtml() {
   return `<div class="pchead"><h1>마감 보고</h1><div class="caption">지점별 최근 마감, 누르면 보고문 전체</div></div><div class="chips hs" style="margin-bottom:12px">${chips}</div>${all.length ? (clB === "전체" ? closingByBranchHtml() : closingBranchListHtml(clB)) : '<div class="empty">아직 마감 보고가 없어요</div>'}`;
 }
 const posTxt = (c) => { const p = c && c.pos; if (!p || !p.ok) return ""; const g = Math.round(+p.과부족 || 0); return p.일마감 ? "포스 일마감 됨" + (g ? ", 과부족 " + (g > 0 ? "+" : "") + g.toLocaleString("ko-KR") : "") : "포스 일마감 아직"; };
+const navTodoN = () => { let n = 0; try { n = bdTodoN(); } catch (e) { n = 0; } try { if (window.admSt && window.admSt() !== "off" && window.msgTaskCounts) n += window.msgTaskCounts().cf || 0; } catch (e) { /* 메신저가 아직 없음 */ } return n; }; /* 업무 메뉴 숫자 = 블로그 지시문 쓸 것 + 내가 맡은 업무 */
 const clRow = (c, i) => { const st = clSt(c), w = st === "bad" ? warnsOf(c).length || 1 : 0; return `<button class="clrow" data-cl="${i}"><b class="${w ? "t-bad" : ""}">${c.date.slice(5).replace("-", "/")}</b><span class="m">${c.status === "done" ? `총 ${won(c.nums.총)}<small>시재 ${won(c.sijae)}${st === "sp" && clDiffTxt(c) ? ", 차액 " + clDiffTxt(c) : ""}${posTxt(c) ? ", " + posTxt(c) : ""}</small>` : c.status === "error" ? `<span class="t-bad">${esc(c.err || "실패")}</span>` : "만드는 중"}</span><small>${esc(c.by)}</small>${w ? `<span class="t-bad">⚠️${w}</span>` : st === "sp" ? '<span class="sptag">특이건</span>' : ""}<span class="chev">›</span></button>`; };
 function closingByBranchHtml() {
   const all = D.closings || [];
@@ -1955,6 +1956,7 @@ matchMedia("(min-width:900px)").addEventListener("change", () => { panelKeep = "
    저장 안 됨, 신호 안 보냄. 관리자 업무와 일정은 예시 자료다. 지점 탭은 원래 업무 화면 그대로(진짜 자료). */
 (() => {
   document.head.insertAdjacentHTML("beforeend", `<style id="ptcss">
+.ptn{font-style:normal;display:inline-grid;place-items:center;min-width:18px;height:18px;padding:0 5px;margin-left:6px;border-radius:9px;background:var(--red,#e5484d);color:#fff;font-size:11px;font-weight:700;vertical-align:1px}
 .ptex{display:flex;align-items:center;gap:10px;background:var(--amber-soft);color:var(--amber);border-radius:14px;padding:10px 14px;font-size:14px;font-weight:600;line-height:1.45;margin:0 0 14px}
 .ptex span{flex:1}.ptex button{flex:none;height:34px;padding:0 12px;border-radius:10px;background:var(--card);color:var(--ink2);font-size:13px;font-weight:700}
 .pthead{display:flex;align-items:center;gap:10px;min-height:44px;margin:0 4px 6px}
@@ -2080,6 +2082,8 @@ button.ptnext:hover{filter:brightness(.97)}
   const ev = (x, big) => x.s ? `<button class="${big ? "item pt" : "ptev"}" data-pt="sch" data-id="${x.s.id}">${big ? `<div class="av">${x.s.time}</div><div class="tx"><b>${esc(x.s.title)}</b><span>일정, ${esc(x.s.who)}</span></div><span class="chev">›</span>` : `<small>${x.s.time}</small>${esc(x.s.title)}`}</button>` : big ? row(x.t, "맡은 사람 " + x.t.owner) : `<button class="ptev ${over(x.t) ? "over" : ""}" data-pt="open" data-id="${x.t.id}"><small>기한</small>${fchip(x.t)}${esc(x.t.title)}</button>`;
   /* 메신저가 켜져 있으면 창고의 진짜 일정을, 아니면 예시 일정을 쓴다 */
   const real = () => !!(window.admSt && window.admSt() !== "off"); /* 정식으로 쓰는 중: 예시를 보이지 않는다 */
+  /* 칸마다 빨간 숫자: 내 것 = 내가 맡은 업무, 지점과 블로그 = 블로그 지시문 쓸 것 */
+  const tabN = (k) => { try { return k === "mine" ? (real() && window.msgTaskCounts ? window.msgTaskCounts().cf : 0) : k === "branch" ? (typeof bdTodoN === "function" ? bdTodoN() : 0) : 0; } catch (e) { return 0; } };
   const liveOn = () => !!(window.admLive && window.admLive()); /* 메신저가 켜져 있으면 달력에 예시 업무를 안 섞는다 */
   const schAll = () => (window.admLive && window.admLive() && window.msgEvents ? window.msgEvents() : SCH);
   function calHtml() {
@@ -2107,7 +2111,7 @@ button.ptnext:hover{filter:brightness(.97)}
     if (!MT.length) seed();
     const onlMode = !!window.ONKEY; /* 11/18 보혜 "블로그 지시문 작성하는 건 어디로 갔지?": 지점 칸에 블로그 지시문 쓰기가 있어서 온라인 쪽에서도 보여 준다. 온라인팀 전용 로그인만 감춘다(매장 자료가 없음) */ if (onlMode && PT.view === "branch") PT.view = "mine"; if (real() && PT.view === "evt") PT.view = "mine"; /* 이벤트 칸은 아직 예시뿐이라 정식에서는 감춘다 */ /* 온라인 쪽에서는 매장 업무 칸을 감춘다 */
     const bdOk = !!(window.bdCan && window.bdCan() && window.bdHtml); if (!bdOk && (PT.view === "bd" || PT.view === "mt")) PT.view = "mine"; /* 팀 할 일과 회의: 온라인팀 보드가 관리자웹 안으로 이사 온 것 */
-    const tabs = `<div class="subnav">${[["mine", "내 것"], ["bd", "팀 할 일"], ["mt", "회의"], ["branch", "지점, 블로그"], ["cal", "달력"], ["evt", "이벤트"]].filter(([k]) => !(onlMode && k === "branch") && !(real() && k === "evt") && !(!bdOk && (k === "bd" || k === "mt"))).map(([k, n]) => `<button class="${PT.view === k ? "on" : ""}" data-pt="view" data-v="${k}">${n}</button>`).join("")}</div>`;
+    const tabs = `<div class="subnav">${[["mine", "내 것"], ["bd", "팀 할 일"], ["mt", "회의"], ["branch", "지점, 블로그"], ["cal", "달력"], ["evt", "이벤트"]].filter(([k]) => !(onlMode && k === "branch") && !(real() && k === "evt") && !(!bdOk && (k === "bd" || k === "mt"))).map(([k, n]) => `<button class="${PT.view === k ? "on" : ""}" data-pt="view" data-v="${k}">${n}${tabN(k) ? `<i class="ptn">${tabN(k)}</i>` : ""}</button>`).join("")}</div>`;
     if (PT.view === "bd" || PT.view === "mt") return tabs + window.bdHtml(PT.view);
     if (PT.view === "branch") return tabs + branchTasks();
     return tabs + `<div class="ptex"><span>예시 자료예요. 저장은 안 돼요. 눌러서 흐름만 봐 주세요.</span><button data-pt="reset">처음으로</button></div>` + (PT.view === "cal" ? calHtml() : PT.view === "evt" ? evtHtml() : mine2Html());
@@ -3142,6 +3146,7 @@ body.hmonline .hmseg button.on{color:var(--blue)}body.hmonline .side,body.hmonli
 body.onlyon .hmseg:not(.hmon),body.onlyon .hmlgsw,body.onlyon [data-act="reload"],body.onlyon .gsopen,body.onlyon .gstop,body.onlyon [data-pt="view"][data-v="branch"],body.onlyon [data-pt="view"][data-v="evt"]{display:none!important}body.onlyon .logo[data-hm]{cursor:default}
 .logo[data-hm]{cursor:pointer;-webkit-user-select:none;user-select:none}.hmlgsw{display:inline-block;margin-left:8px;font-size:11px;font-weight:700;color:var(--blue);background:var(--blue-soft);border-radius:8px;padding:3px 7px;vertical-align:2px;letter-spacing:0}
 .hmlgsw .s{display:none}.top .hmlgsw .l{display:none}.top .hmlgsw .s{display:inline}.top .hmlgsw{margin-left:5px;padding:2px 6px;font-size:10px}.top .logo{white-space:nowrap}
+.hmb .k{font-size:13px;color:var(--sub);margin-top:2px}.hmb .k b{color:var(--ink2);font-weight:700}
 .hmvs{background:var(--card);border-radius:18px;padding:6px 16px}
 .hmvs>div{display:flex;align-items:center;gap:10px;min-height:42px;border-bottom:1px solid var(--line2);font-size:15px}.hmvs>div:last-child{border-bottom:0}
 .hmvs b{flex:none;width:92px;font-weight:700;white-space:nowrap}.hmvs .bar{flex:1;min-width:20px;height:8px;border-radius:4px;background:var(--line2);overflow:hidden}.hmvs .bar i{display:block;height:100%;border-radius:4px;background:var(--blue)}
@@ -3176,44 +3181,52 @@ body.hmfull #nav{display:none!important}body.hmfull .hmboard{border-radius:16px 
   document.head.appendChild(st);
   const HM = { v: ls.get("vf-hm-v") === "online" ? "online" : "vf" };
   const man = (n) => (n >= 10000 ? `${Math.round(n / 10000).toLocaleString("ko-KR")}<small>만</small>` : `${Math.round(n).toLocaleString("ko-KR")}<small>원</small>`);
-  const top = () => { const hm = String(D.at || "").slice(-5); return `<div class="hmtop"><div class="hmseg" role="tablist"><button class="${HM.v === "vf" ? "on" : ""}" data-hm="vf">VF 홈</button><button class="${HM.v === "online" ? "on" : ""}" data-hm="online">온라인 홈</button></div><span class="sp"></span><small>${hm && HM.v === "vf" ? hm + " 기준" : ""}</small>${HM.v === "vf" ? bell() : ""}</div>`; };
+  const top = () => { const hm = String(D.at || "").slice(-5); /* 위쪽 전환 줄 없앰 */ if (HM.v !== "vf") return ""; return `<div class="hmtop"><span class="sp"></span><small>${hm && HM.v === "vf" ? hm + " 기준" : ""}</small>${HM.v === "vf" ? bell() : ""}</div>`; };
   /* 확인할 것은 종 안으로: 많아져도 아래 숫자와 지점이 안 밀림. 있으면 빨강과 개수 */
   const BELL = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5a6.5 6.5 0 0 0-6.5 6.5v3.6L3.7 16a1 1 0 0 0 .9 1.5h14.8a1 1 0 0 0 .9-1.5l-1.8-3.4V9A6.5 6.5 0 0 0 12 2.5zM9.3 19a2.8 2.8 0 0 0 5.4 0z"/></svg>';
   const bell = () => { const n = issuesLeft().length; return `<button class="hmbell ${n ? "on" : ""}" data-hm="iss" aria-label="확인할 것 ${n}건">${BELL}${n ? `<i>${n}</i>` : ""}</button>`; };
   /* 예전 PC 홈 오른쪽 칸에 저절로 뜨던 "제일 급한 것"도 여기 맨 위에 남김 */
   const bellSheet = () => { let hero = ""; try { const top = issuesLeft()[0]; if (top && top.kind === "aout") hero = `<div class="eyebrow" style="margin-top:14px">제일 급한 것</div>${heroHtml()}`; } catch (e) { hero = ""; } openSheet(`<div data-hmbell></div><h3>확인할 것</h3>${hero}<div class="hmbellbody">${issuesHtml()}</div><div class="btns"><button class="btn gray" data-x>닫기</button></div>`); try { bindSparks(); } catch (e) {} };
   function branchCard(o, i) {
-    const c = o.close, L = !c && o.live ? o.live : null, s = c ? +c.총 || 0 : L ? +L.sales || 0 : 0, n = c ? +c.bills || 0 : L ? +L.bills || 0 : 0;
+    const c = o.close, V = !c ? vsOf(o.b) : null, L = !c && !V && o.live ? o.live : null, s = c ? +c.총 || 0 : V ? +V.s || 0 : L ? +L.sales || 0 : 0, n = c ? +c.bills || 0 : V ? +V.n || 0 : L ? +L.bills || 0 : 0;
+    const rv = c ? (c.rev == null ? null : +c.rev || 0) : o.revLive && o.revLive.rev != null ? +o.revLive.rev || 0 : null; /* 리뷰 수: 마감 보고 또는 낮 동안 적힌 값 */
     let kind = "", stt = "오픈 기록 없음";
     if (c) { let k = "ok"; try { k = clSt(closingOf(o.b)); } catch (e) { k = +c.diff || c.warn ? "bad" : "ok"; } kind = k === "bad" ? "bad" : "done"; stt = k === "bad" ? `마감 ${String(c.at || "").slice(-5)}, 확인 필요` : k === "sp" ? `마감 ${String(c.at || "").slice(-5)}, 특이건` : `마감 ${String(c.at || "").slice(-5)}`; }
     else if (o.open) { kind = "on"; stt = `영업 중, 오픈 ${esc(o.open)}`; }
     const who = Array.isArray(o.staff) ? o.staff.join(", ") : o.staff || (c && c.by) || "";
-    return `<button class="hmb ${kind}" data-hmb="${esc(o.b)}"><div class="n"><i>${i + 1}</i>${esc(o.b)}</div><div class="s">${stt}</div><div class="m">${s ? man(s) : '<small style="margin:0">아직 매출 없음</small>'}${s && n ? `<small>${n}건</small>` : ""}</div>${who ? `<div class="w">${esc(who)}</div>` : ""}</button>`;
+    return `<button class="hmb ${kind}" data-hmb="${esc(o.b)}"><div class="n"><i>${i + 1}</i>${esc(o.b)}</div><div class="s">${stt}</div><div class="m">${s ? man(s) : '<small style="margin:0">아직 매출 없음</small>'}</div>${s || n ? `<div class="k">객수 <b>${n}</b>명${rv == null ? "" : `, 리뷰 <b>${rv}</b>`}</div>` : ""}${who ? `<div class="w">${esc(who)}</div>` : ""}</button>`;
   }
   /* 지점별 오늘 매출: 창고에 올라온 값(마스터봇이 읽은 포스 당일매출). 관리자 열쇠로 들어온 사람만 받는다 */
   const VS = { d: null, at: 0, busy: false };
   async function vsLoad() {
     if (VS.busy || window.ONKEY || !window.admLive || !window.admLive() || Date.now() - VS.at < 60e3) return; VS.busy = true; VS.at = Date.now();
-    try { const o = await window.admCall("adm_vfsales_get", {}); const d = o && o.ok && o.sales && typeof o.sales === "object" ? o.sales : null, sig0 = JSON.stringify(VS.d); VS.d = d; if (JSON.stringify(d) !== sig0 && tab === "home" && HM.v === "vf") { const el = $("#hmvs"); if (el) el.innerHTML = vsHtml(); } }
+    try { const o = await window.admCall("adm_vfsales_get", {}); const d = o && o.ok && o.sales && typeof o.sales === "object" ? o.sales : null, sig0 = JSON.stringify(VS.d); VS.d = d; if (JSON.stringify(d) !== sig0 && tab === "home" && HM.v === "vf") { const el = $("#hmbrw"); if (el) el.innerHTML = brHtml(); } }
     catch (e) { /* 다음에 다시 */ } finally { VS.busy = false; }
   }
-  function vsHtml() {
-    const d = VS.d; if (!d || d.d !== nowD() || !d.b) return "";
-    const rows = BR.map((b, i) => [b, i, d.b[b]]).filter((x) => x[2]); if (!rows.length) return "";
-    const sum = rows.reduce((a, x) => a + (+x[2].s || 0), 0), cnt = rows.reduce((a, x) => a + (+x[2].n || 0), 0), top = Math.max(1, ...rows.map((x) => +x[2].s || 0));
-    return `<div class="hmh">지점별 오늘 매출 <small>${esc(String(d.made || "").slice(11))} 기준, 합계 ${w(sum)}원, ${cnt}건</small></div><div class="hmvs">${rows.map(([b, i, x]) => `<div><b>${i + 1}호 ${esc(b)}</b><span class="bar"><i style="width:${Math.round(((+x.s || 0) / top) * 100)}%"></i></span><span class="won">${w(x.s)}<small>원</small></span><span class="n">${+x.n || 0}건${x.old ? ", 앞서 읽은 값" : ""}</span></div>`).join("")}</div>`;
+  /* 오늘 날짜로 올라온 그 지점의 포스 매출(없으면 null) */
+  const vsOf = (b) => { const d = VS.d; return d && d.d === nowD() && d.b && d.b[b] ? d.b[b] : null; };
+  /* 오늘 숫자: 마감한 지점은 마감 보고 값, 영업 중인 지점은 방금 읽은 포스 값 */
+  function statV() {
+    const ops = D.ops || [], t = { s: 0, n: 0, r: 0 };
+    for (const o of ops) { const c = o.close, V = !c ? vsOf(o.b) : null; t.s += c ? +c.총 || 0 : V ? +V.s || 0 : (o.live && +o.live.sales) || 0; t.n += c ? +c.bills || 0 : V ? +V.n || 0 : (o.live && +o.live.bills) || 0; t.r += c ? +c.rev || 0 : (o.revLive && +o.revLive.rev) || 0; }
+    const done = ops.filter((o) => o.close).length;
+    return `<div class="hstat"><div><span>총매출</span><b>${man(t.s)}</b></div><div><span>객수</span><b>${t.n}</b></div><div><span>리뷰</span><b>${t.r}</b></div><div><span>마감 보고</span><b>${done}/${ops.length}곳</b></div></div>`;
+  }
+  function brHtml() {
+    const closed = D.ops.filter((o) => o.close).length, open = D.ops.filter((o) => !o.close && o.open).length, anyWho = D.ops.some((o) => o.staff || (o.close && o.close.by));
+    const has = D.ops.some((o) => vsOf(o.b)), sum = D.ops.reduce((a, o) => a + (o.close ? +o.close.총 || 0 : (vsOf(o.b) || {}).s || 0), 0);
+    return `<div class="hmh">오늘 숫자${has ? ` <small>${esc(String(VS.d.made || "").slice(11))} 기준</small>` : ""}</div>${statV()}<div class="hmh">지점 한눈에 <small>영업 중 ${open}곳, 마감 ${closed}곳${anyWho ? "" : ", 근무자 이름은 아직 자료에 없어요"}</small></div><div class="hmg">${D.ops.map(branchCard).join("")}</div>`;
   }
   function vfHtml() {
     vsLoad();
     const iss = issuesLeft().length, mu = window.msgUnread ? window.msgUnread() : 0, pc = window.ptCounts ? window.ptCounts() : { cf: 0, ov: 0 };
     const tile = (lab, n, cls, go, unit) => `<button ${go}><span>${lab}</span><b class="${n ? cls : "z"}">${n}<small>${unit}</small></b></button>`;
     const tiles = `<div class="hmt">${tile("확인할 것", iss, "r", 'data-hm="iss"', "건")}${tile("안 읽은 메시지", mu, "b", 'data-tab="msg"', "개")}${tile(pc.real ? "내가 맡은 업무" : "확인 기다리는 업무", pc.cf, "b", 'data-tab="tasks"', "건")}${tile("기한 지난 업무", pc.ov, "r", 'data-tab="tasks"', "건")}</div>`;
-    const closed = D.ops.filter((o) => o.close).length, open = D.ops.filter((o) => !o.close && o.open).length, anyWho = D.ops.some((o) => o.staff || (o.close && o.close.by));
-    const br = `<div class="hmh">지점 한눈에 <small>영업 중 ${open}곳, 마감 ${closed}곳${anyWho ? "" : ", 근무자 이름은 아직 자료에 없어요"}</small></div><div class="hmg">${D.ops.map(branchCard).join("")}</div>`;
+    const br = `<div id="hmbrw">${brHtml()}</div>`;
     const nx = window.ptNext ? window.ptNext() : null;
     /* 예전 홈에 있던 것은 그대로 남김: 봇 경고는 맨 위, 지점 표는 카드 아래에 접어서 */
     const tbl = `<details class="hmmore"><summary>지점 표로 자세히 보기</summary><div class="${isPC() ? "cols home" : ""}" style="display:block;margin-top:10px">${isPC() ? opsHtml() : opsMobileHtml()}</div></details>`;
-    return `${botWarn()}<div class="hmh" style="margin-top:8px">지금 할 것</div>${tiles}${nx ? `<div style="margin-top:8px">${nx.html.replace('data-px="ev"', 'data-hm="next"')}</div>` : ""}<div class="hmh">오늘 숫자</div>${statHtml()}<div id="hmvs">${vsHtml()}</div>${br}${tbl}`;
+    return `${botWarn()}<div class="hmh" style="margin-top:8px">지금 할 것</div>${tiles}${nx ? `<div style="margin-top:8px">${nx.html.replace('data-px="ev"', 'data-hm="next"')}</div>` : ""}${br}${tbl}`;
   }
   /* 온라인 홈: 액상덕후 매출(열쇠 뒤 창고에서 받음, 공개 저장소에는 숫자가 없음)과 온라인팀 보드.
      매출은 이 PC의 올리기 스크립트((보혜)\\온라인홈_자료\\온라인홈_매출올리기.mjs)가 올린 것까지만 보인다. */
