@@ -255,7 +255,7 @@ let S = S0(), D = null, E = null, CQ = new Map(), CI = [], CT = { total: 0 }, CN
 try { if (!localStorage.getItem("vf-menu-branch")) localStorage.setItem("vf-menu-branch", new URLSearchParams(location.search).get("b") || "본점"); } catch (e) {}
 $('eng').src = LOCAL ? "menu_b.html" : "./index.html"; /* 올린 곳에선 같은 폴더의 정식 B안을 자료로 씀 */
 $('eng').onload = () => { const w = $('eng').contentWindow; E = (code) => w.eval(code);
-  const t = setInterval(() => { let ok = false; try { ok = E("!!RK"); } catch (e) {} if (!ok) return; clearInterval(t);
+  const t0 = Date.now(), t = setInterval(() => { let ok = false; try { ok = E("!!RK && !!STOCK_AT") || (E("!!RK") && Date.now() - t0 > 8000); } catch (e) {} if (!ok) return; clearInterval(t); /* 재고 파일까지 읽힌 뒤에 시작 (품절, 다른 지점 재고가 맞게 나오게). 8초 넘으면 그냥 시작 */
     D = JSON.parse(E(`JSON.stringify({ branch: BRANCH, rk: RK, stockAt: STOCK_AT || "",
       liq: ALL_LQ.map((x) => ({ id: x.id, n: x.n, s: short(x.n), f: x.f || "", g: String(x.g || "").replace("·", ", "), br: x.br || "", line: x.line || "", img: imgOf(x), tint: tintOf(x), price: liqPrice(x), out: outOf(x.n), no: noOf(x.n) || 0, a: A_SET.has(x.n),
         oth: outOf(x.n) ? Object.entries(STOCK_ALL).filter(([b, v]) => b !== BRANCH && window.POS && window.POS[b] && window.POS[b][posName(x.n, b)] && !(v.out || []).includes(posName(x.n, b))).map(([b]) => b) : [] })),
