@@ -253,7 +253,7 @@ const WAYS = [["first", "전자담배가 처음이에요", "연초나 궐련형�
 const LABEL = { dev: "기기", liq: "액상", pod: "팟, 코일", dsp: "일회용", sum: "확인" };
 const LOCAL = location.protocol === "file:" || /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
 const DEMO = LOCAL && !/[?&]real=1/.test(location.search); /* 내 컴퓨터 미리보기는 봇에 안 보내고 예시로 보여 줌 */
-const S0 = () => ({ step: "start", path: [], who: null, way: "", taste: "전체", dspM: "전체", podFam: "", phone: "", name: "", qz: null, res: null, vp: 0, recDev: "", spin: null, sp: null, mem: null, reg: { name: "", year: "", phone: "", agree: false, mk: false, s: "" } });
+const S0 = () => ({ step: "start", path: [], who: null, way: "", taste: "전체", dspM: "전체", podFam: "", famOpen: false, phone: "", name: "", qz: null, res: null, vp: 0, recDev: "", spin: null, sp: null, mem: null, reg: { name: "", year: "", phone: "", agree: false, mk: false, s: "" } });
 let S = S0(), D = null, E = null, CQ = new Map(), CI = [], CT = { total: 0 }, CN = 0, lastKey = "", qzT = 0;
 
 /* ── 자료: B안을 뒤에 숨겨 열고 그 자료, 담기, 합계, 회원, 문진 규칙을 그대로 부름 ── */
@@ -346,8 +346,8 @@ const V = {
   pod: () => { const mine = devInCart().map(([, v]) => norm(v.model || v.label)), auto = D.fams.find((f) => mine.some((m) => m.includes(norm(f)) || norm(f).includes(m))) || "", fam = S.podFam || auto, list = D.pod.filter((p) => p.fam === fam);
     return split(`<div class="q s">팟, 코일도 챙겨 가세요</div>
       <div class="box" style="margin-top:14px"><h4>꼭 필요한 소모품이에요</h4><p>액상 1병에 1개, 또는 7~8일에 한 번 바꿔 주세요.<br>오래 쓰면 액상이 새고, 새는 액상은 기기 고장의 원인이 돼요.</p></div>
-      ${auto && !S.podFam ? "" : chips(D.fams, fam, "fam")}
-      ${fam ? `<div class="box">${list.map((p) => `<div class="ln"><span class="im">${p.img ? `<img src="${p.img}" alt="">` : ""}</span><span class="tx"><b>${esc(p.n)}</b><span>${won(p.price)}</span></span>${stepper("pod", p.id)}</div>`).join("") || '<div class="empty">맞는 팟이 지금 없어요, 직원에게 말씀해 주세요</div>'}</div>${auto && !S.podFam ? `<button class="txtb" data-fam="${esc(D.fams[0] || "")}">다른 기기 팟 보기</button>` : ""}` : '<div class="empty">쓰시는 기기 이름을 눌러 주세요<br>이름을 모르시면 기기를 직원에게 보여 주세요, 맞는 팟을 찾아 드려요</div>'}`, cartPanel(), "shop"); },
+      ${fam && !S.famOpen ? "" : chips(D.fams, fam, "fam")}
+      ${fam ? `<div class="box"><h4>${esc(fam)}에 맞는 것</h4>${list.map((p) => `<div class="ln"><span class="im">${p.img ? `<img src="${p.img}" alt="">` : ""}</span><span class="tx"><b>${esc(p.n)}</b><span>${won(p.price)}</span></span>${stepper("pod", p.id)}</div>`).join("") || '<div class="empty">맞는 팟이 지금 없어요, 직원에게 말씀해 주세요</div>'}</div>${S.famOpen ? "" : `<button class="txtb" data-famopen="1">다른 기기 팟 보기</button>`}` : '<div class="empty">쓰시는 기기 이름을 눌러 주세요<br>이름을 모르시면 기기를 직원에게 보여 주세요, 맞는 팟을 찾아 드려요</div>'}`, cartPanel(), "shop"); },
   sum: () => { const r = S.reg, m = S.mem;
     const memBox = S.who === "mem" && m && m.s === "found" ? `<div class="box"><h4>회원</h4><p>${maskPhone(S.phone)} 확인됐어요. 결제할 때 이 번호로 적립해 드려요.</p></div>`
       : r.s ? `<div class="box"><h4>회원등록</h4><p>${esc(r.s)}</p></div>`
@@ -458,7 +458,8 @@ document.addEventListener('click', (e) => { const t = e.target, c = (s) => t.clo
   if (b = c('[data-step]')) { const j = S.path.indexOf(b.dataset.step); if (j <= S.path.indexOf(S.step)) return go(b.dataset.step); return; }
   if (b = c('[data-taste]')) { S.taste = b.dataset.taste; return draw(); }
   if (b = c('[data-dspm]')) { S.dspM = b.dataset.dspm; return draw(); }
-  if (b = c('[data-fam]')) { S.podFam = b.dataset.fam; return draw(); }
+  if (b = c('[data-fam]')) { S.podFam = b.dataset.fam; S.famOpen = false; return draw(); }
+  if (c('[data-famopen]')) { S.famOpen = true; return draw(); }
   if (b = c('[data-ck]')) { S.reg[b.dataset.ck] = !S.reg[b.dataset.ck]; return draw(); }
   if (b = c('[data-dev]')) return openDev(b.dataset.dev);
   if (t.id === "regGo") return regSend();
