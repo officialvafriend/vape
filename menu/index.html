@@ -899,7 +899,7 @@ function drawCart() {
 $('lines').onclick = (e) => {
   const ck = e.target.closest('[data-ck]'); if (ck) { member[ck.dataset.ck] = !member[ck.dataset.ck]; if (member.bad === "agree") member.bad = ""; drawCart(); return; }
   const hs = e.target.closest('[data-h2skip]'); if (hs) { window.h2After = null; document.body.classList.remove('open'); qzStart(); return; } /* 11/18 등록 없이 문진으로 */
-  const mo = e.target.closest('[data-memok]'); if (mo) { if (h2on() && !/^[가-힣a-zA-Z ]{1,12}$/.test(member.name.trim())) { member.bad = "name"; drawCart(); return toast("성함을 알려 주세요"); } if (!/^01[016789]\d{7,8}$/.test(member.phone)) { member.bad = "phone"; drawCart(); return toast("휴대폰 번호를 확인해 주세요"); } member.bad = ""; if (memregOn()) { memRegSend(true); return; } member.okd = true; drawCart(); return; } /* 11/12 본점: 포스에서 회원 조회 */
+  const mo = e.target.closest('[data-memok]'); if (mo) { if (h2on() && !/^[가-힣a-zA-Z ]{1,12}$/.test(member.name.trim())) { member.bad = "name"; drawCart(); return toast("성함을 알려 주세요"); } if (!/^01[016789]\d{7,8}$/.test(member.phone) || /^0000/.test(member.phone.slice(3))) { member.bad = "phone"; drawCart(); return toast("휴대폰 번호를 확인해 주세요"); } member.bad = ""; if (memregOn()) { memRegSend(true); return; } member.okd = true; drawCart(); return; } /* 11/12 본점: 포스에서 회원 조회 */
   const sl = e.target.closest('[data-seller]'); if (sl) { SELLER = SELLER === sl.dataset.seller ? "" : sl.dataset.seller; sellerSave(); drawCart(); return; } /* 11/13 판매자 */
   const sa = e.target.closest('[data-sima]'); if (sa) { const x = ALL_LQ.find((y) => y.id === sa.dataset.sima); if (x) { addLiqX(x); toast("담았어요"); drawCart(); } return; } /* 11/12 비슷한 맛 담기 */
   const mc = e.target.closest('[data-memclear]'); if (mc) { Object.assign(member, { type: null, name: "", year: "", phone: "", agree: false, mk: false, sex: "", reg: null, bad: "", okd: false }); drawCart(); return; } /* 11/12 빈 장바구니 회원 칸 초기화 */
@@ -1012,7 +1012,7 @@ async function memRegSend(look) { /* 11/12 look=true: 회원이에요 번호로 
   if (!look) {
   if (!/^[가-힣a-zA-Z ]{1,12}$/.test(member.name.trim())) return need("name", "성함을 알려 주세요");
   if (!/^\d{2}$/.test(member.year || "")) return need("year", "몇 년생인지 알려 주세요"); }
-  if (!/^01[016789]\d{7,8}$/.test(member.phone)) return need("phone", "휴대폰 번호를 확인해 주세요");
+  if (!/^01[016789]\d{7,8}$/.test(member.phone) || /^0000/.test(member.phone.slice(3))) return need("phone", "휴대폰 번호를 확인해 주세요"); /* 11/18 010-0000-xxxx 는 봇이 안 받는 번호(포스 빈 번호 자리)라 패드에서 먼저 알려 줌. 전엔 보낸 뒤 "등록이 안 됐어요"로만 떴음 */
   if (!look && !member.agree) return need("agree", "(필수) 동의를 눌러 주세요"); member.bad = "";
   const id = Array.from(crypto.getRandomValues(new Uint8Array(8)), (b) => b.toString(36)).join("").slice(0, 16).padEnd(8, "0");
   member.reg = { id, s: "send", look: !!look, t0: Date.now() }; memRedraw();
