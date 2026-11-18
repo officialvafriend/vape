@@ -531,6 +531,29 @@ body[data-theme=dark] .scan svg{background:#fff;border-radius:8px}
 .hzrow .sr .add{position:absolute;right:12px;bottom:10px}
 .hzrow .sr .askb{font-size:13px;padding:8px 0}
 .sres .soldmore{margin:8px var(--pad) 0;width:calc(100% - var(--pad) * 2)}
+
+/* 11/18 사진으로 담기: 장바구니 줄 버튼 + 확인 화면 */
+.camb{flex:none;height:56px;padding:0 18px;border-radius:16px;background:var(--bg);border:1.5px solid var(--line);font-size:16px;font-weight:800;color:var(--ink);white-space:nowrap}
+#scanOv{display:none;position:fixed;inset:0;z-index:95;background:var(--bg);flex-direction:column}
+#scanOv.on{display:flex}
+#scanOv .sh{flex:none;display:flex;align-items:center;justify-content:space-between;padding:18px var(--pad) 10px}
+#scanOv .sh b{font-size:24px}#scanOv .sh button{height:44px;padding:0 18px;border-radius:22px;background:var(--card);font-size:15px;font-weight:700}
+#scanOv .sb{flex:1;overflow-y:auto;padding:0 var(--pad) 16px}
+#scanOv .sf{flex:none;display:flex;gap:10px;padding:12px var(--pad) 20px;background:var(--card);box-shadow:0 -1px 0 var(--line)}
+#scanOv .sf button{height:64px;border-radius:18px;font-size:19px;font-weight:800}
+#scanOv .sf .b2{flex:none;padding:0 22px;background:var(--bg);color:var(--ink)}#scanOv .sf .rd{flex:1;background:var(--red);color:#fff}#scanOv .sf .rd:disabled{background:#c9c9cf}
+.scph{width:100%;max-height:300px;object-fit:contain;border-radius:18px;background:#000;margin-bottom:12px}
+.scwait{padding:30px 0;text-align:center;font-size:20px;font-weight:800;line-height:1.6}.scwait small{display:block;font-size:15px;font-weight:600;color:var(--grey)}
+.scr{background:var(--card);border-radius:18px;padding:12px 14px;margin-bottom:10px}
+.scr.unk{box-shadow:inset 0 0 0 2px var(--red)}
+.scr .r1{display:flex;align-items:center;gap:12px}
+.scr .im{width:64px;height:64px;border-radius:14px;background:#f4f4f6;display:flex;align-items:center;justify-content:center;overflow:hidden;flex:none;font-size:26px}.scr .im img{width:100%;height:100%;object-fit:contain}
+.scr .n{flex:1;min-width:0}.scr .n b{display:block;font-size:18px}.scr .n span{font-size:13px;color:var(--grey)}.scr.unk .n b{color:var(--red)}
+.scr .qt{display:flex;align-items:center;gap:6px;flex:none}.scr .qt button{width:44px;height:44px;border-radius:50%;background:var(--bg);font-size:22px;font-weight:800}.scr .qt i{font-style:normal;font-size:20px;font-weight:800;min-width:26px;text-align:center}
+.scr .r2{display:flex;gap:8px;margin-top:10px}.scr .r2 button{flex:1;height:44px;border-radius:12px;background:var(--bg);font-size:15px;font-weight:700}.scr .r2 .pk{background:var(--ink);color:var(--bg)}
+.scr .pick{margin-top:10px}.scr .pick input{width:100%;height:52px;border:1.5px solid var(--line);border-radius:14px;padding:0 16px;font-size:17px;background:var(--bg);color:var(--ink)}
+.scr .pick .ph{display:flex;gap:8px;overflow-x:auto;padding:8px 0 2px}.scr .pick .ph button{flex:none;width:132px;background:var(--bg);border-radius:14px;padding:8px;text-align:left;font-size:14px;font-weight:700;line-height:1.25}.scr .pick .ph img{width:100%;height:84px;object-fit:contain;border-radius:10px;background:#fff;margin-bottom:6px}
+.scadd{width:100%;height:56px;border-radius:16px;border:2px dashed var(--line);font-size:16px;font-weight:700;color:var(--grey)}
 </style>
 </head>
 <body data-v="home"><script>vfFit()</script>
@@ -614,6 +637,7 @@ body[data-theme=dark] .scan svg{background:#fff;border-radius:8px}
   </div>
 
   <div class="cart" role="button" tabindex="0" onclick="drawCart();document.body.classList.add('open')"><!-- 11/12 액상덕후: 버튼 빼고 바 전체를 누르면 장바구니 (빈 장바구니도 열림, 회원 칸) -->
+    <button class="camb" id="camBtn" type="button">📷 사진으로 담기</button><input type="file" id="camIn" accept="image/*" capture="environment" hidden>
     <div class="cnt">담은 상품<em id="cnt">0</em></div>
     <div class="sum price" id="sum">0원</div>
     <span class="up" aria-hidden="true"></span>
@@ -2180,12 +2204,65 @@ function loadOrder() { for (const t of ORDER_CODE.split("_")) { const [a, q0] = 
   document.body.classList.add('open'); qrView(); }
 if (ORDER_CODE) loadOrder();
 
+/* ── 11/18 사진으로 담기: 찍으면 AI 가 품목과 개수를 읽고, 직원이 확인 화면에서 고친 뒤 장바구니에 담음.
+   사진, AI 답, 직원이 고친 정답은 슈파베이스(pad-scan 함수)에 모여 다음 사진부터 더 잘 맞힘. AI 열쇠는 함수 안에만 있음 ── */
+const SCAN_URL = "https://bjjlmnkyhedtutogzliq.supabase.co/functions/v1/pad-scan";
+let scanS = null; /* { id, img, rows: [{ label, id, qty, pick, q }] } */
+const scanOv = document.createElement("div"); scanOv.id = "scanOv"; document.body.appendChild(scanOv);
+const scanFind = (id) => { const x = ALL_LQ.find((y) => y.id === id); if (x) return { t: "liq", x }; const g = GDS.find((y) => y.id === id); return g ? { t: "goods", x: g } : null; };
+const scanImg = (f) => !f ? "" : f.t === "liq" ? imgOf(f.x) : gImg2(f.x);
+const scanClose = () => { scanOv.classList.remove("on"); scanS = null; };
+function scanStart() { $('camIn').value = ""; $('camIn').click(); }
+$('camBtn').addEventListener("pointerdown", (e) => e.stopPropagation());
+$('camBtn').addEventListener("click", (e) => { e.stopPropagation(); scanStart(); });
+$('camIn').addEventListener("click", (e) => e.stopPropagation());
+async function scanShrink(file) { /* 긴 쪽 1280 으로 줄여 JPEG 로 (보내는 시간과 비용 줄이기) */
+  let bm; try { bm = await createImageBitmap(file, { imageOrientation: "from-image" }); } catch (e) { bm = await createImageBitmap(file); }
+  const k = Math.min(1, 1280 / Math.max(bm.width, bm.height)), c = document.createElement("canvas"); c.width = Math.round(bm.width * k); c.height = Math.round(bm.height * k);
+  c.getContext("2d").drawImage(bm, 0, 0, c.width, c.height); return c.toDataURL("image/jpeg", 0.8); }
+function scanWait(img, msg, sub) { scanOv.innerHTML = `<div class="sh"><b>사진으로 담기</b><button data-sc="close">닫기</button></div><div class="sb"><img class="scph" src="${img}" alt=""><div class="scwait">${msg}<small>${sub || ""}</small></div></div>`; scanOv.classList.add("on"); }
+function scanFail(img, msg) { scanOv.innerHTML = `<div class="sh"><b>사진으로 담기</b><button data-sc="close">닫기</button></div><div class="sb">${img ? `<img class="scph" src="${img}" alt="">` : ""}<div class="scwait">${msg}</div></div><div class="sf"><button class="rd" data-sc="again">다시 찍기</button></div>`; scanOv.classList.add("on"); }
+$('camIn').addEventListener("change", async (e) => { const file = e.target.files && e.target.files[0]; if (!file) return;
+  let img = ""; try { img = await scanShrink(file); } catch (er) { return scanFail("", "사진을 열지 못했어요"); }
+  scanWait(img, "사진을 읽고 있어요", "5초쯤 걸려요");
+  try { const cands = [...ALL_LQ.map((x) => ({ id: x.id, n: x.n })), ...GDS.map((g) => ({ id: g.id, n: g.n }))];
+    const r = await fetch(SCAN_URL, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ type: "scan", branch: BRANCH, img: img.split(",")[1], cands }) });
+    const j = await r.json(); if (!j.ok) return scanFail(img, j.error === "limit" ? "오늘은 사진을 너무 많이 찍었어요" : "사진을 읽지 못했어요");
+    scanS = { id: j.scan, img, rows: (j.items || []).map((x) => ({ label: x.label, id: scanFind(x.id) ? x.id : "", qty: x.qty, pick: false, q: "" })) };
+    scanDraw();
+  } catch (er) { scanFail(img, "인터넷을 확인하고 다시 찍어 주세요"); } });
+function scanPickList(i) { const r = scanS.rows[i], res = r.q.trim() ? searchItems(r.q).filter((o) => o.t === "liq" || o.t === "goods").slice(0, 12) : [];
+  return res.length ? res.map((o) => { const im = o.t === "liq" ? imgOf(o.x) : gImg2(o.x); return `<button data-scset="${i}" data-id="${esc(o.x.id)}">${im ? `<img src="${im}" alt="" loading="lazy">` : ""}${esc(o.t === "liq" ? short(o.x.n) : o.x.n)}</button>`; }).join("") : r.q.trim() ? '<span style="font-size:14px;color:var(--grey);padding:8px 0">찾는 상품이 없어요</span>' : ""; }
+function scanDraw() { if (!scanS) return; const rows = scanS.rows, unk = rows.filter((r) => !r.id).length, tot = rows.reduce((a, r) => a + (r.id ? r.qty : 0), 0);
+  scanOv.innerHTML = `<div class="sh"><b>이게 맞나요?</b><button data-sc="close">닫기</button></div><div class="sb"><img class="scph" src="${scanS.img}" alt="">`
+    + (rows.length ? "" : '<div class="scwait">상품을 못 찾았어요<small>라벨이 보이게 다시 찍거나, 아래에서 직접 넣어 주세요</small></div>')
+    + rows.map((r, i) => { const f = r.id ? scanFind(r.id) : null, im = scanImg(f), nm = f ? (f.t === "liq" ? short(f.x.n) : f.x.n) : "";
+      return `<div class="scr ${f ? "" : "unk"}"><div class="r1"><div class="im">${im ? `<img src="${im}" alt="">` : "❓"}</div><div class="n"><b>${f ? esc(nm) : "모르는 상품"}</b><span>${r.label ? "라벨: " + esc(r.label) : ""}</span></div><div class="qt"><button data-scq="${i}" data-d="-1">−</button><i>${r.qty}</i><button data-scq="${i}" data-d="1">+</button></div></div>`
+        + `<div class="r2"><button class="${f ? "" : "pk"}" data-scpick="${i}">${f ? "다른 상품으로 바꾸기" : "상품 고르기"}</button><button data-scdel="${i}">빼기</button></div>`
+        + (r.pick ? `<div class="pick"><input data-scin="${i}" placeholder="상품 이름 (예: 런 청, 초성도 돼요)" value="${esc(r.q)}" autocomplete="off"><div class="ph" id="scph${i}">${scanPickList(i)}</div></div>` : "") + `</div>`; }).join("")
+    + `<button class="scadd" data-sc="add">+ 빠진 상품 넣기</button></div><div class="sf"><button class="b2" data-sc="again">다시 찍기</button><button class="rd" data-sc="ok" ${unk || !tot ? "disabled" : ""}>${unk ? `모르는 상품 ${unk}개를 고르거나 빼 주세요` : tot ? `${tot}개 장바구니에 담기` : "담을 상품이 없어요"}</button></div>`; }
+scanOv.addEventListener("input", (e) => { const i = e.target.dataset.scin; if (i == null || !scanS) return; scanS.rows[+i].q = e.target.value; const box = document.getElementById("scph" + i); if (box) box.innerHTML = scanPickList(+i); });
+scanOv.addEventListener("click", (e) => { const t = e.target.closest("button"); if (!t) return; const d = t.dataset;
+  if (d.sc === "close") return scanClose();
+  if (d.sc === "again") { scanClose(); return scanStart(); }
+  if (!scanS) return;
+  if (d.scq != null) { const r = scanS.rows[+d.scq]; r.qty = Math.max(1, Math.min(99, r.qty + (+d.d))); return scanDraw(); }
+  if (d.scdel != null) { scanS.rows.splice(+d.scdel, 1); return scanDraw(); }
+  if (d.scpick != null) { const r = scanS.rows[+d.scpick]; r.pick = !r.pick; scanDraw(); if (r.pick) { const inp = scanOv.querySelector(`[data-scin="${d.scpick}"]`); if (inp) inp.focus(); } return; }
+  if (d.scset != null) { const r = scanS.rows[+d.scset]; r.id = d.id; r.pick = false; r.q = ""; return scanDraw(); }
+  if (d.sc === "add") { scanS.rows.push({ label: "", id: "", qty: 1, pick: true, q: "" }); scanDraw(); const inp = scanOv.querySelector(`[data-scin="${scanS.rows.length - 1}"]`); if (inp) inp.focus(); return; }
+  if (d.sc === "ok") { const fin = [];
+    for (const r of scanS.rows) { const f = scanFind(r.id); if (!f) continue; fin.push({ label: r.label, id: r.id, n: f.x.n, qty: r.qty });
+      if (f.t === "liq") addItem(f.x.id, { k: "liq", n: f.x.n, label: short(f.x.n), img: imgOf(f.x), unit: liqPrice(f.x), ...(f.x.line === "프라임" ? { prime: true } : {}) }, r.qty); else addGoods(f.x, r.qty); }
+    if (scanS.id) fetch(SCAN_URL, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ type: "final", branch: BRANCH, scan: scanS.id, final: fin }) }).catch(() => {});
+    const n = fin.reduce((a, x) => a + x.qty, 0); scanClose(); drawCart(); document.body.classList.add("open"); toast(`${n}개 담았어요`); } });
+
 /* 11/17 액상덕후 "패드도 자동 새로고침": 5분마다 이 화면 파일이 바뀌었는지 보고, 장바구니가 비고 1분 넘게 아무도 안 만질 때만 새로고침 */
 (() => { let base = null, newer = false, lastTouch = Date.now();
   ["pointerdown", "keydown", "touchstart"].forEach((t) => document.addEventListener(t, () => { lastTouch = Date.now(); }, { capture: true, passive: true }));
   const hash = (s) => { let h = 5381; for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0; return s.length + ":" + h; };
   const check = async () => { try { const r = await fetch(location.pathname + "?v=" + Date.now(), { cache: "no-store" }); if (!r.ok) return; const h = hash(await r.text()); if (base === null) base = h; else if (h !== base) newer = true; } catch (e) {} };
-  const calm = () => !cart.size && !document.body.classList.contains("open") && !document.getElementById("payNote") && !(document.getElementById("brp") || {}).classList?.contains("on") && Date.now() - lastTouch > 60000;
+  const calm = () => !cart.size && !document.body.classList.contains("open") && !document.getElementById("payNote") && !scanOv.classList.contains("on") && !(document.getElementById("brp") || {}).classList?.contains("on") && Date.now() - lastTouch > 60000;
   if (ORDER_CODE) return;
   check(); setInterval(check, 5 * 60000);
   setInterval(() => { if (newer && calm()) location.reload(); }, 15000);
