@@ -333,6 +333,25 @@ body:not(.land) .go5 button:nth-child(n+3){grid-column:span 2}
 body.land #vHome .go5{grid-template-rows:repeat(5,1fr);align-content:stretch}
 .go5 .g-qz b{font-size:24px;line-height:1.15}
 .go5 .soon{position:absolute;top:12px;right:12px;z-index:1;font-style:normal;font-size:11px;font-weight:800;color:#fff;background:rgba(255,255,255,.22);border-radius:999px;padding:3px 9px;backdrop-filter:blur(4px)}
+/* 11/18 첫 화면 새 배치 시험 (주소에 ?home2=1 일 때만 body.home2): 액상, 기기 랭킹 3등 + 처음/회원 시작 카드 */
+#hm2{display:none}
+body.home2 #hm2{display:block;width:100%;flex:none;min-width:0}
+body.home2 .go5 .g-rk,body.home2 .go5 .g-qz{display:none}
+body.home2:not(.land) #vHome .go5{grid-template-rows:108px}
+body.home2.land[data-v=home] #vHome{grid-template-rows:auto 1fr}
+body.home2.land #vHome .poster{grid-row:1 / span 2}
+body.home2.land #vHome .go5{grid-template-rows:repeat(3,1fr)}
+.h2rk{display:grid;grid-template-columns:1fr 1fr;gap:var(--gap);margin-top:var(--gap)}
+.h2rk:empty{display:none}body.land .h2rk{margin-top:0}
+.h2box{background:var(--card);border-radius:var(--r);padding:14px 14px 8px;text-align:left;display:block;width:100%;min-width:0;color:var(--ink)}
+.h2box .hd{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px}.h2box .hd b{font-size:19px}.h2box .hd span{font-size:13px;color:var(--grey);font-weight:700}
+.h2row{display:flex;align-items:center;gap:10px;padding:5px 0}.h2row i{font-style:normal;font-size:20px;font-weight:800;width:18px;text-align:center;color:var(--red);flex:none}
+.h2row .im{width:46px;height:46px;border-radius:10px;background:#fff;box-shadow:inset 0 0 0 1px var(--line);flex:none;display:flex;align-items:center;justify-content:center;overflow:hidden}.h2row .im img{width:100%;height:100%;object-fit:contain}
+.h2row b{font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.h2go{display:grid;grid-template-columns:1fr 1fr;gap:var(--gap);margin-top:var(--gap)}
+.h2go button{min-height:104px;border-radius:var(--r);padding:16px 18px;text-align:left;display:flex;flex-direction:column;justify-content:center;gap:6px}
+.h2go .nw{background:var(--red);color:#fff}.h2go .od{background:var(--ink);color:var(--bg)}
+.h2go small{font-size:15px;font-weight:700;opacity:.85}.h2go b{font-size:21px;line-height:1.25}
 /* 문진 화면 */
 .qz-top{display:flex;align-items:center;gap:12px;margin:4px 0 18px}.qz-top button{width:44px;height:44px;border-radius:50%;background:var(--card);font-size:20px}
 .qz-bar{flex:1;height:8px;border-radius:4px;background:var(--line);overflow:hidden}.qz-bar i{display:block;height:100%;background:var(--red);transition:width .35s}
@@ -542,18 +561,21 @@ body[data-theme=dark] .scan svg{background:#fff;border-radius:8px}
 #scanOv .sf{flex:none;display:flex;gap:10px;padding:12px var(--pad) 20px;background:var(--card);box-shadow:0 -1px 0 var(--line)}
 #scanOv .sf button{height:64px;border-radius:18px;font-size:19px;font-weight:800}
 #scanOv .sf .b2{flex:none;padding:0 22px;background:var(--bg);color:var(--ink)}#scanOv .sf .rd{flex:1;background:var(--red);color:#fff}#scanOv .sf .rd:disabled{background:#c9c9cf}
-.scph{width:100%;max-height:300px;object-fit:contain;border-radius:18px;background:#000;margin-bottom:12px}
+.scph{width:100%;max-height:220px;object-fit:contain;border-radius:18px;background:#000;margin-bottom:12px}
+.schelp{font-size:16px;font-weight:700;color:var(--grey);margin:0 2px 12px;line-height:1.5}
 .scwait{padding:30px 0;text-align:center;font-size:20px;font-weight:800;line-height:1.6}.scwait small{display:block;font-size:15px;font-weight:600;color:var(--grey)}
 .scr{background:var(--card);border-radius:18px;padding:12px 14px;margin-bottom:10px}
 .scr.unk{box-shadow:inset 0 0 0 2px var(--red)}
 .scr .r1{display:flex;align-items:center;gap:12px}
-.scr .im{width:64px;height:64px;border-radius:14px;background:#f4f4f6;display:flex;align-items:center;justify-content:center;overflow:hidden;flex:none;font-size:26px}.scr .im img{width:100%;height:100%;object-fit:contain}
-.scr .n{flex:1;min-width:0}.scr .n b{display:block;font-size:18px}.scr .n span{font-size:13px;color:var(--grey)}.scr.unk .n b{color:var(--red)}
-.scr .qt{display:flex;align-items:center;gap:6px;flex:none}.scr .qt button{width:44px;height:44px;border-radius:50%;background:var(--bg);font-size:22px;font-weight:800}.scr .qt i{font-style:normal;font-size:20px;font-weight:800;min-width:26px;text-align:center}
-.scr .r2{display:flex;gap:8px;margin-top:10px}.scr .r2 button{flex:1;height:44px;border-radius:12px;background:var(--bg);font-size:15px;font-weight:700}.scr .r2 .pk{background:var(--ink);color:var(--bg)}
-.scr .pick{margin-top:10px}.scr .pick input{width:100%;height:52px;border:1.5px solid var(--line);border-radius:14px;padding:0 16px;font-size:17px;background:var(--bg);color:var(--ink)}
-.scr .pick .ph{display:flex;gap:8px;overflow-x:auto;padding:8px 0 2px}.scr .pick .ph button{flex:none;width:132px;background:var(--bg);border-radius:14px;padding:8px;text-align:left;font-size:14px;font-weight:700;line-height:1.25}.scr .pick .ph img{width:100%;height:84px;object-fit:contain;border-radius:10px;background:#fff;margin-bottom:6px}
-.scadd{width:100%;height:56px;border-radius:16px;border:2px dashed var(--line);font-size:16px;font-weight:700;color:var(--grey)}
+.scr .who{flex:1;min-width:0;display:flex;align-items:center;gap:12px;text-align:left;background:none;padding:0;color:inherit}
+.scr .im{width:76px;height:76px;border-radius:14px;background:#f4f4f6;display:flex;align-items:center;justify-content:center;overflow:hidden;flex:none;font-size:30px}.scr .im img{width:100%;height:100%;object-fit:contain}
+.scr .n{flex:1;min-width:0}.scr .n b{display:block;font-size:21px;line-height:1.25}.scr .n span{font-size:14px;color:var(--grey)}.scr.unk .n b{color:var(--red)}
+.scr .qt{display:flex;align-items:center;gap:8px;flex:none}.scr .qt button{width:58px;height:58px;border-radius:50%;background:var(--bg);font-size:28px;font-weight:800}.scr .qt i{font-style:normal;font-size:26px;font-weight:800;min-width:34px;text-align:center}
+.scr .r2{display:flex;gap:8px;margin-top:12px}.scr .r2 button{height:58px;border-radius:14px;background:var(--bg);font-size:18px;font-weight:800}.scr .r2 .ch{flex:2}.scr .r2 .dl{flex:1;color:var(--red)}.scr .r2 .scgo{background:var(--ink);color:var(--bg)}.scr .pick .pt:empty,.scr .pick .ph:empty{display:none}
+.scr .pick{margin-top:12px}.scr .pick input{width:100%;height:60px;border:2px solid var(--ink);border-radius:14px;padding:0 16px;font-size:19px;background:var(--bg);color:var(--ink)}
+.scr .pick .pt{font-size:15px;font-weight:700;color:var(--grey);margin:10px 2px 0}
+.scr .pick .ph{display:flex;gap:10px;overflow-x:auto;padding:8px 0 4px}.scr .pick .ph button{flex:none;width:150px;background:var(--bg);border-radius:14px;padding:10px;text-align:left;font-size:16px;font-weight:800;line-height:1.25}.scr .pick .ph img{width:100%;height:96px;object-fit:contain;border-radius:10px;background:#fff;margin-bottom:6px}
+.scadd{width:100%;height:64px;border-radius:16px;border:2px dashed var(--line);font-size:18px;font-weight:800;color:var(--grey)}
 </style>
 </head>
 <body data-v="home"><script>vfFit()</script>
@@ -579,6 +601,7 @@ body[data-theme=dark] .scan svg{background:#fff;border-radius:8px}
     <!-- 첫 화면 -->
     <div class="view" id="vHome">
       <div class="poster" id="poster"><div class="pv" id="pv"></div><div class="dots" id="dots"></div></div>
+      <div id="hm2"><div class="h2rk" id="h2rk"></div><div class="h2go"><button class="nw" onclick="h2New()"><small>처음이신가요?</small><b>회원등록하고 나에게 맞는 전자담배 찾기</b></button><button class="od" onclick="h2Old()"><small>이미 회원이라면?</small><b>주문내역 조회하기</b></button></div></div>
       <div class="go3 go5">
         <button class="g-rk" onclick="rkOpen()"><img src="pst_c_B2.jpg" alt="" style="object-position:50% 40%"><small>이번 주 우리 매장에서 많이 나간</small><b>랭킹</b></button>
         <button class="g-qz" onclick="qzStart()"><img src="pst_c_H5.jpg" alt="" style="object-position:50% 55%"><small>몇 가지만 고르면 1분이면 끝나요</small><b>나에게 맞는 전자담배 찾기</b></button>
@@ -875,7 +898,8 @@ function drawCart() {
 }
 $('lines').onclick = (e) => {
   const ck = e.target.closest('[data-ck]'); if (ck) { member[ck.dataset.ck] = !member[ck.dataset.ck]; if (member.bad === "agree") member.bad = ""; drawCart(); return; }
-  const mo = e.target.closest('[data-memok]'); if (mo) { if (!/^01[016789]\d{7,8}$/.test(member.phone)) { member.bad = "phone"; drawCart(); return toast("휴대폰 번호를 확인해 주세요"); } member.bad = ""; if (memregOn()) { memRegSend(true); return; } member.okd = true; drawCart(); return; } /* 11/12 본점: 포스에서 회원 조회 */
+  const hs = e.target.closest('[data-h2skip]'); if (hs) { window.h2After = null; document.body.classList.remove('open'); qzStart(); return; } /* 11/18 등록 없이 문진으로 */
+  const mo = e.target.closest('[data-memok]'); if (mo) { if (h2on() && !/^[가-힣a-zA-Z ]{1,12}$/.test(member.name.trim())) { member.bad = "name"; drawCart(); return toast("성함을 알려 주세요"); } if (!/^01[016789]\d{7,8}$/.test(member.phone)) { member.bad = "phone"; drawCart(); return toast("휴대폰 번호를 확인해 주세요"); } member.bad = ""; if (memregOn()) { memRegSend(true); return; } member.okd = true; drawCart(); return; } /* 11/12 본점: 포스에서 회원 조회 */
   const sl = e.target.closest('[data-seller]'); if (sl) { SELLER = SELLER === sl.dataset.seller ? "" : sl.dataset.seller; sellerSave(); drawCart(); return; } /* 11/13 판매자 */
   const sa = e.target.closest('[data-sima]'); if (sa) { const x = ALL_LQ.find((y) => y.id === sa.dataset.sima); if (x) { addLiqX(x); toast("담았어요"); drawCart(); } return; } /* 11/12 비슷한 맛 담기 */
   const mc = e.target.closest('[data-memclear]'); if (mc) { Object.assign(member, { type: null, name: "", year: "", phone: "", agree: false, mk: false, sex: "", reg: null, bad: "", okd: false }); drawCart(); return; } /* 11/12 빈 장바구니 회원 칸 초기화 */
@@ -967,6 +991,7 @@ const extraLines = () => (engrave !== null ? `<div class="scan" data-n="1" data-
   + (giftBase() >= 100000 ? `<div class="scan" data-n="1" data-free="1" data-code="" data-nm="일회용 증정"><div class="hd"><b>🎁 일회용 기기 1개 증정</b><span>× 1</span></div><div class="s">액상, 팟 10만원 이상, 손님이 고른 일회용을 서비스(0원)로</div></div>` : "");
 // 회원 (지금 판 memberBox와 같은 흐름: 처음이에요 = 이름, 번호, 동의 / 회원이에요 = 번호만)
 const member = { type: null, name: "", year: "", phone: "", agree: false, mk: false, sex: "", reg: null, bad: "", okd: false };
+const h2on = () => document.body.classList.contains("home2"); /* 11/18 첫 화면 새 배치 시험 중인지 (window.h2After = 회원 칸 다음에 갈 곳: "qz" 문진, "hist" 주문내역) */
 /* 11/6 회원등록 시험: 패드 입력을 봇이 포스에 등록. 본점 menu-b 주소에서만 켜짐. 이름, 번호는 공개키로 잠가서 보냄 */
 const MEMREG_KEY = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA9uVKKI1z1Iyh3kGLkFnd/fMrBVT6hzfZTBe5ENYILIcIHSNMUM/vhDVBp4cr8Fm6USOMGrh5GCqPOBsNW0JCXIN6AIWy8QPAMuwn5G/Hasf3C8GXxRjrY+wnFx9PEuSXNb+OEC/kLMl3JuA7vCW0Rz10ilguPYyakwmjPgBqf+Ku9hIxeWgODYMYB9Ue7qdSU2bIs3sKgseehYahaJWHBovBdQaRSogNBPp+zbrjwCAt6LVEQNT+yRjMlzDEuQs0uHmxBPtm0ZW/BzLZUWdf10rHHoKXdDtjx0nby6oeFbpyC2slLUPn3Z2L3FVenhk/Ttp5vyLhBZiOC/ybattxWQIDAQAB", MEMREG_API = "https://api.github.com/repos/officialvafriend/vape/contents/menu-b/memreg.json?ref=main";
 const memregOn = () => ["본점", "동성로", "율하", "수성", "반월당", "상인", "광장코아", "현풍", "동성로2"].includes(BRANCH); /* 11/12 회원등록, 조회는 전 지점 (폰 보내기 QR_SEND_ON은 본점만) */ /* 11/12 본점 정식 주소에서 켬 (전엔 menu-b?memreg=1 시험만) */
@@ -992,6 +1017,7 @@ async function memRegSend(look) { /* 11/12 look=true: 회원이에요 번호로 
   try { const enc = await memSeal(look ? { name: "", phone: member.phone, sex: "", sms: "N" } : { name: memFull(), phone: member.phone, sex: "", sms: member.mk ? "Y" : "N" }); /* 성별은 안 받음, 포스 기본값(여) */ /* 11/12 (선택) 쿠폰, 혜택 문자 동의 → 포스 문자 수신 Y */
     const r = await fetch(HOOK, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ content: JSON.stringify({ type: "memreg", branch: BRANCH, pad: PAD_NO, id, enc, ...(look ? { look: 1 } : {}) }), allowed_mentions: { parse: [] }, flags: 4096 }) });
     if (!r.ok) throw new Error("응답 " + r.status); member.reg.s = "wait"; memRedraw(); setTimeout(() => memPoll(id), 1500);
+    if (!look && window.h2After === "qz") { window.h2After = null; if (!document.body.classList.contains('land')) document.body.classList.remove('open'); qzStart(); toast("등록하는 동안 먼저 찾아볼게요"); }
   } catch (e) { member.reg = null; memRedraw(); toast("보내지 못했어요, 다시 눌러 주세요"); } }
 const memFull = () => member.name.trim() ? member.name.trim() + (member.year || "") : ""; /* 11/12 성함+년생(예: 클로드98), 동명이인 구분 */
 const MEM_S = { send: "보내는 중이에요", wait: "등록하는 중이에요. 잠깐이면 돼요, 계속 고르셔도 돼요", ok: "회원등록 됐어요!", dup: "이미 회원이세요! 결제할 때 직원에게 말씀해 주세요", err: "등록이 안 됐어요, 직원에게 말씀해 주세요", off: "등록이 안 됐어요, 직원에게 말씀해 주세요", late: "확인이 늦어지고 있어요, 직원에게 말씀해 주세요" };
@@ -1000,7 +1026,7 @@ function memberBox() {
   if (!member.type) return `<div class="mem"><div class="t">혹시 처음 오셨나요?</div>
     <button class="pk2" data-mem="new"><b>처음이에요, 회원등록하기</b><span>구매 이력이 남아서 AS 받을 때 편해요</span></button>
     <button class="pk2" data-mem="old"><b>회원이에요, 번호 넣기</b><span>휴대폰 번호만 넣어 주세요</span></button></div>`;
-  if (member.reg && member.reg.look) { const s = member.reg.s; return `<div class="mem"><div class="t">회원 확인</div><div class="memst ${s === "found" ? "ok" : s === "none" ? "err" : s}">${MEM_L[s] || ""}</div>${s === "none" ? '<button class="memgo" data-memnew="1">처음이에요, 회원등록하기</button><button class="memgo sub" data-mem="old">번호 다시 넣기</button>' : /err|off|late/.test(s) ? '<button class="memgo" data-mem="old">다시 넣기</button>' : ""}</div>`; }
+  if (member.reg && member.reg.look) { const s = member.reg.s; return `<div class="mem"><div class="t">회원 확인</div><div class="memst ${s === "found" ? "ok" : s === "none" ? "err" : s}">${MEM_L[s] || ""}</div>${s === "none" ? '<button class="memgo" data-memnew="1">처음이에요, 회원등록하기</button><button class="memgo sub" data-mem="old">번호 다시 넣기</button>' : /err|off|late/.test(s) ? '<button class="memgo" data-mem="old">다시 넣기</button>' : ""}${s === "found" && h2on() ? '<div class="mpv">주문내역 보기는 준비 중이에요</div>' : ""}</div>`; }
   if (member.reg) return `<div class="mem"><div class="t">회원등록</div><div class="memst ${member.reg.s}">${MEM_S[member.reg.s] || ""}</div>${/err|off|late/.test(member.reg.s) ? '<button class="memgo" data-mem="new">다시 입력하기</button>' : ""}</div>`;
   const back = `<button data-mem="">다시 고르기</button>`;
   if (member.type === "new") { const bad = (k) => member.bad === k ? " bad" : "", full = memFull();
@@ -1010,8 +1036,8 @@ function memberBox() {
     <div class="mq">휴대폰 번호</div><input type="tel" id="memPhone" class="${bad("phone")}" inputmode="numeric" placeholder="숫자만" value="${esc(member.phone)}">
     ${memregOn() ? `<div class="mpv" id="memPv">${full ? `<b>${esc(full)}</b> 님으로 가입돼요` : ""}</div>` : ""}
     <button class="memck${member.agree ? " on" : ""}${bad("agree")}" data-ck="agree"><i></i><span>(필수) 이름, 번호 저장에 동의해요</span></button>
-    ${memregOn() ? `<button class="memck${member.mk ? " on" : ""}" data-ck="mk"><i></i><span>(선택) 쿠폰 문자 받기</span></button><button class="memgo" data-memreg="1">회원 등록하기</button>` : ""}</div>`; }
-  return `<div class="mem"><div class="t">회원정보 입력 ${back}</div><input type="tel" id="memPhone" class="${member.bad === "phone" ? "bad" : ""}" inputmode="numeric" placeholder="가입하신 휴대폰 번호 (숫자만)" value="${esc(member.phone)}"><button class="memgo" data-memok="1">${member.okd ? "확인됐어요" : "확인"}</button>${member.okd ? '<div class="mpv">직원이 포스에서 번호로 적립해 드려요</div>' : ""}</div>`;
+    ${memregOn() ? `<button class="memck${member.mk ? " on" : ""}" data-ck="mk"><i></i><span>(선택) 쿠폰 문자 받기</span></button><button class="memgo" data-memreg="1">${window.h2After === "qz" ? "등록하고 나에게 맞는 전자담배 찾기" : "회원 등록하기"}</button>` : ""}${window.h2After === "qz" ? '<button class="memgo sub" data-h2skip="1">등록 없이 바로 찾기</button>' : ""}</div>`; }
+  return `<div class="mem"><div class="t">${h2on() ? "회원 확인" : "회원정보 입력"} ${back}</div>${h2on() ? `<div class="mq">성함</div><input type="text" id="memName" class="${member.bad === "name" ? "bad" : ""}" placeholder="예: 김민수" value="${esc(member.name)}"><div class="mq">휴대폰 번호</div>` : ""}<input type="tel" id="memPhone" class="${member.bad === "phone" ? "bad" : ""}" inputmode="numeric" placeholder="가입하신 휴대폰 번호 (숫자만)" value="${esc(member.phone)}"><button class="memgo" data-memok="1">${member.okd ? "확인됐어요" : window.h2After === "hist" ? "주문내역 조회하기" : "확인"}</button>${member.okd ? '<div class="mpv">직원이 포스에서 번호로 적립해 드려요</div>' : ""}</div>`;
 }
 $('lines').addEventListener('focusin', (e) => { if (e.target.closest && e.target.closest('.mem') && e.target.tagName === "INPUT") setTimeout(() => e.target.scrollIntoView({ block: "center" }), 350); }); /* 키보드가 회원칸을 가리지 않게 */
 $('lines').addEventListener('input', (e) => { const t = e.target;
@@ -2204,6 +2230,20 @@ function loadOrder() { for (const t of ORDER_CODE.split("_")) { const [a, q0] = 
   document.body.classList.add('open'); qrView(); }
 if (ORDER_CODE) loadOrder();
 
+/* ── 11/18 첫 화면 새 배치 시험 (?home2=1): 액상, 기기 랭킹 3등(진짜 지점 랭킹 자료, 없으면 칸을 감춤) + 처음/회원 시작 카드 ── */
+if (/[?&]home2=1/.test(location.search) && /scan\.html$/.test(location.pathname)) document.body.classList.add("home2"); /* 11/18 액상덕후 "원래대로 쓰자": 시험 주소(scan.html)에서만 켜짐, 정식 주소에선 안 켜짐 */
+function h2Draw() { if (!h2on()) return; const b = RK && RK.branches && RK.branches[BRANCH]; if (!b) { $('h2rk').innerHTML = ""; return; }
+  const liq = (b.liq || []).map(([n]) => ({ n, x: rkFind("liq", n) })).filter((o) => !(o.x && outOf(o.x.n))).slice(0, 3);
+  const dev = (b.dev || []).slice(0, 3).map(([n]) => { const g = GDS.find((y) => y.c === "dev" && (y.model || y.n).startsWith(n)); return { n, im: devImgOf(n) || (g ? gImg2(g) : "") }; });
+  const row = (i, im, nm) => `<div class="h2row"><i>${i + 1}</i><div class="im">${im ? `<img src="${im}" alt="" loading="lazy">` : ""}</div><b>${esc(nm)}</b></div>`;
+  $('h2rk').innerHTML = (liq.length ? `<button class="h2box" data-h2rk="liq"><div class="hd"><b>액상 랭킹</b><span>전체 보기 ›</span></div>${liq.map((o, i) => row(i, o.x ? imgOf(o.x) : "", short(o.n))).join("")}</button>` : "")
+    + (dev.length ? `<button class="h2box" data-h2rk="dev"><div class="hd"><b>기기 랭킹</b><span>전체 보기 ›</span></div>${dev.map((o, i) => row(i, o.im, o.n)).join("")}</button>` : ""); }
+$('h2rk').onclick = (e) => { const t = e.target.closest('[data-h2rk]'); if (t) { rkTab = t.dataset.h2rk; rkOpen(); } };
+if (h2on()) { rkLoad().then(h2Draw); new MutationObserver(() => { if (document.body.dataset.v === "home") h2Draw(); }).observe(document.body, { attributes: true, attributeFilter: ["data-v"] }); }
+const h2Cart = () => { drawCart(); document.body.classList.add('open'); setTimeout(() => { const el = document.querySelector('#lines .mem'); if (el) el.scrollIntoView({ block: "center" }); }, 120); };
+function h2New() { if (member.reg && !member.reg.look && /ok|dup|wait|send/.test(member.reg.s)) return qzStart(); member.type = "new"; member.reg = null; window.h2After = "qz"; h2Cart(); }
+function h2Old() { if (!(member.reg && member.reg.look && member.reg.s === "found")) { member.type = "old"; member.reg = null; } window.h2After = "hist"; h2Cart(); }
+
 /* ── 11/18 사진으로 담기: 찍으면 AI 가 품목과 개수를 읽고, 직원이 확인 화면에서 고친 뒤 장바구니에 담음.
    사진, AI 답, 직원이 고친 정답은 슈파베이스(pad-scan 함수)에 모여 다음 사진부터 더 잘 맞힘. AI 열쇠는 함수 안에만 있음 ── */
 const SCAN_URL = "https://bjjlmnkyhedtutogzliq.supabase.co/functions/v1/pad-scan";
@@ -2231,17 +2271,20 @@ $('camIn').addEventListener("change", async (e) => { const file = e.target.files
     scanS = { id: j.scan, img, rows: (j.items || []).map((x) => ({ label: x.label, id: scanFind(x.id) ? x.id : "", qty: x.qty, pick: false, q: "" })) };
     scanDraw();
   } catch (er) { scanFail(img, "인터넷을 확인하고 다시 찍어 주세요"); } });
-function scanPickList(i) { const r = scanS.rows[i], res = r.q.trim() ? searchItems(r.q).filter((o) => o.t === "liq" || o.t === "goods").slice(0, 12) : [];
+const scanSame = (id) => { /* 11/18 글자 안 쳐도 같은 브랜드 다른 맛이 바로 뜨게 (AI 는 브랜드는 맞히고 맛만 틀리는 일이 많음) */
+  const f = scanFind(id); if (!f || f.t !== "liq") return []; const w = f.x.n.trim().split(/\s+/); if (w.length < 2) return []; const br = w.slice(0, -1).join(" ") + " ";
+  return ALL_LQ.filter((y) => y.id !== id && y.n.startsWith(br)).slice(0, 40).map((x) => ({ t: "liq", x })); };
+function scanPickList(i) { const r = scanS.rows[i], res = r.q.trim() ? searchItems(r.q).filter((o) => o.t === "liq" || o.t === "goods").slice(0, 12) : scanSame(r.id);
   return res.length ? res.map((o) => { const im = o.t === "liq" ? imgOf(o.x) : gImg2(o.x); return `<button data-scset="${i}" data-id="${esc(o.x.id)}">${im ? `<img src="${im}" alt="" loading="lazy">` : ""}${esc(o.t === "liq" ? short(o.x.n) : o.x.n)}</button>`; }).join("") : r.q.trim() ? '<span style="font-size:14px;color:var(--grey);padding:8px 0">찾는 상품이 없어요</span>' : ""; }
 function scanDraw() { if (!scanS) return; const rows = scanS.rows, unk = rows.filter((r) => !r.id).length, tot = rows.reduce((a, r) => a + (r.id ? r.qty : 0), 0);
   scanOv.innerHTML = `<div class="sh"><b>이게 맞나요?</b><button data-sc="close">닫기</button></div><div class="sb"><img class="scph" src="${scanS.img}" alt="">`
-    + (rows.length ? "" : '<div class="scwait">상품을 못 찾았어요<small>라벨이 보이게 다시 찍거나, 아래에서 직접 넣어 주세요</small></div>')
+    + (rows.length ? '<div class="schelp">틀린 상품은 눌러서 바꾸고, 맨 아래 빨간 버튼을 눌러 주세요</div>' : '<div class="scwait">상품을 못 찾았어요<small>라벨이 보이게 다시 찍거나, 아래에서 직접 넣어 주세요</small></div>')
     + rows.map((r, i) => { const f = r.id ? scanFind(r.id) : null, im = scanImg(f), nm = f ? (f.t === "liq" ? short(f.x.n) : f.x.n) : "";
-      return `<div class="scr ${f ? "" : "unk"}"><div class="r1"><div class="im">${im ? `<img src="${im}" alt="">` : "❓"}</div><div class="n"><b>${f ? esc(nm) : "모르는 상품"}</b><span>${r.label ? "라벨: " + esc(r.label) : ""}</span></div><div class="qt"><button data-scq="${i}" data-d="-1">−</button><i>${r.qty}</i><button data-scq="${i}" data-d="1">+</button></div></div>`
-        + `<div class="r2"><button class="${f ? "" : "pk"}" data-scpick="${i}">${f ? "다른 상품으로 바꾸기" : "상품 고르기"}</button><button data-scdel="${i}">빼기</button></div>`
-        + (r.pick ? `<div class="pick"><input data-scin="${i}" placeholder="상품 이름 (예: 런 청, 초성도 돼요)" value="${esc(r.q)}" autocomplete="off"><div class="ph" id="scph${i}">${scanPickList(i)}</div></div>` : "") + `</div>`; }).join("")
-    + `<button class="scadd" data-sc="add">+ 빠진 상품 넣기</button></div><div class="sf"><button class="b2" data-sc="again">다시 찍기</button><button class="rd" data-sc="ok" ${unk || !tot ? "disabled" : ""}>${unk ? `모르는 상품 ${unk}개를 고르거나 빼 주세요` : tot ? `${tot}개 장바구니에 담기` : "담을 상품이 없어요"}</button></div>`; }
-scanOv.addEventListener("input", (e) => { const i = e.target.dataset.scin; if (i == null || !scanS) return; scanS.rows[+i].q = e.target.value; const box = document.getElementById("scph" + i); if (box) box.innerHTML = scanPickList(+i); });
+      return `<div class="scr ${f ? "" : "unk"}"><div class="r1"><button class="who" data-scpick="${i}"><div class="im">${im ? `<img src="${im}" alt="">` : "❓"}</div><div class="n"><b>${f ? esc(nm) : "모르는 상품"}</b><span>${r.label ? "병에 적힌 글자: " + esc(r.label) : ""}</span></div></button><div class="qt"><button data-scq="${i}" data-d="-1">−</button><i>${r.qty}</i><button data-scq="${i}" data-d="1">+</button></div></div>`
+        + `<div class="r2"><button class="ch ${f ? "" : "scgo"}" data-scpick="${i}">${r.pick ? "고르기 닫기" : f ? "다른 상품으로 바꾸기" : "상품 고르기"}</button><button class="dl" data-scdel="${i}">빼기</button></div>`
+        + (r.pick ? `<div class="pick"><input data-scin="${i}" placeholder="상품 이름 (예: 런 청, 초성도 돼요)" value="${esc(r.q)}" autocomplete="off"><div class="pt" id="scpt${i}">${r.q.trim() ? "찾은 상품" : f && scanSame(r.id).length ? "같은 브랜드 다른 맛, 옆으로 밀어 보세요" : ""}</div><div class="ph" id="scph${i}">${scanPickList(i)}</div></div>` : "") + `</div>`; }).join("")
+    + `<button class="scadd" data-sc="add">+ 빠진 상품 넣기</button></div><div class="sf"><button class="b2" data-sc="again">다시 찍기</button><button class="rd" data-sc="ok" ${tot ? "" : "disabled"}>${tot ? (unk ? `모르는 ${unk}개 빼고 ${tot}개 담기` : `${tot}개 장바구니에 담기`) : unk ? "상품을 골라 주세요" : "담을 상품이 없어요"}</button></div>`; }
+scanOv.addEventListener("input", (e) => { const i = e.target.dataset.scin; if (i == null || !scanS) return; scanS.rows[+i].q = e.target.value; const box = document.getElementById("scph" + i); if (box) box.innerHTML = scanPickList(+i); const pt = document.getElementById("scpt" + i); if (pt) pt.textContent = e.target.value.trim() ? "찾은 상품" : ""; });
 scanOv.addEventListener("click", (e) => { const t = e.target.closest("button"); if (!t) return; const d = t.dataset;
   if (d.sc === "close") return scanClose();
   if (d.sc === "again") { scanClose(); return scanStart(); }
