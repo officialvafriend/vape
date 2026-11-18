@@ -2078,6 +2078,7 @@ button.ptnext:hover{filter:brightness(.97)}
   const hidN = (d) => (PT.calAll ? 0 : MT.filter((t) => t.st === "todo" && t.due === d && !t.first).length);
   const ev = (x, big) => x.s ? `<button class="${big ? "item pt" : "ptev"}" data-pt="sch" data-id="${x.s.id}">${big ? `<div class="av">${x.s.time}</div><div class="tx"><b>${esc(x.s.title)}</b><span>일정, ${esc(x.s.who)}</span></div><span class="chev">›</span>` : `<small>${x.s.time}</small>${esc(x.s.title)}`}</button>` : big ? row(x.t, "맡은 사람 " + x.t.owner) : `<button class="ptev ${over(x.t) ? "over" : ""}" data-pt="open" data-id="${x.t.id}"><small>기한</small>${fchip(x.t)}${esc(x.t.title)}</button>`;
   /* 메신저가 켜져 있으면 창고의 진짜 일정을, 아니면 예시 일정을 쓴다 */
+  const real = () => !!(window.admSt && window.admSt() !== "off"); /* 정식으로 쓰는 중: 예시를 보이지 않는다 */
   const liveOn = () => !!(window.admLive && window.admLive()); /* 메신저가 켜져 있으면 달력에 예시 업무를 안 섞는다 */
   const schAll = () => (window.admLive && window.admLive() && window.msgEvents ? window.msgEvents() : SCH);
   function calHtml() {
@@ -2093,16 +2094,17 @@ button.ptnext:hover{filter:brightness(.97)}
     return bar + `<div class="ptwk">${days.map((d) => { const n = dayItems(d).length; return `<button class="${d === PT.day ? "on" : ""} ${d === today() ? "td" : ""}" data-pt="day" data-d="${d}">${"일월화수목금토"[new Date(d + "T00:00:00Z").getUTCDay()]}<b>${+d.slice(8)}</b><i>${n > 3 ? n : "•".repeat(n)}</i></button>`; }).join("")}</div>${note}<div class="list">${L.map((x) => ev(x, true)).join("") || '<div class="empty">이날은 없어요</div>'}</div>${h ? `<div class="caption" style="margin:0 4px">그 밖의 업무가 ${h}건 더 있어요. [전체 보기]를 누르면 나와요.</div>` : ""}<button class="ptfab" data-pt="new" aria-label="새 업무">+</button>`;
   }
   /* 찾기와 끌어서 순서 바꾸기가 쓰는 곳 */
-  window.ptSearch = (q) => { if (!D) return []; if (!MT.length) seed(); const k = q.toLowerCase(); return MT.filter((t) => `${t.title} ${t.body} ${t.owner} ${t.by}`.toLowerCase().includes(k)).map((t) => ({ id: t.id, title: t.title, sub: `맡은 사람 ${t.owner}, ${dueTxt(t)}` })); };
+  window.ptSearch = (q) => { if (!D || real()) return []; if (!MT.length) seed(); const k = q.toLowerCase(); return MT.filter((t) => `${t.title} ${t.body} ${t.owner} ${t.by}`.toLowerCase().includes(k)).map((t) => ({ id: t.id, title: t.title, sub: `맡은 사람 ${t.owner}, ${dueTxt(t)}` })); };
   window.ptOpen = (id) => { tab = "tasks"; PT.view = "mine"; render(); detail(id); };
   window.ptReorder = (id, refId, after) => { const F = MT.filter((m) => m.first && m.st === "todo").sort((p, q) => p.ord - q.ord), x = F.find((m) => m.id === id); if (!x || id === refId) return false; F.splice(F.indexOf(x), 1); let i = F.findIndex((m) => m.id === refId); if (i < 0) return false; F.splice(i + (after ? 1 : 0), 0, x); F.forEach((m, n) => (m.ord = n + 1)); toast(`먼저 중 ${F.indexOf(x) + 1}번째로 옮겼어요`); rer(); return true; };
   /* 홈 시제품이 숫자를 가져가는 곳 */
-  window.ptCounts = () => { if (!D) return { cf: 0, ov: 0 }; if (!MT.length) seed(); const me = PT.me, L = MT.filter((t) => t.owner === me && t.st === "todo"); return { cf: L.reduce((a, t) => a + kn(t).did, 0), ov: MT.filter((t) => (t.owner === me || t.by === me) && over(t)).length, me }; };
+  window.ptCounts = () => { if (!D) return { cf: 0, ov: 0 }; if (real()) return window.msgTaskCounts ? window.msgTaskCounts() : { cf: 0, ov: 0, real: true }; if (!MT.length) seed(); const me = PT.me, L = MT.filter((t) => t.owner === me && t.st === "todo"); return { cf: L.reduce((a, t) => a + kn(t).did, 0), ov: MT.filter((t) => (t.owner === me || t.by === me) && over(t)).length, me }; };
   /* 원래 업무 화면은 "지점" 탭으로 그대로 */
   const branchTasks = tasksHtml;
   tasksHtml = function () {
     if (!MT.length) seed();
-    const tabs = `<div class="subnav">${[["mine", "내 것"], ["branch", "지점"], ["cal", "달력"], ["evt", "이벤트"]].map(([k, n]) => `<button class="${PT.view === k ? "on" : ""}" data-pt="view" data-v="${k}">${n}</button>`).join("")}</div>`;
+    const onlMode = document.body.classList.contains("hmonline") || !!window.ONKEY; if (onlMode && PT.view === "branch") PT.view = "mine"; if (real() && PT.view === "evt") PT.view = "mine"; /* 이벤트 칸은 아직 예시뿐이라 정식에서는 감춘다 */ /* 온라인 쪽에서는 매장 업무 칸을 감춘다 */
+    const tabs = `<div class="subnav">${[["mine", "내 것"], ["branch", "지점"], ["cal", "달력"], ["evt", "이벤트"]].filter(([k]) => !(onlMode && k === "branch") && !(real() && k === "evt")).map(([k, n]) => `<button class="${PT.view === k ? "on" : ""}" data-pt="view" data-v="${k}">${n}</button>`).join("")}</div>`;
     if (PT.view === "branch") return tabs + branchTasks();
     return tabs + `<div class="ptex"><span>예시 자료예요. 저장은 안 돼요. 눌러서 흐름만 봐 주세요.</span><button data-pt="reset">처음으로</button></div>` + (PT.view === "cal" ? calHtml() : PT.view === "evt" ? evtHtml() : mine2Html());
   };
@@ -2143,7 +2145,7 @@ button.ptnext:hover{filter:brightness(.97)}
   const nextOf = (e) => steps(e).find((s) => !s.done);
   const missing = (e) => [!e.price && "가격이 비어 있어요", !e.brief && "내용이 비어 있어요", !e.poster && "포스터가 아직 없어요"].filter(Boolean);
   const nextLine = (e) => { const s = nextOf(e); return s ? `<button class="ptnext" data-px="ev" data-id="${e.id}"><small>다음 할 것</small><b>${esc(e.name)}, 다음은 "${s.n}" 차례예요</b><span class="${diffD(s.due) < 0 ? "t-bad" : ""}">${dl(s.due)}까지, ${dleft(s.due)}</span></button>` : `<div class="ptnext done"><small>다음 할 것</small><b>${esc(e.name)}, 다음 할 것이 없어요</b></div>`; };
-  window.ptNext = () => { if (!D) return null; if (!MT.length) seed(); const L = EVT.map((e) => [e, nextOf(e)]).filter((x) => x[1]).sort((a, b) => a[1].due.localeCompare(b[1].due)); return L.length ? { id: L[0][0].id, html: nextLine(L[0][0]) } : null; };
+  window.ptNext = () => { if (!D || real()) return null; if (!MT.length) seed(); const L = EVT.map((e) => [e, nextOf(e)]).filter((x) => x[1]).sort((a, b) => a[1].due.localeCompare(b[1].due)); return L.length ? { id: L[0][0].id, html: nextLine(L[0][0]) } : null; };
   window.ptOpenEvent = (id) => { tab = "tasks"; PT.view = "evt"; render(); evDetail(id); };
   function mine2Html() {
     const me = PT.me, boss = me === BOSS;
@@ -2417,6 +2419,8 @@ textarea.msin{height:48px;min-height:48px;max-height:132px;padding:12px 16px;lin
   const call = async (fn, args) => rpc(fn, { p_k: await mkey(), p_who: LV.who, ...args });
   /* 온라인 홈 같은 다른 화면이 같은 열쇠와 이름으로 창고를 부를 때 쓰는 창구 */
   window.admCall = (fn, a) => call(fn, a || {}); window.admLive = () => live(); window.admWho = () => LV.who;
+  window.admSt = () => LV.st; /* "off" 만 시제품(창고에 열쇠 없음). 그 밖에는 정식으로 쓰는 중이라 예시를 보이지 않는다 */
+  window.msgTaskCounts = () => { if (!live()) return { cf: 0, ov: 0, real: true }; const td = new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10), L = LV.tasks.filter((t) => t.st === "open" && owns(t, me())); return { cf: L.length, ov: L.filter((t) => t.due && String(t.due).slice(0, 10) < td).length, real: true }; };
   window.admRpc = (fn, a) => rpc(fn, a || {}); /* 로그인 화면(온라인팀으로 들어가기)이 쓰는 창구 */
   const selfR = () => ROOMS.find((r) => r.mem.length === 1 && r.mem[0] === LV.who);
   const mapM = (x) => ({ id: "m" + Number(x.id), n: Number(x.id), room: "r" + Number(x.room), who: String(x.who), at: String(x.at), txt: String(x.txt), re: x.re ? "m" + Number(x.re) : "", card: x.card && typeof x.card === "object" ? x.card : null });
@@ -2704,10 +2708,11 @@ textarea.msin{height:48px;min-height:48px;max-height:132px;padding:12px 16px;lin
     const mineT = LV.tasks.filter((t) => t.st === "open" && owns(t, me())), gave = LV.tasks.filter((t) => t.st === "open" && t.by === me() && !owns(t, me())), done = LV.tasks.filter((t) => t.st === "done" && (owns(t, me()) || t.by === me())).slice(-8).reverse(), ev = upc().slice(0, 6);
     const withRoom = (t) => tkRow(t).replace("</em>", `, ${esc(rname(R(t.room) || { name: "", mem: [] }))}</em>`);
     const sec = (title, n, html, empty) => `<div class="msgrp">${title} <small>${n}건</small></div>${html || `<div class="msnone">${empty}</div>`}`;
-    return `<div class="mstkbox"><div class="mstkhd"><b>${esc(me())} 업무</b><button data-ms="tknew2">업무 만들기</button></div>${sec("내가 맡은 것", mineT.length, mineT.map(withRoom).join(""), "맡은 일이 없어요")}${sec("내가 준 것", gave.length, gave.map(withRoom).join(""), "준 일이 없어요")}${sec("다가오는 일정", ev.length, ev.map((e) => evRow(e, "evopen")).join(""), "다가오는 일정이 없어요")}${done.length ? sec("끝난 것", done.length, done.map(withRoom).join(""), "") : ""}<div class="caption" style="margin-top:14px">메신저에서 글을 길게 눌러 [업무로 만들기]를 해도 여기에 떠요. 이벤트 탭은 아직 예시 자료예요.</div></div>`;
+    return `<div class="mstkbox"><div class="mstkhd"><b>${esc(me())} 업무</b><button data-ms="tknew2">업무 만들기</button></div>${sec("내가 맡은 것", mineT.length, mineT.map(withRoom).join(""), "맡은 일이 없어요")}${sec("내가 준 것", gave.length, gave.map(withRoom).join(""), "준 일이 없어요")}${sec("다가오는 일정", ev.length, ev.map((e) => evRow(e, "evopen")).join(""), "다가오는 일정이 없어요")}${done.length ? sec("끝난 것", done.length, done.map(withRoom).join(""), "") : ""}<div class="caption" style="margin-top:14px">메신저에서 글을 길게 눌러 [업무로 만들기]를 해도 여기에 떠요.</div></div>`;
   }
   window.msgMyTasks = () => (live() ? LV.tasks.filter((t) => t.st === "open" && (owns(t, me()) || t.by === me())) : []);
-  if (typeof tasksHtml === "function") { const th0 = tasksHtml; tasksHtml = function () { const base = th0.apply(this, arguments), L = window.msgMyTasks(); const box = `<div class="mstkbox"><div class="msgrp" style="margin-top:4px">메신저에서 온 업무 <small>${L.length}개</small></div>${L.map((t) => tkRow(t).replace("</em>", `, ${esc(rname(R(t.room) || { name: "", mem: [] }))}</em>`)).join("")}</div>`; if (!live()) return base; const cut = base.indexOf("</div>") + 6, EX = /<div class="[^"]*"><span>예시 자료예요\. 저장은 안 돼요\. 눌러서 흐름만 봐 주세요\.<\/span><button data-pt="reset">처음으로<\/button><\/div>/; if (/class="on" data-pt="view" data-v="mine"/.test(base)) return base.slice(0, cut) + realMine(); if (/class="on" data-pt="view" data-v="cal"/.test(base)) return base.replace(EX, ""); return base; }; }
+  if (typeof tasksHtml === "function") { const th0 = tasksHtml; tasksHtml = function () { const base = th0.apply(this, arguments), L = window.msgMyTasks(); const box = `<div class="mstkbox"><div class="msgrp" style="margin-top:4px">메신저에서 온 업무 <small>${L.length}개</small></div>${L.map((t) => tkRow(t).replace("</em>", `, ${esc(rname(R(t.room) || { name: "", mem: [] }))}</em>`)).join("")}</div>`; if (!live()) { if (LV.st === "off" || /class="on" data-pt="view" data-v="branch"/.test(base)) return base; const cut0 = base.indexOf("</div>") + 6, wait = ["idle", "check", "load"].includes(LV.st); return base.slice(0, cut0) + `<div class="mstkbox"><div class="msnone" style="padding:28px 16px;line-height:1.6">${wait ? "업무를 불러오는 중이에요." : LV.st === "who" ? "메신저에서 내 이름으로 들어오면 업무가 보여요." : "업무를 못 불러왔어요. 메신저 탭에서 확인해 주세요."}${wait ? "" : '<br><button class="btn" data-tab="msg" style="margin-top:12px;width:auto;padding:0 18px;height:44px">메신저 열기</button>'}</div></div>`; }
+    const cut = base.indexOf("</div>") + 6, EX = /<div class="[^"]*"><span>예시 자료예요\. 저장은 안 돼요\. 눌러서 흐름만 봐 주세요\.<\/span><button data-pt="reset">처음으로<\/button><\/div>/; if (/class="on" data-pt="view" data-v="mine"/.test(base)) return base.slice(0, cut) + realMine(); if (/class="on" data-pt="view" data-v="cal"/.test(base)) return base.replace(EX, ""); return base; }; }
 
   /* ── 화면 ── */
   function aiHtml(m, wide) {
@@ -3179,7 +3184,7 @@ body.hmfull #nav{display:none!important}body.hmfull .hmboard{border-radius:16px 
   function vfHtml() {
     const iss = issuesLeft().length, mu = window.msgUnread ? window.msgUnread() : 0, pc = window.ptCounts ? window.ptCounts() : { cf: 0, ov: 0 };
     const tile = (lab, n, cls, go, unit) => `<button ${go}><span>${lab}</span><b class="${n ? cls : "z"}">${n}<small>${unit}</small></b></button>`;
-    const tiles = `<div class="hmt">${tile("확인할 것", iss, "r", 'data-hm="iss"', "건")}${tile("안 읽은 메시지", mu, "b", 'data-tab="msg"', "개")}${tile("확인 기다리는 업무", pc.cf, "b", 'data-tab="tasks"', "건")}${tile("기한 지난 업무", pc.ov, "r", 'data-tab="tasks"', "건")}</div>`;
+    const tiles = `<div class="hmt">${tile("확인할 것", iss, "r", 'data-hm="iss"', "건")}${tile("안 읽은 메시지", mu, "b", 'data-tab="msg"', "개")}${tile(pc.real ? "내가 맡은 업무" : "확인 기다리는 업무", pc.cf, "b", 'data-tab="tasks"', "건")}${tile("기한 지난 업무", pc.ov, "r", 'data-tab="tasks"', "건")}</div>`;
     const closed = D.ops.filter((o) => o.close).length, open = D.ops.filter((o) => !o.close && o.open).length, anyWho = D.ops.some((o) => o.staff || (o.close && o.close.by));
     const br = `<div class="hmh">지점 한눈에 <small>영업 중 ${open}곳, 마감 ${closed}곳${anyWho ? "" : ", 근무자 이름은 아직 자료에 없어요"}</small></div><div class="hmg">${D.ops.map(branchCard).join("")}</div>`;
     const nx = window.ptNext ? window.ptNext() : null;
@@ -3308,11 +3313,13 @@ ${cmp == null ? "" : `<div class="hmcmp">워드프레스 이번 달 <b>${w(wp.mo
   addOnlineEntry();
   if (!ls.get("vf-admin-key") && /^[0-9a-f]{64}$/.test(ls.get("vf-on-key") || "") && $("#pw")) setTimeout(() => { if (!D) onEnter(ls.get("vf-on-key"), false); }, 0);
   /* 로고 자리에서 VF 관리자와 온라인을 바꾼다 */
-  function decorLogo() { if (window.ONKEY) for (const bt of document.querySelectorAll(".side .navb[data-tab], #nav button")) if (/^(지점|상품|더보기)/.test(bt.textContent.trim())) bt.style.display = "none"; for (const el of document.querySelectorAll("#app .logo")) { el.innerHTML = `VAFRIEND <b>${HM.v === "online" ? "온라인" : "관리자"}</b><span class="hmlgsw"><span class="s">전환</span></span>`; if (!window.ONKEY && el.closest(".side") && !el.nextElementSibling?.classList.contains("hmlgseg")) el.insertAdjacentHTML("afterend", `<div class="hmlgseg" role="tablist"><button class="${HM.v === "online" ? "" : "on"}" data-hm="swapto" data-v="vf">관리자</button><button class="${HM.v === "online" ? "on" : ""}" data-hm="swapto" data-v="online">온라인</button></div>`); el.dataset.hm = "swap"; el.setAttribute("role", "button"); el.setAttribute("aria-label", HM.v === "online" ? "VF 관리자 홈으로 바꾸기" : "온라인 홈으로 바꾸기"); } }
+  function decorLogo() { { const hide = window.ONKEY ? /^(지점|상품|더보기)/ : HM.v === "online" ? /^(지점|상품)/ : null; for (const bt of document.querySelectorAll(".side .navb[data-tab], #nav button")) bt.style.display = hide && hide.test(bt.textContent.trim()) ? "none" : ""; } for (const el of document.querySelectorAll("#app .logo")) { el.innerHTML = `VAFRIEND <b>${HM.v === "online" ? "온라인" : "관리자"}</b><span class="hmlgsw"><span class="s">전환</span></span>`; if (!window.ONKEY && el.closest(".side") && !el.nextElementSibling?.classList.contains("hmlgseg")) el.insertAdjacentHTML("afterend", `<div class="hmlgseg" role="tablist"><button class="${HM.v === "online" ? "" : "on"}" data-hm="swapto" data-v="vf">관리자</button><button class="${HM.v === "online" ? "on" : ""}" data-hm="swapto" data-v="online">온라인</button></div>`); el.dataset.hm = "swap"; el.setAttribute("role", "button"); el.setAttribute("aria-label", HM.v === "online" ? "VF 관리자 홈으로 바꾸기" : "온라인 홈으로 바꾸기"); } }
   /* 보드를 띄워 둔 동안에는 3분마다 도는 자동 새로고침이 보드를 처음으로 되돌리지 않게, 매출 칸만 새로 그린다 */
+  const VFTABS = ["close", "coins", "kpi", "note", "plist", "stockrep", "survey", "order", "bunbae", "group", "must"];
   const render1 = render;
   render = function () {
     if (window.ONKEY) { HM.v = "online"; if (!["home", "msg", "tasks"].includes(tab)) tab = "home"; }
+    else if (HM.v === "online" && VFTABS.includes(tab)) { HM.v = "vf"; ls.set("vf-hm-v", "vf"); } /* 온라인 쪽에서 매장 화면으로 들어가면 관리자 쪽으로 */
     if (!ownH && tab === "home" && HM.v === "online" && $("#hmboard") && ON.pc === isPC()) { const s = $("#hmsales"); if (s) { s.innerHTML = stripHtml(); fitBoard(); } onLoad(); return; }
     ON.pc = isPC(); const out = render1.apply(this, arguments); syncFull(); decorLogo(); return out;
   };
