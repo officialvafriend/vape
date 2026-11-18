@@ -2346,7 +2346,7 @@ textarea.msin{height:48px;min-height:48px;max-height:132px;padding:12px 16px;lin
   const P0 = ["한섭이사", "보혜", "민혁팀장", "동재팀장"];
   /* st: idle 아직 안 물어봄, check 물어보는 중, off 창고에 열쇠가 없음(예시를 보임), who 이름을 골라야 함, load 불러오는 중, ok 진짜, nokey 열쇠가 다름, err 못 닿음 */
   const LV = { st: "idle", k: "", kFor: null, who: ls.get("vf-msg-who") || "", people: P0, seen: {}, since: 0, timer: 0, busy: false, sending: false, fast: false, found: [], foundQ: "", ft: 0, hidAt: 0, urls: {}, miss: {}, hy: false, up: "", tasks: [], emoji: {} };
-  const DEF = { 한섭이사: "🦁", 보혜: "🐰", 민혁팀장: "🐻", 동재팀장: "🐯" }, EMO = ["🦁", "🐰", "🐻", "🐯", "🦊", "🐶", "🐱", "🐼", "🐨", "🐸", "🐵", "🐧", "🦄", "🐷", "🐮", "🐹", "🦉", "🐳", "🐢", "🦖", "🐝", "🌵", "🍀", "🌸", "🔥", "⭐", "🌙", "⚡", "🍑", "🍊", "🍉", "☕"];
+  const DEF = { 한섭이사: "🦁", 보혜: "🐰", 민혁팀장: "🐻", 동재팀장: "🐯", 시원: "🐱", 진: "🐧" }, EMO = ["🦁", "🐰", "🐻", "🐯", "🦊", "🐶", "🐱", "🐼", "🐨", "🐸", "🐵", "🐧", "🦄", "🐷", "🐮", "🐹", "🦉", "🐳", "🐢", "🦖", "🐝", "🌵", "🍀", "🌸", "🔥", "⭐", "🌙", "⚡", "🍑", "🍊", "🍉", "☕"];
   LV.photo = {}; LV.events = [];
   const mapE = (x) => ({ id: Number(x.id), room: "r" + Number(x.room), kind: x.kind === "회의" ? "회의" : "일정", title: String(x.title || ""), d: String(x.d || ""), h: String(x.h || ""), memo: String(x.memo || ""), by: String(x.by || "") });
   const E = (id) => LV.events.find((e) => e.id === +id);
@@ -2407,6 +2407,7 @@ textarea.msin{height:48px;min-height:48px;max-height:132px;padding:12px 16px;lin
   const devTok = () => { let t = ls.get("vf-msg-tok"); if (!/^[0-9a-f]{48}$/.test(t || "")) { t = [...crypto.getRandomValues(new Uint8Array(24))].map((x) => x.toString(16).padStart(2, "0")).join(""); ls.set("vf-msg-tok", t); } return t; };
   const mkey = async () => (await mkey0()) + "." + devTok();
   async function mkey0() {
+    if (window.ONKEY) return window.ONKEY; /* 온라인팀 비밀번호로 들어온 기기: 관리자 열쇠가 없고 온라인 열쇠를 쓴다 */
     if (LV.k && LV.kFor === KEY) return LV.k;
     const a = new Uint8Array(KEY), tag = new TextEncoder().encode("|vf-admin-messenger|1"), buf = new Uint8Array(a.length + tag.length);
     buf.set(a); buf.set(tag, a.length);
@@ -2416,6 +2417,8 @@ textarea.msin{height:48px;min-height:48px;max-height:132px;padding:12px 16px;lin
   const call = async (fn, args) => rpc(fn, { p_k: await mkey(), p_who: LV.who, ...args });
   /* 온라인 홈 같은 다른 화면이 같은 열쇠와 이름으로 창고를 부를 때 쓰는 창구 */
   window.admCall = (fn, a) => call(fn, a || {}); window.admLive = () => live(); window.admWho = () => LV.who;
+  window.admRpc = (fn, a) => rpc(fn, a || {}); /* 로그인 화면(온라인팀으로 들어가기)이 쓰는 창구 */
+  const selfR = () => ROOMS.find((r) => r.mem.length === 1 && r.mem[0] === LV.who);
   const mapM = (x) => ({ id: "m" + Number(x.id), n: Number(x.id), room: "r" + Number(x.room), who: String(x.who), at: String(x.at), txt: String(x.txt), re: x.re ? "m" + Number(x.re) : "", card: x.card && typeof x.card === "object" ? x.card : null });
   const mapT = (x) => ({ id: Number(x.id), room: "r" + Number(x.room), msg: x.msg ? "m" + Number(x.msg) : "", title: String(x.title || ""), owner: String(x.owner || ""), by: String(x.by || ""), st: x.st === "done" ? "done" : "open", due: x.due ? String(x.due) : "" });
   const T = (id) => LV.tasks.find((t) => t.id === +id);
@@ -2469,7 +2472,7 @@ textarea.msin{height:48px;min-height:48px;max-height:132px;padding:12px 16px;lin
   function sched(ms) { clearTimeout(LV.timer); if (!live()) return; LV.timer = setTimeout(poll, ms ?? (document.visibilityState !== "visible" ? 20000 : tab === "msg" ? 3000 : pushMode() === "local" ? 10000 : 30000)); }
   async function poll() {
     if (!live()) return;
-    if (!KEY || !D) { LV.st = "idle"; ROOMS = []; MSGS = []; LV.k = ""; return; } /* 잠그면 멈춤. 다시 들어오면 처음부터 */
+    if ((!KEY && !window.ONKEY) || !D) { LV.st = "idle"; ROOMS = []; MSGS = []; LV.k = ""; return; } /* 잠그면 멈춤. 다시 들어오면 처음부터 */
     const hid = document.visibilityState !== "visible";
     if (hid && pushMode() !== "local") return; /* 안 보이는 동안은 쉰다. 다시 보이면 바로 받음. 직접 알림 방식만 가려져 있어도 20초마다 본다 */
     if (LV.busy) return sched();
@@ -2479,7 +2482,7 @@ textarea.msin{height:48px;min-height:48px;max-height:132px;padding:12px 16px;lin
       if (!s.ok) { LV.st = s.why === "who" ? "who" : "nokey"; LV.names = null; return rr(); }
       const since0 = LV.since, add = take(s);
       /* 직접 알림 방식: 창이 가려졌거나, 떠 있어도 맨 앞이 아니면(다른 프로그램을 쓰는 중) 알림을 띄운다 */
-      if (add && pushMode() === "local" && (hid || !document.hasFocus()) && MSGS.some((m) => m.n > since0 && m.who !== LV.who)) localNote();
+      if (add && pushMode() === "local" && (hid || !document.hasFocus())) { const nm = MSGS.filter((m) => m.n > since0 && m.who !== LV.who).sort((x, y) => x.n - y.n).pop(); if (nm) localNote(nm); }
       if (add || sig() !== before) soft(add);
     } catch { /* 잠깐 끊긴 것은 다음 차례에 다시 */ } finally { LV.busy = false; sched(); }
   }
@@ -2510,7 +2513,7 @@ textarea.msin{height:48px;min-height:48px;max-height:132px;padding:12px 16px;lin
   }
   window.msgUnread = () => {
     if (!D) return 0;
-    if (LV.st === "idle" && KEY && LV.who && ls.get("vf-msg-live") === "1") boot();
+    if (LV.st === "idle" && (KEY || window.ONKEY) && LV.who && ls.get("vf-msg-live") === "1") boot();
     return live() ? mine().reduce((a, r) => a + unread(r.id), 0) : 0;
   };
   function readAll(id, quiet) {
@@ -2534,12 +2537,23 @@ textarea.msin{height:48px;min-height:48px;max-height:132px;padding:12px 16px;lin
   }
 
   /* ── 알림 ── 이 기기가 [알림 켜기]를 누르면 알림 주소를 창고에 적어 두고, 글이나 업무가 생기면 서버 함수가 그 방 사람들 기기에 알림을 쏜다.
-     알림에는 글 내용이 실리지 않는다("새 글이나 업무가 있어요"만 뜸). 아이폰은 홈 화면에 추가한 아이콘으로 열었을 때만 된다. */
+     알림에는 누가 무엇을 올렸는지와 내용 앞부분이 뜬다(창고가 만들고, 그 기기만 풀 수 있게 잠가서 보낸다). 비밀번호가 걸린 방은 내용이 안 뜬다. 아이폰은 홈 화면에 추가한 아이콘으로 열었을 때만 된다. */
   const EDGE_PUSH = SB.url + "/functions/v1/adm-push";
   const pushCan = () => "serviceWorker" in navigator && "PushManager" in window && "Notification" in window;
   const pushMode = () => ("Notification" in window && Notification.permission === "granted" ? ls.get("vf-msg-push") || "" : ""); /* "1" 폰 알림, "local" 창이 열려 있을 때만 */
   const pushIsOn = () => pushMode() === "1" || pushMode() === "local";
-  const localNote = () => { try { navigator.serviceWorker.getRegistration().then((reg) => (reg ? reg.showNotification("베이프렌드 관리자", { body: "새 글이나 업무가 있어요", tag: "adm-new", renotify: true }) : new Notification("베이프렌드 관리자", { body: "새 글이나 업무가 있어요", tag: "adm-new" }))).catch(() => {}); } catch (e) { /* 알림을 못 띄우는 브라우저 */ } };
+/* 알림에 띄울 글. 창고의 adm_push_targets2 와 같은 규칙이다 */
+  const noteOf = (m) => {
+    const r = R(m.room), c = m.card || {}, ck = c.kind || "", w = m.who + "님"; let t = w + "의 새 메시지", b = String(m.txt || "");
+    if (r && r.locked) return { t: w + "의 새 글", b: "비밀번호가 걸린 방이에요. 열어서 봐 주세요.", room: r.n };
+    if (ck === "task" || ck === "업무") { t = w + (/^업무를 끝냈어요/.test(b) ? "이 업무를 끝냈어요" : "이 업무를 올렸어요"); b = c.title || b.replace(/^[^:]{0,14}: /, ""); }
+    else if (c.eid || ck === "회의" || ck === "일정") { t = w + (ck === "회의" ? "이 회의를 올렸어요" : "이 일정을 올렸어요"); b = [c.title, c.sub].filter(Boolean).join(", ") || b; }
+    else if (ck === "file") t = w + (/^사진/.test(b) ? "이 사진을 보냈어요" : "이 파일을 보냈어요");
+    b = String(b).replace(/\s+/g, " ").trim().slice(0, 110);
+    return { t, b: r && r.name ? "[" + r.name + "] " + b : b, room: r ? r.n : 0 };
+  };
+  const localNote = (m) => { const n = m ? noteOf(m) : { t: "베이프렌드 관리자", b: "새 글이나 업무가 있어요", room: 0 }, tag = n.room ? "adm-r" + n.room : "adm-new"; MS.lastNote = n; try { navigator.serviceWorker.getRegistration().then((reg) => (reg ? reg.showNotification(n.t, { body: n.b, tag, renotify: true, data: { room: n.room } }) : new Notification(n.t, { body: n.b, tag }))).catch(() => {}); } catch (e) { /* 알림을 못 띄우는 브라우저 */ } };
+  const subArgs = (sub) => { let k = {}; try { k = (sub.toJSON() || {}).keys || {}; } catch (e) { k = {}; } return { p_endpoint: sub.endpoint, p_on: true, p_p256dh: k.p256dh || "", p_auth: k.auth || "" }; };
   const isIos = () => /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
   const b64uToU8 = (t) => Uint8Array.from(atob(t.replace(/-/g, "+").replace(/_/g, "/") + "===".slice((t.length + 3) % 4)), (c) => c.charCodeAt(0));
   const edgePush = async (b) => (await fetch(EDGE_PUSH, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(b), keepalive: true })).json();
@@ -2552,7 +2566,7 @@ textarea.msin{height:48px;min-height:48px;max-height:132px;padding:12px 16px;lin
       let sub = await reg.pushManager.getSubscription();
       try { if (!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64uToU8(v.pub) }); }
       catch (e6) { const old = await reg.pushManager.getSubscription(); if (old) await old.unsubscribe(); sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64uToU8(v.pub) }); }
-      const o = await call("adm_push_sub", { p_endpoint: sub.endpoint, p_on: true }); if (!o.ok) throw new Error(o.why || "sub");
+      const o = await call("adm_push_sub2", subArgs(sub)); if (!o.ok) throw new Error(o.why || "sub");
       ls.set("vf-msg-push", "1"); toast("알림을 켰어요. 새 글이 오면 이 기기에 떠요"); if ($("#sheet .msprof")) profSheet(); rr();
     } catch (e7) {
       /* 알림 주소를 못 받는 브라우저: 허용은 받았으니, 이 창이 열려 있는 동안 새 글이 오면 직접 알림을 띄운다 */
@@ -2566,8 +2580,10 @@ textarea.msin{height:48px;min-height:48px;max-height:132px;padding:12px 16px;lin
   }
   async function pushSync() { /* 켜 둔 기기는 열 때마다 주소를 다시 알려 준다(주소가 바뀌었거나 이름을 바꿨을 때) */
     if (ls.get("vf-msg-push") !== "1" || !pushCan()) return;
-    try { const reg = await navigator.serviceWorker.register("sw.js"), sub = await reg.pushManager.getSubscription(); if (Notification.permission !== "granted") return ls.set("vf-msg-push", null); if (!sub) return pushOn(); /* 허용은 그대로인데 주소만 사라졌으면 묻지 않고 다시 받는다 */ await call("adm_push_sub", { p_endpoint: sub.endpoint, p_on: true }); } catch (e9) { /* 다음에 다시 */ }
+    try { const reg = await navigator.serviceWorker.register("sw.js"), sub = await reg.pushManager.getSubscription(); if (Notification.permission !== "granted") return ls.set("vf-msg-push", null); if (!sub) return pushOn(); /* 허용은 그대로인데 주소만 사라졌으면 묻지 않고 다시 받는다 */ await call("adm_push_sub2", subArgs(sub)); } catch (e9) { /* 다음에 다시 */ }
   }
+  /* 알림을 누르면 알림 일꾼이 방 번호를 알려 준다. 그 방을 연다 */
+  try { if ("serviceWorker" in navigator) navigator.serviceWorker.addEventListener("message", (e) => { const n = e.data && +e.data.admOpenRoom; if (!n || !live()) return; const r = R("r" + n); if (!r || !r.mem.includes(me())) return; tab = "msg"; if (shut(r)) { MS.room = ""; return full(); } if (r.id !== MS.room) clearFiles(); MS.room = r.id; MS.q = null; MS.v = "all"; readAll(r.id); full(); }); } catch (e31) { /* 알림 일꾼이 없는 브라우저 */ }
   const notify = (r) => { if (!r || !live()) return; mkey().then((k) => edgePush({ type: "notify", k, who: LV.who, room: r.n })).catch(() => {}); };
   const pushBanner = () => { if (!live() || pushIsOn() || MS.pushHide || Date.now() - (+ls.get("vf-msg-push-later") || 0) < 7 * 864e5) return ""; if (pushCan()) return `<div class="mson msalim"><b>알림을 켤까요?</b><span>새 글이나 업무가 오면 이 기기에 알림이 떠요.</span><div class="msab"><button data-ms="pushon">알림 켜기</button><button class="g" data-ms="pushhide">나중에</button></div></div>`; return isIos() ? `<div class="mson msalim"><b>아이폰 알림</b><span>사파리의 공유 단추에서 "홈 화면에 추가"를 한 뒤, 그 아이콘으로 열면 알림을 켤 수 있어요.</span><div class="msab"><button class="g" data-ms="pushhide">알겠어요</button></div></div>` : ""; };
 
@@ -2714,12 +2730,13 @@ textarea.msin{height:48px;min-height:48px;max-height:132px;padding:12px 16px;lin
   function listHtml() {
     const L = mine(), un = L.reduce((a, r) => a + unread(r.id), 0), at = MSGS.filter((m) => L.some((r) => r.id === m.room) && called(m) && m.who !== me() && !seenBy(m, me())).length, dr = L.reduce((a, r) => a + drafts(r.id).filter((m) => m.ai.st === "draft").length, 0);
     const row = (r) => { const M = rmsgs(r.id), last = M.at(-1), n = unread(r.id); return `<button class="msrow ${MS.room === r.id && isPC() ? "on" : ""}" data-ms="room" data-id="${r.id}"><div class="av ${r.imp ? "blue" : ""}">${live() && !r.name && r.mem.length === 2 ? avH(r.mem.find((n) => n !== me()) || "") : esc(rname(r)[0])}</div><div class="tx"><b>${esc(rname(r))}</b><span>${shut(r) ? "🔒 비밀번호가 걸린 방이에요" : last ? esc((last.who === me() ? "나" : last.who) + ": " + last.txt) : "아직 글이 없어요"}</span></div><div class="mt"><small>${last ? (last.at.slice(0, 10) === today() ? hm(last) : md(last)) : ""}</small>${n ? `<i>${n > 99 ? "99+" : n}</i>` : ""}</div></button>`; };
-    const imp = L.filter((r) => r.imp), rest = L.filter((r) => !r.imp);
+    const sr = live() ? selfR() : null, imp = L.filter((r) => r.imp && r !== sr), rest = L.filter((r) => !r.imp && r !== sr), srLast = sr && rmsgs(sr.id).at(-1);
+    const selfRow = live() ? `<div class="msrows" style="margin-top:12px"><button class="msrow ${sr && MS.room === sr.id && isPC() ? "on" : ""}" data-ms="selfroom"><div class="av">📝</div><div class="tx"><b>내 메모</b><span>${srLast ? esc(srLast.txt) : "나만 보는 방이에요. 적어 두고 싶은 것을 남겨요"}</span></div><div class="mt"><small>${srLast ? (srLast.at.slice(0, 10) === today() ? hm(srLast) : md(srLast)) : ""}</small></div></button></div>` : "";
     const head = live() ? `<div class="mshd"><b>메신저</b><span class="sp"></span><button class="mswho" data-ms="me" aria-label="내 프로필">${avH(me())} ${esc(me())}</button><button class="msic" data-ms="newroom" aria-label="새 방">${IC.plus}</button><button class="msic" data-ms="search" aria-label="찾기">${IC.search}</button></div>`
       : `<div class="mshd"><b>메신저</b><span class="sp"></span><button class="msic" data-ms="search" aria-label="찾기">${IC.search}</button></div><div class="mson"><b>메신저를 켤까요?</b><span>켜면 글이 저장되고, 다른 기기와 오가요. 처음 한 번만 누르면 돼요. 아래는 예시 대화예요.</span><button data-ms="on">메신저 켜기</button></div><div class="msex"><span>예시 대화예요. 저장은 안 돼요. ${esc(me())} 화면이에요.</span><button data-ms="me">바꾸기</button><button data-ms="reset">처음으로</button></div>`;
     return `${head}${live() && !LV.pinset ? `<div class="mson mslockme"><b>내 프로필을 잠가 주세요</b><span>비밀번호를 정하면 다른 사람이 ${esc(me())} 이름으로 못 들어와요.</span><button data-ms="lockme">비밀번호 정하기</button></div>` : ""}${pushBanner()}
 <div class="msmiss"><button data-ms="miss" data-k="un">안 읽은 글<b class="${un ? "n" : ""}">${un}</b></button><button data-ms="miss" data-k="at">나를 부른 글<b class="${at ? "n" : ""}">${at}</b></button>${live() ? "" : `<button data-ms="miss" data-k="dr">할 일 초안<b class="${dr ? "n" : ""}">${dr}</b></button>`}</div>
-${imp.length ? `<div class="msgrp">중요</div><div class="msrows">${imp.map(row).join("")}</div>` : ""}<div class="msgrp">전체</div><div class="msrows">${rest.map(row).join("") || `<div class="empty">${live() ? "다른 방이 없어요. 위의 + 로 만들 수 있어요." : "다른 방이 없어요"}</div>`}</div>`;
+${selfRow}${imp.length ? `<div class="msgrp">중요</div><div class="msrows">${imp.map(row).join("")}</div>` : ""}<div class="msgrp">전체</div><div class="msrows">${rest.map(row).join("") || `<div class="empty">${live() ? "다른 방이 없어요. 위의 + 로 만들 수 있어요." : "다른 방이 없어요"}</div>`}</div>`;
   }
   const todoList = (id) => { const L = drafts(id); return L.map((m) => aiHtml(m, true)).join("") || '<div class="none empty">이 방에서 나온 할 일이 없어요</div>'; };
   const decList = (id) => DEC.filter((x) => x.room === id).map((x) => `<button class="msdec" data-ms="jump" data-id="${x.src}"><small>정함</small><span>${esc(x.txt)}</span></button>`).join("") || '<div class="none empty">아직 정한 것이 없어요</div>';
@@ -2783,7 +2800,7 @@ ${live() ? "" : `<div class="mstabs">${tabs.map(([k, n, c, cl]) => `<button clas
     openSheet(`${nodock}<h3>${task ? "업무로 만들기" : "일정으로 만들기"}</h3><div class="caption">글에서 가져왔어요. 고쳐서 보내세요.</div><div class="ptlab">${task ? "무엇을 하나요?" : "무슨 일정인가요?"}</div><input class="ptin" id="msMkT" maxlength="60" value="${esc(k.title)}">${task ? `<div class="ptlab">누가 맡나요?</div><div class="ptpick">${P0.map((n) => `<button class="chip ${k.owner === n ? "on" : ""}" data-ms="mko" data-n="${n}">${n === me() ? "나 (" + n + ")" : n}</button>`).join("")}</div>` : ""}<div class="ptlab">${task ? "언제까지인가요?" : "언제인가요?"}</div><input class="ptin" type="date" id="msMkD" value="${k.due}">${task ? "" : `<input class="ptin" type="time" id="msMkH" value="${k.time || "14:00"}">`}<div class="btns"><button class="btn gray" data-x style="flex:0 0 96px">닫기</button><button class="btn" data-ms="mkgo">${task ? "업무로 보내기" : "일정에 넣기"}</button></div>`);
   }
   function pinsSheet(rid) { const r = R(rid); if (!r) return; openSheet(`${nodock}<h3>공지 ${r.pins.length}개</h3><div class="caption">방마다 10개까지 고정할 수 있어요. 누르면 그 글로 가요.</div><div style="margin-top:12px">${r.pins.map((p) => `<div class="mspr"><button class="msdec" data-ms="jump" data-id="${p.m.id}" data-room="${r.id}"><small>${md(p.m)}</small><span><b>${esc(p.m.who)}</b> ${esc(p.m.txt)}</span></button><button class="mspx" data-ms="unpin" data-id="${p.m.id}" aria-label="이 공지 풀기">풀기</button></div>`).join("")}</div><div class="btns"><button class="btn gray" data-x>닫기</button></div>`); }
-  function profSheet() { openSheet(`${nodock}<h3>내 프로필</h3><div class="msprof"><span class="msav big">${avH(me())}</span><b>${esc(me())}</b></div><div class="msalrow"><span>이 기기 알림 <b>${pushIsOn() ? "켜짐" : "꺼짐"}</b></span><button data-ms="${pushIsOn() ? "pushoff" : "pushon"}">${pushIsOn() ? "끄기" : "알림 켜기"}</button></div><div class="msalrow"><span>프로필 사진 <b>${LV.photo[me()] ? "있음" : "없음"}</b></span>${LV.photo[me()] ? '<button class="g" data-ms="phdel">빼기</button>' : ""}<label class="msphb">사진 고르기<input type="file" id="msPhF" accept="image/*" hidden></label></div><div class="ptlab">사진이 없을 때 보일 이모지</div><div class="msemo">${EMO.map((e) => `<button class="${em(me()) === e ? "on" : ""}" data-ms="emo" data-e="${e}" aria-label="이모지 ${e}">${e}</button>`).join("")}</div><div class="msact" style="margin-top:14px">${LV.pinset ? '<button data-ms="pinchg">내 비밀번호 바꾸기</button>' : '<button data-ms="lockme">내 프로필 잠그기 (비밀번호 정하기)</button>'}${me() === "한섭이사" || me() === "보혜" ? '<button data-ms="resetlist">다른 사람 잠금 풀어 주기</button>' : ""}</div><div class="btns"><button class="btn gray" data-ms="mechg" style="flex:0 0 130px">다른 이름으로</button><button class="btn" data-x>닫기</button></div>`); }
+  function profSheet() { openSheet(`${nodock}<h3>내 프로필</h3><div class="msprof"><span class="msav big">${avH(me())}</span><b>${esc(me())}</b></div><div class="msalrow"><span>이 기기 알림 <b>${pushIsOn() ? "켜짐" : "꺼짐"}</b></span><button data-ms="${pushIsOn() ? "pushoff" : "pushon"}">${pushIsOn() ? "끄기" : "알림 켜기"}</button></div><div class="msalrow"><span>프로필 사진 <b>${LV.photo[me()] ? "있음" : "없음"}</b></span>${LV.photo[me()] ? '<button class="g" data-ms="phdel">빼기</button>' : ""}<label class="msphb">사진 고르기<input type="file" id="msPhF" accept="image/*" hidden></label></div><div class="ptlab">사진이 없을 때 보일 이모지</div><div class="msemo">${EMO.map((e) => `<button class="${em(me()) === e ? "on" : ""}" data-ms="emo" data-e="${e}" aria-label="이모지 ${e}">${e}</button>`).join("")}</div><div class="msact" style="margin-top:14px">${LV.pinset ? '<button data-ms="pinchg">내 비밀번호 바꾸기</button>' : '<button data-ms="lockme">내 프로필 잠그기 (비밀번호 정하기)</button>'}${me() === "한섭이사" || me() === "보혜" ? '<button data-ms="resetlist">다른 사람 잠금 풀어 주기</button>' + (window.ONKEY ? "" : '<button data-ms="onpw">온라인팀 비밀번호 정하기</button>') : ""}</div><div class="btns"><button class="btn gray" data-ms="mechg" style="flex:0 0 130px">다른 이름으로</button><button class="btn" data-x>닫기</button></div>`); }
   /* 업무 탭의 [방에 올리기]가 부른다: 진짜 방에 업무 카드 글을 올린다. 방 이름이 사람 이름이면 그 사람과의 방(없으면 만듦) */
   window.msgShare = async ({ room, title, sub, txt }) => {
     if (!live()) return false;
@@ -2876,6 +2893,11 @@ ${live() ? "" : `<div class="mstabs">${tabs.map(([k, n, c, cl]) => `<button clas
       try { const o = await rpc("adm_setup", { p_k: await mkey0() }); if (o === "no") { LV.st = "nokey"; return rr(); } if (o !== "new" && o !== "ok") return toast("메신저를 못 켰어요. 다시 눌러 주세요"); MS.room = ""; MS.q = null; if (!LV.who) { LV.st = "who"; return rr(); } return load(); } catch { return toast("메신저 창고에 못 닿았어요. 다시 눌러 주세요"); }
     }
     if (a === "retry") { LV.st = "idle"; boot(); return rr(); }
+    if (a === "selfroom") {
+      let r = selfR();
+      if (!r) { try { const o = await call("adm_room_self", {}); if (!o.ok) throw 0; const st = await call("adm_state", { p_since: Math.max(0, LV.since - 20) }); if (st.ok) take(st); r = R("r" + o.id); } catch (e28) { return toast("내 메모를 못 열었어요. 다시 눌러 주세요"); } }
+      if (!r) return; if (r.id !== MS.room) clearFiles(); MS.room = r.id; MS.v = "all"; MS.re = ""; MS.draft = ""; return rr();
+    }
     if (a === "room" && live() && shut(R(id))) { MS.ul = id; return openSheet(`${nodock}<h3>🔒 ${esc(rname(R(id)))}</h3><div class="caption">비밀번호가 걸린 방이에요. 이 기기에서는 한 번만 넣으면 돼요.</div><input class="ptin" type="password" id="msUlP" autocomplete="off" maxlength="30" placeholder="방 비밀번호"><div class="btns"><button class="btn gray" data-x style="flex:0 0 96px">닫기</button><button class="btn" data-ms="unlockgo">열기</button></div>`); }
     if (a === "room") { if (id !== MS.room) clearFiles(); MS.room = id; MS.v = "all"; MS.re = ""; MS.draft = ""; readAll(id); return rr(); }
     if (a === "back") { clearFiles(); MS.room = ""; return rr(); }
@@ -2903,6 +2925,12 @@ ${live() ? "" : `<div class="mstabs">${tabs.map(([k, n, c, cl]) => `<button clas
         if (k.chg) return toast("비밀번호를 바꿨어요. 다른 기기는 새 비밀번호로 다시 들어와야 해요", 4000);
         toast(o.new ? `${k.n} 프로필을 잠갔어요` : `${k.n}(으)로 들어왔어요`); ls.set("vf-pt-me", k.n); LV.who = k.n; ls.set("vf-msg-who", LV.who); return load();
       } catch (e14) { t.disabled = false; return toast("못 했어요. 다시 눌러 주세요"); }
+    }
+    if (a === "onpw") return openSheet(`${nodock}<h3>온라인팀 비밀번호 정하기</h3><div class="caption">시원, 진이 [온라인팀으로 들어가기]에서 넣는 비밀번호예요. 이걸로 들어오면 온라인 홈, 메신저, 업무만 보여요. 관리자 비밀번호와 다르게 정해 주세요(8자 이상). 다시 정하면 예전 것은 안 돼요.</div><input class="ptin" type="password" id="msOnP" autocomplete="off" maxlength="40" placeholder="온라인팀 비밀번호"><input class="ptin" type="password" id="msOnP2" autocomplete="off" maxlength="40" placeholder="한 번 더"><div class="btns"><button class="btn gray" data-x style="flex:0 0 96px">닫기</button><button class="btn" data-ms="onpwgo">정하기</button></div>`);
+    if (a === "onpwgo") {
+      const p = $("#msOnP").value, p2 = $("#msOnP2").value; if (p.length < 8) return toast("8자 이상으로 해 주세요"); if (p !== p2) return toast("두 칸이 서로 달라요. 다시 넣어 주세요"); if (!window.hmOnKey) return toast("이 화면에서는 못 정해요"); t.disabled = true;
+      try { const o = await call("adm_setup2", { p_k2: await window.hmOnKey(p) }); if (!o.ok) { t.disabled = false; return toast(o.why === "who" ? "먼저 내 프로필을 잠가 주세요(비밀번호 정하기)" : o.why === "same" ? "관리자 비밀번호와 다르게 정해 주세요" : "못 정했어요. 다시 눌러 주세요", 4000); } closeSheet(true); return toast("온라인팀 비밀번호를 정했어요. 시원, 진에게 알려 주세요", 4500); }
+      catch (e29) { t.disabled = false; return toast("못 정했어요. 다시 눌러 주세요"); }
     }
     if (a === "pinchg") { MS.cl = { n: LV.who, set: false, chg: true }; return claimSheet(LV.who, true); }
     if (a === "resetlist") { await namesLoad(); return openSheet(`${nodock}<h3>누구의 잠금을 풀까요?</h3><div class="caption">비밀번호를 잊은 사람의 프로필 잠금을 풀어요. 그 사람이 다시 들어오면서 새 비밀번호를 정해요.</div><div class="list" style="margin-top:12px">${(LV.names || []).filter((x) => x.set && x.who !== LV.who).map((x) => `<button class="item" data-ms="resetgo" data-n="${esc(x.who)}"><div class="av">${esc(em(x.who))}</div><div class="tx"><b>${esc(x.who)}</b></div></button>`).join("") || '<div class="empty">잠근 사람이 없어요</div>'}</div><div class="btns"><button class="btn gray" data-x>닫기</button></div>`); }
@@ -3003,7 +3031,13 @@ ${live() ? "" : `<div class="mstabs">${tabs.map(([k, n, c, cl]) => `<button clas
     }
     if (a === "pins") return pinsSheet(t.dataset.room);
     if (a === "selcopy" && m) return openSheet(`${nodock}<h3>글자 골라서 복사</h3><div class="caption">복사할 곳을 길게 눌러 골라 주세요.</div><div class="mssel">${esc(m.txt)}</div><div class="btns"><button class="btn gray" data-ms="copy" data-id="${id}">전체 복사</button><button class="btn" data-x>닫기</button></div>`);
-    if (a === "rmenu") { const r = R(MS.room); if (!r) return; return openSheet(`${nodock}<h3>${esc(rname(r))}</h3><div class="caption">${r.mem.map(esc).join(", ")}</div><div class="msact">${(r.pins || []).length ? '<button data-ms="pins" data-room="' + r.id + '">공지 보기</button>' : ""}<button data-ms="tklist">이 방 할 일</button><button data-ms="aisum">AI 대화 요약</button>${P().some((n) => !r.mem.includes(n)) ? '<button data-ms="invite">사람 부르기</button>' : ""}${me() === "한섭이사" ? '<button data-ms="rlock">' + (r.locked ? "방 비밀번호 바꾸기" : "방 비밀번호 걸기") + "</button>" + (r.locked ? '<button data-ms="rlockoff">방 비밀번호 풀기</button>' : "") : ""}<button data-ms="leave" style="color:var(--red)">방 나가기</button></div><div class="btns"><button class="btn gray" data-x>닫기</button></div>`); }
+    if (a === "rmenu") { const r = R(MS.room); if (!r) return; return openSheet(`${nodock}<h3>${esc(rname(r))}</h3><div class="caption">${r.mem.map(esc).join(", ")}</div><div class="msact">${(r.pins || []).length ? '<button data-ms="pins" data-room="' + r.id + '">공지 보기</button>' : ""}${r.mem.length > 1 ? '<button data-ms="rename">방 이름 바꾸기</button>' : ""}<button data-ms="tklist">이 방 할 일</button><button data-ms="aisum">AI 대화 요약</button>${P().some((n) => !r.mem.includes(n)) ? '<button data-ms="invite">사람 부르기</button>' : ""}${me() === "한섭이사" ? '<button data-ms="rlock">' + (r.locked ? "방 비밀번호 바꾸기" : "방 비밀번호 걸기") + "</button>" + (r.locked ? '<button data-ms="rlockoff">방 비밀번호 풀기</button>' : "") : ""}<button data-ms="leave" style="color:var(--red)">방 나가기</button></div><div class="btns"><button class="btn gray" data-x>닫기</button></div>`); }
+    if (a === "rename") {
+      const r = R(MS.room); if (!r) return; closeSheet(true);
+      const nm = await askText("방 이름 바꾸기", "20자까지 돼요. 비워 두면 사람 이름으로 보여요.", "예: 회의 준비", r.name || "", "바꾸기"); if (nm == null) return;
+      try { const o = await call("adm_room_rename", { p_room: r.n, p_name: String(nm).trim() }); if (!o.ok) throw new Error(o.why || ""); r.name = String(o.name ?? String(nm).trim().slice(0, 20)); if (o.msg) { addMsgs([o.msg]); LV.since = Math.max(LV.since, o.msg.id); (LV.seen[r.id] ||= {})[LV.who] = Math.max((LV.seen[r.id] || {})[LV.who] || 0, o.msg.id); notify(r); } toast("방 이름을 바꿨어요"); return rr(); }
+      catch (e30) { return toast(e30 && e30.message === "self" ? "이 방은 이름을 바꿀 수 없어요" : "못 바꿨어요. 다시 눌러 주세요"); }
+    }
     if (a === "invite") { const r = R(MS.room); if (!r) return; return openSheet(`${nodock}<h3>누구를 부를까요?</h3><div class="caption">부르면 이 방의 예전 글도 같이 보여요.</div><div class="list" style="margin-top:12px">${P().filter((n) => !r.mem.includes(n)).map((n) => `<button class="item" data-ms="invgo" data-n="${esc(n)}"><div class="av">${esc(em(n))}</div><div class="tx"><b>${esc(n)}</b></div></button>`).join("")}</div><div class="btns"><button class="btn gray" data-x>닫기</button></div>`); }
     if (a === "invgo") {
       const r = R(MS.room); if (!r) return; t.disabled = true;
@@ -3094,9 +3128,27 @@ body.hmonline{--blue:#0a7d5c;--blue-soft:#e0f5ec;--bg:#eef5f1;--line:#eef5f1}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) body.hmonline{--blue:#3fcf9e;--blue-soft:#17302a;--bg:#141c19;--line:#22302b}}
 :root[data-theme="dark"] body.hmonline{--blue:#3fcf9e;--blue-soft:#17302a;--bg:#141c19;--line:#22302b}
 body.hmonline .hmseg button.on{color:var(--blue)}body.hmonline .side,body.hmonline .top{box-shadow:inset 0 3px 0 var(--blue)}
+.hmlgseg{display:flex;gap:2px;background:var(--line2);border-radius:12px;padding:3px;margin:10px 0 14px}.hmlgseg button{flex:1;height:36px;border-radius:9px;font-size:14px;font-weight:700;color:var(--sub)}.hmlgseg button.on{background:var(--card);color:var(--blue);box-shadow:0 1px 3px rgba(0,0,0,.1)}.side .hmlgsw{display:none}
+.hmonbtn{display:block;width:100%;height:48px;margin-top:12px;border-radius:14px;background:transparent;color:var(--sub);font-size:15px;font-weight:700;box-shadow:inset 0 0 0 1px var(--line2)}
+body.onlyon .hmseg:not(.hmon),body.onlyon .hmlgsw,body.onlyon [data-act="reload"],body.onlyon .gsopen,body.onlyon .gstop,body.onlyon [data-pt="view"][data-v="branch"],body.onlyon [data-pt="view"][data-v="evt"]{display:none!important}body.onlyon .logo[data-hm]{cursor:default}
 .logo[data-hm]{cursor:pointer;-webkit-user-select:none;user-select:none}.hmlgsw{display:inline-block;margin-left:8px;font-size:11px;font-weight:700;color:var(--blue);background:var(--blue-soft);border-radius:8px;padding:3px 7px;vertical-align:2px;letter-spacing:0}
 .hmlgsw .s{display:none}.top .hmlgsw .l{display:none}.top .hmlgsw .s{display:inline}.top .hmlgsw{margin-left:5px;padding:2px 6px;font-size:10px}.top .logo{white-space:nowrap}
 .hmml{background:var(--card);border-radius:18px;padding:4px 16px}.hmml div{display:flex;gap:12px;align-items:baseline;min-height:44px;padding:10px 0;border-bottom:1px solid var(--line2);font-size:15px}.hmml div:last-child{border-bottom:0}.hmml b{flex:none;min-width:44px;font-weight:700;color:var(--sub);font-size:13px}
+.hmml button{display:flex;gap:12px;align-items:baseline;width:100%;min-height:52px;padding:13px 0;border:0;border-bottom:1px solid var(--line2);background:none;font:inherit;font-size:15px;color:inherit;text-align:left;cursor:pointer;transition:opacity .12s ease}
+.hmml button:last-child{border-bottom:0}
+.hmml button span{flex:1;min-width:0;font-weight:600;line-height:1.4}
+.hmml button small{flex:none;color:var(--sub);font-size:13px}
+.hmml button i{flex:none;font-style:normal;color:var(--sub);font-size:18px;line-height:1}
+.hmml button:active{opacity:.55}
+.hmmn .mt{color:var(--sub);font-size:14px;margin:6px 0 4px;line-height:1.5}
+.hmmn h4{font-size:14px;color:var(--sub);margin:20px 0 8px;font-weight:700}
+.hmmn .box{background:var(--bg);border-radius:14px;padding:12px 14px;font-size:15px;line-height:1.6;white-space:pre-wrap;word-break:break-word}
+.hmmn .ag{border-bottom:1px solid var(--line2);padding:12px 0}
+.hmmn .ag:last-of-type{border-bottom:0}
+.hmmn .ag>b{display:block;font-size:15px;line-height:1.4}
+.hmmn .ag>small{display:block;color:var(--sub);font-size:13px;margin-top:3px}
+.hmmn ul,.hmmn ol{margin:8px 0 0;padding-left:20px;font-size:14px;line-height:1.65}
+.hmmn li{margin:2px 0}
 .hmil{margin-top:12px}.hmil div{padding:11px 0;border-bottom:1px solid var(--line2)}.hmil div:last-child{border-bottom:0}.hmil b{display:block;font-size:15px;font-weight:700;line-height:1.4}.hmil small{display:block;font-size:13px;color:var(--sub);margin-top:2px}
 .hmb .w{line-height:1.45}#hmbdw{margin-top:18px}#hmbdin{margin-top:10px}#hmbdw .hmboard{height:calc(100vh - 150px);min-height:480px}
 body.hmfull #nav{display:none!important}body.hmfull .hmboard{border-radius:16px 16px 0 0}
@@ -3147,7 +3199,7 @@ body.hmfull #nav{display:none!important}body.hmfull .hmboard{border-radius:16px 
     ON.st = "load"; ON.tries = 0;
     try { const o = await window.admCall("adm_online_get", {}); if (!o.ok) ON.st = o.why === "who" ? "who" : "nokey"; else { ON.d = o.sales; ON.at = o.at || ""; ON.t = Date.now(); ON.st = "ok"; } } catch (e) { ON.st = ON.t ? "ok" : "err"; }
     ON.tt = Date.now();
-    if (ON.st === "ok") { try { const bd = await window.admCall("adm_board_get", {}); ON.b = bd && bd.ok ? { items: Array.isArray(bd.items) ? bd.items : [], meetings: Array.isArray(bd.meetings) ? bd.meetings : [], done7: bd.done7 } : null; } catch (e) { ON.b = ON.b || null; } }
+    if (ON.st === "ok") { try { const bd = await window.admCall("adm_board_get", {}); ON.b = bd && bd.ok ? { items: Array.isArray(bd.items) ? bd.items : [], meetings: Array.isArray(bd.meetings) ? bd.meetings : [], mitems: Array.isArray(bd.mitems) ? bd.mitems : [], sums: Array.isArray(bd.sums) ? bd.sums : [], done7: bd.done7 } : null; } catch (e) { ON.b = ON.b || null; } }
     if (tab !== "home" || HM.v !== "online") return;
     /* 화면 짜임이 그대로면 매출 칸만 바꾼다(보드와 스크롤을 건드리지 않게). 처음 받았거나 거절로 바뀌면 통째로 다시 그림 */
     const s = $("#hmsales"), bd = $("#hmboard");
@@ -3158,7 +3210,7 @@ body.hmfull #nav{display:none!important}body.hmfull .hmboard{border-radius:16px 
   function salesHtml() {
     const note = (t, btn) => `<div class="hmex">${t}${btn ? ' <button class="hmre" data-hm="onre">다시 받기</button>' : ""}</div>`;
     if (ON.st === "nolive" || ON.st === "idle") return note("메신저 탭에서 메신저를 켜고 이름을 고르면 여기에 액상덕후 매출이 보여요.");
-    if (ON.st === "who") return note(`온라인 홈은 한섭이사와 보혜만 볼 수 있어요. 지금 고른 이름: ${esc(window.admWho ? window.admWho() : "")}`);
+    if (ON.st === "who") return note(`온라인 홈은 온라인팀(한섭이사, 보혜, 시원, 진)만 볼 수 있어요. 지금 고른 이름: ${esc(window.admWho ? window.admWho() : "")}`);
     if (ON.st === "nokey" || ON.st === "err") return note("매출을 못 불러왔어요.", true);
     const d = ON.d; if (!d) return note(ON.st === "load" ? "매출을 불러오는 중이에요" : "아직 올라온 매출이 없어요.", ON.st !== "load");
     const wp = d.wp || {}, iw = d.iw || {}, hasIw = !!d.iw, mAll = (+wp.month || 0) + (+iw.month || 0), tAll = (+wp.today || 0) + (+iw.today || 0), nAll = (+wp.todayN || 0) + (+iw.todayN || 0), aov = nAll ? Math.round(tAll / nAll) : 0;
@@ -3177,12 +3229,28 @@ ${cmp == null ? "" : `<div class="hmcmp">워드프레스 이번 달 <b>${w(wp.mo
 <div class="hmstamp">${ageT} 올라온 자료예요. 1분마다 새로 받아요. 워드프레스는 입금 확인된 주문만 세요.<button class="hmre" data-hm="onre">다시 받기</button></div>`;
   }
   /* 온라인 홈: VF 홈과 같은 칸 구성. 매출은 창고의 매출 자료, 할 일과 회의는 온라인팀 보드 자료(읽기만)에서 온다 */
-  const BN = { 한섭이사: "한섭", 보혜: "보혜" }, TEAM = ["한섭", "보혜", "시원", "진"];
-  const ownersOf = (it) => String(it.owners || "").split(/[,\s]+/).filter(Boolean);
+  const BN = { 한섭이사: "한섭", 보혜: "보혜", 시원: "시원", 진: "진" }, TEAM = ["한섭", "보혜", "시원", "진"];
+  const FULLN = { 정한섭: "한섭", 안보혜: "보혜", 김시원: "시원", 김진: "진", 한섭이사: "한섭", 이사님: "한섭", 시워니: "시원", 진이: "진", 지니: "진" };
+  const ownersOf = (it) => [...new Set(String(it.owners || "").split(/[,\s/、·]+/).map((t) => t.replace(/님$/, "")).filter(Boolean).map((t) => FULLN[t] || t))];
   const nowD = () => new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10), plusD = (n) => new Date(Date.now() + 9 * 3600e3 + n * 864e5).toISOString().slice(0, 10);
   const dShort = (s) => (/^\d{4}-\d{2}-\d{2}/.test(String(s)) ? `${+String(s).slice(5, 7)}/${+String(s).slice(8, 10)}` : esc(s || ""));
   const itemsOf = (k, n) => { const L = (ON.b && ON.b.items) || [], now = nowD(); return k === "over" ? L.filter((i) => i.due && i.due < now) : k === "week" ? L.filter((i) => i.due && i.due >= now && i.due <= plusD(7)) : k === "who" ? L.filter((i) => (n ? ownersOf(i).includes(n) : !ownersOf(i).length)) : L; };
   const byDue = (L) => L.slice().sort((x, y) => (x.due || "9999").localeCompare(y.due || "9999"));
+  const meetRow = (m) => { const B = ON.b || {}, n = (B.mitems || []).filter((x) => x.meet === m.id).length, hasS = (B.sums || []).some((x) => x.meet === m.id); return `<button data-hm="onmeet" data-id="${esc(m.id)}"><b>${dShort(m.date)}</b><span>${esc(m.title || "회의")}</span><small>${[n ? "안건 " + n + "건" : "", hasS ? "정리 있음" : ""].filter(Boolean).join(", ")}</small><i>›</i></button>`; };
+  function onMeet(id) {
+    const B = ON.b || {}, m = (B.meetings || []).find((x) => String(x.id) === String(id)); if (!m) return;
+    const its = (B.mitems || []).filter((x) => x.meet === m.id).sort((a, b) => (+a.sort || 0) - (+b.sort || 0));
+    let sm = null, cut = false; { const r = (B.sums || []).find((x) => x.meet === m.id); if (r) { try { sm = JSON.parse(r.sum); } catch (e) { cut = true; } } } if (!sm || typeof sm !== "object") sm = null;
+    const clean = (t) => String(t || "").replace(/^\?\s*:\s*/, "").replace(/\s*\((짐작|추측)\)/g, "").trim();
+    const lines = (v) => (Array.isArray(v) ? v : String(v || "").split(/\n/)).map(clean).filter(Boolean);
+    const said = (t) => { const k = t.match(/^([^\s:]{1,6}):\s*(.+)$/); return k ? `<b>${esc(FULLN[k[1]] || k[1])}</b> ${esc(k[2])}` : esc(t); };
+    const ag = sm && Array.isArray(sm.안건별) ? sm.안건별.filter((g) => g && typeof g === "object") : [];
+    const row = (it, a, title) => `<div class="ag"><b>${esc(title)}</b>${it ? `<small>${[ownersOf(it).join(", ") || "담당 없음", it.due ? dShort(it.due) + "까지" : "", it.st].filter(Boolean).map(esc).join(", ")}</small>` : ""}${a && lines(a.정리).length ? `<ul>${lines(a.정리).map((t) => `<li>${said(t)}</li>`).join("")}</ul>` : ""}</div>`;
+    const other = (a) => { const it = (B.items || []).find((x) => x.id === a.item); return it ? it.title : /^new:/.test(String(a.item || "")) ? String(a.item).replace(/^new:/, "") : "기타"; };
+    const rows = its.map((it) => row(it, ag.find((a) => a.item === it.id), it.title)).concat(ag.filter((a) => !its.some((it) => it.id === a.item)).map((a) => row(null, a, other(a))));
+    const ol = (v) => `<ol>${lines(v).map((t) => `<li>${esc(t)}</li>`).join("")}</ol>`;
+    openSheet(`<h3>${esc(m.title || "회의")}</h3><div class="hmmn"><div class="mt">${[dShort(m.date), m.brand, m.att ? "참석 " + m.att : ""].filter(Boolean).map(esc).join(", ")}</div>${m.memo ? `<h4>메모</h4><div class="box">${esc(m.memo)}</div>` : ""}${sm && clean(sm.결론) ? `<h4>결론</h4><div class="box">${esc(clean(sm.결론))}</div>` : ""}<h4>안건 ${its.length}건</h4>${rows.join("") || '<div class="ag"><small>이 회의에 올라온 안건이 없어요</small></div>'}${sm && lines(sm.정한것).length ? `<h4>정한 것</h4>${ol(sm.정한것)}` : ""}${sm && lines(sm.못정한것).length ? `<h4>다음에 정할 것</h4>${ol(sm.못정한것)}` : ""}${sm ? '<div class="caption" style="margin-top:14px">정리는 회의 녹음을 받아써서 만든 거예요. 누가 한 말인지는 짐작이라 틀릴 수 있어요.</div>' : cut ? '<div class="caption" style="margin-top:14px">회의록 정리가 길어서 여기서는 못 보여 드려요. 보드에서 봐 주세요.</div>' : ""}</div><div class="caption" style="margin-top:12px">회의를 만들거나 고치는 것, 녹음은 온라인팀 보드에서 해요.</div><div class="btns"><button class="btn gray" data-x>닫기</button><a class="btn" href="../../online-team/" target="_blank" rel="noopener" style="display:grid;place-items:center;text-decoration:none">보드 열기</a></div>`);
+  }
   function stripHtml() {
     if (!onOk()) return salesHtml();
     const d = ON.d, B = ON.b, now = nowD(), meN = BN[window.admWho ? window.admWho() : ""] || "", mu = window.msgUnread ? window.msgUnread() : 0;
@@ -3203,7 +3271,8 @@ ${cmp == null ? "" : `<div class="hmcmp">워드프레스 이번 달 <b>${w(wp.mo
       const names = TEAM.concat([...new Set(B.items.flatMap(ownersOf))].filter((n) => !TEAM.includes(n)));
       const card = (n, i) => { const L = byDue(itemsOf("who", n)), ov = L.filter((x) => x.due && x.due < now).length; return `<button class="hmb ${ov ? "bad" : L.length ? "on" : ""}" data-hm="onppl" data-n="${esc(n)}"><div class="n"><i>${i + 1}</i>${esc(n || "담당 없음")}</div><div class="s">${L.length ? `할 일 ${L.length}건${ov ? `, 기한 지남 ${ov}건` : ""}` : "할 일 없음"}</div><div class="w">${L.slice(0, 2).map((x) => esc(x.title) + (x.due ? " (" + dShort(x.due) + ")" : "")).join("<br>")}</div></button>`; };
       ppl = `<div class="hmh">할 일 한눈에 <small>하는 중 ${B.items.length}건, 지난 7일에 끝난 것 ${+B.done7 || 0}건</small></div><div class="hmg">${names.map(card).join("")}${itemsOf("who", "").length ? card("", names.length) : ""}</div>`;
-      meet = `<div class="hmh">회의 <small>최근 것부터</small></div><div class="hmml">${(B.meetings || []).slice(0, 5).map((m) => `<div><b>${dShort(m.date)}</b><span>${esc(m.title)}</span></div>`).join("") || '<div><span>회의 기록이 없어요</span></div>'}</div>`;
+      const ML = B.meetings || [];
+      meet = `<div class="hmh">회의 <small>누르면 안건과 정리가 보여요</small></div><div class="hmml">${ML.slice(0, 6).map(meetRow).join("") || '<div><span>회의 기록이 없어요</span></div>'}${ML.length > 6 ? `<button data-hm="onmeetall"><b></b><span>회의 ${ML.length}개 모두 보기</span><i>›</i></button>` : ""}</div>`;
     }
     return `<div class="hmh" style="margin-top:8px">지금 할 것</div>${todo}<div class="hmh">오늘 숫자 <small>액상덕후</small></div>${nums}${chan}${ppl}${meet}<div class="hmstamp">${stamp}<button class="hmre" data-hm="onre">다시 받기</button></div>`;
   }
@@ -3217,16 +3286,45 @@ ${cmp == null ? "" : `<div class="hmcmp">워드프레스 이번 달 <b>${w(wp.mo
     return `<div id="hmsales" data-ok="${ok ? 1 : 0}">${stripHtml()}</div>${ok ? '<details class="hmmore" id="hmbdw"><summary>온라인팀 보드를 여기서 펼쳐 보기</summary><div id="hmbdin"></div></details>' : ""}`;
   }
   document.addEventListener("toggle", (e) => { const dt = e.target; if (!dt || dt.id !== "hmbdw") return; const box = $("#hmbdin"); if (dt.open && box && !$("#hmboard")) box.innerHTML = '<iframe id="hmboard" class="hmboard" src="../../online-team/" title="온라인팀 보드"></iframe>'; if (!dt.open && box) box.innerHTML = ""; syncFull(); }, true);
+  /* ── 온라인팀 전용 들어가기 ── 온라인팀 비밀번호로 들어오면 관리자 열쇠가 없어서 지점 자료(암호 파일)를 못 푼다. 온라인 홈, 메신저, 업무만 쓴다. */
+  window.hmOnKey = async (pw) => { const base = await crypto.subtle.importKey("raw", new TextEncoder().encode(pw), "PBKDF2", false, ["deriveBits"]); const bits = await crypto.subtle.deriveBits({ name: "PBKDF2", hash: "SHA-256", salt: new TextEncoder().encode("vf-admin-online|1"), iterations: 150000 }, base, 256); return [...new Uint8Array(bits)].map((x) => x.toString(16).padStart(2, "0")).join(""); };
+  const stubD = () => { const d = nowD(); return { d, at: "", ops: [], closings: [], branches: [], orders: [], surveys: [], refuse: [], issOk: {}, tasks: [], notices: [], hist: [], taskHist: [], kpi: [], coins: null, blogs: [], blogDrafts: [], bunbae: [], notes: [], stockRep: [], ordNew: 0 }; };
+  function onEnter(k, remember) { window.ONKEY = k; if (remember) ls.set("vf-on-key", k); KEY = null; D = stubD(); HM.v = "online"; tab = "home"; document.body.classList.add("onlyon"); fullH(); }
+  function onLoginForm(msg) { const box = document.querySelector("#app .login"); if (!box) return; box.innerHTML = `<div class="headline">베이프렌드 온라인<br><span id="onmsg" style="color:var(--sub);font-size:18px;font-weight:600">${esc(msg || "온라인팀 비밀번호를 넣어 주세요")}</span></div><label class="lbl" for="onpw" style="display:block;margin:0 0 8px">온라인팀 비밀번호</label><input class="in" id="onpw" type="password" autocomplete="current-password" placeholder="비밀번호"><label style="display:flex;gap:8px;align-items:center;margin:16px 4px;font-size:15px;color:var(--ink2)"><input type="checkbox" id="onrem" checked style="width:18px;height:18px;accent-color:#0a7d5c"> 이 기기에서 기억하기</label><button class="btn" id="ongo" data-hm="ongo" style="background:#0a7d5c">열기</button><button class="hmonbtn" data-hm="onback">관리자로 들어가기</button>`; const i = $("#onpw"); if (i) i.focus(); }
+  function addOnlineEntry() { const box = document.querySelector("#app .login"); if (!box || !$("#pw") || $("#onbtn")) return; box.insertAdjacentHTML("beforeend", '<button class="hmonbtn" id="onbtn" data-hm="onlogin">온라인팀으로 들어가기</button>'); }
+  async function onGo() {
+    const pw = ($("#onpw") || {}).value || "", btn = $("#ongo"); if (!pw) return; if (btn) btn.disabled = true;
+    try {
+      if (!window.admRpc) throw new Error("x");
+      const rd = await window.admRpc("adm_ready2"); if (!rd || !rd.on) return onLoginForm("아직 온라인팀 비밀번호가 없어요. 보혜에게 말해 주세요");
+      const k = await window.hmOnKey(pw), o = await window.admRpc("adm_names", { p_k: k });
+      if (!o.ok || o.lv !== "on") return onLoginForm("비밀번호가 달라요");
+      onEnter(k, !!($("#onrem") || {}).checked);
+    } catch (e) { onLoginForm("들어가지 못했어요. 인터넷을 확인하고 다시 해 주세요"); }
+  }
+  document.addEventListener("keydown", (e) => { if (e.target.id === "onpw" && e.key === "Enter") { e.preventDefault(); onGo(); } });
+  document.addEventListener("click", (e) => { if (e.target.closest('[data-act="logout"]') && window.ONKEY) { window.ONKEY = ""; ls.set("vf-on-key", null); document.body.classList.remove("onlyon", "hmonline"); } }, true);
+  new MutationObserver(() => addOnlineEntry()).observe($("#app"), { childList: true });
+  addOnlineEntry();
+  if (!ls.get("vf-admin-key") && /^[0-9a-f]{64}$/.test(ls.get("vf-on-key") || "") && $("#pw")) setTimeout(() => { if (!D) onEnter(ls.get("vf-on-key"), false); }, 0);
   /* 로고 자리에서 VF 관리자와 온라인을 바꾼다 */
-  function decorLogo() { for (const el of document.querySelectorAll("#app .logo")) { el.innerHTML = `VAFRIEND <b>${HM.v === "online" ? "온라인" : "관리자"}</b><span class="hmlgsw"><span class="l">${HM.v === "online" ? "관리자로" : "온라인으로"}</span><span class="s">전환</span></span>`; el.dataset.hm = "swap"; el.setAttribute("role", "button"); el.setAttribute("aria-label", HM.v === "online" ? "VF 관리자 홈으로 바꾸기" : "온라인 홈으로 바꾸기"); } }
+  function decorLogo() { if (window.ONKEY) for (const bt of document.querySelectorAll(".side .navb[data-tab], #nav button")) if (/^(지점|상품|더보기)/.test(bt.textContent.trim())) bt.style.display = "none"; for (const el of document.querySelectorAll("#app .logo")) { el.innerHTML = `VAFRIEND <b>${HM.v === "online" ? "온라인" : "관리자"}</b><span class="hmlgsw"><span class="s">전환</span></span>`; if (!window.ONKEY && el.closest(".side") && !el.nextElementSibling?.classList.contains("hmlgseg")) el.insertAdjacentHTML("afterend", `<div class="hmlgseg" role="tablist"><button class="${HM.v === "online" ? "" : "on"}" data-hm="swapto" data-v="vf">관리자</button><button class="${HM.v === "online" ? "on" : ""}" data-hm="swapto" data-v="online">온라인</button></div>`); el.dataset.hm = "swap"; el.setAttribute("role", "button"); el.setAttribute("aria-label", HM.v === "online" ? "VF 관리자 홈으로 바꾸기" : "온라인 홈으로 바꾸기"); } }
   /* 보드를 띄워 둔 동안에는 3분마다 도는 자동 새로고침이 보드를 처음으로 되돌리지 않게, 매출 칸만 새로 그린다 */
   const render1 = render;
   render = function () {
+    if (window.ONKEY) { HM.v = "online"; if (!["home", "msg", "tasks"].includes(tab)) tab = "home"; }
     if (!ownH && tab === "home" && HM.v === "online" && $("#hmboard") && ON.pc === isPC()) { const s = $("#hmsales"); if (s) { s.innerHTML = stripHtml(); fitBoard(); } onLoad(); return; }
     ON.pc = isPC(); const out = render1.apply(this, arguments); syncFull(); decorLogo(); return out;
   };
   document.addEventListener("click", (e) => { const s = e.target.closest("[data-hm]"); if (!s) return; const k = s.dataset.hm; if (k === "onsales" || k === "onboard") { ON.v = k === "onboard" ? "board" : "sales"; ls.set("vf-hm-on", ON.v); fullH(); return scrollTo(0, 0); } if (k === "onre") { s.disabled = true; onLoad(true); }
+    if (k === "onlogin") return onLoginForm();
+    if (k === "onback") return renderLogin();
+    if (k === "ongo") return onGo();
+    if (k === "swap" && window.ONKEY) return;
+    if (k === "swapto") { if (window.ONKEY) return; const v = s.dataset.v === "online" ? "online" : "vf"; if (v === HM.v && tab === "home") return; HM.v = v; ls.set("vf-hm-v", HM.v); tab = "home"; fullH(); return scrollTo(0, 0); }
     if (k === "swap") { HM.v = HM.v === "online" ? "vf" : "online"; ls.set("vf-hm-v", HM.v); tab = "home"; fullH(); return scrollTo(0, 0); }
+    if (k === "onmeet") return onMeet(s.dataset.id);
+    if (k === "onmeetall") return openSheet(`<h3>회의 <small style="font-size:14px;color:var(--sub)">${((ON.b && ON.b.meetings) || []).length}개</small></h3><div class="hmml" style="padding:0;background:none">${((ON.b && ON.b.meetings) || []).map(meetRow).join("")}</div><div class="btns"><button class="btn gray" data-x>닫기</button></div>`);
     if (k === "onppl") { const n = s.dataset.n || ""; return onList((n || "담당 없음") + " 할 일", itemsOf("who", n)); }
     if (k === "onlist") return onList(s.dataset.k === "over" ? "기한 지난 것" : "이번 주 기한", itemsOf(s.dataset.k)); if (k === "ondet") openSheet(`<h3>액상덕후 매출</h3><div class="hmdet">${salesHtml()}</div><div class="btns"><button class="btn gray" data-x>닫기</button></div>`); });
   const home = () => `<div class="hmwrap">${top()}${HM.v === "online" ? onlineHtml() : vfHtml()}</div>`;
@@ -3439,7 +3537,7 @@ ${cmp == null ? "" : `<div class="hmcmp">워드프레스 이번 달 <b>${w(wp.mo
 /* 상품 목록 시제품 (11/17). 시험본(관리자_뼈대시험.html)에만 붙는다. 정식 파일에는 안 들어감.
    보혜 "관리자 웹에서 신규상품 등록", "전지점 동일하게", "바코드 등록까지 관리", "그룹도 지정", "원가도 입력", "상품 관리가 세분화되어서 잘 정리".
    목록은 진짜 자료다: 상담패드가 쓰는 pos.js(지점별 상품 이름, 상품코드, 바코드, 분류. 원가 없음)와 직원웹 groups.json(이름별 그룹). 읽기만 한다.
-   신규 상품은 시제품이라 저장도 포스 등록도 안 한다. 올릴 파일만 만든다. 화면에 넣는 글은 esc() 를 거친다. */
+   신규 상품 등록 요청은 창고(adm_prod)에 저장한다. 관리자 모두가 같은 목록을 본다. 포스에 넣는 것은 봇의 몫이고, 봇이 연결되기 전에는 올릴 파일을 받아 사람이 넣는다. 화면에 넣는 글은 esc() 를 거친다. */
 (() => {
   const st = document.createElement("style"); st.id = "plcss";
   st.textContent = `
@@ -3456,8 +3554,11 @@ ${cmp == null ? "" : `<div class="hmcmp">워드프레스 이번 달 <b>${w(wp.mo
 .pllock{background:var(--bg);border-radius:12px;padding:12px 14px;font-size:14px;color:var(--sub);margin-top:12px}
 @media (min-width:900px){.plwrap{max-width:980px}.plq{max-width:420px}}
 `;
+  st.textContent += `
+.plprog.fin{opacity:.72}.plprog .plbad{display:block;color:var(--red,#d93025);font-size:13px;margin-top:4px}
+`;
   document.head.appendChild(st);
-  const PL = { q: "", cat: "", grp: "", only: "", n: 60, st: "", POS: null, GRP: {}, list: null, cats: [], grps: [], pre: {}, NEW: [], nw: null };
+  const PL = { q: "", cat: "", grp: "", only: "", n: 60, st: "", POS: null, GRP: {}, list: null, cats: [], grps: [], pre: {}, NEW: [], nw: null, nat: 0, bot: false, auto: {} };
   const me = () => ls.get("vf-pt-me") || "민혁팀장", canCost = () => true; /* 11/17 보혜: 관리자는 다 원가를 입력할 수 있게. 원가는 포스로만 가고 상담패드, 직원웹, 공개 저장소에는 내려가지 않는다 */
   const ean = (s12) => { let a = 0; for (let i = 0; i < 12; i++) a += +s12[i] * (i % 2 ? 3 : 1); return s12 + ((10 - (a % 10)) % 10); };
   const ownBc = (b, code) => (PL.pre[b] && /^\d{6}$/.test(code) ? ean(PL.pre[b] + code + "00") : "");
@@ -3479,12 +3580,27 @@ ${cmp == null ? "" : `<div class="hmcmp">워드프레스 이번 달 <b>${w(wp.mo
   const filt = () => { const k = PL.q.trim().toLowerCase(); return PL.list.filter((o) => (!k || o.n.toLowerCase().includes(k) || Object.values(o.br).some((x) => x.code === k || x.bc === k)) && (!PL.cat || o.cat === PL.cat) && (!PL.grp || (PL.grp === "-" ? !o.g : o.g === PL.grp)) && (!PL.only || (PL.only === "part" ? o.k < BR.length : PL.only === "warn" ? o.warn : true))); };
   const rowsHtml = (L) => L.slice(0, PL.n).map((o) => `<button class="item plrow" data-pl="open" data-n="${esc(o.n)}"><div class="av ${o.k === BR.length ? "good" : "warn"}">${o.k}/${BR.length}</div><div class="tx"><b>${esc(o.n)}</b><span>${esc(o.cat || "분류 없음")}${o.g ? ", " + esc(o.g) : ""}</span></div>${o.warn ? '<span class="pltag">바코드 확인</span>' : ""}<span class="chev">›</span></button>`).join("");
   const listHtml = () => { const L = filt(); return `<div class="caption" style="margin:0 4px 8px">${L.length.toLocaleString("ko-KR")}개${L.length !== PL.list.length ? `, 전체 ${PL.list.length.toLocaleString("ko-KR")}개 중` : ""}. 앞 숫자는 9곳 중 몇 곳 포스에 있는지예요.</div><div class="list">${rowsHtml(L) || '<div class="empty">맞는 상품이 없어요</div>'}</div>${L.length > PL.n ? `<button class="plmore" data-pl="more">${Math.min(60, L.length - PL.n)}개 더 보기</button>` : ""}`; };
+  const liveOn = () => !!(window.admLive && window.admLive() && window.admCall);
+  const mapP = (p) => ({ id: +p.id, name: String(p.name || ""), cat: String(p.cat || ""), grp: String(p.grp || ""), price: +p.price || 0, cost: p.cost == null ? "" : String(p.cost), bc: String(p.bc || ""), br: BR.filter((b) => (p.br || []).includes(b)), by: String(p.by || ""), st: String(p.st || "대기"), done: p.done && typeof p.done === "object" ? p.done : {}, at: String(p.at || ""), upd: String(p.upd || "") });
+  async function nLoad(force) {
+    if (!liveOn() || (!force && Date.now() - PL.nat < 60000)) return; PL.nat = Date.now();
+    try { const o = await window.admCall("adm_prod_list", {}); if (!o || !o.ok) return; const sig0 = JSON.stringify(PL.NEW); PL.NEW = (o.list || []).map(mapP); PL.bot = !!o.bot; PL.live = true; if (JSON.stringify(PL.NEW) !== sig0 && tab === "plist" && !$("#plNn")) render(); }
+    catch (e) { /* 다음에 다시 */ }
+  }
+  const upd = (p) => { const x = mapP(p), i = PL.NEW.findIndex((y) => y.id === x.id); if (i >= 0) PL.NEW[i] = x; else PL.NEW.unshift(x); };
   const newStat = (x) => { const on = BR.filter((b) => PL.POS[b] && PL.POS[b][x.name]); return { on, txt: on.length ? `포스에 ${on.length}/${x.br.length}곳 들어옴` : "아직 포스에 안 들어옴" }; };
   window.plistHtml = function () {
     load();
     if (PL.st !== "ok") return `<div class="plwrap"><div class="plhd"><h1>상품 목록</h1></div><div class="list"><div class="empty">${PL.st === "fail" ? "상품 자료를 못 불러왔어요. 새로고침 해 주세요." : "상품 자료를 불러오는 중이에요"}</div></div></div>`;
     const part = PL.list.filter((o) => o.k < BR.length).length, warn = PL.list.filter((o) => o.warn).length;
-    const prog = PL.NEW.map((x, i) => { const s = newStat(x); return `<div class="plprog"><b>${esc(x.name)} <span style="display:inline;font-weight:600">등록 준비 중, 예시</span></b><span>${esc(x.cat)}${x.grp ? ", " + esc(x.grp) : ""}, 판매가 ${(+x.price).toLocaleString("ko-KR")}원, 넣을 지점 ${x.br.length}곳. ${s.txt}</span><div class="r"><button data-pl="file" data-i="${i}">포스에 올릴 파일 받기</button><button data-pl="drop" data-i="${i}">지우기</button></div></div>`; }).join("");
+nLoad();
+    const live = !!PL.live && liveOn();
+    const prog = (live ? `<div class="caption" style="margin:0 4px 8px">${PL.NEW.some((x) => x.st === "대기") ? (PL.bot ? "등록 요청은 마감 뒤에 봇이 포스에 넣어요." : "포스에 넣는 봇은 아직 연결 전이에요. 지금은 파일을 받아 포스에 올려 주세요.") : ""}</div>` : "") + PL.NEW.map((x, i) => {
+      if (x.st === "취소") return "";
+      const s = newStat(x), bad = x.br.filter((b) => x.done[b] && x.done[b].ok === false), okN = x.br.filter((b) => (x.done[b] && x.done[b].ok) || s.on.includes(b)).length;
+      if (x.st === "등록됨") return `<div class="plprog fin"><b>${esc(x.name)} <span style="display:inline;font-weight:600">등록됨</span></b><span>${esc(x.upd)}, 넣은 지점 ${x.br.length}곳</span></div>`;
+      if (live && okN === x.br.length && !PL.auto[x.id]) { PL.auto[x.id] = 1; window.admCall("adm_prod_set", { p_id: x.id, p_st: "등록됨" }).then((o) => { if (o && o.ok) { upd(o.prod); if (tab === "plist" && !$("#plNn")) render(); } }).catch(() => {}); }
+      return `<div class="plprog"><b>${esc(x.name)} <span style="display:inline;font-weight:600">${live ? "등록 기다리는 중" : "등록 준비 중, 예시"}</span></b><span>${esc(x.cat)}${x.grp ? ", " + esc(x.grp) : ""}, 판매가 ${(+x.price).toLocaleString("ko-KR")}원, 넣을 지점 ${x.br.length}곳. ${s.txt}${live && x.by ? `. ${esc(x.by)}, ${esc(x.at)}` : ""}</span>${bad.length ? `<span class="plbad">못 넣은 지점: ${bad.map((b) => esc(b) + (x.done[b].note ? " (" + esc(x.done[b].note) + ")" : "")).join(", ")}</span>` : ""}<div class="r"><button data-pl="file" data-i="${i}">포스에 올릴 파일 받기</button>${live ? `<button data-pl="fin" data-i="${i}">직접 넣었어요</button>` : ""}<button data-pl="drop" data-i="${i}">${live ? "취소" : "지우기"}</button></div></div>`; }).join("");
     requestAnimationFrame(() => { const i = $("#plq"); if (i && i.value !== PL.q) i.value = PL.q; });
     return `<div class="plwrap"><div class="plhd"><h1>상품 목록</h1><small>${PL.list.length.toLocaleString("ko-KR")}개</small><span class="sp"></span><button class="plnew" data-pl="new">+ 신규 상품</button></div>${prog}
 <input class="plq" id="plq" placeholder="상품 이름, 상품코드, 바코드" autocomplete="off" aria-label="상품 찾기">
@@ -3501,7 +3617,7 @@ ${cmp == null ? "" : `<div class="hmcmp">워드프레스 이번 달 <b>${w(wp.mo
   }
   function newSheet() {
     const k = PL.nw || (PL.nw = { name: "", cat: PL.cats[0] || "", grp: "", price: "", cost: "", bc: "", br: [...BR] });
-    openSheet(`<h3>신규 상품</h3><div class="caption">시제품이에요. 저장도 포스 등록도 안 돼요. 포스에 올릴 파일만 만들어요.</div>
+    openSheet(`<h3>신규 상품</h3><div class="caption">${liveOn() ? "저장하면 관리자 모두에게 등록 요청으로 보여요." : "메신저에 들어오기 전이라 이 화면에서만 보이는 예시예요. 저장되지 않아요."}</div>
 <div class="ptlab">상품 이름 (9곳에 똑같이 들어갈 이름)</div><input class="ptin" id="plNn" maxlength="40" value="${esc(k.name)}">
 <div class="ptlab">분류</div><select class="ptin" id="plNc">${PL.cats.map((c) => `<option ${k.cat === c ? "selected" : ""}>${esc(c)}</option>`).join("")}</select>
 <div class="ptlab">그룹</div><select class="ptin" id="plNg"><option value="">그룹 없음</option>${PL.grps.map((g) => `<option ${k.grp === g ? "selected" : ""}>${esc(g)}</option>`).join("")}</select>
@@ -3509,7 +3625,7 @@ ${cmp == null ? "" : `<div class="hmcmp">워드프레스 이번 달 <b>${w(wp.mo
 ${canCost() ? `<div class="ptlab">원가 (포스에만 들어가요)</div><input class="ptin" id="plNo" inputmode="numeric" placeholder="숫자만" value="${esc(k.cost)}">` : `<div class="pllock">원가 칸은 한섭이사, 보혜 기기에서만 보여요. 지금은 ${esc(me())} 화면이에요.</div>`}
 <div class="ptlab">제조사 바코드 (없으면 비워 두세요. 지점마다 매장 번호로 만들어요)</div><input class="ptin" id="plNb" inputmode="numeric" maxlength="14" value="${esc(k.bc)}">
 <div class="ptlab">넣을 지점</div><div class="ptpick"><button class="chip ${k.br.length === BR.length ? "on" : ""}" data-pl="nball">전 지점</button>${BR.map((b, i) => `<button class="chip ${k.br.includes(b) ? "on" : ""}" data-pl="nbr" data-b="${b}">${i + 1} ${b}</button>`).join("")}</div>
-<div class="btns"><button class="btn gray" data-x style="flex:0 0 96px">닫기</button><button class="btn" data-pl="nwgo">등록 준비하기</button></div>`);
+<div class="btns"><button class="btn gray" data-x style="flex:0 0 96px">닫기</button><button class="btn" data-pl="nwgo">${liveOn() ? "등록 요청 저장" : "등록 준비하기"}</button></div>`);
   }
   const keep = () => { const k = PL.nw; if (!k || !$("#plNn")) return; k.name = $("#plNn").value; k.cat = $("#plNc").value; k.grp = $("#plNg").value; k.price = $("#plNp").value; if ($("#plNo")) k.cost = $("#plNo").value; k.bc = $("#plNb").value; };
   const csv = (rows) => "﻿" + rows.map((r) => r.map((v) => { const s = String(v ?? ""); return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; }).join(",")).join("\r\n");
@@ -3527,8 +3643,17 @@ ${canCost() ? `<div class="ptlab">원가 (포스에만 들어가요)</div><input
     if (a === "nwgo") { keep(); const k = PL.nw; k.name = k.name.trim(); k.price = String(k.price).replace(/[^\d]/g, ""); k.cost = String(k.cost || "").replace(/[^\d]/g, ""); k.bc = String(k.bc).replace(/[^\d]/g, "");
       if (!k.name) return toast("상품 이름을 적어 주세요"); if (!k.price) return toast("판매가를 숫자로 적어 주세요"); if (!k.br.length) return toast("넣을 지점을 골라 주세요"); if (k.bc && ![8, 12, 13, 14].includes(k.bc.length)) return toast("제조사 바코드 자릿수가 맞지 않아요 (8, 12, 13, 14자리)", 3400);
       const dup = PL.list.find((o) => o.n === k.name); if (dup) return toast(`같은 이름이 이미 ${dup.k}곳 포스에 있어요. 목록에서 찾아 주세요`, 3600);
-      PL.NEW.unshift({ ...k }); PL.nw = null; closeSheet(true); toast("등록 준비 목록에 넣었어요 (예시). 파일을 받아 포스에 올리면 돼요", 3600); return render(); }
-    if (a === "drop") { PL.NEW.splice(+t.dataset.i, 1); return render(); }
+      if (liveOn()) { t.disabled = true;
+        return window.admCall("adm_prod_new", { p_name: k.name, p_cat: k.cat, p_grp: k.grp, p_price: +k.price, p_cost: k.cost === "" ? null : +k.cost, p_bc: k.bc, p_br: k.br }).then((o) => {
+          if (!o || !o.ok) { t.disabled = false; return toast(o && o.why === "dup" ? "같은 이름의 등록 요청이 이미 기다리고 있어요" : o && o.why === "key" ? "관리자 비밀번호로 들어온 화면에서만 저장할 수 있어요" : "저장하지 못했어요. 다시 눌러 주세요", 3600); }
+          PL.live = true; upd(o.prod); PL.nw = null; closeSheet(true); toast("등록 요청을 저장했어요. 관리자 모두에게 보여요", 3600); render();
+        }).catch(() => { t.disabled = false; toast("저장하지 못했어요. 다시 눌러 주세요"); }); }
+      PL.NEW.unshift({ ...k, st: "대기", done: {} }); PL.nw = null; closeSheet(true); toast("등록 준비 목록에 넣었어요 (예시). 파일을 받아 포스에 올리면 돼요", 3600); return render(); }
+    if (a === "drop" || a === "fin") { const x = PL.NEW[+t.dataset.i]; if (!x) return;
+      if (!x.id) { PL.NEW.splice(+t.dataset.i, 1); return render(); }
+      const st = a === "fin" ? "등록됨" : "취소";
+      return askConfirm(a === "fin" ? "포스에 직접 넣었나요?" : "이 등록 요청을 취소할까요?", a === "fin" ? `${x.name}을(를) 넣을 지점 ${x.br.length}곳 포스에 다 넣었으면 등록됨으로 바꿔요.` : `${x.name} 등록 요청이 관리자 모두의 목록에서 빠져요.`, a === "fin" ? "등록됨으로" : "취소하기", a !== "fin").then((ok) => { if (!ok) return;
+        return window.admCall("adm_prod_set", { p_id: x.id, p_st: st }).then((o) => { if (!o || !o.ok) return toast("못 바꿨어요. 다시 눌러 주세요"); upd(o.prod); toast(a === "fin" ? "등록됨으로 바꿨어요" : "등록 요청을 취소했어요"); render(); }); }).catch(() => toast("못 바꿨어요. 다시 눌러 주세요")); }
     if (a === "file") { const x = PL.NEW[+t.dataset.i], head = ["지점", "상품명", "분류", "그룹", "판매가", ...(x.cost ? ["원가"] : []), "바코드"]; save(`신규상품_${x.name}.csv`, csv([head, ...x.br.map((b) => [`${BR.indexOf(b) + 1}호 ${b}`, x.name, x.cat, x.grp, x.price, ...(x.cost ? [x.cost] : []), x.bc || "포스 등록 뒤 매장 번호로 만듦"])])); return toast(`신규상품_${x.name}.csv 로 받았어요`, 3200); }
   });
 })();
