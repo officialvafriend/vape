@@ -1217,7 +1217,8 @@ function closingAllHtml() {
   const chips = ["전체", ...BR].map((b, i) => `<button class="chip ${clB === b ? "on" : ""}" data-clb="${b}">${b === "전체" ? "전 지점" : i + "호 " + b}</button>`).join("");
   return `<div class="pchead"><h1>마감 보고</h1><div class="caption">지점별 최근 마감, 누르면 보고문 전체</div></div><div class="chips hs" style="margin-bottom:12px">${chips}</div>${all.length ? (clB === "전체" ? closingByBranchHtml() : closingBranchListHtml(clB)) : '<div class="empty">아직 마감 보고가 없어요</div>'}`;
 }
-const clRow = (c, i) => { const st = clSt(c), w = st === "bad" ? warnsOf(c).length || 1 : 0; return `<button class="clrow" data-cl="${i}"><b class="${w ? "t-bad" : ""}">${c.date.slice(5).replace("-", "/")}</b><span class="m">${c.status === "done" ? `총 ${won(c.nums.총)}<small>시재 ${won(c.sijae)}${st === "sp" && clDiffTxt(c) ? ", 차액 " + clDiffTxt(c) : ""}</small>` : c.status === "error" ? `<span class="t-bad">${esc(c.err || "실패")}</span>` : "만드는 중"}</span><small>${esc(c.by)}</small>${w ? `<span class="t-bad">⚠️${w}</span>` : st === "sp" ? '<span class="sptag">특이건</span>' : ""}<span class="chev">›</span></button>`; };
+const posTxt = (c) => { const p = c && c.pos; if (!p || !p.ok) return ""; const g = Math.round(+p.과부족 || 0); return p.일마감 ? "포스 일마감 됨" + (g ? ", 과부족 " + (g > 0 ? "+" : "") + g.toLocaleString("ko-KR") : "") : "포스 일마감 아직"; };
+const clRow = (c, i) => { const st = clSt(c), w = st === "bad" ? warnsOf(c).length || 1 : 0; return `<button class="clrow" data-cl="${i}"><b class="${w ? "t-bad" : ""}">${c.date.slice(5).replace("-", "/")}</b><span class="m">${c.status === "done" ? `총 ${won(c.nums.총)}<small>시재 ${won(c.sijae)}${st === "sp" && clDiffTxt(c) ? ", 차액 " + clDiffTxt(c) : ""}${posTxt(c) ? ", " + posTxt(c) : ""}</small>` : c.status === "error" ? `<span class="t-bad">${esc(c.err || "실패")}</span>` : "만드는 중"}</span><small>${esc(c.by)}</small>${w ? `<span class="t-bad">⚠️${w}</span>` : st === "sp" ? '<span class="sptag">특이건</span>' : ""}<span class="chev">›</span></button>`; };
 function closingByBranchHtml() {
   const all = D.closings || [];
   return `<div class="clgrid">${BR.map((b, bi) => { const L = all.map((c, i) => [c, i]).filter(([c]) => c.b === b).slice(0, 7), last = L[0]?.[0], wn = L.reduce((a, [c]) => a + (clSt(c) === "bad" ? warnsOf(c).length || 1 : 0), 0), spn = L.filter(([c]) => clSt(c) === "sp").length;
@@ -1235,7 +1236,7 @@ function closingListHtml(max = 8) {
 }
 function sheetClosing(i) {
   const c = D.closings[i], n = c.nums || {};
-  openSheet(`<div class="eyebrow">${esc(ho(c.b))}, ${c.date}, ${esc(c.at)} 보냄</div><h3>${c.status === "done" ? `총매출 ${won(n.총)}원` : c.status === "error" ? "보고문을 못 만들었어요" : "보고문 만드는 중"}</h3>
+  openSheet(`<div class="eyebrow">${esc(ho(c.b))}, ${c.date}, ${esc(c.at)} 보냄</div><h3>${c.status === "done" ? `총매출 ${won(n.총)}원` : c.status === "error" ? "보고문을 못 만들었어요" : "보고문 만드는 중"}</h3>${posTxt(c) ? `<div class="caption" id="clpos">${posTxt(c)}</div>` : ""}
     ${c.status === "done" ? `<div class="caption">영수 ${n.영수객수}건, 객단가 ${won(n.객단가)}원, 일회용 ${n.kpi?.일회용 ?? "-"}, 프리미엄 ${n.kpi?.프리미엄 ?? "-"}, 지정 ${n.kpi?.지정 ?? "-"}, 발맥프로 ${n.kpi?.발맥프로 ?? "-"}, 택배 ${n.kpi?.택배 ?? "-"}</div>
       ${clBody(c)}
       <div class="report" id="rpt">${esc(c.text)}</div>
@@ -2095,6 +2096,7 @@ button.ptnext:hover{filter:brightness(.97)}
   }
   /* 찾기와 끌어서 순서 바꾸기가 쓰는 곳 */
   window.ptSearch = (q) => { if (!D || real()) return []; if (!MT.length) seed(); const k = q.toLowerCase(); return MT.filter((t) => `${t.title} ${t.body} ${t.owner} ${t.by}`.toLowerCase().includes(k)).map((t) => ({ id: t.id, title: t.title, sub: `맡은 사람 ${t.owner}, ${dueTxt(t)}` })); };
+  window.ptView = (v) => { tab = "tasks"; PT.view = v; render(); };
   window.ptOpen = (id) => { tab = "tasks"; PT.view = "mine"; render(); detail(id); };
   window.ptReorder = (id, refId, after) => { const F = MT.filter((m) => m.first && m.st === "todo").sort((p, q) => p.ord - q.ord), x = F.find((m) => m.id === id); if (!x || id === refId) return false; F.splice(F.indexOf(x), 1); let i = F.findIndex((m) => m.id === refId); if (i < 0) return false; F.splice(i + (after ? 1 : 0), 0, x); F.forEach((m, n) => (m.ord = n + 1)); toast(`먼저 중 ${F.indexOf(x) + 1}번째로 옮겼어요`); rer(); return true; };
   /* 홈 시제품이 숫자를 가져가는 곳 */
@@ -2103,8 +2105,10 @@ button.ptnext:hover{filter:brightness(.97)}
   const branchTasks = tasksHtml;
   tasksHtml = function () {
     if (!MT.length) seed();
-    const onlMode = document.body.classList.contains("hmonline") || !!window.ONKEY; if (onlMode && PT.view === "branch") PT.view = "mine"; if (real() && PT.view === "evt") PT.view = "mine"; /* 이벤트 칸은 아직 예시뿐이라 정식에서는 감춘다 */ /* 온라인 쪽에서는 매장 업무 칸을 감춘다 */
-    const tabs = `<div class="subnav">${[["mine", "내 것"], ["branch", "지점"], ["cal", "달력"], ["evt", "이벤트"]].filter(([k]) => !(onlMode && k === "branch") && !(real() && k === "evt")).map(([k, n]) => `<button class="${PT.view === k ? "on" : ""}" data-pt="view" data-v="${k}">${n}</button>`).join("")}</div>`;
+    const onlMode = !!window.ONKEY; /* 11/18 보혜 "블로그 지시문 작성하는 건 어디로 갔지?": 지점 칸에 블로그 지시문 쓰기가 있어서 온라인 쪽에서도 보여 준다. 온라인팀 전용 로그인만 감춘다(매장 자료가 없음) */ if (onlMode && PT.view === "branch") PT.view = "mine"; if (real() && PT.view === "evt") PT.view = "mine"; /* 이벤트 칸은 아직 예시뿐이라 정식에서는 감춘다 */ /* 온라인 쪽에서는 매장 업무 칸을 감춘다 */
+    const bdOk = !!(window.bdCan && window.bdCan() && window.bdHtml); if (!bdOk && (PT.view === "bd" || PT.view === "mt")) PT.view = "mine"; /* 팀 할 일과 회의: 온라인팀 보드가 관리자웹 안으로 이사 온 것 */
+    const tabs = `<div class="subnav">${[["mine", "내 것"], ["bd", "팀 할 일"], ["mt", "회의"], ["branch", "지점, 블로그"], ["cal", "달력"], ["evt", "이벤트"]].filter(([k]) => !(onlMode && k === "branch") && !(real() && k === "evt") && !(!bdOk && (k === "bd" || k === "mt"))).map(([k, n]) => `<button class="${PT.view === k ? "on" : ""}" data-pt="view" data-v="${k}">${n}</button>`).join("")}</div>`;
+    if (PT.view === "bd" || PT.view === "mt") return tabs + window.bdHtml(PT.view);
     if (PT.view === "branch") return tabs + branchTasks();
     return tabs + `<div class="ptex"><span>예시 자료예요. 저장은 안 돼요. 눌러서 흐름만 봐 주세요.</span><button data-pt="reset">처음으로</button></div>` + (PT.view === "cal" ? calHtml() : PT.view === "evt" ? evtHtml() : mine2Html());
   };
@@ -3288,7 +3292,7 @@ ${cmp == null ? "" : `<div class="hmcmp">워드프레스 이번 달 <b>${w(wp.mo
   function onlineHtml() {
     onLoad();
     const ok = onOk();
-    return `<div id="hmsales" data-ok="${ok ? 1 : 0}">${stripHtml()}</div>${ok ? '<details class="hmmore" id="hmbdw"><summary>온라인팀 보드를 여기서 펼쳐 보기</summary><div id="hmbdin"></div></details>' : ""}`;
+    return `<div id="hmsales" data-ok="${ok ? 1 : 0}">${stripHtml()}</div>${ok ? '<details class="hmmore" id="hmbdw"><summary>옛 보드 펼쳐 보기 (녹음, 제안함, 인수인계, 사진첩은 아직 여기 있어요)</summary><div id="hmbdin"></div></details>' : ""}`;
   }
   document.addEventListener("toggle", (e) => { const dt = e.target; if (!dt || dt.id !== "hmbdw") return; const box = $("#hmbdin"); if (dt.open && box && !$("#hmboard")) box.innerHTML = '<iframe id="hmboard" class="hmboard" src="../../online-team/" title="온라인팀 보드"></iframe>'; if (!dt.open && box) box.innerHTML = ""; syncFull(); }, true);
   /* ── 온라인팀 전용 들어가기 ── 온라인팀 비밀번호로 들어오면 관리자 열쇠가 없어서 지점 자료(암호 파일)를 못 푼다. 온라인 홈, 메신저, 업무만 쓴다. */
@@ -3316,6 +3320,7 @@ ${cmp == null ? "" : `<div class="hmcmp">워드프레스 이번 달 <b>${w(wp.mo
   function decorLogo() { { const hide = window.ONKEY ? /^(지점|상품|더보기)/ : HM.v === "online" ? /^(지점|상품)/ : null; for (const bt of document.querySelectorAll(".side .navb[data-tab], #nav button")) bt.style.display = hide && hide.test(bt.textContent.trim()) ? "none" : ""; } for (const el of document.querySelectorAll("#app .logo")) { el.innerHTML = `VAFRIEND <b>${HM.v === "online" ? "온라인" : "관리자"}</b><span class="hmlgsw"><span class="s">전환</span></span>`; if (!window.ONKEY && el.closest(".side") && !el.nextElementSibling?.classList.contains("hmlgseg")) el.insertAdjacentHTML("afterend", `<div class="hmlgseg" role="tablist"><button class="${HM.v === "online" ? "" : "on"}" data-hm="swapto" data-v="vf">관리자</button><button class="${HM.v === "online" ? "on" : ""}" data-hm="swapto" data-v="online">온라인</button></div>`); el.dataset.hm = "swap"; el.setAttribute("role", "button"); el.setAttribute("aria-label", HM.v === "online" ? "VF 관리자 홈으로 바꾸기" : "온라인 홈으로 바꾸기"); } }
   /* 보드를 띄워 둔 동안에는 3분마다 도는 자동 새로고침이 보드를 처음으로 되돌리지 않게, 매출 칸만 새로 그린다 */
   const VFTABS = ["close", "coins", "kpi", "note", "plist", "stockrep", "survey", "order", "bunbae", "group", "must"];
+  window.hmReload = () => onLoad(true);
   const render1 = render;
   render = function () {
     if (window.ONKEY) { HM.v = "online"; if (!["home", "msg", "tasks"].includes(tab)) tab = "home"; }
@@ -3330,8 +3335,10 @@ ${cmp == null ? "" : `<div class="hmcmp">워드프레스 이번 달 <b>${w(wp.mo
     if (k === "swap" && window.ONKEY) return;
     if (k === "swapto") { if (window.ONKEY) return; const v = s.dataset.v === "online" ? "online" : "vf"; if (v === HM.v && tab === "home") return; HM.v = v; ls.set("vf-hm-v", HM.v); tab = "home"; fullH(); return scrollTo(0, 0); }
     if (k === "swap") { HM.v = HM.v === "online" ? "vf" : "online"; ls.set("vf-hm-v", HM.v); tab = "home"; fullH(); return scrollTo(0, 0); }
-    if (k === "onmeet") return onMeet(s.dataset.id);
+    if (k === "onmeet") return window.bdCan && window.bdCan() ? window.bdOpenMeeting(s.dataset.id) : onMeet(s.dataset.id); /* 관리자웹 안의 회의 화면으로. 새 창을 열지 않는다 */
     if (k === "onmeetall") return openSheet(`<h3>회의 <small style="font-size:14px;color:var(--sub)">${((ON.b && ON.b.meetings) || []).length}개</small></h3><div class="hmml" style="padding:0;background:none">${((ON.b && ON.b.meetings) || []).map(meetRow).join("")}</div><div class="btns"><button class="btn gray" data-x>닫기</button></div>`);
+    if (k === "onppl" && window.bdCan && window.bdCan()) return window.bdOpenList({ who: s.dataset.n || "-", tag: "" });
+    if (k === "onlist" && window.bdCan && window.bdCan()) return window.bdOpenList({ due: s.dataset.k === "over" ? "over" : "week", tag: "" });
     if (k === "onppl") { const n = s.dataset.n || ""; return onList((n || "담당 없음") + " 할 일", itemsOf("who", n)); }
     if (k === "onlist") return onList(s.dataset.k === "over" ? "기한 지난 것" : "이번 주 기한", itemsOf(s.dataset.k)); if (k === "ondet") openSheet(`<h3>액상덕후 매출</h3><div class="hmdet">${salesHtml()}</div><div class="btns"><button class="btn gray" data-x>닫기</button></div>`); });
   const home = () => `<div class="hmwrap">${top()}${HM.v === "online" ? onlineHtml() : vfHtml()}</div>`;
@@ -3344,6 +3351,200 @@ ${cmp == null ? "" : `<div class="hmcmp">워드프레스 이번 달 <b>${w(wp.mo
     const b = e.target.closest("[data-hmb]"); if (!b) return;
     const name = b.dataset.hmb;
     try { if (D.branches && D.branches.some((y) => y.b === name)) return sheetBranch(name, "프리미엄 A"); const i = (D.closings || []).findIndex((c) => c.b === name && c.date === D.d); if (i >= 0) return sheetClosing(i); toast(`${name}은 아직 볼 자료가 없어요`); } catch (er) { toast(`${name} 상세를 못 열었어요`); }
+  });
+})();
+
+</script>
+<script>
+/* 관리자_보드시제품.js */
+/* 관리자웹 안의 온라인팀 보드 (2026-11-18, 1단계: 팀 할 일과 회의)
+   온라인팀 보드(online-team)가 쓰는 자료를 그대로 읽고 쓴다. 자료를 옮기지 않아서 옛 보드도 그대로 돈다.
+   업무 탭의 [팀 할 일], [회의] 칸으로 들어간다. 온라인팀 이름(한섭이사, 보혜, 시원, 진)으로 메신저에 들어온 기기에서만 보인다.
+   태그(베이프렌드, 액상덕후, VUFF, 공통)로 나눈다. 관리자 쪽에서는 베이프렌드 태그가, 온라인 쪽에서는 전체가 먼저 보인다.
+   화면에 넣는 글은 esc() 를 거친다. 예시 자료는 없다. 못 불러오면 못 불러왔다고만 보인다. */
+(() => {
+  const st = document.createElement("style"); st.id = "bdcss";
+  st.textContent = `
+.bdchips{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 8px}
+.bdfil{display:flex;gap:8px;margin:0 0 12px}.bdfil .bdsel{flex:1;min-width:0}
+.bdsel{height:44px;padding:0 24px 0 11px;border:1px solid var(--line2);border-radius:14px;background:var(--card) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%2366717f' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat right 9px center;color:var(--ink);font:inherit;font-size:14px;font-weight:600;letter-spacing:-.3px;appearance:none;-webkit-appearance:none;text-overflow:ellipsis}
+.bded .bdsel{width:100%;height:52px;font-size:16px;font-weight:500;padding:0 30px 0 14px;background-position:right 12px center;letter-spacing:0}
+.bdpick{display:flex;align-items:center;width:100%;text-align:left;cursor:pointer}.bdpick span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.bdpick i{flex:none;font-style:normal;color:var(--sub);font-size:13px}
+.bdseg{display:flex;background:var(--line2);border-radius:14px;padding:4px;margin:0 0 10px}
+.bdseg button{flex:1;height:42px;border-radius:11px;font-size:15px;font-weight:700;color:var(--sub);background:none}
+.bdseg button.on{background:var(--card);color:var(--ink);box-shadow:0 1px 3px rgba(20,30,50,.10)}
+.bdsec{display:flex;align-items:center;gap:8px;width:100%;min-height:46px;padding:0 6px;margin-top:8px;background:none;text-align:left;cursor:pointer}
+.bdsec::before{content:"";flex:none;width:10px;height:10px;border-radius:50%;background:var(--sub)}
+.bdsec.tVF::before{background:#1b64da}.bdsec.t액상덕후::before{background:#0a7d5c}.bdsec.tVUFF::before{background:#7a3fd1}.bdsec.late::before{background:var(--red,#d93025)}
+.bdsec b{font-size:17px;font-weight:800;letter-spacing:-.3px}.bdsec small{color:var(--sub);font-size:13px;font-weight:600}.bdsec i{margin-left:auto;font-style:normal;font-size:12px;color:var(--sub)}
+.bdsub{font-size:13px;font-weight:700;color:var(--sub);margin:16px 4px 6px}
+.bdrow .tx b{white-space:normal;line-height:1.4}.bdrow .tx em{font-style:normal}
+.bdst{flex:none;min-width:52px;height:26px;padding:0 8px;border-radius:8px;background:var(--line2);color:var(--ink2);font-size:12px;font-weight:700;display:grid;place-items:center}
+.bdst.s3{background:var(--blue-soft);color:var(--blue)}.bdst.s4{background:#e6f4ea;color:#177a3c}.bdst.s1{background:var(--amber-soft,#fff4d6);color:var(--amber,#9a6700)}
+.bdtag{flex:none;height:22px;padding:0 8px;border-radius:999px;font-size:11px;font-weight:700;display:grid;place-items:center;background:var(--line2);color:var(--ink2)}
+.bdtag.tVF{background:#e8f3ff;color:#1b64da}.bdtag.t액상덕후{background:#e0f5ec;color:#0a7d5c}.bdtag.tVUFF{background:#f3e8ff;color:#7a3fd1}
+.bdlate{color:var(--red,#d93025);font-weight:700}
+.bdback{height:36px;padding:0 12px 0 8px;border-radius:10px;background:var(--card);color:var(--ink2);font-size:14px;font-weight:700;margin:0 0 10px}
+.bdmh{display:flex;align-items:flex-start;gap:10px;margin:0 4px 4px}.bdmh h1{flex:1;font-size:22px;font-weight:800;letter-spacing:-.5px;line-height:1.35}
+.bdmini{flex:none;height:34px;padding:0 12px;border-radius:10px;background:var(--card);color:var(--ink2);font-size:13px;font-weight:700}
+.bdbox{background:var(--card);border-radius:16px;padding:14px 16px;font-size:15px;line-height:1.65;white-space:pre-wrap;word-break:break-word}
+.bdmin{background:var(--card);border-radius:16px;padding:4px 16px 14px}.bdmin h4{font-size:13px;color:var(--sub);font-weight:700;margin:14px 0 6px}
+.bdmin p{font-size:15px;line-height:1.65;white-space:pre-wrap;word-break:break-word}.bdmin ul,.bdmin ol{margin:4px 0 0;padding-left:20px;font-size:14px;line-height:1.65}.bdmin .ag{margin-top:10px}.bdmin .ag>b{font-size:14px}
+.bded .ptlab{margin-top:14px}.bded textarea.ptin{min-height:84px;height:auto;padding:12px 14px;line-height:1.55;resize:vertical}
+.bded .two{display:flex;gap:8px}.bded .two>*{flex:1;min-width:0}
+.bdlog{border-top:1px solid var(--line2);padding:10px 0;font-size:14px;line-height:1.55;white-space:pre-wrap;word-break:break-word}.bdlog small{display:block;color:var(--sub);font-size:12px;margin-bottom:2px}
+.bdtr{font-size:14px;line-height:1.65;padding:6px 0;border-bottom:1px solid var(--line2);word-break:break-word}.bdtr small{color:var(--sub);margin-right:8px;font-size:12px}
+`;
+  document.head.appendChild(st);
+  const TAGS = [["VF", "베이프렌드"], ["액상덕후", "액상덕후"], ["VUFF", "VUFF"], ["공통", "공통"]], TAGN = Object.fromEntries(TAGS);
+  const STS = ["후보", "확인필요", "시도", "확정", "완료", "보류", "제외"], ACT = ["확인필요", "시도", "확정"], TEAM = ["한섭", "보혜", "시원", "진"];
+  const FULLN = { 정한섭: "한섭", 안보혜: "보혜", 김시원: "시원", 김진: "진", 한섭이사: "한섭", 이사님: "한섭", 시워니: "시원", 진이: "진", 지니: "진" };
+  const BD = { st: "", at: 0, items: [], meetings: [], recs: [], me: "", tagV: "VF", tagO: "", by: "tag", only: "", fold: {}, grp: "act", meet: "", ed: null, md: null };
+  const onl = () => document.body.classList.contains("hmonline") || !!window.ONKEY;
+  const tag = () => (onl() ? BD.tagO : BD.tagV), setTag = (v) => { if (onl()) BD.tagO = v; else BD.tagV = v; };
+  const brandOf = (x) => (TAGN[x.brand] ? x.brand : "공통");
+  const ownersOf = (it) => [...new Set(String(it.owners || "").split(/[,\s/、·]+/).map((t) => t.replace(/님$/, "")).filter(Boolean).map((t) => FULLN[t] || t))];
+  const nowD = () => new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10), plusD = (n) => new Date(Date.now() + 9 * 3600e3 + n * 864e5).toISOString().slice(0, 10);
+  const dShort = (s) => (/^\d{4}-\d{2}-\d{2}/.test(String(s)) ? `${+String(s).slice(5, 7)}/${+String(s).slice(8, 10)}` : String(s || ""));
+  const M = (id) => BD.meetings.find((m) => m.id === id), I = (id) => BD.items.find((x) => x.id === id);
+  const call = (fn, a) => window.admCall(fn, a || {});
+  const busy = () => !!document.querySelector("#dim.on .bded");
+  window.bdCan = () => !!(window.admLive && window.admLive() && window.admCall && ["한섭이사", "보혜", "시원", "진"].includes(window.admWho ? window.admWho() : ""));
+  const redraw = () => { if (typeof tab !== "undefined" && tab === "tasks" && $("#bdroot") && !busy()) render(); };
+  async function load(force) {
+    if (!window.bdCan() || (!force && Date.now() - BD.at < 45000)) return; BD.at = Date.now(); if (!BD.st) BD.st = "load";
+    try { const o = await call("adm_board_all"); if (o && o.ok) { const sig0 = JSON.stringify([BD.items, BD.meetings, BD.recs]); BD.items = o.items || []; BD.meetings = o.meetings || []; BD.recs = o.recs || []; BD.me = String(o.me || ""); const was = BD.st; BD.st = "ok"; if (was !== "ok" || JSON.stringify([BD.items, BD.meetings, BD.recs]) !== sig0) redraw(); } else if (BD.st !== "ok") { BD.st = "fail"; redraw(); } }
+    catch (e) { if (BD.st !== "ok") { BD.st = "fail"; redraw(); } }
+  }
+  const sel = (id, key, opts, cur) => `<select class="bdsel" ${id ? `id="${id}"` : ""} ${key ? `data-bdsel="${key}"` : ""}>${opts.map(([v, n]) => `<option value="${esc(v)}" ${String(cur) === String(v) ? "selected" : ""}>${esc(n)}</option>`).join("")}</select>`;
+  /* 묶음 순서: 관리자 쪽에서는 베이프렌드가 맨 위, 온라인 쪽에서는 액상덕후와 VUFF가 위 */
+  const ORDER = () => (onl() ? ["액상덕후", "VUFF", "공통", "VF"] : ["VF", "액상덕후", "VUFF", "공통"]);
+  const secs = (kind, groups, body) => groups.filter((g) => g[2].length).map(([k, title, L, cls]) => { const key = kind + ":" + k, shut = !!BD.fold[key]; return `<button class="bdsec ${cls || ""}" data-bd="fold" data-k="${esc(key)}"><b>${esc(title)}</b><small>${L.length}${kind === "mt" ? "개" : "건"}</small><i>${shut ? "펼치기" : "접기"}</i></button>${shut ? "" : `<div class="list">${L.map(body).join("")}</div>`}`; }).join("");
+  const tagPill = (x) => `<span class="bdtag t${brandOf(x)}">${TAGN[brandOf(x)]}</span>`;
+  const row = (x, noTag) => { const o = ownersOf(x), late = ACT.includes(x.st) && x.due && x.due < nowD(); return `<button class="item bdrow" data-bd="item" data-id="${esc(x.id)}"><span class="bdst s${STS.indexOf(x.st)}">${esc(x.st || "상태 없음")}</span><div class="tx"><b>${esc(x.title)}</b><span>${esc(o.join(", ") || "담당 없음")}${x.due ? `, <em class="${late ? "bdlate" : ""}">${esc(dShort(x.due))}${x.time ? " " + esc(x.time) : ""}까지</em>` : ""}${x.area ? ", " + esc(x.area) : ""}</span></div>${noTag === true ? "" : tagPill(x)}<span class="chev">›</span></button>`; };
+  const byDue = (L) => L.slice().sort((a, b) => (a.due || "9999").localeCompare(b.due || "9999") || String(b.upd || "").localeCompare(String(a.upd || "")));
+  function itemList() {
+    const now = nowD(), wk = plusD(7), T = BD.items;
+    const G = { act: T.filter((x) => ACT.includes(x.st)), cand: T.filter((x) => x.st === "후보"), done: T.filter((x) => x.st === "완료"), hold: T.filter((x) => x.st === "보류" || x.st === "제외") };
+    const L = BD.grp === "done" ? G.done.slice().sort((a, b) => String(b.upd || "").localeCompare(String(a.upd || ""))).slice(0, 80) : byDue(G[BD.grp]);
+    const seg = `<div class="bdseg" role="tablist">${[["tag", "태그별"], ["who", "사람별"], ["due", "기한별"]].map(([k, n]) => `<button class="${BD.by === k ? "on" : ""}" data-bd="by" data-v="${k}">${n}</button>`).join("")}</div>`;
+    const stSel = sel("", "grp", [["act", "하는 중 " + G.act.length + "건"], ["cand", "후보 " + G.cand.length + "건"], ["done", "끝난 것 " + G.done.length + "건"], ["hold", "보류, 제외 " + G.hold.length + "건"]], BD.grp);
+    let groups;
+    if (BD.by === "who") { const extra = [...new Set(L.flatMap(ownersOf))].filter((n) => !TEAM.includes(n)); groups = [...TEAM, ...extra].map((n) => [n, n, L.filter((x) => ownersOf(x).includes(n)), ""]).concat([["-", "담당 없음", L.filter((x) => !ownersOf(x).length), ""]]); }
+    else if (BD.by === "due") groups = [["over", "기한 지난 것", L.filter((x) => x.due && x.due < now), "late"], ["week", "이번 주", L.filter((x) => x.due && x.due >= now && x.due <= wk), ""], ["later", "그 뒤", L.filter((x) => x.due && x.due > wk), ""], ["none", "기한 없음", L.filter((x) => !x.due), ""]];
+    else groups = ORDER().map((v) => [v, TAGN[v], L.filter((x) => brandOf(x) === v), "t" + v]);
+    const one = BD.only ? groups.find((g) => g[0] === BD.only) : null; if (BD.only && !one) BD.only = "";
+    const body = secs(BD.by, one ? [one] : groups, (x) => row(x, BD.by === "tag"));
+    return `<div class="plhd"><h1>팀 할 일</h1><small>${L.length}건</small><span class="sp"></span><button class="plnew" data-bd="new">+ 할 일</button></div>${seg}<div class="bdfil">${stSel}${one ? `<button class="chip on" data-bd="onlyoff" style="flex:none">${esc(one[1])}만 ×</button>` : ""}</div>${body || '<div class="list"><div class="empty">여기에 맞는 할 일이 없어요</div></div>'}`;
+  }
+  const sumOf = (mid) => { const r = BD.recs.filter((x) => x.meet === mid && x.sum).slice(-1)[0]; if (!r) return null; try { const o = JSON.parse(r.sum); return o && typeof o === "object" ? o : null; } catch (e) { return null; } };
+  function meetList() {
+    const rowM = (m) => { const n = BD.items.filter((x) => x.meet === m.id).length, has = BD.recs.some((r) => r.meet === m.id && r.sum); return `<button class="item bdrow" data-bd="meet" data-id="${esc(m.id)}"><span class="bdst">${esc(dShort(m.date))}</span><div class="tx"><b>${esc(m.title || "회의")}</b><span>${[n ? "안건 " + n + "건" : "안건 없음", has ? "회의록 있음" : "", m.att ? "참석 " + esc(m.att) : ""].filter(Boolean).join(", ")}</span></div><span class="chev">›</span></button>`; };
+    const body = secs("mt", ORDER().map((v) => [v, TAGN[v] + " 회의", BD.meetings.filter((m) => brandOf(m) === v), "t" + v]), rowM);
+    return `<div class="plhd"><h1>회의</h1><small>${BD.meetings.length}개</small><span class="sp"></span><button class="plnew" data-bd="mnew">+ 회의</button></div>${body || '<div class="list"><div class="empty">아직 회의가 없어요</div></div>'}`;
+  }
+  const clean = (t) => String(t || "").replace(/^\?\s*:\s*/, "").replace(/\s*\((짐작|추측)\)/g, "").trim();
+  const lines = (v) => (Array.isArray(v) ? v : String(v || "").split(/\n/)).map(clean).filter(Boolean);
+  const said = (t) => { const k = t.match(/^([^\s:]{1,6}):\s*(.+)$/); return k ? `<b>${esc(FULLN[k[1]] || k[1])}</b> ${esc(k[2])}` : esc(t); };
+  function meetPage() {
+    const m = M(BD.meet), its = BD.items.filter((x) => x.meet === m.id).sort((a, b) => (+a.sort || 0) - (+b.sort || 0)), sm = sumOf(m.id), recs = BD.recs.filter((r) => r.meet === m.id);
+    const ag = sm && Array.isArray(sm.안건별) ? sm.안건별.filter((g) => g && typeof g === "object" && lines(g.정리).length) : [];
+    const agT = (a) => { const it = I(a.item); return it ? it.title : /^new:/.test(String(a.item || "")) ? String(a.item).replace(/^new:/, "") : "기타"; };
+    const ol = (v) => `<ol>${lines(v).map((t) => `<li>${esc(t)}</li>`).join("")}</ol>`;
+    const mins = sm ? `<div class="bdsub">회의록</div><div class="bdmin">${clean(sm.결론) ? `<h4>결론</h4><p>${esc(clean(sm.결론))}</p>` : ""}${ag.length ? `<h4>안건별 정리</h4>${ag.map((a) => `<div class="ag"><b>${esc(agT(a))}</b><ul>${lines(a.정리).map((t) => `<li>${said(t)}</li>`).join("")}</ul></div>`).join("")}` : ""}${lines(sm.정한것).length ? `<h4>정한 것</h4>${ol(sm.정한것)}` : ""}${lines(sm.못정한것).length ? `<h4>다음에 정할 것</h4>${ol(sm.못정한것)}` : ""}<div class="caption" style="margin-top:12px">회의 녹음을 받아써서 만든 정리예요. 누가 한 말인지는 짐작이라 틀릴 수 있어요.</div></div>` : "";
+    const recRow = recs.length ? `<div class="bdsub">녹음 ${recs.length}개</div><div class="list">${recs.map((r) => `<button class="item bdrow" data-bd="rec" data-id="${esc(r.id)}" ${r.has ? "" : "disabled"}><span class="bdst">${esc(r.len || "녹음")}</span><div class="tx"><b>${esc(r.st || "")}</b><span>${r.has ? "받아쓴 글 보기" : "아직 받아쓴 글이 없어요"}</span></div>${r.has ? '<span class="chev">›</span>' : ""}</button>`).join("")}</div>` : "";
+    return `<button class="bdback" data-bd="mback">‹ 회의 목록</button><div class="bdmh"><h1>${esc(m.title || "회의")}</h1><button class="bdmini" data-bd="medit">고치기</button></div>
+<div class="caption" style="margin:0 4px 12px">${[esc(dShort(m.date)), TAGN[brandOf(m)], m.att ? "참석 " + esc(m.att) : ""].filter(Boolean).join(", ")}</div>
+${m.memo ? `<div class="bdsub" style="margin-top:0">메모</div><div class="bdbox">${esc(m.memo)}</div>` : ""}
+<div class="plhd" style="margin-top:18px"><h1 style="font-size:17px">안건</h1><small>${its.length}건</small><span class="sp"></span><button class="plnew" data-bd="new" data-meet="${esc(m.id)}">+ 안건</button></div>
+<div class="list">${its.map(row).join("") || '<div class="empty">아직 안건이 없어요. [+ 안건]으로 넣어요</div>'}</div>${mins}${recRow}
+<div class="caption" style="margin:14px 4px 0">새로 녹음하는 것은 아직 옛 보드에서 해요. 다음 순서로 옮겨요.</div>`;
+  }
+  window.bdHtml = (view) => {
+    load();
+    if (BD.st !== "ok") return `<div id="bdroot"><div class="list"><div class="empty">${BD.st === "fail" ? '보드 자료를 못 불러왔어요. <button class="hmre" data-bd="re">다시 받기</button>' : "불러오는 중이에요"}</div></div></div>`;
+    return `<div id="bdroot">${view === "mt" ? (BD.meet && M(BD.meet) ? meetPage() : meetList()) : itemList()}</div>`;
+  };
+  const go = (v) => { if (window.ptView) window.ptView(v); };
+  window.bdOpenMeeting = (id) => { BD.meet = id; go("mt"); scrollTo(0, 0); };
+  window.bdOpenList = (o) => { o = o || {}; BD.grp = "act"; if (o.who) { BD.by = "who"; BD.only = o.who; } else if (o.due) { BD.by = "due"; BD.only = o.due; } else BD.only = ""; BD.fold = {}; go("bd"); scrollTo(0, 0); };
+
+  /* ── 할 일 창 ── */
+  const keepEd = () => { const e = BD.ed; if (!e || !$("#bdT")) return; e.title = $("#bdT").value; e.st = $("#bdSt").value; e.brand = $("#bdTag").value; e.due = $("#bdDue").value; e.time = $("#bdTime").value; e.area = $("#bdArea").value; e.memo = $("#bdMemo").value; e.check = $("#bdCheck").value; if ($("#bdLog")) e.log = $("#bdLog").value; };
+  const logBody = (b) => String(b || "").replace(/\[\[[^\]]*\]\]/g, " ").replace(/[ \t]+/g, " ").trim() || "(첨부나 표시만 있는 기록)";
+  function itemSheet() {
+    const e = BD.ed, m = e.meet ? M(e.meet) : null, areas = [...new Set(BD.items.map((x) => x.area).filter(Boolean))].sort();
+    openSheet(`<div class="bded"><h3>${e.id ? "할 일" : m ? "새 안건" : "새 할 일"}</h3>${m ? `<div class="caption">회의: ${esc(m.title)}</div>` : ""}
+<div class="ptlab">제목</div><input class="ptin" id="bdT" maxlength="160" value="${esc(e.title)}">
+<div class="two"><div><div class="ptlab">상태</div>${sel("bdSt", "", STS.map((x) => [x, x]), e.st)}</div><div><div class="ptlab">태그</div>${sel("bdTag", "", TAGS, TAGN[e.brand] ? e.brand : "공통")}</div></div>
+<div class="ptlab">맡은 사람</div><button class="ptin bdpick" data-bd="eownopen"><span>${esc(e.owners.join(", ") || "아직 없음")}</span><i>${e.ownOpen ? "접기" : "고르기"}</i></button>
+${e.ownOpen ? `<div class="bdchips" style="margin-top:8px">${[...new Set([...TEAM, ...e.owners])].map((n) => `<button class="chip ${e.owners.includes(n) ? "on" : ""}" data-bd="eown" data-v="${esc(n)}">${esc(n)}</button>`).join("")}</div>` : ""}
+<div class="two"><div><div class="ptlab">기한</div><input class="ptin" id="bdDue" type="date" value="${esc(e.due)}"></div><div><div class="ptlab">시간</div><input class="ptin" id="bdTime" type="time" value="${esc(/^\d{2}:\d{2}$/.test(e.time) ? e.time : "")}"></div></div>
+<div class="ptlab">분야</div><input class="ptin" id="bdArea" maxlength="30" list="bdAreas" value="${esc(e.area)}"><datalist id="bdAreas">${areas.map((a) => `<option value="${esc(a)}">`).join("")}</datalist>
+<div class="ptlab">메모</div><textarea class="ptin" id="bdMemo" maxlength="6000">${esc(e.memo)}</textarea>
+<div class="ptlab">확인할 것</div><textarea class="ptin" id="bdCheck" maxlength="6000" style="min-height:64px">${esc(e.check)}</textarea>
+${e.id ? `<div class="ptlab">기록 ${e.logs.length}개</div>${e.logs.map((l) => `<div class="bdlog"><small>${esc(FULLN[l.who] || l.who || "")} ${esc(String(l.at || "").slice(5))}</small>${esc(logBody(l.body))}</div>`).join("")}<div class="two" style="margin-top:8px"><input class="ptin" id="bdLog" maxlength="1000" placeholder="기록 남기기" value="${esc(e.log || "")}"><button class="btn gray" data-bd="elog" style="flex:0 0 84px">남기기</button></div>` : ""}
+<div class="btns"><button class="btn gray" data-x style="flex:0 0 96px">닫기</button><button class="btn" data-bd="esave">저장</button></div></div>`);
+  }
+  async function openItem(id, preset) {
+    preset = preset || {};
+    if (!id) { BD.ed = { id: "", title: "", st: preset.meet ? "후보" : "확정", brand: preset.brand !== undefined ? preset.brand : onl() ? "공통" : "VF", area: "", owners: preset.who ? [preset.who] : [], due: "", time: "", memo: "", check: "", meet: preset.meet || "", logs: [], log: "" }; return itemSheet(); }
+    openSheet('<div class="bded"><h3>할 일</h3><div class="caption">불러오는 중이에요</div></div>');
+    try { const o = await call("adm_board_item", { p_id: id }); if (!o || !o.ok) throw 0; const x = o.item; BD.ed = { id: x.id, title: x.title || "", st: x.st || "후보", brand: x.brand || "", area: x.area || "", owners: ownersOf(x), due: /^\d{4}-\d{2}-\d{2}$/.test(x.due || "") ? x.due : "", time: x.time || "", memo: x.memo || "", check: x.check || "", meet: x.meet || "", logs: o.logs || [], log: "" }; itemSheet(); }
+    catch (e) { closeSheet(true); toast("그 할 일을 못 불러왔어요"); }
+  }
+  window.bdOpenItem = (id) => openItem(id);
+  const after = async (msg) => { closeSheet(true); toast(msg); await load(true); if (window.hmReload) window.hmReload(); redraw(); };
+  /* ── 회의 창 ── */
+  const keepMd = () => { const m = BD.md; if (!m || !$("#bdMt")) return; m.title = $("#bdMt").value; m.brand = $("#bdMtag").value; m.date = $("#bdMd").value; m.att = $("#bdMa").value; m.memo = $("#bdMm").value; };
+  function meetSheet() {
+    const m = BD.md;
+    openSheet(`<div class="bded"><h3>${m.id ? "회의 고치기" : "새 회의"}</h3>
+<div class="ptlab">제목</div><input class="ptin" id="bdMt" maxlength="120" value="${esc(m.title)}">
+<div class="two"><div><div class="ptlab">날짜</div><input class="ptin" id="bdMd" type="date" value="${esc(m.date)}"></div><div><div class="ptlab">참석</div><input class="ptin" id="bdMa" maxlength="120" placeholder="한섭, 보혜" value="${esc(m.att)}"></div></div>
+<div class="ptlab">태그</div>${sel("bdMtag", "", TAGS, TAGN[m.brand] ? m.brand : "공통")}
+<div class="ptlab">메모</div><textarea class="ptin" id="bdMm" maxlength="4000">${esc(m.memo)}</textarea>
+<div class="btns"><button class="btn gray" data-x style="flex:0 0 96px">닫기</button><button class="btn" data-bd="msave">저장</button></div></div>`);
+  }
+  async function recSheet(id) {
+    openSheet('<h3>받아쓴 글</h3><div class="caption">불러오는 중이에요</div>');
+    try { const o = await call("adm_board_rec", { p_id: id }); if (!o || !o.ok) throw 0; let T = [], C = []; try { T = JSON.parse(o.text || "[]"); } catch (e) { T = []; } try { C = JSON.parse(o.cls || "[]"); } catch (e) { C = []; }
+      const who = {}; for (const c of Array.isArray(C) ? C : []) if (c && c.who) who[c.i] = c.who;
+      openSheet(`<h3>받아쓴 글 <small style="font-size:14px;color:var(--sub)">${Array.isArray(T) ? T.length : 0}줄</small></h3><div class="caption">누가 한 말인지는 짐작이라 틀릴 수 있어요.</div><div style="margin-top:10px">${(Array.isArray(T) ? T : []).slice(0, 2500).map((r, i) => `<div class="bdtr"><small>${esc(String((r && r[0]) || ""))}</small>${who[i] ? `<b>${esc(FULLN[who[i]] || who[i])}</b> ` : ""}${esc(String((r && r[1]) || ""))}</div>`).join("") || '<div class="caption">받아쓴 글이 비어 있어요</div>'}</div><div class="btns"><button class="btn gray" data-x>닫기</button></div>`); }
+    catch (e) { closeSheet(true); toast("받아쓴 글을 못 불러왔어요"); }
+  }
+  document.addEventListener("change", (ev) => { const t = ev.target.closest("[data-bdsel]"); if (!t) return; const k = t.dataset.bdsel, v = t.value; if (k === "grp") BD.grp = v; render(); });
+  /* 업무 탭의 [회의] 칸을 직접 누르면 늘 회의 목록부터 보인다 (열어 둔 회의에 갇히지 않게). 다른 화면에서 회의를 골라 들어올 때는 그 회의가 바로 열린다 */
+  document.addEventListener("click", (ev) => { const pv = ev.target.closest('[data-pt="view"]'); if (pv && pv.dataset.v === "mt") BD.meet = ""; }, true);
+  document.addEventListener("click", async (ev) => {
+    const t = ev.target.closest("[data-bd]"); if (!t || t.disabled) return; const a = t.dataset.bd, v = t.dataset.v;
+    if (a === "re") { BD.st = ""; BD.at = 0; return render(); }
+    if (a === "by") { BD.by = v; BD.only = ""; return render(); }
+    if (a === "onlyoff") { BD.only = ""; return render(); }
+    if (a === "fold") { const k = t.dataset.k; BD.fold[k] = !BD.fold[k]; return render(); }
+    if (a === "item") return openItem(t.dataset.id);
+    if (a === "new") return openItem("", { meet: t.dataset.meet || "", who: !t.dataset.meet && BD.by === "who" && TEAM.includes(BD.only) ? BD.only : "", brand: t.dataset.meet && M(t.dataset.meet) ? brandOf(M(t.dataset.meet)) : undefined });
+    if (a === "meet") { BD.meet = t.dataset.id; render(); return scrollTo(0, 0); }
+    if (a === "mback") { BD.meet = ""; return render(); }
+    if (a === "rec") return recSheet(t.dataset.id);
+    if (a === "eownopen") { keepEd(); BD.ed.ownOpen = !BD.ed.ownOpen; const y = $("#sheet") ? $("#sheet").scrollTop : 0; itemSheet(); if ($("#sheet")) $("#sheet").scrollTop = y; return; }
+    if (a === "eown") { keepEd(); const L = BD.ed.owners; L.includes(v) ? L.splice(L.indexOf(v), 1) : L.push(v); const y = $("#sheet") ? $("#sheet").scrollTop : 0; itemSheet(); if ($("#sheet")) $("#sheet").scrollTop = y; return; }
+    if (a === "elog") { keepEd(); const e = BD.ed, body = String(e.log || "").trim(); if (!body) return toast("남길 글을 적어 주세요"); t.disabled = true;
+      try { const o = await call("adm_board_save", { p_kind: "log", p_data: { 안건id: e.id, 내용: body } }); if (!o || !o.ok) throw 0; e.logs.push({ id: o.id, at: new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 16).replace("T", " "), who: BD.me, body }); e.log = ""; toast("기록을 남겼어요"); return itemSheet(); }
+      catch (x) { t.disabled = false; return toast("기록을 못 남겼어요. 다시 눌러 주세요"); } }
+    if (a === "esave") { keepEd(); const e = BD.ed, title = e.title.trim(); if (!title) return toast("제목을 적어 주세요"); t.disabled = true;
+      const d = { 제목: title, 상태: e.st, 브랜드: e.brand, 분야: e.area.trim(), 담당자: e.owners.join(", "), 마감: e.due, 시간: e.time, 메모: e.memo, 확인할것: e.check };
+      if (e.id) d.id = e.id; else if (e.meet) { d.회의id = e.meet; d.순서 = String(BD.items.filter((x) => x.meet === e.meet).reduce((n, x) => Math.max(n, +x.sort || 0), 0) + 1); }
+      try { const o = await call("adm_board_save", { p_kind: "item", p_data: d }); if (!o || !o.ok) throw new Error((o && o.why) || "");
+        const lg = String(e.log || "").trim(); if (lg && e.id) await call("adm_board_save", { p_kind: "log", p_data: { 안건id: e.id, 내용: lg } }).catch(() => {});
+        return after(e.id ? "저장했어요" : "할 일을 넣었어요"); }
+      catch (x) { t.disabled = false; return toast("저장하지 못했어요. 다시 눌러 주세요"); } }
+    if (a === "mnew") { BD.md = { id: "", title: "", date: nowD(), brand: onl() ? "공통" : "VF", att: "", memo: "" }; return meetSheet(); }
+    if (a === "medit") { const m = M(BD.meet); if (!m) return; BD.md = { id: m.id, title: m.title || "", date: /^\d{4}-\d{2}-\d{2}$/.test(m.date || "") ? m.date : nowD(), brand: m.brand || "", att: m.att || "", memo: m.memo || "" }; return meetSheet(); }
+    if (a === "msave") { keepMd(); const m = BD.md, title = m.title.trim(); if (!title) return toast("회의 제목을 적어 주세요"); if (!/^\d{4}-\d{2}-\d{2}$/.test(m.date)) return toast("날짜를 골라 주세요"); t.disabled = true;
+      const d = { 제목: title, 날짜: m.date, 브랜드: m.brand, 참석: m.att.trim(), 메모: m.memo }; if (m.id) d.id = m.id;
+      try { const o = await call("adm_board_save", { p_kind: "meeting", p_data: d }); if (!o || !o.ok) throw 0; if (!m.id) BD.meet = o.id; return after(m.id ? "회의를 고쳤어요" : "회의를 만들었어요"); }
+      catch (x) { t.disabled = false; return toast("저장하지 못했어요. 다시 눌러 주세요"); } }
   });
 })();
 
@@ -3562,6 +3763,11 @@ ${cmp == null ? "" : `<div class="hmcmp">워드프레스 이번 달 <b>${w(wp.mo
 @media (min-width:900px){.plwrap{max-width:980px}.plq{max-width:420px}}
 `;
   st.textContent += `
+.plreq{background:var(--blue-soft);border-radius:16px;padding:12px 14px 6px;margin:0 0 12px}
+.plreqh{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin-bottom:4px}.plreqh b{font-size:15px}.plreqh span{font-size:13px;color:var(--sub)}
+.plreqr{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:8px 0;border-top:1px solid rgba(0,0,0,.06)}.plreqr .tx{flex:1;min-width:180px}.plreqr .tx b{display:block;font-size:15px}.plreqr .tx span{display:block;font-size:13px;color:var(--sub);margin-top:1px}
+.plreqr .r{display:flex;gap:6px}.plreqr .r button{height:32px;padding:0 10px;border-radius:9px;background:var(--card);color:var(--ink2);font-size:13px;font-weight:700}
+.pltag.new{background:var(--blue-soft);color:var(--blue)}
 .plprog.fin{opacity:.72}.plprog .plbad{display:block;color:var(--red,#d93025);font-size:13px;margin-top:4px}
 `;
   document.head.appendChild(st);
@@ -3577,6 +3783,15 @@ ${cmp == null ? "" : `<div class="hmcmp">워드프레스 이번 달 <b>${w(wp.mo
     PL.list = [...m.values()].map((o) => ({ ...o, k: Object.keys(o.br).length, g: PL.GRP[o.n] || "", warn: Object.entries(o.br).some(([b, x]) => !x.bc || kind(b, x.code, x.bc) === "매장 자체, 번호 다름") })).sort((a, b) => b.k - a.k || a.n.localeCompare(b.n, "ko"));
     const cc = {}; for (const o of PL.list) cc[o.cat] = (cc[o.cat] || 0) + 1; PL.cats = Object.entries(cc).sort((a, b) => b[1] - a[1]).map(([k]) => k);
     PL.grps = [...new Set(Object.values(PL.GRP))].sort();
+    PL.base = PL.list; mergeNew();
+  }
+  /* 봇이 포스에 넣은 결과(창고의 지점별 "상품코드 …, 바코드 …")를 목록에 합친다 */
+  const doneOf = (x, b) => { const d = x.done && x.done[b]; if (!d || !d.ok) return null; const t = String(d.note || ""), c = (t.match(/상품코드 (\d{6})/) || [])[1]; return c ? { code: c, bc: (t.match(/바코드 (\d{8,14})/) || [])[1] || "" } : null; };
+  function mergeNew() {
+    if (!PL.base) return; const m = new Map(PL.base.map((o) => [o.n, o])); let n = 0;
+    for (const x of PL.NEW) { if (!x.id || x.st === "취소") continue; const got = {}; for (const b of BR) { const g = doneOf(x, b); if (g) got[b] = g; } if (!Object.keys(got).length) continue;
+      const o0 = m.get(x.name), br = o0 ? { ...got, ...o0.br } : got; m.set(x.name, o0 ? { ...o0, br, k: Object.keys(br).length } : { n: x.name, cat: x.cat, br, k: Object.keys(br).length, g: x.grp || "", warn: false, fresh: true }); n++; }
+    PL.list = n ? [...m.values()].sort((a, b) => (b.fresh ? 1 : 0) - (a.fresh ? 1 : 0) || b.k - a.k || a.n.localeCompare(b.n, "ko")) : PL.base;
   }
   function load() {
     if (PL.st) return; PL.st = "loading";
@@ -3585,29 +3800,29 @@ ${cmp == null ? "" : `<div class="hmcmp">워드프레스 이번 달 <b>${w(wp.mo
     tryScript(["pos.js", "../menu/pos.js"]).then(async () => { PL.POS = window.POS; PL.GRP = (await grp) || {}; build(); PL.st = "ok"; if (tab === "plist") render(); }).catch(() => { PL.st = "fail"; if (tab === "plist") render(); });
   }
   const filt = () => { const k = PL.q.trim().toLowerCase(); return PL.list.filter((o) => (!k || o.n.toLowerCase().includes(k) || Object.values(o.br).some((x) => x.code === k || x.bc === k)) && (!PL.cat || o.cat === PL.cat) && (!PL.grp || (PL.grp === "-" ? !o.g : o.g === PL.grp)) && (!PL.only || (PL.only === "part" ? o.k < BR.length : PL.only === "warn" ? o.warn : true))); };
-  const rowsHtml = (L) => L.slice(0, PL.n).map((o) => `<button class="item plrow" data-pl="open" data-n="${esc(o.n)}"><div class="av ${o.k === BR.length ? "good" : "warn"}">${o.k}/${BR.length}</div><div class="tx"><b>${esc(o.n)}</b><span>${esc(o.cat || "분류 없음")}${o.g ? ", " + esc(o.g) : ""}</span></div>${o.warn ? '<span class="pltag">바코드 확인</span>' : ""}<span class="chev">›</span></button>`).join("");
+  const rowsHtml = (L) => L.slice(0, PL.n).map((o) => `<button class="item plrow" data-pl="open" data-n="${esc(o.n)}"><div class="av ${o.k === BR.length ? "good" : "warn"}">${o.k}/${BR.length}</div><div class="tx"><b>${esc(o.n)}</b><span>${esc(o.cat || "분류 없음")}${o.g ? ", " + esc(o.g) : ""}</span></div>${o.fresh ? '<span class="pltag new">새로 등록</span>' : ""}${o.warn ? '<span class="pltag">바코드 확인</span>' : ""}<span class="chev">›</span></button>`).join("");
   const listHtml = () => { const L = filt(); return `<div class="caption" style="margin:0 4px 8px">${L.length.toLocaleString("ko-KR")}개${L.length !== PL.list.length ? `, 전체 ${PL.list.length.toLocaleString("ko-KR")}개 중` : ""}. 앞 숫자는 9곳 중 몇 곳 포스에 있는지예요.</div><div class="list">${rowsHtml(L) || '<div class="empty">맞는 상품이 없어요</div>'}</div>${L.length > PL.n ? `<button class="plmore" data-pl="more">${Math.min(60, L.length - PL.n)}개 더 보기</button>` : ""}`; };
   const liveOn = () => !!(window.admLive && window.admLive() && window.admCall);
   const mapP = (p) => ({ id: +p.id, name: String(p.name || ""), cat: String(p.cat || ""), grp: String(p.grp || ""), price: +p.price || 0, cost: p.cost == null ? "" : String(p.cost), bc: String(p.bc || ""), br: BR.filter((b) => (p.br || []).includes(b)), by: String(p.by || ""), st: String(p.st || "대기"), done: p.done && typeof p.done === "object" ? p.done : {}, at: String(p.at || ""), upd: String(p.upd || "") });
   async function nLoad(force) {
     if (!liveOn() || (!force && Date.now() - PL.nat < 60000)) return; PL.nat = Date.now();
-    try { const o = await window.admCall("adm_prod_list", {}); if (!o || !o.ok) return; const sig0 = JSON.stringify(PL.NEW); PL.NEW = (o.list || []).map(mapP); PL.bot = !!o.bot; PL.live = true; if (JSON.stringify(PL.NEW) !== sig0 && tab === "plist" && !$("#plNn")) render(); }
+    try { const o = await window.admCall("adm_prod_list", {}); if (!o || !o.ok) return; const sig0 = JSON.stringify(PL.NEW); PL.NEW = (o.list || []).map(mapP); PL.bot = !!o.bot; PL.live = true; mergeNew(); if (JSON.stringify(PL.NEW) !== sig0 && tab === "plist" && !$("#plNn")) render(); }
     catch (e) { /* 다음에 다시 */ }
   }
-  const upd = (p) => { const x = mapP(p), i = PL.NEW.findIndex((y) => y.id === x.id); if (i >= 0) PL.NEW[i] = x; else PL.NEW.unshift(x); };
-  const newStat = (x) => { const on = BR.filter((b) => PL.POS[b] && PL.POS[b][x.name]); return { on, txt: on.length ? `포스에 ${on.length}/${x.br.length}곳 들어옴` : "아직 포스에 안 들어옴" }; };
+  const upd = (p) => { const x = mapP(p), i = PL.NEW.findIndex((y) => y.id === x.id); if (i >= 0) PL.NEW[i] = x; else PL.NEW.unshift(x); mergeNew(); };
+  const newStat = (x) => { const on = BR.filter((b) => (PL.POS[b] && PL.POS[b][x.name]) || doneOf(x, b)); return { on, txt: on.length ? `포스에 ${on.length}/${x.br.length}곳 들어옴` : "아직 포스에 안 들어옴" }; };
   window.plistHtml = function () {
     load();
     if (PL.st !== "ok") return `<div class="plwrap"><div class="plhd"><h1>상품 목록</h1></div><div class="list"><div class="empty">${PL.st === "fail" ? "상품 자료를 못 불러왔어요. 새로고침 해 주세요." : "상품 자료를 불러오는 중이에요"}</div></div></div>`;
     const part = PL.list.filter((o) => o.k < BR.length).length, warn = PL.list.filter((o) => o.warn).length;
 nLoad();
     const live = !!PL.live && liveOn();
-    const prog = (live ? `<div class="caption" style="margin:0 4px 8px">${PL.NEW.some((x) => x.st === "대기") ? (PL.bot ? "등록 요청은 마감 뒤에 봇이 포스에 넣어요." : "포스에 넣는 봇은 아직 연결 전이에요. 지금은 파일을 받아 포스에 올려 주세요.") : ""}</div>` : "") + PL.NEW.map((x, i) => {
-      if (x.st === "취소") return "";
-      const s = newStat(x), bad = x.br.filter((b) => x.done[b] && x.done[b].ok === false), okN = x.br.filter((b) => (x.done[b] && x.done[b].ok) || s.on.includes(b)).length;
-      if (x.st === "등록됨") return `<div class="plprog fin"><b>${esc(x.name)} <span style="display:inline;font-weight:600">등록됨</span></b><span>${esc(x.upd)}, 넣은 지점 ${x.br.length}곳</span></div>`;
+    const wait = PL.NEW.map((x, i) => [x, i]).filter(([x]) => x.st !== "취소" && x.st !== "등록됨"), fin = PL.NEW.filter((x) => x.st === "등록됨");
+    const waitRow = ([x, i]) => { const s = newStat(x), bad = x.br.filter((b) => x.done[b] && x.done[b].ok === false), okN = x.br.filter((b) => s.on.includes(b)).length;
       if (live && okN === x.br.length && !PL.auto[x.id]) { PL.auto[x.id] = 1; window.admCall("adm_prod_set", { p_id: x.id, p_st: "등록됨" }).then((o) => { if (o && o.ok) { upd(o.prod); if (tab === "plist" && !$("#plNn")) render(); } }).catch(() => {}); }
-      return `<div class="plprog"><b>${esc(x.name)} <span style="display:inline;font-weight:600">${live ? "등록 기다리는 중" : "등록 준비 중, 예시"}</span></b><span>${esc(x.cat)}${x.grp ? ", " + esc(x.grp) : ""}, 판매가 ${(+x.price).toLocaleString("ko-KR")}원, 넣을 지점 ${x.br.length}곳. ${s.txt}${live && x.by ? `. ${esc(x.by)}, ${esc(x.at)}` : ""}</span>${bad.length ? `<span class="plbad">못 넣은 지점: ${bad.map((b) => esc(b) + (x.done[b].note ? " (" + esc(x.done[b].note) + ")" : "")).join(", ")}</span>` : ""}<div class="r"><button data-pl="file" data-i="${i}">포스에 올릴 파일 받기</button>${live ? `<button data-pl="fin" data-i="${i}">직접 넣었어요</button>` : ""}<button data-pl="drop" data-i="${i}">${live ? "취소" : "지우기"}</button></div></div>`; }).join("");
+      return `<div class="plreqr"><div class="tx"><b>${esc(x.name)}</b><span>${(+x.price).toLocaleString("ko-KR")}원, ${x.br.length}곳 중 ${okN}곳 들어감${live && x.by ? ", " + esc(x.by) : ""}${live ? "" : ", 예시"}</span>${bad.length ? `<span class="plbad">못 넣은 지점: ${bad.map((b) => esc(b) + (x.done[b].note ? " (" + esc(x.done[b].note) + ")" : "")).join(", ")}. 봇이 다시 넣어 봐요.</span>` : ""}</div><div class="r"><button data-pl="drop" data-i="${i}">${live ? "취소" : "지우기"}</button></div></div>`; };
+    const prog = (wait.length ? `<div class="plreq"><div class="plreqh"><b>포스에 넣는 중 ${wait.length}건</b><span>${live ? (PL.bot ? "봇이 지점 포스에 차례로 넣고 있어요. 5분 안에 시작해요" : "포스에 넣는 봇이 꺼져 있어요") : "저장되지 않는 예시예요"}</span></div>${wait.map(waitRow).join("")}</div>` : "")
+      + (fin.length ? `<div class="caption" style="margin:0 4px 10px">최근에 포스에 넣은 상품 ${fin.length}개: ${fin.slice(0, 6).map((x) => esc(x.name)).join(", ")}${fin.length > 6 ? " 등" : ""}. 목록 맨 위에 "새로 등록"으로 보여요.</div>` : "");
     requestAnimationFrame(() => { const i = $("#plq"); if (i && i.value !== PL.q) i.value = PL.q; });
     return `<div class="plwrap"><div class="plhd"><h1>상품 목록</h1><small>${PL.list.length.toLocaleString("ko-KR")}개</small><span class="sp"></span><button class="plnew" data-pl="new">+ 신규 상품</button></div>${prog}
 <input class="plq" id="plq" placeholder="상품 이름, 상품코드, 바코드" autocomplete="off" aria-label="상품 찾기">
