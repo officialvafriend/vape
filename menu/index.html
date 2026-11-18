@@ -1002,9 +1002,11 @@ async function memPoll(id, n = 0) { if (!member.reg || member.reg.id !== id) ret
   let st = null; try { const r = await fetch(SB_URL + "/rest/v1/rpc/memreg_get", { method: "POST", headers: { apikey: SB_KEY, Authorization: "Bearer " + SB_KEY, "Content-Type": "application/json" }, body: JSON.stringify({ p_id: id }) }); if (r.ok) st = await r.json(); } catch (e) {}
   if (!st && n % 4 === 3) { try { const r = await fetch(MEMREG_API, { cache: "no-store", headers: { Accept: "application/vnd.github.raw+json" } }); if (r.ok) { const row = (await r.json()).find((x) => x.id === id); if (row) st = row.s; } } catch (e) {} }
   if (!member.reg || member.reg.id !== id) return;
-  if (st && st !== "wait") { member.reg.s = st; memRedraw(); return; }
-  if (n >= 80) { member.reg.s = "late"; memRedraw(); return; }
+  if (st && st !== "wait") { member.reg.s = st; memLog(st); memRedraw(); return; }
+  if (n >= 80) { member.reg.s = "late"; memLog("late"); memRedraw(); return; }
   setTimeout(() => memPoll(id, n + 1), 1500); }
+/* 11/18 액상덕후 "그렇게 해서 해보자": 패드가 손님에게 보여 준 회원등록, 조회 결과를 패드 기록에 남김 (봇 기록과 대조용). 결과 글자와 걸린 초만, 이름과 번호는 안 남김 */
+function memLog(s) { try { const r = member.reg || {}; ev("mr", s, (r.look ? "조회" : "등록") + " " + (r.t0 ? Math.round((Date.now() - r.t0) / 1000) + "초" : "")); evFlush(); } catch (e) {} }
 async function memRegSend(look) { /* 11/12 look=true: 회원이에요 번호로 포스에서 찾기만 */
   const need = (k, msg) => { member.bad = k; drawCart(); toast(msg); setTimeout(() => { const el = document.querySelector('.mem .bad'); if (el) { el.scrollIntoView({ block: "center" }); if (el.tagName === "INPUT") el.focus(); } }, 60); };
   if (!look) {
@@ -1013,12 +1015,12 @@ async function memRegSend(look) { /* 11/12 look=true: 회원이에요 번호로 
   if (!/^01[016789]\d{7,8}$/.test(member.phone)) return need("phone", "휴대폰 번호를 확인해 주세요");
   if (!look && !member.agree) return need("agree", "(필수) 동의를 눌러 주세요"); member.bad = "";
   const id = Array.from(crypto.getRandomValues(new Uint8Array(8)), (b) => b.toString(36)).join("").slice(0, 16).padEnd(8, "0");
-  member.reg = { id, s: "send", look: !!look }; memRedraw();
+  member.reg = { id, s: "send", look: !!look, t0: Date.now() }; memRedraw();
   try { const enc = await memSeal(look ? { name: "", phone: member.phone, sex: "", sms: "N" } : { name: memFull(), phone: member.phone, sex: "", sms: member.mk ? "Y" : "N" }); /* 성별은 안 받음, 포스 기본값(여) */ /* 11/12 (선택) 쿠폰, 혜택 문자 동의 → 포스 문자 수신 Y */
     const r = await fetch(HOOK, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ content: JSON.stringify({ type: "memreg", branch: BRANCH, pad: PAD_NO, id, enc, ...(look ? { look: 1 } : {}) }), allowed_mentions: { parse: [] }, flags: 4096 }) });
     if (!r.ok) throw new Error("응답 " + r.status); member.reg.s = "wait"; memRedraw(); setTimeout(() => memPoll(id), 1500);
     if (!look && window.h2After === "qz") { window.h2After = null; if (!document.body.classList.contains('land')) document.body.classList.remove('open'); qzStart(); toast("등록하는 동안 먼저 찾아볼게요"); }
-  } catch (e) { member.reg = null; memRedraw(); toast("보내지 못했어요, 다시 눌러 주세요"); } }
+  } catch (e) { memLog("sendfail"); member.reg = null; memRedraw(); toast("보내지 못했어요, 다시 눌러 주세요"); } }
 const memFull = () => member.name.trim() ? member.name.trim() + (member.year || "") : ""; /* 11/12 성함+년생(예: 클로드98), 동명이인 구분 */
 const MEM_S = { send: "보내는 중이에요", wait: "등록하는 중이에요. 잠깐이면 돼요, 계속 고르셔도 돼요", ok: "회원등록 됐어요!", dup: "이미 회원이세요! 결제할 때 직원에게 말씀해 주세요", err: "등록이 안 됐어요, 직원에게 말씀해 주세요", off: "등록이 안 됐어요, 직원에게 말씀해 주세요", late: "확인이 늦어지고 있어요, 직원에게 말씀해 주세요" };
 const MEM_L = { send: "찾는 중이에요", wait: "포스에서 찾는 중이에요. 계속 고르셔도 돼요", found: "회원 확인됐어요! 결제할 때 이 번호로 찾을게요", none: "이 번호로 된 회원이 없어요", err: "확인이 안 됐어요, 직원에게 번호를 말씀해 주세요", off: "확인이 안 됐어요, 직원에게 번호를 말씀해 주세요", late: "확인이 늦어지고 있어요, 직원에게 번호를 말씀해 주세요" };
