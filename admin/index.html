@@ -163,6 +163,22 @@
 .botwarn{display:block;width:100%;text-align:left;background:var(--red-soft);color:var(--red);font-weight:700;font-size:14px;border-radius:12px;padding:10px 14px;margin:0 0 14px}
 .kbar .chip{height:40px;padding:0 12px;border-radius:10px;background:var(--card);font-weight:600;font-size:14px;color:var(--ink2);border:1px solid var(--line2)}
 .kbar .chip.on{background:var(--blue);color:#fff;border-color:var(--blue)}
+.padmon{display:flex;align-items:center;gap:6px;margin:0 0 16px}.padmon b{min-width:64px;text-align:center;font-size:20px;font-weight:800}.padmon button{width:48px;height:48px;border-radius:14px;background:var(--card);box-shadow:inset 0 0 0 1px var(--line2);font-size:20px;font-weight:700;color:var(--ink2)}.padmon button:disabled{opacity:.3}
+.padlist{display:grid;gap:10px}@media (min-width:900px){.padlist{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}}
+.padrow{display:block;width:100%;text-align:left;background:var(--card);border-radius:18px;padding:16px 18px}.padrow .h{display:flex;align-items:baseline;gap:8px}.padrow .h b{font-size:18px;font-weight:800;letter-spacing:-.3px}.padrow .h small{font-size:12px;font-weight:600;color:var(--sub)}.padrow .h .sp{flex:1}.padrow .h strong{font-size:18px;font-weight:800;color:var(--blue);font-variant-numeric:tabular-nums}.padrow .h i{font-style:normal;color:var(--sub);font-weight:700}
+.padrow .bar{margin:10px 0 8px}.padrow .s{font-size:14px;color:var(--sub)}.padrow .w{font-size:15px;font-weight:600;color:var(--ink2);margin-top:4px;line-height:1.45;word-break:keep-all}.padrow .w.t-bad{color:var(--red)}
+.padnone{margin-top:12px;background:var(--line);border-radius:14px;padding:12px 16px;font-size:14px;color:var(--sub);line-height:1.6}.padnone b{display:block;color:var(--ink2);font-size:14px}
+.ofgrid{display:grid;gap:12px}.ofgrid>.card,.ofwrap>.card{margin:0}.ofwrap{display:contents}
+.ofrow{display:flex;align-items:center;gap:12px;min-height:60px;padding:8px 0;border-top:1px solid var(--line2)}.ofrow .tx{flex:1;min-width:0}.ofrow .tx b{display:block;font-size:16px;font-weight:700}.ofrow .tx span{display:block;font-size:14px;color:var(--sub);line-height:1.45;word-break:keep-all}.ofrow .tx span.t-bad{color:var(--red);font-weight:700}
+.ofrow .btn{flex:none;width:auto;height:40px;padding:0 14px;font-size:14px}
+.ofdot{flex:none;width:12px;height:12px;border-radius:50%;background:var(--green)}.ofdot.bad{background:var(--red)}
+.ofwarn{background:var(--red-soft);color:var(--red);border-radius:12px;padding:10px 12px;font-size:14px;font-weight:700;margin:8px 0}
+.oftbl{width:100%;border-collapse:collapse;margin-top:6px}.oftbl th{text-align:left;font-size:13px;font-weight:700;color:var(--sub);padding:8px 10px 8px 0;white-space:nowrap}.oftbl th small{font-weight:700;color:var(--ink2);margin-left:4px}
+.oftbl td{padding:11px 10px 11px 0;border-top:1px solid var(--line2);font-size:15px;font-variant-numeric:tabular-nums;vertical-align:top}.oftbl td b{font-weight:700;white-space:nowrap}.oftbl td small{color:var(--sub);font-size:13px;font-weight:500;margin-left:4px}
+.oftbl td.ok{color:var(--green);font-weight:600}.oftbl td.bad{color:var(--red);font-weight:800}.oftbl td.off{color:var(--sub)}
+@media (min-width:900px){.ofgrid{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:16px;align-items:start}.ofbr{grid-column:1 / -1}}
+.ofsum{border-radius:12px;padding:10px 14px;font-size:14px;line-height:1.5;margin:8px 0 4px}.ofsum b{display:block;font-size:15px;font-weight:800}.ofsum.ok{background:var(--green-soft);color:var(--green)}.ofsum.bad{background:var(--red-soft);color:var(--red)}
+@media (max-width:899px){.oftbl thead{display:none}.oftbl tr{display:block;padding:10px 0;border-top:1px solid var(--line2)}.oftbl td{display:flex;gap:10px;padding:2px 0;border:0;font-size:15px}.oftbl td[data-l]::before{content:attr(data-l);flex:none;width:86px;color:var(--sub);font-size:13px;font-weight:500;padding-top:2px}.oftbl td:first-child{font-size:16px;padding-bottom:2px}.oftbl td small{margin-left:0}}
 .ops.kt td{padding-top:9px;padding-bottom:9px}
 .ops.kt{min-width:0}.ops.kt td.g{color:var(--green);font-weight:800}.ops.kt td.r{color:var(--red);font-weight:800}
 .krank{display:grid;grid-template-columns:1fr 1fr;gap:12px}
@@ -525,7 +541,7 @@ function render() {
   $("#app").innerHTML = `<div class="shell"><aside class="side"><div class="logo">VAFRIEND <b>관리자</b></div>
       ${GROUPS.map((g) => `<button class="navb ${grpOf(tab) === g ? "on" : ""}" data-tab="${grpTab(g)}">${ICG[g[0]] || ICON[g[0]]}${g[1]}${g[0] === "tasks" && tn ? `<span class="nbadge">${tn}</span>` : ""}${g[0] === "msg" && mn ? `<span class="nbadge">${mn}</span>` : ""}${g[0] === "more" && botBad() ? ' <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--red);margin-left:4px"></span>' : ""}</button>`).join("")}
       <div class="foot"><button class="navb" data-act="reload">↻ ${hh ? `${hh}:${mm} 기준` : "새로고침"}</button><button class="navb" data-act="logout">🔒 잠그기</button></div></aside>
-    <main class="main ${EMBED[tab] || tab === "msg" ? "embm" : ""}">${tab === "msg" || tab === "plist" || tab === "home" || tab === "tasks" || tab === "kpi" || tab === "survey" || tab === "group" || tab === "must" || tab === "stockrep" || tab === "coins" || tab === "close" || EMBED[tab] ? body : `<div class="narrow">${body}</div>`}</main></div>`;
+    <main class="main ${EMBED[tab] || tab === "msg" ? "embm" : ""}">${tab === "msg" || tab === "plist" || tab === "home" || tab === "tasks" || tab === "kpi" || tab === "survey" || tab === "group" || tab === "must" || tab === "stockrep" || tab === "coins" || tab === "close" || tab === "office" || EMBED[tab] ? body : `<div class="narrow">${body}</div>`}</main></div>`;
   markEmb();
   if (tab === "home" && $("#panel")) { if (panelKeep) { $("#panel").innerHTML = panelKeep; bindSparks(); } else { const top = issuesLeft()[0], fresh = top && issKey(top) !== panelOffKey; if (fresh && top.b && D.branches.some((y) => y.b === top.b)) { panelBranch(top.b, "프리미엄 A"); panelKeep = ""; } else { $("#panel").innerHTML = fresh && top.kind === "aout" ? `<div class="eyebrow">제일 급한 것</div>${heroHtml()}` : panelDefault(); bindSparks(); } } }
 }
@@ -548,15 +564,56 @@ function kRow(label, g, hl = {}) {
 }
 const kHL = (list) => { const o = {}; for (const k of ["avg", "ticket", "des", "disp", "valm", "rev"]) { const xs = list.map((g) => kVals(g)[k]).filter((x) => x != null); if (xs.length > 1) o[k] = { max: Math.max(...xs), min: Math.min(...xs) }; } return o; };
 const kHead = (first) => `<thead><tr><th>${first}</th><th>영업일</th><th>매출(만원)</th><th>하루 평균(만원)</th><th>객수</th><th>객단가</th><th>지정판매율</th><th>일회용판매율</th><th>발맥프로율</th><th>리뷰율</th></tr></thead>`;
+const kModeBar = () => `<div class="kbar">${[["staff", "직원별"], ["branch", "지점별"], ["pad", "패드"]].map(([k, n]) => `<button class="chip ${kpiM === k ? "on" : ""}" data-kpim="${k}">${n}</button>`).join("")}</div>`;
 function kpiHtml() {
-  const K = D.kpi; if (!K) return '<div class="empty">KPI 기록을 아직 못 불러왔어요</div>';
+  if (kpiM === "pad") return kModeBar() + padKpiHtml(); /* 패드 사용량은 KPI 기록과 따로 받아 온다 */
+  const K = D.kpi; if (!K) return kModeBar() + '<div class="empty">KPI 기록을 아직 못 불러왔어요</div>';
   if (kpiM === "staff") return kpiRankHtml() + kpiHtml0(K);
   return kpiHtml0(K);
 }
 function kpiHtml0(K) {
-  const modeBar = `<div class="kbar">${[["staff", "직원별"], ["branch", "지점별"]].map(([k, n]) => `<button class="chip ${kpiM === k ? "on" : ""}" data-kpim="${k}">${n}</button>`).join("")}</div>`;
+  const modeBar = kModeBar();
   if (kpiM === "staff") return modeBar + staffKpiHtml(K);
   return modeBar + branchKpiHtml(K);
+}
+/* ── KPI 패드 칸 (11/18 보혜 "직원 KPI 안에 패드 사용량도 달마다 체크", "다른 지점 직원들이 어떻게 쓰는지를 모르니까") ──
+   이 PC의 올리기 도구(온라인홈_자료\패드사용_올리기.mjs)가 패드 사용 기록을 달, 지점, 판매자별로 세어 창고에 올려 둔 개수를 보여 준다.
+   금액, 상품명, 검색어는 없다. 예시 자료도 없다: 못 받으면 못 받았다고만 보인다. */
+const PADK = { st: "", at: 0, d: null, m: "" };
+async function padkLoad(force) {
+  if (!(window.admCall && window.admLive && window.admLive())) return;
+  if (!force && Date.now() - PADK.at < 5 * 60e3) return; PADK.at = Date.now(); if (!PADK.st) PADK.st = "load";
+  try { const o = await window.admCall("adm_vfpad_get"); if (o && o.ok) { PADK.d = o.pad && typeof o.pad === "object" ? o.pad : null; PADK.st = "ok"; } else if (PADK.st !== "ok") PADK.st = "fail"; } catch (e) { if (PADK.st !== "ok") PADK.st = "fail"; }
+  if (tab === "kpi" && kpiM === "pad" && !$("#dim").classList.contains("on")) render();
+}
+const padN = (v) => (+v || 0).toLocaleString();
+const padDay = (s) => (/^\d{4}-\d{2}-\d{2}$/.test(String(s || "")) ? `${+s.slice(5, 7)}/${+s.slice(8)}` : "-");
+function padKpiHtml() {
+  const head = (cap) => `<div class="pchead"><h1>패드 사용</h1><div class="caption">${cap}</div></div>`;
+  if (!(window.admLive && window.admLive())) return head("메신저에 들어온 뒤에 보여요") + '<div class="list"><div class="empty">메신저에서 내 이름으로 들어오면 패드 사용량이 보여요.<br><button class="btn" data-tab="msg" style="margin-top:12px;width:auto;padding:0 18px;height:44px">메신저 열기</button></div></div>';
+  padkLoad();
+  if (PADK.st !== "ok") return head("") + `<div class="list"><div class="empty">${PADK.st === "fail" ? '패드 사용량을 못 불러왔어요. <button class="hmre" data-padk="re">다시 받기</button>' : "불러오는 중이에요"}</div></div>`;
+  const P = PADK.d, ms = P && P.m ? Object.keys(P.m).filter((m) => /^\d{4}-\d{2}$/.test(m)).sort() : [];
+  if (!ms.length) return head("") + '<div class="list"><div class="empty">아직 올라온 패드 기록이 없어요</div></div>';
+  if (!ms.includes(PADK.m)) PADK.m = ms.at(-1);
+  const M = P.m[PADK.m] || {}, at = ms.indexOf(PADK.m), prev = ms[at - 1], next = ms[at + 1], mon = +PADK.m.slice(5), hasSeller = PADK.m >= String(P.sellerFrom || "2026-11-13").slice(0, 7);
+  const step = `<div class="padmon"><button data-padm="${esc(prev || "")}" ${prev ? "" : "disabled"} aria-label="이전 달">‹</button><b>${mon}월</b><button data-padm="${esc(next || "")}" ${next ? "" : "disabled"} aria-label="다음 달">›</button></div>`;
+  const used = BR.filter((b) => M[b]).sort((a, b) => (+M[b].d || 0) - (+M[a].d || 0) || (+M[b].a || 0) - (+M[a].a || 0)), none = BR.filter((b) => !M[b]), top = Math.max(1, ...used.map((b) => +M[b].d || 0));
+  const row = (b) => { const x = M[b], S = Object.entries(x.staff || {}).sort((p, q) => q[1] - p[1]), w = +x.w || 0, blank = +x.blank || 0;
+    const who = !hasSeller ? "" : S.length ? S.slice(0, 3).map(([n, c]) => `${esc(n)} ${padN(c)}번`).join(", ") + (S.length > 3 ? ` 외 ${S.length - 3}명` : "") + (blank ? `, 안 고름 ${padN(blank)}번` : "") : w ? "판매자를 안 골라서 누가 썼는지 몰라요" : "";
+    return `<button class="padrow" data-padb="${esc(b)}"><div class="h"><b>${BR.indexOf(b) + 1} ${esc(b)}</b>${b === "본점" ? "<small>시험 포함</small>" : ""}<span class="sp"></span><strong>주문 ${padN(x.d)}번</strong><i>›</i></div><div class="bar"><i style="width:${Math.max(2, Math.round(((+x.d || 0) / top) * 100))}%"></i></div><div class="s">쓴 날 ${padN(x.days)}일, 마지막 ${padDay(x.last)}</div>${who ? `<div class="w ${hasSeller && w && !S.length ? "t-bad" : ""}">${who}</div>` : ""}</button>`; };
+  return head(`${esc(String(P.made || "").slice(5).replace("-", "/"))} 기준`) + step + `<div class="sec">많이 쓴 지점부터 <small>쓴 곳 ${used.length}곳, 안 쓴 곳 ${none.length}곳</small></div><div class="padlist">${used.map(row).join("") || '<div class="list"><div class="empty">이 달에 패드를 쓴 지점이 없어요</div></div>'}</div>${none.length ? `<div class="padnone"><b>안 쓴 지점 ${none.length}곳</b>${none.map((b) => `${BR.indexOf(b) + 1} ${esc(b)}`).join(", ")}</div>` : ""}
+    <div class="caption" style="margin-top:12px">주문은 패드에서 QR이나 포스로 보내기 화면을 연 횟수예요.${hasSeller ? "" : " 판매자 이름은 11/13부터 남아요."}</div>`;
+}
+function padBranchSheet(b) {
+  const P = PADK.d, x = P && P.m && P.m[PADK.m] ? P.m[PADK.m][b] : null; if (!x) return;
+  const S = Object.entries(x.staff || {}).sort((p, q) => q[1] - p[1]);
+  const line = (n, c, sub) => `<div class="item" style="cursor:default"><div class="tx"><b>${n}</b>${sub ? `<span>${sub}</span>` : ""}</div><b style="flex:none;font-size:16px">${padN(c)}번</b></div>`;
+  openSheet(`<h3>${BR.indexOf(b) + 1} ${esc(b)}, ${+PADK.m.slice(5)}월 패드</h3><div class="caption">쓴 날 ${padN(x.days)}일, 마지막으로 쓴 날 ${padDay(x.last)}</div>
+<div class="sec" style="margin-top:14px">직원별 주문 <small>주문 화면을 열 때 고른 판매자, 11/13부터</small></div>
+<div class="list">${S.map(([n, c]) => line(esc(n), c, "")).join("") || '<div class="empty">판매자를 고른 주문이 없어요</div>'}${+x.blank ? line("판매자 안 고름", x.blank, "누가 했는지 알 수 없어요") : ""}</div>
+<div class="sec">그 밖에</div><div class="list">${line("담기", x.a)}${line("검색", x.q)}${line("직원에게 보여주기", x.f)}${line("회원 등록, 조회", x.mr)}${line("패드 열기", x.o)}</div>
+<div class="btns"><button class="btn gray" data-x>닫기</button></div>`);
 }
 function branchKpiHtml(K) {
   const A = K.agg[kpiP] || {};
@@ -1138,33 +1195,40 @@ function visitsHtml() {
   }).join("");
   return `<div style="padding:12px 0;border-top:1px solid var(--line2)"><div class="eyebrow" style="margin-bottom:6px">오늘 직원웹 접속 <span class="t-sub" style="font-weight:500">같은 기기는 30분에 한 번 셈</span></div><div style="display:flex;flex-wrap:wrap;gap:6px">${chips}</div></div>`;
 }
+/* 11/18 보혜 "사무실도 배치 보기 편하게": 들판(캐릭터)은 그대로 두고, 그 옆에 봇 세 줄, 아래에 지점별 표 하나.
+   전에는 지점 9곳이 칩 묶음 세 덩이(포스 로그인, 직원웹 접속, 은행알림)로 흩어져 있었다. 이제 지점마다 한 줄에서 세 가지를 같이 본다. 내용과 판정은 전과 같다. */
 function botHtml() {
-  if (!BOT) return `<div class="card" id="botcard"><div class="eyebrow">봇 상태</div><div class="t-sub">${BOT_ERR ? "불러오지 못했어요" : "불러오는 중"}</div></div>`;
-  const m = agoMin(BOT.at), dead = m > 10;
-  const opsBad = dead || BOT.ops.s === "에러", master = BOT.master || {};
+  if (!BOT) return `<div id="botcard" class="ofwrap"><div class="card ofbots"><div class="eyebrow">봇 상태</div><div class="t-sub">${BOT_ERR ? "불러오지 못했어요" : "불러오는 중"}</div></div></div>`;
+  const m = agoMin(BOT.at), dead = m > 10, master = BOT.master || {}, ad = BOT.adj || null;
+  const opsBad = dead || BOT.ops.s === "에러", masterBad = dead || !master.ok || !master.login;
   const masterTxt = dead ? "확인 안 됨" : !master.ok ? master.err || "꺼져 있음" : master.login ? "본사 로그인 됨" : "로그인 필요 (봇 PC 크롬 창에서)";
-  const masterBad = dead || !master.ok || !master.login;
-  const row = (name, bad, txt, btn) => `<div style="display:flex;align-items:center;gap:10px;padding:12px 0;border-top:1px solid var(--line2)"><b style="width:64px">${name}</b><span class="${bad ? "t-bad" : "t-good"}" style="flex:1;font-weight:700">${bad ? "⚠️" : "✅"} ${esc(txt)}</span>${btn}</div>`;
-  const rb = (bot) => `<button class="btn gray" style="width:auto;height:40px;padding:0 14px;font-size:15px" data-restart="${bot}">다시 켜기</button>`;
-  const hh = new Date(Date.now() + 9 * 3600e3).getUTCHours(), open = hh >= 11 && hh < 22;
-  // 10/28 사장님 "신호가 안 온 줄 알았다": 마지막 알림 시각 대신 오늘 포스 이체 건수와 통장 입금 건수를 비교. 이체 손님이 없으면 회색, 다 들어왔으면 초록, 포스엔 있는데 통장에 없으면 빨강
-  // 10/29 사장님 "전처럼 깔끔하게": 칩은 폰 알림 앱 상태만. 정상(초록, 마지막 알림 시각) / 알림 끊김(빨강) / 오늘 조용함(회색) / 연결 전(회색). 포스 대조는 칩을 누르면(다음 단계)
-  const bank = BR.map((b) => { const v = BOT.bank?.[b], o = v && typeof v === "object" ? v : { last: v || null, st: v ? "ok" : "none" };
-    const lt = o.last ? o.last.slice(5).replace("-", "/").replace(/^(\d\d\/\d\d) /, (m, d) => (d === todayMD() ? "" : d + " ")) : "";
-    // 10/29 생존 신호(폰 매크로가 15분마다 보냄)가 있는 지점은 그 시각으로: 살아 있음 HH:MM / 신호 끊김
-    const bt = o.beat ? o.beat.slice(5).replace("-", "/").replace(/^(\d\d\/\d\d) /, (m, d) => (d === todayMD() ? "" : d + " ")) : "";
-    const [txt, cls] = o.st === "cut" ? [o.beat ? `신호 끊김, 마지막 ${bt}` : `알림 끊김, 마지막 ${lt}`, "background:var(--red-soft);color:var(--red)"] : o.st === "none" ? ["연결 전", "color:var(--sub)"] : o.st === "quiet" && !o.beat ? ["오늘 알림 아직 없음", "color:var(--sub)"] : [o.beat ? `살아 있음 ${bt}` : `정상, 마지막 ${lt}`, "background:var(--green-soft);color:var(--green)"];
-    return `<span class="chip" style="display:inline-flex;align-items:center;gap:5px;height:34px;padding:0 12px;font-size:14px;${cls}" title="${o.gap ? "오늘 끊겼던 시간 " + esc(o.gap) : ""}${o.posTr != null ? " 포스 이체 " + o.posTr + "건" : ""}">${BR.indexOf(b) + 1}호 ${b} <small>${txt}${o.gap ? " ⚠️" : ""}</small></span>`; }).join("");
-  return `<div class="card" id="botcard"><div class="eyebrow">봇 상태 <span class="t-sub" style="font-weight:500">${agoTxt(m)} 기준${dead ? ", 이 PC나 운영봇이 꺼진 것 같아요 (10분마다 자동으로 다시 켜요)" : ""}</span></div>
-    ${row("운영봇", opsBad, dead ? "소식 없음 " + agoTxt(m) : BOT.ops.s + (BOT.ops.line ? ", " + BOT.ops.line : ""), rb("운영봇"))}
-    ${row("마스터봇", masterBad, masterTxt, rb("마스터봇"))}
-    ${(() => { const ad = BOT.adj; if (!ad) return ""; const brs = Object.entries(ad.br || {}), bad = brs.filter(([, v]) => !v.login); const txt = dead ? "확인 안 됨" : !ad.ok ? (ad.err || "꺼져 있음") : bad.length ? "로그인 필요: " + bad.map(([b]) => b).join(", ") : brs.length + "개 지점 로그인 됨"; return row("조정봇", dead || !ad.ok || bad.length > 0, txt, "") + (ad.ok ? `<div style="display:flex;flex-wrap:wrap;gap:6px;padding:0 0 10px">${brs.map(([b, v]) => `<span class="chip" style="display:inline-flex;align-items:center;height:30px;padding:0 10px;font-size:13px;${v.login ? "background:var(--green-soft);color:var(--green)" : "background:var(--red-soft);color:var(--red)"}">${BR.indexOf(b) + 1}호 ${b} ${v.login ? "로그인" : "로그인 필요"}</span>`).join("")}</div>` : ""); })()}
-    ${BOT.bsQ ? `<div class="t-bad" style="padding:8px 0;font-weight:700">⚠️ 시트에 못 들어간 기록 ${BOT.bsQ}건 (다시 보내는 중)</div>` : ""}
-    ${visitsHtml()}
-    <div style="padding-top:12px;border-top:1px solid var(--line2)"><div class="eyebrow" style="margin-bottom:6px">지점 폰 은행알림 <span class="t-sub" style="font-weight:500">지점 폰 알림 앱 상태, 끊기면 빨간색</span></div><div style="display:flex;flex-wrap:wrap;gap:6px">${bank}</div></div></div>`;
+  const adBr = ad ? Object.entries(ad.br || {}) : [], adNeed = adBr.filter(([, v]) => !v.login), adBad = !!ad && (dead || !ad.ok || adNeed.length > 0);
+  const adTxt = !ad ? "" : dead ? "확인 안 됨" : !ad.ok ? ad.err || "꺼져 있음" : adNeed.length ? "로그인 필요: " + adNeed.map(([b]) => b).join(", ") : adBr.length + "개 지점 로그인 됨";
+  const row = (name, bad, txt, bot) => `<div class="ofrow"><i class="ofdot ${bad ? "bad" : "ok"}"></i><div class="tx"><b>${name}</b><span class="${bad ? "t-bad" : ""}">${bad ? "확인 필요, " : ""}${esc(txt)}</span></div>${bot ? `<button class="btn gray" data-restart="${bot}">다시 켜기</button>` : ""}</div>`;
+  const today = todayMD(), short = (s) => (s ? s.slice(5).replace("-", "/").replace(/^(\d\d\/\d\d) /, (x, d) => (d === today ? "" : d + " ")) : "");
+  const cell = (label, cls, html, title) => `<td class="${cls}" data-l="${label}"${title ? ` title="${esc(title)}"` : ""}>${html}</td>`;
+  let nLog = 0, nVis = 0, nBank = 0, nBankOn = 0;
+  const rows = BR.map((b, i) => {
+    const a = ad && ad.ok && ad.br ? ad.br[b] : null, v = BOT.visits ? BOT.visits[b] : null, bv = BOT.bank?.[b], o = bv && typeof bv === "object" ? bv : { last: bv || null, st: bv ? "ok" : "none" };
+    if (a && a.login) nLog++; if (v) nVis++;
+    const lt = short(o.last), bt = short(o.beat);
+    const [btxt, bcls] = o.st === "cut" ? [o.beat ? `신호 끊김, 마지막 ${bt}` : `알림 끊김, 마지막 ${lt}`, "bad"] : o.st === "none" ? ["연결 전", "off"] : o.st === "quiet" && !o.beat ? ["오늘 알림 아직 없음", "off"] : [o.beat ? `살아 있음 ${bt}` : `정상, 마지막 ${lt}`, "ok"];
+    if (o.st !== "none") nBankOn++; if (bcls === "ok") nBank++;
+    return `<tr><td><b>${i + 1}호 ${esc(b)}</b></td>${cell("포스 로그인", !ad || !a ? "off" : a.login ? "ok" : "bad", !ad ? "-" : !ad.ok || dead ? "확인 안 됨" : !a ? "-" : a.login ? "로그인 됨" : "로그인 필요")}${cell("직원웹 접속", !BOT.visits ? "off" : v ? "ok" : "off", !BOT.visits ? "-" : v ? `${esc(v.first)}${v.last !== v.first ? "~" + esc(v.last) : ""} <small>${+v.n || 0}회${v.phone ? ", 폰" : ""}</small>` : "안 열림")}${cell("은행알림", bcls, esc(btxt) + (o.gap ? " <small>끊긴 적 있음</small>" : ""), (o.gap ? "오늘 끊겼던 시간 " + o.gap : "") + (o.posTr != null ? " 포스 이체 " + o.posTr + "건" : ""))}</tr>`;
+  }).join("");
+  return `<div id="botcard" class="ofwrap"><div class="card ofbots"><div class="eyebrow">봇 상태 <span class="t-sub" style="font-weight:500">${agoTxt(m)} 기준</span></div>
+    ${dead ? '<div class="ofwarn">이 PC나 운영봇이 꺼진 것 같아요. 10분마다 자동으로 다시 켜요.</div>' : ""}
+    ${row("운영봇", opsBad, dead ? "소식 없음 " + agoTxt(m) : BOT.ops.s + (BOT.ops.line ? ", " + BOT.ops.line : ""), "운영봇")}
+    ${row("마스터봇", masterBad, masterTxt, "마스터봇")}
+    ${ad ? row("조정봇", adBad, adTxt, "") : ""}
+    ${BOT.bsQ ? `<div class="ofwarn">시트에 못 들어간 기록 ${+BOT.bsQ}건, 다시 보내는 중이에요.</div>` : ""}</div>
+  <div class="card ofbr"><div class="eyebrow">지점별 <span class="t-sub" style="font-weight:500">오늘, 지점 ${BR.length}곳</span></div>
+    ${ad && ad.ok && !dead ? (adNeed.length ? `<div class="ofsum bad"><b>포스 로그인이 필요한 곳 ${adNeed.length}곳</b>${adNeed.map(([b]) => `${BR.indexOf(b) + 1}호 ${esc(b)}`).join(", ")}</div>` : `<div class="ofsum ok"><b>포스 로그인은 ${adBr.length}곳 모두 됐어요</b></div>`) : ""}
+    <table class="oftbl"><thead><tr><th>지점</th><th>포스 로그인${ad && ad.ok && !dead ? ` <small>${nLog}/${adBr.length || BR.length}</small>` : ""}</th><th>직원웹 접속${BOT.visits ? ` <small>${nVis}/${BR.length}</small>` : ""}</th><th>은행알림${nBankOn ? ` <small>정상 ${nBank}/${nBankOn}</small>` : ""}</th></tr></thead><tbody>${rows}</tbody></table>
+    <div class="caption" style="margin-top:10px">포스 로그인은 조정봇이 그 지점 포스에 들어가 있는지예요. 직원웹 접속은 첫 접속과 마지막 접속 시각이고, 같은 기기는 30분에 한 번 세요. 은행알림은 지점 폰 알림 앱 상태예요.</div></div></div>`;
 }
 // 10/25 사장님: 봇 상태 자세히는 '사무실' 메뉴로, 홈에는 신호등처럼 작게(누르면 사무실)
-function officeHtml() { return `<div class="pchead"><h1>사무실</h1><div class="caption">봇 상태, 포스 조정 로그인, 지점 직원웹 접속, 은행 알림</div></div>${charsHtml()}${botHtml()}`; }
+function officeHtml() { return `<div class="pchead"><h1>사무실</h1><div class="caption">봇 상태, 지점별 포스 로그인과 직원웹 접속, 은행알림</div></div><div class="ofgrid">${charsHtml()}${botHtml()}</div>`; }
 // 10/25 사장님 "바탕화면 위젯이 자꾸 사라져서 슬퍼": 우사기(운영봇), 쿠리만쥬(마스터봇)를 사무실에. 바탕화면 위젯과 같은 표정 묶음, 15초마다 그 안에서 바뀜
 const CHAR_POSE = {
   usagi: { 업무중: ["work", "check", "base", "talk", "ship"], 휴식: ["rest", "snack", "peek"], 에러: ["error", "hurry"] },
@@ -1856,6 +1920,9 @@ document.addEventListener("click", async (e) => {
   if (t.dataset.x !== undefined) return closeSheet();
   if (t.dataset.kpib) { kpiB = t.dataset.kpib; ls.set("vf-admin-kpib", kpiB); return render(); }
   if (t.dataset.kpim) { kpiM = t.dataset.kpim; ls.set("vf-admin-kpim", kpiM); return render(); }
+  if (t.dataset.padm) { PADK.m = t.dataset.padm; return render(); } /* 이전 달, 다음 달 */
+  if (t.dataset.padb) return padBranchSheet(t.dataset.padb);
+  if (t.dataset.padk === "re") { PADK.st = ""; PADK.at = 0; return render(); }
   if (t.dataset.kpis) { kpiS = t.dataset.kpis; ls.set("vf-admin-kpis", kpiS); return render(); }
   if (t.dataset.kpip) { kpiP = t.dataset.kpip; ls.set("vf-admin-kpip", kpiP); return render(); }
   if (t.dataset.orderf) { orderF = t.dataset.orderf; return render(); }
@@ -2414,8 +2481,25 @@ textarea.msin{height:48px;min-height:48px;max-height:132px;padding:12px 16px;lin
   const upc = () => LV.events.filter((e) => e.d >= today()).sort((a, b) => (a.d + a.h).localeCompare(b.d + b.h));
   const evWhen = (e) => dl(e.d) + (e.h ? " " + e.h : "");
   const avH = (n) => { const p = LV.st === "ok" && LV.photo[n]; return p ? `<img class="msph" src="${p}" alt="">` : esc(em(n)); }; /* 사진이 있으면 사진, 없으면 이모지. 사진 주소는 받을 때 모양을 검사한 것만 넣는다 */
-  async function photoLoad() { LV.pt = Date.now(); try { const o = await call("adm_photos", {}); if (!o.ok || !o.photos) return; const P2 = {}; for (const k in o.photos) if (/^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(String(o.photos[k])) && String(o.photos[k]).length < 80000) P2[k] = String(o.photos[k]); const ch = JSON.stringify(Object.keys(P2).map((k) => [k, P2[k].length])) !== JSON.stringify(Object.keys(LV.photo).map((k) => [k, LV.photo[k].length])); LV.photo = P2; if (ch && tab === "msg" && !$("#msin")?.value) rr(); } catch (e19) { /* 다음에 다시 */ } }
+  async function photoLoad() { LV.pt = Date.now(); colorLoad(); try { const o = await call("adm_photos", {}); if (!o.ok || !o.photos) return; const P2 = {}; for (const k in o.photos) if (/^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(String(o.photos[k])) && String(o.photos[k]).length < 80000) P2[k] = String(o.photos[k]); const ch = JSON.stringify(Object.keys(P2).map((k) => [k, P2[k].length])) !== JSON.stringify(Object.keys(LV.photo).map((k) => [k, LV.photo[k].length])); LV.photo = P2; if (ch && tab === "msg" && !$("#msin")?.value) rr(); } catch (e19) { /* 다음에 다시 */ } }
   const em = (n) => (LV.st === "ok" && (LV.emoji[n] || DEF[n])) || String(n || "?")[0];
+  /* 사람마다 말풍선 색: 고른 색이 있으면 그 색, 없으면 명단 순서대로 하나씩. 색 이름은 c1 ~ c8 만 받는다 */
+  LV.color = {};
+  const COLS = [["c1", "파랑"], ["c2", "초록"], ["c3", "보라"], ["c4", "주황"], ["c5", "분홍"], ["c6", "청록"], ["c7", "노랑"], ["c8", "회색"]];
+  const colOf = (n) => { const c = LV.color && LV.color[n]; if (/^c[1-8]$/.test(String(c || ""))) return c; const i = P().indexOf(n); return "c" + ((i < 0 ? 7 : i % 8) + 1); };
+  async function colorLoad() { try { const o = await call("adm_colors", {}); if (!o.ok || !o.colors) return; const C2 = {}; for (const k in o.colors) if (/^c[1-8]$/.test(String(o.colors[k]))) C2[k] = String(o.colors[k]); const ch = JSON.stringify(C2) !== JSON.stringify(LV.color); LV.color = C2; if (ch && tab === "msg" && !$("#msin")?.value) rr(); } catch (e22) { /* 다음에 다시 */ } }
+  { const st2 = document.createElement("style"); st2.id = "mscolcss"; st2.textContent = `
+.msg.c1{--pb:#e3efff;--pn:#1b64da}.msg.c2{--pb:#dff3e6;--pn:#177a3c}.msg.c3{--pb:#ece6ff;--pn:#6b3fd1}.msg.c4{--pb:#ffeada;--pn:#b85a00}.msg.c5{--pb:#ffe3ec;--pn:#c2255c}.msg.c6{--pb:#d9f2f3;--pn:#0b7285}.msg.c7{--pb:#fff3bf;--pn:#8a6d00}.msg.c8{--pb:#e9ecef;--pn:#495057}
+.mscold.c1{background:#1b64da}.mscold.c2{background:#177a3c}.mscold.c3{background:#6b3fd1}.mscold.c4{background:#d9730d}.mscold.c5{background:#d6336c}.mscold.c6{background:#0b7285}.mscold.c7{background:#e0a800}.mscold.c8{background:#6c757d}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .msg.c1{--pb:#1c2f4d;--pn:#8ab4ff}:root:not([data-theme="light"]) .msg.c2{--pb:#173524;--pn:#69db8f}:root:not([data-theme="light"]) .msg.c3{--pb:#2b2450;--pn:#b197fc}:root:not([data-theme="light"]) .msg.c4{--pb:#40290f;--pn:#ffa94d}:root:not([data-theme="light"]) .msg.c5{--pb:#45202f;--pn:#faa2c1}:root:not([data-theme="light"]) .msg.c6{--pb:#123438;--pn:#66d9e8}:root:not([data-theme="light"]) .msg.c7{--pb:#3d3410;--pn:#ffd43b}:root:not([data-theme="light"]) .msg.c8{--pb:#2c3036;--pn:#ced4da}}
+:root[data-theme="dark"] .msg.c1{--pb:#1c2f4d;--pn:#8ab4ff}:root[data-theme="dark"] .msg.c2{--pb:#173524;--pn:#69db8f}:root[data-theme="dark"] .msg.c3{--pb:#2b2450;--pn:#b197fc}:root[data-theme="dark"] .msg.c4{--pb:#40290f;--pn:#ffa94d}:root[data-theme="dark"] .msg.c5{--pb:#45202f;--pn:#faa2c1}:root[data-theme="dark"] .msg.c6{--pb:#123438;--pn:#66d9e8}:root[data-theme="dark"] .msg.c7{--pb:#3d3410;--pn:#ffd43b}:root[data-theme="dark"] .msg.c8{--pb:#2c3036;--pn:#ced4da}
+.msg:not(.me) .bb{background:var(--pb,var(--card))}
+.msg button.nm{display:block;background:none;padding:0;text-align:left;font-size:14px;font-weight:800;color:var(--pn,var(--sub));margin:0 0 4px 6px;min-height:22px;cursor:pointer}.msg.hav button.nm{margin-left:46px}
+.msg button.msav{padding:0;cursor:pointer;box-shadow:inset 0 0 0 2px var(--pn,var(--line2))}
+.mspv{display:flex;flex-direction:column;align-items:center;gap:10px;margin:18px 0 6px;text-align:center}.mspv .msav.huge{width:132px;height:132px;font-size:68px}.mspv .msav.huge .msph{width:100%;height:100%;object-fit:cover}.mspv b{font-size:22px;font-weight:800}.mspv small{display:flex;align-items:center;gap:6px;font-size:14px;color:var(--sub)}
+.mscold{display:inline-block;width:14px;height:14px;border-radius:50%}
+.mscolp{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:8px}.mscolp button{display:flex;align-items:center;justify-content:center;gap:8px;height:48px;border-radius:12px;background:var(--bg);font-size:14px;font-weight:700;color:var(--ink2)}.mscolp button.on{box-shadow:inset 0 0 0 2px var(--ink);color:var(--ink)}
+`; document.head.appendChild(st2); }
   const EDGE = SB.url + "/functions/v1/adm-file", FMAX = 20 * 1024 * 1024, FN = 5, SIGN = SB.url + "/storage/v1/object/sign/adm-files/";
   const live = () => LV.st === "ok";
   const demo = () => LV.st === "off";
@@ -2783,7 +2867,7 @@ textarea.msin{height:48px;min-height:48px;max-height:132px;padding:12px 16px;lin
     const I = m.who === me(), r = R(m.room), src = m.re && MSGS.find((x) => x.id === m.re), left = r.mem.filter((n) => n !== m.who && !seenBy(m, n)).length;
     const txt = m.card && ((m.card.kind === "file" && m.card.auto) || m.card.kind === "task" || m.card.eid) ? "" : esc(m.txt).replace(new RegExp("@(" + P().join("|") + ")", "g"), "<b>@$1</b>");
     const card = m.card && m.card.kind === "file" ? filesHtml(m) : m.card && m.card.kind === "task" ? taskCard(m) : m.card && m.card.eid ? evCard(m) : m.card ? `<span class="mscard" role="group"><small>${esc(m.card.kind || "")}</small><b>${esc(m.card.title || "")}</b><span>${esc(m.card.sub || "")}</span>${m.card.tag ? `<i>${esc(m.card.tag)}</i>` : ""}</span>` : "";
-    return `<div class="msg ${I ? "me" : live() ? "hav" : ""} ${MS.flash === m.id ? "flash" : ""}" data-mid="${m.id}">${I ? "" : `<small class="nm">${esc(m.who)}</small>`}<div class="bw">${I || !live() ? "" : `<span class="msav" aria-hidden="true">${avH(m.who)}</span>`}<div class="bb" data-msb="${m.id}">${src ? `<span class="msq">${esc(src.who)}: ${esc(src.txt)}</span>` : ""}${card}${txt}</div><div class="mm"><button class="mo" data-ms="act" data-id="${m.id}" aria-label="이 글로 할 일">⋯</button>${left && (I || live()) ? `<button class="u" data-ms="who" data-id="${m.id}" aria-label="아직 안 읽은 사람 보기">안 읽음 ${left}</button>` : ""}<span>${hm(m)}</span></div></div>${noai || live() ? "" : aiHtml(m)}</div>`;
+    return `<div class="msg ${I ? "me" : live() ? "hav" : ""} ${I ? "" : colOf(m.who)} ${MS.flash === m.id ? "flash" : ""}" data-mid="${m.id}">${I ? "" : live() ? `<button class="nm" data-ms="pview" data-n="${esc(m.who)}">${esc(m.who)}</button>` : `<small class="nm">${esc(m.who)}</small>`}<div class="bw">${I || !live() ? "" : `<button class="msav" data-ms="pview" data-n="${esc(m.who)}" aria-label="${esc(m.who)} 프로필 보기">${avH(m.who)}</button>`}<div class="bb" data-msb="${m.id}">${src ? `<span class="msq">${esc(src.who)}: ${esc(src.txt)}</span>` : ""}${card}${txt}</div><div class="mm"><button class="mo" data-ms="act" data-id="${m.id}" aria-label="이 글로 할 일">⋯</button>${left && (I || live()) ? `<button class="u" data-ms="who" data-id="${m.id}" aria-label="아직 안 읽은 사람 보기">안 읽음 ${left}</button>` : ""}<span>${hm(m)}</span></div></div>${noai || live() ? "" : aiHtml(m)}</div>`;
   }
   function gateHtml() {
     if (LV.st === "who") return `<div class="mson"><b>누구신가요?</b><span>이 기기에서 쓸 이름을 골라 주세요. 한 번만 고르면 돼요.</span><div class="msnames">${(LV.names || (namesLoad(), P0.map((n) => ({ who: n })))).map((x) => `<button data-ms="mepick" data-n="${esc(x.who)}">${x.emoji ? esc(x.emoji) + " " : ""}${esc(x.who)}${x.set ? " 🔒" : ""}</button>`).join("")}</div></div>`;
@@ -2827,7 +2911,7 @@ ${live() ? "" : `<div class="mstabs">${tabs.map(([k, n, c, cl]) => `<button clas
   const sideHtml = () => {
     const r = R(MS.room); if (!r) return '<aside class="msside"></aside>';
     const pin = pinOf(r), pinBox = pin ? `<button class="msdec" data-ms="jump" data-id="${pin.id}"><small>공지</small><span>${esc(pin.txt)}</span></button>` : '<div class="none">고정한 글이 없어요</div>';
-    if (live()) return `<aside class="msside"><h4>이 방 할 일<small>${openT(r.id).length}개</small></h4>${openT(r.id).map(tkRow).join("") || '<div class="none">할 일이 없어요. 글을 누르면 업무로 만들 수 있어요.</div>'}<h4>이 방 사람<small>${r.mem.length}명</small></h4><div class="msmem">${r.mem.map((n) => `<div><span class="av ${n === me() ? "blue" : ""}">${avH(n)}</span>${esc(n)}${n === me() ? " (나)" : ""}</div>`).join("")}</div><h4>고정한 공지<small>${(r.pins || []).length}개</small></h4>${(r.pins || []).map((p) => `<button class="msdec" data-ms="jump" data-id="${p.m.id}" data-room="${r.id}"><small>${md(p.m)}</small><span>${esc(p.m.txt)}</span></button>`).join("") || '<div class="none">고정한 글이 없어요</div>'}</aside>`;
+    if (live()) return `<aside class="msside"><h4>이 방 할 일<small>${openT(r.id).length}개</small></h4>${openT(r.id).map(tkRow).join("") || '<div class="none">할 일이 없어요. 글을 누르면 업무로 만들 수 있어요.</div>'}<h4>이 방 사람<small>${r.mem.length}명</small></h4><div class="msmem">${r.mem.map((n) => `<div${live() ? ` role="button" tabindex="0" data-ms="pview" data-n="${esc(n)}" style="cursor:pointer"` : ""}><span class="av ${n === me() ? "blue" : ""}">${avH(n)}</span>${esc(n)}${n === me() ? " (나)" : ""}</div>`).join("")}</div><h4>고정한 공지<small>${(r.pins || []).length}개</small></h4>${(r.pins || []).map((p) => `<button class="msdec" data-ms="jump" data-id="${p.m.id}" data-room="${r.id}"><small>${md(p.m)}</small><span>${esc(p.m.txt)}</span></button>`).join("") || '<div class="none">고정한 글이 없어요</div>'}</aside>`;
     return `<aside class="msside"><h4>할 일 초안<small>AI가 대화에서 뽑았어요</small></h4>${todoList(r.id)}<h4>정한 것</h4>${decList(r.id)}<h4>고정한 공지</h4>${pinBox}</aside>`;
   };
   const hi = (s, q) => { const e = esc(s); if (!q) return e; const i = s.toLowerCase().indexOf(q.toLowerCase()); if (i < 0) return e; return esc(s.slice(0, i)) + "<mark>" + esc(s.slice(i, i + q.length)) + "</mark>" + esc(s.slice(i + q.length)); };
@@ -2853,6 +2937,10 @@ ${live() ? "" : `<div class="mstabs">${tabs.map(([k, n, c, cl]) => `<button clas
   };
   /* 찾기와 손짓이 쓰는 곳 */
   window.msgSearch = (q) => { if (!D || (!live() && !demo())) return []; if (demo() && !ROOMS.length) seed(); return found(q).map((m) => ({ id: m.id, title: m.card ? (m.card.title || "") + " / " + m.txt : m.txt, sub: `${rname(R(m.room))}, ${m.who}, ${md(m)} ${hm(m)}` })); };
+  /* 폰의 뒤로 단추가 쓰는 곳: 폰에서 방 안에 들어가 있는지, 방 목록으로 돌아가기 */
+  window.msgColorNow = () => colorLoad(); /* 색을 지금 다시 받기 */
+  window.msgInRoom = () => !isPC() && typeof tab !== "undefined" && tab === "msg" && !!MS.room && !!document.querySelector(".msroom");
+  window.msgBack = () => { if (!MS.room) return false; clearFiles(); MS.room = ""; rr(); return true; };
   window.msgOpen = (id) => { const m = anyMsg(id); if (m) openMsg(m); };
   /* 끝난 업무 카드는 예시 대화에만 올라간다. 업무가 아직 예시라서 진짜 방에는 안 올린다. */
   window.msgAuto = (x) => { if (!D || !demo()) return; if (!ROOMS.length) seed(); const t = new Date(Date.now() + 9 * 3600e3).toISOString().slice(11, 16); MSGS.push({ id: "g" + ++seq, room: "r1", who: x.who, at: D.d + " " + t, txt: "업무를 끝냈어요.", seen: [x.who], card: { kind: "끝난 업무", title: x.title, sub: x.sub, tag: "끝" } }); };
@@ -2864,7 +2952,13 @@ ${live() ? "" : `<div class="mstabs">${tabs.map(([k, n, c, cl]) => `<button clas
     openSheet(`${nodock}<h3>${task ? "업무로 만들기" : "일정으로 만들기"}</h3><div class="caption">글에서 가져왔어요. 고쳐서 보내세요.</div><div class="ptlab">${task ? "무엇을 하나요?" : "무슨 일정인가요?"}</div><input class="ptin" id="msMkT" maxlength="60" value="${esc(k.title)}">${task ? `<div class="ptlab">누가 맡나요?</div><div class="ptpick">${P0.map((n) => `<button class="chip ${k.owner === n ? "on" : ""}" data-ms="mko" data-n="${n}">${n === me() ? "나 (" + n + ")" : n}</button>`).join("")}</div>` : ""}<div class="ptlab">${task ? "언제까지인가요?" : "언제인가요?"}</div><input class="ptin" type="date" id="msMkD" value="${k.due}">${task ? "" : `<input class="ptin" type="time" id="msMkH" value="${k.time || "14:00"}">`}<div class="btns"><button class="btn gray" data-x style="flex:0 0 96px">닫기</button><button class="btn" data-ms="mkgo">${task ? "업무로 보내기" : "일정에 넣기"}</button></div>`);
   }
   function pinsSheet(rid) { const r = R(rid); if (!r) return; openSheet(`${nodock}<h3>공지 ${r.pins.length}개</h3><div class="caption">방마다 10개까지 고정할 수 있어요. 누르면 그 글로 가요.</div><div style="margin-top:12px">${r.pins.map((p) => `<div class="mspr"><button class="msdec" data-ms="jump" data-id="${p.m.id}" data-room="${r.id}"><small>${md(p.m)}</small><span><b>${esc(p.m.who)}</b> ${esc(p.m.txt)}</span></button><button class="mspx" data-ms="unpin" data-id="${p.m.id}" aria-label="이 공지 풀기">풀기</button></div>`).join("")}</div><div class="btns"><button class="btn gray" data-x>닫기</button></div>`); }
-  function profSheet() { openSheet(`${nodock}<h3>내 프로필</h3><div class="msprof"><span class="msav big">${avH(me())}</span><b>${esc(me())}</b></div><div class="msalrow"><span>이 기기 알림 <b>${pushIsOn() ? "켜짐" : "꺼짐"}</b></span><button data-ms="${pushIsOn() ? "pushoff" : "pushon"}">${pushIsOn() ? "끄기" : "알림 켜기"}</button></div><div class="msalrow"><span>프로필 사진 <b>${LV.photo[me()] ? "있음" : "없음"}</b></span>${LV.photo[me()] ? '<button class="g" data-ms="phdel">빼기</button>' : ""}<label class="msphb">사진 고르기<input type="file" id="msPhF" accept="image/*" hidden></label></div><div class="ptlab">사진이 없을 때 보일 이모지</div><div class="msemo">${EMO.map((e) => `<button class="${em(me()) === e ? "on" : ""}" data-ms="emo" data-e="${e}" aria-label="이모지 ${e}">${e}</button>`).join("")}</div><div class="msact" style="margin-top:14px">${LV.pinset ? '<button data-ms="pinchg">내 비밀번호 바꾸기</button>' : '<button data-ms="lockme">내 프로필 잠그기 (비밀번호 정하기)</button>'}${me() === "한섭이사" || me() === "보혜" ? '<button data-ms="resetlist">다른 사람 잠금 풀어 주기</button>' + (window.ONKEY ? "" : '<button data-ms="onpw">온라인팀 비밀번호 정하기</button>') : ""}</div><div class="btns"><button class="btn gray" data-ms="mechg" style="flex:0 0 130px">다른 이름으로</button><button class="btn" data-x>닫기</button></div>`); }
+  /* 다른 사람 프로필 보기: 사진(없으면 이모지)을 크게, 이름, 말풍선 색, 1:1 대화로 가기 */
+  function viewProf(n) {
+    if (!live() || !P().includes(n)) return; if (n === me()) return profSheet();
+    const c = colOf(n), cn = (COLS.find((x) => x[0] === c) || [])[1] || "";
+    openSheet(`${nodock}<h3>프로필</h3><div class="mspv"><span class="msav huge">${avH(n)}</span><b>${esc(n)}</b><small><i class="mscold ${c}"></i>말풍선 색 ${cn}</small></div><div class="btns"><button class="btn gray" data-x style="flex:0 0 96px">닫기</button><button class="btn" data-ms="pdm" data-n="${esc(n)}">1:1 대화하기</button></div>`);
+  }
+  function profSheet() { openSheet(`${nodock}<h3>내 프로필</h3><div class="msprof"><span class="msav big">${avH(me())}</span><b>${esc(me())}</b></div><div class="msalrow"><span>이 기기 알림 <b>${pushIsOn() ? "켜짐" : "꺼짐"}</b></span><button data-ms="${pushIsOn() ? "pushoff" : "pushon"}">${pushIsOn() ? "끄기" : "알림 켜기"}</button></div><div class="msalrow"><span>프로필 사진 <b>${LV.photo[me()] ? "있음" : "없음"}</b></span>${LV.photo[me()] ? '<button class="g" data-ms="phdel">빼기</button>' : ""}<label class="msphb">사진 고르기<input type="file" id="msPhF" accept="image/*" hidden></label></div><div class="ptlab">내 말풍선 색 <small style="font-weight:500;color:var(--sub)">다른 사람 화면에서 내 글이 이 색으로 보여요</small></div><div class="mscolp">${COLS.map(([c, n]) => `<button class="${colOf(me()) === c ? "on" : ""}" data-ms="col" data-c="${c}" aria-label="말풍선 색 ${n}"><i class="mscold ${c}"></i>${n}</button>`).join("")}</div><div class="ptlab">사진이 없을 때 보일 이모지</div><div class="msemo">${EMO.map((e) => `<button class="${em(me()) === e ? "on" : ""}" data-ms="emo" data-e="${e}" aria-label="이모지 ${e}">${e}</button>`).join("")}</div><div class="msact" style="margin-top:14px">${LV.pinset ? '<button data-ms="pinchg">내 비밀번호 바꾸기</button>' : '<button data-ms="lockme">내 프로필 잠그기 (비밀번호 정하기)</button>'}${me() === "한섭이사" || me() === "보혜" ? '<button data-ms="resetlist">다른 사람 잠금 풀어 주기</button>' + (window.ONKEY ? "" : '<button data-ms="onpw">온라인팀 비밀번호 정하기</button>') : ""}</div><div class="btns"><button class="btn gray" data-ms="mechg" style="flex:0 0 130px">다른 이름으로</button><button class="btn" data-x>닫기</button></div>`); }
   /* 업무 탭의 [방에 올리기]가 부른다: 진짜 방에 업무 카드 글을 올린다. 방 이름이 사람 이름이면 그 사람과의 방(없으면 만듦) */
   window.msgShare = async ({ room, title, sub, txt }) => {
     if (!live()) return false;
@@ -3118,6 +3212,13 @@ ${live() ? "" : `<div class="mstabs">${tabs.map(([k, n, c, cl]) => `<button clas
     if (a === "pushon") return pushOn();
     if (a === "pushoff") return pushOff();
     if (a === "pushhide") { MS.pushHide = true; ls.set("vf-msg-push-later", String(Date.now())); return rr(); }
+    if (a === "pview") return viewProf(t.dataset.n);
+    if (a === "col") { const c5 = t.dataset.c; if (!/^c[1-8]$/.test(String(c5))) return; try { const o = await call("adm_color_set", { p_c: c5 }); if (!o.ok) throw 0; LV.color = { ...LV.color, [LV.who]: c5 }; profSheet(); return rr(); } catch { return toast("색을 못 바꿨어요. 다시 눌러 주세요"); } }
+    if (a === "pdm") { const n = t.dataset.n; if (!P().includes(n) || n === LV.who) return; t.disabled = true;
+      try { let r = ROOMS.find((x) => !x.name && x.mem.length === 2 && x.mem.includes(n) && x.mem.includes(LV.who));
+        if (!r) { const o = await call("adm_room_new", { p_mem: [n], p_name: "" }); if (!o.ok) throw 0; const s2 = await call("adm_state", { p_since: Math.max(0, LV.since - 20) }); if (s2.ok) take(s2); r = R("r" + o.id); if (!r) throw 0; }
+        closeSheet(true); clearFiles(); tab = "msg"; MS.room = r.id; MS.v = "all"; MS.re = ""; MS.draft = ""; readAll(r.id); return full(); }
+      catch { t.disabled = false; return toast("대화방을 못 열었어요. 다시 눌러 주세요"); } }
     if (a === "emo") { const e5 = t.dataset.e; try { const o = await call("adm_emoji_set", { p_emoji: e5 }); if (!o.ok) throw 0; LV.emoji = { ...LV.emoji, [LV.who]: e5 }; profSheet(); return rr(); } catch { return toast("이모지를 못 바꿨어요. 다시 눌러 주세요"); } }
     if (a === "pin" && m) {
       const r = R(m.room), off = r.pin === id;
@@ -3244,8 +3345,18 @@ body.hmfull #nav{display:none!important}body.hmfull .hmboard{border-radius:16px 
     let kind = "", stt = "오픈 기록 없음";
     if (c) { let k = "ok"; try { k = clSt(closingOf(o.b)); } catch (e) { k = +c.diff || c.warn ? "bad" : "ok"; } kind = k === "bad" ? "bad" : "done"; stt = k === "bad" ? `마감 ${String(c.at || "").slice(-5)}, 확인 필요` : k === "sp" ? `마감 ${String(c.at || "").slice(-5)}, 특이건` : `마감 ${String(c.at || "").slice(-5)}`; }
     else if (o.open) { kind = "on"; stt = `영업 중, 오픈 ${esc(o.open)}`; }
-    const who = Array.isArray(o.staff) ? o.staff.join(", ") : o.staff || (c && c.by) || "";
-    return `<button class="hmb ${kind}" data-hmb="${esc(o.b)}"><div class="n"><i>${i + 1}</i>${esc(o.b)}</div><div class="s">${stt}</div><div class="m">${s ? man(s) : '<small style="margin:0">아직 매출 없음</small>'}</div>${s || n ? `<div class="k">객수 <b>${n}</b>명${rv == null ? "" : `, 리뷰 <b>${rv}</b>`}</div>` : ""}${who ? `<div class="w">${esc(who)}</div>` : ""}</button>`;
+    /* 11/18 보혜 "객단가만 넣어 주고 근무자 이름만 뜨면 끝": 근무자는 오늘 출근 기록(지금 근무 중인 사람), 마감한 지점은 마감 보고한 사람 */
+    const now = stOf(o.b), who = Array.isArray(o.staff) ? o.staff.join(", ") : o.staff || (now.length ? now.join(", ") : (c && c.by) || "");
+    const per = s && n ? (Math.round(s / n / 1000) / 10).toFixed(1) + "만" : "";
+    return `<button class="hmb ${kind}" data-hmb="${esc(o.b)}"><div class="n"><i>${i + 1}</i>${esc(o.b)}</div><div class="s">${stt}</div><div class="m">${s ? man(s) : '<small style="margin:0">아직 매출 없음</small>'}</div>${s || n ? `<div class="k">객수 <b>${n}</b>명${per ? `, 객단가 <b>${per}</b>` : ""}${rv == null ? "" : `, 리뷰 <b>${rv}</b>`}</div>` : ""}${who ? `<div class="w">${c && !now.length ? "마감 " : "근무 "}${esc(who)}</div>` : ""}</button>`;
+  }
+  /* 오늘 출근 기록(직원웹이 올려 둔 것): 지점별로 지금 근무 중인 사람 이름. 못 받으면 이름 줄을 안 그린다 */
+  const ST = { d: null, at: 0, busy: false };
+  const stOf = (b) => { try { const j = ST.d; if (!j || j.d !== nowD() || !j.br || !j.br[b]) return []; return [...new Set((j.br[b].ins || []).filter((a) => a && !a.out && a.name && !/^시험/.test(a.name)).map((a) => String(a.name).slice(0, 12)))]; } catch (e) { return []; } };
+  async function stLoad() {
+    if (ST.busy || window.ONKEY || Date.now() - ST.at < 5 * 60e3) return; ST.busy = true; ST.at = Date.now();
+    try { const j = await (await fetch("https://officialvafriend.github.io/vape/staff/today.json?t=" + Math.floor(Date.now() / 60e3), { cache: "no-store" })).json(); const sig0 = JSON.stringify(ST.d); ST.d = j && typeof j === "object" ? j : null; if (JSON.stringify(ST.d) !== sig0 && tab === "home" && HM.v === "vf") { const el = $("#hmbrw"); if (el) el.innerHTML = brHtml(); } }
+    catch (e) { /* 다음에 다시 */ } finally { ST.busy = false; }
   }
   /* 지점별 오늘 매출: 창고에 올라온 값(마스터봇이 읽은 포스 당일매출). 관리자 열쇠로 들어온 사람만 받는다 */
   const VS = { d: null, at: 0, busy: false };
@@ -3266,17 +3377,17 @@ body.hmfull #nav{display:none!important}body.hmfull .hmboard{border-radius:16px 
   function brHtml() {
     const closed = D.ops.filter((o) => o.close).length, open = D.ops.filter((o) => !o.close && o.open).length, anyWho = D.ops.some((o) => o.staff || (o.close && o.close.by));
     const has = D.ops.some((o) => vsOf(o.b)), sum = D.ops.reduce((a, o) => a + (o.close ? +o.close.총 || 0 : (vsOf(o.b) || {}).s || 0), 0);
-    return `<div class="hmh">오늘 숫자${has ? ` <small>${esc(String(VS.d.made || "").slice(11))} 기준</small>` : ""}</div>${statV()}<div class="hmh">지점 한눈에 <small>영업 중 ${open}곳, 마감 ${closed}곳${anyWho ? "" : ", 근무자 이름은 아직 자료에 없어요"}</small></div><div class="hmg">${D.ops.map(branchCard).join("")}</div>`;
+    return `<div class="hmh">오늘 숫자${has ? ` <small>${esc(String(VS.d.made || "").slice(11))} 기준</small>` : ""}</div>${statV()}<div class="hmh">지점 한눈에 <small>영업 중 ${open}곳, 마감 ${closed}곳, 카드를 누르면 자세히 보여요</small></div><div class="hmg">${D.ops.map(branchCard).join("")}</div>`;
   }
   function vfHtml() {
-    vsLoad();
+    vsLoad(); stLoad();
     const iss = issuesLeft().length, mu = window.msgUnread ? window.msgUnread() : 0, pc = window.ptCounts ? window.ptCounts() : { cf: 0, ov: 0 };
     const tile = (lab, n, cls, go, unit) => `<button ${go}><span>${lab}</span><b class="${n ? cls : "z"}">${n}<small>${unit}</small></b></button>`;
     const tiles = `<div class="hmt">${tile("확인할 것", iss, "r", 'data-hm="iss"', "건")}${tile("안 읽은 메시지", mu, "b", 'data-tab="msg"', "개")}${tile(pc.real ? "내가 맡은 업무" : "확인 기다리는 업무", pc.cf, "b", 'data-tab="tasks"', "건")}${tile("기한 지난 업무", pc.ov, "r", 'data-tab="tasks"', "건")}</div>`;
     const br = `<div id="hmbrw">${brHtml()}</div>`;
     const nx = window.ptNext ? window.ptNext() : null;
-    /* 예전 홈에 있던 것은 그대로 남김: 봇 경고는 맨 위, 지점 표는 카드 아래에 접어서 */
-    const tbl = `<details class="hmmore"><summary>지점 표로 자세히 보기</summary><div class="${isPC() ? "cols home" : ""}" style="display:block;margin-top:10px">${isPC() ? opsHtml() : opsMobileHtml()}</div></details>`;
+    /* 11/18 보혜 "자세히 보기랑 위에 카드로 보는 거랑 다른데? 그냥 아래 표 없애고": 카드와 숫자 기준이 달랐던(30분마다 읽는 값) 아래 표를 없앴다. 봇 경고는 맨 위에 그대로 */
+    const tbl = "";
     return `${botWarn()}<div class="hmh" style="margin-top:8px">지금 할 것</div>${tiles}${nx ? `<div style="margin-top:8px">${nx.html.replace('data-px="ev"', 'data-hm="next"')}</div>` : ""}${br}${tbl}`;
   }
   /* 온라인 홈: 액상덕후 매출(열쇠 뒤 창고에서 받음, 공개 저장소에는 숫자가 없음)과 온라인팀 보드.
@@ -3663,6 +3774,9 @@ ${e.id ? `<div class="ptlab">기록 ${e.logs.length}개</div>${e.logs.map((l) =>
     catch (e) { closeSheet(true); toast("그 할 일을 못 불러왔어요"); }
   }
   window.bdOpenItem = (id) => openItem(id);
+  /* 폰의 뒤로 단추가 쓰는 곳: 회의 하나를 열어 둔 상태인지, 회의 목록으로 돌아가기 */
+  window.bdInMeet = () => typeof tab !== "undefined" && tab === "tasks" && !!BD.meet && !!document.querySelector("#bdroot .bdmh");
+  window.bdBack = () => { if (!BD.meet) return false; BD.meet = ""; render(); return true; };
   /* ── 일정 칸(업무 탭)이 쓰는 곳 ── 기한이 있는 하는 중 할 일과 회의 날짜를 내준다. 날짜를 옮기면 기한만 고쳐 저장한다 */
   const isD = (s) => /^\d{4}-\d{2}-\d{2}$/.test(String(s || ""));
   const attOf = (m) => String(m.att || "").split(/[,\s/]+/).map((t) => t.replace(/님$/, "")).filter(Boolean).map((t) => FULLN[t] || t);
@@ -3801,6 +3915,41 @@ ${e.id ? `<div class="ptlab">기록 ${e.logs.length}개</div>${e.logs.map((l) =>
     const g = e.target.closest("[data-brgo]");
     if (g) { const [a, i] = g.dataset.brgo.split("|"); closeSheet(true); const b = chips(a)[+i]; if (b) b.click(); }
   });
+})();
+
+/* ── 뒤로가기 (11/18 보혜 "메신저에서 뒤로가기 하면 앱 꺼짐", 갤럭시) ──
+   폰의 뒤로 단추가 앱을 끄지 않고 앱 안에서 한 단계씩 돌아가게 한다(아이폰은 화면 안의 뒤로 단추가 그대로 있다).
+   돌아가는 순서: 떠 있는 창 닫기 → 메신저 방에서 방 목록으로, 회의에서 회의 목록으로 → 다른 메뉴에서 홈으로 → 홈에서는 앱이 닫힌다.
+   방법: 한 단계 들어갈 때마다(사람이 눌러서) 브라우저 기록에 한 칸을 넣어 두고, 뒤로가 눌리면 그 한 칸만큼 화면을 되돌린다.
+   화면 안의 단추로 돌아갔을 때는 넣어 둔 칸을 같이 뺀다(뒤로를 헛누르지 않게). 기록은 사람이 누른 뒤에만 넣는다(브라우저가 사람이 안 누르고 넣은 칸은 건너뛴다). */
+(() => {
+  if (!window.history || !history.pushState) return;
+  let depth = 0, wait = false, wt = 0;
+  const dimOn = () => { const d = document.getElementById("dim"); return !!d && d.classList.contains("on"); };
+  const inside = () => !!((window.msgInRoom && window.msgInRoom()) || (window.bdInMeet && window.bdInMeet()));
+  const level = () => { try { if (typeof D === "undefined" || !D) return 0; return (tab !== "home" ? 1 : 0) + (inside() ? 1 : 0) + (dimOn() ? 1 : 0); } catch (e) { return 0; } };
+  const sync = () => {
+    if (wait) return; const L = level();
+    if (L > depth) { try { for (; depth < L; depth++) history.pushState({ adm: depth + 1 }, ""); } catch (e) { /* 기록을 못 넣는 브라우저는 그대로 둔다 */ } }
+    else if (L < depth) { const n = depth - L; depth = L; wait = true; clearTimeout(wt); wt = setTimeout(() => { wait = false; }, 600); try { history.go(-n); } catch (e) { wait = false; } }
+  };
+  window.admBackSync = sync; window.admBackDepth = () => depth;
+  const step = () => {
+    try {
+      if (typeof D === "undefined" || !D) return;
+      if (dimOn()) return closeSheet(true);
+      if (window.msgInRoom && window.msgInRoom()) return window.msgBack();
+      if (window.bdInMeet && window.bdInMeet()) return window.bdBack();
+      if (tab !== "home") { tab = "home"; render(); scrollTo(0, 0); }
+    } catch (e) { /* 못 돌아가도 앱은 그대로 */ }
+  };
+  addEventListener("popstate", () => {
+    if (wait) { wait = false; clearTimeout(wt); return; } /* 화면 안의 단추로 돌아가서 우리가 뺀 칸 */
+    if (depth > 0) depth--; step(); depth = Math.min(depth, level()); /* 사람이 누른 뒤로가기: 한 단계만 돌아간다 */
+  });
+  /* 사람이 누른 뒤에 화면 단계와 기록 칸 수를 맞춘다 */
+  const later = () => { setTimeout(sync, 0); setTimeout(sync, 350); };
+  document.addEventListener("click", later); document.addEventListener("keyup", (e) => { if (e.key === "Enter" || e.key === "Escape") later(); });
 })();
 
 </script>
