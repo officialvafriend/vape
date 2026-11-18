@@ -3142,6 +3142,11 @@ body.hmonline .hmseg button.on{color:var(--blue)}body.hmonline .side,body.hmonli
 body.onlyon .hmseg:not(.hmon),body.onlyon .hmlgsw,body.onlyon [data-act="reload"],body.onlyon .gsopen,body.onlyon .gstop,body.onlyon [data-pt="view"][data-v="branch"],body.onlyon [data-pt="view"][data-v="evt"]{display:none!important}body.onlyon .logo[data-hm]{cursor:default}
 .logo[data-hm]{cursor:pointer;-webkit-user-select:none;user-select:none}.hmlgsw{display:inline-block;margin-left:8px;font-size:11px;font-weight:700;color:var(--blue);background:var(--blue-soft);border-radius:8px;padding:3px 7px;vertical-align:2px;letter-spacing:0}
 .hmlgsw .s{display:none}.top .hmlgsw .l{display:none}.top .hmlgsw .s{display:inline}.top .hmlgsw{margin-left:5px;padding:2px 6px;font-size:10px}.top .logo{white-space:nowrap}
+.hmvs{background:var(--card);border-radius:18px;padding:6px 16px}
+.hmvs>div{display:flex;align-items:center;gap:10px;min-height:42px;border-bottom:1px solid var(--line2);font-size:15px}.hmvs>div:last-child{border-bottom:0}
+.hmvs b{flex:none;width:92px;font-weight:700;white-space:nowrap}.hmvs .bar{flex:1;min-width:20px;height:8px;border-radius:4px;background:var(--line2);overflow:hidden}.hmvs .bar i{display:block;height:100%;border-radius:4px;background:var(--blue)}
+.hmvs .won{flex:none;min-width:96px;text-align:right;font-weight:800;font-variant-numeric:tabular-nums}.hmvs .won small{font-weight:600;color:var(--sub);margin-left:2px}.hmvs .n{flex:none;min-width:44px;text-align:right;color:var(--sub);font-size:13px}
+@media (max-width:520px){.hmvs b{width:78px;font-size:14px}.hmvs .won{min-width:84px}.hmvs .bar{display:none}.hmvs .n{flex:1}}
 .hmml{background:var(--card);border-radius:18px;padding:4px 16px}.hmml div{display:flex;gap:12px;align-items:baseline;min-height:44px;padding:10px 0;border-bottom:1px solid var(--line2);font-size:15px}.hmml div:last-child{border-bottom:0}.hmml b{flex:none;min-width:44px;font-weight:700;color:var(--sub);font-size:13px}
 .hmml button{display:flex;gap:12px;align-items:baseline;width:100%;min-height:52px;padding:13px 0;border:0;border-bottom:1px solid var(--line2);background:none;font:inherit;font-size:15px;color:inherit;text-align:left;cursor:pointer;transition:opacity .12s ease}
 .hmml button:last-child{border-bottom:0}
@@ -3185,7 +3190,21 @@ body.hmfull #nav{display:none!important}body.hmfull .hmboard{border-radius:16px 
     const who = Array.isArray(o.staff) ? o.staff.join(", ") : o.staff || (c && c.by) || "";
     return `<button class="hmb ${kind}" data-hmb="${esc(o.b)}"><div class="n"><i>${i + 1}</i>${esc(o.b)}</div><div class="s">${stt}</div><div class="m">${s ? man(s) : '<small style="margin:0">아직 매출 없음</small>'}${s && n ? `<small>${n}건</small>` : ""}</div>${who ? `<div class="w">${esc(who)}</div>` : ""}</button>`;
   }
+  /* 지점별 오늘 매출: 창고에 올라온 값(마스터봇이 읽은 포스 당일매출). 관리자 열쇠로 들어온 사람만 받는다 */
+  const VS = { d: null, at: 0, busy: false };
+  async function vsLoad() {
+    if (VS.busy || window.ONKEY || !window.admLive || !window.admLive() || Date.now() - VS.at < 60e3) return; VS.busy = true; VS.at = Date.now();
+    try { const o = await window.admCall("adm_vfsales_get", {}); const d = o && o.ok && o.sales && typeof o.sales === "object" ? o.sales : null, sig0 = JSON.stringify(VS.d); VS.d = d; if (JSON.stringify(d) !== sig0 && tab === "home" && HM.v === "vf") { const el = $("#hmvs"); if (el) el.innerHTML = vsHtml(); } }
+    catch (e) { /* 다음에 다시 */ } finally { VS.busy = false; }
+  }
+  function vsHtml() {
+    const d = VS.d; if (!d || d.d !== nowD() || !d.b) return "";
+    const rows = BR.map((b, i) => [b, i, d.b[b]]).filter((x) => x[2]); if (!rows.length) return "";
+    const sum = rows.reduce((a, x) => a + (+x[2].s || 0), 0), cnt = rows.reduce((a, x) => a + (+x[2].n || 0), 0), top = Math.max(1, ...rows.map((x) => +x[2].s || 0));
+    return `<div class="hmh">지점별 오늘 매출 <small>${esc(String(d.made || "").slice(11))} 기준, 합계 ${w(sum)}원, ${cnt}건</small></div><div class="hmvs">${rows.map(([b, i, x]) => `<div><b>${i + 1}호 ${esc(b)}</b><span class="bar"><i style="width:${Math.round(((+x.s || 0) / top) * 100)}%"></i></span><span class="won">${w(x.s)}<small>원</small></span><span class="n">${+x.n || 0}건${x.old ? ", 앞서 읽은 값" : ""}</span></div>`).join("")}</div>`;
+  }
   function vfHtml() {
+    vsLoad();
     const iss = issuesLeft().length, mu = window.msgUnread ? window.msgUnread() : 0, pc = window.ptCounts ? window.ptCounts() : { cf: 0, ov: 0 };
     const tile = (lab, n, cls, go, unit) => `<button ${go}><span>${lab}</span><b class="${n ? cls : "z"}">${n}<small>${unit}</small></b></button>`;
     const tiles = `<div class="hmt">${tile("확인할 것", iss, "r", 'data-hm="iss"', "건")}${tile("안 읽은 메시지", mu, "b", 'data-tab="msg"', "개")}${tile(pc.real ? "내가 맡은 업무" : "확인 기다리는 업무", pc.cf, "b", 'data-tab="tasks"', "건")}${tile("기한 지난 업무", pc.ov, "r", 'data-tab="tasks"', "건")}</div>`;
@@ -3194,7 +3213,7 @@ body.hmfull #nav{display:none!important}body.hmfull .hmboard{border-radius:16px 
     const nx = window.ptNext ? window.ptNext() : null;
     /* 예전 홈에 있던 것은 그대로 남김: 봇 경고는 맨 위, 지점 표는 카드 아래에 접어서 */
     const tbl = `<details class="hmmore"><summary>지점 표로 자세히 보기</summary><div class="${isPC() ? "cols home" : ""}" style="display:block;margin-top:10px">${isPC() ? opsHtml() : opsMobileHtml()}</div></details>`;
-    return `${botWarn()}<div class="hmh" style="margin-top:8px">지금 할 것</div>${tiles}${nx ? `<div style="margin-top:8px">${nx.html.replace('data-px="ev"', 'data-hm="next"')}</div>` : ""}<div class="hmh">오늘 숫자</div>${statHtml()}${br}${tbl}`;
+    return `${botWarn()}<div class="hmh" style="margin-top:8px">지금 할 것</div>${tiles}${nx ? `<div style="margin-top:8px">${nx.html.replace('data-px="ev"', 'data-hm="next"')}</div>` : ""}<div class="hmh">오늘 숫자</div>${statHtml()}<div id="hmvs">${vsHtml()}</div>${br}${tbl}`;
   }
   /* 온라인 홈: 액상덕후 매출(열쇠 뒤 창고에서 받음, 공개 저장소에는 숫자가 없음)과 온라인팀 보드.
      매출은 이 PC의 올리기 스크립트((보혜)\\온라인홈_자료\\온라인홈_매출올리기.mjs)가 올린 것까지만 보인다. */
