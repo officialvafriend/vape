@@ -381,7 +381,7 @@ function draw() { if (!D) return; const i = S.path.indexOf(S.step), inPath = i >
   const key = S.step + (S.step === "quiz" ? S.qz.i : S.step === "pick" ? (S.res ? "r" + S.vp : "w") : S.step === "hello" ? (S.mem || {}).s : "");
   const m = $('main'), same = key === lastKey, sc = same ? [...m.querySelectorAll('[data-sc]')].map((e) => e.scrollTop) : [];
   const keep = document.activeElement && document.activeElement.id; m.innerHTML = V[S.step]();
-  if (same) m.querySelectorAll('[data-sc]').forEach((e, j) => { e.scrollTop = sc[j] || 0; }); /* 담기를 눌러도 보던 자리 그대로 */
+  if (same) { m.classList.remove('in'); m.querySelectorAll('[data-sc]').forEach((e, j) => { e.scrollTop = sc[j] || 0; }); } /* 같은 화면에서 누를 땐 움직임 없이, 보던 자리 그대로 (11/18 "버튼 누를 때마다 요란법석") */
   else { lastKey = key; m.classList.remove('in'); void m.offsetWidth; m.classList.add('in'); } /* 화면이 바뀔 때만 올라오는 움직임 */
   document.body.classList.toggle('ft', S.step !== "start");
   const last = i === S.path.length - 1, Qn = S.step === "quiz" ? S.qz.list[S.qz.i] : null;
