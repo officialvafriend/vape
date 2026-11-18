@@ -70,10 +70,15 @@ main{flex:1;min-height:0;padding:20px 24px;display:flex;flex-direction:column}
 .tri button:active img{transform:scale(1.05)}
 
 /* 쓰는 기기 고르기: 이름 버튼 5칸 */
-.dvg{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-top:20px}
-.dvg button{height:74px;border-radius:16px;background:var(--card);font-size:23px;font-weight:800;letter-spacing:-.03em;box-shadow:0 2px 8px rgba(0,0,0,.06)}
-.dvg button:active{background:#EEE}
-.dvg button.dk{background:none;box-shadow:none;border:2px dashed #CCC;color:var(--g1)}
+.dvh{display:flex;align-items:center;gap:20px}.dvh > div{flex:1;min-width:0}
+.dvh .dk{flex:none;height:72px;padding:0 30px;border-radius:16px;border:2px solid var(--ink);background:var(--card);font-size:24px;font-weight:800}
+.dvr{flex:1;min-height:0;display:flex;gap:16px;overflow-x:auto;overflow-y:hidden;margin:16px -24px 0;padding:4px 24px 12px;scroll-snap-type:x proximity;scrollbar-width:thin}
+.dvr button{flex:none;width:262px;border-radius:26px;background:var(--card);box-shadow:0 2px 8px rgba(0,0,0,.06);display:flex;flex-direction:column;padding:16px;text-align:left;scroll-snap-align:start;scroll-margin-left:24px}
+.dvr button:active{transform:scale(.985)}
+.dvr .im{flex:1;min-height:0;border-radius:18px;background:#F4F4F6;overflow:hidden;display:flex;align-items:center;justify-content:center;color:var(--g2);font-size:20px}
+.dvr .im img{width:100%;height:100%;object-fit:contain}
+.dvr b{flex:none;font-size:28px;font-weight:800;letter-spacing:-.03em;margin-top:12px}
+.dvr small{flex:none;font-size:17px;color:var(--g2);font-weight:600;height:24px}
 /* 번호 누르기 */
 .num{background:var(--card);border-radius:var(--r);margin-top:22px;padding:22px;text-align:center;font-size:50px;font-weight:800;letter-spacing:.02em}
 .num.e{color:#CCC}
@@ -266,7 +271,7 @@ $('eng').onload = () => { const w = $('eng').contentWindow; E = (code) => w.eval
       liq: ALL_LQ.map((x) => ({ id: x.id, n: x.n, s: short(x.n), f: x.f || "", g: String(x.g || "").replace("·", ", "), br: x.br || "", line: x.line || "", img: imgOf(x), tint: tintOf(x), price: liqPrice(x), out: outOf(x.n), no: noOf(x.n) || 0, a: A_SET.has(x.n),
         oth: outOf(x.n) ? Object.entries(STOCK_ALL).filter(([b, v]) => b !== BRANCH && window.POS && window.POS[b] && window.POS[b][posName(x.n, b)] && !(v.out || []).includes(posName(x.n, b))).map(([b]) => b) : [] })),
       dsp: GDS.filter((g) => g.c === "dsp").map((g) => ({ id: g.id, n: g.n, price: g.price, img: gImg2(g), opt: g.opt || "", mn: dInfo(g.model).name || g.model || "" })),
-      pod: GDS.filter((g) => g.c === "pod" && (g.sub || "팟·코일") === "팟·코일").map((g) => ({ id: g.id, n: g.n, price: g.price, img: gImg(g), fam: podDevOf(g) })), fams: podFams(),
+      pod: GDS.filter((g) => g.c === "pod" && (g.sub || "팟·코일") === "팟·코일").map((g) => ({ id: g.id, n: g.n, price: g.price, img: gImg(g), fam: podDevOf(g) })), fams: podFams(), famImg: podFams().map((f) => [f, devImgOf(f) || (f === "발라리안 맥스프로" ? devImgOf("발라맥스프로") : "") || "", GDS.filter((g) => g.c === "pod" && podDevOf(g) === f).map((g) => gImg(g)).filter(Boolean)[0] || ""]),
       dev: devModels().map((m) => ({ n: m, img: devImgOf(m), sub: DEV_SUB[m] || "", opts: devOpts(m).map((g) => ({ id: g.id, n: g.n, opt: g.opt || "", price: g.price, img: devImgOf(g.model, g.opt) })) })).map((d) => ({ ...d, price: d.opts.length ? Math.min(...d.opts.map((o) => o.price)) : 0 })) })`));
     $('load').style.display = "none"; sync(); draw(); }, 200); };
 function sync() { try { const o = JSON.parse(E(`JSON.stringify({ i: [...cart].map(([k, v]) => [k, { label: v.label || v.n || "", qty: v.qty || 0, unit: v.unit || 0, img: v.img || "", k: v.k || "", model: v.model || "" }]), t: (() => { const t = totalOf(); return { total: t.total, how: t.how || "", c: t.c, unit: [...cart.values()].reduce((a, x) => a + (x.k === "bulk" ? x.items.reduce((s, [, , q]) => s + q * 15000, 0) * x.qty : x.k === "dsp15" ? x.items.reduce((s, [, , q, p]) => s + q * p, 0) * x.qty : x.unit * x.qty), 0) }; })() })`)); CI = o.i; CQ = new Map(o.i.map(([k, v]) => [k, v.qty])); CT = o.t; CN = o.i.reduce((a, b) => a + b[1].qty, 0); } catch (e) {} }
@@ -329,8 +334,9 @@ const V = {
   way: () => split(`<div class="q an">오늘 어떻게<br>오셨어요?</div><div class="qs an d1">하나만 골라 주세요</div>`,
     `<div class="ans">${WAYS.map(([k, t, sub]) => `<button data-way="${k}"><span><b>${t}</b><span>${sub}</span></span></button>`).join("")}</div>`),
   /* 쓰는 기기를 알면 맞는 팟, 코일을 바로 골라 드릴 수 있음. 기기 이름은 B안의 팟 기기 목록(podFams) 그대로 */
-  mydev: () => `<div class="q s an">어떤 기기를 쓰세요?</div><div class="qs an" style="margin-top:4px">맞는 팟, 코일을 같이 챙겨 드려요. 이름을 모르셔도 괜찮아요</div>
-    <div class="dvg an d1">${D.fams.map((f) => `<button data-mydev="${esc(f)}">${esc(f)}</button>`).join("")}<button class="dk" data-mydev="">잘 모르겠어요</button></div>`,
+  /* 사진은 기기 사진이 있으면 기기, 없으면 그 기기에 끼우는 팟 사진(작게 "팟 사진"이라고 적음), 둘 다 없으면 이름만. 옆으로 넘겨 봄 */
+  mydev: () => `<div class="dvh an"><div><div class="q s">어떤 기기를 쓰세요?</div><div class="qs" style="margin-top:4px">옆으로 넘겨서 찾아 주세요. 맞는 팟, 코일을 같이 챙겨 드려요</div></div><button class="dk" data-mydev="">잘 모르겠어요</button></div>
+    <div class="dvr an d1" id="dvr">${D.famImg.map(([f, d, p]) => `<button data-mydev="${esc(f)}"><span class="im">${d || p ? `<img src="${d || p}" alt="" loading="lazy">` : "사진 준비 중"}</span><b>${esc(f)}</b><small>${!d && p ? "팟 사진" : ""}</small></button>`).join("")}</div>`,
   dev: () => { const rk = rankMap("dev"), rec = (d) => S.recDev && d.n === S.recDev ? 0 : 1, list = [...D.dev].sort((a, b) => rec(a) - rec(b) || (rk.get(a.n) || 99) - (rk.get(b.n) || 99)), mine = devInCart();
     return split(`<div class="q s">기기를 골라 주세요</div><div class="qs" style="margin-top:4px">${S.recDev ? "답변에 맞는 기기를 맨 앞에 뒀어요. " : "많이 나간 순서예요. "}누르면 색상을 고를 수 있어요</div>
       <div class="grid">${list.map((d) => { const got = mine.some(([k]) => d.opts.some((o) => o.id === k)); return `<div class="cd ${got ? "got" : ""}" data-dev="${esc(d.n)}">${!rec(d) ? `<i class="rkb">추천</i>` : rk.get(d.n) ? `<i class="rkb">${rk.get(d.n)}위</i>` : ""}<div class="im">${d.img ? `<img src="${d.img}" alt="" loading="lazy">` : esc(d.n)}</div><small>${d.opts.length > 1 ? "색상 " + d.opts.length + "가지" : esc(d.sub || "기기")}</small><b>${esc(d.n)}</b><div class="pr">${d.price ? won(d.price) : "직원에게 문의"}</div><button class="add ${got ? "" : "line"}">${got ? "담았어요" : "색상 고르기"}</button></div>`; }).join("")}</div>`, cartPanel(), "shop"); },
@@ -473,6 +479,7 @@ document.addEventListener('click', (e) => { const t = e.target, c = (s) => t.clo
     if (S.step === "check") return staff();
     if (i === S.path.length - 1) { if (!CN) return toast("먼저 상품을 담아 주세요"); return go("check"); }
     if (S.step === "liq" && !liqN() && !CN) return toast("액상을 하나 이상 골라 주세요"); return go(S.path[i + 1]); } });
+document.addEventListener('wheel', (e) => { const r = e.target.closest && e.target.closest('.dvr'); if (r && Math.abs(e.deltaY) > Math.abs(e.deltaX)) r.scrollLeft += e.deltaY; }, { passive: true }); /* 마우스 휠로도 옆으로 넘어가게 (패드에선 손가락으로 밀기) */
 document.addEventListener('input', (e) => { const t = e.target; if (t.id === "mName") S.name = t.value; if (t.id === "rName") S.reg.name = t.value; if (t.id === "rYear") S.reg.year = t.value = t.value.replace(/\D/g, "").slice(0, 2); if (t.id === "rPhone") S.reg.phone = t.value = t.value.replace(/\D/g, "").slice(0, 11); });
 </script>
 </body>
