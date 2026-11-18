@@ -526,7 +526,8 @@ body[data-theme=dark] .srcart{background:#f1f1f3;color:#15120f}body[data-theme=d
 .memsx{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}.memsx button{height:48px;border-radius:12px;background:var(--card);border:1px solid var(--line);font-size:16px;font-weight:700;color:var(--ink)}.memsx button.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 .memgo{display:block;width:100%;height:52px;margin-top:10px;border-radius:12px;background:var(--red);color:#fff;font-size:16px;font-weight:800}
 .memst{font-size:16px;font-weight:700;line-height:1.4}.memst.ok,.memst.dup{color:#1a7f4b}.memst.err,.memst.off,.memst.late{color:var(--red)}
-.memline{font-size:14px;margin-top:14px;padding:12px 14px;border-radius:12px;background:var(--bg)}
+.memline{font-size:16px;margin-top:14px;padding:16px 18px;border-radius:14px;background:var(--bg);box-shadow:inset 0 0 0 2px var(--ink);line-height:1.45}
+.memline b{display:block;font-size:17px}.memline strong{display:block;font-size:30px;font-weight:800;letter-spacing:-.01em;margin-top:4px}.memline.nomem{box-shadow:none}
 .qrbox{background:#fff;border-radius:16px;padding:16px;text-align:center;color:#15120f}.qrbox svg{max-width:480px;width:100%;height:auto}
 .posw{font-size:13.5px;background:#fff4e5;color:#8a4b00;border-radius:12px;padding:10px 12px;margin-top:10px}
 body[data-theme=dark] .srch,body[data-theme=dark] .home-btn{background:#1c1d20;color:#cfcfd5}
@@ -1046,7 +1047,7 @@ $('lines').addEventListener('input', (e) => { const t = e.target;
   if (t.id === "memName" || t.id === "memYear") { if (t.id === "memYear") t.value = t.value.replace(/\D/g, "").slice(0, 2); member[t.id === "memName" ? "name" : "year"] = t.value; if (member.bad === "name" || member.bad === "year") { member.bad = ""; t.classList.remove("bad"); } const pv = document.getElementById("memPv"); if (pv) pv.innerHTML = memFull() ? `<b>${esc(memFull())}</b> 님으로 가입돼요` : ""; } if (t.id === "memPhone") { t.value = t.value.replace(/\D/g, "").slice(0, 11); member.phone = t.value; member.okd = false; if (member.bad === "phone") { member.bad = ""; t.classList.remove("bad"); } } if (t.id === "memAgree") member.agree = t.checked; if (t.id === "memMk") member.mk = t.checked; });
 $('lines').addEventListener('change', (e) => { if (e.target.id === "memAgree") member.agree = e.target.checked; if (e.target.id === "memMk") member.mk = e.target.checked; });
 const MEM_LINE = { ok: "패드로 등록됨, 포스에서 번호로 회원 조회", dup: "이미 회원, 포스에서 번호로 회원 조회", wait: "패드로 등록 중, 끝나면 포스에서 조회", send: "패드로 등록 중, 끝나면 포스에서 조회", err: "패드 등록 실패, 포스에서 직접 등록", off: "패드 등록 실패, 포스에서 직접 등록", late: "패드 등록 확인 안 됨, 포스에서 번호로 조회", found: "회원 확인됨, 포스에서 번호로 회원 조회", none: "이 번호 회원 없음, 포스에서 확인" }; /* 11/12 회원조회 결과 (없으면 undefined로 떴음) */
-const memLine = () => member.type ? `<div class="memline"><b>${member.reg ? (member.reg.look && /send|wait/.test(member.reg.s) ? "회원 확인 중" : member.reg.look && /err|off|late/.test(member.reg.s) ? "회원 확인 안 됨, 포스에서 번호로 조회" : MEM_LINE[member.reg.s] || "회원 확인 중") : member.type === "new" ? "신규 회원등록" : "기존 회원"}</b> ${esc([member.type === "new" ? memFull() : member.name, member.phone.replace(/(\d{3})(\d{3,4})(\d{4})/, "$1-$2-$3")].filter(Boolean).join(", ") || "정보 미입력")}${member.type === "new" && !member.agree ? ' <span style="color:var(--red)">(동의 안 함)</span>' : ""}</div>` : `<div class="memline"><b>회원 정보 없음</b> 적립 원하시는지 여쭤보고, 회원이면 포스에서 조회 먼저</div>`;
+const memLine = () => member.type ? `<div class="memline"><b>${member.reg ? (member.reg.look && /send|wait/.test(member.reg.s) ? "회원 확인 중" : member.reg.look && /err|off|late/.test(member.reg.s) ? "회원 확인 안 됨, 포스에서 번호로 조회" : MEM_LINE[member.reg.s] || "회원 확인 중") : member.type === "new" ? "신규 회원등록" : "기존 회원"}</b><strong>${esc([member.type === "new" ? memFull() : member.name, member.phone.replace(/(\d{3})(\d{3,4})(\d{4})/, "$1-$2-$3")].filter(Boolean).join(", ") || "정보 미입력")}</strong>${member.type === "new" && !member.agree ? ' <span style="color:var(--red)">(동의 안 함)</span>' : ""}</div>` : `<div class="memline nomem"><b>회원 정보 없음</b> 적립 원하시는지 여쭤보고, 회원이면 포스에서 조회 먼저</div>`;
 // 아래 버튼: 담은 상품 → 직원 바코드 / QR → 완료
 /* 11/12 액상덕후 "드래그로 내렸다가 올렸다가": 세로 화면에서 아래 바를 위로 끌면 열림, 장바구니 윗부분(손잡이, 제목)을 아래로 끌면 닫힘 */
 (function () {
@@ -1277,14 +1278,14 @@ function qrView() {
   const payQ = chunks(codes), svcQ = chunks(svcCodes);
   const part = (k, n) => n > 1 ? ` ${k + 1}/${n}` : "";
   $('shH').textContent = "QR로 한 번에 찍기"; ev("w", SELLER || "", String(t)); /* 11/13 판매자 기록 (패드 사용기록) */
-  $('lines').innerHTML = `${SELLER ? `<div class="sellq">🙋 판매자 <b>${esc(SELLER)}</b></div>` : `<div class="sellq none">🙋 판매자를 안 골랐어요. 장바구니 맨 위에서 골라 주세요</div>`}${orderBox()}<div style="font-size:14.5px;color:var(--grey);margin-bottom:10px">포스 판매 화면에서 스캐너로 위에서부터 차례로 찍으세요. (${esc(BRANCH)} 포스 기준)</div>
+  $('lines').innerHTML = `${SELLER ? `<div class="sellq">🙋 판매자 <b>${esc(SELLER)}</b></div>` : `<div class="sellq none">🙋 판매자를 안 골랐어요. 장바구니 맨 위에서 골라 주세요</div>`}${orderBox()}${memLine()}<div style="font-size:14.5px;color:var(--grey);margin:12px 0 10px">포스 판매 화면에서 스캐너로 위에서부터 차례로 찍으세요. (${esc(BRANCH)} 포스 기준)</div>
     ${unreg.length ? `<div class="posw">바코드가 없어서 QR에서 뺐어요. 포스에서 직접 찾아 넣어 주세요: ${unreg.map(esc).join(", ")}</div>` : ""}
     ${payQ.map((l, k) => `${stp(1, "결제 QR 찍기" + part(k, payQ.length), "기기, 묶음 상품, 정가 상품")}<div class="qrbox">${qr(l)}<div style="font-size:16px;font-weight:800;margin-top:8px">${l.length}개 찍힘${k === payQ.length - 1 ? `, 포스 금액 ${won(t)} 확인` : ""}</div></div>`).join("")}
     ${svcQ.map((l, k) => `${stp(2, "서비스 QR 찍기" + part(k, svcQ.length), "찍은 다음 새로 들어온 줄만 포스에서 서비스(0원) 처리해 주세요")}<div class="qrbox svq">${qr(l)}<div style="font-size:16px;font-weight:800;margin-top:8px">서비스 ${l.length}개 (금액 0원으로 처리)</div></div>`).join("")}
     ${miss.length ? `<div class="posw">QR에 안 들어간 것 (직접 찍기): ${miss.map(esc).join(", ")}</div>` : ""}
     ${svcMiss.length ? `<div class="posw">매장에서 고를 서비스분 (진열대에서 골라 찍고 서비스 처리): ${svcMiss.map(esc).join(", ")}</div>` : ""}
     <div class="final" style="margin-top:12px"><span>포스 결제 금액이 이 금액인지 확인</span><b>${won(t)}</b></div>
-    <div style="margin-top:10px;font-size:14px;color:var(--grey)">하나만 찍히면 구분 문자를 바꿔 보세요 <select id="qrSep">${Object.keys(QR_SEPS).map((k) => `<option value="${k}" ${k === qrSep ? "selected" : ""}>${{ cr: "Enter (CR)", crlf: "Enter (CR+LF)", lf: "줄바꿈 (LF)", tab: "Tab" }[k]}</option>`).join("")}</select></div>${memLine()}`;
+    <div style="margin-top:10px;font-size:14px;color:var(--grey)">하나만 찍히면 구분 문자를 바꿔 보세요 <select id="qrSep">${Object.keys(QR_SEPS).map((k) => `<option value="${k}" ${k === qrSep ? "selected" : ""}>${{ cr: "Enter (CR)", crlf: "Enter (CR+LF)", lf: "줄바꿈 (LF)", tab: "Tab" }[k]}</option>`).join("")}</select></div>`; /* 11/18 상인점 "작게 떠서 있는지 몰랐어요": 회원 번호 줄을 맨 아래에서 맨 위로, 크게 */
   $('qrSep').onchange = (e) => { qrSep = e.target.value; try { localStorage.setItem("vf-qr-sep", qrSep); } catch (er) {} qrView(); };
   setFoot("qr");
   if (QR_SEND_ON) { const sb = document.createElement("button"); sb.className = "cta posgo"; sb.textContent = "포스로 보내기"; sb.onclick = () => qrSend(codes, svcCodes, t, sb); $('lines').prepend(sb); } /* 11/17 액상덕후 "너무 숨겨져 있음": 맨 위, 크게 */
