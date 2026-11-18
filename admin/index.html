@@ -1218,7 +1218,7 @@ function closingAllHtml() {
   return `<div class="pchead"><h1>마감 보고</h1><div class="caption">지점별 최근 마감, 누르면 보고문 전체</div></div><div class="chips hs" style="margin-bottom:12px">${chips}</div>${all.length ? (clB === "전체" ? closingByBranchHtml() : closingBranchListHtml(clB)) : '<div class="empty">아직 마감 보고가 없어요</div>'}`;
 }
 const posTxt = (c) => { const p = c && c.pos; if (!p || !p.ok) return ""; const g = Math.round(+p.과부족 || 0); return p.일마감 ? "포스 일마감 됨" + (g ? ", 과부족 " + (g > 0 ? "+" : "") + g.toLocaleString("ko-KR") : "") : "포스 일마감 아직"; };
-const navTodoN = () => { let n = 0; try { n = bdTodoN(); } catch (e) { n = 0; } try { if (window.admSt && window.admSt() !== "off" && window.msgTaskCounts) n += window.msgTaskCounts().cf || 0; } catch (e) { /* 메신저가 아직 없음 */ } return n; }; /* 업무 메뉴 숫자 = 블로그 지시문 쓸 것 + 내가 맡은 업무 */
+const navTodoN = () => { let n = 0; try { n = window.ptOnlSide && window.ptOnlSide() ? 0 : bdTodoN(); /* 온라인 쪽에는 지점 칸이 없어서 블로그 지시문 숫자를 안 센다 */ } catch (e) { n = 0; } try { if (window.admSt && window.admSt() !== "off" && window.msgTaskCounts) n += window.msgTaskCounts().cf || 0; } catch (e) { /* 메신저가 아직 없음 */ } return n; }; /* 업무 메뉴 숫자 = 블로그 지시문 쓸 것 + 내가 맡은 업무 */
 const clRow = (c, i) => { const st = clSt(c), w = st === "bad" ? warnsOf(c).length || 1 : 0; return `<button class="clrow" data-cl="${i}"><b class="${w ? "t-bad" : ""}">${c.date.slice(5).replace("-", "/")}</b><span class="m">${c.status === "done" ? `총 ${won(c.nums.총)}<small>시재 ${won(c.sijae)}${st === "sp" && clDiffTxt(c) ? ", 차액 " + clDiffTxt(c) : ""}${posTxt(c) ? ", " + posTxt(c) : ""}</small>` : c.status === "error" ? `<span class="t-bad">${esc(c.err || "실패")}</span>` : "만드는 중"}</span><small>${esc(c.by)}</small>${w ? `<span class="t-bad">⚠️${w}</span>` : st === "sp" ? '<span class="sptag">특이건</span>' : ""}<span class="chev">›</span></button>`; };
 function closingByBranchHtml() {
   const all = D.closings || [];
@@ -2009,6 +2009,18 @@ button.ptnext:hover{filter:brightness(.97)}
 .ptev .ptf{height:18px;line-height:18px;padding:0 5px;font-size:11px;margin-right:4px}
 .ptev:hover{background:var(--press)}.ptev small{display:block;color:var(--sub);font-weight:700;font-size:12px}.ptev.over small{color:var(--red)}
 .ptmore{display:block;width:100%;text-align:left;padding:6px 8px;font-size:13px;font-weight:700;color:var(--sub)}
+.cltop{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 12px}
+.clnav{display:flex;align-items:center;gap:6px}.clnav b{font-size:16px;font-weight:700;margin:0 6px;white-space:nowrap}
+.clnav button{height:44px;min-width:44px;padding:0 10px;white-space:nowrap;border-radius:12px;background:var(--card);box-shadow:inset 0 0 0 1px var(--line2);font-size:15px;font-weight:700;color:var(--ink2)}
+.cltool{display:flex;align-items:center;gap:8px;margin-left:auto}
+.clseg{display:flex;background:var(--line2);border-radius:12px;padding:3px}.clseg button{height:38px;padding:0 14px;border-radius:9px;font-size:14px;font-weight:700;color:var(--sub);background:none;white-space:nowrap}.clseg button.on{background:var(--card);color:var(--ink);box-shadow:0 1px 3px rgba(20,30,50,.10)}
+.clleft{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px}.clleft button{height:44px;padding:0 14px;border-radius:12px;background:var(--card);font-size:14px;font-weight:700;color:var(--ink2)}.clleft button.bad{color:var(--red)}
+#ptcalroot .ptday h5{display:flex;align-items:center;min-height:32px;margin:0 2px 6px 4px}#ptcalroot .ptday h5 span{flex:1}
+.cladd{flex:none;width:32px;height:32px;border-radius:9px;background:var(--bg);color:var(--sub);font-size:18px;font-weight:700;line-height:1}
+.ptday.drop{box-shadow:inset 0 0 0 2px var(--blue)}
+.ptev.kmt{background:var(--blue-soft)}.ptev.kmt small{color:var(--blue)}.ptev[draggable="true"]{cursor:grab}
+@media (hover:hover) and (pointer:fine){.cladd:hover{background:var(--blue-soft);color:var(--blue)}}
+@media (max-width:899px){.clnav{width:100%}.clnav b{flex:1;text-align:center}.cltool{width:100%;margin-left:0}.cltool .ptnew{margin-left:auto}}
 @media (min-width:900px){.ptnew{display:block}.ptfab{display:none}.ptcols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:22px;align-items:start}.ptcols .sec:first-child{margin-top:8px}}
 @media (min-width:900px) and (max-width:1799px){body.docked .ptcols{grid-template-columns:minmax(0,1fr)}body.docked .ptcal{grid-template-columns:repeat(4,minmax(0,1fr))}}
 @media (max-width:899px){.sec.ptfirstsec{margin-top:18px}}
@@ -2083,6 +2095,7 @@ button.ptnext:hover{filter:brightness(.97)}
   /* 메신저가 켜져 있으면 창고의 진짜 일정을, 아니면 예시 일정을 쓴다 */
   const real = () => !!(window.admSt && window.admSt() !== "off"); /* 정식으로 쓰는 중: 예시를 보이지 않는다 */
   /* 칸마다 빨간 숫자: 내 것 = 내가 맡은 업무, 지점과 블로그 = 블로그 지시문 쓸 것 */
+  window.ptOnlSide = () => (window.hmOnl ? window.hmOnl() : document.body.classList.contains("hmonline") || !!window.ONKEY);
   const tabN = (k) => { try { return k === "mine" ? (real() && window.msgTaskCounts ? window.msgTaskCounts().cf : 0) : k === "branch" ? (typeof bdTodoN === "function" ? bdTodoN() : 0) : 0; } catch (e) { return 0; } };
   const liveOn = () => !!(window.admLive && window.admLive()); /* 메신저가 켜져 있으면 달력에 예시 업무를 안 섞는다 */
   const schAll = () => (window.admLive && window.admLive() && window.msgEvents ? window.msgEvents() : SCH);
@@ -2098,6 +2111,33 @@ button.ptnext:hover{filter:brightness(.97)}
     const L = dayItems(PT.day), h = hidN(PT.day);
     return bar + `<div class="ptwk">${days.map((d) => { const n = dayItems(d).length; return `<button class="${d === PT.day ? "on" : ""} ${d === today() ? "td" : ""}" data-pt="day" data-d="${d}">${"일월화수목금토"[new Date(d + "T00:00:00Z").getUTCDay()]}<b>${+d.slice(8)}</b><i>${n > 3 ? n : "•".repeat(n)}</i></button>`; }).join("")}</div>${note}<div class="list">${L.map((x) => ev(x, true)).join("") || '<div class="empty">이날은 없어요</div>'}</div>${h ? `<div class="caption" style="margin:0 4px">그 밖의 업무가 ${h}건 더 있어요. [전체 보기]를 누르면 나와요.</div>` : ""}<button class="ptfab" data-pt="new" aria-label="새 업무">+</button>`;
   }
+  /* ── 일정(정식) ── 11/18 보혜 "일정 정리하는 것도 사용하기 편하게": 메신저의 일정, 회의, 기한 있는 업무와 온라인팀 할 일, 회의를 한 주에 모아 본다.
+     날짜의 [+]로 그날 할 일을 넣고, PC에서는 할 일을 다른 날짜 칸으로 끌어서 옮긴다. 예시 자료는 없다. */
+  const CL = { mine: ls.get("vf-pt-calmine") === "1", drag: "" };
+  const KN = { ev: "일정", tk: "업무", bd: "할 일", mt: "회의" };
+  const calSrc = () => { const me = window.admWho ? window.admWho() : ""; return schAll().map((s) => { const tk = String(s.id)[0] === "t"; return { id: s.id, k: tk ? "tk" : "ev", title: tk ? String(s.title).replace(/^업무: /, "") : s.title, d: s.d, time: /^\d{2}:\d{2}$/.test(s.time) ? s.time : "", who: s.who, mine: !tk || String(s.who || "").split(/[,\s]+/).includes(me) }; }).concat(window.bdCal ? window.bdCal() : []).filter((x) => !CL.mine || x.mine); };
+  const calOn = (A, d) => A.filter((x) => x.d === d).sort((a, b) => (a.time || "99").localeCompare(b.time || "99") || (b.k === "mt") - (a.k === "mt"));
+  const calRow = (x, big) => { const late = (x.k === "bd" || x.k === "tk") && x.d < today(), lab = x.time || KN[x.k];
+    return big ? `<button class="item pt" data-pt="sch" data-id="${esc(x.id)}"><div class="av ${x.k === "mt" ? "blue" : late ? "bad" : ""}" style="font-size:12px">${esc(lab)}</div><div class="tx"><b>${esc(x.title)}</b><span>${KN[x.k]}${x.who ? ", " + esc(x.who) : ""}${late ? ', <span class="t-bad" style="display:inline;font-weight:700">기한 지남</span>' : ""}</span></div><span class="chev">›</span></button>`
+      : `<button class="ptev k${x.k} ${late ? "over" : ""}" data-pt="sch" data-id="${esc(x.id)}" ${x.k === "bd" ? 'draggable="true"' : ""}><small>${esc(lab)}${x.time ? ", " + KN[x.k] : ""}${x.who ? ", " + esc(x.who) : ""}</small>${esc(x.title)}</button>`; };
+  function calLive() {
+    if (window.bdCalLoad) window.bdCalLoad();
+    const ws = wkStart(), days = [0, 1, 2, 3, 4, 5, 6].map((i) => addD(ws, i)), td = today(), A = calSrc(), can = !!(window.bdCan && window.bdCan() && window.bdNew);
+    const sm = (d) => `${+d.slice(5, 7)}/${+d.slice(8)}`, wkN = PT.wk === 0 ? "이번 주 " : PT.wk === 1 ? "다음 주 " : PT.wk === -1 ? "지난주 " : "";
+    const left = can && window.bdCalLeft ? window.bdCalLeft() : { over: 0, none: 0 };
+    const top = `<div class="cltop"><div class="clnav"><button data-pt="wk" data-n="-1" aria-label="이전 주">‹</button><b>${wkN}${sm(ws)} ~ ${sm(days[6])}</b><button data-pt="wk" data-n="1" aria-label="다음 주">›</button>${PT.wk ? '<button data-pt="wk" data-n="0">오늘</button>' : ""}</div><div class="cltool"><div class="clseg" role="tablist"><button class="${CL.mine ? "" : "on"}" data-pt="calmine" data-v="0">전체</button><button class="${CL.mine ? "on" : ""}" data-pt="calmine" data-v="1">내 것만</button></div>${can ? `<button class="ptnew" data-pt="caladd" data-d="${days.includes(td) ? td : days[0]}">+ 할 일</button>` : ""}</div></div>`;
+    const chips = left.over || left.none ? `<div class="clleft">${left.over ? `<button class="bad" data-pt="calgo" data-v="over">기한 지난 할 일 ${left.over}건 ›</button>` : ""}${left.none ? `<button data-pt="calgo" data-v="none">날짜 없는 할 일 ${left.none}건 ›</button>` : ""}</div>` : "";
+    if (isPC()) return `<div id="ptcalroot">${top}${chips}<div class="ptcal">${days.map((d) => { const L = calOn(A, d); return `<div class="ptday ${d === td ? "td" : ""}" data-cld="${d}"><h5><span>${d === td ? sm(d) + " 오늘" : dl(d)}</span>${can ? `<button class="cladd" data-pt="caladd" data-d="${d}" aria-label="${dl(d)}에 할 일 넣기">+</button>` : ""}</h5>${L.slice(0, 7).map((x) => calRow(x)).join("")}${L.length > 7 ? `<button class="ptmore" data-pt="calday" data-d="${d}">${L.length - 7}건 더</button>` : ""}</div>`; }).join("")}</div>${can ? '<div class="caption" style="margin:10px 4px 0">할 일은 다른 날짜 칸으로 끌어서 옮길 수 있어요.</div>' : ""}</div>`;
+    const W = days.map((d) => [d, calOn(A, d)]).filter(([, L]) => L.length);
+    return `<div id="ptcalroot">${top}${chips}<div class="ptwk">${days.map((d) => { const n = calOn(A, d).length; return `<button class="${d === td ? "on td" : ""}" data-pt="day" data-d="${d}">${"일월화수목금토"[new Date(d + "T00:00:00Z").getUTCDay()]}<b>${+d.slice(8)}</b><i>${n > 3 ? n : "•".repeat(n)}</i></button>`; }).join("")}</div>${W.map(([d, L]) => `<div class="ptdh ${d === td ? "td" : ""}" id="ptd-${d}">${dl(d)}${d === td ? ", 오늘" : ""} <span style="font-weight:600">${L.length}건</span></div><div class="list">${L.map((x) => calRow(x, true)).join("")}</div>`).join("") || `<div class="list"><div class="empty">${CL.mine ? "이 주에는 내 일정이 없어요" : "이 주에는 일정이 없어요"}</div></div>`}</div>`;
+  }
+  document.addEventListener("dragstart", (e) => { const t = e.target.closest && e.target.closest('.ptev[draggable="true"]'); if (!t) return; CL.drag = t.dataset.id; e.dataTransfer.effectAllowed = "move"; try { e.dataTransfer.setData("text/plain", t.dataset.id); } catch (x) { /* 못 넣어도 옮기기는 된다 */ } });
+  const dropOff = (keep) => document.querySelectorAll(".ptday.drop").forEach((el) => { if (el !== keep) el.classList.remove("drop"); });
+  document.addEventListener("dragover", (e) => { if (!CL.drag) return; const c = e.target.closest && e.target.closest("[data-cld]"); if (!c) return dropOff(); e.preventDefault(); e.dataTransfer.dropEffect = "move"; dropOff(c); c.classList.add("drop"); });
+  document.addEventListener("drop", (e) => { const id = CL.drag, c = e.target.closest && e.target.closest("[data-cld]"); CL.drag = ""; dropOff(); if (!id || !c) return; e.preventDefault(); if (window.bdMove) window.bdMove(id, c.dataset.cld); });
+  document.addEventListener("dragend", () => { CL.drag = ""; dropOff(); });
+  window.ptViewNow = () => PT.view;
+  window.ptViewSet = (v) => { PT.view = v; }; /* 다시 그리지 않고 칸만 바꿔 둔다(왼쪽 메뉴의 업무를 눌렀을 때) */
   /* 찾기와 끌어서 순서 바꾸기가 쓰는 곳 */
   window.ptSearch = (q) => { if (!D || real()) return []; if (!MT.length) seed(); const k = q.toLowerCase(); return MT.filter((t) => `${t.title} ${t.body} ${t.owner} ${t.by}`.toLowerCase().includes(k)).map((t) => ({ id: t.id, title: t.title, sub: `맡은 사람 ${t.owner}, ${dueTxt(t)}` })); };
   window.ptView = (v) => { tab = "tasks"; PT.view = v; render(); };
@@ -2111,9 +2151,14 @@ button.ptnext:hover{filter:brightness(.97)}
     if (!MT.length) seed();
     const onlMode = !!window.ONKEY; /* 11/18 보혜 "블로그 지시문 작성하는 건 어디로 갔지?": 지점 칸에 블로그 지시문 쓰기가 있어서 온라인 쪽에서도 보여 준다. 온라인팀 전용 로그인만 감춘다(매장 자료가 없음) */ if (onlMode && PT.view === "branch") PT.view = "mine"; if (real() && PT.view === "evt") PT.view = "mine"; /* 이벤트 칸은 아직 예시뿐이라 정식에서는 감춘다 */ /* 온라인 쪽에서는 매장 업무 칸을 감춘다 */
     const bdOk = !!(window.bdCan && window.bdCan() && window.bdHtml); if (!bdOk && (PT.view === "bd" || PT.view === "mt")) PT.view = "mine"; /* 팀 할 일과 회의: 온라인팀 보드가 관리자웹 안으로 이사 온 것 */
-    const tabs = `<div class="subnav">${[["mine", "내 것"], ["bd", "팀 할 일"], ["mt", "회의"], ["branch", "지점, 블로그"], ["cal", "달력"], ["evt", "이벤트"]].filter(([k]) => !(onlMode && k === "branch") && !(real() && k === "evt") && !(!bdOk && (k === "bd" || k === "mt"))).map(([k, n]) => `<button class="${PT.view === k ? "on" : ""}" data-pt="view" data-v="${k}">${n}${tabN(k) ? `<i class="ptn">${tabN(k)}</i>` : ""}</button>`).join("")}</div>`;
+    /* 온라인 쪽에서는 회의와 일정이 왼쪽(폰은 아래) 메뉴에 따로 있어서, 업무 안의 칸에서는 뺀다. 그 두 화면에는 칸 줄을 안 그린다 */
+    /* 11/18 보혜 "왜 또 지점 블로그가 온라인팀에 들어간 거야?", "지점에 업무 주던 것도 없어졌고": 지점 칸은 관리자 쪽에만 두고, 이름을 "지점 업무"로 해서 내 것 바로 옆에 둔다(지점에 할 일 보내기, 블로그 지시문, 공지, 재고조사가 이 안에 있다) */
+    const onlSide = window.ptOnlSide(); if (onlSide && PT.view === "branch") PT.view = "mine";
+    const sideNav = bdOk && onlSide, solo = sideNav && (PT.view === "mt" || PT.view === "cal");
+    const tabs = solo ? "" : `<div class="subnav">${[["mine", "내 것"], ["branch", "지점 업무"], ["bd", "팀 할 일"], ["mt", "회의"], ["cal", "일정"], ["evt", "이벤트"]].filter(([k]) => !(onlSide && k === "branch") && !(real() && k === "evt") && !(!bdOk && (k === "bd" || k === "mt")) && !(sideNav && (k === "mt" || k === "cal"))).map(([k, n]) => `<button class="${PT.view === k ? "on" : ""}" data-pt="view" data-v="${k}">${n}${tabN(k) ? `<i class="ptn">${tabN(k)}</i>` : ""}</button>`).join("")}</div>`;
     if (PT.view === "bd" || PT.view === "mt") return tabs + window.bdHtml(PT.view);
     if (PT.view === "branch") return tabs + branchTasks();
+    if (PT.view === "cal" && real()) return tabs + calLive(); /* 정식 일정에는 예시 안내를 붙이지 않는다 */
     return tabs + `<div class="ptex"><span>예시 자료예요. 저장은 안 돼요. 눌러서 흐름만 봐 주세요.</span><button data-pt="reset">처음으로</button></div>` + (PT.view === "cal" ? calHtml() : PT.view === "evt" ? evtHtml() : mine2Html());
   };
 
@@ -2244,6 +2289,12 @@ ${miss.length ? `<div class="plnote" style="background:var(--amber-soft);color:v
     if (a === "calall") { PT.calAll = !PT.calAll; return render(); }
     if (a === "day" && !isPC()) { const el = document.getElementById("ptd-" + t.dataset.d); if (el) el.scrollIntoView({ block: "start", behavior: "smooth" }); else toast(`${dl(t.dataset.d)}은 없어요`); return; }
     if (a === "day") { PT.day = t.dataset.d; if (isPC()) { const L = dayItems(PT.day); return openSheet(`<h3>${dl(PT.day)}</h3><div class="list" style="margin-top:12px">${L.map((v) => ev(v, true)).join("")}</div><div class="btns"><button class="btn gray" data-x>닫기</button></div>`); } return render(); }
+    if (a === "calmine") { CL.mine = t.dataset.v === "1"; ls.set("vf-pt-calmine", CL.mine ? "1" : "0"); return render(); }
+    if (a === "caladd") { if (window.bdNew) window.bdNew({ due: t.dataset.d }); return; }
+    if (a === "calgo") { if (window.bdOpenList) window.bdOpenList({ due: t.dataset.v }); return; }
+    if (a === "calday") { const d = t.dataset.d, L = calOn(calSrc(), d); return openSheet(`<h3>${dl(d)}</h3><div class="list" style="margin-top:12px">${L.map((v) => calRow(v, true)).join("")}</div><div class="btns"><button class="btn gray" data-x>닫기</button></div>`); }
+    if (a === "sch" && /^B:/.test(String(id))) { if (window.bdOpenItem) window.bdOpenItem(String(id).slice(2)); return; } /* 온라인팀 할 일 */
+    if (a === "sch" && /^M:/.test(String(id))) { if ($("#dim").classList.contains("on")) closeSheet(true); if (window.bdOpenMeeting) window.bdOpenMeeting(String(id).slice(2)); return; } /* 온라인팀 회의 */
     if (a === "sch" && /^[et]\d+$/.test(String(id)) && window.msgEventOpen) return window.msgEventOpen(id); /* 창고에 저장된 진짜 일정 */
     if (a === "sch") { const s = SCH.find((v) => v.id === id); PT.open = ""; return openSheet(`<div class="eyebrow">일정, 예시</div><h3>${esc(s.title)}</h3><div class="ptchips"><span class="tag gray">${dl(s.d)} ${s.time}</span><span class="tag gray">${esc(s.who)}</span></div><div class="caption" style="margin-top:16px">일정은 끝내기가 없어요. 시간이 지나면 지나간 것으로 넘어가요.</div><div class="btns"><button class="btn gray" data-x>닫기</button></div>`); }
   });
@@ -2426,7 +2477,7 @@ textarea.msin{height:48px;min-height:48px;max-height:132px;padding:12px 16px;lin
   }
   const call = async (fn, args) => rpc(fn, { p_k: await mkey(), p_who: LV.who, ...args });
   /* 온라인 홈 같은 다른 화면이 같은 열쇠와 이름으로 창고를 부를 때 쓰는 창구 */
-  window.admCall = (fn, a) => call(fn, a || {}); window.admLive = () => live(); window.admWho = () => LV.who;
+  window.admCall = (fn, a) => call(fn, a || {}); window.admEdge = async (name, b) => (await fetch(SB.url + "/functions/v1/" + name, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ k: await mkey(), who: LV.who, ...(b || {}) }) })).json(); /* 다른 화면(회의 녹음)이 같은 열쇠와 이름으로 서버 함수를 부를 때 */ window.admLive = () => live(); window.admWho = () => LV.who;
   window.admSt = () => LV.st; /* "off" 만 시제품(창고에 열쇠 없음). 그 밖에는 정식으로 쓰는 중이라 예시를 보이지 않는다 */
   window.msgTaskCounts = () => { if (!live()) return { cf: 0, ov: 0, real: true }; const td = new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10), L = LV.tasks.filter((t) => t.st === "open" && owns(t, me())); return { cf: L.length, ov: L.filter((t) => t.due && String(t.due).slice(0, 10) < td).length, real: true }; };
   window.admRpc = (fn, a) => rpc(fn, a || {}); /* 로그인 화면(온라인팀으로 들어가기)이 쓰는 창구 */
@@ -2693,7 +2744,7 @@ textarea.msin{height:48px;min-height:48px;max-height:132px;padding:12px 16px;lin
     const k = MS.tk, r = R(k.room);
     openSheet(`${nodock}<h3>${k.src ? "업무로 만들기" : "업무 만들기"}</h3><div class="caption">${k.src ? "글에서 가져왔어요. 고쳐서 보내세요." : "만들면 이 방에 업무 카드로 올라가요."}</div><div class="ptlab">무엇을 하나요?</div><input class="ptin" id="msTkT" maxlength="60" value="${esc(k.title)}"><div class="ptlab">누가 맡나요? (여러 명 고를 수 있어요)</div><div class="ptpick">${r.mem.map((n) => `<button class="chip ${(k.owners || []).includes(n) ? "on" : ""}" data-ms="tko" data-n="${esc(n)}">${n === me() ? "나 (" + esc(n) + ")" : esc(n)}</button>`).join("")}</div><div class="ptlab">언제까지인가요? (안 골라도 돼요)</div><input class="ptin" type="date" id="msTkD" value="${esc(k.due)}"><div class="btns"><button class="btn gray" data-x style="flex:0 0 96px">닫기</button><button class="btn" data-ms="tkgo">업무로 보내기</button></div>`);
   }
-  function evSheet() { const k = MS.ev; openSheet(`${nodock}<h3>${k.kind} 올리기</h3><div class="caption">이 방에 ${k.kind} 카드로 올라가고, 달력에도 들어가요.</div>${upc().length ? `<button class="mspick" data-ms="evpick">있는 일정에서 고르기 <b>${upc().length}</b></button>` : ""}<div class="ptlab">${k.kind === "회의" ? "무슨 회의인가요?" : "무슨 일정인가요?"}</div><input class="ptin" id="msEvT" maxlength="60" placeholder="${k.kind === "회의" ? "예: 관리자 회의" : "예: 수성 방문"}"><div class="ptlab">언제인가요?</div><input class="ptin" type="date" id="msEvD" value="${today()}"><input class="ptin" type="time" id="msEvH" value="14:00"><div class="ptlab">덧붙일 말 (안 적어도 돼요)</div><input class="ptin" id="msEvM" maxlength="100" placeholder="예: 본점 2층"><div class="btns"><button class="btn gray" data-x style="flex:0 0 96px">닫기</button><button class="btn" data-ms="evgo">올리기</button></div>`); }
+  function evSheet() { const k = MS.ev; openSheet(`${nodock}<h3>${k.kind} 올리기</h3><div class="caption">이 방에 ${k.kind} 카드로 올라가고, 업무의 일정에도 들어가요.</div>${upc().length ? `<button class="mspick" data-ms="evpick">있는 일정에서 고르기 <b>${upc().length}</b></button>` : ""}<div class="ptlab">${k.kind === "회의" ? "무슨 회의인가요?" : "무슨 일정인가요?"}</div><input class="ptin" id="msEvT" maxlength="60" placeholder="${k.kind === "회의" ? "예: 관리자 회의" : "예: 수성 방문"}"><div class="ptlab">언제인가요?</div><input class="ptin" type="date" id="msEvD" value="${today()}"><input class="ptin" type="time" id="msEvH" value="14:00"><div class="ptlab">덧붙일 말 (안 적어도 돼요)</div><input class="ptin" id="msEvM" maxlength="100" placeholder="예: 본점 2층"><div class="btns"><button class="btn gray" data-x style="flex:0 0 96px">닫기</button><button class="btn" data-ms="evgo">올리기</button></div>`); }
   /* 일정 카드: 창고의 일정이 살아 있으면 지금 내용으로 보여 준다 */
   function evCard(m) { const c = m.card, e = E(c.eid), k = esc(e ? e.kind : c.kind || "일정"); return `<button class="mscard msev" data-ms="evopen" data-eid="${Number(c.eid)}"><small>${k}</small><b>${esc(e ? e.title : c.title || "")}</b><span>${e ? esc(evWhen(e) + (e.memo ? ", " + e.memo : "")) : esc(c.sub || "")}</span><i>${e ? k : "지워진 " + k}</i></button>`; }
   function evView(id) {
@@ -3003,7 +3054,7 @@ ${live() ? "" : `<div class="mstabs">${tabs.map(([k, n, c, cl]) => `<button clas
     if (a === "ev") { MS.ev = { kind: t.dataset.k === "회의" ? "회의" : "일정", room: MS.room }; return evSheet(); }
     if (a === "evgo") { /* 일정을 창고에 저장하고 방에 카드로 올린다 */
       const k = MS.ev, r = R(k.room), title = $("#msEvT").value.trim(), d = $("#msEvD").value, h = $("#msEvH").value, memo = $("#msEvM").value.trim(); if (!title) return toast(k.kind === "회의" ? "회의 이름을 적어 주세요" : "일정 이름을 적어 주세요"); if (!d) return toast("날짜를 골라 주세요"); t.disabled = true;
-      try { const o = await call("adm_event_new", { p_room: r.n, p_kind: k.kind, p_title: title, p_d: d, p_h: h || "", p_memo: memo }); if (!o.ok) throw 0; addMsgs([o.msg]); LV.events = LV.events.filter((x) => x.id !== +o.event.id).concat(mapE(o.event)); LV.since = Math.max(LV.since, o.msg.id); (LV.seen[k.room] ||= {})[LV.who] = Math.max((LV.seen[k.room] || {})[LV.who] || 0, o.msg.id); MS.ev = null; closeSheet(true); notify(r); toast(k.kind === "회의" ? "회의를 올렸어요. 달력에도 넣었어요" : "일정을 올렸어요. 달력에도 넣었어요"); return rr(); }
+      try { const o = await call("adm_event_new", { p_room: r.n, p_kind: k.kind, p_title: title, p_d: d, p_h: h || "", p_memo: memo }); if (!o.ok) throw 0; addMsgs([o.msg]); LV.events = LV.events.filter((x) => x.id !== +o.event.id).concat(mapE(o.event)); LV.since = Math.max(LV.since, o.msg.id); (LV.seen[k.room] ||= {})[LV.who] = Math.max((LV.seen[k.room] || {})[LV.who] || 0, o.msg.id); MS.ev = null; closeSheet(true); notify(r); toast(k.kind === "회의" ? "회의를 올렸어요. 일정에도 넣었어요" : "일정을 올렸어요. 일정에도 넣었어요"); return rr(); }
       catch (e22) { t.disabled = false; return toast("못 올렸어요. 다시 눌러 주세요"); }
     }
     if (a === "evpick") return openSheet(`${nodock}<h3>어느 일정을 올릴까요?</h3><div class="caption">누르면 이 방에 카드로 올라가요.</div><div style="margin-top:12px">${upc().map((e) => evRow(e, "evsharego", 'data-rid="' + MS.room + '"')).join("") || '<div class="empty">다가오는 일정이 없어요</div>'}</div><div class="btns"><button class="btn gray" data-x>닫기</button></div>`);
@@ -3015,7 +3066,7 @@ ${live() ? "" : `<div class="mstabs">${tabs.map(([k, n, c, cl]) => `<button clas
       catch (e23) { t.disabled = false; return toast(e23 && e23.message === "who" ? "그 방 사람이 볼 수 없는 일정이라 못 올려요" : "못 올렸어요. 다시 눌러 주세요", 3500); }
     }
     if (a === "evdel") {
-      const e = E(t.dataset.eid); if (!e) return; closeSheet(true); if (!(await askConfirm(`${e.kind}을 지울까요?`.replace("회의을", "회의를"), `${e.title}, ${evWhen(e)}. 달력에서도 빠져요.`, "지우기", true))) return;
+      const e = E(t.dataset.eid); if (!e) return; closeSheet(true); if (!(await askConfirm(`${e.kind}을 지울까요?`.replace("회의을", "회의를"), `${e.title}, ${evWhen(e)}. 일정에서도 빠져요.`, "지우기", true))) return;
       try { const o = await call("adm_event_del", { p_id: e.id }); if (!o.ok) throw new Error(o.why || ""); LV.events = LV.events.filter((x) => x.id !== e.id); if (o.msg) { addMsgs([o.msg]); LV.since = Math.max(LV.since, o.msg.id); } toast("지웠어요"); if (tab === "msg" || tab === "tasks") full(); return; }
       catch (e24) { return toast(e24 && e24.message === "mine" ? "만든 사람이나 한섭이사만 지울 수 있어요" : "못 지웠어요. 다시 눌러 주세요", 3500); }
     }
@@ -3349,9 +3400,26 @@ ${cmp == null ? "" : `<div class="hmcmp">워드프레스 이번 달 <b>${w(wp.mo
   addOnlineEntry();
   if (!ls.get("vf-admin-key") && /^[0-9a-f]{64}$/.test(ls.get("vf-on-key") || "") && $("#pw")) setTimeout(() => { if (!D) onEnter(ls.get("vf-on-key"), false); }, 0);
   /* 로고 자리에서 VF 관리자와 온라인을 바꾼다 */
-  function decorLogo() { { const hide = window.ONKEY ? /^(지점|상품|더보기)/ : HM.v === "online" ? /^(지점|상품)/ : null; for (const bt of document.querySelectorAll(".side .navb[data-tab], #nav button")) bt.style.display = hide && hide.test(bt.textContent.trim()) ? "none" : ""; } for (const el of document.querySelectorAll("#app .logo")) { el.innerHTML = `VAFRIEND <b>${HM.v === "online" ? "온라인" : "관리자"}</b><span class="hmlgsw"><span class="s">전환</span></span>`; if (!window.ONKEY && el.closest(".side") && !el.nextElementSibling?.classList.contains("hmlgseg")) el.insertAdjacentHTML("afterend", `<div class="hmlgseg" role="tablist"><button class="${HM.v === "online" ? "" : "on"}" data-hm="swapto" data-v="vf">관리자</button><button class="${HM.v === "online" ? "on" : ""}" data-hm="swapto" data-v="online">온라인</button></div>`); el.dataset.hm = "swap"; el.setAttribute("role", "button"); el.setAttribute("aria-label", HM.v === "online" ? "VF 관리자 홈으로 바꾸기" : "온라인 홈으로 바꾸기"); } }
+  /* 11/18 보혜 "더보기로 직원웹까지 볼 수 있는 건 좀 불편": 온라인 쪽에서는 매장 메뉴(지점, 상품, 더보기)를 다 감추고, 업무 아래에 회의와 일정을 둔다 */
+  const ONAV = [["mt", "회의", '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 15a3.5 3.5 0 0 0 3.5-3.5v-5a3.5 3.5 0 0 0-7 0v5A3.5 3.5 0 0 0 12 15zm6.5-3.5a1 1 0 0 0-2 0 4.5 4.5 0 0 1-9 0 1 1 0 0 0-2 0 6.5 6.5 0 0 0 5.5 6.4V20H9a1 1 0 0 0 0 2h6a1 1 0 0 0 0-2h-2v-2.1a6.5 6.5 0 0 0 5.5-6.4z"/></svg>'], ["cal", "일정", '<svg viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M12 2.5a9.5 9.5 0 1 0 0 19 9.5 9.5 0 0 0 0-19zm1 4.5a1 1 0 0 0-2 0V12a1 1 0 0 0 .4.8l3.2 2.4a1 1 0 0 0 1.2-1.6L13 11.5z"/></svg>']];
+  window.hmOnl = () => !!window.ONKEY || HM.v === "online"; /* 지금 온라인 쪽을 보고 있는지 */
+  function decorNav() {
+    const onl = !!window.ONKEY || HM.v === "online", hide = onl ? /^(지점|상품|더보기)/ : null;
+    for (const bt of document.querySelectorAll(".side .navb[data-tab], #nav button")) if (!bt.dataset.onav) bt.style.display = hide && hide.test(bt.textContent.trim()) ? "none" : "";
+    const bd = onl && !!(window.bdCan && window.bdCan()), pv = tab === "tasks" && window.ptViewNow ? window.ptViewNow() : "";
+    for (const [host, pc] of [[document.querySelector("#app .side"), true], [document.querySelector("#nav > div"), false]]) {
+      if (!host) continue; const anchor = [...host.querySelectorAll(pc ? ".navb[data-tab]" : "button[data-g]")].find((b) => (pc ? /^업무/.test(b.textContent.trim()) : b.dataset.g === "tasks")); if (!anchor) continue;
+      let prev = anchor;
+      for (const [v, n, ic] of ONAV) { let b = host.querySelector(`[data-onav="${v}"]`); if (!b) { b = document.createElement("button"); if (pc) b.className = "navb"; b.dataset.onav = v; b.innerHTML = ic + n; prev.after(b); } b.style.display = bd ? "" : "none"; b.classList.toggle("on", bd && pv === v); prev = b; }
+      if (bd && (pv === "mt" || pv === "cal")) anchor.classList.remove("on");
+    }
+  }
+  document.addEventListener("click", (e) => { const b = e.target.closest("[data-onav]"); if (!b) return; const v = b.dataset.onav; if (v === "mt" && window.bdOpenMeeting) window.bdOpenMeeting(""); else if (window.ptView) window.ptView(v); scrollTo(0, 0); });
+  /* 회의나 일정을 보다가 [업무]를 누르면 업무의 첫 칸(내 것)이 나온다 */
+  document.addEventListener("click", (e) => { const b = e.target.closest('.side .navb[data-tab="tasks"], #nav button[data-g="tasks"]'); if (!b || !window.ptViewNow || !window.ptViewSet) return; if ((!!window.ONKEY || HM.v === "online") && window.bdCan && window.bdCan() && ["mt", "cal"].includes(window.ptViewNow())) window.ptViewSet("mine"); }, true);
+  function decorLogo() { decorNav(); for (const el of document.querySelectorAll("#app .logo")) { el.innerHTML = `VAFRIEND <b>${HM.v === "online" ? "온라인" : "관리자"}</b><span class="hmlgsw"><span class="s">전환</span></span>`; if (!window.ONKEY && el.closest(".side") && !el.nextElementSibling?.classList.contains("hmlgseg")) el.insertAdjacentHTML("afterend", `<div class="hmlgseg" role="tablist"><button class="${HM.v === "online" ? "" : "on"}" data-hm="swapto" data-v="vf">관리자</button><button class="${HM.v === "online" ? "on" : ""}" data-hm="swapto" data-v="online">온라인</button></div>`); el.dataset.hm = "swap"; el.setAttribute("role", "button"); el.setAttribute("aria-label", HM.v === "online" ? "VF 관리자 홈으로 바꾸기" : "온라인 홈으로 바꾸기"); } }
   /* 보드를 띄워 둔 동안에는 3분마다 도는 자동 새로고침이 보드를 처음으로 되돌리지 않게, 매출 칸만 새로 그린다 */
-  const VFTABS = ["close", "coins", "kpi", "note", "plist", "stockrep", "survey", "order", "bunbae", "group", "must"];
+  const VFTABS = ["close", "coins", "kpi", "note", "plist", "stockrep", "survey", "order", "bunbae", "group", "must", "office", "staff", "naver"];
   window.hmReload = () => onLoad(true);
   const render1 = render;
   render = function () {
@@ -3426,6 +3494,14 @@ ${cmp == null ? "" : `<div class="hmcmp">워드프레스 이번 달 <b>${w(wp.mo
 .bded .two{display:flex;gap:8px}.bded .two>*{flex:1;min-width:0}
 .bdlog{border-top:1px solid var(--line2);padding:10px 0;font-size:14px;line-height:1.55;white-space:pre-wrap;word-break:break-word}.bdlog small{display:block;color:var(--sub);font-size:12px;margin-bottom:2px}
 .bdtr{font-size:14px;line-height:1.65;padding:6px 0;border-bottom:1px solid var(--line2);word-break:break-word}.bdtr small{color:var(--sub);margin-right:8px;font-size:12px}
+.bdrec{display:flex;align-items:center;gap:12px;background:var(--card);border-radius:16px;padding:14px 16px}.bdrec .tx{flex:1;min-width:0}.bdrec .tx b{display:block;font-size:16px;font-weight:700}.bdrec .tx span{display:block;font-size:13px;color:var(--sub);line-height:1.5;margin-top:2px}
+.bdrecgo{flex:none;display:flex;align-items:center;gap:8px;height:48px;padding:0 18px;border-radius:14px;background:var(--red,#d93025);color:#fff;font-size:15px;font-weight:700}.bdrecgo::before{content:"";width:10px;height:10px;border-radius:50%;background:#fff}.bdrecgo.stop{background:var(--ink);}.bdrecgo.stop::before{border-radius:2px}.bdrecgo:disabled{opacity:.5}
+#bdrecbar{position:fixed;right:24px;bottom:24px;z-index:60;display:flex;align-items:center;gap:10px;height:52px;padding:0 8px 0 16px;border-radius:26px;background:#191f28;color:#fff;font-size:14px;box-shadow:0 6px 20px rgba(0,0,0,.22)}
+#bdrecbar .dot{flex:none;width:10px;height:10px;border-radius:50%;background:#ff5a52}#bdrecbar b{font-weight:700;white-space:nowrap}#bdrecbar .t{font-variant-numeric:tabular-nums;font-weight:700}#bdrecbar small{color:#c4cad3;font-size:12px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#bdrecbar button{flex:none;height:38px;padding:0 14px;border-radius:19px;background:#fff;color:#191f28;font-size:14px;font-weight:700}
+@media (max-width:899px){.bdrec{flex-direction:column;align-items:stretch}.bdrecgo{justify-content:center}#bdrecbar{left:8px;right:8px;bottom:calc(68px + env(safe-area-inset-bottom));border-radius:16px}#bdrecbar small{flex:1;max-width:none}body.bdrecon .toast{bottom:calc(136px + env(safe-area-inset-bottom))}}
+@media (min-width:900px){#bdrecbar small{margin-right:4px}}
+@media (prefers-reduced-motion:no-preference){#bdrecbar .dot{animation:bdblink 1.6s ease-in-out infinite}}@keyframes bdblink{50%{opacity:.35}}
 `;
   document.head.appendChild(st);
   const TAGS = [["VF", "베이프렌드"], ["액상덕후", "액상덕후"], ["VUFF", "VUFF"], ["공통", "공통"]], TAGN = Object.fromEntries(TAGS);
@@ -3442,7 +3518,7 @@ ${cmp == null ? "" : `<div class="hmcmp">워드프레스 이번 달 <b>${w(wp.mo
   const call = (fn, a) => window.admCall(fn, a || {});
   const busy = () => !!document.querySelector("#dim.on .bded");
   window.bdCan = () => !!(window.admLive && window.admLive() && window.admCall && ["한섭이사", "보혜", "시원", "진"].includes(window.admWho ? window.admWho() : ""));
-  const redraw = () => { if (typeof tab !== "undefined" && tab === "tasks" && $("#bdroot") && !busy()) render(); };
+  const redraw = () => { if (typeof tab !== "undefined" && tab === "tasks" && ($("#bdroot") || $("#ptcalroot")) && !busy()) render(); };
   async function load(force) {
     if (!window.bdCan() || (!force && Date.now() - BD.at < 45000)) return; BD.at = Date.now(); if (!BD.st) BD.st = "load";
     try { const o = await call("adm_board_all"); if (o && o.ok) { const sig0 = JSON.stringify([BD.items, BD.meetings, BD.recs]); BD.items = o.items || []; BD.meetings = o.meetings || []; BD.recs = o.recs || []; BD.me = String(o.me || ""); const was = BD.st; BD.st = "ok"; if (was !== "ok" || JSON.stringify([BD.items, BD.meetings, BD.recs]) !== sig0) redraw(); } else if (BD.st !== "ok") { BD.st = "fail"; redraw(); } }
@@ -3484,14 +3560,75 @@ ${cmp == null ? "" : `<div class="hmcmp">워드프레스 이번 달 <b>${w(wp.mo
     const agT = (a) => { const it = I(a.item); return it ? it.title : /^new:/.test(String(a.item || "")) ? String(a.item).replace(/^new:/, "") : "기타"; };
     const ol = (v) => `<ol>${lines(v).map((t) => `<li>${esc(t)}</li>`).join("")}</ol>`;
     const mins = sm ? `<div class="bdsub">회의록</div><div class="bdmin">${clean(sm.결론) ? `<h4>결론</h4><p>${esc(clean(sm.결론))}</p>` : ""}${ag.length ? `<h4>안건별 정리</h4>${ag.map((a) => `<div class="ag"><b>${esc(agT(a))}</b><ul>${lines(a.정리).map((t) => `<li>${said(t)}</li>`).join("")}</ul></div>`).join("")}` : ""}${lines(sm.정한것).length ? `<h4>정한 것</h4>${ol(sm.정한것)}` : ""}${lines(sm.못정한것).length ? `<h4>다음에 정할 것</h4>${ol(sm.못정한것)}` : ""}<div class="caption" style="margin-top:12px">회의 녹음을 받아써서 만든 정리예요. 누가 한 말인지는 짐작이라 틀릴 수 있어요.</div></div>` : "";
-    const recRow = recs.length ? `<div class="bdsub">녹음 ${recs.length}개</div><div class="list">${recs.map((r) => `<button class="item bdrow" data-bd="rec" data-id="${esc(r.id)}" ${r.has ? "" : "disabled"}><span class="bdst">${esc(r.len || "녹음")}</span><div class="tx"><b>${esc(r.st || "")}</b><span>${r.has ? "받아쓴 글 보기" : "아직 받아쓴 글이 없어요"}</span></div>${r.has ? '<span class="chev">›</span>' : ""}</button>`).join("")}</div>` : "";
+    const recRow = recs.length ? `<div class="bdsub">녹음한 것 ${recs.length}개</div><div class="list">${recs.map((r) => `<button class="item bdrow" data-bd="rec" data-id="${esc(r.id)}" ${r.has ? "" : "disabled"}><span class="bdst">${esc(r.len || "녹음")}</span><div class="tx"><b>${esc(r.st || "")}</b><span>${r.has ? "받아쓴 글 보기" : "아직 받아쓴 글이 없어요"}</span></div>${r.has ? '<span class="chev">›</span>' : ""}</button>`).join("")}</div>` : "";
     return `<button class="bdback" data-bd="mback">‹ 회의 목록</button><div class="bdmh"><h1>${esc(m.title || "회의")}</h1><button class="bdmini" data-bd="medit">고치기</button></div>
 <div class="caption" style="margin:0 4px 12px">${[esc(dShort(m.date)), TAGN[brandOf(m)], m.att ? "참석 " + esc(m.att) : ""].filter(Boolean).join(", ")}</div>
 ${m.memo ? `<div class="bdsub" style="margin-top:0">메모</div><div class="bdbox">${esc(m.memo)}</div>` : ""}
 <div class="plhd" style="margin-top:18px"><h1 style="font-size:17px">안건</h1><small>${its.length}건</small><span class="sp"></span><button class="plnew" data-bd="new" data-meet="${esc(m.id)}">+ 안건</button></div>
-<div class="list">${its.map(row).join("") || '<div class="empty">아직 안건이 없어요. [+ 안건]으로 넣어요</div>'}</div>${mins}${recRow}
-<div class="caption" style="margin:14px 4px 0">새로 녹음하는 것은 아직 옛 보드에서 해요. 다음 순서로 옮겨요.</div>`;
+<div class="list">${its.map(row).join("") || '<div class="empty">아직 안건이 없어요. [+ 안건]으로 넣어요</div>'}</div>
+<div class="bdsub">녹음</div>${recBox(m.id)}${recRow}${mins}`;
   }
+  /* ── 녹음 ── 옛 보드와 같은 방식: 2분마다 조각을 서버 함수(adm-rec)로 보내 같은 자리에 쌓는다. 중간에 끊겨도 보낸 조각은 남는다.
+     받아쓰기는 사무실 PC의 받아쓰기 도구가 한다(이 화면은 녹음과 "녹음 중", "녹음 끝" 표시만 한다). */
+  let REC = null;
+  const recOk = () => !!(navigator.mediaDevices && window.MediaRecorder && window.admEdge);
+  const b64 = (blob) => new Promise((ok, no) => { const f = new FileReader(); f.onload = () => ok(String(f.result).split(",")[1]); f.onerror = no; f.readAsDataURL(blob); });
+  const recTime = () => { const s = Math.floor((Date.now() - REC.t0) / 1000); return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`; };
+  function recBox(mid) {
+    if (REC && REC.meet === mid) return `<div class="bdrec"><div class="tx"><b>${REC.stopping ? "녹음을 저장하고 있어요" : "녹음하고 있어요"}</b><span>이 화면을 켜 둔 채로 두세요. 다른 메뉴를 봐도 녹음은 이어져요.</span></div>${REC.stopping ? "" : '<button class="bdrecgo stop" data-bd="recstop">멈춤</button>'}</div>`;
+    if (REC) return `<div class="bdrec"><div class="tx"><b>다른 회의를 녹음하고 있어요</b><span>${esc((M(REC.meet) || {}).title || "")}</span></div></div>`;
+    return `<div class="bdrec"><div class="tx"><b>회의 녹음</b><span>사무실 PC의 [회의 받아쓰기]를 켜 두면, 녹음이 끝난 뒤 회의록이 여기에 생겨요.</span></div><button class="bdrecgo" data-bd="recgo" data-id="${esc(mid)}">녹음 시작</button></div>`;
+  }
+  function recBar() {
+    let el = document.getElementById("bdrecbar");
+    if (!REC) { if (el) el.remove(); document.body.classList.remove("bdrecon"); return; }
+    if (!el) { el = document.createElement("div"); el.id = "bdrecbar"; document.body.appendChild(el); document.body.classList.add("bdrecon"); }
+    const sig = [REC.stopping ? 1 : 0, REC.fail, REC.meet].join("|");
+    if (el.dataset.sig !== sig) { el.dataset.sig = sig; el.innerHTML = `<span class="dot"></span><b>${REC.stopping ? "녹음 저장 중" : "녹음 중"}</b><span class="t"></span><small>${esc((M(REC.meet) || {}).title || "회의")}${REC.fail ? `, 못 보낸 조각 ${REC.fail}개` : ""}</small>${REC.stopping ? "" : '<button data-bd="recstop">멈춤</button>'}`; }
+    el.querySelector(".t").textContent = recTime();
+  }
+  function recSend(blob) {
+    const R = REC, part = ++R.part;
+    R.q = R.q.then(async () => {
+      const data = await b64(blob);
+      for (let i = 0; i < 3; i++) {
+        try { const o = await window.admEdge("adm-rec", { meet: R.meet, sess: R.sess, part, mime: R.mime, b64: data }); if (o && o.ok) { R.sent++; return; } if (o && (o.error === "key" || o.error === "size")) break; } catch (e) { /* 아래에서 다시 */ }
+        await new Promise((w) => setTimeout(w, 3000 * (i + 1)));
+      }
+      R.fail++; recBar(); toast(`녹음 ${part}번째 조각을 못 보냈어요. 인터넷을 확인해 주세요`);
+    });
+  }
+  const recMark = async (R, stt) => { for (let i = 0; i < 3; i++) { try { const o = await call("adm_board_recmark", { p_meet: R.meet, p_sess: R.sess, p_st: stt }); if (o && o.ok) return true; if (o && o.why) return false; } catch (e) { /* 다시 */ } await new Promise((w) => setTimeout(w, 1500 * (i + 1))); } return false; };
+  const recWake = async () => { try { if (REC && navigator.wakeLock) REC.wake = await navigator.wakeLock.request("screen"); } catch (e) { /* 화면 켜 두기를 못 써도 녹음은 된다 */ } };
+  async function recStart(mid) {
+    if (REC) return toast("이미 녹음하고 있어요");
+    if (!M(mid)) return;
+    if (!recOk()) return toast("이 브라우저는 녹음이 안 돼요. 크롬이나 사파리로 열어 주세요");
+    let stream; try { stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } }); } catch (e) { return toast("마이크를 쓸 수 없어요. 브라우저에서 마이크를 허용해 주세요"); }
+    if (REC) { stream.getTracks().forEach((t) => t.stop()); return; }
+    const mime = ["audio/webm;codecs=opus", "audio/mp4", "audio/webm"].find((x) => MediaRecorder.isTypeSupported(x)) || "";
+    let mr; try { mr = new MediaRecorder(stream, mime ? { mimeType: mime, audioBitsPerSecond: 32000 } : {}); } catch (e) { stream.getTracks().forEach((t) => t.stop()); return toast("이 브라우저는 녹음이 안 돼요. 크롬이나 사파리로 열어 주세요"); }
+    const k = new Date(Date.now() + 9 * 3600e3).toISOString(), R = { mr, stream, meet: mid, sess: `${k.slice(0, 10).replace(/-/g, "")}-${k.slice(11, 13)}${k.slice(14, 16)}`, mime: mr.mimeType || mime || "audio/webm", part: 0, sent: 0, fail: 0, t0: Date.now(), q: Promise.resolve(), wake: null, stopping: false };
+    REC = R; recBar(); redraw();
+    if (!(await recMark(R, "녹음 중"))) { stream.getTracks().forEach((t) => t.stop()); REC = null; recBar(); redraw(); return toast("녹음을 시작하지 못했어요. 다시 눌러 주세요"); }
+    mr.ondataavailable = (e) => { if (e.data && e.data.size) recSend(e.data); };
+    mr.onstop = async () => {
+      R.stream.getTracks().forEach((t) => t.stop()); clearInterval(R.timer); try { if (R.wake) R.wake.release(); } catch (e) { /* 이미 풀림 */ }
+      R.stopping = true; recBar(); redraw(); await R.q; const marked = await recMark(R, "녹음 끝"); REC = null; recBar();
+      toast(R.fail ? `녹음을 멈췄어요. 조각 ${R.fail}개를 못 보냈어요` : marked ? `녹음을 저장했어요 (조각 ${R.sent}개)` : "녹음은 저장했어요. 끝났다는 표시는 못 남겼어요", 3600);
+      await load(true); redraw();
+    };
+    R.t0 = Date.now(); mr.start(120000); R.timer = setInterval(recBar, 1000); recWake(); recBar(); redraw(); load(true);
+    /* 첫 조각은 5초 뒤에 먼저 보낸다: 못 보내는 문제가 있으면 2분 뒤가 아니라 바로 알 수 있게 */
+    setTimeout(() => { try { if (REC === R && !R.stopping && mr.state === "recording") mr.requestData(); } catch (e) { /* 못 해도 2분 조각은 간다 */ } }, 5000);
+    toast("녹음을 시작했어요. 이 화면을 켜 둔 채로 두세요", 3600);
+  }
+  const recStop = () => { if (REC && !REC.stopping && REC.mr.state !== "inactive") { REC.stopping = true; recBar(); REC.mr.stop(); } };
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && REC) recWake(); });
+  addEventListener("beforeunload", (e) => { if (REC) { e.preventDefault(); e.returnValue = ""; } });
+  /* 녹음하는 동안에는 잠그기를 막는다(잠그면 열쇠가 없어져 조각을 못 보낸다) */
+  document.addEventListener("click", (e) => { if (REC && e.target.closest('[data-act="logout"]')) { e.stopPropagation(); e.preventDefault(); toast("녹음을 먼저 멈춰 주세요"); } }, true);
+  window.bdRecOn = () => !!REC;
   window.bdHtml = (view) => {
     load();
     if (BD.st !== "ok") return `<div id="bdroot"><div class="list"><div class="empty">${BD.st === "fail" ? '보드 자료를 못 불러왔어요. <button class="hmre" data-bd="re">다시 받기</button>' : "불러오는 중이에요"}</div></div></div>`;
@@ -3520,12 +3657,25 @@ ${e.id ? `<div class="ptlab">기록 ${e.logs.length}개</div>${e.logs.map((l) =>
   }
   async function openItem(id, preset) {
     preset = preset || {};
-    if (!id) { BD.ed = { id: "", title: "", st: preset.meet ? "후보" : "확정", brand: preset.brand !== undefined ? preset.brand : onl() ? "공통" : "VF", area: "", owners: preset.who ? [preset.who] : [], due: "", time: "", memo: "", check: "", meet: preset.meet || "", logs: [], log: "" }; return itemSheet(); }
+    if (!id) { BD.ed = { id: "", title: "", st: preset.meet ? "후보" : "확정", brand: preset.brand !== undefined ? preset.brand : onl() ? "공통" : "VF", area: "", owners: preset.who ? [preset.who] : [], due: /^\d{4}-\d{2}-\d{2}$/.test(preset.due || "") ? preset.due : "", time: "", memo: "", check: "", meet: preset.meet || "", logs: [], log: "" }; return itemSheet(); }
     openSheet('<div class="bded"><h3>할 일</h3><div class="caption">불러오는 중이에요</div></div>');
     try { const o = await call("adm_board_item", { p_id: id }); if (!o || !o.ok) throw 0; const x = o.item; BD.ed = { id: x.id, title: x.title || "", st: x.st || "후보", brand: x.brand || "", area: x.area || "", owners: ownersOf(x), due: /^\d{4}-\d{2}-\d{2}$/.test(x.due || "") ? x.due : "", time: x.time || "", memo: x.memo || "", check: x.check || "", meet: x.meet || "", logs: o.logs || [], log: "" }; itemSheet(); }
     catch (e) { closeSheet(true); toast("그 할 일을 못 불러왔어요"); }
   }
   window.bdOpenItem = (id) => openItem(id);
+  /* ── 일정 칸(업무 탭)이 쓰는 곳 ── 기한이 있는 하는 중 할 일과 회의 날짜를 내준다. 날짜를 옮기면 기한만 고쳐 저장한다 */
+  const isD = (s) => /^\d{4}-\d{2}-\d{2}$/.test(String(s || ""));
+  const attOf = (m) => String(m.att || "").split(/[,\s/]+/).map((t) => t.replace(/님$/, "")).filter(Boolean).map((t) => FULLN[t] || t);
+  window.bdCalLoad = () => { load(); };
+  window.bdCal = () => (window.bdCan() && BD.st === "ok" ? BD.items.filter((x) => ACT.includes(x.st) && isD(x.due)).map((x) => ({ id: "B:" + x.id, k: "bd", title: x.title, d: x.due, time: /^\d{2}:\d{2}$/.test(x.time || "") ? x.time : "", who: ownersOf(x).join(", "), mine: ownersOf(x).includes(BD.me), tag: brandOf(x) }))
+    .concat(BD.meetings.filter((m) => isD(m.date)).map((m) => ({ id: "M:" + m.id, k: "mt", title: m.title || "회의", d: m.date, time: "", who: attOf(m).join(", "), mine: !attOf(m).length || attOf(m).includes(BD.me), tag: brandOf(m) }))) : []);
+  window.bdCalLeft = () => { if (!window.bdCan() || BD.st !== "ok") return { over: 0, none: 0 }; const L = BD.items.filter((x) => ACT.includes(x.st)), now = nowD(); return { over: L.filter((x) => isD(x.due) && x.due < now).length, none: L.filter((x) => !isD(x.due)).length }; };
+  window.bdNew = (o) => openItem("", { who: BD.me, ...(o || {}) });
+  window.bdMove = async (id, d) => {
+    const x = I(String(id).replace(/^B:/, "")); if (!x || !isD(d) || x.due === d) return false; const old = x.due; x.due = d; redraw();
+    try { const o = await call("adm_board_save", { p_kind: "item", p_data: { id: x.id, 마감: d } }); if (!o || !o.ok) throw 0; toast(`${dShort(d)} 날짜로 옮겼어요`); BD.at = Date.now(); if (window.hmReload) window.hmReload(); return true; }
+    catch (e) { x.due = old; redraw(); toast("날짜를 못 옮겼어요. 다시 해 주세요"); return false; }
+  };
   const after = async (msg) => { closeSheet(true); toast(msg); await load(true); if (window.hmReload) window.hmReload(); redraw(); };
   /* ── 회의 창 ── */
   const keepMd = () => { const m = BD.md; if (!m || !$("#bdMt")) return; m.title = $("#bdMt").value; m.brand = $("#bdMtag").value; m.date = $("#bdMd").value; m.att = $("#bdMa").value; m.memo = $("#bdMm").value; };
@@ -3559,6 +3709,8 @@ ${e.id ? `<div class="ptlab">기록 ${e.logs.length}개</div>${e.logs.map((l) =>
     if (a === "meet") { BD.meet = t.dataset.id; render(); return scrollTo(0, 0); }
     if (a === "mback") { BD.meet = ""; return render(); }
     if (a === "rec") return recSheet(t.dataset.id);
+    if (a === "recgo") { t.disabled = true; await recStart(t.dataset.id); t.disabled = false; return; }
+    if (a === "recstop") return recStop();
     if (a === "eownopen") { keepEd(); BD.ed.ownOpen = !BD.ed.ownOpen; const y = $("#sheet") ? $("#sheet").scrollTop : 0; itemSheet(); if ($("#sheet")) $("#sheet").scrollTop = y; return; }
     if (a === "eown") { keepEd(); const L = BD.ed.owners; L.includes(v) ? L.splice(L.indexOf(v), 1) : L.push(v); const y = $("#sheet") ? $("#sheet").scrollTop : 0; itemSheet(); if ($("#sheet")) $("#sheet").scrollTop = y; return; }
     if (a === "elog") { keepEd(); const e = BD.ed, body = String(e.log || "").trim(); if (!body) return toast("남길 글을 적어 주세요"); t.disabled = true;
