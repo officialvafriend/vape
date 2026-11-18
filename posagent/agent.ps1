@@ -30,7 +30,7 @@ public class W32 {
 }
 "@
 $HERE = Split-Path -Parent $MyInvocation.MyCommand.Path
-$VER = "1117b"
+$VER = "1118a"
 $WEB = "https://officialvafriend.github.io/vape/posagent/"
 $SB = "https://bjjlmnkyhedtutogzliq.supabase.co/rest/v1/rpc/"; $KEY = "sb_publishable_i8rfcm_zAnwV75joN58FCw_8tHgFUKr"
 $cfgPath = Join-Path $HERE "설정.json"
@@ -131,10 +131,14 @@ function TypeCodes($codes, $nsvc) {
   $script:fgName = FgName $fg
   if ($script:fgName -match "^($SKIP)$") { $script:posHwnd = [IntPtr]::Zero; [Windows.Forms.MessageBox]::Show("포스가 아닌 창($($script:fgName))이 눌려 있어서 멈췄어요.`n다시 [포스에 넣기]를 누르고, 3초 안에 포스 숫자 칸을 눌러 주세요.", "포스 입력") | Out-Null; return $false }
   $i = 0; $n = @($codes).Count; $firstSvc = $n - $nsvc
+  # 11/18 상인점: 첫 바코드의 마지막 숫자와 엔터를 포스가 놓쳐 다음 바코드와 붙어 "미등록 상품코드"가 뜸 (영상으로 확인).
+  # 둘째부터는 온전히 들어갔으므로, 치기 전에 잠깐 기다리고 첫 바코드만 천천히 침. 나머지는 원래 속도
+  $lbMain.Text = "넣는 중 0 / $n`n마우스, 키보드 잠시 그대로"; $f.Refresh(); Start-Sleep -Milliseconds 700
+  $first = $true
   foreach ($c in $codes) {
     if (-not ("$c" -match '^[0-9]{4,20}$')) { $i++; continue }   # 숫자 바코드만
     if ([W32]::GetForegroundWindow() -ne $fg) { [Windows.Forms.MessageBox]::Show("화면이 바뀌어서 멈췄어요. $i 개 넣었어요.", "포스 입력") | Out-Null; return $false }
-    [W32]::Scan("$c", $KEYMS)
+    if ($first) { [W32]::Scan("$c", [Math]::Max($KEYMS, 40)); Start-Sleep -Milliseconds 400; $first = $false } else { [W32]::Scan("$c", $KEYMS) }
     if ($SVCVK -and $i -ge $firstSvc) { Start-Sleep -Milliseconds 250; [W32]::Key([byte]$SVCVK, $KEYMS) }
     $i++; $lbMain.Text = "넣는 중 $i / $n`n마우스, 키보드 잠시 그대로"; $f.Refresh(); Start-Sleep -Milliseconds $GAP
   }
