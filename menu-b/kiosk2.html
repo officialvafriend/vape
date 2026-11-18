@@ -69,6 +69,11 @@ main{flex:1;min-height:0;padding:20px 24px;display:flex;flex-direction:column}
 .tri b,.tri span{position:relative;z-index:1}.tri b{font-size:40px;font-weight:800;letter-spacing:-.03em}.tri span{font-size:21px;opacity:.88;margin-top:4px}
 .tri button:active img{transform:scale(1.05)}
 
+/* 쓰는 기기 고르기: 이름 버튼 5칸 */
+.dvg{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-top:20px}
+.dvg button{height:74px;border-radius:16px;background:var(--card);font-size:23px;font-weight:800;letter-spacing:-.03em;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.dvg button:active{background:#EEE}
+.dvg button.dk{background:none;box-shadow:none;border:2px dashed #CCC;color:var(--g1)}
 /* 번호 누르기 */
 .num{background:var(--card);border-radius:var(--r);margin-top:22px;padding:22px;text-align:center;font-size:50px;font-weight:800;letter-spacing:.02em}
 .num.e{color:#CCC}
@@ -244,10 +249,11 @@ const won = (n) => Number(n).toLocaleString() + "원";
 const norm = (s) => String(s).toLowerCase().replace(/^vf\s*/, "").replace(/\s+/g, "");
 const J = (v) => JSON.stringify(v);
 const TASTES = ["전체", "과일", "디저트, 음료", "멘솔, 민트", "시가, 타바코"];
+const WAYS = [["first", "전자담배가 처음이에요", "연초나 궐련형에서 넘어와요"], ["have", "쓰는 기기가 있어요", "액상, 팟을 사러 왔어요"], ["swap", "기기를 바꾸고 싶어요", "새 기기를 보러 왔어요"], ["dsp", "일회용을 찾아요", "바로 쓰고 버리는 것"]];
 const LABEL = { dev: "기기", liq: "액상", pod: "팟, 코일", dsp: "일회용", sum: "확인" };
 const LOCAL = location.protocol === "file:" || /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
 const DEMO = LOCAL && !/[?&]real=1/.test(location.search); /* 내 컴퓨터 미리보기는 봇에 안 보내고 예시로 보여 줌 */
-const S0 = () => ({ step: "start", path: [], who: null, taste: "전체", dspM: "전체", podFam: "", phone: "", name: "", qz: null, res: null, vp: 0, recDev: "", spin: null, sp: null, mem: null, reg: { name: "", year: "", phone: "", agree: false, mk: false, s: "" } });
+const S0 = () => ({ step: "start", path: [], who: null, way: "", taste: "전체", dspM: "전체", podFam: "", phone: "", name: "", qz: null, res: null, vp: 0, recDev: "", spin: null, sp: null, mem: null, reg: { name: "", year: "", phone: "", agree: false, mk: false, s: "" } });
 let S = S0(), D = null, E = null, CQ = new Map(), CI = [], CT = { total: 0 }, CN = 0, lastKey = "", qzT = 0;
 
 /* ── 자료: B안을 뒤에 숨겨 열고 그 자료, 담기, 합계, 회원, 문진 규칙을 그대로 부름 ── */
@@ -301,11 +307,11 @@ const V = {
   hello: () => { const m = S.mem || {};
     if (m.s === "wait") return `<div class="wait"><i></i>회원을 찾는 중이에요</div>`;
     if (m.s === "none") return split(`<div class="q an">이 번호로 된<br>회원이 없어요</div><div class="qs an d1">${fmtPhone(S.phone)}</div>`, `<div class="big"><button data-go="phone"><span class="tx"><b>번호 다시 넣기</b></span><span class="arr">›</span></button><button class="p" data-who="new"><span class="tx"><b>처음이에요</b><span>고른 뒤에 회원등록을 할 수 있어요</span></span><span class="arr">›</span></button></div>`);
-    if (m.s !== "found") return split(`<div class="q an">확인이 안 됐어요</div><div class="qs an d1">직원에게 번호를 말씀해 주세요</div>`, `<div class="big"><button data-go="phone"><span class="tx"><b>다시 해 보기</b></span><span class="arr">›</span></button><button class="p" data-go="what"><span class="tx"><b>먼저 고르기</b></span><span class="arr">›</span></button></div>`);
+    if (m.s !== "found") return split(`<div class="q an">확인이 안 됐어요</div><div class="qs an d1">직원에게 번호를 말씀해 주세요</div>`, `<div class="big"><button data-go="phone"><span class="tx"><b>다시 해 보기</b></span><span class="arr">›</span></button><button class="p" data-go="way"><span class="tx"><b>먼저 고르기</b></span><span class="arr">›</span></button></div>`);
     const orders = (m.orders || []).map((o, i) => `<div class="box an d1"><h4>${esc(o.date)} ${esc(o.branch)}에서 산 것</h4>${o.items.map((it) => `<div class="ln"><span class="im">${it.img ? `<img src="${it.img}" alt="">` : ""}</span><span class="tx"><b>${esc(it.name)}</b><span>${it.qty}개</span></span></div>`).join("")}<div style="padding:8px 0 16px"><button class="add" data-again="${i}">이대로 담기</button></div></div>`).join("");
     return split(`<div class="q an"><em>${esc(S.name.trim() || "회원")}</em>님<br>확인됐어요</div><div class="qs an d1">${maskPhone(S.phone)}</div>
       <div class="demo an d2">${m.demo ? "미리보기라서 오른쪽 주문은 예시예요. 실제 주문 이력은 봇 연결 뒤에 나와요." : "지금은 번호로 회원 확인까지만 돼요. 성함 대조와 지난 주문 보기는 봇 연결 뒤에 붙어요."}</div>`,
-      `${orders}<div class="big an d2" style="margin-top:${orders ? 16 : 0}px"><button class="p" data-go="what"><span class="tx"><b>새로 고르기</b></span><span class="arr">›</span></button></div>`); },
+      `${orders}<div class="big an d2" style="margin-top:${orders ? 16 : 0}px"><button class="p" data-go="way"><span class="tx"><b>새로 고르기</b></span><span class="arr">›</span></button></div>`); },
   /* 처음: 한 화면에 질문 하나. 질문과 추천 규칙은 B안의 문진(QZ, QZ_RULE)을 그대로 씀 */
   quiz: () => { const L = S.qz.list, Q = L[S.qz.i]; if (!Q) return `<div class="wait"><i></i>답변을 보고 맞는 맛을 고르고 있어요</div>`;
     const cur = S.qz.ans[Q.k] || (Q.multi ? [] : "");
@@ -319,10 +325,12 @@ const V = {
     return `<div class="full" data-sc="1"><div class="q s an">둘 중에 어느 쪽이 끌리세요?</div><div class="qs an" style="margin-top:4px">마음에 드는 쪽을 담아 주세요. 둘 다 담아도 돼요</div>
       <div class="vs">${one(P.a, true)}<span class="mid2">VS</span>${one(P.b, false)}</div>
       <div class="why an d3"><b>이렇게 골랐어요</b>${esc(R.why)}${P.n > 1 ? `<button class="txtb" data-vsnext="1" style="margin:8px 0 0;height:44px;padding:0">다른 맛으로 다시 보기</button>` : ""}</div></div>`; },
-  what: () => `<div class="q an">무엇을 찾으세요?</div>
-    <div class="tri"><button data-what="dev"><img src="pst_c_H2.jpg" alt=""><b>기기와 액상</b><span>전자담배를 새로 시작해요</span></button>
-    <button data-what="liq"><img src="pst_c_B1.jpg" alt=""><b>액상만</b><span>쓰는 기기가 있어요</span></button>
-    <button data-what="dsp"><img src="pst_c_D1.jpg" alt=""><b>일회용</b><span>바로 쓰고 버리는 것</span></button></div>`,
+  /* 갈래 나누기 (11/18 액상덕후 "갈래가 나뉘는 게 참 좋은데, 진짜 퍼스널쇼핑"). 갈래마다 묻는 것과 지나는 화면이 다름 */
+  way: () => split(`<div class="q an">오늘 어떻게<br>오셨어요?</div><div class="qs an d1">하나만 골라 주세요</div>`,
+    `<div class="ans">${WAYS.map(([k, t, sub]) => `<button data-way="${k}"><span><b>${t}</b><span>${sub}</span></span></button>`).join("")}</div>`),
+  /* 쓰는 기기를 알면 맞는 팟, 코일을 바로 골라 드릴 수 있음. 기기 이름은 B안의 팟 기기 목록(podFams) 그대로 */
+  mydev: () => `<div class="q s an">어떤 기기를 쓰세요?</div><div class="qs an" style="margin-top:4px">맞는 팟, 코일을 같이 챙겨 드려요. 이름을 모르셔도 괜찮아요</div>
+    <div class="dvg an d1">${D.fams.map((f) => `<button data-mydev="${esc(f)}">${esc(f)}</button>`).join("")}<button class="dk" data-mydev="">잘 모르겠어요</button></div>`,
   dev: () => { const rk = rankMap("dev"), rec = (d) => S.recDev && d.n === S.recDev ? 0 : 1, list = [...D.dev].sort((a, b) => rec(a) - rec(b) || (rk.get(a.n) || 99) - (rk.get(b.n) || 99)), mine = devInCart();
     return split(`<div class="q s">기기를 골라 주세요</div><div class="qs" style="margin-top:4px">${S.recDev ? "답변에 맞는 기기를 맨 앞에 뒀어요. " : "많이 나간 순서예요. "}누르면 색상을 고를 수 있어요</div>
       <div class="grid">${list.map((d) => { const got = mine.some(([k]) => d.opts.some((o) => o.id === k)); return `<div class="cd ${got ? "got" : ""}" data-dev="${esc(d.n)}">${!rec(d) ? `<i class="rkb">추천</i>` : rk.get(d.n) ? `<i class="rkb">${rk.get(d.n)}위</i>` : ""}<div class="im">${d.img ? `<img src="${d.img}" alt="" loading="lazy">` : esc(d.n)}</div><small>${d.opts.length > 1 ? "색상 " + d.opts.length + "가지" : esc(d.sub || "기기")}</small><b>${esc(d.n)}</b><div class="pr">${d.price ? won(d.price) : "직원에게 문의"}</div><button class="add ${got ? "" : "line"}">${got ? "담았어요" : "색상 고르기"}</button></div>`; }).join("")}</div>`, cartPanel(), "shop"); },
@@ -339,7 +347,7 @@ const V = {
     return split(`<div class="q s">팟, 코일도 챙겨 가세요</div>
       <div class="box" style="margin-top:14px"><h4>꼭 필요한 소모품이에요</h4><p>액상 1병에 1개, 또는 7~8일에 한 번 바꿔 주세요.<br>오래 쓰면 액상이 새고, 새는 액상은 기기 고장의 원인이 돼요.</p></div>
       ${auto && !S.podFam ? "" : chips(D.fams, fam, "fam")}
-      ${fam ? `<div class="box">${list.map((p) => `<div class="ln"><span class="im">${p.img ? `<img src="${p.img}" alt="">` : ""}</span><span class="tx"><b>${esc(p.n)}</b><span>${won(p.price)}</span></span>${stepper("pod", p.id)}</div>`).join("") || '<div class="empty">맞는 팟이 지금 없어요, 직원에게 말씀해 주세요</div>'}</div>${auto && !S.podFam ? `<button class="txtb" data-fam="${esc(D.fams[0] || "")}">다른 기기 팟 보기</button>` : ""}` : '<div class="empty">쓰시는 기기를 눌러 주세요</div>'}`, cartPanel(), "shop"); },
+      ${fam ? `<div class="box">${list.map((p) => `<div class="ln"><span class="im">${p.img ? `<img src="${p.img}" alt="">` : ""}</span><span class="tx"><b>${esc(p.n)}</b><span>${won(p.price)}</span></span>${stepper("pod", p.id)}</div>`).join("") || '<div class="empty">맞는 팟이 지금 없어요, 직원에게 말씀해 주세요</div>'}</div>${auto && !S.podFam ? `<button class="txtb" data-fam="${esc(D.fams[0] || "")}">다른 기기 팟 보기</button>` : ""}` : '<div class="empty">쓰시는 기기 이름을 눌러 주세요<br>이름을 모르시면 기기를 직원에게 보여 주세요, 맞는 팟을 찾아 드려요</div>'}`, cartPanel(), "shop"); },
   sum: () => { const r = S.reg, m = S.mem;
     const memBox = S.who === "mem" && m && m.s === "found" ? `<div class="box"><h4>회원</h4><p>${maskPhone(S.phone)} 확인됐어요. 결제할 때 이 번호로 적립해 드려요.</p></div>`
       : r.s ? `<div class="box"><h4>회원등록</h4><p>${esc(r.s)}</p></div>`
@@ -371,9 +379,12 @@ function vsPair() { const R = S.res, rk = rankMap("liq"), as = (R.liqs || []).ma
   if (!as.length) return { a: null, b: null, n: 0 };
   const a = as[S.vp % as.length], bs = D.liq.filter((x) => !x.a && !x.out && x.g === a.g && x.line === a.line).sort((p, q) => (rk.get(p.id) || 99) - (rk.get(q.id) || 99) || (p.no || 1e4) - (q.no || 1e4));
   return { a, b: bs.length ? bs[Math.floor(S.vp / as.length) % bs.length] : null, n: as.length }; }
-function qzLoad() { S.qz.list = JSON.parse(E(`JSON.stringify(QZ.filter((Q) => !Q.if || Q.if(${J(S.qz.ans)})).map((Q) => ({ k: Q.k, q: Q.q, h: Q.h || "", multi: !!Q.multi, a: Q.a })))`)); }
+function qzLoad() { S.qz.list = JSON.parse(E(`JSON.stringify(QZ.filter((Q) => !Q.if || Q.if(${J(S.qz.ans)})).map((Q) => ({ k: Q.k, q: Q.q, h: Q.h || "", multi: !!Q.multi, a: Q.a })))`))
+    .filter((Q) => S.way !== "have" || ["hit", "taste", "mint"].includes(Q.k)) /* 기기가 있는 분은 맛 문답만 */
+    .map((Q) => Q.k === "now" ? { ...Q, a: Q.a.filter(([t]) => t !== "전자담배") } : Q); } /* 전자담배 쓰던 분은 갈래에서 이미 나뉨 */
 function qzDone() { S.res = null; go("pick"); setTimeout(() => { try { S.res = JSON.parse(E(`(() => { const R = QZ_RULE(${J(S.qz.ans)}); return JSON.stringify({ kind: R.kind, title: R.title, why: R.why, dev: R.dev || "", liqs: (R.liqs || []).map((x) => x.id) }); })()`)); } catch (e) { S.res = { kind: "x", title: "직원이 같이 골라 드릴게요", why: "추천을 만들지 못했어요.", liqs: [] }; }
-  const d = D.dev.find((y) => y.n === S.res.dev || y.n.startsWith(S.res.dev) || (S.res.dev || "").startsWith(y.n)); S.recDev = d ? d.n : ""; S.vp = 0; if (S.step === "pick") draw(); }, 1400); }
+  const d = D.dev.find((y) => y.n === S.res.dev || y.n.startsWith(S.res.dev) || (S.res.dev || "").startsWith(y.n)); S.recDev = d ? d.n : ""; S.vp = 0;
+  if (S.way === "have") { S.recDev = ""; const w = String(S.res.why || "").match(/^.*?요\./); if (w) S.res.why = w[0]; } /* 기기가 있는 분께는 기기 권하는 문장을 빼고 맛 이야기만 */ if (S.step === "pick") draw(); }, 1400); }
 
 function draw() { if (!D) return; const i = S.path.indexOf(S.step), inPath = i >= 0;
   $('steps').innerHTML = inPath ? S.path.map((p, j) => `<button data-step="${p}" class="${j === i ? "on" : j < i ? "done" : ""}"><i>${j < i ? "✓" : j + 1}</i>${LABEL[p]}</button>`).join("") : `<span class="br">${esc(D.branch)}</span>`;
@@ -385,7 +396,7 @@ function draw() { if (!D) return; const i = S.path.indexOf(S.step), inPath = i >
   else { lastKey = key; m.classList.remove('in'); void m.offsetWidth; m.classList.add('in'); } /* 화면이 바뀔 때만 올라오는 움직임 */
   document.body.classList.toggle('ft', S.step !== "start");
   const last = i === S.path.length - 1, Qn = S.step === "quiz" ? S.qz.list[S.qz.i] : null;
-  const nx = S.step === "quiz" ? (Qn && Qn.multi ? "다음 ›" : "") : S.step === "pick" ? (S.res ? "기기 고르기 ›" : "") : S.step === "check" ? "포스로 보내기 화면 ›" : !inPath ? "" : last ? "직원 확인 ›" : S.step === "dev" && !devInCart().length ? "기기 없이 다음 ›" : S.step === "pod" && !CI.some(([, v]) => v.k === "goods") ? "팟 없이 다음 ›" : `${LABEL[S.path[i + 1]]} ${S.path[i + 1] === "sum" ? "하기" : "고르기"} ›`;
+  const nx = S.step === "quiz" ? (Qn && Qn.multi ? "다음 ›" : "") : S.step === "pick" ? (S.res ? (S.way === "have" ? "액상 더 고르기 ›" : "기기 고르기 ›") : "") : S.step === "check" ? "포스로 보내기 화면 ›" : !inPath ? "" : last ? "직원 확인 ›" : S.step === "dev" && !devInCart().length ? "기기 없이 다음 ›" : S.step === "pod" && !CI.some(([, v]) => v.k === "goods") ? "팟 없이 다음 ›" : `${LABEL[S.path[i + 1]]} ${S.path[i + 1] === "sum" ? "하기" : "고르기"} ›`;
   $('foot').innerHTML = `<button class="bk" id="prev">‹ 이전</button><div class="tt">${CN ? `<span>담은 상품 ${CN}개</span><b>${won(CT.total || 0)}</b>` : ""}</div>${nx ? `<button class="nx" id="next">${nx}</button>` : ""}`;
   if (keep && $(keep)) $(keep).focus(); }
 function go(step) { S.step = step; closeSp(); draw(); }
@@ -427,7 +438,12 @@ document.addEventListener('click', (e) => { const t = e.target, c = (s) => t.clo
   if (b = c('[data-add]')) { const [k, id, d] = b.dataset.add.split(":"); add(k, id, +d); if (S.sp) openDev(S.sp); return; }
   if (c('[data-closesp]')) return closeSp();
   if (b = c('[data-qt]')) { try { E(`addItem(${J(b.dataset.k)}, cart.get(${J(b.dataset.k)}), ${+b.dataset.qt})`); } catch (er) {} sync(); return draw(); }
-  if (b = c('[data-who]')) { S.who = b.dataset.who; if (S.who === "new") { S.qz = { i: 0, ans: {}, list: [] }; S.res = null; try { qzLoad(); } catch (er) { return go("what"); } return go("quiz"); } return go(S.who === "mem" ? "phone" : "what"); }
+  if (b = c('[data-who]')) { S.who = b.dataset.who; return go(S.who === "mem" ? "phone" : "way"); }
+  if (b = c('[data-way]')) { S.way = b.dataset.way; S.res = null; S.qz = null; S.recDev = ""; S.podFam = "";
+    if (S.way === "have") return go("mydev");
+    if (S.way === "first") { S.qz = { i: 0, ans: {}, list: [] }; try { qzLoad(); } catch (er) { S.path = ["dev", "liq", "pod", "sum"]; return go("dev"); } return go("quiz"); }
+    S.path = S.way === "dsp" ? ["dsp", "sum"] : ["dev", "liq", "pod", "sum"]; return go(S.path[0]); }
+  if (b = c('[data-mydev]')) { S.podFam = b.dataset.mydev; S.qz = { i: 0, ans: { now: ["전자담배"] }, list: [] }; try { qzLoad(); } catch (er) { S.path = ["liq", "pod", "sum"]; return go("liq"); } return go("quiz"); }
   if (b = c('[data-who2]')) { S.who = "new"; return draw(); }
   if (b = c('[data-qa]')) { const Q = S.qz.list[S.qz.i], v = b.dataset.qa; if (!Q) return; if (Q.k === "now") { delete S.qz.ans.cig; delete S.qz.ans.heat; }
     if (Q.multi) { const l = S.qz.ans[Q.k] || []; S.qz.ans[Q.k] = l.includes(v) ? l.filter((x) => x !== v) : [...l, v]; return draw(); }
@@ -438,7 +454,6 @@ document.addEventListener('click', (e) => { const t = e.target, c = (s) => t.clo
   if (t.id === "spinGo") { const n = 1 + Math.floor(Math.random() * 6), base = S.spin ? S.spin.deg - (S.spin.deg % 360) + 360 : 0; S.spin = { n, deg: base + 360 * 4 + (360 - (n * 60 - 30)), done: false }; $('whl').style.transform = `rotate(${S.spin.deg}deg)`; t.disabled = true; setTimeout(() => { if (S.spin) S.spin.done = true; if (S.step === "roulette") draw(); }, 3500); return; }
   if (b = c('[data-key]')) { const k = b.dataset.key; if (k === "ok") return go("mname"); S.phone = k === "del" ? S.phone.slice(0, -1) : (S.phone + k).slice(0, 11); return draw(); }
   if (b = c('[data-go]')) return go(b.dataset.go);
-  if (b = c('[data-what]')) { S.path = { dev: ["dev", "liq", "pod", "sum"], liq: ["liq", "sum"], dsp: ["dsp", "sum"] }[b.dataset.what]; return go(S.path[0]); }
   if (b = c('[data-again]')) { const o = S.mem.orders[+b.dataset.again]; o.items.forEach((it) => { for (let i = 0; i < it.qty; i++) add(it.kind, it.id, 1); }); S.path = ["liq", "sum"]; toast("지난번 그대로 담았어요"); return go("sum"); }
   if (b = c('[data-step]')) { const j = S.path.indexOf(b.dataset.step); if (j <= S.path.indexOf(S.step)) return go(b.dataset.step); return; }
   if (b = c('[data-taste]')) { S.taste = b.dataset.taste; return draw(); }
@@ -449,11 +464,11 @@ document.addEventListener('click', (e) => { const t = e.target, c = (s) => t.clo
   if (t.id === "regGo") return regSend();
   if (t.id === "homeBtn") return reset();
   if (t.id === "back") { try { E("document.body.classList.remove('open')"); } catch (er) {} document.body.classList.remove('stf'); sync(); return draw(); }
-  if (t.id === "prev") { const i = S.path.indexOf(S.step); if (i > 0) return go(S.path[i - 1]); if (i === 0) return go(S.res ? "pick" : "what"); if (S.step === "what") return go(S.who === "mem" && S.mem && S.mem.s === "found" ? "hello" : "start"); if (S.step === "hello") return go("mname"); if (S.step === "mname") return go("phone");
-    if (S.step === "quiz") { if (S.qz.i > 0) { S.qz.i--; return draw(); } return go("start"); } if (S.step === "pick") { qzLoad(); S.qz.i = Math.max(0, S.qz.list.length - 1); return go("quiz"); } if (S.step === "check") return go("sum"); if (S.step === "roulette") return go("check"); return go("start"); }
+  if (t.id === "prev") { const i = S.path.indexOf(S.step); if (i > 0) return go(S.path[i - 1]); if (i === 0) return go(S.res ? "pick" : "way"); if (S.step === "way") return go(S.who === "mem" && S.mem && S.mem.s === "found" ? "hello" : "start"); if (S.step === "mydev") return go("way"); if (S.step === "hello") return go("mname"); if (S.step === "mname") return go("phone");
+    if (S.step === "quiz") { if (S.qz.i > 0) { S.qz.i--; return draw(); } return go(S.way === "have" ? "mydev" : "way"); } if (S.step === "pick") { qzLoad(); S.qz.i = Math.max(0, S.qz.list.length - 1); return go("quiz"); } if (S.step === "check") return go("sum"); if (S.step === "roulette") return go("check"); return go("start"); }
   if (t.id === "next") { const i = S.path.indexOf(S.step);
     if (S.step === "quiz") { const Q = S.qz.list[S.qz.i]; if (!Q || !(S.qz.ans[Q.k] || []).length) return toast("하나 이상 골라 주세요"); qzLoad(); S.qz.i++; if (S.qz.i >= S.qz.list.length) return qzDone(); return draw(); }
-    if (S.step === "pick") { S.path = ["dev", "liq", "pod", "sum"]; return go("dev"); }
+    if (S.step === "pick") { S.path = S.way === "have" ? ["liq", "pod", "sum"] : ["dev", "liq", "pod", "sum"]; return go(S.path[0]); }
     if (S.step === "check") return staff();
     if (i === S.path.length - 1) { if (!CN) return toast("먼저 상품을 담아 주세요"); return go("check"); }
     if (S.step === "liq" && !liqN() && !CN) return toast("액상을 하나 이상 골라 주세요"); return go(S.path[i + 1]); } });
