@@ -3300,7 +3300,7 @@ ${live() ? "" : `<div class="mstabs">${tabs.map(([k, n, c, cl]) => `<button clas
 .hmb .n{display:flex;align-items:center;gap:8px;font-size:16px;font-weight:700}.hmb .n i{font-style:normal;width:24px;height:24px;border-radius:8px;display:grid;place-items:center;font-size:13px;font-weight:800;background:var(--line);color:var(--ink2);flex:none}
 .hmb.on .n i{background:var(--blue-soft);color:var(--blue)}.hmb.done .n i{background:var(--green-soft);color:var(--green)}.hmb.bad .n i{background:var(--red-soft);color:var(--red)}
 .hmb .s{font-size:13px;font-weight:600;color:var(--sub)}.hmb.on .s{color:var(--blue)}.hmb.done .s{color:var(--green)}.hmb.bad .s{color:var(--red)}
-.hmb .m{font-size:18px;font-weight:800;letter-spacing:-.3px;margin-top:auto}.hmb .m small{font-size:12px;font-weight:600;color:var(--sub);margin-left:4px}
+.hmb .m{font-size:18px;font-weight:800;letter-spacing:-.3px;margin-top:8px}.hmb .m small{font-size:12px;font-weight:600;color:var(--sub);margin-left:4px}
 .hmb .w{font-size:12px;color:var(--sub);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .hmex{background:var(--amber-soft);color:var(--amber);border-radius:14px;padding:10px 14px;font-size:14px;font-weight:600;line-height:1.45;margin:0 0 12px}
 .hmk{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
@@ -4453,6 +4453,123 @@ ${canCost() ? `<div class="ptlab">원가 (포스에만 들어가요)</div><input
         return window.admCall("adm_prod_set", { p_id: x.id, p_st: st }).then((o) => { if (!o || !o.ok) return toast("못 바꿨어요. 다시 눌러 주세요"); upd(o.prod); toast(a === "fin" ? "등록됨으로 바꿨어요" : "등록 요청을 취소했어요"); render(); }); }).catch(() => toast("못 바꿨어요. 다시 눌러 주세요")); }
     if (a === "file") { const x = PL.NEW[+t.dataset.i], head = ["지점", "상품명", "분류", "그룹", "판매가", ...(x.cost ? ["원가"] : []), "바코드"]; save(`신규상품_${x.name}.csv`, csv([head, ...x.br.map((b) => [`${BR.indexOf(b) + 1}호 ${b}`, x.name, x.cat, x.grp, x.price, ...(x.cost ? [x.cost] : []), x.bc || "포스 등록 뒤 매장 번호로 만듦"])])); return toast(`신규상품_${x.name}.csv 로 받았어요`, 3200); }
   });
+})();
+
+</script>
+<script>
+/* 관리자_그래프시제품.js */
+/* 그래프 시제품 (11/18). 아직 어디에도 안 붙어 있다. 시험본(관리자_뼈대시험.html)에 붙일지는 관리자앱 나비스가 정한다.
+   액상덕후가 스레드 글(후디, 대시보드 그래프 12가지)을 보고 "관리자웹에 적용할 만한 거 넣어봐".
+   열두 가지 중 지금 진짜 자료(D)로 물음에 답이 되는 세 가지만 넣었다. 숫자 칸이나 단추는 늘리지 않는다. 예시 자료 없음. 화면에 넣는 글은 esc() 를 거친다.
+   1) 불릿 차트: 홈 지점 카드의 오늘 매출 아래, 막대 = 오늘 매출, 세로 눈금 = 지난달 하루 평균(D.ops[].avgPrev). 물음 "오늘 어디가 평소보다 처지나".
+   2) 레이더 차트: 직원 KPI 표에서 줄을 누르면 뜨는 창, 네 축(하루 매출, 객단가, 지정판매율, 리뷰율)을 근무 지점 평균과 견줌(D.kpi.staff[기간].rows 의 vs, ticketVs, desVs, revVs). 물음 "이 직원은 뭐가 강하고 뭐가 약한가".
+   3) 지점별 KPI 맨 위: 지난주 평소보다 처진 지점부터 한 줄씩(D.kpi.agg.week). 처음엔 히트맵이었는데 "보기 불편"이라 막대 목록으로 바꿈. 물음 "지난주 어디가 약했나".
+   빨간색은 안 쓴다(관리자웹에 빨강이 너무 많다는 지적). 파랑 한 색의 진하기만 쓴다. */
+(() => {
+  if (document.getElementById("gxcss")) return;
+  const st = document.createElement("style"); st.id = "gxcss";
+  st.textContent = `
+.gxb{margin:6px 0 2px}.gxbt{position:relative;height:8px;border-radius:4px;background:var(--line2);overflow:visible}
+.gxbt i{position:absolute;left:0;top:0;bottom:0;border-radius:4px;background:var(--blue);min-width:3px}.gxbt i.hit{background:var(--green)}
+.gxbt u{position:absolute;top:-4px;bottom:-4px;width:2px;border-radius:1px;background:var(--ink);text-decoration:none}
+.gxbc{display:block;margin-top:5px;font-size:12px;font-weight:600;color:var(--sub);letter-spacing:-.2px}.gxbc b{color:var(--ink2);font-weight:700}
+.gxh{background:var(--card);border-radius:20px;padding:16px 16px 12px;margin:0 0 14px}
+.gxh h3{font-size:16px;font-weight:700;margin:0 0 2px}.gxh p{font-size:13px;color:var(--sub);margin:0 0 12px;line-height:1.5}
+.gxl{display:grid;gap:2px}.gxlr{display:grid;grid-template-columns:92px minmax(0,1fr) 156px;gap:10px;align-items:center;padding:9px 0;border-top:1px solid var(--line)}.gxlr:first-child{border-top:0}
+.gxlr .n{font-size:15px;font-weight:700;white-space:nowrap}.gxlr .n small{color:var(--sub);font-weight:600;margin-right:4px}
+.gxlr .t{position:relative;height:10px;border-radius:5px;background:var(--line)}.gxlr .t::after{content:"";position:absolute;left:50%;top:-4px;bottom:-4px;width:2px;margin-left:-1px;background:var(--ink);border-radius:1px}
+.gxlr .t i{position:absolute;top:0;bottom:0;border-radius:5px;min-width:2px}.gxlr .t i.dn{background:var(--sub)}.gxlr .t i.up{background:var(--blue)}
+.gxlr .v{text-align:right}.gxlr .v b{display:block;font-size:16px;font-weight:800;font-variant-numeric:tabular-nums}.gxlr .v b.up{color:var(--blue)}.gxlr .v small{display:block;font-size:12px;color:var(--sub);font-weight:600;white-space:nowrap}
+@media (max-width:899px){.gxlr{grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"n v" "t t";gap:6px 10px;padding:11px 0}.gxlr .n{grid-area:n}.gxlr .v{grid-area:v;display:flex;align-items:baseline;gap:8px;flex-direction:row-reverse}.gxlr .t{grid-area:t}}
+.gxhs{margin-top:8px;font-size:14px;font-weight:600;color:var(--ink2);line-height:1.6}
+.gxr{text-align:center;margin:10px 0 4px}.gxr svg{max-width:300px;width:100%;height:auto}
+.gxrl{margin:8px 0 0;padding:0;list-style:none}.gxrl li{display:flex;justify-content:space-between;gap:10px;padding:9px 2px;border-top:1px solid var(--line);font-size:15px}.gxrl li b{font-weight:700}.gxrl li span{color:var(--sub);font-weight:600}
+.gxrl li b.up{color:var(--blue)}
+.kst.gxrow{cursor:pointer}table.ops.kt tbody tr.gxrow{cursor:pointer}table.ops.kt tbody tr.gxrow:hover td{background:var(--press)}
+.gxtip{font-size:13px;color:var(--sub);font-weight:600;margin:8px 2px 0}
+`;
+  document.head.appendChild(st);
+  const E = (s) => (typeof esc === "function" ? esc(s) : String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])));
+  const man = (n) => (Math.round(n / 1000) / 10).toLocaleString("ko-KR", { maximumFractionDigits: 1 }) + "만";
+
+  /* ── 1) 불릿 차트: 홈 지점 카드 ── */
+  function bullets() {
+    if (typeof tab === "undefined" || tab !== "home" || typeof D === "undefined" || !D || !D.ops) return;
+    document.querySelectorAll("#app .hmb[data-hmb]").forEach((card) => {
+      if (card.querySelector(".gxb")) return;
+      const m = card.querySelector(".m"), o = D.ops.find((x) => x.b === card.dataset.hmb); if (!m || !o || !(o.avgPrev > 0)) return;
+      const v = parseFloat(m.textContent.replace(/,/g, "")) * 10000; if (!isFinite(v) || v <= 0) return; /* 카드에 뜬 숫자를 그대로 씀(카드와 막대가 다른 숫자를 말하지 않게) */
+      const max = Math.max(o.avgPrev * 1.25, v * 1.05), hit = v >= o.avgPrev;
+      const d = document.createElement("div"); d.className = "gxb";
+      d.innerHTML = `<div class="gxbt" role="img" aria-label="오늘 매출이 지난달 하루 평균의 ${Math.round(v / o.avgPrev * 100)}퍼센트"><i class="${hit ? "hit" : ""}" style="width:${(v / max * 100).toFixed(1)}%"></i><u style="left:${(o.avgPrev / max * 100).toFixed(1)}%"></u></div><span class="gxbc">지난달 평균 <b>${E(man(o.avgPrev))}</b>의 <b>${Math.round(v / o.avgPrev * 100)}%</b></span>`;
+      m.insertAdjacentElement("afterend", d);
+    });
+  }
+
+  /* ── 2) 레이더 차트: 직원 KPI 줄을 누르면 ── */
+  const AX = [["vs", "하루 매출", "%"], ["ticketVs", "객단가", "%"], ["desVs", "지정판매율", "%p"], ["revVs", "리뷰율", "%p"]];
+  const LIM = 0.15; /* 축 끝 = 지점 평균보다 15% 위, 가운데 = 15% 아래, 중간 고리 = 지점 평균 */
+  function radarSvg(r) {
+    const S = 260, c = S / 2, R = 88, n = AX.length, ang = (i) => -Math.PI / 2 + (i * 2 * Math.PI) / n;
+    const pt = (i, f) => [c + Math.cos(ang(i)) * R * f, c + Math.sin(ang(i)) * R * f];
+    const f = (v) => Math.max(0.06, Math.min(1, ((v || 0) + LIM) / (2 * LIM)));
+    const ring = (fr, extra) => `<polygon points="${AX.map((_, i) => pt(i, fr).map((x) => x.toFixed(1)).join(",")).join(" ")}" fill="none" ${extra}/>`;
+    const poly = AX.map((a, i) => pt(i, f(r[a[0]])).map((x) => x.toFixed(1)).join(",")).join(" ");
+    const lab = AX.map((a, i) => { const [x, y] = pt(i, 1.22); return `<text x="${x.toFixed(1)}" y="${(y + 4).toFixed(1)}" text-anchor="middle" font-size="12" font-weight="700" fill="var(--ink2)">${a[1]}</text>`; }).join("");
+    const dots = AX.map((a, i) => { const [x, y] = pt(i, f(r[a[0]])); return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3.5" fill="var(--blue)"/>`; }).join("");
+    return `<svg viewBox="0 0 ${S} ${S}" role="img" aria-label="지점 평균과 견준 네 가지 그림">${ring(1, 'stroke="var(--line2)" stroke-width="1"')}${AX.map((_, i) => { const [x, y] = pt(i, 1); return `<line x1="${c}" y1="${c}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke="var(--line2)" stroke-width="1"/>`; }).join("")}${ring(0.5, 'stroke="var(--sub)" stroke-width="1.5" stroke-dasharray="4 4"')}<polygon points="${poly}" fill="var(--blue)" fill-opacity=".16" stroke="var(--blue)" stroke-width="2" stroke-linejoin="round"/>${dots}${lab}</svg>`;
+  }
+  function staffSheet(name, br) {
+    const S = D && D.kpi && D.kpi.staff && D.kpi.staff[typeof kpiS !== "undefined" ? kpiS : "last30"]; if (!S) return;
+    const r = (S.rows || []).find((x) => x.n === name && x.b === br); if (!r) return;
+    const fmt = (v, u) => (v == null ? "-" : (v > 0 ? "+" : "") + (v * 100).toFixed(1) + u);
+    const have = AX.filter((a) => r[a[0]] != null), best = have.slice().sort((a, b) => r[b[0]] - r[a[0]])[0], worst = have.slice().sort((a, b) => r[a[0]] - r[b[0]])[0];
+    const ga = (w) => w + ((w.charCodeAt(w.length - 1) - 0xac00) % 28 ? "이" : "가"); /* 받침 있으면 이, 없으면 가 */
+    const line = have.length >= 2 && best !== worst ? `${ga(best[1])} ${r[best[0]] > 0 ? "가장 강하고" : "그나마 낫고"}, ${ga(worst[1])} ${r[worst[0]] < 0 ? "가장 약해요" : "가장 덜 올랐어요"}.` : "";
+    openSheet(`<div class="eyebrow">${E(br)}, ${E(S.from)} ~ ${E(S.to)}, 근무 ${r.days}일</div><h3>${E(name)}</h3>
+      <div class="caption">점선이 근무 지점 평균이에요. 파란 모양이 점선 밖으로 나간 쪽이 강한 점, 안으로 들어간 쪽이 약한 점이에요.</div>
+      <div class="gxr">${radarSvg(r)}</div>
+      ${line ? `<div class="gxhs">${E(line)}</div>` : ""}
+      <ul class="gxrl">${AX.map((a) => `<li><span>${a[1]}</span><b class="${r[a[0]] > 0 ? "up" : ""}">지점 평균보다 ${E(fmt(r[a[0]], a[2]))}</b></li>`).join("")}</ul>
+      <div class="btns"><button class="btn gray" data-x>닫기</button></div>`);
+  }
+  function staffRows() {
+    if (typeof tab === "undefined" || tab !== "kpi" || typeof kpiM === "undefined" || kpiM !== "staff") return;
+    /* 11/18 관리자앱 나비스: 폰의 직원별은 표 대신 사람마다 한 칸(.kst)이라, 그 칸을 눌러도 같은 창이 뜨게 */
+    { const cards = document.querySelectorAll("#app .kst:not(.gxrow)"); cards.forEach((c) => { const b = c.querySelector(".h b"), s = c.querySelector(".h small"); if (!b || !s) return; c.classList.add("gxrow"); c.dataset.gxn = b.textContent.trim(); c.dataset.gxb = s.textContent.trim(); c.tabIndex = 0; c.setAttribute("role", "button"); });
+      const first = document.querySelector("#app .kst"); if (first && !document.querySelector("#app .gxtip")) { const t = document.createElement("div"); t.className = "gxtip"; t.style.margin = "0 2px 10px"; t.textContent = "사람을 누르면 강한 점과 약한 점이 그림으로 보여요"; first.insertAdjacentElement("beforebegin", t); } }
+    const tb = document.querySelector("#app table.ops.kt tbody"); if (!tb) return;
+    tb.querySelectorAll("tr:not(.gxrow)").forEach((tr) => { const b = tr.querySelector("td b"), s = tr.querySelector("td small"); if (!b || !s) return; tr.classList.add("gxrow"); tr.dataset.gxn = b.textContent.replace(/^\d+\.\s*/, "").trim(); tr.dataset.gxb = s.textContent.trim(); tr.tabIndex = 0; tr.setAttribute("role", "button"); });
+    const w = tb.closest(".opsw"); if (w && !w.previousElementSibling?.classList.contains("gxtip") && !document.querySelector("#app .gxtip")) { const t = document.createElement("div"); t.className = "gxtip"; t.textContent = "직원 줄을 누르면 강한 점과 약한 점이 그림으로 보여요"; w.insertAdjacentElement("beforebegin", t); }
+  }
+  document.addEventListener("click", (e) => { const tr = e.target.closest && e.target.closest("tr.gxrow, .kst.gxrow"); if (tr) staffSheet(tr.dataset.gxn, tr.dataset.gxb); });
+  document.addEventListener("keydown", (e) => { if ((e.key === "Enter" || e.key === " ") && e.target.classList && e.target.classList.contains("gxrow")) { e.preventDefault(); staffSheet(e.target.dataset.gxn, e.target.dataset.gxb); } });
+
+  /* ── 3) 지점별 KPI 맨 위: 지난주, 평소보다 처진 지점부터 한 줄씩 ──
+     11/18 처음엔 히트맵(지점 × 12주 색 칸)으로 넣었는데 액상덕후 "이건 보기가 불편하지 않냐" → 색 진하기를 눈으로 풀어야 해서 답이 안 보임.
+     그래서 답만 남김: 가장 최근에 다 찬 주 하나, 지점마다 한 줄(평소 대비 막대와 %), 처진 곳이 위. 평소 = 최근 12주 하루 평균(5일 이상 기록된 주만). */
+  function heat() {
+    if (typeof tab === "undefined" || tab !== "kpi" || typeof kpiM === "undefined" || kpiM !== "branch") return;
+    const app = document.getElementById("app"); if (!app || app.querySelector(".gxh")) return;
+    const W = D && D.kpi && D.kpi.agg && D.kpi.agg.week; if (!W) return;
+    const anchor = [...app.querySelectorAll(".sec")].find((s) => /지점 비교/.test(s.textContent)); if (!anchor) return;
+    const keys = [...new Set(Object.values(W).flatMap((a) => a.map((x) => x.k)))].sort().slice(-12); if (keys.length < 4) return;
+    const rows = BR.map((b, i) => { const by = Object.fromEntries((W[b] || []).map((x) => [x.k, x])); const full = keys.map((k) => by[k]).filter((x) => x && x.days >= 5 && x.sales > 0); return { b, i, by, base: full.length >= 3 ? full.reduce((a, x) => a + x.sales / x.days, 0) / full.length : null }; }).filter((r) => r.base);
+    let wk = null; for (let k = keys.length - 1; k >= 0 && !wk; k--) if (rows.filter((r) => r.by[keys[k]] && r.by[keys[k]].days >= 5).length >= 3) wk = keys[k];
+    if (!wk) return;
+    const L = rows.map((r) => { const x = r.by[wk]; return x && x.days >= 5 && x.sales > 0 ? { b: r.b, i: r.i, avg: x.sales / x.days, base: r.base, d: x.sales / x.days / r.base - 1, x } : null; }).filter(Boolean).sort((a, b) => a.d - b.d);
+    if (!L.length) return;
+    const x0 = L[0].x, per = `${+x0.from.slice(5, 7)}/${+x0.from.slice(8)}~${+x0.to.slice(5, 7)}/${+x0.to.slice(8)}`, mx = Math.max(0.1, ...L.map((r) => Math.abs(r.d)));
+    const box = document.createElement("div"); box.className = "gxh";
+    box.innerHTML = `<h3>지난주(${E(per)}) 평소보다 처진 지점부터</h3><p>가운데 선이 그 지점 평소(최근 ${keys.length}주 하루 평균)예요. 왼쪽으로 길수록 평소보다 못 한 주, 오른쪽이면 잘 된 주예요.</p>
+      <div class="gxl">${L.map((r) => { const w = (Math.abs(r.d) / mx * 50).toFixed(1), dn = r.d < 0; return `<div class="gxlr"><span class="n"><small>${r.i + 1}</small>${E(r.b)}</span><span class="t" aria-hidden="true"><i class="${dn ? "dn" : "up"}" style="${dn ? "right:50%" : "left:50%"};width:${w}%"></i></span><span class="v"><b class="${dn ? "" : "up"}">${r.d > 0 ? "+" : ""}${Math.round(r.d * 100)}%</b><small>하루 ${E(man(r.avg))} (평소 ${E(man(r.base))})</small></span></div>`; }).join("")}</div>`;
+    anchor.insertAdjacentElement("beforebegin", box);
+  }
+
+  const run = () => { try { bullets(); } catch (e) {} try { staffRows(); } catch (e) {} try { heat(); } catch (e) {} };
+  if (typeof render === "function") { const _r = render; render = function () { const r = _r.apply(this, arguments); run(); return r; }; }
+  const app = document.getElementById("app"); if (app) new MutationObserver(run).observe(app, { childList: true, subtree: true });
+  run();
 })();
 
 </script>
