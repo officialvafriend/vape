@@ -2362,7 +2362,7 @@ async function liveSend(s) { const me = lv; me.busy = true; me.calls++; me.lastS
 liveOv.addEventListener("click", (e) => { const t = e.target.closest("[data-lv]"); if (!t) return; const a = t.dataset.lv;
   if (a === "close") return liveStop();
   if (a === "re" && lv) { lv.sig = null; lv.calls = Math.min(lv.calls, 10); lv.lastSend = 0; lv.res = null; liveBoxes(null); liveSum(); return liveSet("다시 읽을게요. 그대로 두세요"); }
-  if (a === "ok" && lv && lv.res) { const r = lv.res; liveStop(); scanS = { id: r.id, img: r.img, rows: r.items.map((x) => ({ label: x.label, id: scanFind(x.id) ? x.id : "", qty: x.qty, pick: false, q: "" })) }; scanDraw(); } });
+  if (a === "ok" && lv && lv.res) { const r = lv.res; liveStop(); scanS = { id: r.id, img: r.img, rows: r.items.map((x) => ({ label: x.label, id: scanFind(x.id) ? x.id : "", qty: x.qty, pick: false, q: "" })) }; scanOv.classList.add("on"); scanDraw(); } }); /* 확인 화면을 켜고 그림 (사진 방식은 기다리는 화면에서 이미 켜져 있었음) */
 
 /* 11/17 액상덕후 "패드도 자동 새로고침": 5분마다 이 화면 파일이 바뀌었는지 보고, 장바구니가 비고 1분 넘게 아무도 안 만질 때만 새로고침 */
 (() => { let base = null, newer = false, lastTouch = Date.now();
