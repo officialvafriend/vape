@@ -448,7 +448,9 @@ function openOth(id) { const x = D.liq.find((y) => y.id === id); if (!x) return;
   $('shf').innerHTML = `<button class="add" data-closesp="1">닫기</button>`; document.body.classList.add('sp'); }
 const closeSp = () => { document.body.classList.remove('sp'); S.sp = null; };
 $('dim').onclick = closeSp;
-function staff() { if (!CN) return toast("먼저 상품을 담아 주세요"); try { E("document.body.classList.add('open'); drawCart(); staffView()"); } catch (e) { return toast("직원 화면을 열지 못했어요"); } document.body.classList.add('stf'); }
+function staff() { if (!CN) return toast("먼저 상품을 담아 주세요"); /* B안 화면을 통째로 보이면 왼쪽에 B안 첫 화면이 같이 떠서 어색함 (11/19 "포스로 보내기 화면이 웃기네"). 직원 확인 칸만 가운데 크게 보이게 겉모양만 덮어씀. menu_b.html 은 안 고침 */
+  const KQ = "body.kq{background:#F5F5F6}body.kq .app,body.kq .dim,body.kq .camL,body.kq .grab{display:none!important}body.kq .sheet{top:0!important;bottom:0!important;left:50%!important;right:auto!important;width:760px!important;max-width:none!important;height:100%!important;transform:translateX(-50%)!important;border-radius:0!important;padding-top:18px!important;z-index:40!important;box-shadow:0 0 0 1px rgba(0,0,0,.06)!important}";
+  try { E(`if (!document.getElementById('kq')) { const s = document.createElement('style'); s.id = 'kq'; s.textContent = ${J(KQ)}; document.head.appendChild(s); } document.body.classList.add('open', 'kq'); drawCart(); staffView()`); } catch (e) { return toast("직원 화면을 열지 못했어요"); } document.body.classList.add('stf'); }
 
 /* ── 누르기 ── */
 document.addEventListener('click', (e) => { const t = e.target, c = (s) => t.closest(s);
@@ -483,7 +485,7 @@ document.addEventListener('click', (e) => { const t = e.target, c = (s) => t.clo
   if (t.id === "regGo") return regSend();
   if (t.id === "homeBtn") return reset();
   if (t.id === "sndBtn") { SND = !SND; try { localStorage.setItem("vf-kiosk-snd", SND ? "1" : "0"); speechSynthesis.cancel(); } catch (er) {} if (SND) chime(); return draw(); }
-  if (t.id === "back") { try { E("document.body.classList.remove('open')"); } catch (er) {} document.body.classList.remove('stf'); sync(); return draw(); }
+  if (t.id === "back") { try { E("document.body.classList.remove('open', 'kq')"); } catch (er) {} document.body.classList.remove('stf'); sync(); return draw(); }
   if (t.id === "prev") { const i = S.path.indexOf(S.step); if (i > 0) return go(S.path[i - 1]); if (i === 0) return go(S.res ? "pick" : "way"); if (S.step === "way") return go(S.who === "mem" && S.mem && S.mem.s === "found" ? "hello" : "start"); if (S.step === "mydev") return go("way"); if (S.step === "hello") return go("mname"); if (S.step === "mname") return go("phone");
     if (S.step === "quiz") { if (S.qz.i > 0) { S.qz.i--; return draw(); } return go(S.way === "have" ? "mydev" : "way"); } if (S.step === "pick") { qzLoad(); S.qz.i = Math.max(0, S.qz.list.length - 1); return go("quiz"); } if (S.step === "check") return go("sum"); if (S.step === "roulette") return go("check"); return go("start"); }
   if (t.id === "next") { const i = S.path.indexOf(S.step);
