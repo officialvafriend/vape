@@ -576,6 +576,21 @@ body[data-theme=dark] .scan svg{background:#fff;border-radius:8px}
 .scr .pick{margin-top:12px}.scr .pick input{width:100%;height:60px;border:2px solid var(--ink);border-radius:14px;padding:0 16px;font-size:19px;background:var(--bg);color:var(--ink)}
 .scr .pick .pt{font-size:15px;font-weight:700;color:var(--grey);margin:10px 2px 0}
 .scr .pick .ph{display:flex;gap:10px;overflow-x:auto;padding:8px 0 4px}.scr .pick .ph button{flex:none;width:150px;background:var(--bg);border-radius:14px;padding:10px;text-align:left;font-size:16px;font-weight:800;line-height:1.25}.scr .pick .ph img{width:100%;height:96px;object-fit:contain;border-radius:10px;background:#fff;margin-bottom:6px}
+/* 11/19 스캔 화면 (본점만 시험): 카메라를 켜 두고, 멈추면 알아서 읽어 제품에 테두리와 개수를 띄움 */
+#liveOv{display:none;position:fixed;inset:0;z-index:96;background:#000;flex-direction:column}
+#liveOv.on{display:flex}
+#liveOv .lv{position:relative;flex:1;min-height:0;overflow:hidden}
+#liveOv video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
+#liveOv .lyr{position:absolute;inset:0;pointer-events:none}
+#liveOv .bx{position:absolute;border:4px solid #2ee66b;border-radius:10px;box-shadow:0 0 0 2px rgba(0,0,0,.4)}
+#liveOv .bx.unk{border-color:#ffcc00}
+#liveOv .bx b{position:absolute;left:-4px;bottom:100%;margin-bottom:4px;background:#2ee66b;color:#000;font-size:17px;font-weight:800;padding:3px 9px;border-radius:8px;white-space:nowrap}
+#liveOv .bx.unk b{background:#ffcc00}
+#liveOv .st{position:absolute;left:0;right:0;top:0;padding:18px 16px 30px;text-align:center;color:#fff;font-size:22px;font-weight:800;background:linear-gradient(rgba(0,0,0,.65),rgba(0,0,0,0))}
+#liveOv .bar{flex:none;background:var(--card);padding:14px var(--pad) 20px}
+#liveOv .lvsum{font-size:19px;font-weight:800;min-height:28px;margin-bottom:10px;line-height:1.4}
+#liveOv .lvbtn{display:flex;gap:10px}#liveOv .lvbtn button{height:64px;border-radius:18px;font-size:19px;font-weight:800}
+#liveOv .lvbtn .b2{flex:none;padding:0 22px;background:var(--bg);color:var(--ink)}#liveOv .lvbtn .rd{flex:1;background:var(--red);color:#fff}#liveOv .lvbtn .rd:disabled{background:#c9c9cf}
 .scadd{width:100%;height:64px;border-radius:16px;border:2px dashed var(--line);font-size:18px;font-weight:800;color:var(--grey)}
 </style>
 </head>
@@ -2257,7 +2272,7 @@ const scanImg = (f) => !f ? "" : f.t === "liq" ? imgOf(f.x) : gImg2(f.x);
 const scanClose = () => { scanOv.classList.remove("on"); scanS = null; };
 function scanStart() { $('camIn').value = ""; $('camIn').click(); }
 $('camBtn').addEventListener("pointerdown", (e) => e.stopPropagation());
-$('camBtn').addEventListener("click", (e) => { e.stopPropagation(); scanStart(); });
+$('camBtn').addEventListener("click", (e) => { e.stopPropagation(); scanGo(); });
 $('camIn').addEventListener("click", (e) => e.stopPropagation());
 async function scanShrink(file) { /* 긴 쪽 1280 으로 줄여 JPEG 로 (보내는 시간과 비용 줄이기) */
   let bm; try { bm = await createImageBitmap(file, { imageOrientation: "from-image" }); } catch (e) { bm = await createImageBitmap(file); }
@@ -2290,7 +2305,7 @@ function scanDraw() { if (!scanS) return; const rows = scanS.rows, unk = rows.fi
 scanOv.addEventListener("input", (e) => { const i = e.target.dataset.scin; if (i == null || !scanS) return; scanS.rows[+i].q = e.target.value; const box = document.getElementById("scph" + i); if (box) box.innerHTML = scanPickList(+i); const pt = document.getElementById("scpt" + i); if (pt) pt.textContent = e.target.value.trim() ? "찾은 상품" : ""; });
 scanOv.addEventListener("click", (e) => { const t = e.target.closest("button"); if (!t) return; const d = t.dataset;
   if (d.sc === "close") return scanClose();
-  if (d.sc === "again") { scanClose(); return scanStart(); }
+  if (d.sc === "again") { scanClose(); return scanGo(); }
   if (!scanS) return;
   if (d.scq != null) { const r = scanS.rows[+d.scq]; r.qty = Math.max(1, Math.min(99, r.qty + (+d.d))); return scanDraw(); }
   if (d.scdel != null) { scanS.rows.splice(+d.scdel, 1); return scanDraw(); }
@@ -2303,12 +2318,58 @@ scanOv.addEventListener("click", (e) => { const t = e.target.closest("button"); 
     if (scanS.id) fetch(SCAN_URL, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ type: "final", branch: BRANCH, scan: scanS.id, final: fin }) }).catch(() => {});
     const n = fin.reduce((a, x) => a + x.qty, 0); scanClose(); drawCart(); document.body.classList.add("open"); toast(`${n}개 담았어요`); } });
 
+/* ── 11/19 스캔 화면 (본점만 시험, 액상덕후 "사진이 아니라 스캔하고 테두리 생기고 갯수 생기고"):
+   카메라를 화면 안에 켜 두고, 화면이 멈추면 알아서 한 장을 보내 읽음. 읽힌 제품에 테두리와 개수를 띄우고, [확인하고 담기]를 누르면 원래 확인 화면으로 이어짐.
+   같은 장면은 다시 안 읽고(비용), 한 번 열어서 15번까지만 자동으로 읽음. 카메라를 못 켜면 예전 사진 방식으로 ── */
+const SCAN_LIVE = BRANCH === "본점" && !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+const scanGo = () => SCAN_LIVE ? liveStart() : scanStart();
+let lv = null;
+const liveOv = document.createElement("div"); liveOv.id = "liveOv"; document.body.appendChild(liveOv);
+liveOv.innerHTML = `<div class="lv"><video playsinline muted autoplay></video><div class="lyr"></div><div class="st"></div></div><div class="bar"><div class="lvsum"></div><div class="lvbtn"><button class="b2" data-lv="close">닫기</button><button class="b2" data-lv="re">다시 읽기</button><button class="rd" data-lv="ok" disabled>확인하고 담기</button></div></div>`;
+const lvV = liveOv.querySelector("video"), lvC = document.createElement("canvas"); lvC.width = 32; lvC.height = 18;
+const liveSet = (m) => { liveOv.querySelector(".st").textContent = m; };
+function liveSig() { const g = lvC.getContext("2d", { willReadFrequently: true }); g.drawImage(lvV, 0, 0, 32, 18); const d = g.getImageData(0, 0, 32, 18).data, o = new Uint8Array(576); for (let i = 0; i < 576; i++) o[i] = (d[i * 4] + d[i * 4 + 1] * 2 + d[i * 4 + 2]) >> 2; return o; }
+const sigDiff = (a, b) => { let s = 0; for (let i = 0; i < 576; i++) s += Math.abs(a[i] - b[i]); return s / 576; };
+function liveBoxes(items) { const L = liveOv.querySelector(".lyr"); if (!items) { L.innerHTML = ""; return; }
+  const cw = L.clientWidth, ch = L.clientHeight, vw = lvV.videoWidth || 1, vh = lvV.videoHeight || 1, k = Math.min(cw / vw, ch / vh), ox = (cw - vw * k) / 2, oy = (ch - vh * k) / 2;
+  L.innerHTML = items.map((x) => { const f = scanFind(x.id), nm = f ? (f.t === "liq" ? short(f.x.n) : f.x.n) : "모르는 상품";
+    return (x.boxes || []).map((b, i) => `<div class="bx ${f ? "" : "unk"}" style="left:${ox + b[0] / 1000 * vw * k}px;top:${oy + b[1] / 1000 * vh * k}px;width:${(b[2] - b[0]) / 1000 * vw * k}px;height:${(b[3] - b[1]) / 1000 * vh * k}px">${i ? "" : `<b>${esc(nm)}${x.qty > 1 ? " ×" + x.qty : ""}</b>`}</div>`).join(""); }).join(""); }
+function liveSum() { const r = lv && lv.res, S2 = liveOv.querySelector(".lvsum"), ok = liveOv.querySelector('[data-lv="ok"]');
+  if (!r || !r.items.length) { S2.textContent = ""; ok.disabled = true; ok.textContent = "확인하고 담기"; return; }
+  const n = r.items.reduce((a, x) => a + x.qty, 0), unk = r.items.filter((x) => !scanFind(x.id)).reduce((a, x) => a + x.qty, 0);
+  S2.textContent = r.items.map((x) => { const f = scanFind(x.id); return (f ? (f.t === "liq" ? short(f.x.n) : f.x.n) : "모르는 상품") + " " + x.qty; }).join(", "); ok.disabled = false; ok.textContent = `${n}개 확인하고 담기` + (unk ? ` (모르는 ${unk}개)` : ""); }
+async function liveStart() { let stream; try { stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" }, width: { ideal: 1920 }, height: { ideal: 1080 } }, audio: false }); } catch (e) { return scanStart(); } /* 카메라를 못 켜면 예전 사진 방식 */
+  lv = { stream, prev: null, steadyAt: 0, busy: false, calls: 0, res: null, sig: null, lastSend: 0 }; lvV.srcObject = stream; liveBoxes(null); liveSum(); liveSet("제품을 비추고 잠깐 멈춰 주세요"); liveOv.classList.add("on"); lv.t = setInterval(liveTick, 400); }
+function liveStop() { if (!lv) return; clearInterval(lv.t); try { lv.stream.getTracks().forEach((t) => t.stop()); } catch (e) {} lvV.srcObject = null; lv = null; liveOv.classList.remove("on"); }
+function liveTick() { if (!lv || lv.busy || lvV.readyState < 2 || !lvV.videoWidth) return; const s = liveSig(), d = lv.prev ? sigDiff(s, lv.prev) : 99; lv.prev = s;
+  if (d > 6) { lv.steadyAt = 0; if (lv.res && lv.sig && sigDiff(s, lv.sig) > 12) { lv.res = null; liveBoxes(null); liveSum(); liveSet("움직였어요. 멈추면 다시 읽어요"); } return; } /* 움직이는 중 */
+  if (!lv.steadyAt) lv.steadyAt = Date.now();
+  if (Date.now() - lv.steadyAt < 800) return;
+  if (lv.sig && sigDiff(s, lv.sig) < 8) return; /* 같은 장면은 다시 안 읽음 */
+  if (lv.calls >= 15) return liveSet("많이 읽었어요. [다시 읽기]를 눌러 주세요");
+  if (Date.now() - lv.lastSend < 3000) return;
+  liveSend(s); }
+async function liveSend(s) { const me = lv; me.busy = true; me.calls++; me.lastSend = Date.now(); me.sig = s; liveSet("읽는 중이에요. 그대로 두세요");
+  const k = Math.min(1, 1280 / Math.max(lvV.videoWidth, lvV.videoHeight)), c = document.createElement("canvas"); c.width = Math.round(lvV.videoWidth * k); c.height = Math.round(lvV.videoHeight * k); c.getContext("2d").drawImage(lvV, 0, 0, c.width, c.height); const img = c.toDataURL("image/jpeg", 0.8);
+  try { const cands = [...ALL_LQ.map((x) => ({ id: x.id, n: x.n })), ...GDS.map((g) => ({ id: g.id, n: g.n }))];
+    const r = await fetch(SCAN_URL, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ type: "scan", branch: BRANCH, img: img.split(",")[1], cands }) }), j = await r.json();
+    if (lv !== me) return;
+    if (!j.ok) { me.sig = null; liveSet(j.error === "limit" ? "오늘은 너무 많이 읽었어요" : "읽지 못했어요. 조금 움직였다가 다시 멈춰 주세요"); }
+    else if (!(j.items || []).length) { me.res = null; liveBoxes(null); liveSum(); liveSet("제품이 안 보여요. 라벨이 보이게 비춰 주세요"); }
+    else { me.res = { id: j.scan, img, items: j.items }; liveBoxes(j.items); liveSum(); liveSet("읽었어요. 맞으면 아래 빨간 버튼을 눌러 주세요"); }
+  } catch (e) { if (lv === me) { me.sig = null; liveSet("인터넷을 확인해 주세요"); } }
+  finally { me.busy = false; } }
+liveOv.addEventListener("click", (e) => { const t = e.target.closest("[data-lv]"); if (!t) return; const a = t.dataset.lv;
+  if (a === "close") return liveStop();
+  if (a === "re" && lv) { lv.sig = null; lv.calls = Math.min(lv.calls, 10); lv.lastSend = 0; lv.res = null; liveBoxes(null); liveSum(); return liveSet("다시 읽을게요. 그대로 두세요"); }
+  if (a === "ok" && lv && lv.res) { const r = lv.res; liveStop(); scanS = { id: r.id, img: r.img, rows: r.items.map((x) => ({ label: x.label, id: scanFind(x.id) ? x.id : "", qty: x.qty, pick: false, q: "" })) }; scanDraw(); } });
+
 /* 11/17 액상덕후 "패드도 자동 새로고침": 5분마다 이 화면 파일이 바뀌었는지 보고, 장바구니가 비고 1분 넘게 아무도 안 만질 때만 새로고침 */
 (() => { let base = null, newer = false, lastTouch = Date.now();
   ["pointerdown", "keydown", "touchstart"].forEach((t) => document.addEventListener(t, () => { lastTouch = Date.now(); }, { capture: true, passive: true }));
   const hash = (s) => { let h = 5381; for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0; return s.length + ":" + h; };
   const check = async () => { try { const r = await fetch(location.pathname + "?v=" + Date.now(), { cache: "no-store" }); if (!r.ok) return; const h = hash(await r.text()); if (base === null) base = h; else if (h !== base) newer = true; } catch (e) {} };
-  const calm = () => !cart.size && !document.body.classList.contains("open") && !document.getElementById("payNote") && !scanOv.classList.contains("on") && !(document.getElementById("brp") || {}).classList?.contains("on") && Date.now() - lastTouch > 60000;
+  const calm = () => !cart.size && !document.body.classList.contains("open") && !document.getElementById("payNote") && !scanOv.classList.contains("on") && !liveOv.classList.contains("on") && !(document.getElementById("brp") || {}).classList?.contains("on") && Date.now() - lastTouch > 60000;
   if (ORDER_CODE) return;
   check(); setInterval(check, 5 * 60000);
   setInterval(() => { if (newer && calm()) location.reload(); }, 15000);
