@@ -289,10 +289,13 @@ let tt = 0; function toast(m, ms) { const t = $('toast'); t.textContent = m; t.s
 
 /* ── 소리: 딩동(기기 안에서 만드는 소리, 파일 없음)과 질문 읽어 주기(패드에 들어 있는 한국어 음성). 위 "소리 켬" 버튼으로 끔 ── */
 let SND = true, AC = null, sayT = 0, prevStep = ""; try { SND = localStorage.getItem("vf-kiosk-snd") !== "0"; } catch (e) {}
-function chime() { if (!SND) return; try { AC = AC || new (window.AudioContext || window.webkitAudioContext)(); if (AC.state === "suspended") AC.resume();
-  [[659.25, 0], [523.25, .32]].forEach(([f, at]) => { const o = AC.createOscillator(), g = AC.createGain(), t = AC.currentTime + at; o.type = "sine"; o.frequency.value = f; g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(.35, t + .02); g.gain.exponentialRampToValueAtTime(.0001, t + 1.1); o.connect(g); g.connect(AC.destination); o.start(t); o.stop(t + 1.2); }); } catch (e) {} }
+/* 11/19 액상덕후 "터치할 때 소리가 좋았으면, 딩동 말고": 버튼을 누르면 짧은 "톡", 담기는 조금 밝은 "또롱" (tapsnd1119) */
+function blip(notes) { if (!SND) return; try { AC = AC || new (window.AudioContext || window.webkitAudioContext)(); if (AC.state === "suspended") AC.resume();
+  notes.forEach(([f0, f1, at, len, vol]) => { const o = AC.createOscillator(), g = AC.createGain(), t = AC.currentTime + at; o.type = "sine"; o.frequency.setValueAtTime(f0, t); o.frequency.exponentialRampToValueAtTime(f1, t + len); g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + .008); g.gain.exponentialRampToValueAtTime(.0001, t + len); o.connect(g); g.connect(AC.destination); o.start(t); o.stop(t + len + .02); }); } catch (e) {} }
+const tapSnd = () => blip([[620, 380, 0, .09, .28]]), addSnd = () => blip([[784, 784, 0, .1, .22], [1175, 1175, .08, .16, .2]]);
+document.addEventListener('click', (e) => { const b = e.target.closest && e.target.closest('button, [data-dev]'); if (!b || b.disabled) return; const a = b.dataset.add || ""; if (/:1$/.test(a) || b.dataset.qt === "1" || b.dataset.again) addSnd(); else tapSnd(); }, true);
 /* 11/19 액상덕후 "목소리 무서워" → "지금 목소리를 좀 다듬어 봐": 조금 높게, 조금 천천히, 조금 작게 (voicetune1119). 주소에 ?pitch=1.4&rate=0.9 를 붙이면 바로 바꿔 들어 볼 수 있고, ?voice=0 이면 끔 */
-const QP = new URLSearchParams(location.search), VOICE = QP.get("voice") !== "0", V_PITCH = Math.min(2, Math.max(.5, +QP.get("pitch") || 1.3)), V_RATE = Math.min(1.5, Math.max(.6, +QP.get("rate") || .92));
+const QP = new URLSearchParams(location.search), VOICE = QP.get("voice") === "1", V_PITCH = Math.min(2, Math.max(.5, +QP.get("pitch") || 1.3)), V_RATE = Math.min(1.5, Math.max(.6, +QP.get("rate") || .92));
 function say(text, wait) { clearTimeout(sayT); try { speechSynthesis.cancel(); } catch (e) {} if (!VOICE || !SND || !text || !window.speechSynthesis) return;
   sayT = setTimeout(() => { try { const u = new SpeechSynthesisUtterance(text); u.lang = "ko-KR"; u.pitch = V_PITCH; u.rate = V_RATE; u.volume = .85; const v = speechSynthesis.getVoices().find((x) => /^ko/i.test(x.lang)); if (v) u.voice = v; speechSynthesis.speak(u); } catch (e) {} }, wait || 0); }
 
@@ -426,7 +429,7 @@ function draw() { if (!D) return; const i = S.path.indexOf(S.step), inPath = i >
   if (same) { m.classList.remove('in'); m.querySelectorAll('[data-sc]').forEach((e, j) => { e.scrollTop = sc[j] || 0; }); } /* 같은 화면에서 누를 땐 움직임 없이, 보던 자리 그대로 (11/18 "버튼 누를 때마다 요란법석") */
   else { lastKey = key; m.classList.remove('in'); void m.offsetWidth; m.classList.add('in');
     const dd = (prevStep === "start" && S.step !== "start") || S.step === "check" || key === "pickr0", q = m.querySelector('.q'); /* 딩동은 시작할 때, 추천이 나올 때, 직원 확인 때만. 나머지는 질문을 읽어 주기만 */
-    if (dd) chime(); say(q ? q.innerText.replace(/\s+/g, " ") : "", dd ? 750 : 150); }
+    say(q ? q.innerText.replace(/\s+/g, " ") : "", dd ? 750 : 150); }
   prevStep = S.step; $('sndBtn').textContent = SND ? "소리 켬" : "소리 끔"; /* 화면이 바뀔 때만 올라오는 움직임 */
   document.body.classList.toggle('ft', S.step !== "start");
   const last = i === S.path.length - 1, Qn = S.step === "quiz" ? S.qz.list[S.qz.i] : null;
@@ -501,7 +504,7 @@ document.addEventListener('click', (e) => { const t = e.target, c = (s) => t.clo
   if (b = c('[data-dev]')) return openDev(b.dataset.dev);
   if (t.id === "regGo") return regSend();
   if (t.id === "homeBtn") return reset();
-  if (t.id === "sndBtn") { SND = !SND; try { localStorage.setItem("vf-kiosk-snd", SND ? "1" : "0"); speechSynthesis.cancel(); } catch (er) {} if (SND) chime(); return draw(); }
+  if (t.id === "sndBtn") { SND = !SND; try { localStorage.setItem("vf-kiosk-snd", SND ? "1" : "0"); speechSynthesis.cancel(); } catch (er) {} return draw(); }
   if (t.id === "back") { try { E("document.body.classList.remove('open', 'kq')"); } catch (er) {} document.body.classList.remove('stf'); sync(); return draw(); }
   if (t.id === "prev") { const i = S.path.indexOf(S.step); if (i > 0) return go(S.path[i - 1]); if (i === 0) return go(S.res ? "pick" : "way"); if (S.step === "way") return go(S.who === "mem" && S.mem && S.mem.s === "found" ? "hello" : "start"); if (S.step === "mydev") return go("way"); if (S.step === "hello") return go("mname"); if (S.step === "mname") return go("phone");
     if (S.step === "quiz") { if (S.qz.i > 0) { S.qz.i--; return draw(); } return go(S.way === "have" ? "mydev" : "way"); } if (S.step === "pick") { qzLoad(); S.qz.i = Math.max(0, S.qz.list.length - 1); return go("quiz"); } if (S.step === "check") return go("sum"); if (S.step === "roulette") return go("check"); return go("start"); }
