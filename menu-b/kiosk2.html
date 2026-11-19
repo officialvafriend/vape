@@ -136,6 +136,7 @@ main{flex:1;min-height:0;padding:20px 24px;display:flex;flex-direction:column}
 .cd .f{font-size:17px;color:var(--g1);min-height:23px}
 .cd .pr{font-size:23px;font-weight:800;margin:8px 0 10px}
 .rkb{position:absolute;left:22px;top:22px;background:var(--pt);color:#fff;font-size:18px;font-weight:800;border-radius:8px;padding:4px 11px;z-index:1;font-style:normal}
+.evb{position:absolute;right:22px;top:22px;background:var(--ink);color:#fff;font-size:18px;font-weight:800;border-radius:8px;padding:4px 11px;z-index:1;font-style:normal}
 .add{width:100%;height:64px;border-radius:14px;background:var(--ink);color:#fff;font-size:23px;font-weight:800}
 .add.line{background:var(--card);color:var(--ink);border:2px solid var(--ink)}
 .add:disabled{background:#CCC}
@@ -263,7 +264,7 @@ const WAYS = [["first", "전자담배가 처음이에요", "연초나 궐련형�
 const LABEL = { dev: "기기", liq: "액상", pod: "팟, 코일", dsp: "일회용", sum: "확인" };
 const LOCAL = location.protocol === "file:" || /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
 const DEMO = LOCAL && !/[?&]real=1/.test(location.search); /* 내 컴퓨터 미리보기는 봇에 안 보내고 예시로 보여 줌 */
-const S0 = () => ({ step: "start", path: [], who: null, way: "", taste: "전체", dspM: "전체", podFam: "", famOpen: false, phone: "", name: "", qz: null, res: null, vp: 0, recDev: "", spin: null, sp: null, mem: null, reg: { name: "", year: "", phone: "", agree: false, mk: false, s: "" } });
+const S0 = () => ({ step: "start", path: [], who: null, way: "", evSeen: {}, taste: "전체", dspM: "전체", podFam: "", famOpen: false, phone: "", name: "", qz: null, res: null, vp: 0, recDev: "", spin: null, sp: null, mem: null, reg: { name: "", year: "", phone: "", agree: false, mk: false, s: "" } });
 let S = S0(), D = null, E = null, CQ = new Map(), CI = [], CT = { total: 0 }, CN = 0, lastKey = "", qzT = 0;
 
 /* ── 자료: B안을 뒤에 숨겨 열고 그 자료, 담기, 합계, 회원, 문진 규칙을 그대로 부름 ── */
@@ -275,13 +276,16 @@ $('eng').onload = () => { const w = $('eng').contentWindow; E = (code) => w.eval
     D = JSON.parse(E(`JSON.stringify({ branch: BRANCH, rk: RK, stockAt: STOCK_AT || "",
       liq: ALL_LQ.map((x) => ({ id: x.id, n: x.n, s: short(x.n), f: x.f || "", g: String(x.g || "").replace("·", ", "), br: x.br || "", line: x.line || "", img: imgOf(x), tint: tintOf(x), price: liqPrice(x), out: outOf(x.n), no: noOf(x.n) || 0, a: A_SET.has(x.n),
         oth: outOf(x.n) ? Object.entries(STOCK_ALL).filter(([b, v]) => b !== BRANCH && window.POS && window.POS[b] && window.POS[b][posName(x.n, b)] && !(v.out || []).includes(posName(x.n, b))).map(([b]) => b) : [] })),
-      dsp: GDS.filter((g) => g.c === "dsp").map((g) => ({ id: g.id, n: g.n, price: g.price, img: gImg2(g), opt: g.opt || "", mn: dInfo(g.model).name || g.model || "" })),
+      dsp: GDS.filter((g) => g.c === "dsp").map((g) => ({ id: g.id, n: g.n, price: g.price, img: gImg2(g), opt: g.opt || "", mn: dInfo(g.model).name || g.model || "", ev: g.ev && EVN[g.ev] ? [...EVN[g.ev], g.ev] : null })),
       pod: GDS.filter((g) => g.c === "pod" && (g.sub || "팟·코일") === "팟·코일").map((g) => ({ id: g.id, n: g.n, price: g.price, img: gImg(g), fam: podDevOf(g) })), fams: podFams(), famImg: podFams().map((f) => [f, devImgOf(f) || (f === "발라리안 맥스프로" ? devImgOf("발라맥스프로") : "") || "", GDS.filter((g) => g.c === "pod" && podDevOf(g) === f).map((g) => gImg(g)).filter(Boolean)[0] || ""]),
       dev: devModels().map((m) => ({ n: m, img: devImgOf(m), sub: DEV_SUB[m] || "", opts: devOpts(m).map((g) => ({ id: g.id, n: g.n, opt: g.opt || "", price: g.price, img: devImgOf(g.model, g.opt) })) })).map((d) => ({ ...d, price: d.opts.length ? Math.min(...d.opts.map((o) => o.price)) : 0 })) })`));
     $('load').style.display = "none"; sync(); draw(); }, 200); };
-function sync() { try { const o = JSON.parse(E(`JSON.stringify({ i: [...cart].map(([k, v]) => [k, { label: v.label || v.n || "", qty: v.qty || 0, unit: v.unit || 0, img: v.img || "", k: v.k || "", model: v.model || "" }]), t: (() => { const t = totalOf(); return { total: t.total, how: t.how || "", c: t.c, unit: [...cart.values()].reduce((a, x) => a + (x.k === "bulk" ? x.items.reduce((s, [, , q]) => s + q * 15000, 0) * x.qty : x.k === "dsp15" ? x.items.reduce((s, [, , q, p]) => s + q * p, 0) * x.qty : x.unit * x.qty), 0) }; })() })`)); CI = o.i; CQ = new Map(o.i.map(([k, v]) => [k, v.qty])); CT = o.t; CN = o.i.reduce((a, b) => a + b[1].qty, 0); } catch (e) {} }
-function add(kind, id, d = 1) { try { if (CQ.get(id)) E(`addItem(${J(id)}, cart.get(${J(id)}), ${d})`); else if (kind === "liq") E(`addLiqX(ALL_LQ.find((y) => y.id === ${J(id)}))`); else E(`addGoods(GDS.find((y) => y.id === ${J(id)}))`); } catch (e) { return toast("담지 못했어요"); } sync(); draw(); }
-let tt = 0; function toast(m) { const t = $('toast'); t.textContent = m; t.style.display = "block"; clearTimeout(tt); tt = setTimeout(() => t.style.display = "none", 2000); }
+function sync() { try { const o = JSON.parse(E(`JSON.stringify({ i: [...cart].map(([k, v]) => [k, { label: v.label || v.n || "", qty: v.qty || 0, unit: v.unit || 0, img: v.img || "", k: v.k || "", model: v.model || "" }]), t: (() => { const t = totalOf(); return { total: t.total, how: t.how || "", c: t.c, gp: (() => { try { return Object.entries(t.gp.cnt || {}).map(([ek, n]) => [ek, n, EVN[evB(ek)] || null]); } catch (e) { return []; } })(), unit: [...cart.values()].reduce((a, x) => a + (x.k === "bulk" ? x.items.reduce((s, [, , q]) => s + q * 15000, 0) * x.qty : x.k === "dsp15" ? x.items.reduce((s, [, , q, p]) => s + q * p, 0) * x.qty : x.unit * x.qty), 0) }; })() })`)); CI = o.i; CQ = new Map(o.i.map(([k, v]) => [k, v.qty])); CT = o.t; CN = o.i.reduce((a, b) => a + b[1].qty, 0); } catch (e) {} }
+function add(kind, id, d = 1) { try { if (CQ.get(id)) E(`addItem(${J(id)}, cart.get(${J(id)}), ${d})`); else if (kind === "liq") E(`addLiqX(ALL_LQ.find((y) => y.id === ${J(id)}))`); else E(`addGoods(GDS.find((y) => y.id === ${J(id)}))`); } catch (e) { return toast("담지 못했어요"); } sync(); draw();
+  /* 행사 상품을 처음 담을 때 한 번 알려 줌 (11/19 액상덕후 "2+1 이면 행사상품입니다 안내가 나오는 게"). 행사 종류와 개수는 B안 자료(EVN) 그대로 */
+  const g = kind === "dsp" && d > 0 ? D.dsp.find((y) => y.id === id) : null;
+  if (g && g.ev && !S.evSeen[g.ev[3]]) { S.evSeen[g.ev[3]] = 1; const m = g.ev[3] === "DSP-AIRX" ? `${g.ev[2]} 행사 상품이에요. 팟 ${g.ev[0]}개 사면 팟 ${g.ev[1]}개 더, 또는 기기를 드려요` : `${g.ev[2]} 행사 상품이에요. ${g.ev[0]}개 사면 ${g.ev[1]}개 더 드려요`; toast(m, 4000); say(m, 100); } }
+let tt = 0; function toast(m, ms) { const t = $('toast'); t.textContent = m; t.style.display = "block"; clearTimeout(tt); tt = setTimeout(() => t.style.display = "none", ms || 2000); }
 
 /* ── 소리: 딩동(기기 안에서 만드는 소리, 파일 없음)과 질문 읽어 주기(패드에 들어 있는 한국어 음성). 위 "소리 켬" 버튼으로 끔 ── */
 let SND = true, AC = null, sayT = 0, prevStep = ""; try { SND = localStorage.getItem("vf-kiosk-snd") !== "0"; } catch (e) {}
@@ -299,7 +303,7 @@ function rankMap(kind) { const b = ((D.rk.branches || {})[D.branch] || {})[kind]
 
 /* ── 조각 ── */
 const stepper = (kind, id) => { const q = CQ.get(id) || 0; return q ? `<div class="stp"><button data-add="${kind}:${id}:-1">−</button><b>${q}</b><button data-add="${kind}:${id}:1">+</button></div>` : `<button class="add" data-add="${kind}:${id}:1">담기</button>`; };
-const card = (kind, x, o) => `<div class="cd ${CQ.get(x.id) ? "got" : ""}">${o.rk ? `<i class="rkb">${o.rk}위</i>` : ""}<div class="im" style="${o.tint ? "background:" + o.tint : ""}">${x.img ? `<img src="${x.img}" alt="" loading="lazy">` : esc(o.name)}</div><small>${esc(o.brand || "")}</small><b>${esc(o.name)}</b><span class="f">${esc(o.sub || "")}</span><div class="pr">${won(x.price)}</div>${stepper(kind, x.id)}</div>`;
+const card = (kind, x, o) => `<div class="cd ${CQ.get(x.id) ? "got" : ""}">${o.rk ? `<i class="rkb">${o.rk}위</i>` : ""}${o.ev ? `<i class="evb">${esc(o.ev)} 행사</i>` : ""}<div class="im" style="${o.tint ? "background:" + o.tint : ""}">${x.img ? `<img src="${x.img}" alt="" loading="lazy">` : esc(o.name)}</div><small>${esc(o.brand || "")}</small><b>${esc(o.name)}</b><span class="f">${esc(o.sub || "")}</span><div class="pr">${won(x.price)}</div>${stepper(kind, x.id)}</div>`;
 const chips = (arr, cur, key) => `<div class="chips">${arr.map((t) => `<button data-${key}="${esc(t)}" class="${t === cur ? "on" : ""}">${esc(t)}</button>`).join("")}</div>`;
 const fmtPhone = (p) => p.length <= 3 ? p : p.length <= 7 ? p.slice(0, 3) + "-" + p.slice(3) : p.slice(0, 3) + "-" + p.slice(3, p.length - 4) + "-" + p.slice(-4);
 const maskPhone = (p) => p.slice(0, 3) + "-****-" + p.slice(-4);
@@ -310,6 +314,10 @@ const split = (l, r, cls = "") => `<div class="sp2 ${cls}"><div class="L ${/shop
 const cartPanel = () => { const n = liqN(), goal = n < 5 ? 5 : 11;
   return `<div class="cp"><h4>담은 상품<em>${CN}</em></h4><div class="cpl">${CI.map(([k, v]) => `<div class="cl"><span class="im">${v.img ? `<img src="${v.img}" alt="">` : ""}</span><span class="tx">${esc(v.label)}</span><span class="mq"><button data-qt="-1" data-k="${esc(k)}">−</button><i>${v.qty}</i><button data-qt="1" data-k="${esc(k)}">+</button></span></div>`).join("") || '<div class="cpe">아직 담은 게 없어요<br>왼쪽에서 골라 주세요</div>'}</div>
     <div class="cpf">${S.step === "liq" || n ? `<div class="evp"><b>${n >= 11 ? "11병 90,000원 적용 중" : n >= 5 ? `5병 49,500원 적용 중<br>${11 - n}병 더 고르면 11병 90,000원` : n ? `${5 - n}병 더 고르면 5병 49,500원` : "5병 49,500원, 11병 90,000원"}</b><span>맛 섞어도 돼요. 1병은 15,000원</span><div class="dots">${Array.from({ length: goal }, (_, i) => `<i class="${i < n ? "on" : ""}"></i>`).join("")}</div></div>` : ""}
+      ${(CT.gp || []).filter((x) => x[2] && x[1]).map(([ek, n, [buy, free, label]]) => { const nm = ek.split("|")[1] || (ek === "DSP-AIRX" ? "에어릭스" : ""), set = buy + free, r = n % set, air = ek === "DSP-AIRX";
+        const msg = air ? (n >= buy ? `팟 ${free}개 더 또는 기기, 직원이 안내해 드려요` : `${buy - n}개 더 고르면 팟 ${free}개 더 또는 기기`) : r === 0 ? "행사 적용됐어요" : r < buy ? `${buy - r}개 더 고르면 ${free}개가 0원` : `${set - r}개 더 담으세요, 0원이에요`;
+        const len = air ? buy : set, fill = air ? Math.min(n, buy) : (r === 0 ? set : r);
+        return `<div class="evp"><b>${esc((nm + " " + label).trim())} 행사</b><span>${msg}</span><div class="dots">${Array.from({ length: len }, (_, i) => `<i class="${i < fill ? "on" : ""}"></i>`).join("")}</div></div>`; }).join("")}
       <div class="cpt"><span>합계${CT.how ? ` <span class="bdg">${esc(CT.how)}</span>` : ""}</span><strong>${won(CT.total || 0)}</strong></div></div></div>`; };
 
 /* ── 화면 ── */
@@ -362,7 +370,7 @@ const V = {
       <div class="grid">${list.map((x) => card("liq", x, { rk: rk.get(x.id), tint: x.tint, brand: x.br, name: x.s, sub: x.f })).join("")}</div>
       ${outs.length ? `<div class="q s" style="margin-top:34px">이 매장엔 지금 없는 맛</div><div class="qs" style="margin-top:4px">다른 지점에 있는지 바로 볼 수 있어요</div><div class="grid">${outs.map((x) => `<div class="cd sold"><div class="im" style="${x.tint ? "background:" + x.tint : ""}">${x.img ? `<img src="${x.img}" alt="" loading="lazy">` : esc(x.s)}</div><small>${esc(x.br || "")}</small><b>${esc(x.s)}</b><span class="f">${esc(x.f || "")}</span><div class="soldt">${esc(D.branch)} 품절</div><button class="add line" data-oth="${esc(x.id)}">다른 지점 재고</button></div>`).join("")}</div>` : ""}`, cartPanel(), "shop"); },
   dsp: () => { const rk = rankMap("dsp"), models = ["전체", ...new Set(D.dsp.map((g) => g.mn))], list = D.dsp.filter((g) => S.dspM === "전체" || g.mn === S.dspM).sort((a, b) => (rk.get(a.id) || 99) - (rk.get(b.id) || 99) || a.n.localeCompare(b.n, "ko"));
-    return split(`<div class="q s">일회용을 골라 주세요</div>${chips(models, S.dspM, "dspm")}<div class="grid">${list.map((g) => card("dsp", g, { rk: rk.get(g.id), brand: g.mn, name: g.opt || g.n })).join("")}</div>`, cartPanel(), "shop"); },
+    return split(`<div class="q s">일회용을 골라 주세요</div>${chips(models, S.dspM, "dspm")}<div class="grid">${list.map((g) => card("dsp", g, { rk: rk.get(g.id), brand: g.mn, name: g.opt || g.n, ev: g.ev && g.ev[2], sub: g.ev ? `${g.ev[0]}개 사면 ${g.ev[1]}개 더` : "" })).join("")}</div>`, cartPanel(), "shop"); },
   pod: () => { const mine = devInCart().map(([, v]) => norm(v.model || v.label)), auto = D.fams.find((f) => mine.some((m) => m.includes(norm(f)) || norm(f).includes(m))) || "", fam = S.podFam || auto, list = D.pod.filter((p) => p.fam === fam);
     return split(`<div class="q s">팟, 코일도 같이 골라 주세요</div>
       <div class="box" style="margin-top:14px"><h4>꼭 필요한 소모품이에요</h4><p>액상 1병에 1개, 또는 7~8일에 한 번 바꿔 주세요.<br>오래 쓰면 액상이 새고, 새는 액상은 기기 고장의 원인이 돼요.</p></div>
