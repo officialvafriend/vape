@@ -238,7 +238,7 @@ main.in .vsc{animation:pop2 .55s cubic-bezier(.2,.8,.2,1) both}main.in .vsc.b{an
 </head>
 <body>
 <div id="app">
-  <header><span class="logo">VF</span><div class="steps" id="steps"></div><button class="home" id="homeBtn">처음으로</button></header>
+  <header><span class="logo">VF</span><div class="steps" id="steps"></div><button class="home" id="sndBtn">소리 켬</button><button class="home" id="homeBtn">처음으로</button></header>
   <main id="main"></main>
   <footer id="foot"></footer>
   <div class="dim" id="dim"></div>
@@ -277,6 +277,13 @@ $('eng').onload = () => { const w = $('eng').contentWindow; E = (code) => w.eval
 function sync() { try { const o = JSON.parse(E(`JSON.stringify({ i: [...cart].map(([k, v]) => [k, { label: v.label || v.n || "", qty: v.qty || 0, unit: v.unit || 0, img: v.img || "", k: v.k || "", model: v.model || "" }]), t: (() => { const t = totalOf(); return { total: t.total, how: t.how || "", c: t.c, unit: [...cart.values()].reduce((a, x) => a + (x.k === "bulk" ? x.items.reduce((s, [, , q]) => s + q * 15000, 0) * x.qty : x.k === "dsp15" ? x.items.reduce((s, [, , q, p]) => s + q * p, 0) * x.qty : x.unit * x.qty), 0) }; })() })`)); CI = o.i; CQ = new Map(o.i.map(([k, v]) => [k, v.qty])); CT = o.t; CN = o.i.reduce((a, b) => a + b[1].qty, 0); } catch (e) {} }
 function add(kind, id, d = 1) { try { if (CQ.get(id)) E(`addItem(${J(id)}, cart.get(${J(id)}), ${d})`); else if (kind === "liq") E(`addLiqX(ALL_LQ.find((y) => y.id === ${J(id)}))`); else E(`addGoods(GDS.find((y) => y.id === ${J(id)}))`); } catch (e) { return toast("담지 못했어요"); } sync(); draw(); }
 let tt = 0; function toast(m) { const t = $('toast'); t.textContent = m; t.style.display = "block"; clearTimeout(tt); tt = setTimeout(() => t.style.display = "none", 2000); }
+
+/* ── 소리: 딩동(기기 안에서 만드는 소리, 파일 없음)과 질문 읽어 주기(패드에 들어 있는 한국어 음성). 위 "소리 켬" 버튼으로 끔 ── */
+let SND = true, AC = null, sayT = 0, prevStep = ""; try { SND = localStorage.getItem("vf-kiosk-snd") !== "0"; } catch (e) {}
+function chime() { if (!SND) return; try { AC = AC || new (window.AudioContext || window.webkitAudioContext)(); if (AC.state === "suspended") AC.resume();
+  [[659.25, 0], [523.25, .32]].forEach(([f, at]) => { const o = AC.createOscillator(), g = AC.createGain(), t = AC.currentTime + at; o.type = "sine"; o.frequency.value = f; g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(.35, t + .02); g.gain.exponentialRampToValueAtTime(.0001, t + 1.1); o.connect(g); g.connect(AC.destination); o.start(t); o.stop(t + 1.2); }); } catch (e) {} }
+function say(text, wait) { clearTimeout(sayT); try { speechSynthesis.cancel(); } catch (e) {} if (!SND || !text || !window.speechSynthesis) return;
+  sayT = setTimeout(() => { try { const u = new SpeechSynthesisUtterance(text); u.lang = "ko-KR"; const v = speechSynthesis.getVoices().find((x) => /^ko/i.test(x.lang)); if (v) u.voice = v; speechSynthesis.speak(u); } catch (e) {} }, wait || 0); }
 
 /* ── 랭킹 순위 (B안과 같은 규칙) ── */
 function rankMap(kind) { const b = ((D.rk.branches || {})[D.branch] || {})[kind] || [], m = new Map(); let r = 0;
@@ -399,7 +406,10 @@ function draw() { if (!D) return; const i = S.path.indexOf(S.step), inPath = i >
   const m = $('main'), same = key === lastKey, sc = same ? [...m.querySelectorAll('[data-sc]')].map((e) => e.scrollTop) : [];
   const keep = document.activeElement && document.activeElement.id; m.innerHTML = V[S.step]();
   if (same) { m.classList.remove('in'); m.querySelectorAll('[data-sc]').forEach((e, j) => { e.scrollTop = sc[j] || 0; }); } /* 같은 화면에서 누를 땐 움직임 없이, 보던 자리 그대로 (11/18 "버튼 누를 때마다 요란법석") */
-  else { lastKey = key; m.classList.remove('in'); void m.offsetWidth; m.classList.add('in'); } /* 화면이 바뀔 때만 올라오는 움직임 */
+  else { lastKey = key; m.classList.remove('in'); void m.offsetWidth; m.classList.add('in');
+    const dd = (prevStep === "start" && S.step !== "start") || S.step === "check" || key === "pickr0", q = m.querySelector('.q'); /* 딩동은 시작할 때, 추천이 나올 때, 직원 확인 때만. 나머지는 질문을 읽어 주기만 */
+    if (dd) chime(); say(q ? q.innerText.replace(/\s+/g, " ") : "", dd ? 750 : 150); }
+  prevStep = S.step; $('sndBtn').textContent = SND ? "소리 켬" : "소리 끔"; /* 화면이 바뀔 때만 올라오는 움직임 */
   document.body.classList.toggle('ft', S.step !== "start");
   const last = i === S.path.length - 1, Qn = S.step === "quiz" ? S.qz.list[S.qz.i] : null;
   const nx = S.step === "quiz" ? (Qn && Qn.multi ? "다음 ›" : "") : S.step === "pick" ? (S.res ? (S.way === "have" ? "액상 더 고르기 ›" : "기기 고르기 ›") : "") : S.step === "check" ? "포스로 보내기 화면 ›" : !inPath ? "" : last ? "직원 확인 ›" : S.step === "dev" && !devInCart().length ? "기기 없이 다음 ›" : S.step === "pod" && !CI.some(([, v]) => v.k === "goods") ? "팟 없이 다음 ›" : `${LABEL[S.path[i + 1]]} ${S.path[i + 1] === "sum" ? "하기" : "고르기"} ›`;
@@ -470,6 +480,7 @@ document.addEventListener('click', (e) => { const t = e.target, c = (s) => t.clo
   if (b = c('[data-dev]')) return openDev(b.dataset.dev);
   if (t.id === "regGo") return regSend();
   if (t.id === "homeBtn") return reset();
+  if (t.id === "sndBtn") { SND = !SND; try { localStorage.setItem("vf-kiosk-snd", SND ? "1" : "0"); speechSynthesis.cancel(); } catch (er) {} if (SND) chime(); return draw(); }
   if (t.id === "back") { try { E("document.body.classList.remove('open')"); } catch (er) {} document.body.classList.remove('stf'); sync(); return draw(); }
   if (t.id === "prev") { const i = S.path.indexOf(S.step); if (i > 0) return go(S.path[i - 1]); if (i === 0) return go(S.res ? "pick" : "way"); if (S.step === "way") return go(S.who === "mem" && S.mem && S.mem.s === "found" ? "hello" : "start"); if (S.step === "mydev") return go("way"); if (S.step === "hello") return go("mname"); if (S.step === "mname") return go("phone");
     if (S.step === "quiz") { if (S.qz.i > 0) { S.qz.i--; return draw(); } return go(S.way === "have" ? "mydev" : "way"); } if (S.step === "pick") { qzLoad(); S.qz.i = Math.max(0, S.qz.list.length - 1); return go("quiz"); } if (S.step === "check") return go("sum"); if (S.step === "roulette") return go("check"); return go("start"); }
