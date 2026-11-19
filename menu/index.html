@@ -2328,7 +2328,7 @@ const scanGo = () => SCAN_LIVE ? liveStart() : scanStart();
    찍을 땐 카메라의 큰 사진(takePhoto)을 먼저 쓰고, 안 되는 기기에선 화면 장면 4장 중 제일 또렷한 것을 씀 */
 let lv = null;
 const liveOv = document.createElement("div"); liveOv.id = "liveOv"; document.body.appendChild(liveOv);
-liveOv.innerHTML = `<div class="lv"><video playsinline muted autoplay></video><img class="still" alt="" hidden><div class="lyr"></div><div class="st"></div></div><div class="bar"><div class="lvsum"></div><div class="lvbtn"><button class="b2" data-lv="close">닫기</button><button class="rd" data-lv="shot">찍기</button><button class="rd" data-lv="ok" hidden>확인하고 담기</button></div></div>`;
+liveOv.innerHTML = `<div class="lv"><video playsinline muted autoplay></video><img class="still" alt="" hidden><div class="lyr"></div><div class="st"></div><div class="lvver" style="position:absolute;left:8px;bottom:6px;font-size:12px;color:rgba(255,255,255,.75);z-index:2"></div></div><div class="bar"><div class="lvsum"></div><div class="lvbtn"><button class="b2" data-lv="close">닫기</button><button class="rd" data-lv="shot">찍기</button><button class="rd" data-lv="ok" hidden>확인하고 담기</button></div></div>`;
 const lvV = liveOv.querySelector("video"), lvI = liveOv.querySelector(".still");
 const liveSet = (m) => { liveOv.querySelector(".st").textContent = m; };
 function liveBoxes(items, iw, ih) { const L = liveOv.querySelector(".lyr"); if (!items) { L.innerHTML = ""; return; }
@@ -2342,9 +2342,10 @@ function liveDraw() { if (!lv) return; const r = lv.res, S2 = liveOv.querySelect
   const n = r.items.reduce((a, x) => a + x.qty, 0), unk = r.items.filter((x) => !scanFind(x.id)).reduce((a, x) => a + x.qty, 0);
   S2.textContent = r.items.map((x) => { const f = scanFind(x.id); return (f ? (f.t === "liq" ? short(f.x.n) : f.x.n) : "모르는 상품") + " " + x.qty; }).join(", ");
   ok.hidden = false; ok.textContent = `${n}개 확인하고 담기` + (unk ? ` (모르는 ${unk}개)` : ""); liveBoxes(r.items, r.w, r.h); }
-async function liveStart() { let stream; try { stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" }, width: { ideal: 2560 }, height: { ideal: 1440 } }, audio: false }); } catch (e) { return scanStart(); } /* 카메라를 못 켜면 예전 사진 방식 */
-  try { const tr = stream.getVideoTracks()[0], cap = tr.getCapabilities ? tr.getCapabilities() : {}; if ((cap.focusMode || []).includes("continuous")) tr.applyConstraints({ advanced: [{ focusMode: "continuous" }] }).catch(() => {}); } catch (e) {} /* 되는 기기에선 계속 초점 맞추기 */
-  lv = { stream, busy: false, calls: 0, res: null, still: "" }; lvV.srcObject = stream; liveOv.classList.add("on"); liveSet("라벨이 앞을 보게 나란히 놓고 [찍기]를 눌러 주세요"); liveDraw(); }
+async function liveStart() { let stream; try { stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" }, width: { ideal: 1920 }, height: { ideal: 1080 } }, audio: false }); } catch (e) { return scanStart(); } /* 카메라를 못 켜면 예전 사진 방식 */
+  /* 11/19 14:04 본점 패드 사진: 카메라 표시등은 켜졌는데 화면이 검음. 화면이 잘 나오던 13:34 판과 다른 점(2560 요청, 초점 설정 바꾸기)을 모두 원래대로 돌리고, 재생을 직접 시킴 */
+  lv = { stream, busy: false, calls: 0, res: null, still: "" }; lvV.srcObject = stream; liveOv.classList.add("on"); try { const pl = lvV.play(); if (pl && pl.catch) pl.catch(() => {}); } catch (e) {}
+  liveOv.querySelector(".lvver").textContent = "스캔 1119e " + ((stream.getVideoTracks()[0] || {}).label || "").slice(0, 24); setTimeout(() => { if (lv) liveOv.querySelector(".lvver").textContent += " " + lvV.videoWidth + "x" + lvV.videoHeight + (lvV.paused ? " 멈춤" : " 재생"); }, 1500); /* 어느 판인지, 어떤 카메라가 어떤 크기로 켜졌는지 화면 구석에 (원인 볼 때 씀) */ liveSet("라벨이 앞을 보게 나란히 놓고 [찍기]를 눌러 주세요"); liveDraw(); }
 function liveStop() { if (!lv) return; try { lv.stream.getTracks().forEach((t) => t.stop()); } catch (e) {} lvV.srcObject = null; lv = null; lvI.hidden = true; lvI.removeAttribute("src"); liveBoxes(null); liveOv.classList.remove("on"); }
 /* 한 장 잡기: 큰 사진이 되면 그걸로, 안 되면 화면 장면 4장 중 제일 또렷한 것. 긴 쪽 1600 으로 줄여 돌려줌 */
 async function liveGrab() { const out = document.createElement("canvas"), fit = (w, h) => { const k = Math.min(1, 1600 / Math.max(w, h)); out.width = Math.round(w * k); out.height = Math.round(h * k); };
