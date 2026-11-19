@@ -2338,7 +2338,8 @@ function liveSum() { const r = lv && lv.res, S2 = liveOv.querySelector(".lvsum")
   if (!r || !r.items.length) { S2.textContent = ""; ok.disabled = true; ok.textContent = "확인하고 담기"; return; }
   const n = r.items.reduce((a, x) => a + x.qty, 0), unk = r.items.filter((x) => !scanFind(x.id)).reduce((a, x) => a + x.qty, 0);
   S2.textContent = r.items.map((x) => { const f = scanFind(x.id); return (f ? (f.t === "liq" ? short(f.x.n) : f.x.n) : "모르는 상품") + " " + x.qty; }).join(", "); ok.disabled = false; ok.textContent = `${n}개 확인하고 담기` + (unk ? ` (모르는 ${unk}개)` : ""); }
-async function liveStart() { let stream; try { stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" }, width: { ideal: 1920 }, height: { ideal: 1080 } }, audio: false }); } catch (e) { return scanStart(); } /* 카메라를 못 켜면 예전 사진 방식 */
+async function liveStart() { let stream; try { stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" }, width: { ideal: 2560 }, height: { ideal: 1440 } }, audio: false }); } catch (e) { return scanStart(); } /* 카메라를 못 켜면 예전 사진 방식 */
+  try { const tr = stream.getVideoTracks()[0], cap = tr.getCapabilities ? tr.getCapabilities() : {}; if ((cap.focusMode || []).includes("continuous")) tr.applyConstraints({ advanced: [{ focusMode: "continuous" }] }).catch(() => {}); } catch (e) {} /* 되는 기기에선 계속 초점 맞추기 */
   lv = { stream, prev: null, steadyAt: 0, busy: false, calls: 0, res: null, sig: null, lastSend: 0 }; lvV.srcObject = stream; liveBoxes(null); liveSum(); liveSet("제품을 비추고 잠깐 멈춰 주세요"); liveOv.classList.add("on"); lv.t = setInterval(liveTick, 400); }
 function liveStop() { if (!lv) return; clearInterval(lv.t); try { lv.stream.getTracks().forEach((t) => t.stop()); } catch (e) {} lvV.srcObject = null; lv = null; liveOv.classList.remove("on"); }
 function liveTick() { if (!lv || lv.busy || lvV.readyState < 2 || !lvV.videoWidth) return; const s = liveSig(), d = lv.prev ? sigDiff(s, lv.prev) : 99; lv.prev = s;
@@ -2351,7 +2352,13 @@ function liveTick() { if (!lv || lv.busy || lvV.readyState < 2 || !lvV.videoWidt
   if (Date.now() - lv.lastSend < 3000) return;
   liveSend(s); }
 async function liveSend(s) { const me = lv; me.busy = true; me.calls++; me.lastSend = Date.now(); me.sig = s; liveSet("읽는 중이에요. 그대로 두세요");
-  const k = Math.min(1, 1280 / Math.max(lvV.videoWidth, lvV.videoHeight)), c = document.createElement("canvas"); c.width = Math.round(lvV.videoWidth * k); c.height = Math.round(lvV.videoHeight * k); c.getContext("2d").drawImage(lvV, 0, 0, c.width, c.height); const img = c.toDataURL("image/jpeg", 0.8);
+  /* 11/19 "인식이 안 됨": 기록을 보니 글자가 반만 읽힘(손 떨림으로 흐린 장면). 0.12초 간격으로 4장을 잡아 제일 또렷한 한 장만 보내고, 크기도 1280 → 1600 으로 키움 */
+  const k = Math.min(1, 1600 / Math.max(lvV.videoWidth, lvV.videoHeight)), c = document.createElement("canvas"); c.width = Math.round(lvV.videoWidth * k); c.height = Math.round(lvV.videoHeight * k); const cg = c.getContext("2d");
+  const sc = document.createElement("canvas"); sc.width = 160; sc.height = Math.max(1, Math.round(160 * lvV.videoHeight / lvV.videoWidth)); const sg = sc.getContext("2d", { willReadFrequently: true });
+  const sharp = () => { sg.drawImage(lvV, 0, 0, sc.width, sc.height); const d = sg.getImageData(0, 0, sc.width, sc.height).data, w = sc.width; let s = 0; for (let i = 4; i < d.length - 4; i += 4) { if ((i / 4) % w === 0) continue; const a = d[i] + d[i + 1] + d[i + 2], b = d[i - 4] + d[i - 3] + d[i - 2]; s += (a - b) * (a - b); } return s; }; /* 옆 칸과의 밝기 차 제곱 합 = 또렷할수록 큼 */
+  let best = -1; for (let n = 0; n < 4; n++) { const v = sharp(); if (v > best) { best = v; cg.drawImage(lvV, 0, 0, c.width, c.height); } if (n < 3) await new Promise((r) => setTimeout(r, 120)); }
+  if (lv !== me) return; const img = c.toDataURL("image/jpeg", 0.82);
+  try { ev("ls", lvV.videoWidth + "x" + lvV.videoHeight, String(me.calls)); } catch (e) {} /* 카메라 화질 기록 (원인 볼 때 씀) */
   try { const cands = [...ALL_LQ.map((x) => ({ id: x.id, n: x.n })), ...GDS.map((g) => ({ id: g.id, n: g.n }))];
     const r = await fetch(SCAN_URL, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ type: "scan", branch: BRANCH, img: img.split(",")[1], cands }) }), j = await r.json();
     if (lv !== me) return;
