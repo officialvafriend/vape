@@ -2325,7 +2325,7 @@ const SCAN_LIVE = BRANCH === "본점" && !!(navigator.mediaDevices && navigator.
 const scanGo = () => SCAN_LIVE ? liveStart() : scanStart();
 let lv = null;
 const liveOv = document.createElement("div"); liveOv.id = "liveOv"; document.body.appendChild(liveOv);
-liveOv.innerHTML = `<div class="lv"><video playsinline muted autoplay></video><div class="lyr"></div><div class="st"></div></div><div class="bar"><div class="lvsum"></div><div class="lvbtn"><button class="b2" data-lv="close">닫기</button><button class="b2" data-lv="re">다시 읽기</button><button class="rd" data-lv="ok" disabled>확인하고 담기</button></div></div>`;
+liveOv.innerHTML = `<div class="lv"><video playsinline muted autoplay></video><div class="lyr"></div><div class="st"></div></div><div class="bar"><div class="lvsum"></div><div class="lvbtn"><button class="b2" data-lv="close">닫기</button><button class="b2" data-lv="re">지금 읽기</button><button class="rd" data-lv="ok" disabled>확인하고 담기</button></div></div>`;
 const lvV = liveOv.querySelector("video"), lvC = document.createElement("canvas"); lvC.width = 32; lvC.height = 18;
 const liveSet = (m) => { liveOv.querySelector(".st").textContent = m; };
 function liveSig() { const g = lvC.getContext("2d", { willReadFrequently: true }); g.drawImage(lvV, 0, 0, 32, 18); const d = g.getImageData(0, 0, 32, 18).data, o = new Uint8Array(576); for (let i = 0; i < 576; i++) o[i] = (d[i * 4] + d[i * 4 + 1] * 2 + d[i * 4 + 2]) >> 2; return o; }
@@ -2342,11 +2342,12 @@ async function liveStart() { let stream; try { stream = await navigator.mediaDev
   lv = { stream, prev: null, steadyAt: 0, busy: false, calls: 0, res: null, sig: null, lastSend: 0 }; lvV.srcObject = stream; liveBoxes(null); liveSum(); liveSet("제품을 비추고 잠깐 멈춰 주세요"); liveOv.classList.add("on"); lv.t = setInterval(liveTick, 400); }
 function liveStop() { if (!lv) return; clearInterval(lv.t); try { lv.stream.getTracks().forEach((t) => t.stop()); } catch (e) {} lvV.srcObject = null; lv = null; liveOv.classList.remove("on"); }
 function liveTick() { if (!lv || lv.busy || lvV.readyState < 2 || !lvV.videoWidth) return; const s = liveSig(), d = lv.prev ? sigDiff(s, lv.prev) : 99; lv.prev = s;
-  if (d > 6) { lv.steadyAt = 0; if (lv.res && lv.sig && sigDiff(s, lv.sig) > 12) { lv.res = null; liveBoxes(null); liveSum(); liveSet("움직였어요. 멈추면 다시 읽어요"); } return; } /* 움직이는 중 */
+  /* 11/19 액상덕후 "손 떠니까 인식이 잘 안 되는데": 손에 들면 조금씩 흔들려서 '멈춤'이 안 잡혔음. 흔들림 허용을 넓히고(6→14), 멈춤 시간을 줄이고(0.8→0.5초), 읽은 뒤 작은 흔들림으론 테두리를 안 지움 */
+  if (d > 14) { lv.steadyAt = 0; if (lv.res && lv.sig && sigDiff(s, lv.sig) > 26) { lv.res = null; liveBoxes(null); liveSum(); liveSet("움직였어요. 멈추면 다시 읽어요"); } return; } /* 크게 움직이는 중 */
   if (!lv.steadyAt) lv.steadyAt = Date.now();
-  if (Date.now() - lv.steadyAt < 800) return;
-  if (lv.sig && sigDiff(s, lv.sig) < 8) return; /* 같은 장면은 다시 안 읽음 */
-  if (lv.calls >= 15) return liveSet("많이 읽었어요. [다시 읽기]를 눌러 주세요");
+  if (Date.now() - lv.steadyAt < 500) return;
+  if (lv.sig && sigDiff(s, lv.sig) < 16) return; /* 같은 장면은 다시 안 읽음 (흔들림 정도는 같은 장면으로 봄) */
+  if (lv.calls >= 15) return liveSet("많이 읽었어요. [지금 읽기]를 눌러 주세요");
   if (Date.now() - lv.lastSend < 3000) return;
   liveSend(s); }
 async function liveSend(s) { const me = lv; me.busy = true; me.calls++; me.lastSend = Date.now(); me.sig = s; liveSet("읽는 중이에요. 그대로 두세요");
@@ -2361,7 +2362,7 @@ async function liveSend(s) { const me = lv; me.busy = true; me.calls++; me.lastS
   finally { me.busy = false; } }
 liveOv.addEventListener("click", (e) => { const t = e.target.closest("[data-lv]"); if (!t) return; const a = t.dataset.lv;
   if (a === "close") return liveStop();
-  if (a === "re" && lv) { lv.sig = null; lv.calls = Math.min(lv.calls, 10); lv.lastSend = 0; lv.res = null; liveBoxes(null); liveSum(); return liveSet("다시 읽을게요. 그대로 두세요"); }
+  if (a === "re" && lv) { if (lv.busy) return; if (lvV.readyState < 2 || !lvV.videoWidth) return liveSet("카메라가 아직 준비 중이에요"); lv.calls = Math.min(lv.calls, 10); lv.res = null; liveBoxes(null); liveSum(); return liveSend(liveSig()); } /* 지금 읽기: 흔들려도, 같은 장면이어도 누르면 바로 한 장 읽음 */
   if (a === "ok" && lv && lv.res) { const r = lv.res; liveStop(); scanS = { id: r.id, img: r.img, rows: r.items.map((x) => ({ label: x.label, id: scanFind(x.id) ? x.id : "", qty: x.qty, pick: false, q: "" })) }; scanOv.classList.add("on"); scanDraw(); } }); /* 확인 화면을 켜고 그림 (사진 방식은 기다리는 화면에서 이미 켜져 있었음) */
 
 /* 11/17 액상덕후 "패드도 자동 새로고침": 5분마다 이 화면 파일이 바뀌었는지 보고, 장바구니가 비고 1분 넘게 아무도 안 만질 때만 새로고침 */
