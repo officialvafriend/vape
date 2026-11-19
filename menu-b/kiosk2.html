@@ -335,7 +335,7 @@ const V = {
     `<div class="ans">${WAYS.map(([k, t, sub]) => `<button data-way="${k}"><span><b>${t}</b><span>${sub}</span></span></button>`).join("")}</div>`),
   /* 쓰는 기기를 알면 맞는 팟, 코일을 바로 골라 드릴 수 있음. 기기 이름은 B안의 팟 기기 목록(podFams) 그대로 */
   /* 사진은 기기 사진이 있으면 기기, 없으면 그 기기에 끼우는 팟 사진(작게 "팟 사진"이라고 적음), 둘 다 없으면 이름만. 옆으로 넘겨 봄 */
-  mydev: () => `<div class="dvh an"><div><div class="q s">어떤 기기를 쓰세요?</div><div class="qs" style="margin-top:4px">옆으로 넘겨서 찾아 주세요. 맞는 팟, 코일을 같이 챙겨 드려요</div></div><button class="dk" data-mydev="">잘 모르겠어요</button></div>
+  mydev: () => `<div class="dvh an"><div><div class="q s">어떤 기기를 쓰세요?</div><div class="qs" style="margin-top:4px">옆으로 넘겨서 찾아 주세요. 맞는 팟, 코일을 바로 보여 드려요</div></div><button class="dk" data-mydev="">잘 모르겠어요</button></div>
     <div class="dvr an d1" id="dvr">${D.famImg.map(([f, d, p]) => `<button data-mydev="${esc(f)}"><span class="im">${d || p ? `<img src="${d || p}" alt="" loading="lazy">` : "사진 준비 중"}</span><b>${esc(f)}</b><small>${!d && p ? "팟 사진" : ""}</small></button>`).join("")}</div>`,
   dev: () => { const rk = rankMap("dev"), rec = (d) => S.recDev && d.n === S.recDev ? 0 : 1, list = [...D.dev].sort((a, b) => rec(a) - rec(b) || (rk.get(a.n) || 99) - (rk.get(b.n) || 99)), mine = devInCart();
     return split(`<div class="q s">기기를 골라 주세요</div><div class="qs" style="margin-top:4px">${S.recDev ? "답변에 맞는 기기를 맨 앞에 뒀어요. " : "많이 나간 순서예요. "}누르면 색상을 고를 수 있어요</div>
@@ -350,7 +350,7 @@ const V = {
   dsp: () => { const rk = rankMap("dsp"), models = ["전체", ...new Set(D.dsp.map((g) => g.mn))], list = D.dsp.filter((g) => S.dspM === "전체" || g.mn === S.dspM).sort((a, b) => (rk.get(a.id) || 99) - (rk.get(b.id) || 99) || a.n.localeCompare(b.n, "ko"));
     return split(`<div class="q s">일회용을 골라 주세요</div>${chips(models, S.dspM, "dspm")}<div class="grid">${list.map((g) => card("dsp", g, { rk: rk.get(g.id), brand: g.mn, name: g.opt || g.n })).join("")}</div>`, cartPanel(), "shop"); },
   pod: () => { const mine = devInCart().map(([, v]) => norm(v.model || v.label)), auto = D.fams.find((f) => mine.some((m) => m.includes(norm(f)) || norm(f).includes(m))) || "", fam = S.podFam || auto, list = D.pod.filter((p) => p.fam === fam);
-    return split(`<div class="q s">팟, 코일도 챙겨 가세요</div>
+    return split(`<div class="q s">팟, 코일도 같이 골라 주세요</div>
       <div class="box" style="margin-top:14px"><h4>꼭 필요한 소모품이에요</h4><p>액상 1병에 1개, 또는 7~8일에 한 번 바꿔 주세요.<br>오래 쓰면 액상이 새고, 새는 액상은 기기 고장의 원인이 돼요.</p></div>
       ${fam && !S.famOpen ? "" : chips(D.fams, fam, "fam")}
       ${fam ? `<div class="box"><h4>${esc(fam)}에 맞는 것</h4>${list.map((p) => `<div class="ln"><span class="im">${p.img ? `<img src="${p.img}" alt="">` : ""}</span><span class="tx"><b>${esc(p.n)}</b><span>${won(p.price)}</span></span>${stepper("pod", p.id)}</div>`).join("") || '<div class="empty">맞는 팟이 지금 없어요, 직원에게 말씀해 주세요</div>'}</div>${S.famOpen ? "" : `<button class="txtb" data-famopen="1">다른 기기 팟 보기</button>`}` : '<div class="empty">쓰시는 기기 이름을 눌러 주세요<br>이름을 모르시면 기기를 직원에게 보여 주세요, 맞는 팟을 찾아 드려요</div>'}`, cartPanel(), "shop"); },
