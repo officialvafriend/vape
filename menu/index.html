@@ -514,6 +514,8 @@ body[data-theme=dark] .srcart{background:#f1f1f3;color:#15120f}body[data-theme=d
 .mem .t{font-size:16px;font-weight:800;margin-bottom:10px;display:flex;justify-content:space-between}.mem .t button{font-size:13px;color:var(--grey);text-decoration:underline}
 .mem .pk2{display:block;width:100%;text-align:left;background:var(--card);border-radius:14px;padding:14px 16px;margin-bottom:8px}.mem .pk2 b{display:block;font-size:16px}.mem .pk2 span{font-size:13px;color:var(--grey)}
 .mem input[type=text],.mem input[type=tel]{width:100%;height:52px;border:1px solid var(--line);border-radius:12px;padding:0 14px;font-size:17px;margin-bottom:8px;background:var(--card);color:var(--ink)}
+/* 11/19 "아예 사진으로 담기 버튼이 없는데": 가로 화면에선 아래 띠가 안 보여 버튼도 같이 사라졌음(처음 만들 때부터). 가로에선 담은 상품 칸 위에 따로 둠 */
+.camL{display:none}body.land .camL{display:block;position:absolute;top:26px;right:118px;height:44px;padding:0 16px;border-radius:999px;background:var(--ink);color:var(--bg);font-size:16px;font-weight:800;white-space:nowrap}
 .shclr{position:absolute;top:26px;right:24px;height:44px;padding:0 18px;border-radius:999px;background:var(--bg);color:var(--ink);font-size:16px;font-weight:700}.shclr::after{content:"";position:absolute;inset:-6px}.shclr.arm{background:var(--red);color:#fff}.shclr[hidden]{display:none}
 .mem label{display:flex;gap:8px;align-items:center;font-size:13.5px;color:var(--grey)}
 .mem .mq{font-size:16px;font-weight:700;margin:4px 0 6px}
@@ -683,7 +685,7 @@ body[data-theme=dark] .scan svg{background:#fff;border-radius:8px}
   </div>
 </div>
 <div class="dim" onclick="document.body.classList.remove('open')"></div>
-<div class="sheet"><div class="grab"></div><div class="h" style="margin-top:0" id="shH">담은 상품</div><button id="shClear" class="shclr" hidden>비우기</button><div class="lines" id="lines"></div>
+<div class="sheet"><div class="grab"></div><div class="h" style="margin-top:0" id="shH">담은 상품</div><button id="shClear" class="shclr" hidden>비우기</button><button id="camBtnL" class="camL" type="button">📷 사진으로 담기</button><div class="lines" id="lines"></div>
   <div class="tot" id="tot"><span id="how">합계</span><b class="price" id="sum2">0원</b></div>
   <div class="shbtn" id="shBtns"></div></div>
 <!-- 포스터 누르면 올라오는 이벤트 구매 화면 (지금 판 #evp와 같은 역할) -->
@@ -2273,6 +2275,7 @@ const scanClose = () => { scanOv.classList.remove("on"); scanS = null; };
 function scanStart() { $('camIn').value = ""; $('camIn').click(); }
 $('camBtn').addEventListener("pointerdown", (e) => e.stopPropagation());
 $('camBtn').addEventListener("click", (e) => { e.stopPropagation(); scanGo(); });
+$('camBtnL').addEventListener("click", (e) => { e.stopPropagation(); scanGo(); }); /* 가로 화면용 */
 $('camIn').addEventListener("click", (e) => e.stopPropagation());
 async function scanShrink(file) { /* 긴 쪽 1280 으로 줄여 JPEG 로 (보내는 시간과 비용 줄이기) */
   let bm; try { bm = await createImageBitmap(file, { imageOrientation: "from-image" }); } catch (e) { bm = await createImageBitmap(file); }
