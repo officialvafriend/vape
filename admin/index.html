@@ -157,7 +157,15 @@
 .ops td small{display:block;font-size:11px;font-weight:600}
 /* 10/19 KPI: 버튼 36px 14px, 숫자 24px, 표 14px 40px, 홈 상위/하위 두 칸 */
 .kbar{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px}
-.subnav{display:flex;flex-wrap:wrap;gap:12px;margin:0 0 16px}.subnav button{height:40px;padding:0 14px;border-radius:12px;background:var(--card);font-weight:700;font-size:15px;color:var(--ink2);border:1px solid var(--line2)}.subnav button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.subnav{display:flex;flex-wrap:nowrap;gap:2px;margin:0 0 16px;overflow-x:auto;scrollbar-width:none;box-shadow:inset 0 -1px 0 var(--line2)}.subnav::-webkit-scrollbar{display:none}
+.subnav button{flex:none;height:46px;padding:0 12px;border:0;border-bottom:3px solid transparent;border-radius:0;background:none;font-weight:700;font-size:16px;color:var(--sub);white-space:nowrap}.subnav button.on{background:none;color:var(--ink);border-bottom-color:var(--ink)}
+.subnav.sub2{box-shadow:none}.subnav.sub2 button{border-radius:10px;border-bottom:0;padding:0 12px}
+.kseg{display:flex;background:var(--line2);border-radius:14px;padding:4px;margin:0 0 14px;max-width:420px}.kseg button{flex:1;height:42px;border-radius:11px;font-size:15px;font-weight:700;color:var(--sub);background:none}.kseg button.on{background:var(--card);color:var(--ink);box-shadow:0 1px 3px rgba(20,30,50,.10)}
+.ksel{display:flex;gap:8px;margin:0 0 14px;max-width:420px}.ksel .bdsel{flex:1;min-width:0}
+.kst{display:block;background:var(--card);border-radius:16px;padding:14px 16px}.kst+.kst{margin-top:8px}.kst .h{display:flex;align-items:center;gap:10px}.kst .h i{flex:none;font-style:normal;min-width:30px;height:30px;padding:0 6px;border-radius:10px;display:grid;place-items:center;font-size:14px;font-weight:800;background:var(--line);color:var(--ink2)}.kst .h i.g{background:var(--green-soft);color:var(--green)}.kst .h i.r{background:var(--red-soft);color:var(--red)}
+.kst .h b{font-size:17px;font-weight:800}.kst .h small{font-size:13px;color:var(--sub);font-weight:600}.kst .h .sp{flex:1}.kst .h strong{font-size:14px;font-weight:700;color:var(--ink2);white-space:nowrap}
+.kst .d{margin-top:8px;display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;font-size:14px;color:var(--sub)}.kst .d b{color:var(--ink);font-weight:700}.kst .d .t-good,.kst .d .t-bad{font-weight:700}
+.padtop{display:flex;align-items:center;gap:12px;margin:0 0 4px}.padtop h1{flex:1;font-size:22px;font-weight:800;letter-spacing:-.6px}.padtop .padmon{margin:0}
 .hstat{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:10px;margin:0 0 18px}.hstat div{background:var(--card);border-radius:18px;padding:16px 18px}.hstat span{display:block;font-size:13px;font-weight:700;color:var(--sub);white-space:nowrap}.hstat b{display:block;font-size:24px;font-weight:800;letter-spacing:-.6px;margin-top:6px;white-space:nowrap}
 @media (max-width:700px){.hstat{grid-template-columns:1fr 1fr}.hstat b{font-size:22px}}
 .botwarn{display:block;width:100%;text-align:left;background:var(--red-soft);color:var(--red);font-weight:700;font-size:14px;border-radius:12px;padding:10px 14px;margin:0 0 14px}
@@ -177,6 +185,9 @@
 .oftbl td{padding:11px 10px 11px 0;border-top:1px solid var(--line2);font-size:15px;font-variant-numeric:tabular-nums;vertical-align:top}.oftbl td b{font-weight:700;white-space:nowrap}.oftbl td small{color:var(--sub);font-size:13px;font-weight:500;margin-left:4px}
 .oftbl td.ok{color:var(--green);font-weight:600}.oftbl td.bad{color:var(--red);font-weight:800}.oftbl td.off{color:var(--sub)}
 @media (min-width:900px){.ofgrid{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:16px;align-items:start}.ofbr{grid-column:1 / -1}}
+.ofall{display:flex;align-items:center;gap:10px;min-height:52px;font-size:17px}.ofall b{font-weight:800}.ofall.ok b{color:var(--green)}.ofall.bad b{color:var(--red)}
+.ofprob{display:grid;gap:8px;margin:0 0 6px}.ofprob>div{background:var(--red-soft);border-radius:12px;padding:10px 14px}.ofprob b{display:block;font-size:16px;font-weight:800}.ofprob span{display:block;font-size:14px;color:var(--red);font-weight:700;margin-top:2px}
+.ofmore{margin-top:6px}.ofmore>summary{display:flex;align-items:center;min-height:44px;font-size:14px;font-weight:700;color:var(--sub);cursor:pointer;list-style:none}.ofmore>summary::-webkit-details-marker{display:none}.ofmore>summary::after{content:"펼치기";margin-left:auto;font-size:13px;font-weight:600}.ofmore[open]>summary::after{content:"접기"}
 .ofsum{border-radius:12px;padding:10px 14px;font-size:14px;line-height:1.5;margin:8px 0 4px}.ofsum b{display:block;font-size:15px;font-weight:800}.ofsum.ok{background:var(--green-soft);color:var(--green)}.ofsum.bad{background:var(--red-soft);color:var(--red)}
 @media (max-width:899px){.oftbl thead{display:none}.oftbl tr{display:block;padding:10px 0;border-top:1px solid var(--line2)}.oftbl td{display:flex;gap:10px;padding:2px 0;border:0;font-size:15px}.oftbl td[data-l]::before{content:attr(data-l);flex:none;width:86px;color:var(--sub);font-size:13px;font-weight:500;padding-top:2px}.oftbl td:first-child{font-size:16px;padding-bottom:2px}.oftbl td small{margin-left:0}}
 .ops.kt td{padding-top:9px;padding-bottom:9px}
@@ -564,17 +575,14 @@ function kRow(label, g, hl = {}) {
 }
 const kHL = (list) => { const o = {}; for (const k of ["avg", "ticket", "des", "disp", "valm", "rev"]) { const xs = list.map((g) => kVals(g)[k]).filter((x) => x != null); if (xs.length > 1) o[k] = { max: Math.max(...xs), min: Math.min(...xs) }; } return o; };
 const kHead = (first) => `<thead><tr><th>${first}</th><th>영업일</th><th>매출(만원)</th><th>하루 평균(만원)</th><th>객수</th><th>객단가</th><th>지정판매율</th><th>일회용판매율</th><th>발맥프로율</th><th>리뷰율</th></tr></thead>`;
-const kModeBar = () => `<div class="kbar">${[["staff", "직원별"], ["branch", "지점별"], ["pad", "패드"]].map(([k, n]) => `<button class="chip ${kpiM === k ? "on" : ""}" data-kpim="${k}">${n}</button>`).join("")}</div>`;
+const kModeBar = () => `<div class="kseg" role="tablist">${[["staff", "직원별"], ["branch", "지점별"], ["pad", "패드"]].map(([k, n]) => `<button class="${kpiM === k ? "on" : ""}" data-kpim="${k}">${n}</button>`).join("")}</div>`;
+const kSel = (key, opts, cur) => `<select class="bdsel" data-ksel="${key}" aria-label="${key === "s" ? "기간" : key === "b" ? "지점" : "묶음"}">${opts.map(([v, n]) => `<option value="${esc(v)}" ${String(cur) === String(v) ? "selected" : ""}>${esc(n)}</option>`).join("")}</select>`;
+const kBrOpts = () => [["전체", "지점 전체"], ...BR.map((b, i) => [b, `${i + 1} ${b}`])];
 function kpiHtml() {
   if (kpiM === "pad") return kModeBar() + padKpiHtml(); /* 패드 사용량은 KPI 기록과 따로 받아 온다 */
   const K = D.kpi; if (!K) return kModeBar() + '<div class="empty">KPI 기록을 아직 못 불러왔어요</div>';
-  if (kpiM === "staff") return kpiRankHtml() + kpiHtml0(K);
-  return kpiHtml0(K);
-}
-function kpiHtml0(K) {
-  const modeBar = kModeBar();
-  if (kpiM === "staff") return modeBar + staffKpiHtml(K);
-  return modeBar + branchKpiHtml(K);
+  if (kpiM === "staff") return kModeBar() + staffKpiHtml(K);
+  return kModeBar() + branchKpiHtml(K);
 }
 /* ── KPI 패드 칸 (11/18 보혜 "직원 KPI 안에 패드 사용량도 달마다 체크", "다른 지점 직원들이 어떻게 쓰는지를 모르니까") ──
    이 PC의 올리기 도구(온라인홈_자료\패드사용_올리기.mjs)가 패드 사용 기록을 달, 지점, 판매자별로 세어 창고에 올려 둔 개수를 보여 준다.
@@ -602,9 +610,10 @@ function padKpiHtml() {
   const row = (b) => { const x = M[b], S = Object.entries(x.staff || {}).sort((p, q) => q[1] - p[1]), w = +x.w || 0, blank = +x.blank || 0;
     const who = !hasSeller ? "" : S.length ? S.slice(0, 3).map(([n, c]) => `${esc(n)} ${padN(c)}번`).join(", ") + (S.length > 3 ? ` 외 ${S.length - 3}명` : "") + (blank ? `, 안 고름 ${padN(blank)}번` : "") : w ? "판매자를 안 골라서 누가 썼는지 몰라요" : "";
     return `<button class="padrow" data-padb="${esc(b)}"><div class="h"><b>${BR.indexOf(b) + 1} ${esc(b)}</b>${b === "본점" ? "<small>시험 포함</small>" : ""}<span class="sp"></span><strong>주문 ${padN(x.d)}번</strong><i>›</i></div><div class="bar"><i style="width:${Math.max(2, Math.round(((+x.d || 0) / top) * 100))}%"></i></div><div class="s">쓴 날 ${padN(x.days)}일, 마지막 ${padDay(x.last)}</div>${who ? `<div class="w ${hasSeller && w && !S.length ? "t-bad" : ""}">${who}</div>` : ""}</button>`; };
-  return head(`${esc(String(P.made || "").slice(5).replace("-", "/"))} 기준`) + step + `<div class="sec">많이 쓴 지점부터 <small>쓴 곳 ${used.length}곳, 안 쓴 곳 ${none.length}곳</small></div><div class="padlist">${used.map(row).join("") || '<div class="list"><div class="empty">이 달에 패드를 쓴 지점이 없어요</div></div>'}</div>${none.length ? `<div class="padnone"><b>안 쓴 지점 ${none.length}곳</b>${none.map((b) => `${BR.indexOf(b) + 1} ${esc(b)}`).join(", ")}</div>` : ""}
+  return `<div class="padtop"><h1>패드 사용</h1>${step}</div><div class="caption" style="margin:0 0 12px">${esc(String(P.made || "").slice(5).replace("-", "/"))} 기준</div><div class="sec">많이 쓴 지점부터 <small>쓴 곳 ${used.length}곳, 안 쓴 곳 ${none.length}곳</small></div><div class="padlist">${used.map(row).join("") || '<div class="list"><div class="empty">이 달에 패드를 쓴 지점이 없어요</div></div>'}</div>${none.length ? `<div class="padnone"><b>안 쓴 지점 ${none.length}곳</b>${none.map((b) => `${BR.indexOf(b) + 1} ${esc(b)}`).join(", ")}</div>` : ""}
     <div class="caption" style="margin-top:12px">주문은 패드에서 QR이나 포스로 보내기 화면을 연 횟수예요.${hasSeller ? "" : " 판매자 이름은 11/13부터 남아요."}</div>`;
 }
+document.addEventListener("change", (e) => { const t = e.target.closest && e.target.closest("[data-ksel]"); if (!t) return; const k = t.dataset.ksel, v = t.value; if (k === "s") { kpiS = v; ls.set("vf-admin-kpis", v); } else if (k === "b") { kpiB = v; ls.set("vf-admin-kpib", v); } else if (k === "p") { kpiP = v === "month" ? "month" : "week"; ls.set("vf-admin-kpip", kpiP); } render(); });
 function padBranchSheet(b) {
   const P = PADK.d, x = P && P.m && P.m[PADK.m] ? P.m[PADK.m][b] : null; if (!x) return;
   const S = Object.entries(x.staff || {}).sort((p, q) => q[1] - p[1]);
@@ -617,7 +626,7 @@ function padBranchSheet(b) {
 }
 function branchKpiHtml(K) {
   const A = K.agg[kpiP] || {};
-  const bar = `<div class="kbar">${["전체", ...BR].map((b, i) => `<button class="chip ${kpiB === b ? "on" : ""}" data-kpib="${b}">${b === "전체" ? "전체" : i + " " + b}</button>`).join("")}<span style="flex:1"></span>${[["week", "주별"], ["month", "월별"]].map(([k, n]) => `<button class="chip ${kpiP === k ? "on" : ""}" data-kpip="${k}">${n}</button>`).join("")}</div>`;
+  const bar = `<div class="ksel">${kSel("b", kBrOpts(), kpiB)}${kSel("p", [["week", "주별로 보기"], ["month", "월별로 보기"]], kpiP)}</div>`;
   let tiles = "", table = "";
   if (kpiB === "전체") {
     const keys = [...new Set(Object.values(A).flat().map((g) => g.k))].sort(), last = keys.at(-1), prev = keys.at(-2);
@@ -650,10 +659,14 @@ const KPI_HIDE = ["김진", "김시원", "보혜", "안보혜"];
 const kpiClean = (S) => (S ? { ...S, rows: S.rows.filter((r) => !KPI_HIDE.includes(String(r.n).trim())) } : S);
 function staffKpiHtml(K) {
   const S = kpiClean(K.staff?.[kpiS]); if (!S) return '<div class="empty">직원 KPI 기록이 없어요</div>';
-  const bar = `<div class="kbar">${Object.entries(SP).map(([k, n]) => `<button class="chip ${kpiS === k ? "on" : ""}" data-kpis="${k}">${n}</button>`).join("")}<span style="flex:1"></span>${["전체", ...BR].map((b, i) => `<button class="chip ${kpiB === b ? "on" : ""}" data-kpib="${b}">${b === "전체" ? "전체" : i + " " + b}</button>`).join("")}</div>`;
+  const bar = `<div class="ksel">${kSel("s", Object.entries(SP), kpiS)}${kSel("b", kBrOpts(), kpiB)}</div>`;
   const rows = S.rows.filter((r) => kpiB === "전체" || r.b === kpiB);
+  const ranked = S.rows.filter((x) => x.score != null), rk = (r) => (r.score != null ? ranked.indexOf(r) + 1 : 0);
+  const vsT = (v, u) => (v == null ? "" : ` <span class="${v >= 0 ? "t-good" : "t-bad"}" style="display:inline">${v >= 0 ? "+" : ""}${(v * 100).toFixed(1)}${u || "%"}</span>`);
+  const card = (r) => { const n = rk(r), cls = !n ? "" : n <= 3 ? "g" : n > ranked.length - 3 ? "r" : ""; return `<div class="kst"><div class="h"><i class="${cls}">${n || "-"}</i><b>${esc(r.n)}</b><small>${esc(r.b)}</small><span class="sp"></span><strong>${r.score != null ? "점수 " + r.score : "근무 5일 미만"}</strong></div><div class="d"><span>하루 매출${vsT(r.vs) || " <b>-</b>"}</span><span>객단가 <b>${r.ticket ? man(Math.round(r.ticket)) : "-"}</b></span><span>지정판매율 <b>${fP(r.des)}</b></span><span>리뷰율 <b>${fP(r.revRate)}</b></span><span>일회용 <b>${fP(r.disp)}</b></span><span>근무 <b>${r.days}일</b></span></div></div>`; };
+  if (!isPC()) return `<div class="pchead"><h1>직원 KPI</h1><div class="caption">${esc(S.from.slice(5).replace("-", "/"))} ~ ${esc(S.to.slice(5).replace("-", "/"))}, 순위대로예요. 근무 5일 이상만 순위를 매겨요</div></div>${bar}${rows.map(card).join("") || '<div class="list"><div class="empty">기록 없음</div></div>'}<div class="caption" style="margin-top:10px">하루 매출 옆 %는 그 직원이 일한 지점 평균과의 차이예요. 점수는 하루 매출, 지정판매율, 객단가, 리뷰율 순위를 더한 값이고 낮을수록 좋아요.</div>`;
   const tr = (r) => `<tr><td><b>${r.score != null ? S.rows.filter((x) => x.score != null).indexOf(r) + 1 + ". " : ""}${esc(r.n)}</b><small>${esc(r.b)}</small></td><td>${r.days}<small>혼자 ${r.solo}</small></td><td>${fD(r.vs).replace("<small", "<b").replace("</small>", "</b>") || "-"}</td><td>${r.ticket ? won(Math.round(r.ticket)) : "-"}${fD(r.ticketVs)}</td><td>${fP(r.des)}${fD(r.desVs, "%p")}</td><td>${fP(r.disp)}</td><td>${fP(r.revRate)}${fD(r.revVs, "%p")}</td><td>${r.score ?? "<small>근무 5일 미만</small>"}</td></tr>`;
-  return `<div class="pchead"><h1>직원 KPI</h1><div class="caption">${esc(S.from)} ~ ${esc(S.to)}, 근무 5일 이상만 순위</div></div>${bar}
+  return `${kpiRankHtml()}<div class="pchead" style="margin-top:18px"><h1>직원 KPI</h1><div class="caption">${esc(S.from)} ~ ${esc(S.to)}, 근무 5일 이상만 순위</div></div>${bar}
     <div class="opsw"><table class="ops kt"><thead><tr><th>직원</th><th>근무일</th><th>하루 매출(지점 대비)</th><th>객단가</th><th>지정판매율</th><th>일회용판매율</th><th>리뷰율</th><th>점수</th></tr></thead><tbody>${rows.map(tr).join("") || '<tr><td colspan="8">기록 없음</td></tr>'}</tbody></table></div>
     <div class="caption" style="margin-top:10px">포스에 판매자가 안 찍혀서, 그날 마감에 적힌 근무자 전원이 그날 지점 숫자를 같이 받아요(여러 명이 같이 일한 날은 개인 차이가 흐려져요). 작은 글씨 %는 그 직원이 일한 지점 평균과의 차이예요. 점수 = 하루 매출, 지정판매율, 객단가, 리뷰율을 지점 평균 대비로 각각 순위 매겨 더한 값(낮을수록 좋음). 이름이 다르게 적힌 사람은 운영봇 data\\직원이름_별칭.json 에서 합쳐요.</div>`;
 }
@@ -1207,26 +1220,32 @@ function botHtml() {
   const row = (name, bad, txt, bot) => `<div class="ofrow"><i class="ofdot ${bad ? "bad" : "ok"}"></i><div class="tx"><b>${name}</b><span class="${bad ? "t-bad" : ""}">${bad ? "확인 필요, " : ""}${esc(txt)}</span></div>${bot ? `<button class="btn gray" data-restart="${bot}">다시 켜기</button>` : ""}</div>`;
   const today = todayMD(), short = (s) => (s ? s.slice(5).replace("-", "/").replace(/^(\d\d\/\d\d) /, (x, d) => (d === today ? "" : d + " ")) : "");
   const cell = (label, cls, html, title) => `<td class="${cls}" data-l="${label}"${title ? ` title="${esc(title)}"` : ""}>${html}</td>`;
-  let nLog = 0, nVis = 0, nBank = 0, nBankOn = 0;
+  let nLog = 0, nVis = 0, nBank = 0, nBankOn = 0; const probs = [];
   const rows = BR.map((b, i) => {
     const a = ad && ad.ok && ad.br ? ad.br[b] : null, v = BOT.visits ? BOT.visits[b] : null, bv = BOT.bank?.[b], o = bv && typeof bv === "object" ? bv : { last: bv || null, st: bv ? "ok" : "none" };
     if (a && a.login) nLog++; if (v) nVis++;
     const lt = short(o.last), bt = short(o.beat);
     const [btxt, bcls] = o.st === "cut" ? [o.beat ? `신호 끊김, 마지막 ${bt}` : `알림 끊김, 마지막 ${lt}`, "bad"] : o.st === "none" ? ["연결 전", "off"] : o.st === "quiet" && !o.beat ? ["오늘 알림 아직 없음", "off"] : [o.beat ? `살아 있음 ${bt}` : `정상, 마지막 ${lt}`, "ok"];
     if (o.st !== "none") nBankOn++; if (bcls === "ok") nBank++;
+    { const pb = []; if (ad && ad.ok && !dead && a && !a.login) pb.push("포스 로그인 필요"); if (bcls === "bad") pb.push(/^알림/.test(btxt) ? "은행" + btxt : "은행알림 " + btxt); if (pb.length) probs.push([i, b, pb]); }
     return `<tr><td><b>${i + 1}호 ${esc(b)}</b></td>${cell("포스 로그인", !ad || !a ? "off" : a.login ? "ok" : "bad", !ad ? "-" : !ad.ok || dead ? "확인 안 됨" : !a ? "-" : a.login ? "로그인 됨" : "로그인 필요")}${cell("직원웹 접속", !BOT.visits ? "off" : v ? "ok" : "off", !BOT.visits ? "-" : v ? `${esc(v.first)}${v.last !== v.first ? "~" + esc(v.last) : ""} <small>${+v.n || 0}회${v.phone ? ", 폰" : ""}</small>` : "안 열림")}${cell("은행알림", bcls, esc(btxt) + (o.gap ? " <small>끊긴 적 있음</small>" : ""), (o.gap ? "오늘 끊겼던 시간 " + o.gap : "") + (o.posTr != null ? " 포스 이체 " + o.posTr + "건" : ""))}</tr>`;
   }).join("");
-  return `<div id="botcard" class="ofwrap"><div class="card ofbots"><div class="eyebrow">봇 상태 <span class="t-sub" style="font-weight:500">${agoTxt(m)} 기준</span></div>
+  /* 정상인 것은 접어 두고 확인이 필요한 것만 먼저. 접고 편 상태는 자료를 새로 받아도 그대로 둔다 */
+  const bots = [["운영봇", opsBad, dead ? "소식 없음 " + agoTxt(m) : BOT.ops.s + (BOT.ops.line ? ", " + BOT.ops.line : ""), "운영봇"], ["마스터봇", masterBad, masterTxt, "마스터봇"]].concat(ad ? [["조정봇", adBad, adTxt, ""]] : []);
+  const badB = bots.filter((x) => x[1]), okB = bots.filter((x) => !x[1]), more = (k, sum, body) => `<details class="ofmore" data-ofk="${k}" ${OFOPEN[k] ? "open" : ""}><summary>${sum}</summary>${body}</details>`;
+  const botCard = `<div class="card ofbots"><div class="eyebrow">봇 상태 <span class="t-sub" style="font-weight:500">${agoTxt(m)} 기준</span></div>
     ${dead ? '<div class="ofwarn">이 PC나 운영봇이 꺼진 것 같아요. 10분마다 자동으로 다시 켜요.</div>' : ""}
-    ${row("운영봇", opsBad, dead ? "소식 없음 " + agoTxt(m) : BOT.ops.s + (BOT.ops.line ? ", " + BOT.ops.line : ""), "운영봇")}
-    ${row("마스터봇", masterBad, masterTxt, "마스터봇")}
-    ${ad ? row("조정봇", adBad, adTxt, "") : ""}
-    ${BOT.bsQ ? `<div class="ofwarn">시트에 못 들어간 기록 ${+BOT.bsQ}건, 다시 보내는 중이에요.</div>` : ""}</div>
-  <div class="card ofbr"><div class="eyebrow">지점별 <span class="t-sub" style="font-weight:500">오늘, 지점 ${BR.length}곳</span></div>
-    ${ad && ad.ok && !dead ? (adNeed.length ? `<div class="ofsum bad"><b>포스 로그인이 필요한 곳 ${adNeed.length}곳</b>${adNeed.map(([b]) => `${BR.indexOf(b) + 1}호 ${esc(b)}`).join(", ")}</div>` : `<div class="ofsum ok"><b>포스 로그인은 ${adBr.length}곳 모두 됐어요</b></div>`) : ""}
-    <table class="oftbl"><thead><tr><th>지점</th><th>포스 로그인${ad && ad.ok && !dead ? ` <small>${nLog}/${adBr.length || BR.length}</small>` : ""}</th><th>직원웹 접속${BOT.visits ? ` <small>${nVis}/${BR.length}</small>` : ""}</th><th>은행알림${nBankOn ? ` <small>정상 ${nBank}/${nBankOn}</small>` : ""}</th></tr></thead><tbody>${rows}</tbody></table>
-    <div class="caption" style="margin-top:10px">포스 로그인은 조정봇이 그 지점 포스에 들어가 있는지예요. 직원웹 접속은 첫 접속과 마지막 접속 시각이고, 같은 기기는 30분에 한 번 세요. 은행알림은 지점 폰 알림 앱 상태예요.</div></div></div>`;
+    ${BOT.bsQ ? `<div class="ofwarn">시트에 못 들어간 기록 ${+BOT.bsQ}건, 다시 보내는 중이에요.</div>` : ""}
+    ${badB.length ? `<div class="ofall bad"><b>확인이 필요한 봇 ${badB.length}개</b></div>${badB.map((x) => row(...x)).join("")}` : `<div class="ofall ok"><i class="ofdot ok"></i><b>봇 ${bots.length}개 모두 정상이에요</b></div>`}
+    ${okB.length ? more("bot", badB.length ? `정상인 봇 ${okB.length}개 보기` : "봇마다 자세히 보기", okB.map((x) => row(...x)).join("")) : ""}</div>`;
+  const brCard = `<div class="card ofbr"><div class="eyebrow">지점 <span class="t-sub" style="font-weight:500">오늘, ${BR.length}곳</span></div>
+    ${probs.length ? `<div class="ofall bad"><b>확인이 필요한 지점 ${probs.length}곳</b></div><div class="ofprob">${probs.map(([i, b, pb]) => `<div><b>${i + 1}호 ${esc(b)}</b><span>${pb.map(esc).join(", ")}</span></div>`).join("")}</div>` : `<div class="ofall ok"><i class="ofdot ok"></i><b>지점 ${BR.length}곳 모두 정상이에요</b></div>`}
+    ${more("br", "지점마다 자세히 보기", `<table class="oftbl"><thead><tr><th>지점</th><th>포스 로그인${ad && ad.ok && !dead ? ` <small>${nLog}/${adBr.length || BR.length}</small>` : ""}</th><th>직원웹 접속${BOT.visits ? ` <small>${nVis}/${BR.length}</small>` : ""}</th><th>은행알림${nBankOn ? ` <small>정상 ${nBank}/${nBankOn}</small>` : ""}</th></tr></thead><tbody>${rows}</tbody></table>
+    <div class="caption" style="margin-top:10px">포스 로그인은 조정봇이 그 지점 포스에 들어가 있는지예요. 직원웹 접속은 첫 접속과 마지막 접속 시각이고, 같은 기기는 30분에 한 번 세요. 은행알림은 지점 폰 알림 앱 상태예요.</div>`)}</div>`;
+  return `<div id="botcard" class="ofwrap">${botCard}${brCard}</div>`;
 }
+const OFOPEN = { bot: false, br: false };
+document.addEventListener("toggle", (e) => { const d = e.target; if (d && d.classList && d.classList.contains("ofmore") && d.dataset.ofk) OFOPEN[d.dataset.ofk] = d.open; }, true);
 // 10/25 사장님: 봇 상태 자세히는 '사무실' 메뉴로, 홈에는 신호등처럼 작게(누르면 사무실)
 function officeHtml() { return `<div class="pchead"><h1>사무실</h1><div class="caption">봇 상태, 지점별 포스 로그인과 직원웹 접속, 은행알림</div></div><div class="ofgrid">${charsHtml()}${botHtml()}</div>`; }
 // 10/25 사장님 "바탕화면 위젯이 자꾸 사라져서 슬퍼": 우사기(운영봇), 쿠리만쥬(마스터봇)를 사무실에. 바탕화면 위젯과 같은 표정 묶음, 15초마다 그 안에서 바뀜
@@ -2496,8 +2515,11 @@ textarea.msin{height:48px;min-height:48px;max-height:132px;padding:12px 16px;lin
 .msg:not(.me) .bb{background:var(--pb,var(--card))}
 .msg button.nm{display:block;background:none;padding:0;text-align:left;font-size:14px;font-weight:800;color:var(--pn,var(--sub));margin:0 0 4px 6px;min-height:22px;cursor:pointer}.msg.hav button.nm{margin-left:46px}
 .msg button.msav{padding:0;cursor:pointer;box-shadow:inset 0 0 0 2px var(--pn,var(--line2))}
-.mspv{display:flex;flex-direction:column;align-items:center;gap:10px;margin:18px 0 6px;text-align:center}.mspv .msav.huge{width:132px;height:132px;font-size:68px}.mspv .msav.huge .msph{width:100%;height:100%;object-fit:cover}.mspv b{font-size:22px;font-weight:800}.mspv small{display:flex;align-items:center;gap:6px;font-size:14px;color:var(--sub)}
+.mspv{display:flex;flex-direction:column;align-items:center;gap:10px;margin:18px 0 6px;text-align:center}.mspv .msav.huge{width:132px;height:132px;font-size:68px;align-self:center}.mspv .msav.huge .msph{width:100%;height:100%;object-fit:cover}.mspv b{font-size:22px;font-weight:800}.mspv small{display:flex;align-items:center;gap:6px;font-size:14px;color:var(--sub)}
 .mscold{display:inline-block;width:14px;height:14px;border-radius:50%}
+#msview>img.msvprof{width:min(88vw,420px);height:auto;max-height:calc(100% - 72px);border-radius:24px;background:#fff}
+.mspv button.msav.huge,.msprof button.msav.big{padding:0;cursor:zoom-in}
+.mspvbig{height:40px;padding:0 14px;border-radius:12px;background:var(--bg);font-size:14px;font-weight:700;color:var(--ink2)}
 .mscolp{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:8px}.mscolp button{display:flex;align-items:center;justify-content:center;gap:8px;height:48px;border-radius:12px;background:var(--bg);font-size:14px;font-weight:700;color:var(--ink2)}.mscolp button.on{box-shadow:inset 0 0 0 2px var(--ink);color:var(--ink)}
 `; document.head.appendChild(st2); }
   const EDGE = SB.url + "/functions/v1/adm-file", FMAX = 20 * 1024 * 1024, FN = 5, SIGN = SB.url + "/storage/v1/object/sign/adm-files/";
@@ -2552,6 +2574,7 @@ textarea.msin{height:48px;min-height:48px;max-height:132px;padding:12px 16px;lin
   const devTok = () => { let t = ls.get("vf-msg-tok"); if (!/^[0-9a-f]{48}$/.test(t || "")) { t = [...crypto.getRandomValues(new Uint8Array(24))].map((x) => x.toString(16).padStart(2, "0")).join(""); ls.set("vf-msg-tok", t); } return t; };
   const mkey = async () => (await mkey0()) + "." + devTok();
   async function mkey0() {
+    if (window.ADMDEV) return "dev"; /* 승인된 기기: 열쇠 대신 "dev.기기표"로 묻는다(창고가 기기표로 사람과 범위를 안다) */
     if (window.ONKEY) return window.ONKEY; /* 온라인팀 비밀번호로 들어온 기기: 관리자 열쇠가 없고 온라인 열쇠를 쓴다 */
     if (LV.k && LV.kFor === KEY) return LV.k;
     const a = new Uint8Array(KEY), tag = new TextEncoder().encode("|vf-admin-messenger|1"), buf = new Uint8Array(a.length + tag.length);
@@ -2939,6 +2962,8 @@ ${live() ? "" : `<div class="mstabs">${tabs.map(([k, n, c, cl]) => `<button clas
   window.msgSearch = (q) => { if (!D || (!live() && !demo())) return []; if (demo() && !ROOMS.length) seed(); return found(q).map((m) => ({ id: m.id, title: m.card ? (m.card.title || "") + " / " + m.txt : m.txt, sub: `${rname(R(m.room))}, ${m.who}, ${md(m)} ${hm(m)}` })); };
   /* 폰의 뒤로 단추가 쓰는 곳: 폰에서 방 안에 들어가 있는지, 방 목록으로 돌아가기 */
   window.msgColorNow = () => colorLoad(); /* 색을 지금 다시 받기 */
+  /* 승인된 기기가 들어올 때: 이름을 승인된 그 이름으로 맞추고 메신저를 처음부터 다시 연다 */
+  window.msgSetWho = (n) => { clearTimeout(LV.timer); LV.who = String(n || ""); ls.set("vf-msg-who", LV.who); LV.k = ""; LV.kFor = null; LV.st = "idle"; ROOMS = []; MSGS = []; };
   window.msgInRoom = () => !isPC() && typeof tab !== "undefined" && tab === "msg" && !!MS.room && !!document.querySelector(".msroom");
   window.msgBack = () => { if (!MS.room) return false; clearFiles(); MS.room = ""; rr(); return true; };
   window.msgOpen = (id) => { const m = anyMsg(id); if (m) openMsg(m); };
@@ -2953,12 +2978,18 @@ ${live() ? "" : `<div class="mstabs">${tabs.map(([k, n, c, cl]) => `<button clas
   }
   function pinsSheet(rid) { const r = R(rid); if (!r) return; openSheet(`${nodock}<h3>공지 ${r.pins.length}개</h3><div class="caption">방마다 10개까지 고정할 수 있어요. 누르면 그 글로 가요.</div><div style="margin-top:12px">${r.pins.map((p) => `<div class="mspr"><button class="msdec" data-ms="jump" data-id="${p.m.id}" data-room="${r.id}"><small>${md(p.m)}</small><span><b>${esc(p.m.who)}</b> ${esc(p.m.txt)}</span></button><button class="mspx" data-ms="unpin" data-id="${p.m.id}" aria-label="이 공지 풀기">풀기</button></div>`).join("")}</div><div class="btns"><button class="btn gray" data-x>닫기</button></div>`); }
   /* 다른 사람 프로필 보기: 사진(없으면 이모지)을 크게, 이름, 말풍선 색, 1:1 대화로 가기 */
+  function viewPhoto(n) {
+    const p = live() && LV.photo[n]; if (!p) return; let v = $("#msview"); if (!v) { v = document.createElement("div"); v.id = "msview"; document.body.appendChild(v); }
+    v.innerHTML = `<div class="msvbar"><span>${esc(n)} 프로필 사진</span><button data-ms="viewx" aria-label="닫기">×</button></div><img class="msvprof" src="${p}" alt="${esc(n)} 프로필 사진">`; v.hidden = false;
+  }
+  window.msgViewOn = () => { const v = $("#msview"); return !!v && !v.hidden; };
+  window.msgViewClose = () => { const v = $("#msview"); if (!v || v.hidden) return false; v.hidden = true; v.innerHTML = ""; return true; };
   function viewProf(n) {
     if (!live() || !P().includes(n)) return; if (n === me()) return profSheet();
     const c = colOf(n), cn = (COLS.find((x) => x[0] === c) || [])[1] || "";
-    openSheet(`${nodock}<h3>프로필</h3><div class="mspv"><span class="msav huge">${avH(n)}</span><b>${esc(n)}</b><small><i class="mscold ${c}"></i>말풍선 색 ${cn}</small></div><div class="btns"><button class="btn gray" data-x style="flex:0 0 96px">닫기</button><button class="btn" data-ms="pdm" data-n="${esc(n)}">1:1 대화하기</button></div>`);
+    openSheet(`${nodock}<h3>프로필</h3><div class="mspv">${LV.photo[n] ? `<button class="msav huge" data-ms="pphoto" data-n="${esc(n)}" aria-label="${esc(n)} 프로필 사진 크게 보기">${avH(n)}</button><button class="mspvbig" data-ms="pphoto" data-n="${esc(n)}">사진 크게 보기</button>` : `<span class="msav huge">${avH(n)}</span>`}<b>${esc(n)}</b><small><i class="mscold ${c}"></i>말풍선 색 ${cn}</small></div><div class="btns"><button class="btn gray" data-x style="flex:0 0 96px">닫기</button><button class="btn" data-ms="pdm" data-n="${esc(n)}">1:1 대화하기</button></div>`);
   }
-  function profSheet() { openSheet(`${nodock}<h3>내 프로필</h3><div class="msprof"><span class="msav big">${avH(me())}</span><b>${esc(me())}</b></div><div class="msalrow"><span>이 기기 알림 <b>${pushIsOn() ? "켜짐" : "꺼짐"}</b></span><button data-ms="${pushIsOn() ? "pushoff" : "pushon"}">${pushIsOn() ? "끄기" : "알림 켜기"}</button></div><div class="msalrow"><span>프로필 사진 <b>${LV.photo[me()] ? "있음" : "없음"}</b></span>${LV.photo[me()] ? '<button class="g" data-ms="phdel">빼기</button>' : ""}<label class="msphb">사진 고르기<input type="file" id="msPhF" accept="image/*" hidden></label></div><div class="ptlab">내 말풍선 색 <small style="font-weight:500;color:var(--sub)">다른 사람 화면에서 내 글이 이 색으로 보여요</small></div><div class="mscolp">${COLS.map(([c, n]) => `<button class="${colOf(me()) === c ? "on" : ""}" data-ms="col" data-c="${c}" aria-label="말풍선 색 ${n}"><i class="mscold ${c}"></i>${n}</button>`).join("")}</div><div class="ptlab">사진이 없을 때 보일 이모지</div><div class="msemo">${EMO.map((e) => `<button class="${em(me()) === e ? "on" : ""}" data-ms="emo" data-e="${e}" aria-label="이모지 ${e}">${e}</button>`).join("")}</div><div class="msact" style="margin-top:14px">${LV.pinset ? '<button data-ms="pinchg">내 비밀번호 바꾸기</button>' : '<button data-ms="lockme">내 프로필 잠그기 (비밀번호 정하기)</button>'}${me() === "한섭이사" || me() === "보혜" ? '<button data-ms="resetlist">다른 사람 잠금 풀어 주기</button>' + (window.ONKEY ? "" : '<button data-ms="onpw">온라인팀 비밀번호 정하기</button>') : ""}</div><div class="btns"><button class="btn gray" data-ms="mechg" style="flex:0 0 130px">다른 이름으로</button><button class="btn" data-x>닫기</button></div>`); }
+  function profSheet() { openSheet(`${nodock}<h3>내 프로필</h3><div class="msprof">${LV.photo[me()] ? `<button class="msav big" data-ms="pphoto" data-n="${esc(me())}" aria-label="내 프로필 사진 크게 보기">${avH(me())}</button>` : `<span class="msav big">${avH(me())}</span>`}<b>${esc(me())}</b>${LV.photo[me()] ? `<button class="mspvbig" data-ms="pphoto" data-n="${esc(me())}" style="margin-left:auto">사진 크게 보기</button>` : ""}</div><div class="msalrow"><span>이 기기 알림 <b>${pushIsOn() ? "켜짐" : "꺼짐"}</b></span><button data-ms="${pushIsOn() ? "pushoff" : "pushon"}">${pushIsOn() ? "끄기" : "알림 켜기"}</button></div><div class="msalrow"><span>프로필 사진 <b>${LV.photo[me()] ? "있음" : "없음"}</b></span>${LV.photo[me()] ? '<button class="g" data-ms="phdel">빼기</button>' : ""}<label class="msphb">사진 고르기<input type="file" id="msPhF" accept="image/*" hidden></label></div><div class="ptlab">내 말풍선 색 <small style="font-weight:500;color:var(--sub)">다른 사람 화면에서 내 글이 이 색으로 보여요</small></div><div class="mscolp">${COLS.map(([c, n]) => `<button class="${colOf(me()) === c ? "on" : ""}" data-ms="col" data-c="${c}" aria-label="말풍선 색 ${n}"><i class="mscold ${c}"></i>${n}</button>`).join("")}</div><div class="ptlab">사진이 없을 때 보일 이모지</div><div class="msemo">${EMO.map((e) => `<button class="${em(me()) === e ? "on" : ""}" data-ms="emo" data-e="${e}" aria-label="이모지 ${e}">${e}</button>`).join("")}</div>${window.ADMDEV ? `<div class="msalrow"><span>이 기기 <b>${esc(window.ADMDEV.label || "")}</b></span><span style="flex:none;font-size:13px;color:var(--sub)">승인된 기기</span></div>` : ""}<div class="msact" style="margin-top:14px">${(me() === "한섭이사" || me() === "보혜") && !window.ONKEY ? `<button data-ms="devlist">기기 승인, 기기 목록${window.hmDevWait && window.hmDevWait() ? ` (요청 ${window.hmDevWait()}건)` : ""}</button>` : ""}${LV.pinset ? '<button data-ms="pinchg">내 비밀번호 바꾸기</button>' : '<button data-ms="lockme">내 프로필 잠그기 (비밀번호 정하기)</button>'}${me() === "한섭이사" || me() === "보혜" ? '<button data-ms="resetlist">다른 사람 잠금 풀어 주기</button>' + (window.ONKEY ? "" : '<button data-ms="onpw">온라인팀 비밀번호 정하기</button>') : ""}</div><div class="btns">${window.ADMDEV ? "" : '<button class="btn gray" data-ms="mechg" style="flex:0 0 130px">다른 이름으로</button>'}<button class="btn" data-x>닫기</button></div>`); }
   /* 업무 탭의 [방에 올리기]가 부른다: 진짜 방에 업무 카드 글을 올린다. 방 이름이 사람 이름이면 그 사람과의 방(없으면 만듦) */
   window.msgShare = async ({ room, title, sub, txt }) => {
     if (!live()) return false;
@@ -3020,9 +3051,10 @@ ${live() ? "" : `<div class="mstabs">${tabs.map(([k, n, c, cl]) => `<button clas
     const img = new Image(), url = URL.createObjectURL(e.target.files[0]);
     img.onerror = () => { URL.revokeObjectURL(url); toast("이 사진은 못 읽었어요. 다른 사진으로 해 주세요"); };
     img.onload = async () => {
-      const S2 = 192, c = document.createElement("canvas"), z = Math.min(img.width, img.height), x = (img.width - z) / 2, y = img.height > img.width ? (img.height - z) * 0.3 : (img.height - z) / 2;
-      c.width = c.height = S2; const g = c.getContext("2d"); g.fillStyle = "#fff"; g.fillRect(0, 0, S2, S2); g.drawImage(img, x, y, z, z, 0, 0, S2, S2); URL.revokeObjectURL(url);
-      const d = c.toDataURL("image/jpeg", 0.85);
+      const c = document.createElement("canvas"), z = Math.min(img.width, img.height), x = (img.width - z) / 2, y = img.height > img.width ? (img.height - z) * 0.3 : (img.height - z) / 2;
+      let d = "";
+      for (const [S2, q] of [[384, 0.85], [384, 0.72], [320, 0.78], [256, 0.82], [192, 0.85]]) { c.width = c.height = S2; const g = c.getContext("2d"); g.fillStyle = "#fff"; g.fillRect(0, 0, S2, S2); g.drawImage(img, x, y, z, z, 0, 0, S2, S2); d = c.toDataURL("image/jpeg", q); if (d.length < 78000) break; }
+      URL.revokeObjectURL(url);
       try { const o = await call("adm_photo_set", { p_img: d }); if (!o.ok) throw 0; LV.photo = { ...LV.photo, [LV.who]: d }; toast("프로필 사진을 넣었어요"); if ($("#sheet .msprof")) profSheet(); rr(); } catch (e20) { toast("사진을 못 넣었어요. 다시 해 주세요"); }
     };
     img.src = url;
@@ -3212,7 +3244,9 @@ ${live() ? "" : `<div class="mstabs">${tabs.map(([k, n, c, cl]) => `<button clas
     if (a === "pushon") return pushOn();
     if (a === "pushoff") return pushOff();
     if (a === "pushhide") { MS.pushHide = true; ls.set("vf-msg-push-later", String(Date.now())); return rr(); }
+    if (a === "devlist") { if (window.hmDevList) window.hmDevList(); return; }
     if (a === "pview") return viewProf(t.dataset.n);
+    if (a === "pphoto") return viewPhoto(t.dataset.n);
     if (a === "col") { const c5 = t.dataset.c; if (!/^c[1-8]$/.test(String(c5))) return; try { const o = await call("adm_color_set", { p_c: c5 }); if (!o.ok) throw 0; LV.color = { ...LV.color, [LV.who]: c5 }; profSheet(); return rr(); } catch { return toast("색을 못 바꿨어요. 다시 눌러 주세요"); } }
     if (a === "pdm") { const n = t.dataset.n; if (!P().includes(n) || n === LV.who) return; t.disabled = true;
       try { let r = ROOMS.find((x) => !x.name && x.mem.length === 2 && x.mem.includes(n) && x.mem.includes(LV.who));
@@ -3388,7 +3422,8 @@ body.hmfull #nav{display:none!important}body.hmfull .hmboard{border-radius:16px 
     const nx = window.ptNext ? window.ptNext() : null;
     /* 11/18 보혜 "자세히 보기랑 위에 카드로 보는 거랑 다른데? 그냥 아래 표 없애고": 카드와 숫자 기준이 달랐던(30분마다 읽는 값) 아래 표를 없앴다. 봇 경고는 맨 위에 그대로 */
     const tbl = "";
-    return `${botWarn()}<div class="hmh" style="margin-top:8px">지금 할 것</div>${tiles}${nx ? `<div style="margin-top:8px">${nx.html.replace('data-px="ev"', 'data-hm="next"')}</div>` : ""}${br}${tbl}`;
+    if (dvBoss() && Date.now() - (DVA.at || 0) > 60e3) { DVA.at = Date.now(); dvaLoad().then(dvaBanner); }
+    return `${botWarn()}<div id="hmdvw">${dvaBannerHtml()}</div><div class="hmh" style="margin-top:8px">지금 할 것</div>${tiles}${nx ? `<div style="margin-top:8px">${nx.html.replace('data-px="ev"', 'data-hm="next"')}</div>` : ""}${br}${tbl}`;
   }
   /* 온라인 홈: 액상덕후 매출(열쇠 뒤 창고에서 받음, 공개 저장소에는 숫자가 없음)과 온라인팀 보드.
      매출은 이 PC의 올리기 스크립트((보혜)\\온라인홈_자료\\온라인홈_매출올리기.mjs)가 올린 것까지만 보인다. */
@@ -3510,6 +3545,145 @@ ${cmp == null ? "" : `<div class="hmcmp">워드프레스 이번 달 <b>${w(wp.mo
   new MutationObserver(() => addOnlineEntry()).observe($("#app"), { childList: true });
   addOnlineEntry();
   if (!ls.get("vf-admin-key") && /^[0-9a-f]{64}$/.test(ls.get("vf-on-key") || "") && $("#pw")) setTimeout(() => { if (!D) onEnter(ls.get("vf-on-key"), false); }, 0);
+  /* ── 기기 승인 (11/18 보혜 "기기 승인 이제 추가해 줘, 이름 뭐라고 저장할지 적는 칸도 넣어서") ──
+     새 기기: 로그인 화면의 [기기 승인 요청하기] → 누구인지 고르고 이 기기 이름을 적어 보냄 → 기다림 → 한섭이사나 보혜가 승인하면 저절로 열림.
+     승인하는 쪽: 메신저 [내 프로필] → [기기 승인, 기기 목록]. 범위(관리자와 온라인 / 온라인만)를 고르고, 승인된 기기는 [끊기]로 끊는다.
+     기기는 무작위 기기표(메신저가 쓰는 것과 같은 것)로 자기임을 밝히고, 창고에는 "dev.기기표"로 묻는다(비밀번호도 메신저 열쇠도 안 씀).
+     관리자 범위 기기는 지점 자료를 푸는 열쇠가 있어야 한다. 승인하는 화면이 그 열쇠를 요청 기기의 공개 열쇠로 잠가 창고에 맡기고,
+     요청 기기만 자기 안의 열쇠(밖으로 못 꺼내게 만든 것, 브라우저 저장소에 둠)로 푼다. 푼 열쇠는 기기에 저장하지 않고 열 때마다 다시 받는다(끊으면 못 받음). */
+  const DVN = ["한섭이사", "보혜", "민혁팀장", "동재팀장", "시원", "진"], DV_ON = ["한섭이사", "보혜", "시원", "진"], DVLV = { vf: "관리자와 온라인", on: "온라인만" };
+  const DV = { pick: "", auto: "", timer: 0, locked: false, busy: false, shown: "" };
+  const dvTok = () => { let t = ls.get("vf-msg-tok"); if (!/^[0-9a-f]{48}$/.test(t || "")) { t = [...crypto.getRandomValues(new Uint8Array(24))].map((x) => x.toString(16).padStart(2, "0")).join(""); ls.set("vf-msg-tok", t); } return t; };
+  const dvB64 = { to: (u8) => btoa(String.fromCharCode(...new Uint8Array(u8))), from: (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0)) };
+  const dvIdb = (mode, fn) => new Promise((ok, no) => { let rq; try { rq = indexedDB.open("vf-admin-dev", 1); } catch (e) { return no(e); } rq.onupgradeneeded = () => rq.result.createObjectStore("k"); rq.onerror = () => no(rq.error); rq.onsuccess = () => { const db = rq.result; let r; try { const tx = db.transaction("k", mode); r = fn(tx.objectStore("k")); tx.oncomplete = () => { db.close(); ok(r && r.result); }; tx.onerror = tx.onabort = () => { db.close(); no(tx.error); }; } catch (e) { db.close(); no(e); } }; });
+  const EC = { name: "ECDH", namedCurve: "P-256" };
+  async function dvKeys(make) { let kp = await dvIdb("readonly", (s) => s.get("ecdh")).catch(() => null); if ((!kp || !kp.privateKey || !kp.publicKey) && make) { kp = await crypto.subtle.generateKey(EC, false, ["deriveKey"]); await dvIdb("readwrite", (s) => s.put({ privateKey: kp.privateKey, publicKey: kp.publicKey }, "ecdh")); } return kp && kp.privateKey && kp.publicKey ? kp : null; }
+  async function dvUnwrap(wrap, epub) { const kp = await dvKeys(false); if (!kp) throw new Error("nokey"); const pub = await crypto.subtle.importKey("raw", dvB64.from(epub), EC, false, []), aes = await crypto.subtle.deriveKey({ name: "ECDH", public: pub }, kp.privateKey, { name: "AES-GCM", length: 256 }, false, ["decrypt"]), raw = dvB64.from(wrap); try { return new Uint8Array(await crypto.subtle.decrypt({ name: "AES-GCM", iv: raw.slice(0, 12) }, aes, raw.slice(12))); } catch (e) { throw new Error("nokey"); } }
+  async function dvWrap(keyBytes, devPub) { const eph = await crypto.subtle.generateKey(EC, false, ["deriveKey"]), pub = await crypto.subtle.importKey("raw", dvB64.from(devPub), EC, false, []), aes = await crypto.subtle.deriveKey({ name: "ECDH", public: pub }, eph.privateKey, { name: "AES-GCM", length: 256 }, false, ["encrypt"]), iv = crypto.getRandomValues(new Uint8Array(12)), ct = new Uint8Array(await crypto.subtle.encrypt({ name: "AES-GCM", iv }, aes, keyBytes)), out = new Uint8Array(12 + ct.length); out.set(iv); out.set(ct, 12); return { wrap: dvB64.to(out), epub: dvB64.to(await crypto.subtle.exportKey("raw", eph.publicKey)) }; }
+  const dvRpc = (fn, a) => { if (!window.admRpc) throw new Error("rpc"); return window.admRpc(fn, a); };
+  { const st = document.createElement("style"); st.id = "dvcss"; st.textContent = `
+.dvnames{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.dvnames button{height:52px;border-radius:14px;background:var(--card);box-shadow:inset 0 0 0 1px var(--line2);font-size:16px;font-weight:700;color:var(--ink2)}.dvnames button.on{background:var(--blue);color:#fff;box-shadow:none}
+.login #dvlabel{background:var(--card);box-shadow:inset 0 0 0 1px var(--line2)}
+.dvrow{display:flex;align-items:center;gap:8px;cursor:default}.dvrow .tx{flex:1;min-width:0}.dvb{flex:none;height:42px;padding:0 14px;border-radius:12px;background:var(--line);font-size:14px;font-weight:700;color:var(--ink2)}.dvb.p{background:var(--blue);color:#fff}.dvb:disabled{opacity:.5}
+.dvcol{display:flex;flex-direction:column;gap:8px;margin-top:16px}.dvcol .btn{width:100%}
+.hmdvb{display:flex;align-items:center;width:100%;min-height:52px;padding:0 16px;margin:8px 0 0;border-radius:14px;background:var(--blue-soft);color:var(--blue);font-size:15px;font-weight:800;text-align:left}.hmdvb span{flex:1}
+`; document.head.appendChild(st); }
+  const dvBox = () => document.querySelector("#app .login");
+  const dvGuess = () => { const u = navigator.userAgent; return /iPhone/.test(u) ? "아이폰" : /iPad/.test(u) ? "아이패드" : /Android/.test(u) ? "폰" : "PC"; };
+  const dvSub = (t) => `<span id="dvmsg" style="color:var(--sub);font-size:18px;font-weight:600">${esc(t)}</span>`;
+  function dvAskForm(msg) {
+    const box = dvBox(); if (!box) return; const old = $("#dvlabel"), lab = old ? old.value : DV.auto; DV.shown = "ask"; clearTimeout(DV.timer);
+    box.innerHTML = `<div class="headline">기기 승인 요청<br>${dvSub(msg || "승인되면 비밀번호 없이 들어와요")}</div>
+<div class="lbl" style="margin:0 0 8px">누구신가요?</div><div class="dvnames">${DVN.map((n) => `<button class="${DV.pick === n ? "on" : ""}" data-hm="dvpick" data-n="${n}">${n}</button>`).join("")}</div>
+<label class="lbl" for="dvlabel" style="display:block;margin:18px 0 8px">이 기기 이름 <span style="font-weight:500;color:var(--sub)">기기 목록에 이 이름으로 보여요</span></label><input class="in" id="dvlabel" maxlength="20" placeholder="예) 보혜 갤럭시" value="${esc(lab || "")}">
+<button class="btn" id="dvsend" data-hm="dvsend" style="margin-top:16px">승인 요청 보내기</button><button class="hmonbtn" data-hm="onback">비밀번호로 들어가기</button>`;
+  }
+  function dvWaitScreen(o) {
+    const box = dvBox(); if (!box) return; DV.shown = "wait";
+    box.innerHTML = `<div class="headline">승인을 기다리고 있어요<br>${dvSub("한섭이사님이나 보혜님이 승인하면 저절로 열려요")}</div>
+<div class="caption" style="margin:4px 0 8px;font-size:15px">요청한 이름 <b>${esc(o.who || "")}</b>, 기기 이름 <b>${esc(o.label || "")}</b></div>
+<button class="hmonbtn" data-hm="dvcancel">요청 취소하기</button><button class="hmonbtn" data-hm="onback">비밀번호로 들어가기</button>`;
+  }
+  const dvMsg = (t) => { const el = $("#dvmsg") || $("#loginmsg"); if (el) el.textContent = t; else toast(t, 4000); };
+  /* 내 요청이 어떻게 됐는지 묻는다. 승인됐으면 들어가고, 기다리는 중이면 4초 뒤에 또 묻는다 */
+  async function dvCheck(quiet) {
+    clearTimeout(DV.timer); if (D || DV.busy || !dvBox()) return; DV.busy = true;
+    try {
+      const o = await dvRpc("adm_dev_poll", { p_tok: dvTok() });
+      if (D || !dvBox()) return;
+      if (!o || !o.ok) throw new Error("x");
+      if (o.st === "ok") return await dvEnter(o);
+      if (o.st === "wait") { if (DV.shown !== "wait") dvWaitScreen(o); DV.timer = setTimeout(() => dvCheck(true), 4000); return; }
+      { const was = DV.shown; ls.set("vf-dev", null); DV.shown = ""; renderLogin(o.st === "no" ? "이 기기는 승인이 안 됐거나 연결이 끊겼어요" : was === "wait" ? "보낸 요청이 없어졌어요. 다시 보내 주세요" : undefined); } /* 화면을 새로 그려 단추가 [기기 승인 요청하기]로 돌아온다 */
+    } catch (e) { if (DV.shown === "wait" || ls.get("vf-dev") === "1") DV.timer = setTimeout(() => dvCheck(true), 8000); if (!quiet) dvMsg("확인하지 못했어요. 인터넷을 확인해 주세요"); }
+    finally { DV.busy = false; }
+  }
+  async function dvEnter(o) {
+    clearTimeout(DV.timer); DV.shown = ""; ls.set("vf-dev", "1");
+    const info = { who: String(o.who || ""), lv: o.lv === "on" ? "on" : "vf", label: String(o.label || "") };
+    if (info.lv === "on") { window.ADMDEV = info; if (window.msgSetWho) window.msgSetWho(info.who); return onEnter("dev", false); }
+    let key;
+    try { key = await dvUnwrap(String(o.wrap || ""), String(o.epub || "")); }
+    catch (e) { DV.reset = true; return dvAskForm("이 기기 안의 열쇠가 없어졌어요. 승인을 다시 요청해 주세요"); }
+    try { RAW = await fetchEnc(); } catch (e) { DV.timer = setTimeout(() => dvCheck(true), 8000); return dvMsg("자료를 불러오지 못했어요. 인터넷을 확인해 주세요"); }
+    try { D = await decrypt(RAW, key); }
+    catch (e) { DV.reset = true; return dvAskForm("관리자 비밀번호가 바뀌어서 승인을 다시 받아야 해요"); }
+    window.ADMDEV = info; window.ONKEY = ""; KEY = key; document.body.classList.remove("onlyon"); if (window.msgSetWho) window.msgSetWho(info.who);
+    tab = "home"; safeRender();
+  }
+  async function dvSend() {
+    const who = DV.pick, label = (($("#dvlabel") || {}).value || "").trim(), btn = $("#dvsend");
+    if (!who) return dvMsg("누구인지 먼저 골라 주세요"); if (!label) { const i = $("#dvlabel"); if (i) i.focus(); return dvMsg("이 기기 이름을 적어 주세요"); }
+    if (/[<>]/.test(label)) return dvMsg("기기 이름에 < > 는 못 써요");
+    if (btn) { btn.disabled = true; btn.textContent = "보내는 중…"; }
+    let kp; try { kp = await dvKeys(true); if (!kp) throw 0; } catch (e) { if (btn) { btn.disabled = false; btn.textContent = "승인 요청 보내기"; } return dvMsg("이 브라우저에서는 기기 승인을 쓸 수 없어요. 시크릿 창이면 보통 창으로 열어 주세요"); }
+    try {
+      const o = await dvRpc("adm_dev_ask", { p_tok: dvTok(), p_who: who, p_label: label, p_pub: dvB64.to(await crypto.subtle.exportKey("raw", kp.publicKey)), p_reset: !!DV.reset });
+      if (!o || !o.ok) { if (btn) { btn.disabled = false; btn.textContent = "승인 요청 보내기"; } return dvMsg(o && o.why === "wait" ? "요청을 너무 자주 보냈어요. 10분 뒤에 다시 해 주세요" : o && o.why === "full" ? "기다리는 요청이 너무 많아요. 보혜에게 말해 주세요" : o && o.why === "label" ? "기기 이름을 20자 안으로 적어 주세요" : "요청을 못 보냈어요. 다시 눌러 주세요"); }
+      DV.reset = false; ls.set("vf-dev", "1"); DV.shown = ""; dvCheck(true);
+    } catch (e) { if (btn) { btn.disabled = false; btn.textContent = "승인 요청 보내기"; } dvMsg("요청을 못 보냈어요. 인터넷을 확인해 주세요"); }
+  }
+  /* 로그인 화면에 들어가는 단추: 승인된 기기면 [이 기기로 들어가기], 아니면 [기기 승인 요청하기] */
+  function addDevEntry() {
+    const box = dvBox(); if (!box || !$("#pw") || $("#dvbtn")) return;
+    box.insertAdjacentHTML("beforeend", ls.get("vf-dev") === "1" ? '<button class="hmonbtn" id="dvbtn" data-hm="dvgo" style="color:var(--blue);box-shadow:inset 0 0 0 2px var(--blue)">승인된 이 기기로 들어가기</button>' : '<button class="hmonbtn" id="dvbtn" data-hm="dvask">기기 승인 요청하기</button>');
+  }
+  new MutationObserver(() => addDevEntry()).observe($("#app"), { childList: true }); addDevEntry();
+  /* 처음 켤 때: 기억해 둔 비밀번호 열쇠가 없고, 이 기기가 요청을 보냈거나 승인된 기기면 바로 확인한다 */
+  if (!ls.get("vf-admin-key") && !/^[0-9a-f]{64}$/.test(ls.get("vf-on-key") || "") && ls.get("vf-dev") === "1" && $("#pw")) setTimeout(() => { if (!D && !DV.locked) dvCheck(true); }, 0);
+  /* 잠그기: 승인된 기기는 잠가도 [승인된 이 기기로 들어가기]로 다시 들어온다(저절로 다시 열리지는 않게) */
+  document.addEventListener("click", (e) => { if (e.target.closest('[data-act="logout"]') && window.ADMDEV) { DV.locked = true; window.ADMDEV = null; if (window.ONKEY === "dev") { window.ONKEY = ""; document.body.classList.remove("onlyon", "hmonline"); } } }, true);
+  document.addEventListener("keydown", (e) => { if (e.target.id === "dvlabel" && e.key === "Enter") { e.preventDefault(); dvSend(); } });
+  /* ── 승인하는 쪽 ── */
+  const DVA = { list: null, wait: 0, err: "", told: -1 };
+  const dvBoss = () => !window.ONKEY && !!KEY && !!D && !!(window.admLive && window.admLive()) && ["한섭이사", "보혜"].includes(window.admWho ? window.admWho() : "");
+  async function dvaLoad() { try { const o = await window.admCall("adm_dev_list", {}); if (o && o.ok) { DVA.list = Array.isArray(o.devs) ? o.devs : []; DVA.wait = +o.wait || 0; DVA.err = ""; } else DVA.err = (o && o.why) || "x"; } catch (e) { DVA.err = "net"; } return DVA; }
+  const dvD = (id) => (DVA.list || []).find((x) => x.id === id);
+  const dvWhen = (s) => (s ? String(s).slice(5).replace("-", "/") : "");
+  function dvaSheet() {
+    const nd = '<div class="nodock"></div>';
+    if (DVA.err === "who") return openSheet(`${nd}<h3>기기 승인</h3><div class="caption" style="margin-top:8px;line-height:1.6">기기 승인은 한섭이사님과 보혜님만 할 수 있어요.<br>내 프로필을 잠근(비밀번호를 정한) 기기에서 열어 주세요.</div><div class="btns"><button class="btn gray" data-x>닫기</button></div>`);
+    if (DVA.err || !DVA.list) return openSheet(`${nd}<h3>기기 승인</h3><div class="caption" style="margin-top:8px">기기 목록을 못 불러왔어요.</div><div class="btns"><button class="btn gray" data-x style="flex:0 0 96px">닫기</button><button class="btn" data-hm="dvlist">다시 받기</button></div>`);
+    const W = DVA.list.filter((x) => x.st === "wait"), A = DVA.list.filter((x) => x.st === "ok");
+    openSheet(`${nd}<h3>기기 승인</h3>
+<div class="sec" style="margin-top:14px">승인을 기다리는 기기 <small>${W.length}대</small></div>
+<div class="list">${W.map((x) => `<div class="item dvrow"><div class="tx"><b>${esc(x.label)}</b><span>${esc(x.who)}, ${esc(dvWhen(x.at))} 요청</span></div><button class="dvb" data-hm="dvno" data-id="${esc(x.id)}">거절</button><button class="dvb p" data-hm="dvok" data-id="${esc(x.id)}">승인하기</button></div>`).join("") || '<div class="empty">기다리는 기기가 없어요</div>'}</div>
+<div class="sec">승인된 기기 <small>${A.length}대</small></div>
+<div class="list">${A.map((x) => `<div class="item dvrow"><div class="tx"><b>${esc(x.label)}</b><span>${esc(x.who)}, ${DVLV[x.lv] || ""}, ${x.seen ? "마지막 접속 " + esc(dvWhen(x.seen)) : "아직 안 들어옴"}</span></div><button class="dvb" data-hm="dvcut" data-id="${esc(x.id)}" ${x.me ? "disabled" : ""}>${x.me ? "이 기기" : "끊기"}</button></div>`).join("") || '<div class="empty">승인된 기기가 없어요</div>'}</div>
+<div class="caption" style="margin-top:12px;line-height:1.6">비밀번호로 들어온 기기는 이 목록에 안 나와요.</div>
+<div class="btns"><button class="btn gray" data-x>닫기</button></div>`);
+  }
+  function dvaOkSheet(id) {
+    const x = dvD(id); if (!x) return dvaSheet(); const on = DV_ON.includes(x.who);
+    openSheet(`<div class="nodock"></div><h3>이 기기를 승인할까요?</h3><div class="caption" style="margin-top:6px;line-height:1.6"><b>${esc(x.who)}</b>님 이름으로 온 요청이에요. 본인이 보낸 것이 맞는지 먼저 물어봐 주세요.</div>
+<div class="ptlab">기기 이름</div><input class="ptin" id="dvaLabel" maxlength="20" value="${esc(x.label)}">
+<div class="dvcol"><button class="btn" data-hm="dvokgo" data-id="${esc(id)}" data-lv="vf">관리자와 온라인 모두 승인</button>${on ? `<button class="btn gray" data-hm="dvokgo" data-id="${esc(id)}" data-lv="on">온라인만 승인</button>` : ""}<button class="btn gray" data-hm="dvlist">뒤로</button></div>`);
+  }
+  window.hmDevList = async () => { openSheet('<div class="nodock"></div><h3>기기 승인</h3><div class="caption">불러오는 중이에요</div>'); await dvaLoad(); dvaSheet(); dvaBanner(); };
+  window.hmDevWait = () => (dvBoss() ? DVA.wait : 0);
+  const dvaBannerHtml = () => (dvBoss() && DVA.wait ? `<button class="hmdvb" data-hm="dvlist"><span>기기 승인 요청 ${DVA.wait}건이 기다리고 있어요</span>›</button>` : "");
+  function dvaBanner() { const el = $("#hmdvw"); if (el) el.innerHTML = dvaBannerHtml(); }
+  /* 승인할 수 있는 사람의 화면은 1분마다 기다리는 요청이 있는지 본다. 새로 생기면 한 번 알려 준다 */
+  setInterval(async () => { if (!dvBoss() || document.visibilityState !== "visible") return; const was = DVA.wait; await dvaLoad(); if (DVA.err) return; dvaBanner(); if (DVA.wait > was && DVA.wait !== DVA.told) { DVA.told = DVA.wait; toast(`기기 승인 요청이 ${DVA.wait}건 있어요. 메신저의 내 프로필에서 볼 수 있어요`, 5000); } }, 60e3);
+  document.addEventListener("click", async (e) => {
+    const s = e.target.closest("[data-hm]"); if (!s || s.disabled) return; const k = s.dataset.hm, id = s.dataset.id;
+    if (k === "dvask") { DV.pick = ""; DV.auto = ""; return dvAskForm(); }
+    if (k === "dvpick") { const lab = $("#dvlabel"), cur = lab ? lab.value.trim() : ""; DV.pick = s.dataset.n; const next = `${DV.pick} ${dvGuess()}`; if (lab && (!cur || cur === DV.auto)) { lab.value = next; DV.auto = next; } return dvAskForm(($("#dvmsg") || {}).textContent); }
+    if (k === "dvsend") return dvSend();
+    if (k === "dvgo") { DV.locked = false; s.disabled = true; s.textContent = "확인하는 중…"; return dvCheck(false); }
+    if (k === "dvcancel") { clearTimeout(DV.timer); try { await dvRpc("adm_dev_cancel", { p_tok: dvTok() }); } catch (x) { /* 못 지워도 화면은 돌아간다 */ } ls.set("vf-dev", null); DV.shown = ""; return renderLogin("요청을 취소했어요"); }
+    if (k === "dvlist") return window.hmDevList();
+    if (k === "dvok") return dvaOkSheet(id);
+    if (k === "dvokgo") { const x = dvD(id), lv = s.dataset.lv === "on" ? "on" : "vf", label = (($("#dvaLabel") || {}).value || "").trim(); if (!x) return; if (!label) return toast("기기 이름을 적어 주세요"); s.disabled = true;
+      try { const a = { p_id: id, p_act: "ok", p_lv: lv, p_label: label }; if (lv === "vf") { if (!KEY) throw new Error("nokey"); const w = await dvWrap(KEY, x.pub); a.p_wrap = w.wrap; a.p_epub = w.epub; }
+        const o = await window.admCall("adm_dev_set", a); if (!o || !o.ok) throw new Error((o && o.why) || "x"); toast(`${x.who}님의 "${label}"을 승인했어요`, 3600); }
+      catch (x2) { s.disabled = false; return toast(x2 && x2.message === "st" ? "이미 처리된 요청이에요" : "승인하지 못했어요. 다시 눌러 주세요"); }
+      return window.hmDevList(); }
+    if (k === "dvno" || k === "dvcut") { const x = dvD(id); if (!x) return; const cut = k === "dvcut";
+      if (!(await askConfirm(cut ? "이 기기를 끊을까요?" : "이 요청을 거절할까요?", `${x.who}, ${x.label}. ${cut ? "끊으면 이 기기는 더 못 들어와요. 다시 쓰려면 승인을 새로 받아야 해요." : "거절하면 그 기기에 승인이 안 됐다고 나와요."}`, cut ? "끊기" : "거절", true))) return;
+      try { const o = await window.admCall("adm_dev_set", { p_id: id, p_act: "no" }); if (!o || !o.ok) throw 0; toast(cut ? "기기를 끊었어요" : "요청을 거절했어요"); } catch (x3) { toast("처리하지 못했어요. 다시 눌러 주세요"); }
+      return window.hmDevList(); }
+  });
   /* 로고 자리에서 VF 관리자와 온라인을 바꾼다 */
   /* 11/18 보혜 "더보기로 직원웹까지 볼 수 있는 건 좀 불편": 온라인 쪽에서는 매장 메뉴(지점, 상품, 더보기)를 다 감추고, 업무 아래에 회의와 일정을 둔다 */
   const ONAV = [["mt", "회의", '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 15a3.5 3.5 0 0 0 3.5-3.5v-5a3.5 3.5 0 0 0-7 0v5A3.5 3.5 0 0 0 12 15zm6.5-3.5a1 1 0 0 0-2 0 4.5 4.5 0 0 1-9 0 1 1 0 0 0-2 0 6.5 6.5 0 0 0 5.5 6.4V20H9a1 1 0 0 0 0 2h6a1 1 0 0 0 0-2h-2v-2.1a6.5 6.5 0 0 0 5.5-6.4z"/></svg>'], ["cal", "일정", '<svg viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M12 2.5a9.5 9.5 0 1 0 0 19 9.5 9.5 0 0 0 0-19zm1 4.5a1 1 0 0 0-2 0V12a1 1 0 0 0 .4.8l3.2 2.4a1 1 0 0 0 1.2-1.6L13 11.5z"/></svg>']];
@@ -3929,8 +4103,9 @@ ${e.id ? `<div class="ptlab">기록 ${e.logs.length}개</div>${e.logs.map((l) =>
   if (!window.history || !history.pushState) return;
   let depth = 0, wait = false, wt = 0;
   const dimOn = () => { const d = document.getElementById("dim"); return !!d && d.classList.contains("on"); };
+  const viewOn = () => !!(window.msgViewOn && window.msgViewOn()); /* 사진 크게 보기가 떠 있음 */
   const inside = () => !!((window.msgInRoom && window.msgInRoom()) || (window.bdInMeet && window.bdInMeet()));
-  const level = () => { try { if (typeof D === "undefined" || !D) return 0; return (tab !== "home" ? 1 : 0) + (inside() ? 1 : 0) + (dimOn() ? 1 : 0); } catch (e) { return 0; } };
+  const level = () => { try { if (typeof D === "undefined" || !D) return 0; return (tab !== "home" ? 1 : 0) + (inside() ? 1 : 0) + (dimOn() ? 1 : 0) + (viewOn() ? 1 : 0) + (window.tpOn && window.tpOn() ? 1 : 0); } catch (e) { return 0; } };
   const sync = () => {
     if (wait) return; const L = level();
     if (L > depth) { try { for (; depth < L; depth++) history.pushState({ adm: depth + 1 }, ""); } catch (e) { /* 기록을 못 넣는 브라우저는 그대로 둔다 */ } }
@@ -3940,6 +4115,8 @@ ${e.id ? `<div class="ptlab">기록 ${e.logs.length}개</div>${e.logs.map((l) =>
   const step = () => {
     try {
       if (typeof D === "undefined" || !D) return;
+      if (window.tpOn && window.tpOn()) return window.tpClose();
+      if (viewOn()) return window.msgViewClose();
       if (dimOn()) return closeSheet(true);
       if (window.msgInRoom && window.msgInRoom()) return window.msgBack();
       if (window.bdInMeet && window.bdInMeet()) return window.bdBack();
@@ -3953,6 +4130,59 @@ ${e.id ? `<div class="ptlab">기록 ${e.logs.length}개</div>${e.logs.map((l) =>
   /* 사람이 누른 뒤에 화면 단계와 기록 칸 수를 맞춘다 */
   const later = () => { setTimeout(sync, 0); setTimeout(sync, 350); };
   document.addEventListener("click", later); document.addEventListener("keyup", (e) => { if (e.key === "Enter" || e.key === "Escape") later(); });
+})();
+
+/* ── 시간 고르기 (11/18 보혜 "일정 정할 때 타임피커 좋은데?", 단추 판은 "이건 별론데" → 바퀴 모양) ──
+   시간 칸(input type=time)을 누르면 브라우저 기본 창 대신 이 창이 뜬다: 오전/오후, 시, 분 세 줄을 위아래로 굴려 가운데 줄에 맞추고 [정하기].
+   고른 값은 원래 칸에 "HH:MM"으로 들어가서, 저장하는 쪽은 바뀐 것이 없다. 키보드로 칸에 들어가 직접 치는 것도 그대로 된다. */
+(() => {
+  const RH = 44; /* 한 줄 높이 */
+  const st = document.createElement("style"); st.id = "tpcss";
+  st.textContent = `
+#tpick{position:fixed;inset:0;z-index:95;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;justify-content:center}#tpick[hidden]{display:none}
+.tpbox{width:min(440px,100%);background:var(--card);border-radius:24px 24px 0 0;padding:22px 20px calc(18px + env(safe-area-inset-bottom));box-sizing:border-box}
+.tpbox h4{display:flex;align-items:baseline;gap:10px;font-size:17px;font-weight:800;margin:0 0 12px}.tpbox h4 b{margin-left:auto;font-size:22px;font-weight:800;color:var(--blue);font-variant-numeric:tabular-nums}
+.tpwheel{position:relative;display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;height:${RH * 5}px;margin:0 0 16px}
+.tpwheel::before{content:"";position:absolute;left:0;right:0;top:${RH * 2}px;height:${RH}px;border-radius:12px;background:var(--line);pointer-events:none}
+.tpc{position:relative;height:${RH * 5}px;overflow-y:auto;scroll-snap-type:y mandatory;scrollbar-width:none;overscroll-behavior:contain;-webkit-mask-image:linear-gradient(transparent,#000 28%,#000 72%,transparent);mask-image:linear-gradient(transparent,#000 28%,#000 72%,transparent)}.tpc::-webkit-scrollbar{display:none}
+.tpc::before,.tpc::after{content:"";display:block;height:${RH * 2}px}
+.tpc button{display:block;width:100%;height:${RH}px;scroll-snap-align:center;background:none;font-size:20px;font-weight:600;color:var(--sub);font-variant-numeric:tabular-nums}.tpc button.on{color:var(--ink);font-weight:800;font-size:22px}
+.tpb{display:flex;gap:8px}.tpb button{height:54px;border-radius:14px;font-size:16px;font-weight:700}.tpb .g{flex:0 0 108px;background:var(--line);color:var(--ink2)}.tpb .p{flex:1;background:var(--blue);color:#fff}
+@media (min-width:900px){#tpick{align-items:center}.tpbox{border-radius:24px;padding-bottom:20px}}
+`;
+  document.head.appendChild(st);
+  let TP = null, tmr = 0;
+  const box = () => { let b = document.getElementById("tpick"); if (!b) { b = document.createElement("div"); b.id = "tpick"; b.hidden = true; document.body.appendChild(b); } return b; };
+  const p2 = (n) => String(n).padStart(2, "0");
+  const txt = () => `${TP.ap === "pm" ? "오후" : "오전"} ${TP.h}:${p2(TP.m)}`;
+  const v24 = () => `${p2((TP.h % 12) + (TP.ap === "pm" ? 12 : 0))}:${p2(TP.m)}`;
+  const col = (k) => box().querySelector('.tpc[data-k="' + k + '"]');
+  /* 줄마다 지금 값에 "on"을 붙이고, 머리와 단추 글을 맞춘다(줄을 새로 그리지 않아서 굴리던 자리가 안 튄다) */
+  function mark() { for (const k of ["ap", "h", "m"]) { const c = col(k); if (c) for (const b of c.children) b.classList.toggle("on", String(TP[k]) === b.dataset.v); } const hd = box().querySelector("h4 b"), ok = box().querySelector('[data-tp="ok"]'); if (hd) hd.textContent = txt(); if (ok) ok.textContent = txt() + "으로 정하기"; }
+  const toRow = (k, smooth) => { const c = col(k); if (!c) return; const i = [...c.children].findIndex((b) => b.dataset.v === String(TP[k])); if (i >= 0) c.scrollTo({ top: i * RH, behavior: smooth ? "smooth" : "auto" }); };
+  function draw() {
+    const ms = []; for (let m = 0; m < 60; m += 5) ms.push(m); if (!ms.includes(TP.m)) { ms.push(TP.m); ms.sort((a, b) => a - b); }
+    const c = (k, L) => `<div class="tpc ${k}" data-k="${k}" role="listbox" aria-label="${k === "ap" ? "오전 오후" : k === "h" ? "시" : "분"}">${L.map(([v, n]) => `<button data-tp="${k}" data-v="${v}">${n}</button>`).join("")}</div>`;
+    box().innerHTML = `<div class="tpbox" role="dialog" aria-label="시간 고르기"><h4>시간 고르기<b></b></h4>
+<div class="tpwheel">${c("ap", [["am", "오전"], ["pm", "오후"]])}${c("h", [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((h) => [h, h + "시"]))}${c("m", ms.map((m) => [m, p2(m) + "분"]))}</div>
+<div class="tpb"><button class="g" data-tp="none">시간 없음</button><button class="p" data-tp="ok"></button></div></div>`;
+    mark(); for (const k of ["ap", "h", "m"]) { toRow(k, false); col(k).addEventListener("scroll", () => { clearTimeout(tmr); tmr = setTimeout(() => { if (!TP) return; for (const kk of ["ap", "h", "m"]) { const cc = col(kk); if (!cc) continue; const b = cc.children[Math.max(0, Math.min(cc.children.length - 1, Math.round(cc.scrollTop / RH)))]; if (b) TP[kk] = kk === "ap" ? b.dataset.v : +b.dataset.v; } mark(); }, 90); }, { passive: true }); }
+  }
+  function open(input) {
+    const k = String(input.value || "").match(/^(\d{2}):(\d{2})$/), H = k ? +k[1] : 14, M = k ? +k[2] : 0;
+    TP = { input, ap: H >= 12 ? "pm" : "am", h: H % 12 === 0 ? 12 : H % 12, m: M }; box().hidden = false; draw();
+  }
+  const close = () => { const b = box(); if (b.hidden) return false; clearTimeout(tmr); b.hidden = true; b.innerHTML = ""; TP = null; return true; };
+  window.tpOn = () => !box().hidden; window.tpClose = close;
+  const put = (v) => { const i = TP && TP.input; close(); if (!i || !document.contains(i)) return; i.value = v; i.dispatchEvent(new Event("input", { bubbles: true })); i.dispatchEvent(new Event("change", { bubbles: true })); };
+  const isT = (e) => { const i = e.target && e.target.closest ? e.target.closest('input[type="time"]') : null; return i && !i.disabled && !i.readOnly ? i : null; };
+  /* 누르면 기본 창이 뜨기 전에 가로챈다 */
+  document.addEventListener("pointerdown", (e) => { if (isT(e)) e.preventDefault(); }, true);
+  document.addEventListener("click", (e) => { const i = isT(e); if (i) { e.preventDefault(); e.stopPropagation(); i.blur(); return open(i); }
+    const t = e.target.closest ? e.target.closest("[data-tp]") : null;
+    if (t && TP) { e.stopPropagation(); const a = t.dataset.tp; if (a === "none") return put(""); if (a === "ok") return put(v24()); TP[a] = a === "ap" ? (t.dataset.v === "pm" ? "pm" : "am") : +t.dataset.v; mark(); return toRow(a, !matchMedia("(prefers-reduced-motion:reduce)").matches); }
+    if (TP && e.target === box()) { e.stopPropagation(); close(); } }, true);
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && TP) { e.stopPropagation(); close(); } }, true);
 })();
 
 </script>
@@ -4052,6 +4282,15 @@ ${e.id ? `<div class="ptlab">기록 ${e.logs.length}개</div>${e.logs.map((l) =>
   document.addEventListener("touchend", () => { if (!sw || !sw.on) { sw = null; return; } const { s, dy, t } = sw, fast = dy > 40 && dy / Math.max(1, Date.now() - t) > 0.55; sw = null; s.style.transition = "transform .2s cubic-bezier(0.23,1,0.32,1)";
     if (dy > 110 || fast) { s.style.transform = "translateY(100%)"; setTimeout(() => { if (ASKR) ASKR(null); else closeSheet(); s.style.transform = ""; s.style.transition = ""; s.style.animation = ""; }, 190); }
     else { s.style.transform = ""; setTimeout(() => { s.style.transition = ""; s.style.animation = "none"; }, 210); } });
+  /* 마우스로도 끌어 닫기 (11/18 보혜 "이거 드래그로 닫기 안 되네"): 좁은 창에서 마우스로 쓸 때. 단추나 입력 칸에서 시작한 끌기는 빼서 누르기가 그대로 된다 */
+  let swm = null;
+  const swFin = (o) => { const { s, dy, t } = o, fast = dy > 40 && dy / Math.max(1, Date.now() - t) > 0.55; s.style.transition = "transform .2s cubic-bezier(0.23,1,0.32,1)";
+    if (dy > 110 || fast) { s.style.transform = "translateY(100%)"; setTimeout(() => { if (ASKR) ASKR(null); else closeSheet(); s.style.transform = ""; s.style.transition = ""; s.style.animation = ""; }, 190); }
+    else { s.style.transform = ""; setTimeout(() => { s.style.transition = ""; s.style.animation = "none"; }, 210); } };
+  document.addEventListener("mousedown", (e) => { swm = null; if (isPC() || e.button !== 0) return; const s = e.target.closest("#sheet"); if (!s || $("#dim").classList.contains("dock") || s.scrollTop > 0) return; if (e.target.closest("input,textarea,select,button,a,label,[data-x]")) return; swm = { y: e.clientY, x: e.clientX, s, dy: 0, t: Date.now(), on: false }; });
+  document.addEventListener("mousemove", (e) => { if (!swm) return; if (!(e.buttons & 1)) { const o = swm; swm = null; if (o.on) swFin(o); return; } const dy = e.clientY - swm.y, dx = e.clientX - swm.x; if (!swm.on) { if (dy < 8 || Math.abs(dx) > dy) { if (dy < -8 || Math.abs(dx) > 12) swm = null; return; } swm.on = true; swm.s.style.transition = "none"; swm.s.style.animation = "none"; } swm.dy = Math.max(0, dy); swm.s.style.transform = `translateY(${swm.dy}px)`; e.preventDefault(); });
+  document.addEventListener("mouseup", () => { if (!swm) return; const o = swm; swm = null; if (o.on) { swFin(o); window.__swAt = Date.now(); } });
+  document.addEventListener("click", (e) => { if (window.__swAt && Date.now() - window.__swAt < 250) { e.stopPropagation(); e.preventDefault(); } }, true); /* 끌다 놓은 자리의 누름은 버린다 */
 
   /* 끌다가 놓아 제자리로 돌아온 창은 닫힐 때 올라오는 움직임을 되살린다 */
   new MutationObserver(() => { if (!$("#dim").classList.contains("on")) { const s = $("#sheet"); s.style.animation = ""; s.style.transform = ""; s.style.transition = ""; } }).observe(document.getElementById("dim"), { attributes: true, attributeFilter: ["class"] });
