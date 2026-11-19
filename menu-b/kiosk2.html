@@ -282,9 +282,10 @@ let tt = 0; function toast(m) { const t = $('toast'); t.textContent = m; t.style
 let SND = true, AC = null, sayT = 0, prevStep = ""; try { SND = localStorage.getItem("vf-kiosk-snd") !== "0"; } catch (e) {}
 function chime() { if (!SND) return; try { AC = AC || new (window.AudioContext || window.webkitAudioContext)(); if (AC.state === "suspended") AC.resume();
   [[659.25, 0], [523.25, .32]].forEach(([f, at]) => { const o = AC.createOscillator(), g = AC.createGain(), t = AC.currentTime + at; o.type = "sine"; o.frequency.value = f; g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(.35, t + .02); g.gain.exponentialRampToValueAtTime(.0001, t + 1.1); o.connect(g); g.connect(AC.destination); o.start(t); o.stop(t + 1.2); }); } catch (e) {} }
-const VOICE = false; /* 11/19 액상덕후 "목소리 무서워": 기기 기본 음성은 끔. 녹음한 목소리 파일이 생기면 그걸로 다시 붙임 (voiceoff1119) */
+/* 11/19 액상덕후 "목소리 무서워" → "지금 목소리를 좀 다듬어 봐": 조금 높게, 조금 천천히, 조금 작게 (voicetune1119). 주소에 ?pitch=1.4&rate=0.9 를 붙이면 바로 바꿔 들어 볼 수 있고, ?voice=0 이면 끔 */
+const QP = new URLSearchParams(location.search), VOICE = QP.get("voice") !== "0", V_PITCH = Math.min(2, Math.max(.5, +QP.get("pitch") || 1.3)), V_RATE = Math.min(1.5, Math.max(.6, +QP.get("rate") || .92));
 function say(text, wait) { clearTimeout(sayT); try { speechSynthesis.cancel(); } catch (e) {} if (!VOICE || !SND || !text || !window.speechSynthesis) return;
-  sayT = setTimeout(() => { try { const u = new SpeechSynthesisUtterance(text); u.lang = "ko-KR"; const v = speechSynthesis.getVoices().find((x) => /^ko/i.test(x.lang)); if (v) u.voice = v; speechSynthesis.speak(u); } catch (e) {} }, wait || 0); }
+  sayT = setTimeout(() => { try { const u = new SpeechSynthesisUtterance(text); u.lang = "ko-KR"; u.pitch = V_PITCH; u.rate = V_RATE; u.volume = .85; const v = speechSynthesis.getVoices().find((x) => /^ko/i.test(x.lang)); if (v) u.voice = v; speechSynthesis.speak(u); } catch (e) {} }, wait || 0); }
 
 /* ── 랭킹 순위 (B안과 같은 규칙) ── */
 function rankMap(kind) { const b = ((D.rk.branches || {})[D.branch] || {})[kind] || [], m = new Map(); let r = 0;
