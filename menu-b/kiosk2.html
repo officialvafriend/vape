@@ -198,6 +198,15 @@ main{flex:1;min-height:0;padding:20px 24px;display:flex;flex-direction:column}
 .selr button{height:60px;padding:0 26px;border-radius:14px;border:2px solid var(--line);background:var(--card);font-size:23px;font-weight:800;color:var(--g1)}
 .selr button.on{background:var(--ink);border-color:var(--ink);color:#fff}
 .selr span{font-size:20px;color:var(--pt);font-weight:700;margin-left:6px}
+/* 키캡 클리커 (keycap1119) */
+.kcs{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;gap:40px}
+.kc{position:relative;width:236px;height:250px;border-radius:38px;background:#26262A;box-shadow:0 16px 26px rgba(0,0,0,.22);touch-action:manipulation;cursor:pointer;user-select:none;-webkit-user-select:none}
+.kct{position:absolute;left:16px;right:16px;top:8px;height:204px;border-radius:28px;background:#fff;overflow:hidden;display:flex;align-items:center;justify-content:center;box-shadow:0 12px 0 #0E0E10,inset 0 -8px 0 rgba(0,0,0,.07);transition:transform .05s ease-out,box-shadow .05s ease-out}
+.kct img{width:100%;height:100%;object-fit:contain;pointer-events:none}
+.kct b{font-size:72px;font-weight:900;font-style:italic;color:var(--pt);letter-spacing:-.04em}
+.kc.dn .kct{transform:translateY(10px);box-shadow:0 2px 0 #0E0E10,inset 0 -8px 0 rgba(0,0,0,.07)}
+.kcc{flex:none;text-align:center;font-size:24px;font-weight:700;color:var(--g1);padding-bottom:4px}
+.kcc b{font-size:56px;font-weight:900;color:var(--ink);margin-right:8px;letter-spacing:-.03em}
 /* 룰렛 (예시) */
 .whl{width:400px;height:400px;border-radius:50%;margin:0 auto;position:relative;background:conic-gradient(#111 0 60deg,#fff 60deg 120deg,#D81F2A 120deg 180deg,#fff 180deg 240deg,#111 240deg 300deg,#fff 300deg 360deg);box-shadow:0 0 0 10px var(--card),0 6px 24px rgba(0,0,0,.15);transition:transform 3.4s cubic-bezier(.12,.75,.1,1)}
 .whl span{position:absolute;left:50%;top:50%;width:0;height:0;font-size:34px;font-weight:900}
@@ -264,7 +273,7 @@ const WAYS = [["first", "전자담배가 처음이에요", "연초나 궐련형�
 const LABEL = { dev: "기기", liq: "액상", pod: "팟, 코일", dsp: "일회용", sum: "확인" };
 const LOCAL = location.protocol === "file:" || /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
 const DEMO = LOCAL && !/[?&]real=1/.test(location.search); /* 내 컴퓨터 미리보기는 봇에 안 보내고 예시로 보여 줌 */
-const S0 = () => ({ step: "start", path: [], who: null, way: "", evSeen: {}, taste: "전체", dspM: "전체", podFam: "", famOpen: false, phone: "", name: "", qz: null, res: null, vp: 0, recDev: "", spin: null, sp: null, mem: null, reg: { name: "", year: "", phone: "", agree: false, mk: false, s: "" } });
+const S0 = () => ({ step: "start", path: [], who: null, way: "", evSeen: {}, kc: 0, taste: "전체", dspM: "전체", podFam: "", famOpen: false, phone: "", name: "", qz: null, res: null, vp: 0, recDev: "", spin: null, sp: null, mem: null, reg: { name: "", year: "", phone: "", agree: false, mk: false, s: "" } });
 let S = S0(), D = null, E = null, CQ = new Map(), CI = [], CT = { total: 0 }, CN = 0, lastKey = "", qzT = 0;
 
 /* ── 자료: B안을 뒤에 숨겨 열고 그 자료, 담기, 합계, 회원, 문진 규칙을 그대로 부름 ── */
@@ -408,12 +417,12 @@ const V = {
       ${sl.l.length ? `<div class="selr an d1"><b>판매 직원</b>${sl.l.map((n) => `<button data-seller="${esc(n)}" class="${n === sl.s ? "on" : ""}">${esc(n)}</button>`).join("")}${sl.s ? "" : `<span>직원 이름을 눌러 주세요</span>`}</div>` : ""}
       <div class="chk3"><div class="chk an d1"><i>1</i><b>서비스, 할인</b><span>${save ? esc(CT.how || "묶음, 이벤트") + " 적용. 직원이 손님 앞에서 서비스 처리해 드려요" : "이번 주문엔 적용된 묶음 할인이 없어요"}</span>${save ? `<strong class="r">-${won(save)}</strong>` : ""}</div>
       <div class="chk an d2"><i>2</i><b>결제하실 금액</b><span>담은 상품 ${CN}개. 직원이 포스 금액과 같은지 확인해요</span><strong>${won(CT.total || 0)}</strong></div>
-      <div class="chk an d3"><i>3</i><b>회원</b><span>${esc(mem)}</span><button class="txtb" data-go="roulette" style="margin:auto 0 0;padding:0;text-align:left">기다리는 동안 룰렛 돌려 보기 (예시)</button></div></div>`; },
-  /* 참여형 룰렛: 혜택 내용은 아직 안 정해서 칸은 번호만 (예시 화면) */
-  roulette: () => split(`<div class="pin"></div><div class="whl" id="whl" style="transform:rotate(${S.spin ? S.spin.deg : 0}deg)">${[1, 2, 3, 4, 5, 6].map((n) => `<span style="transform:rotate(${n * 60 - 30}deg)"><u>${n}</u></span>`).join("")}</div>`,
-    `<div class="q an">룰렛을<br>돌려 보세요</div><div class="demo an d1">예시 화면이에요. 칸마다 어떤 혜택을 넣을지는 아직 안 정했어요.</div>
-    <div class="why an d2">${S.spin && S.spin.done ? `<b>${S.spin.n}번 칸</b>혜택 내용이 정해지면 여기에 나와요` : "아래 버튼을 눌러 주세요"}</div>
-    <div class="an d3" style="margin-top:16px"><button class="add" id="spinGo" ${S.spin && !S.spin.done ? "disabled" : ""}>${S.spin ? "한 번 더 돌리기" : "돌리기"}</button></div>`),
+      <div class="chk an d3"><i>3</i><b>회원</b><span>${esc(mem)}</span><button class="txtb" data-go="keycap" style="margin:auto 0 0;padding:0;text-align:left">기다리는 동안 키캡 눌러 보기</button></div></div>`; },
+  /* 기다리는 동안 키캡 클리커 (11/19 액상덕후 "고른 액상으로 결제 기다리는 동안 키캡 만들기", "키캡 클리커 알지"). 키캡 윗면은 손님이 담은 상품 사진, 누르면 갈축 소리. 혜택과는 아직 안 엮음 */
+  keycap: () => { const caps = CI.filter(([, v]) => v.img).slice(0, 4);
+    return `<div class="q s an">기다리는 동안 눌러 보세요</div><div class="qs an" style="margin-top:4px">${caps.length ? "고르신 상품으로 만든 키캡이에요" : "키캡을 눌러 보세요"}</div>
+      <div class="kcs an d1">${(caps.length ? caps : [["", { img: "", label: "VF" }]]).map(([, v]) => `<div class="kc" data-kc="1"><span class="kct">${v.img ? `<img src="${v.img}" alt="" draggable="false">` : `<b>VF</b>`}</span></div>`).join("")}</div>
+      <div class="kcc an d2"><b id="kcn">${S.kc}</b>번 눌렀어요</div>`; },
 };
 function sellers() { try { const o = JSON.parse(E(`JSON.stringify({ l: [...new Set([...SELLERS, ...(SELLER ? [SELLER] : [])])], s: SELLER || "" })`)); if (o.l.length === 1 && !o.s) { E(`SELLER = ${J(o.l[0])}; sellerSave()`); o.s = o.l[0]; } return o; } catch (e) { return { l: [], s: "" }; } }
 /* VS 짝: A그룹 쪽은 문진 추천 순서대로, 반대쪽은 같은 맛 계열(g), 같은 가격대(line)에서 A그룹이 아닌 것 중 많이 나간 순 (임시 기준) */
@@ -499,7 +508,6 @@ document.addEventListener('click', (e) => { const t = e.target, c = (s) => t.clo
   if (c('[data-vsnext]')) { S.vp++; return draw(); }
   if (b = c('[data-oth]')) return openOth(b.dataset.oth);
   if (t.id === "memGo") { if (!/^[가-힣a-zA-Z ]{1,12}$/.test(S.name.trim())) return toast("성함을 알려 주세요"); return lookup(); }
-  if (t.id === "spinGo") { const n = 1 + Math.floor(Math.random() * 6), base = S.spin ? S.spin.deg - (S.spin.deg % 360) + 360 : 0; S.spin = { n, deg: base + 360 * 4 + (360 - (n * 60 - 30)), done: false }; $('whl').style.transform = `rotate(${S.spin.deg}deg)`; t.disabled = true; setTimeout(() => { if (S.spin) S.spin.done = true; if (S.step === "roulette") draw(); }, 3500); return; }
   if (b = c('[data-key]')) { const k = b.dataset.key; if (k === "ok") return go("mname"); S.phone = k === "del" ? S.phone.slice(0, -1) : (S.phone + k).slice(0, 11); return draw(); }
   if (b = c('[data-go]')) return go(b.dataset.go);
   if (b = c('[data-again]')) { const o = S.mem.orders[+b.dataset.again]; o.items.forEach((it) => { for (let i = 0; i < it.qty; i++) add(it.kind, it.id, 1); }); S.path = ["liq", "sum"]; toast("지난번 그대로 담았어요"); return go("sum"); }
@@ -515,7 +523,7 @@ document.addEventListener('click', (e) => { const t = e.target, c = (s) => t.clo
   if (t.id === "sndBtn") { SND = !SND; try { localStorage.setItem("vf-kiosk-snd", SND ? "1" : "0"); speechSynthesis.cancel(); } catch (er) {} return draw(); }
   if (t.id === "back") { try { E("document.body.classList.remove('open', 'kq')"); } catch (er) {} document.body.classList.remove('stf'); sync(); return draw(); }
   if (t.id === "prev") { const i = S.path.indexOf(S.step); if (i > 0) return go(S.path[i - 1]); if (i === 0) return go(S.res ? "pick" : "way"); if (S.step === "way") return go(S.who === "mem" && S.mem && S.mem.s === "found" ? "hello" : "start"); if (S.step === "mydev") return go("way"); if (S.step === "hello") return go("mname"); if (S.step === "mname") return go("phone");
-    if (S.step === "quiz") { if (S.qz.i > 0) { S.qz.i--; return draw(); } return go(S.way === "have" ? "mydev" : "way"); } if (S.step === "pick") { qzLoad(); S.qz.i = Math.max(0, S.qz.list.length - 1); return go("quiz"); } if (S.step === "check") return go("sum"); if (S.step === "roulette") return go("check"); return go("start"); }
+    if (S.step === "quiz") { if (S.qz.i > 0) { S.qz.i--; return draw(); } return go(S.way === "have" ? "mydev" : "way"); } if (S.step === "pick") { qzLoad(); S.qz.i = Math.max(0, S.qz.list.length - 1); return go("quiz"); } if (S.step === "check") return go("sum"); if (S.step === "keycap") return go("check"); return go("start"); }
   if (t.id === "next") { const i = S.path.indexOf(S.step);
     if (S.step === "quiz") { const Q = S.qz.list[S.qz.i]; if (!Q || !(S.qz.ans[Q.k] || []).length) return toast("하나 이상 골라 주세요"); qzLoad(); S.qz.i++; if (S.qz.i >= S.qz.list.length) return qzDone(); return draw(); }
     if (S.step === "pick") { S.path = S.way === "have" ? ["liq", "pod", "sum"] : ["dev", "liq", "pod", "sum"]; return go(S.path[0]); }
@@ -523,6 +531,10 @@ document.addEventListener('click', (e) => { const t = e.target, c = (s) => t.clo
     if (i === S.path.length - 1) { if (!CN) return toast("먼저 상품을 담아 주세요"); return go("check"); }
     if (S.step === "liq" && !liqN() && !CN) return toast("액상을 하나 이상 골라 주세요"); return go(S.path[i + 1]); } });
 document.addEventListener('wheel', (e) => { const r = e.target.closest && e.target.closest('.dvr'); if (r && Math.abs(e.deltaY) > Math.abs(e.deltaX)) r.scrollLeft += e.deltaY; }, { passive: true }); /* 마우스 휠로도 옆으로 넘어가게 (패드에선 손가락으로 밀기) */
+/* 키캡: 누르는 순간 내려가며 "도", 떼는 순간 올라오며 가벼운 "독" */
+document.addEventListener('pointerdown', (e) => { const k = e.target.closest && e.target.closest('[data-kc]'); if (!k) return; k.classList.add('dn'); thock(0, 300, .55); S.kc++; const n = $('kcn'); if (n) n.textContent = S.kc; });
+const kcUp = () => { const l = document.querySelectorAll('.kc.dn'); if (!l.length) return; l.forEach((k) => k.classList.remove('dn')); thock(0, 430, .22); };
+document.addEventListener('pointerup', kcUp); document.addEventListener('pointercancel', kcUp);
 document.addEventListener('input', (e) => { const t = e.target; if (t.id === "mName") S.name = t.value; if (t.id === "rName") S.reg.name = t.value; if (t.id === "rYear") S.reg.year = t.value = t.value.replace(/\D/g, "").slice(0, 2); if (t.id === "rPhone") S.reg.phone = t.value = t.value.replace(/\D/g, "").slice(0, 11); });
 </script>
 </body>
