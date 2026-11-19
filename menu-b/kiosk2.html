@@ -192,6 +192,11 @@ main{flex:1;min-height:0;padding:20px 24px;display:flex;flex-direction:column}
 .chk strong{margin-top:auto;padding-top:14px;font-size:50px;font-weight:900;letter-spacing:-.035em}
 .chk strong.r{color:var(--pt)}
 
+.selr{display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin-top:16px}
+.selr b{font-size:22px;font-weight:800;margin-right:6px}
+.selr button{height:60px;padding:0 26px;border-radius:14px;border:2px solid var(--line);background:var(--card);font-size:23px;font-weight:800;color:var(--g1)}
+.selr button.on{background:var(--ink);border-color:var(--ink);color:#fff}
+.selr span{font-size:20px;color:var(--pt);font-weight:700;margin-left:6px}
 /* 룰렛 (예시) */
 .whl{width:400px;height:400px;border-radius:50%;margin:0 auto;position:relative;background:conic-gradient(#111 0 60deg,#fff 60deg 120deg,#D81F2A 120deg 180deg,#fff 180deg 240deg,#111 240deg 300deg,#fff 300deg 360deg);box-shadow:0 0 0 10px var(--card),0 6px 24px rgba(0,0,0,.15);transition:transform 3.4s cubic-bezier(.12,.75,.1,1)}
 .whl span{position:absolute;left:50%;top:50%;width:0;height:0;font-size:34px;font-weight:900}
@@ -379,7 +384,9 @@ const V = {
   /* 마지막은 직원 손: 서비스 처리(손님이 보는 앞에서), 금액 최종 확인, 회원 (액상덕후 11/18) */
   check: () => { const save = Math.max(0, (CT.unit || 0) - (CT.total || 0)), r = S.reg, m = S.mem;
     const mem = S.who === "mem" && m && m.s === "found" ? maskPhone(S.phone) + " 회원 확인됐어요. 이 번호로 구매 이력을 남겨요" : r.s ? r.s : "회원 없이 진행해요";
+    const sl = sellers(); /* 판매 직원: B안의 오늘 출근자 목록(SELLERS)과 고른 이름(SELLER)을 그대로 씀. 11/19 "직원화면에는 판매자 성함을 적는 게 좋을 듯" */
     return `<div class="q s an">직원이 확인해 드릴게요</div><div class="qs an" style="margin-top:4px">패드를 직원에게 보여 주세요</div>
+      ${sl.l.length ? `<div class="selr an d1"><b>판매 직원</b>${sl.l.map((n) => `<button data-seller="${esc(n)}" class="${n === sl.s ? "on" : ""}">${esc(n)}</button>`).join("")}${sl.s ? "" : `<span>직원 이름을 눌러 주세요</span>`}</div>` : ""}
       <div class="chk3"><div class="chk an d1"><i>1</i><b>서비스, 할인</b><span>${save ? esc(CT.how || "묶음, 이벤트") + " 적용. 직원이 손님 앞에서 서비스 처리해 드려요" : "이번 주문엔 적용된 묶음 할인이 없어요"}</span>${save ? `<strong class="r">-${won(save)}</strong>` : ""}</div>
       <div class="chk an d2"><i>2</i><b>결제하실 금액</b><span>담은 상품 ${CN}개. 직원이 포스 금액과 같은지 확인해요</span><strong>${won(CT.total || 0)}</strong></div>
       <div class="chk an d3"><i>3</i><b>회원</b><span>${esc(mem)}</span><button class="txtb" data-go="roulette" style="margin:auto 0 0;padding:0;text-align:left">기다리는 동안 룰렛 돌려 보기 (예시)</button></div></div>`; },
@@ -389,6 +396,7 @@ const V = {
     <div class="why an d2">${S.spin && S.spin.done ? `<b>${S.spin.n}번 칸</b>혜택 내용이 정해지면 여기에 나와요` : "아래 버튼을 눌러 주세요"}</div>
     <div class="an d3" style="margin-top:16px"><button class="add" id="spinGo" ${S.spin && !S.spin.done ? "disabled" : ""}>${S.spin ? "한 번 더 돌리기" : "돌리기"}</button></div>`),
 };
+function sellers() { try { const o = JSON.parse(E(`JSON.stringify({ l: [...new Set([...SELLERS, ...(SELLER ? [SELLER] : [])])], s: SELLER || "" })`)); if (o.l.length === 1 && !o.s) { E(`SELLER = ${J(o.l[0])}; sellerSave()`); o.s = o.l[0]; } return o; } catch (e) { return { l: [], s: "" }; } }
 /* VS 짝: A그룹 쪽은 문진 추천 순서대로, 반대쪽은 같은 맛 계열(g), 같은 가격대(line)에서 A그룹이 아닌 것 중 많이 나간 순 (임시 기준) */
 function vsPair() { const R = S.res, rk = rankMap("liq"), as = (R.liqs || []).map((id) => D.liq.find((x) => x.id === id)).filter((x) => x && !x.out);
   if (!as.length) return { a: null, b: null, n: 0 };
@@ -468,6 +476,7 @@ document.addEventListener('click', (e) => { const t = e.target, c = (s) => t.clo
   if (b = c('[data-qa]')) { const Q = S.qz.list[S.qz.i], v = b.dataset.qa; if (!Q) return; if (Q.k === "now") { delete S.qz.ans.cig; delete S.qz.ans.heat; }
     if (Q.multi) { const l = S.qz.ans[Q.k] || []; S.qz.ans[Q.k] = l.includes(v) ? l.filter((x) => x !== v) : [...l, v]; return draw(); }
     if (qzT) return; S.qz.ans[Q.k] = v; draw(); qzT = setTimeout(() => { qzT = 0; qzLoad(); S.qz.i++; if (S.qz.i >= S.qz.list.length) return qzDone(); draw(); }, 240); return; }
+  if (b = c('[data-seller]')) { try { E(`SELLER = SELLER === ${J(b.dataset.seller)} ? "" : ${J(b.dataset.seller)}; sellerSave()`); } catch (er) {} return draw(); }
   if (c('[data-vsnext]')) { S.vp++; return draw(); }
   if (b = c('[data-oth]')) return openOth(b.dataset.oth);
   if (t.id === "memGo") { if (!/^[가-힣a-zA-Z ]{1,12}$/.test(S.name.trim())) return toast("성함을 알려 주세요"); return lookup(); }
@@ -491,7 +500,7 @@ document.addEventListener('click', (e) => { const t = e.target, c = (s) => t.clo
   if (t.id === "next") { const i = S.path.indexOf(S.step);
     if (S.step === "quiz") { const Q = S.qz.list[S.qz.i]; if (!Q || !(S.qz.ans[Q.k] || []).length) return toast("하나 이상 골라 주세요"); qzLoad(); S.qz.i++; if (S.qz.i >= S.qz.list.length) return qzDone(); return draw(); }
     if (S.step === "pick") { S.path = S.way === "have" ? ["liq", "pod", "sum"] : ["dev", "liq", "pod", "sum"]; return go(S.path[0]); }
-    if (S.step === "check") return staff();
+    if (S.step === "check") { const sl = sellers(); if (sl.l.length && !sl.s) return toast("판매 직원 이름을 눌러 주세요"); return staff(); }
     if (i === S.path.length - 1) { if (!CN) return toast("먼저 상품을 담아 주세요"); return go("check"); }
     if (S.step === "liq" && !liqN() && !CN) return toast("액상을 하나 이상 골라 주세요"); return go(S.path[i + 1]); } });
 document.addEventListener('wheel', (e) => { const r = e.target.closest && e.target.closest('.dvr'); if (r && Math.abs(e.deltaY) > Math.abs(e.deltaX)) r.scrollLeft += e.deltaY; }, { passive: true }); /* 마우스 휠로도 옆으로 넘어가게 (패드에선 손가락으로 밀기) */
