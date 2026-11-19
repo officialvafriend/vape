@@ -506,9 +506,10 @@ body.land .cartp .scard{grid-column:1/-1}
 .turn.on{border-color:#e5313b;border-style:solid}
 .sp{position:relative;z-index:1;width:40px;height:40px;border-radius:50%;background:#fff;border:2px dashed #d9c78f;display:flex;align-items:center;justify-content:center}
 .sp small{font-size:12px;font-weight:800;color:#c4b27a}
-.sp.on{border:0;background:radial-gradient(circle at 35% 30%,#ff6b6b,#E01A19 60%,#b30f0f);box-shadow:0 2px 0 #8a0c0c,0 4px 8px rgba(224,26,25,.35);transform:rotate(-10deg)}
-.sp.on em{font-style:normal;font-family:var(--jal);font-size:13px;color:#fff;letter-spacing:-.02em;border:2px solid rgba(255,255,255,.8);border-radius:50%;width:30px;height:30px;display:flex;align-items:center;justify-content:center}
-.sp.rw{width:54px;height:54px;border:3px solid #FFB020;background:#FFF0C2;box-shadow:0 0 0 4px rgba(255,176,32,.2)}
+.sp.on{border:3px solid #fff;background:radial-gradient(circle at 32% 28%,#ffffff,#e6ebf2 38%,#b8c2d0 72%,#eef2f7);box-shadow:0 3px 6px rgba(40,70,110,.35),inset 0 -3px 5px rgba(0,0,0,.12)}
+.sp.on em{font-style:normal;font-size:0;width:24px;height:24px;border-radius:50%;background:linear-gradient(160deg,#6fb6ff,#2f6fe0);box-shadow:inset 0 2px 3px rgba(255,255,255,.6);display:flex;align-items:center;justify-content:center}.sp.on em::after{content:'✓';font-size:15px;font-weight:900;color:#fff}
+.sp.rw{width:54px;height:54px;border:3px dashed #e3c98a;background:#fffaf0;box-shadow:none}
+.sp.rw.on{border:3px solid #fff;background:radial-gradient(circle at 35% 30%,#fff3c4,#FFB020 70%)}
 .sp.rw u{text-decoration:none;font-size:26px}
 .sp.rw label{position:absolute;bottom:-17px;left:50%;transform:translateX(-50%);white-space:nowrap;font-family:var(--jal);font-size:12px;color:#b45309}
 .sp.rw.on{transform:rotate(-8deg) scale(1.05)}.sp.rw.on em{width:40px;height:40px;font-size:16px}
@@ -535,6 +536,54 @@ body:not(.land) .cstaff{overflow-y:auto;scrollbar-width:none}body:not(.land) .cs
 .pfgo{margin-top:8px;width:100%;height:60px;border:0;border-radius:16px;background:var(--deep);color:#fff;font-family:var(--jal);font-size:22px}.pfgo small{font-family:var(--kr);font-size:14px;opacity:.8}
 .pfnote{margin-top:6px;text-align:center;font-size:15px;color:#4e5968}.pfnote.wait{font-family:var(--jal);font-size:17px;color:#b45309;animation:pulse 1.4s ease-in-out infinite}
 .pfdemo{margin-top:6px;text-align:center;font-size:12px;color:#8b95a1}
+.svmore{margin-left:6px;padding:4px 10px;border:0;border-radius:999px;background:var(--tint);color:var(--deep);font-family:var(--jal);font-size:14px;vertical-align:1px}
+.mfind.on button[data-act=stview]{background:#FFE14D;color:#191f28}
+/* 도장 자세히 보기 */
+.stv .svscroll{flex:1;min-height:0;overflow-y:auto;margin-top:12px;border-radius:26px;background:linear-gradient(180deg,#d6f5ec 0%,#cfe9ff 40%,#e9f4ff 100%);color:#191f28;scrollbar-width:none}.stv .svscroll::-webkit-scrollbar{display:none}
+.svhead{text-align:center;padding:24px 16px 6px}.svhead small{font-size:17px;font-weight:700;color:#4e5968}
+.svhead h1{font-family:var(--jal);font-weight:normal;font-size:60px;line-height:1.1;margin:4px 0 8px}
+.svpill{display:inline-block;padding:8px 16px;border-radius:999px;background:rgba(255,255,255,.85);font-size:15px;font-weight:700;color:#333d4b;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.svgrade{margin:18px 26px 6px;padding:22px 18px 38px;border-radius:20px;background:rgba(255,255,255,.75)}
+.gbar{position:relative;height:10px;border-radius:10px;background:#e5e8eb}.gbar i{position:absolute;left:0;top:0;bottom:0;border-radius:10px;background:linear-gradient(90deg,#7dd3a8,#3fb37f);transition:width 1s}
+.gdot{position:absolute;top:50%;width:14px;height:14px;margin:-7px 0 0 -7px;border-radius:50%;background:#fff;border:3px solid #d1d6db}.gdot.on{border-color:#3fb37f}
+.gtip{position:absolute;bottom:18px;transform:translateX(-50%);padding:5px 10px;border-radius:10px;background:#191f28;color:#fff;font-style:normal;font-size:13px;font-weight:800;white-space:nowrap}
+.gtip::after{content:'';position:absolute;left:50%;bottom:-5px;margin-left:-5px;border:5px solid transparent;border-top-color:#191f28;border-bottom:0}
+.glab{position:relative;height:30px;margin-top:10px}.glab div{position:absolute;transform:translateX(-50%);text-align:center;white-space:nowrap}
+.glab div:first-child{transform:none}.glab div:last-child{transform:translateX(-100%)}
+.glab b{display:block;font-size:13px;color:#8b95a1;font-weight:800}.glab small{font-size:11px;color:#b0b8c1}.glab .cur b{color:#3fb37f;font-family:var(--jal);font-weight:normal;font-size:14px}
+.svscene{position:relative;margin:10px 10px 0}
+.svbg{position:absolute;inset:0;width:100%;height:100%}
+.cloud{animation:drift 9s ease-in-out infinite alternate;animation-delay:calc(var(--cd) * -1)}@keyframes drift{to{transform:translateX(26px)}}
+.svprog{stroke-dasharray:var(--p) 4000;transition:stroke-dasharray 1s}
+.svb{position:absolute;width:68px;height:68px;margin:-34px 0 0 -34px;animation:svin .45s cubic-bezier(.2,1.5,.4,1) both;animation-delay:var(--d)}
+@keyframes svin{0%{transform:scale(.3);opacity:0}100%{transform:none;opacity:1}}
+.svb .coin{width:100%;height:100%;border-radius:50%;border:4px solid #fff;background:radial-gradient(circle at 32% 28%,#fff,#e8ecf2 38%,#bcc5d2 72%,#f1f4f8);box-shadow:0 6px 12px rgba(40,70,110,.25),inset 0 -4px 6px rgba(0,0,0,.1);display:flex;align-items:center;justify-content:center}
+.svb .coin i{width:36px;height:36px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff,#d7dde6);box-shadow:inset 0 2px 3px rgba(0,0,0,.12);display:flex;align-items:center;justify-content:center;font-style:normal;font-weight:900;font-size:20px;color:#b0b8c1}
+.svb.on .coin i{background:linear-gradient(160deg,#79bdff,#2f6fe0);color:#fff;box-shadow:inset 0 3px 4px rgba(255,255,255,.55),0 2px 6px rgba(47,111,224,.4)}
+.svb.nx .coin{border:4px dashed #5aa9ff;background:radial-gradient(circle,#fff,#eaf4ff);animation:nextp 1.2s ease-in-out infinite}
+.svb label{position:absolute;top:100%;left:50%;transform:translateX(-50%);margin-top:4px;white-space:nowrap;font-size:12px;font-weight:800;color:#4e5968;text-shadow:0 1px 0 #fff}
+.okst{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) rotate(-16deg);padding:2px 7px;border:2px solid #e5313b;border-radius:8px;color:#e5313b;font-family:var(--jal);font-weight:normal;font-size:13px;background:rgba(255,255,255,.65);letter-spacing:.02em;white-space:nowrap}
+.svb.new .okst,.svb.new .coin i{animation:stampIn .55s cubic-bezier(.2,1.4,.4,1) both;animation-delay:var(--d)}
+.tip{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);margin-bottom:8px;padding:5px 10px;border-radius:10px;background:#191f28;color:#fff;font-style:normal;font-size:13px;font-weight:800;white-space:nowrap}
+.tip::after{content:'';position:absolute;left:50%;bottom:-5px;margin-left:-5px;border:5px solid transparent;border-top-color:#191f28;border-bottom:0}
+.walker2{position:absolute;left:100%;bottom:40%;animation:hop .9s ease-in-out infinite}
+.svb.rw{width:84px;height:84px;margin:-42px 0 0 -42px}
+.svb.rw .scp{width:100%;height:100%;background:repeating-conic-gradient(from 0deg,transparent 0 6deg,rgba(255,255,255,.0) 6deg 12deg),#fff;display:flex;align-items:center;justify-content:center;filter:drop-shadow(0 6px 10px rgba(0,0,0,.15));opacity:.9}
+.svb.rw .scp span{width:76%;height:76%;border-radius:50%;border:3px dashed #c9cdd2;display:flex;align-items:center;justify-content:center;font-size:32px;filter:grayscale(1);opacity:.55}
+.svb.rw.on .scp{background:linear-gradient(150deg,var(--c1),var(--c2));opacity:1}
+.svb.rw.on .scp span{border:3px solid rgba(255,255,255,.7);filter:none;opacity:1;background:rgba(255,255,255,.18)}
+.svb.rw:not(.on) .scp{animation:glow2 2.4s ease-in-out infinite}@keyframes glow2{50%{filter:drop-shadow(0 0 10px rgba(90,169,255,.6))}}
+.svb.rw label{font-family:var(--jal);font-weight:normal;font-size:13px;color:#b45309}
+.svbox{margin:16px 26px;padding:16px 18px;border-radius:20px;background:rgba(255,255,255,.85)}
+.svbox h3{font-family:var(--jal);font-weight:normal;font-size:20px;margin-bottom:8px}
+.rwr{display:grid;grid-template-columns:36px 110px 1fr 90px;align-items:center;gap:8px;padding:6px 0}
+.rwr .e{font-size:24px}.rwr b{font-family:var(--jal);font-weight:normal;font-size:16px}.rwr small{font-size:13px;color:#8b95a1;text-align:right}
+.rwr .rb{height:8px;border-radius:8px;background:#e5e8eb;overflow:hidden}.rwr .rb i{display:block;height:100%;border-radius:8px;background:linear-gradient(90deg,#5aa9ff,#2f6fe0)}
+.rwr.ok small{color:#e5313b;font-weight:800}.rwr.ok .rb i{background:linear-gradient(90deg,#ffb020,#e5313b)}
+.lgr{display:flex;align-items:center;gap:10px;padding:6px 0;border-top:1px solid #eef0f3}.lgr:first-of-type{border-top:0}
+.lgr span{width:44px;font-size:14px;color:#8b95a1}.lgr b{width:36px;font-family:var(--jal);font-weight:normal;font-size:17px}.lgr b.p{color:#2f6fe0}.lgr b.m{color:#e5313b}.lgr small{font-size:14px;color:#4e5968}
+body.land .stv .svscroll{display:grid;grid-template-columns:1fr 1.1fr;align-items:start}
+body.land .stv .svhead,body.land .stv .svgrade{grid-column:1}body.land .stv .svscene{grid-column:2;grid-row:1/6}
 .srule{margin-top:8px;padding:8px 12px;border-radius:12px;background:#FFF6D6;color:#5c4400;font-size:15px;text-align:center}.srule b{font-family:var(--jal);font-weight:normal;color:#e5313b}
 .srule.ok{background:#E8F7EE;color:#0f7a3d}
 .sadd .go:disabled{opacity:.4}
@@ -1158,7 +1207,7 @@ function memDone(){
       (state.memKind==='new'?'<div class="row2"><span>이름</span><b>'+esc(full)+'</b></div>':'')+
       '<div class="row2"><span>휴대폰</span><b>'+esc(ph)+'</b></div>'+
       (state.memKind==='new'?'<div class="row2"><span>쿠폰 문자</span><b>'+(m.mk?'받을래요 🎟️':'안 받아요')+'</b></div>':'')+
-      (function(){ var rec=stampRec(m.phone); return '<div class="row2"><span>🟡 도장</span><b>'+(rec?rec.stamps+'개'+(rec.name?' · '+esc(maskName(rec.name))+' 님':''):'이 패드엔 아직 없어요 (오늘부터 모아요)')+'</b></div>'+stampMap(rec?rec.stamps:0)+'<div class="snext">'+nextReward(rec?rec.stamps:0)+'</div>'; })()+
+      (function(){ var rec=stampRec(m.phone); return '<div class="row2"><span>🟡 도장</span><b>'+(rec?rec.stamps+'개'+(rec.name?' · '+esc(maskName(rec.name))+' 님':''):'이 패드엔 아직 없어요 (오늘부터 모아요)')+'</b></div>'+stampMap(rec?rec.stamps:0)+'<div class="snext">'+nextReward(rec?rec.stamps:0)+' <button class="svmore" data-act="stview">🔍 자세히 보기</button></div>'; })()+
     '</section>'+(state.hist.indexOf('cart-staff')>=0?'<div class="acts" style="margin-top:auto"><button data-act="cmemo2">📝 회원메모 쓰기</button><button class="main" data-act="tocart">‹ 결제 화면으로</button></div>':'<div class="acts" style="margin-top:auto"><button data-act="memoff">회원 없이 둘러보기</button><button class="main" data-act="mshop">🛒 이 회원으로 담기 시작</button></div>')+'</div>';
 }
 
@@ -1534,7 +1583,7 @@ function fly(img){ var r=img.getBoundingClientRect(), f=document.getElementById(
   g.className='ghost'; g.innerHTML='<img src="'+img.src+'" alt="">'; g.style.left=(r.left+r.width/2)/sc+'px'; g.style.top=(r.top+r.height/2)/sc+'px'; document.body.appendChild(g);
   requestAnimationFrame(function(){ requestAnimationFrame(function(){ g.classList.add('fly'); g.style.left=(f.left+f.width/2)/sc+'px'; g.style.top=(f.top+f.height/2)/sc+'px'; }); });
   setTimeout(function(){ g.remove(); }, 600); }
-var CART_OFF = /^(home|mem|cart|mix$|dev-dtl|cmp|resv)/;
+var CART_OFF = /^(home|mem|cart|mix$|dev-dtl|cmp|resv|stamp)/;
 function cartDevs(){ var c=state.cart||{}, out=[], seen={}; Object.keys(c).forEach(function(id){ var x=ITEM(id); if(!x||x.line!=='기기'||!x.dev||seen[x.dev]) return; var i=mIdx(x.dev); if(i<0) return; seen[x.dev]=1; out.push(MODELS[i]); }); return out; }
 function cartFab(bump){ var f=document.getElementById('cartfab'), dk=document.getElementById('cartdock'), n=cartN(), v=state.view, c=state.cart||{};
   dk.hidden = CART_OFF.test(v) || (!n && !document.querySelector('#app .item .add, #app .dcard[data-gid]'));
@@ -1842,12 +1891,50 @@ function stampMap(n, nw){
 function stampBoom(){ var nw=state.stNew; if(!nw) return; setTimeout(function(){ state.stNew=null; }, 50);
   REWARDS.forEach(function(r){ if (r[0]>nw.from && r[0]<=nw.to){ var el=document.querySelectorAll('.smap .sp')[ (function(i){ var row=Math.floor((i-1)/10), c=(i-1)%10; return row*10+c; })(r[0]) ];
     if(!el) return; setTimeout(function(){ ['🎉','✨','🎁','⭐','🎊','💛'].forEach(function(em,k){ var s2=document.createElement('span'); s2.className='boom'; s2.textContent=em; s2.style.left='50%'; var a=k/6*Math.PI*2; s2.style.setProperty('--x',Math.round(Math.cos(a)*70)+'px'); s2.style.setProperty('--y',Math.round(Math.sin(a)*60)+'px'); s2.style.setProperty('--r','20deg'); el.appendChild(s2); setTimeout(function(){s2.remove()},1000); }); toast('🎁 '+r[2]+' 받을 수 있어요!'); }, (r[0]-nw.from)*250+400); } }); }
+/* ---------- 🔍 도장 자세히 보기: 하늘·산 풍경 위 구불구불한 길, 은빛 도장 동전, 보상 배지 ---------- */
+var GRADES=[[0,'🌱','새싹'],[5,'🙂','단골'],[10,'😎','찐단골'],[20,'💎','VIP'],[30,'👑','레전드']];
+var RW_COL={5:['#FFB38A','#FF7A59'],10:['#8EC5FF','#4C8DFF'],20:['#C9A8FF','#8B5CF6'],30:['#FFD66B','#F59E0B']};
+function scallop(){ if (window.__scp) return window.__scp; var pts=[], N=28; for (var i=0;i<N;i++){ var a=i/N*Math.PI*2, r=i%2?46:50; pts.push((50+Math.cos(a)*r).toFixed(1)+'% '+(50+Math.sin(a)*r).toFixed(1)+'%'); } return window.__scp='polygon('+pts.join(',')+')'; }
+function gradeOf(n){ var g=GRADES[0]; GRADES.forEach(function(x){ if(n>=x[0]) g=x; }); return g; }
+function stampView(){
+  var M0=state.member; if(!M0) return memberLookupPrompt();
+  var rec=stampRec(M0.phone)||{name:M0.name,stamps:0,log:[]}, n=rec.stamps||0, nw=state.stNew, g=gradeOf(n), gi=GRADES.indexOf(g);
+  /* 길: 6줄 × 5칸 지그재그 */
+  var W=400, top=120, gap=150, H=top+gap*5+130, xs=[60,130,200,270,340], P=[], d='';
+  for (var r=0;r<6;r++){ var y=top+r*gap, row=r%2?xs.slice().reverse():xs; row.forEach(function(x){ P.push([x,y]); }); }
+  for (var r2=0;r2<6;r2++){ var y2=top+r2*gap, a=r2%2?340:60, b=r2%2?60:340;
+    d+=(r2?'':'M'+a+' '+y2)+' L'+b+' '+y2; if (r2<5) d+=' A75 75 0 0 '+(r2%2?0:1)+' '+b+' '+(y2+gap); }
+  var pct=function(v,t){ return (v/t*100).toFixed(2)+'%'; };
+  var scene='<svg class="svbg" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none">'+
+    '<defs><linearGradient id="mt1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7fc8b0"/><stop offset="1" stop-color="#3f8f86"/></linearGradient>'+
+    '<linearGradient id="mt2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#a9dcc4"/><stop offset="1" stop-color="#5aa598"/></linearGradient></defs>'+
+    [0,1,2,3].map(function(k){ var y=180+k*230; return '<path d="M-20 '+(y+120)+' L70 '+(y-10)+' L150 '+(y+90)+' L240 '+(y-40)+' L330 '+(y+70)+' L420 '+(y-5)+' L420 '+(y+160)+' L-20 '+(y+160)+'Z" fill="url(#mt'+(k%2+1)+')" opacity=".55"/>'; }).join('')+
+    [[40,90],[300,330],[70,620],[320,860]].map(function(c){ return '<g class="cloud" style="--cd:'+(c[0]%7)+'s"><ellipse cx="'+c[0]+'" cy="'+c[1]+'" rx="34" ry="16" fill="#fff" opacity=".9"/><ellipse cx="'+(c[0]+22)+'" cy="'+(c[1]-10)+'" rx="22" ry="16" fill="#fff" opacity=".9"/></g>'; }).join('')+
+    [[20,250],[385,410],[25,560],[380,720],[22,880],[385,1000]].map(function(t){ return '<g><polygon points="'+t[0]+','+(t[1]-34)+' '+(t[0]-14)+','+t[1]+' '+(t[0]+14)+','+t[1]+'" fill="#2f7a5f"/><rect x="'+(t[0]-2)+'" y="'+t[1]+'" width="4" height="8" fill="#6b4f3a"/></g>'; }).join('')+
+    '<path d="'+d+'" fill="none" stroke="#dfe7ee" stroke-width="40" stroke-linecap="round" stroke-linejoin="round"/>'+
+    '<path d="'+d+'" fill="none" stroke="#fff" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/>'+
+    '<path class="svprog" d="'+d+'" fill="none" stroke="#5aa9ff" stroke-width="12" stroke-linecap="round" style="--p:'+(n<1?0:(function(k){ var r=Math.floor((k-1)/5), w=(k-1)%5; return (r*(280+Math.PI*75)+w*70).toFixed(1); })(Math.min(n,30)))+'"/>'+
+    '</svg>';
+  var badges=P.map(function(pt,i0){ var i=i0+1, rw=REWARDS.filter(function(x){return x[0]===i})[0], on=i<=n, nx=i===n+1, isNew=nw&&i>nw.from&&i<=nw.to;
+    var st='left:'+pct(pt[0],W)+';top:'+pct(pt[1],H)+';--d:'+(isNew?(i-nw.from-1)*.3+.3:Math.min(i0,12)*.04)+'s';
+    if (rw){ var c=RW_COL[i]; return '<div class="svb rw'+(on?' on':'')+(nx?' nx':'')+(isNew?' new':'')+'" style="'+st+';--c1:'+c[0]+';--c2:'+c[1]+'"><div class="scp" style="clip-path:'+scallop()+'"><span>'+rw[1]+'</span></div>'+(on?'<b class="okst">GET!</b>':'')+'<label>'+i+'개 · '+rw[2]+'</label></div>'; }
+    return '<div class="svb'+(on?' on':'')+(nx?' nx':'')+(isNew?' new':'')+'" style="'+st+'"><div class="coin"><i>✓</i></div>'+(on&&(i===n||isNew)?'<b class="okst">VF ✓</b>':'')+(nx?'<em class="tip">다음 도장</em><span class="walker2">'+chRed(46)+'</span>':'')+'<label>'+i+'번째</label></div>'; }).join('');
+  var log=(rec.log||[]).slice().reverse().slice(0,8).map(function(l){ var t=new Date(l.t); return '<div class="lgr"><span>'+(t.getMonth()+1)+'/'+t.getDate()+'</span><b class="'+(l.d>0?'p':'m')+'">'+(l.d>0?'+':'')+l.d+'</b><small>'+esc(l.note||'')+'</small></div>'; }).join('');
+  return '<div class="pane res stv">'+topBar('도장 자세히 보기 🔍',1,1)+
+    '<div class="svscroll"><div class="svhead"><small>'+esc(maskName(M0.name||rec.name))+' 님의 도장 현황</small><h1><span class="cnt3" data-n="'+n+'">'+n+'</span>개</h1><span class="svpill">💧 액상 5병 이상 사면 도장 1개 · '+nextReward(n).replace(/<[^>]+>/g,'')+'</span></div>'+
+    '<div class="svgrade"><div class="gbar"><i style="width:'+(Math.min(n,30)/30*100)+'%"></i>'+GRADES.map(function(x){ return '<span class="gdot'+(n>=x[0]?' on':'')+'" style="left:'+(x[0]/30*100)+'%"></span>'; }).join('')+'<em class="gtip" style="left:'+(Math.min(n,30)/30*100)+'%">현재 '+n+'개</em></div>'+
+      '<div class="glab">'+GRADES.map(function(x,k){ return '<div class="'+(k===gi?'cur':'')+'" style="left:'+(x[0]/30*100)+'%"><b>'+x[1]+' '+x[2]+'</b><small>'+x[0]+'개</small></div>'; }).join('')+'</div></div>'+
+    '<div class="svscene" style="aspect-ratio:'+W+'/'+H+'">'+scene+badges+'</div>'+
+    '<div class="svbox"><h3>🎁 보상</h3>'+REWARDS.map(function(r){ var ok=n>=r[0]; return '<div class="rwr'+(ok?' ok':'')+'"><span class="e">'+r[1]+'</span><b>'+r[2]+'</b><div class="rb"><i style="width:'+Math.min(100,n/r[0]*100)+'%"></i></div><small>'+(ok?'받을 수 있어요!':(r[0]-n)+'개 남음')+'</small></div>'; }).join('')+'</div>'+
+    '<div class="svbox"><h3>🧾 도장 기록</h3>'+(log||'<div class="lgr"><small>아직 기록이 없어요. 오늘 첫 도장을 받아 보세요!</small></div>')+'</div></div></div>';
+}
+function memberLookupPrompt(){ return '<div class="pane res">'+topBar('도장 자세히 보기 🔍',1,1)+'<section class="q"><h1>먼저 회원 조회를<br>해 주세요 👤</h1></section><button class="cta" data-act="mem-old">👤 회원 조회하기</button></div>'; }
 function nextReward(n){ var r=REWARDS.filter(function(r){return r[0]>n})[0]; return r?'<b>'+(r[0]-n)+'개</b> 더 모으면 '+r[1]+' '+r[2]+'!':'🎉 모든 보상을 받을 수 있어요!'; }
 /* 첫 화면 맨 위: 회원 조회 (회원이 정해지면 이름과 도장 지도 요약) */
 function memberBox(){ var M0=state.member;
   if (!M0) return '<button class="mfind" data-act="mem-old"><span class="em">👤</span><span><b>회원 조회하고 시작하기</b><small>휴대폰 번호만 넣으면 도장 지도가 바로 나와요 🟡</small></span><i>›</i></button>';
   var rec=stampRec(M0.phone)||{stamps:0}, n=rec.stamps||0;
-  return '<div class="mfind on"><span class="em">👤</span><span><b>'+esc(maskName(M0.name||rec.name))+' 님 · 🟡 도장 '+n+'개</b><small>'+nextReward(n)+'</small></span><button data-act="mem-old">바꾸기</button><button data-act="memclr">해제</button></div>'; }
+  return '<div class="mfind on"><span class="em">👤</span><span><b>'+esc(maskName(M0.name||rec.name))+' 님 · 🟡 도장 '+n+'개</b><small>'+nextReward(n)+'</small></span><button data-act="stview">🔍 도장</button><button data-act="mem-old">바꾸기</button><button data-act="memclr">해제</button></div>'; }
 function memberChip(){ var M0=state.member; if(!M0) return ''; var rec=stampRec(M0.phone)||{stamps:0};
   return '<div class="mchip">👤 <b>'+esc(maskName(M0.name||rec.name))+'</b> 님 · 🟡 도장 <b>'+(rec.stamps||0)+'</b>개</div>'; }
 function stampBottles(){ return cartSum().bottles||0; }
@@ -1858,7 +1945,7 @@ function stampCard(){
   var rec=stampRec(M0.phone)||{name:M0.name,stamps:0,log:[]}, n=rec.stamps||0, add=state.stAdd==null?stampDefault():state.stAdd, nb=stampBottles();
   var done=state.stDone, can=REWARDS.filter(function(r){return n>=r[0]});
   return '<div class="scard"><div class="sh"><b>🗺️ '+esc(maskName(M0.name||rec.name))+' 님 도장 지도</b><span>🟡 '+n+' / 30</span></div>'+stampMap(n, state.stNew)+
-    '<div class="snext">'+nextReward(n)+'</div>'+
+    '<div class="snext">'+nextReward(n)+' <button class="svmore" data-act="stview">🔍 자세히 보기</button></div>'+
     (done!=null&&state.pf===4?posFlow(0).replace('<div class="pfdemo">','<div class="sok">'+(done?'✅ 포스봇이 결제를 확인해서 도장 '+done+'개 찍었어요':'✅ 결제 확인 · 이번엔 도장 없음 (액상 5병 미만)')+'</div><div class="pfdemo">'):
       (nb<STAMP_MIN_BOTTLES?'<div class="srule">💧 액상 <b>5병 이상</b> 사면 도장 1개! 지금 '+nb+'병 · <b>'+(STAMP_MIN_BOTTLES-nb)+'병</b> 더 담으면 도장 받아요</div>':'<div class="srule ok">💧 액상 '+nb+'병 구매 · 도장 1개 받을 수 있어요 🎉</div>')+
       posFlow(add))+
@@ -1909,6 +1996,7 @@ function render(){
   else if (v==='mem-old') h = memPane('old');
   else if (v==='mem-done') h = memDone();
   else if (v==='cheap') h = cheapPane();
+  else if (v==='stamp') h = stampView();
   else if (v==='memo') h = memoPane();
   else if (v==='resv') h = resvPane();
   else if (v==='resv-done') h = resvDone();
@@ -2018,6 +2106,7 @@ document.getElementById('app').addEventListener('click',function(e){
   if (a==='sta') { state.stAdd=Math.max(0,Math.min(10,(state.stAdd==null?stampDefault():state.stAdd)+(+b.dataset.d))); return render(); }
   if (a==='stgo') { stampGo(); return; }
   if (a==='pfsend') { pfSend(); return; }
+  if (a==='stview') return go('stamp');
   if (a==='strw') { stampUse(+b.dataset.n); return; }
   if (a==='mback') { state.memoFrom=null; state.mpre=''; return back(); }
   if (a==='cmemo') { var cc=state.cart||{}, S0=cartSum(), mm0=M_(), d0=new Date();
