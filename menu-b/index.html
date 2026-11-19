@@ -2349,14 +2349,16 @@ function liveStop() { if (!lv) return; try { lv.stream.getTracks().forEach((t) =
 /* 한 장 잡기: 큰 사진이 되면 그걸로, 안 되면 화면 장면 4장 중 제일 또렷한 것. 긴 쪽 1600 으로 줄여 돌려줌 */
 async function liveGrab() { const out = document.createElement("canvas"), fit = (w, h) => { const k = Math.min(1, 1600 / Math.max(w, h)); out.width = Math.round(w * k); out.height = Math.round(h * k); };
   let how = "video";
-  try { if (window.ImageCapture) { const blob = await Promise.race([new ImageCapture(lv.stream.getVideoTracks()[0]).takePhoto(), new Promise((_, no) => setTimeout(() => no(new Error("late")), 2500))]); const bm = await createImageBitmap(blob); fit(bm.width, bm.height); out.getContext("2d").drawImage(bm, 0, 0, out.width, out.height); how = "photo " + bm.width + "x" + bm.height; return { c: out, how }; } } catch (e) {}
+  /* 11/19 "사진 찍을 때 화면이 검은 화면으로 떠": 카메라의 큰 사진(takePhoto)을 찍는 동안 패드가 미리보기를 끊어 검게 보였음 → 큰 사진은 안 쓰고 화면 장면에서 고름 */
   fit(lvV.videoWidth, lvV.videoHeight); const cg = out.getContext("2d");
   const sc = document.createElement("canvas"); sc.width = 160; sc.height = Math.max(1, Math.round(160 * lvV.videoHeight / lvV.videoWidth)); const sg = sc.getContext("2d", { willReadFrequently: true });
   const sharp = () => { sg.drawImage(lvV, 0, 0, sc.width, sc.height); const d = sg.getImageData(0, 0, sc.width, sc.height).data, w = sc.width; let s = 0; for (let i = 4; i < d.length - 4; i += 4) { if ((i / 4) % w === 0) continue; const a = d[i] + d[i + 1] + d[i + 2], b = d[i - 4] + d[i - 3] + d[i - 2]; s += (a - b) * (a - b); } return s; }; /* 옆 칸과의 밝기 차 제곱 합 = 또렷할수록 큼 */
   let best = -1; for (let n = 0; n < 4; n++) { const v = sharp(); if (v > best) { best = v; cg.drawImage(lvV, 0, 0, out.width, out.height); } if (n < 3) await new Promise((r) => setTimeout(r, 120)); }
   return { c: out, how: "video " + lvV.videoWidth + "x" + lvV.videoHeight }; }
 async function liveShot() { const me = lv; if (!me || me.busy) return; if (lvV.readyState < 2 || !lvV.videoWidth) return liveSet("카메라가 아직 준비 중이에요");
-  me.busy = true; me.res = null; me.calls++; liveSet("찍는 중이에요. 그대로 두세요"); liveDraw();
+  me.busy = true; me.res = null; me.calls++; liveSet("찍는 중이에요. 그대로 두세요");
+  try { const q = document.createElement("canvas"), qk = Math.min(1, 900 / Math.max(lvV.videoWidth, lvV.videoHeight)); q.width = Math.round(lvV.videoWidth * qk); q.height = Math.round(lvV.videoHeight * qk); q.getContext("2d").drawImage(lvV, 0, 0, q.width, q.height); me.still = q.toDataURL("image/jpeg", 0.7); } catch (e) {} /* 누르자마자 그 장면을 멈춰 보여 줌 (찍혔다는 게 바로 보이게) */
+  liveDraw();
   try { const g = await liveGrab(); if (lv !== me) return; const img = g.c.toDataURL("image/jpeg", 0.82); me.still = img; liveSet("읽는 중이에요"); liveDraw();
     try { ev("ls", g.how, String(me.calls)); } catch (e) {} /* 어떤 화질로 찍혔는지 기록 (원인 볼 때 씀) */
     const cands = [...ALL_LQ.map((x) => ({ id: x.id, n: x.n })), ...GDS.map((x) => ({ id: x.id, n: x.n }))];
