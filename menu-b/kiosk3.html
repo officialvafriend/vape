@@ -758,7 +758,7 @@ const SAY = {
   check: () => "네 번째 칸을 위에서부터 하나씩 챙기고, 금액이 맞으면 포스로 보내 주세요.",
   phone: () => "휴대폰 번호 눌러 주시겠어요?",
   mname: () => "성함도 알려 주시겠어요?",
-  hello: () => "확인됐어요. 오늘은 어떤 걸 보러 오셨어요?",
+  hello: () => { const m = S.mem || {}; return m.s === "found" && (m.orders || []).length ? "확인됐어요. 지난번에 사신 그대로 담아 드릴까요?" : m.s === "name" ? "성함을 다시 한 번 알려 주시겠어요?" : m.s === "none" ? "이 번호로는 회원이 없으세요. 오늘 등록해 드릴까요?" : "확인됐어요. 오늘은 어떤 걸 보러 오셨어요?"; },
   _dev: () => "기기랑 같이 사시면 액상이 반값이에요. 색상은 어떤 게 끌리세요?",
   _nudge: () => "조금만 더 담으시면 훨씬 이득이라 한 번 말씀드려요. 편하신 대로 하셔도 돼요.",
   plan: () => { const n = liqN(), T = TIER(), d51 = !T.dev; return DEAL ? `5+1 기획전 적용됐어요. 6병에 ${won(T.pa + DEAL_ADD)}이에요.` : d51 && n === 5 && setDone() ? "5병 다 담으셨어요. 이제 100원에 한 병 더 골라 보세요." : !S.plan ? (d51 ? `5병 담으시면 한 병을 100원에 더 드리는 기획전이에요. 6병에 ${won(T.pa + DEAL_ADD)}이에요.` : `5병을 한 번에 담는 구성이에요. 기기랑 같이면 5병 ${won(T.pa)}이에요.`) : n >= 5 ? SAY.liq() : n ? `${5 - n}병만 더 고르시면 ${d51 ? "100원에 한 병을 더 드려요." : `5병 ${won(T.pa)}이에요.`}` : d51 ? `한 번에 담기를 누르시면 5병이 담겨요. 그다음 100원에 한 병 더 고르시면 돼요.` : `한 번에 담기를 누르시면 5병이 담겨요.`; },
@@ -829,10 +829,11 @@ const V = {
   hello: () => { const m = S.mem || {};
     if (m.s === "wait") return `<div class="wait"><i></i>회원을 찾는 중이에요</div>`;
     if (m.s === "none") return split(`<div class="q an">이 번호로 된<br>회원이 없어요</div><div class="qs an d1">${fmtPhone(S.phone)}</div>`, `<div class="big"><button data-go="phone"><span class="tx"><b>번호 다시 넣기</b></span><span class="arr">›</span></button><button class="p" data-who="new"><span class="tx"><b>처음이에요</b><span>고른 뒤에 회원등록을 할 수 있어요</span></span><span class="arr">›</span></button></div>`);
+    if (m.s === "name") return split(`<div class="q an">성함이 등록된 것과<br>달라요</div><div class="qs an d1">${fmtPhone(S.phone)}</div>`, `<div class="big"><button class="p" data-go="mname"><span class="tx"><b>성함 다시 넣기</b></span><span class="arr">›</span></button><button data-go="phone"><span class="tx"><b>번호 다시 넣기</b></span><span class="arr">›</span></button></div>`);
     if (m.s !== "found") return split(`<div class="q an">확인이 안 됐어요</div><div class="qs an d1">직원에게 번호를 말씀해 주세요</div>`, `<div class="big"><button data-go="phone"><span class="tx"><b>다시 해 보기</b></span><span class="arr">›</span></button><button class="p" data-go="way"><span class="tx"><b>먼저 고르기</b></span><span class="arr">›</span></button></div>`);
-    const orders = (m.orders || []).map((o, i) => `<div class="box an d1"><h4>${esc(o.date)} ${esc(o.branch)}에서 산 것</h4>${o.items.map((it) => `<div class="ln"><span class="im">${it.img ? `<img src="${it.img}" alt="">` : ""}</span><span class="tx"><b>${esc(it.name)}</b><span>${it.qty}개</span></span></div>`).join("")}<div style="padding:8px 0 16px"><button class="add" data-again="${i}">이대로 담기</button></div></div>`).join("");
+    const orders = (m.orders || []).map((o, i) => `<div class="box an d1"><h4>${esc(o.date)} ${esc(o.branch)}에서 산 것</h4>${o.items.map((it) => `<div class="ln"><span class="im">${it.img ? `<img src="${it.img}" alt="">` : ""}</span><span class="tx"><b>${esc(it.name)}</b><span>${it.qty}개${it.out ? ", 지금 품절" : it.id ? "" : ", 직원에게 말씀해 주세요"}</span></span></div>`).join("")}<div style="padding:8px 0 16px"><button class="add" data-again="${i}">이대로 담기</button></div></div>`).join("");
     return split(`<div class="q an"><em>${esc(S.name.trim() || "회원")}</em>님<br>확인됐어요</div><div class="qs an d1">${maskPhone(S.phone)}</div>
-      <div class="demo an d2">${m.demo ? "미리보기라서 오른쪽 주문은 예시예요. 실제 주문 이력은 봇 연결 뒤에 나와요." : "지금은 번호로 회원 확인까지만 돼요. 성함 대조와 지난 주문 보기는 봇 연결 뒤에 붙어요."}</div>`,
+      <div class="demo an d2">${m.demo ? "미리보기라서 오른쪽 주문은 예시예요." : m.real ? ((m.orders || []).length ? "오른쪽은 이 지점에서 최근 석 달 동안 사신 것이에요." : "이 지점에서 최근 석 달 동안 사신 기록이 없어요.") : "지금은 번호로 회원 확인까지만 됐어요."}</div>`,
       `${orders}<div class="big an d2" style="margin-top:${orders ? 16 : 0}px"><button class="p" data-go="way"><span class="tx"><b>새로 고르기</b></span><span class="arr">›</span></button></div>`); },
   /* 처음: 한 화면에 질문 하나. 질문과 추천 규칙은 B안의 문진(QZ, QZ_RULE)을 그대로 씀 */
   quiz: () => { const L = S.qz.list, Q = L[S.qz.i]; if (!Q) return `<div class="wait"><i></i>답변을 보고 맞는 맛을 고르고 있어요</div>`;
@@ -1083,7 +1084,34 @@ const tabsHtml = () => `<div class="tabs">${TABS.map((T, i) => `<button data-tab
 function reset() { try { E(`cart.clear(); Object.assign(member, { type: null, name: "", year: "", phone: "", agree: false, mk: false, reg: null, bad: "", okd: false }); drawCart()`); } catch (e) {} S = S0(); sync(); go("start"); }
 
 /* ── 회원 찾기: 실제는 B안의 번호 조회(memRegSend)를 그대로 부름. 미리보기는 예시 ── */
-function lookup() { S.mem = { s: "wait" }; go("hello");
+/* ── 회원 조회 봇 연결 (11/20 액상덕후 "봇 연결해", "빠르게"). 번호 + 성함을 공개키로 잠가 보내면 봇이 포스에서 찾아 성함이 맞을 때만 최근 주문을 돌려줌.
+   결과는 이 패드가 방금 만든 열쇠로 잠겨 와서 이 패드만 읽음. 봇이 답이 없으면(아직 새 코드가 아니면) 전 방식으로 번호만 확인 ── */
+const PADFIND_ON = false; /* 운영봇을 새 코드로 켠 뒤에 true 로 바꾸고 다시 올릴 것. 그 전에 켜면 지금 도는 봇이 모르는 신호라 팀장님들께 확인 알림이 갈 수 있음 */
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+function padSend(type, extra) { return fetch(E("HOOK"), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ content: JSON.stringify({ type, branch: D.branch, pad: E("PAD_NO"), ...extra }), allowed_mentions: { parse: [] }, flags: 4096 }) }); }
+let warmAt = 0; function padWarm() { if (DEMO || !PADFIND_ON || Date.now() - warmAt < 5 * 60e3) return; warmAt = Date.now(); try { padSend("padwarm", {}).catch(() => {}); } catch (e) {} } /* 번호를 누르는 동안 봇이 회원 화면을 미리 열어 둠 */
+async function padFind() { const id = Array.from(crypto.getRandomValues(new Uint8Array(8)), (b) => b.toString(36)).join("").slice(0, 16).padEnd(8, "0"), key = crypto.getRandomValues(new Uint8Array(32));
+  const enc = await E("memSeal")({ phone: S.phone, name: S.name.trim(), k: btoa(String.fromCharCode(...key)) });
+  const r = await padSend("padfind", { id, enc }); if (!r.ok) throw new Error("send");
+  const U = E("SB_URL"), K = E("SB_KEY");
+  for (let n = 0; n < 12; n++) { await sleep(n ? 600 : 500);
+    try { const rr = await fetch(U + "/rest/v1/rpc/memfind_get", { method: "POST", headers: { apikey: K, Authorization: "Bearer " + K, "Content-Type": "application/json" }, body: JSON.stringify({ p_id: id }) }); const v = rr.ok ? await rr.json() : null;
+      if (typeof v === "string" && v.startsWith("p1.")) { const raw = Uint8Array.from(atob(v.slice(3)), (c) => c.charCodeAt(0)), ck = await crypto.subtle.importKey("raw", key, "AES-GCM", false, ["decrypt"]);
+        return JSON.parse(new TextDecoder().decode(await crypto.subtle.decrypt({ name: "AES-GCM", iv: raw.slice(0, 12) }, ck, raw.slice(12)))); } } catch (e) {} }
+  return null; }
+/* 포스 상품 이름 → 패드 상품(담을 수 있게). 묶음 상품 줄(49,500원(5병) 같은 것)은 뺌 */
+function mapOrders(list) { let lq = []; try { lq = JSON.parse(E(`JSON.stringify(ALL_LQ.map((x) => [posName(x.n), x.id]))`)); } catch (e) {}
+  const nz = (t) => String(t || "").replace(/\s/g, ""), L = new Map(lq.map(([n, id]) => [nz(n), id])), G = new Map([...D.pod.map((x) => [nz(x.n), ["pod", x]]), ...D.dsp.map((x) => [nz(x.n), ["dsp", x]]), ...D.dev.flatMap((d) => d.opts.map((o) => [nz(o.n), ["dev", { ...o, img: o.img || d.img }]]))]);
+  return (list || []).map((o) => ({ date: ((d) => `${+d.slice(4, 6)}월 ${+d.slice(6, 8)}일`)(String(o.d).replace(/\D/g, "")), branch: D.branch, items: (o.items || []).filter((it) => !/\d{2},\d{3}|\[\d/.test(it.p)).map((it) => { const id = L.get(nz(it.p)), x = id && D.liq.find((y) => y.id === id), g = G.get(nz(it.p)); return x ? { kind: "liq", id: x.id, name: x.s, img: x.img, qty: it.q, out: x.out } : g ? { kind: g[0], id: g[1].id, name: g[1].n, img: g[1].img, qty: it.q } : { kind: "", id: "", name: it.p, img: "", qty: it.q }; }) })).filter((o) => o.items.length); }
+async function lookup() { S.mem = { s: "wait" }; go("hello");
+  if (DEMO || !PADFIND_ON) return lookupOld();
+  let res = null; try { res = await padFind(); } catch (e) {}
+  if (S.step !== "hello") return;
+  if (!res || !res.s || res.s === "err") return lookupOld(); /* 봇이 답이 없거나 못 찾음: 전 방식(번호만) */
+  if (res.s === "found") { try { E(`Object.assign(member, { type: "old", name: ${J(S.name.trim())}, phone: ${J(S.phone)}, reg: null, bad: "", okd: true })`); } catch (e) {} S.mem = { s: "found", real: true, orders: mapOrders(res.orders) }; }
+  else S.mem = { s: res.s === "none" ? "none" : "name" };
+  draw(); }
+function lookupOld() { S.mem = { s: "wait" }; go("hello");
   if (DEMO) { try { E(`Object.assign(member, { type: "old", phone: ${J(S.phone)}, reg: null, bad: "", okd: true })`); } catch (e) {} const rk = [...rankMap("liq").keys()].slice(0, 2).map((id) => D.liq.find((x) => x.id === id)).filter(Boolean);
     return setTimeout(() => { S.mem = { s: "found", demo: true, orders: [{ date: "예시", branch: D.branch, items: rk.map((x, i) => ({ kind: "liq", id: x.id, name: x.s, img: x.img, qty: i ? 1 : 2 })) }] }; draw(); }, 700); }
   try { E(`Object.assign(member, { type: "old", name: ${J(S.name.trim())}, phone: ${J(S.phone)}, reg: null, bad: "" }); memRegSend(true)`); } catch (e) { S.mem = { s: "err" }; return draw(); }
@@ -1185,7 +1213,7 @@ document.addEventListener('click', (e) => { const t = e.target, c = (s) => t.clo
   if (b = c('[data-plan]')) { S.plan = b.dataset.plan; if (S.step !== "plan") { S.planBack = S.step === "liq"; if (!S.planBack) { S.who = S.who || "guest"; S.way = "have"; S.path = []; } } return go("plan"); }
   if (b = c('[data-soon]')) return toast(b.dataset.soon + " 화면은 아직 만드는 중이에요");
   if (b = c('[data-cat]')) { const k = b.dataset.cat; S.who = "guest"; S.way = k === "dsp" ? "dsp" : k === "dev" ? "swap" : "have"; S.res = null; S.qz = null; S.recDev = ""; S.podFam = ""; S.path = k === "dsp" ? ["dsp", "sum"] : k === "dev" ? ["dev", "liq", "pod", "sum"] : ["liq", "pod", "sum"]; return go(S.path[0]); }
-  if (b = c('[data-who]')) { S.who = b.dataset.who; return go(S.who === "mem" ? "phone" : "way"); }
+  if (b = c('[data-who]')) { S.who = b.dataset.who; if (S.who === "mem") padWarm(); return go(S.who === "mem" ? "phone" : "way"); }
   if (b = c('[data-way]')) { S.way = b.dataset.way; S.res = null; S.qz = null; S.recDev = ""; S.podFam = "";
     if (S.way === "have") return go("mydev");
     if (S.way === "first") { S.qz = { i: 0, ans: {}, list: [] }; try { qzLoad(); } catch (er) { S.path = ["dev", "liq", "pod", "sum"]; return go("dev"); } return go("quiz"); }
@@ -1201,7 +1229,7 @@ document.addEventListener('click', (e) => { const t = e.target, c = (s) => t.clo
   if (t.id === "memGo") { if (!/^[가-힣a-zA-Z ]{1,12}$/.test(S.name.trim())) return toast("성함을 알려 주세요"); return lookup(); }
   if (b = c('[data-key]')) { const k = b.dataset.key; if (k === "ok") return go("mname"); S.phone = k === "del" ? S.phone.slice(0, -1) : (S.phone + k).slice(0, 11); return draw(); }
   if (b = c('[data-go]')) return go(b.dataset.go);
-  if (b = c('[data-again]')) { const o = S.mem.orders[+b.dataset.again]; o.items.forEach((it) => { for (let i = 0; i < it.qty; i++) add(it.kind, it.id, 1); }); S.path = ["liq", "sum"]; toast("지난번 그대로 담았어요"); return go("sum"); }
+  if (b = c('[data-again]')) { const o = S.mem.orders[+b.dataset.again]; o.items.filter((it) => it.id && !it.out).forEach((it) => { for (let i = 0; i < it.qty; i++) add(it.kind, it.id, 1); }); S.path = ["liq", "sum"]; toast("지난번 그대로 담았어요"); return go("sum"); }
   if (b = c('[data-step]')) { const j = S.path.indexOf(b.dataset.step); if (j <= S.path.indexOf(S.step)) return go(b.dataset.step); return; }
   if (b = c('[data-taste]')) { S.taste = b.dataset.taste; return draw(); }
   if (b = c('[data-dspm]')) { S.dspM = b.dataset.dspm; return draw(); }
