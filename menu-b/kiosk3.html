@@ -715,8 +715,12 @@ $('eng').onload = () => { const w = $('eng').contentWindow; E = (code) => w.eval
 const DEAL_ADD = 100;
 let DEAL = false, LD = false;
 const poolIds = () => [...new Set(PLAN_SETS.flatMap((P) => planItems(P).map((x) => x.id)))];
-const setDone = () => PLAN_SETS.some((P) => { const it = planItems(P); return it.length >= 5 && it.every((x) => CQ.get(x.id)); });
-const dealWant = () => { if (!D) return false; const n = liqN(); return !devInCart().length && n >= 6 && n <= 9 && setDone() && poolIds().reduce((a, id) => a + (CQ.get(id) || 0), 0) >= 6; };
+/* 11/20 고침: 전엔 "기획전 다섯 가지 맛을 하나씩 다" 담아야만 5+1이 됐음 → 같은 맛을 여러 병 담거나 섞어 담으면 100원 한 병이 안 골라졌음.
+   이제는 빌런, 릭, (한) 액상이면 어떤 맛이든 합쳐서 5병이면 됨 (포스의 "빌런,릭,제이코리아 49,600원(6병)" 상품과 같은 범위) */
+const dealEl = (x) => /^VF (빌런|릭) /.test(x.n) || /\(한\)/.test(x.n);
+const dealQty = () => D.liq.reduce((a, x) => a + (dealEl(x) ? (CQ.get(x.id) || 0) : 0), 0);
+const setDone = () => dealQty() >= 5;
+const dealWant = () => { if (!D) return false; const n = liqN(); return !devInCart().length && n >= 6 && n <= 9 && dealQty() >= 6; };
 function dealHook() { try { E(`if (!window.__dealHooked) { window.__dealHooked = 1; window.__deal51 = false; estimate = ((o) => function (c) { const e = o(c), n = (c.v || 0) + (c.p || 0); if (window.__deal51 && !c.dev && n >= 6 && n <= 9) { e.total -= ${ONE - DEAL_ADD}; e.how = "5+1 기획전"; } return e; })(estimate);
     staffView = ((o) => function () { const r = o.apply(this, arguments); try { const c = countCart(), n = (c.v || 0) + (c.p || 0); if (window.__deal51 && !c.dev && n >= 6 && n <= 9) { const L = document.getElementById("lines"), nm = Object.keys(POS[BRANCH] || {}).find((k) => k.includes("49,600") && k.includes("6병")), p = nm && posOf(nm), old = posOf(posBundle("p5")), b = old && [...L.querySelectorAll(".scan")].find((el) => el.dataset.code === old[1]);
       if (b && p) { b.dataset.code = p[1]; b.dataset.nm = nm; const h = b.querySelector(".hd b"), t = b.querySelector(".s"); if (h) h.textContent = nm; if (t) t.textContent = "5+1 기획전 49,600원"; const one = [...L.querySelectorAll(".scan")].find((el) => el !== b && (+el.dataset.n || 1) > (+el.dataset.free || 0) && /액상/.test((el.querySelector(".s") || {}).textContent || "")); if (one) { one.dataset.free = String((+one.dataset.free || 0) + 1); const t2 = one.querySelector(".s"); if (t2 && (+one.dataset.n || 1) <= +one.dataset.free) t2.innerHTML = '프리미엄 액상 <b class="sv">서비스(0원)</b>'; } }
@@ -960,9 +964,9 @@ const V = {
     if (!P) return split(`<div class="q s">기획전</div><div class="qs" style="margin-top:4px">${d51 ? "5병을 담으면 1병을 100원에 더 드려요" : "5병을 한 번에 담는 구성이에요"}. 하나를 눌러 주세요</div>
       <div class="plg">${L.map((y) => `<button data-plan="${y.k}"><span class="pth">${y.items.slice(0, 5).map((x) => x.img ? `<img src="${x.img}" alt="">` : "").join("")}</span><span class="ptx"><i>${deal}</i><b>${esc(y.t)}</b><small>${esc(y.sub)}</small></span><span class="arr">›</span></button>`).join("")}</div>`, cartPanel(), "shop");
     const left = P.items.filter((x) => !CQ.get(x.id)), full = !left.length, n = liqN(), pool = [...P.items, ...poolIds().map((id) => D.liq.find((x) => x.id === id)).filter((x) => x && !x.out && !P.items.includes(x))].slice(0, 10); /* 고르던 기획전 맛을 앞에, 열 개까지만 */
-    const head = `<div class="plh"><img src="kiosk3_img/${DEAL ? "char_yay" : "char_rec"}.png" alt=""><div><i>${deal}</i><b>${esc(P.t)}</b><small>${esc(dsub || P.sub)}</small></div>${left.length ? `<button class="add" data-planall="${P.k}">${left.length === P.items.length ? `${P.items.length}병 한 번에 담기` : `남은 ${left.length}병 담기`}</button>` : ""}</div>`;
+    const head = `<div class="plh"><img src="kiosk3_img/${DEAL ? "char_yay" : "char_rec"}.png" alt=""><div><i>${deal}</i><b>${esc(P.t)}</b><small>${esc(dsub || P.sub)}</small></div>${left.length && n < 5 ? `<button class="add" data-planall="${P.k}">${left.length === P.items.length ? `${P.items.length}병 한 번에 담기` : `남은 ${left.length}병 담기`}</button>` : ""}</div>`;
     /* 5병이 다 차면 바로 아래에 "100원에 1병 더"만 크게 보여 줌. 고르면 5+1 완성 */
-    const plus = d51 && full && !DEAL && n === 5 ? `<div class="p1"><b>이제 <em>100원</em>에 1병 더 고르세요</b><div class="p1g">${pool.map((x) => `<button data-add="liq:${x.id}:1"><span style="${x.tint ? "background:" + x.tint : ""}">${x.img ? `<img src="${x.img}" alt="">` : ""}</span>${esc(x.s.replace(/^\(한\)\s*/, ""))}<i>100원</i></button>`).join("")}</div></div>` : "";
+    const plus = d51 && setDone() && !DEAL && n === 5 ? `<div class="p1"><b>이제 <em>100원</em>에 1병 더 고르세요</b><div class="p1g">${pool.map((x) => `<button data-add="liq:${x.id}:1"><span style="${x.tint ? "background:" + x.tint : ""}">${x.img ? `<img src="${x.img}" alt="">` : ""}</span>${esc(x.s.replace(/^\(한\)\s*/, ""))}<i>100원</i></button>`).join("")}</div></div>` : "";
     const done = DEAL ? `<div class="p1 ok"><b>5+1 완성! 6병에 <em>${won(T.pa + DEAL_ADD)}</em></b></div>` : "";
     return split(`${head}${plus}${done}
       <div class="grid">${[...P.items].sort((a, b) => (rk.get(a.id) || 99) - (rk.get(b.id) || 99)).map((x) => card("liq", x, { name: x.s, brand: x.br, sub: x.f, tint: x.tint, rk: rk.get(x.id) })).join("")}</div>
