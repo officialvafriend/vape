@@ -614,6 +614,16 @@ body[data-scr="hello"] .sp2 > .L.mid::after{background-image:url(kiosk3_img/char
 .st3b{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:14px}.st3b .txtb{margin:0}
 .scanb{display:flex;align-items:center;gap:10px;height:64px;padding:0 24px;border-radius:var(--r2);background:var(--card);border:2px solid var(--ink);font-size:22px;font-weight:800;box-shadow:var(--sh)}
 .scanb i{font-style:normal;font-size:24px}.scanb:active{transform:scale(.97)}
+.plb{display:flex;align-items:center;gap:14px;width:100%;height:92px;padding:0 20px 0 14px;margin-bottom:12px;border-radius:var(--r);background:var(--ptbg);border:3px solid var(--pt);text-align:left;box-shadow:var(--sh)}
+.plb:active{transform:scale(.985)}
+.plb img{width:68px;height:68px;object-fit:contain;flex:none;animation:bob 2.6s ease-in-out infinite}
+.plb span{flex:1;min-width:0;display:grid;grid-template-columns:auto 1fr;column-gap:10px;align-items:center}
+.plb i{font-style:normal;background:var(--pt);color:#fff;font-size:17px;font-weight:800;border-radius:8px;padding:3px 10px}
+.plb b{font-size:32px;font-weight:900;letter-spacing:-.03em;color:var(--pt)}
+.plb small{grid-column:1 / 3;font-size:18px;font-weight:600;color:var(--g1)}
+.plb u{flex:none;text-decoration:none;font-size:20px;font-weight:800;color:var(--pt)}
+.st3 .big.tall button{min-height:146px!important}.st3 .big.tall b{font-size:42px!important}
+.band{grid-template-columns:repeat(6,1fr)!important}.band button{font-size:23px!important}.band img{width:68px!important;height:68px!important}
 </style>
 </head>
 <body>
@@ -823,10 +833,10 @@ const CIG_PACK = 4500, CIG_DAYS = 30;
 /* ── 화면 ── */
 const V = {
   start: () => `<div class="st3">${split(`<div class="stg3"><div class="bub an">어서 오세요!<small>베이프렌드 ${esc(D.branch)}</small></div><img src="kiosk3_img/char_hi.png" alt=""></div>`,
-    `<div class="qs an" style="margin:0 0 14px">하나를 눌러 주세요</div><div class="big tall"><button class="p" data-who="new"><span class="tx"><b>처음이에요</b><span>몇 가지만 답하면 맞는 걸 찾아 드려요</span></span><span class="arr">›</span></button>
+    `<button class="plb an" data-plan=""><img src="kiosk3_img/ic_plan.png" alt=""><span><i>기획전</i><b>5+1 ${won(49500 + DEAL_ADD)}</b><small>5병 담으면 1병을 ${DEAL_ADD}원에 더 드려요</small></span><u>보러 가기 ›</u></button><div class="big tall"><button class="p" data-who="new"><span class="tx"><b>처음이에요</b><span>몇 가지만 답하면 맞는 걸 찾아 드려요</span></span><span class="arr">›</span></button>
     <button data-who="mem"><span class="tx"><b>회원이에요</b><span>번호와 성함으로 지난 주문을 불러와요</span></span><span class="arr">›</span></button></div>
     <div class="st3b"><button class="txtb" data-who="guest">그냥 둘러볼게요</button><button class="scanb" data-scan="1"><i>📷</i>사진으로 담기</button></div>`)}
-    <div class="band an d2">${[["dev", "기기", "ic_dev"], ["liq", "액상", "ic_liq"], ["dsp", "일회용", "ic_dsp"]].map(([k, t, ic]) => `<button data-cat="${k}"><img src="kiosk3_img/${ic}.png" alt="">${t}</button>`).join("")}<button data-plan=""><img src="kiosk3_img/ic_plan.png" alt="">기획전</button><button data-go="pack"><img src="kiosk3_img/ic_gift.png" alt="">달 패키지</button><button data-go="calc"><img src="kiosk3_img/ic_calc.png" alt="">유지비</button><button data-go="coupon"><img src="kiosk3_img/ic_coupon.png" alt="">쿠폰</button></div></div>`,
+    <div class="band an d2">${[["dev", "기기", "ic_dev"], ["liq", "액상", "ic_liq"], ["dsp", "일회용", "ic_dsp"]].map(([k, t, ic]) => `<button data-cat="${k}"><img src="kiosk3_img/${ic}.png" alt="">${t}</button>`).join("")}<button data-go="pack"><img src="kiosk3_img/ic_gift.png" alt="">달 패키지</button><button data-go="calc"><img src="kiosk3_img/ic_calc.png" alt="">유지비</button><button data-go="coupon"><img src="kiosk3_img/ic_coupon.png" alt="">쿠폰</button></div></div>`,
   phone: () => split(`<div class="q an">휴대폰 번호를<br>눌러 주세요</div><div class="num an d1 ${S.phone ? "" : "e"}">${S.phone ? fmtPhone(S.phone) : "010-0000-0000"}</div>`,
     `<div class="pad an d1">${[1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => `<button data-key="${n}">${n}</button>`).join("")}<button class="s" data-key="del">지우기</button><button data-key="0">0</button><button class="ok" data-key="ok" ${/^01[016789]\d{7,8}$/.test(S.phone) ? "" : "disabled"}>다음</button></div>`),
   /* 회원: 번호 다음에 성함 (액상덕후 "전화번호 + 성함으로 조회하면 다른 고객님 정보가 뜨진 않을 거 아니야") */
