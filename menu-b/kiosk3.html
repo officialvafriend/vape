@@ -8,7 +8,7 @@
 /* 11/20 패드에서 화면이 덜덜 떨림: 폭을 바꾸면 화면 비율이 1픽셀쯤 달라져 다시 폭을 바꾸는 일이 끝없이 되풀이됐음.
    → 처음 열 때와 화면을 돌릴 때만 맞추고, 패드 비율(주소창 때문에 조금 길어진 것 포함, 1.9 미만)은 1280 그대로 둠. 폰처럼 훨씬 긴 화면만 넓힘 */
 (function () { var m = document.getElementById("vp"), cur = 1280;
-  var fit = function () { var r = window.innerWidth / Math.max(1, window.innerHeight), w = r >= 1.9 ? Math.round(800 * r / 20) * 20 : 1280; if (Math.abs(w - cur) < 60) return; cur = w; m.content = "width=" + w + ", user-scalable=no"; };
+  var fit = function () { var r = window.innerWidth / Math.max(1, window.innerHeight), w = r > 1.61 ? Math.ceil(800 * r / 20) * 20 : 1280; /* 11/20 실제 패드는 위아래 띠 때문에 화면이 16:10보다 조금 길어서 아래가 잘렸음 → 조금만 길어도 높이 800이 되게 폭을 맞춤. 떨림은 화면 크기 바뀔 때마다 다시 맞추던 것 때문이라, 처음과 돌릴 때만 맞추는 것은 그대로 */ if (Math.abs(w - cur) < 20) return; cur = w; m.content = "width=" + w + ", user-scalable=no"; };
   fit(); window.addEventListener("orientationchange", function () { setTimeout(fit, 400); }); })();
 </script>
 <title>상담패드 키오스크</title>
