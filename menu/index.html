@@ -150,6 +150,7 @@ body[data-v=qz] .tabs,body[data-v=rk] .tabs{display:none}
 .lqmore{grid-column:1/-1;min-height:68px;border-radius:16px;background:var(--card);font-size:19px;font-weight:700;color:var(--ink)}
 .lqmore b{color:var(--red);margin-left:8px}
 .chips.sub{grid-column:1/-1;margin:0}
+.fab{position:fixed;left:-999px;top:0;z-index:45;display:flex;flex-direction:column;gap:6px;padding:6px 8px 8px;border-radius:22px;background:var(--card);box-shadow:0 8px 28px rgba(0,0,0,.24),0 0 0 1px var(--line);touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}.fab .fgrab{width:36px;height:5px;border-radius:3px;background:var(--line);margin:2px auto 0}.fab button{height:48px;min-width:116px;padding:0 14px;border-radius:14px;background:var(--bg);color:var(--ink);font-size:16px;font-weight:800;white-space:nowrap;display:flex;align-items:center;justify-content:space-between;gap:10px}.fab button.on{background:var(--ink);color:var(--bg)}.fab button span{max-width:96px;overflow:hidden;text-overflow:ellipsis}.fab button i{font-style:normal;font-size:13px;font-weight:700;opacity:.7}.fab button.add{color:var(--red);justify-content:center}.fab.drag{opacity:.9;box-shadow:0 14px 36px rgba(0,0,0,.34)}
 .nxchip{display:none;position:fixed;left:50%;transform:translateX(-50%);bottom:104px;z-index:8;height:68px;padding:0 26px;border-radius:34px;background:var(--ink);color:var(--bg);font-size:18px;font-weight:700;box-shadow:0 8px 24px rgba(0,0,0,.28);white-space:nowrap}.nxchip.on{display:block}.nxchip b{margin-left:12px;color:#ff8a92}
 body.land .nxchip{left:calc((100% - 380px) / 2);bottom:24px}
 .chips.sub button{height:48px;padding:0 18px;font-size:17px}
@@ -515,7 +516,7 @@ body[data-theme=dark] .srcart{background:#f1f1f3;color:#15120f}body[data-theme=d
 .mem .pk2{display:block;width:100%;text-align:left;background:var(--card);border-radius:14px;padding:14px 16px;margin-bottom:8px}.mem .pk2 b{display:block;font-size:16px}.mem .pk2 span{font-size:13px;color:var(--grey)}
 .mem input[type=text],.mem input[type=tel]{width:100%;height:52px;border:1px solid var(--line);border-radius:12px;padding:0 14px;font-size:17px;margin-bottom:8px;background:var(--card);color:var(--ink)}
 /* 11/19 "아예 사진으로 담기 버튼이 없는데": 가로 화면에선 아래 띠가 안 보여 버튼도 같이 사라졌음(처음 만들 때부터). 가로에선 담은 상품 칸 위에 따로 둠 */
-.camL{display:none}body.land .camL{display:block;position:absolute;top:26px;right:118px;height:44px;padding:0 16px;border-radius:999px;background:var(--ink);color:var(--bg);font-size:16px;font-weight:800;white-space:nowrap}
+.camL{display:none}body.land .camL{display:block;flex:none;width:100%;height:48px;margin:14px 0 6px;padding:0 16px;border-radius:999px;background:var(--ink);color:var(--bg);font-size:16px;font-weight:800;white-space:nowrap}
 .shclr{position:absolute;top:26px;right:24px;height:44px;padding:0 18px;border-radius:999px;background:var(--bg);color:var(--ink);font-size:16px;font-weight:700}.shclr::after{content:"";position:absolute;inset:-6px}.shclr.arm{background:var(--red);color:#fff}.shclr[hidden]{display:none}
 .mem label{display:flex;gap:8px;align-items:center;font-size:13.5px;color:var(--grey)}
 .mem .mq{font-size:16px;font-weight:700;margin:4px 0 6px}
@@ -694,6 +695,7 @@ body[data-theme=dark] .scan svg{background:#fff;border-radius:8px}
   <div class="evf"><div class="evbar"><i id="evBar"></i></div><button class="cta" id="evGo" style="margin:0"></button></div></div>
 <div class="asks" id="ask"><div class="evh"><div><small style="color:var(--grey)">다른 지점 재고</small><b>재고 확인</b></div><button id="askX" aria-label="닫기">✕</button></div><div class="evb" id="askB"></div></div>
 <button class="askchip" id="askChip"></button>
+<div class="fab" id="fab"></div>
 <button class="nxchip" id="nxChip">다음 손님이세요?<b>담은 상품 비우기</b></button>
 <div id="vidBox" class="vidbox" hidden><div class="vidin"><div class="vidh"><b id="vidTi">사용 영상</b><button id="vidSnd" class="vidsnd">🔊 소리 끄기</button><button id="vidX" aria-label="닫기">✕</button></div><video id="vidV" controls playsinline preload="none"></video><div id="vidCap" class="vidcap"></div><div id="vidGuide" class="vidguide"></div></div></div>
 <div class="asks sps" id="sp"><div class="evh"><div><small style="color:var(--grey)">전자담배 기기</small><b id="spTi">스펙</b></div><button id="spX" aria-label="닫기">✕</button></div><div class="evb" id="spB"></div></div>
@@ -900,7 +902,7 @@ async function sellerLoad() { try { const j = await (await fetch("https://offici
 const sellerBox = () => { if (SELLERS.length === 1) return `<div class="sellr"><span>🙋 판매자</span><b style="font-size:16px">${esc(SELLERS[0])}</b></div>`; const L = [...new Set([...SELLERS, ...(SELLER ? [SELLER] : [])])]; if (!L.length) return "";
   return `<div class="sellr"><span>🙋 판매자</span><div>${L.map((n) => `<button class="${n === SELLER ? "on" : ""}" data-seller="${esc(n)}">${esc(n)}</button>`).join("")}</div></div>`; };
 setTimeout(sellerLoad, 1500); setInterval(sellerLoad, 5 * 60e3);
-function drawCart() {
+function drawCart() { try { fabDraw(); } catch (e) {} /* 11/20 떠 있는 단추의 손님별 개수 */
   const t = totalOf(), n = [...cart.values()].reduce((a, x) => a + x.qty, 0);
   $('cnt').textContent = n; $('sum').textContent = $('sum2').textContent = won(t.total);
   $('how').textContent = t.how ? "합계 (" + t.how + " 적용)" : "합계";
@@ -1119,7 +1121,41 @@ function nextCust() { resetSale(); lf = "전체"; mf = "전체"; evQ = ""; myDev
 function nxShow() { const c = $('nxChip'); if (!cart.size) return c.classList.remove('on'); c.classList.add('on'); clearTimeout(c._t); c._t = setTimeout(() => c.classList.remove('on'), 8000); }
 $('nxChip').onclick = () => { $('nxChip').classList.remove('on'); nextCust(); toast("비웠어요, 다음 손님 맞이하세요"); };
 function doneSale() { if (!confirm("결제 완료하고 처음 화면으로 갈까요?")) return;
-  nextCust(); go('home'); toast("감사합니다! 처음 화면으로 왔어요"); }
+  nextCust(); const nx = slotDrop(); go('home'); toast(nx ? `결제 완료, ${nx} 장바구니로 왔어요` : "감사합니다! 처음 화면으로 왔어요"); }
+
+/* ── 11/20 액상덕후 "장바구니가 하나라서 동시에 여러 손님 응대를 못 함": 손님별 장바구니 + 손가락으로 옮기는 떠 있는 단추(자리 기억) ── */
+const SLOT_MAX = 5; let slots = [{ no: 1, s: null }], slotI = 0; /* s = 잠깐 넣어 둔 손님 것, 지금 보는 손님은 null */
+const slotSnap = () => ({ cart: [...cart.entries()], PERK, member: { ...member }, goalN, engrave, scan: [...scanDone], qz: JSON.parse(JSON.stringify(qz)), ledger: { ...ledger }, airxGift, myDevOpen, qzPkMore });
+function slotLoad(s) { resetSale(); if (!s) return; s.cart.forEach(([k, v]) => cart.set(k, v)); PERK = s.PERK; Object.assign(member, s.member); goalN = s.goalN; engrave = s.engrave; s.scan.forEach((x) => scanDone.add(x)); qz = s.qz; Object.assign(ledger, s.ledger); airxGift = s.airxGift; myDevOpen = s.myDevOpen; qzPkMore = s.qzPkMore; }
+const slotName = (i) => { const m = i === slotI ? member : slots[i].s.member, nm = (m.name || "").trim(); return nm ? nm + "님" : m.type && /^01\d{8,9}$/.test(m.phone || "") ? m.phone.slice(-4) + "님" : "손님 " + slots[i].no; }; /* 회원 칸에 성함을 넣으면 성함으로, 번호만 있으면 끝 4자리로 */
+const slotEmpty = (s) => !s.cart.length && !s.member.type && !s.member.reg;
+const slotQty = (i) => i === slotI ? [...cart.values()].reduce((a, x) => a + x.qty, 0) : slots[i].s.cart.reduce((a, [, x]) => a + x.qty, 0);
+function slotDraw() { cartViewBack(); drawDev(); drawLiq(); drawGoal(); drawDspList(); drawPodView(); fabDraw(); }
+function slotGo(i) { if (i === slotI || !slots[i]) return; const cur = slotSnap();
+  if (slotEmpty(cur) && slots.length > 1) { slots.splice(slotI, 1); if (i > slotI) i--; } else slots[slotI].s = cur; /* 빈 장바구니는 떠날 때 저절로 없어짐 */
+  slotI = i; slotLoad(slots[i].s); slots[i].s = null; if (member.reg && member.reg.s === "send") memPoll(member.reg.id); slotDraw(); toast(`${slotName(i)} 장바구니예요`); }
+function slotAdd() { if (slotEmpty(slotSnap())) return toast("지금 장바구니가 비어 있어요, 여기에 담으면 돼요"); if (slots.length >= SLOT_MAX) return toast(`장바구니는 ${SLOT_MAX}개까지예요`);
+  let no = 1; while (slots.some((x) => x.no === no)) no++; slots.push({ no, s: null }); slots[slotI].s = slotSnap(); slotI = slots.length - 1; slotLoad(null); slotDraw(); toast(`손님 ${no} 장바구니를 만들었어요`); }
+function slotDrop() { if (slots.length < 2) return 0; slots.splice(slotI, 1); slotI = 0; slotLoad(slots[0].s); slots[0].s = null; if (member.reg && member.reg.s === "send") memPoll(member.reg.id); slotDraw(); return slotName(0); } /* 결제 끝난 손님 것은 없애고 남은 손님으로 */
+function fabDraw() { const f = $('fab'); if (!f) return; const many = slots.length > 1;
+  f.innerHTML = '<div class="fgrab"></div><button data-fb="home">처음</button>' + (many ? slots.map((x, i) => `<button data-fb="go" data-i="${i}" class="${i === slotI ? "on" : ""}"><span>${esc(slotName(i))}</span><i>${slotQty(i)}개</i></button>`).join("") : "") + '<button data-fb="add" class="add">＋ 손님 추가</button>';
+  try { const h = $('shH'); if (!staffOn && /담은 상품$/.test(h.textContent)) h.textContent = many ? `${slotName(slotI)} 담은 상품` : "담은 상품"; } catch (e) {}
+  fabPos(); }
+const FAB_KEY = () => "vf-b-fab-" + (innerWidth > innerHeight ? "land" : "port"); /* 가로, 세로 자리를 따로 기억 */
+function fabPos(px) { const f = $('fab'), w = f.offsetWidth, h = f.offsetHeight, mx = Math.max(1, innerWidth - w - 16), my = Math.max(1, innerHeight - h - 16); let p = px;
+  if (!p) { let sv = null; try { sv = JSON.parse(localStorage.getItem(FAB_KEY()) || "null"); } catch (e) {}
+    p = sv ? { x: sv.x * innerWidth, y: sv.y * innerHeight } :{ x: mx - (document.body.classList.contains('land') ? 380 : 0), y: my - (document.body.classList.contains('land') ? 0 : 96) }; } /* 처음 자리: 오른쪽 아래, 담은 상품 칸은 피해서 */
+  p.x = Math.min(mx, Math.max(8, p.x)); p.y = Math.min(my, Math.max(8, p.y)); f.style.left = p.x + "px"; f.style.top = p.y + "px"; return { x: p.x / innerWidth, y: p.y / innerHeight }; } /* 왼쪽 위 모서리 자리를 화면 비율로 기억 (손님이 늘면 아래로 길어짐) */
+(() => { const f = $('fab'); let d = null, moved = 0;
+  f.addEventListener('pointerdown', (e) => { d = { id: e.pointerId, sx: e.clientX, sy: e.clientY, ox: f.offsetLeft, oy: f.offsetTop, on: false }; });
+  addEventListener('pointermove', (e) => { if (!d || e.pointerId !== d.id) return; const dx = e.clientX - d.sx, dy = e.clientY - d.sy;
+    if (!d.on) { if (Math.hypot(dx, dy) < 10) return; d.on = true; f.classList.add('drag'); try { f.setPointerCapture(d.id); } catch (er) {} }
+    d.fr = fabPos({ x: d.ox + dx, y: d.oy + dy }); });
+  const end = (e) => { if (!d || e.pointerId !== d.id) return; if (d.on) { moved = Date.now(); f.classList.remove('drag'); try { localStorage.setItem(FAB_KEY(), JSON.stringify(d.fr)); } catch (er) {} } d = null; };
+  addEventListener('pointerup', end); addEventListener('pointercancel', end);
+  f.addEventListener('click', (e) => { if (Date.now() - moved < 400) return; const b = e.target.closest('[data-fb]'); if (!b) return; const k = b.dataset.fb; try { ev("s", k, String(slots.length)); } catch (er) {} /* 떠 있는 단추 기록: home 처음, go 손님 바꾸기, add 손님 추가 */
+    if (k === "home") logoHome(); if (k === "go") slotGo(+b.dataset.i); if (k === "add") slotAdd(); });
+  addEventListener('resize', () => fabPos()); addEventListener('input', () => { try { if (slots.length > 1) fabDraw(); } catch (er) {} }); setTimeout(fabDraw, 0); })(); /* 성함을 치는 대로 단추 이름도 바뀜 */
 
 // ── 기기 화면 ──
 const devOpts = (m) => GDS.filter((g) => g.c === "dev" && g.model === m && !OUT.has(g.n));
@@ -2200,7 +2236,13 @@ async function evFlush() {
   } catch (e) {} finally { evBusy = false; }
 }
 setInterval(evFlush, 60e3);
-document.addEventListener("visibilitychange", () => { if (document.hidden) evFlush(); });
+/* 11/20 액상덕후 "터치 좌표도 확인": 누른 자리를 화면 비율(가로 00~99, 세로 00~99, 네 자리)로 10번씩 묶어 k "t"로 남김. n = 좌표 묶음, x = 화면이름(+는 장바구니 열림)|가로x세로. 무엇을 눌렀는지, 이름, 번호는 안 남김 */
+let tapBuf = "", tapV = "", tapT = 0;
+const tapOut = () => { clearTimeout(tapT); if (tapBuf) ev("t", tapBuf, tapV); tapBuf = ""; };
+addEventListener("pointerdown", (e) => { try { const b = document.body, v = (b.dataset.v || "") + (b.classList.contains("open") ? "+" : "") + "|" + innerWidth + "x" + innerHeight; if (v !== tapV) { tapOut(); tapV = v; }
+  const p = (a, m) => String(Math.min(99, Math.max(0, Math.floor(a / m * 100)))).padStart(2, "0"); tapBuf += p(e.clientX, innerWidth) + p(e.clientY, innerHeight);
+  if (tapBuf.length >= 40) tapOut(); else { clearTimeout(tapT); tapT = setTimeout(tapOut, 15000); } } catch (er) {} }, true);
+document.addEventListener("visibilitychange", () => { if (document.hidden) { tapOut(); evFlush(); } });
 // 기존 함수에 기록만 덧붙임 (동작은 그대로)
 const evWrap = (name, f) => { const o = window[name] || eval(name); const w = function (...a) { const r = o.apply(this, a); try { f(...a); } catch (e) {} return r; }; eval(name + " = w"); };
 evWrap("go", (v) => ev("m", v));
