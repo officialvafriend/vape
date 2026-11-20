@@ -1067,7 +1067,7 @@ function draw() { if (!D) return; const i = S.path.indexOf(S.step), inPath = i >
   moreHint();
   if (!same && S.step === "calc") calcAnim();
   if (keep && $(keep)) $(keep).focus(); if (dealHit) cele("5+1", TT); else if (dspHit) cele(dspHit + " 행사 적용!", TT); else if (hit) cele(hit, TT); }
-function go(step) { S.step = step; closeSp(); draw(); }
+function go(step) { S.step = step; if (step === "phone" && !S.phone) S.phone = "010"; /* 11/20 "010은 미리 넣어 두는 게": 여덟 자리만 누르면 됨. 지우기로 지울 수 있음 */ closeSp(); draw(); }
 /* ── 손님별 탭 (3판 11/20). "손님 여럿 동시 응대": 고르던 화면과 담은 상품을 손님마다 따로 보관하고 눌러서 오감. 최대 3명(개수는 임시).
    담은 상품은 뒤에 연 B안의 장바구니라서, 탭을 바꿀 때 그 내용을 통째로 옮겨 두고 다시 꺼냄. 새로고침하면 사라짐 ── */
 const TAB_MAX = 3;
