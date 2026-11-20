@@ -87,6 +87,7 @@ body[data-v=qz] .tabs,body[data-v=rk] .tabs{display:none}
 /* 위 글자 뒤 그라데이션 (10/27 사장님 "잘 안 보여서": 하복2 설명 줄이 뒤 빛과 겹침) */
 .pv::before{content:"";position:absolute;left:0;right:0;top:0;height:460px;background:linear-gradient(to bottom,rgba(244,244,246,.92),rgba(244,244,246,.6) 55%,rgba(244,244,246,0));z-index:1}
 .pv.dk::before{background:linear-gradient(to bottom,rgba(0,0,0,.6),rgba(0,0,0,.3) 55%,rgba(0,0,0,0))}
+.pv.nofx::before{display:none}
 .pv .t,.pv .p{z-index:2}.pv .bg{z-index:0}
 .pv .r1{display:flex;gap:16px;align-items:center;margin-bottom:12px}.pv .r1 s{font-size:30px;color:#8d887f}.pv .r1 .l{font-size:28px;font-weight:600;color:#6e6e73}
 .pv .pl{background:#d81f2a;color:#fff;border-radius:999px;padding:8px 20px 9px;font-size:28px;font-weight:800}
@@ -149,6 +150,7 @@ body[data-v=qz] .tabs,body[data-v=rk] .tabs{display:none}
 .lqmore{grid-column:1/-1;min-height:68px;border-radius:16px;background:var(--card);font-size:19px;font-weight:700;color:var(--ink)}
 .lqmore b{color:var(--red);margin-left:8px}
 .chips.sub{grid-column:1/-1;margin:0}
+.fab{position:fixed;left:-999px;top:0;z-index:45;display:flex;flex-direction:column;gap:6px;padding:6px 8px 8px;border-radius:22px;background:var(--card);box-shadow:0 8px 28px rgba(0,0,0,.24),0 0 0 1px var(--line);touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}.fab .fgrab{width:36px;height:5px;border-radius:3px;background:var(--line);margin:2px auto 0}.fab button{height:48px;min-width:116px;padding:0 14px;border-radius:14px;background:var(--bg);color:var(--ink);font-size:16px;font-weight:800;white-space:nowrap;display:flex;align-items:center;justify-content:space-between;gap:10px}.fab button.on{background:var(--ink);color:var(--bg)}.fab button span{max-width:96px;overflow:hidden;text-overflow:ellipsis}.fab button i{font-style:normal;font-size:13px;font-weight:700;opacity:.7}.fab button.add{color:var(--red);justify-content:center}.fab.drag{opacity:.9;box-shadow:0 14px 36px rgba(0,0,0,.34)}
 .nxchip{display:none;position:fixed;left:50%;transform:translateX(-50%);bottom:104px;z-index:8;height:68px;padding:0 26px;border-radius:34px;background:var(--ink);color:var(--bg);font-size:18px;font-weight:700;box-shadow:0 8px 24px rgba(0,0,0,.28);white-space:nowrap}.nxchip.on{display:block}.nxchip b{margin-left:12px;color:#ff8a92}
 body.land .nxchip{left:calc((100% - 380px) / 2);bottom:24px}
 .chips.sub button{height:48px;padding:0 18px;font-size:17px}
@@ -172,6 +174,12 @@ body.land .nxchip{left:calc((100% - 380px) / 2);bottom:24px}
 .cart .cnt em{font-style:normal;display:inline-block;min-width:26px;height:26px;border-radius:13px;background:var(--red);color:#fff;text-align:center;line-height:26px;font-size:14px;margin-left:6px}
 .cart .sum{flex:1;text-align:right;font-size:28px}
 .cart .show{height:56px;padding:0 24px;border-radius:16px;background:var(--black);color:#fff;font-size:17px;font-weight:800}
+.cart{cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:none}.sheet .grab,#shH{touch-action:none}.sheet .grab{padding:10px 0;margin:-10px auto 6px;background-clip:content-box;height:25px}.cart:active{background:#f4f4f6}
+/* 11/12 바 가운데 위쪽에 은은한 위 화살표, 살짝 오르내림 (끌어 올리는 느낌) */
+.cart .up{position:absolute;left:50%;top:10px;width:18px;height:18px;margin-left:-9px;pointer-events:none;animation:cartUp 1.8s cubic-bezier(.45,0,.55,1) infinite}
+.cart .up::after{content:"";position:absolute;left:3px;top:6px;width:10px;height:10px;border-left:2.5px solid #b4b4bb;border-top:2.5px solid #b4b4bb;border-radius:2px 0 0 0;transform:rotate(45deg)}
+@keyframes cartUp{0%,100%{transform:translateY(2px);opacity:.55}50%{transform:translateY(-3px);opacity:1}}
+@media (prefers-reduced-motion:reduce){.cart .up{animation:none}}
 
 /* 담은 상품 시트 */
 .dim{position:fixed;inset:0;background:rgba(0,0,0,.35);opacity:0;pointer-events:none;transition:opacity .3s}
@@ -326,6 +334,25 @@ body:not(.land) .go5 button:nth-child(n+3){grid-column:span 2}
 body.land #vHome .go5{grid-template-rows:repeat(5,1fr);align-content:stretch}
 .go5 .g-qz b{font-size:24px;line-height:1.15}
 .go5 .soon{position:absolute;top:12px;right:12px;z-index:1;font-style:normal;font-size:11px;font-weight:800;color:#fff;background:rgba(255,255,255,.22);border-radius:999px;padding:3px 9px;backdrop-filter:blur(4px)}
+/* 11/18 첫 화면 새 배치 시험 (주소에 ?home2=1 일 때만 body.home2): 액상, 기기 랭킹 3등 + 처음/회원 시작 카드 */
+#hm2{display:none}
+body.home2 #hm2{display:block;width:100%;flex:none;min-width:0}
+body.home2 .go5 .g-rk,body.home2 .go5 .g-qz{display:none}
+body.home2:not(.land) #vHome .go5{grid-template-rows:108px}
+body.home2.land[data-v=home] #vHome{grid-template-rows:auto 1fr}
+body.home2.land #vHome .poster{grid-row:1 / span 2}
+body.home2.land #vHome .go5{grid-template-rows:repeat(3,1fr)}
+.h2rk{display:grid;grid-template-columns:1fr 1fr;gap:var(--gap);margin-top:var(--gap)}
+.h2rk:empty{display:none}body.land .h2rk{margin-top:0}
+.h2box{background:var(--card);border-radius:var(--r);padding:14px 14px 8px;text-align:left;display:block;width:100%;min-width:0;color:var(--ink)}
+.h2box .hd{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px}.h2box .hd b{font-size:19px}.h2box .hd span{font-size:13px;color:var(--grey);font-weight:700}
+.h2row{display:flex;align-items:center;gap:10px;padding:5px 0}.h2row i{font-style:normal;font-size:20px;font-weight:800;width:18px;text-align:center;color:var(--red);flex:none}
+.h2row .im{width:46px;height:46px;border-radius:10px;background:#fff;box-shadow:inset 0 0 0 1px var(--line);flex:none;display:flex;align-items:center;justify-content:center;overflow:hidden}.h2row .im img{width:100%;height:100%;object-fit:contain}
+.h2row b{font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.h2go{display:grid;grid-template-columns:1fr 1fr;gap:var(--gap);margin-top:var(--gap)}
+.h2go button{min-height:104px;border-radius:var(--r);padding:16px 18px;text-align:left;display:flex;flex-direction:column;justify-content:center;gap:6px}
+.h2go .nw{background:var(--red);color:#fff}.h2go .od{background:var(--ink);color:var(--bg)}
+.h2go small{font-size:15px;font-weight:700;opacity:.85}.h2go b{font-size:21px;line-height:1.25}
 /* 문진 화면 */
 .qz-top{display:flex;align-items:center;gap:12px;margin:4px 0 18px}.qz-top button{width:44px;height:44px;border-radius:50%;background:var(--card);font-size:20px}
 .qz-bar{flex:1;height:8px;border-radius:4px;background:var(--line);overflow:hidden}.qz-bar i{display:block;height:100%;background:var(--red);transition:width .35s}
@@ -361,6 +388,8 @@ body.land #vHome .go5{grid-template-rows:repeat(5,1fr);align-content:stretch}
 .rkr .mv.up{color:var(--red)}.rkr .mv.dn{color:#3b82f6}.rkr .mv.eq{color:var(--grey)}.rkr .mv.new{color:#ff7a00}
 .rkr .mv.hot{color:#fff;background:var(--red);border-radius:999px;padding:4px 6px;font-family:var(--kr,inherit);font-size:12px}.rkr .mv.hot u{display:inline-block;text-decoration:none;margin-right:2px;animation:rkbob .9s ease-in-out infinite}
 @media (prefers-reduced-motion:reduce){.rkin,.rkr.top > i,.rkr .mv.hot u{animation:none}}
+/* 11/17 액상덕후 "랭킹 애니메이션 너무 분답다": 줄 하나씩 날아오기, 1~3위 숫자 튀기, 급상승 화살표 통통 끔 */
+.rkin,.rkr.top > i,.rkr .mv.hot u{animation:none!important}
 /* 첫구매 혜택 */
 #perkBox{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:80}#perkBox.on{display:flex}
 #perkBox .pb{background:var(--card);color:var(--ink);border-radius:24px;padding:28px;width:min(440px,90vw);text-align:center}#perkBox .pb > b{font-size:22px}#perkBox p{color:var(--grey);margin:8px 0 14px}
@@ -400,6 +429,7 @@ body.land .qzgrid{grid-template-columns:repeat(6,1fr)}
 .srch{gap:8px}.srch input{flex:1;border:0;outline:0;background:none;font:inherit;font-size:16px;color:var(--ink);min-width:0}.srch button{display:none;font-size:15px;color:var(--grey)}.srch.on button{display:block}
 .sres{display:none;position:absolute;left:0;right:0;top:64px;bottom:88px;z-index:15;background:var(--bg);overflow-y:auto;padding:4px var(--pad) var(--pad)}
 body.srchon .sres{display:block}
+body.open:not(.evon):not(.spon):not(.askon) .sheet{z-index:40}body.open:not(.evon):not(.spon):not(.askon) .dim{z-index:39} /* 11/13 액상덕후 "제일 우선은 장바구니": 열면 검색 결과 등 모든 화면 위로. 장바구니에서 연 패키지, 자세히 창만 그 위 */
 .sr{display:flex;align-items:center;gap:14px;background:var(--card);border-radius:16px;padding:10px 14px;margin-bottom:8px}
 .sr .im{width:56px;height:56px;border-radius:12px;background:#f4f4f6;display:flex;align-items:center;justify-content:center;overflow:hidden;font-size:24px;flex:none}.sr .im img{width:100%;height:100%;object-fit:contain}
 .sr .n{flex:1;min-width:0}.sr .n b{display:block;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.sr .n span{font-size:13px;color:var(--grey)}
@@ -439,9 +469,54 @@ body[data-theme=dark] .shbtn .b1{background:#f1f1f3;color:#15120f}
 .sum2 .r{display:flex;justify-content:space-between;font-size:15px;padding:3px 0;color:var(--grey)}.sum2 .r.off b{color:var(--red)}
 .sum2 .save{font-size:14px;font-weight:800;color:var(--red);text-align:right;margin-top:4px}
 .mem{background:var(--bg);border-radius:16px;padding:14px 16px;margin:10px 0 4px}
+/* 11/13 판매자 고르기 */
+.sellr{display:flex;align-items:center;gap:12px;margin:0 0 10px;padding:10px 12px;border-radius:14px;background:var(--bg)}.sellr>span{font-size:15px;font-weight:800;white-space:nowrap}
+.sellr>div{display:flex;gap:8px;overflow-x:auto}.sellr button{flex:none;height:44px;padding:0 16px;border-radius:22px;background:var(--card);border:2px solid var(--line);font-size:16px;font-weight:700;color:var(--ink)}
+.sellr button.on{background:var(--black);border-color:var(--black);color:#fff}
+.sellq{font-size:16px;margin:0 0 10px;padding:10px 12px;border-radius:12px;background:var(--bg)}.sellq b{font-size:18px}.sellq.none{color:var(--red);font-weight:700}
+/* 11/13 다크모드: 고른 칸이 검정 위 검정이라 안 보이던 것 → 밝게 */
+body[data-theme=dark] .sellr button.on,body[data-theme=dark] .podbig.on,body[data-theme=dark] .simr i,body[data-theme=dark] .podmore .pstep button{background:#f1f1f3;border-color:#f1f1f3;color:#15120f}
+body[data-theme=dark] .srcart{background:#f1f1f3;color:#15120f}body[data-theme=dark] .srcart i{color:#fff}
+/* 11/13 신입 시험 고침 */
+.podbig{display:block;width:100%;min-height:76px;border-radius:16px;background:var(--red);color:#fff;text-align:center;padding:10px 14px;margin-bottom:8px}.podbig b{display:block;font-size:21px}.podbig span{display:block;font-size:15px;opacity:.9;margin-top:2px}
+.podbig.on{background:var(--black)}
+.podmore{display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--gap)}.podmore>button{font-size:16px;color:var(--grey);text-decoration:underline;padding:8px 2px}
+.posgo{margin:0 0 14px!important;height:72px!important;font-size:24px!important;background:var(--ink)!important;color:var(--bg)!important}
+.staffsend{background:var(--card)!important;color:var(--grey)!important;border:1.5px solid var(--line);font-size:15px!important;height:48px!important}
+.srcart{position:sticky;top:0;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;margin:0 0 8px;padding:12px 16px;border-radius:14px;background:var(--black);color:#fff;text-align:left;font-size:15px}.srcart b{font-size:17px;margin-right:6px}.srcart i{font-style:normal;font-weight:800;color:#fff;white-space:nowrap;background:var(--red);border-radius:10px;padding:6px 10px}
+/* 11/13 기기 사용 영상 */
+.vidbox{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;padding:20px}.vidbox[hidden]{display:none}
+.vidin{width:100%;max-width:760px;max-height:100%;display:flex;flex-direction:column}.vidh{display:flex;justify-content:space-between;align-items:center;color:#fff;padding:0 4px 12px}.vidh b{font-size:22px}.vidh button{width:52px;height:52px;border-radius:26px;background:rgba(255,255,255,.18);color:#fff;font-size:24px}
+.vidin{overflow-y:auto}.vidin video{width:100%;max-height:46vh;border-radius:16px;background:#000}
+.vidh>b{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.vidh .vidsnd{flex:none;width:auto;white-space:nowrap;margin-left:auto;margin-right:12px;height:56px;padding:0 22px;border-radius:28px;background:#fff;color:#15120f;font-size:19px;font-weight:800}.vidh .vidsnd.off{background:#d81f2a;color:#fff}
+.vidguide{margin-top:12px;max-height:38vh;overflow-y:auto;border-radius:14px;background:#fff;color:#15120f;padding:6px 10px}.vidguide:empty{display:none}.vgt{font-size:18px;font-weight:800;padding:8px 6px}.vgt small{font-size:14px;color:#8b8b8b;font-weight:600;margin-left:6px}
+.vg{display:flex;gap:12px;align-items:flex-start;width:100%;text-align:left;padding:12px 8px;border-top:1px solid #eee;background:none;color:#15120f}.vg .e{font-size:26px}.vg .t{flex:1}.vg b{display:block;font-size:19px}.vg small{display:block;font-size:16px;color:#555;line-height:1.45;margin-top:2px}.vg i{font-style:normal;font-size:14px;color:#8b8b8b;white-space:nowrap}.vg.on{background:#fff3f3;border-radius:10px}.vg.on b{color:#d81f2a}
+.vidcap{min-height:110px;margin-top:12px;padding:14px 18px;border-radius:14px;background:rgba(0,0,0,.55);color:#fff;font-size:26px;font-weight:700;line-height:1.45;text-align:center;word-break:keep-all}.vidcap:empty{visibility:hidden}
+.vidgo{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;height:60px;margin:0 0 var(--gap);border-radius:14px;background:var(--black);color:#fff;font-size:19px;font-weight:800}.vidgo i{font-style:normal;width:30px;height:30px;border-radius:15px;background:var(--red);display:flex;align-items:center;justify-content:center;font-size:13px}
+/* 11/13 자세히 창 이벤트 칸 */
+.spev{background:var(--card);border-radius:16px;padding:16px 18px;margin:12px 0 4px;border:2px solid var(--red)}
+.spev-t{font-size:18px;font-weight:800;color:var(--red);margin-bottom:8px}
+.spev-r{display:grid;grid-template-columns:1fr auto;gap:0 12px;padding:8px 0;border-top:1px solid var(--line)}.spev-r:first-of-type{border-top:0}
+.spev-r b{font-size:18px}.spev-r strong{font-size:20px;color:var(--red);text-align:right}.spev-r span{grid-column:1/-1;font-size:14px;color:var(--grey)}
+.spev-n{font-size:15px;color:var(--grey);margin-top:6px}
+/* 11/13 품절 접기 */
+#sres:not(.showsold) .sr.sold,#liqGrid:not(.showsold) .it.sold,#podList:not(.showsold) .sr.sold{display:none}
+.soldmore{grid-column:1/-1;display:block;width:100%;height:56px;margin:8px 0;border-radius:14px;border:1.5px dashed var(--line);background:transparent;color:var(--grey);font-size:17px;font-weight:700}
+/* 11/12 혜택 칸 안 비슷한 맛 */
+.simr{margin-top:12px}.simr>span{display:block;font-size:15px;font-weight:700;color:var(--grey);margin-bottom:8px}
+.simr>div{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.simr button{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;background:var(--card);border-radius:14px;padding:10px 6px 12px;text-align:center}
+.simr img{width:64px;height:64px;object-fit:cover;border-radius:10px}.simr b{font-size:15px;line-height:1.2}.simr small{font-size:13px;color:var(--grey)}
+.simr i{position:absolute;top:6px;right:6px;width:26px;height:26px;border-radius:13px;background:var(--black);color:#fff;font-style:normal;font-weight:800;line-height:26px;font-size:17px}
+/* 11/12 빈 장바구니 회원 칸 크게 */
+.membig .mem{padding:22px 20px}.membig .mem .t{font-size:26px;margin-bottom:16px}.membig .mem .t button{font-size:16px}
+.membig .mem .pk2{padding:26px 22px;margin-bottom:12px;border-radius:18px}.membig .mem .pk2 b{font-size:24px}.membig .mem .pk2 span{font-size:17px;display:block;margin-top:4px}
+.membig .mem .mq{font-size:20px}.membig .mem input[type=text],.membig .mem input[type=tel]{height:64px;font-size:22px}.membig .memck{min-height:64px;font-size:18px}.membig .memgo{height:64px;font-size:20px}.membig .memst{font-size:20px}
 .mem .t{font-size:16px;font-weight:800;margin-bottom:10px;display:flex;justify-content:space-between}.mem .t button{font-size:13px;color:var(--grey);text-decoration:underline}
 .mem .pk2{display:block;width:100%;text-align:left;background:var(--card);border-radius:14px;padding:14px 16px;margin-bottom:8px}.mem .pk2 b{display:block;font-size:16px}.mem .pk2 span{font-size:13px;color:var(--grey)}
 .mem input[type=text],.mem input[type=tel]{width:100%;height:52px;border:1px solid var(--line);border-radius:12px;padding:0 14px;font-size:17px;margin-bottom:8px;background:var(--card);color:var(--ink)}
+/* 11/19 "아예 사진으로 담기 버튼이 없는데": 가로 화면에선 아래 띠가 안 보여 버튼도 같이 사라졌음(처음 만들 때부터). 가로에선 담은 상품 칸 위에 따로 둠 */
+.camL{display:none}body.land .camL{display:block;flex:none;width:100%;height:48px;margin:14px 0 6px;padding:0 16px;border-radius:999px;background:var(--ink);color:var(--bg);font-size:16px;font-weight:800;white-space:nowrap}
 .shclr{position:absolute;top:26px;right:24px;height:44px;padding:0 18px;border-radius:999px;background:var(--bg);color:var(--ink);font-size:16px;font-weight:700}.shclr::after{content:"";position:absolute;inset:-6px}.shclr.arm{background:var(--red);color:#fff}.shclr[hidden]{display:none}
 .mem label{display:flex;gap:8px;align-items:center;font-size:13.5px;color:var(--grey)}
 .mem .mq{font-size:16px;font-weight:700;margin:4px 0 6px}
@@ -454,7 +529,8 @@ body[data-theme=dark] .shbtn .b1{background:#f1f1f3;color:#15120f}
 .memsx{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}.memsx button{height:48px;border-radius:12px;background:var(--card);border:1px solid var(--line);font-size:16px;font-weight:700;color:var(--ink)}.memsx button.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 .memgo{display:block;width:100%;height:52px;margin-top:10px;border-radius:12px;background:var(--red);color:#fff;font-size:16px;font-weight:800}
 .memst{font-size:16px;font-weight:700;line-height:1.4}.memst.ok,.memst.dup{color:#1a7f4b}.memst.err,.memst.off,.memst.late{color:var(--red)}
-.memline{font-size:14px;margin-top:14px;padding:12px 14px;border-radius:12px;background:var(--bg)}
+.memline{font-size:16px;margin-top:14px;padding:16px 18px;border-radius:14px;background:var(--bg);box-shadow:inset 0 0 0 2px var(--ink);line-height:1.45}
+.memline b{display:block;font-size:17px}.memline strong{display:block;font-size:30px;font-weight:800;letter-spacing:-.01em;margin-top:4px}.memline.nomem{box-shadow:none}
 .qrbox{background:#fff;border-radius:16px;padding:16px;text-align:center;color:#15120f}.qrbox svg{max-width:480px;width:100%;height:auto}
 .posw{font-size:13.5px;background:#fff4e5;color:#8a4b00;border-radius:12px;padding:10px 12px;margin-top:10px}
 body[data-theme=dark] .srch,body[data-theme=dark] .home-btn{background:#1c1d20;color:#cfcfd5}
@@ -462,6 +538,63 @@ body[data-theme=dark] .hero .ph{background:#e9e9ec}
 body[data-theme=dark] .it .im{background:#f4f4f6}
 body[data-theme=dark] .dim{background:rgba(0,0,0,.6)}
 body[data-theme=dark] .scan svg{background:#fff;border-radius:8px}
+
+/* 11/17 검색 결과 가로 넘기기 */
+.sres{bottom:auto;overflow:visible;padding:8px 0 16px;box-shadow:0 10px 24px rgba(0,0,0,.14);border-radius:0 0 24px 24px}
+.hzpad{padding:0 var(--pad)}
+.hzhd{padding:4px var(--pad) 8px;font-size:14px;color:var(--grey);font-weight:700}
+.hzrow{display:flex;gap:12px;overflow-x:auto;overflow-y:hidden;padding:2px var(--pad) 6px;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;touch-action:pan-x pan-y;overscroll-behavior-x:contain;cursor:grab}
+.hzrow.drag{cursor:grabbing;scroll-snap-type:none}
+.hzrow::-webkit-scrollbar{height:0}
+.hzrow .sr{flex:none;width:196px;flex-direction:column;align-items:stretch;gap:6px;margin:0;padding:12px;position:relative;scroll-snap-align:start}
+.hzrow .sr .im{width:100%;height:150px;border-radius:14px;font-size:44px}
+.hzrow .sr .n b{white-space:normal;font-size:16px;line-height:1.25;height:2.5em;overflow:hidden}
+.hzrow .sr .n span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hzrow .sr .price{font-size:19px;color:var(--red);padding-right:52px}
+.hzrow .sr .add{position:absolute;right:12px;bottom:10px}
+.hzrow .sr .askb{font-size:13px;padding:8px 0}
+.sres .soldmore{margin:8px var(--pad) 0;width:calc(100% - var(--pad) * 2)}
+
+/* 11/18 사진으로 담기: 장바구니 줄 버튼 + 확인 화면 */
+.camb{flex:none;height:56px;padding:0 18px;border-radius:16px;background:var(--bg);border:1.5px solid var(--line);font-size:16px;font-weight:800;color:var(--ink);white-space:nowrap}
+#scanOv{display:none;position:fixed;inset:0;z-index:95;background:var(--bg);flex-direction:column}
+#scanOv.on{display:flex}
+#scanOv .sh{flex:none;display:flex;align-items:center;justify-content:space-between;padding:18px var(--pad) 10px}
+#scanOv .sh b{font-size:24px}#scanOv .sh button{height:44px;padding:0 18px;border-radius:22px;background:var(--card);font-size:15px;font-weight:700}
+#scanOv .sb{flex:1;overflow-y:auto;padding:0 var(--pad) 16px}
+#scanOv .sf{flex:none;display:flex;gap:10px;padding:12px var(--pad) 20px;background:var(--card);box-shadow:0 -1px 0 var(--line)}
+#scanOv .sf button{height:64px;border-radius:18px;font-size:19px;font-weight:800}
+#scanOv .sf .b2{flex:none;padding:0 22px;background:var(--bg);color:var(--ink)}#scanOv .sf .rd{flex:1;background:var(--red);color:#fff}#scanOv .sf .rd:disabled{background:#c9c9cf}
+.scph{width:100%;max-height:220px;object-fit:contain;border-radius:18px;background:#000;margin-bottom:12px}
+.schelp{font-size:16px;font-weight:700;color:var(--grey);margin:0 2px 12px;line-height:1.5}
+.scwait{padding:30px 0;text-align:center;font-size:20px;font-weight:800;line-height:1.6}.scwait small{display:block;font-size:15px;font-weight:600;color:var(--grey)}
+.scr{background:var(--card);border-radius:18px;padding:12px 14px;margin-bottom:10px}
+.scr.unk{box-shadow:inset 0 0 0 2px var(--red)}
+.scr .r1{display:flex;align-items:center;gap:12px}
+.scr .who{flex:1;min-width:0;display:flex;align-items:center;gap:12px;text-align:left;background:none;padding:0;color:inherit}
+.scr .im{width:76px;height:76px;border-radius:14px;background:#f4f4f6;display:flex;align-items:center;justify-content:center;overflow:hidden;flex:none;font-size:30px}.scr .im img{width:100%;height:100%;object-fit:contain}
+.scr .n{flex:1;min-width:0}.scr .n b{display:block;font-size:21px;line-height:1.25}.scr .n span{font-size:14px;color:var(--grey)}.scr.unk .n b{color:var(--red)}
+.scr .qt{display:flex;align-items:center;gap:8px;flex:none}.scr .qt button{width:58px;height:58px;border-radius:50%;background:var(--bg);font-size:28px;font-weight:800}.scr .qt i{font-style:normal;font-size:26px;font-weight:800;min-width:34px;text-align:center}
+.scr .r2{display:flex;gap:8px;margin-top:12px}.scr .r2 button{height:58px;border-radius:14px;background:var(--bg);font-size:18px;font-weight:800}.scr .r2 .ch{flex:2}.scr .r2 .dl{flex:1;color:var(--red)}.scr .r2 .scgo{background:var(--ink);color:var(--bg)}.scr .pick .pt:empty,.scr .pick .ph:empty{display:none}
+.scr .pick{margin-top:12px}.scr .pick input{width:100%;height:60px;border:2px solid var(--ink);border-radius:14px;padding:0 16px;font-size:19px;background:var(--bg);color:var(--ink)}
+.scr .pick .pt{font-size:15px;font-weight:700;color:var(--grey);margin:10px 2px 0}
+.scr .pick .ph{display:flex;gap:10px;overflow-x:auto;padding:8px 0 4px}.scr .pick .ph button{flex:none;width:150px;background:var(--bg);border-radius:14px;padding:10px;text-align:left;font-size:16px;font-weight:800;line-height:1.25}.scr .pick .ph img{width:100%;height:96px;object-fit:contain;border-radius:10px;background:#fff;margin-bottom:6px}
+/* 11/19 스캔 화면 (본점만 시험): 카메라를 켜 두고, 멈추면 알아서 읽어 제품에 테두리와 개수를 띄움 */
+#liveOv{display:none;position:fixed;inset:0;z-index:96;background:#000;flex-direction:column}
+#liveOv.on{display:flex}
+#liveOv .lv{position:relative;flex:1;min-height:0;overflow:hidden}
+#liveOv video,#liveOv .still{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}#liveOv .still{background:#000}#liveOv .still[hidden]{display:none} /* 11/19 패드 전체에 img{display:block} 이 있어 hidden 이 안 먹고 검은 칸이 카메라를 덮었음 */#liveOv .lvbtn [hidden]{display:none}#liveOv .lvbtn .rd:disabled,#liveOv .lvbtn .b2:disabled{opacity:.6}
+#liveOv .lyr{position:absolute;inset:0;pointer-events:none}
+#liveOv .bx{position:absolute;border:4px solid #2ee66b;border-radius:10px;box-shadow:0 0 0 2px rgba(0,0,0,.4)}
+#liveOv .bx.unk{border-color:#ffcc00}
+#liveOv .bx b{position:absolute;left:-4px;bottom:100%;margin-bottom:4px;background:#2ee66b;color:#000;font-size:17px;font-weight:800;padding:3px 9px;border-radius:8px;white-space:nowrap}
+#liveOv .bx.unk b{background:#ffcc00}
+#liveOv .st{position:absolute;left:0;right:0;top:0;padding:18px 16px 30px;text-align:center;color:#fff;font-size:22px;font-weight:800;background:linear-gradient(rgba(0,0,0,.65),rgba(0,0,0,0))}
+#liveOv .bar{flex:none;background:var(--card);padding:14px var(--pad) 20px}
+#liveOv .lvsum{font-size:19px;font-weight:800;min-height:28px;margin-bottom:10px;line-height:1.4}
+#liveOv .lvbtn{display:flex;gap:10px}#liveOv .lvbtn button{height:64px;border-radius:18px;font-size:19px;font-weight:800}
+#liveOv .lvbtn .b2{flex:none;padding:0 22px;background:var(--bg);color:var(--ink)}#liveOv .lvbtn .rd{flex:1;background:var(--red);color:#fff}#liveOv .lvbtn .rd:disabled{background:#c9c9cf}
+.scadd{width:100%;height:64px;border-radius:16px;border:2px dashed var(--line);font-size:18px;font-weight:800;color:var(--grey)}
 </style>
 </head>
 <body data-v="home"><script>vfFit()</script>
@@ -487,12 +620,13 @@ body[data-theme=dark] .scan svg{background:#fff;border-radius:8px}
     <!-- 첫 화면 -->
     <div class="view" id="vHome">
       <div class="poster" id="poster"><div class="pv" id="pv"></div><div class="dots" id="dots"></div></div>
+      <div id="hm2"><div class="h2rk" id="h2rk"></div><div class="h2go"><button class="nw" onclick="h2New()"><small>처음이신가요?</small><b>회원등록하고 나에게 맞는 전자담배 찾기</b></button><button class="od" onclick="h2Old()"><small>이미 회원이라면?</small><b>주문내역 조회하기</b></button></div></div>
       <div class="go3 go5">
         <button class="g-rk" onclick="rkOpen()"><img src="pst_c_B2.jpg" alt="" style="object-position:50% 40%"><small>이번 주 우리 매장에서 많이 나간</small><b>랭킹</b></button>
         <button class="g-qz" onclick="qzStart()"><img src="pst_c_H5.jpg" alt="" style="object-position:50% 55%"><small>몇 가지만 고르면 1분이면 끝나요</small><b>나에게 맞는 전자담배 찾기</b></button>
         <button onclick="go('liq')"><img src="pst_c_B1.jpg" alt="" style="object-position:50% 50%"><small>빌런, 릭</small><b>액상</b></button>
         <button onclick="go('dsp')"><img src="pst_c_D1.jpg" alt="" style="object-position:45% 55%"><small>10개 사면 5개 더</small><b>일회용</b></button>
-        <button onclick="go('dev')"><img src="pst_c_H2.jpg" alt="" style="object-position:50% 45%"><small>하복2, 발라맥스프로</small><b>기기</b></button>
+        <button onclick="go('dev')"><img src="pst_c_H2.jpg" alt="" style="object-position:50% 45%"><small>말론S, 말론, 하복2</small><b>기기</b></button>
       </div>
     </div>
 
@@ -510,7 +644,7 @@ body[data-theme=dark] .scan svg{background:#fff;border-radius:8px}
       <div class="thumbs" id="thumbs"></div>
       <div class="pk" id="pk"></div>
       <div id="pods"></div>
-      <button class="cta" id="devAdd">담기</button>
+      <div id="devVid"></div><button class="cta" id="devAdd">담기</button>
     </div>
 
     <!-- 액상 -->
@@ -544,14 +678,15 @@ body[data-theme=dark] .scan svg{background:#fff;border-radius:8px}
     
   </div>
 
-  <div class="cart">
+  <div class="cart" role="button" tabindex="0" onclick="drawCart();document.body.classList.add('open')"><!-- 11/12 액상덕후: 버튼 빼고 바 전체를 누르면 장바구니 (빈 장바구니도 열림, 회원 칸) -->
+    <button class="camb" id="camBtn" type="button">📷 사진으로 담기</button><input type="file" id="camIn" accept="image/*" capture="environment" hidden>
     <div class="cnt">담은 상품<em id="cnt">0</em></div>
     <div class="sum price" id="sum">0원</div>
-    <button class="show" onclick="document.body.classList.add('open')">직원에게 보여주기</button>
+    <span class="up" aria-hidden="true"></span>
   </div>
 </div>
 <div class="dim" onclick="document.body.classList.remove('open')"></div>
-<div class="sheet"><div class="grab"></div><div class="h" style="margin-top:0" id="shH">담은 상품</div><button id="shClear" class="shclr" hidden>비우기</button><div class="lines" id="lines"></div>
+<div class="sheet"><div class="grab"></div><div class="h" style="margin-top:0" id="shH">담은 상품</div><button id="shClear" class="shclr" hidden>비우기</button><button id="camBtnL" class="camL" type="button">📷 사진으로 담기</button><div class="lines" id="lines"></div>
   <div class="tot" id="tot"><span id="how">합계</span><b class="price" id="sum2">0원</b></div>
   <div class="shbtn" id="shBtns"></div></div>
 <!-- 포스터 누르면 올라오는 이벤트 구매 화면 (지금 판 #evp와 같은 역할) -->
@@ -560,7 +695,9 @@ body[data-theme=dark] .scan svg{background:#fff;border-radius:8px}
   <div class="evf"><div class="evbar"><i id="evBar"></i></div><button class="cta" id="evGo" style="margin:0"></button></div></div>
 <div class="asks" id="ask"><div class="evh"><div><small style="color:var(--grey)">다른 지점 재고</small><b>재고 확인</b></div><button id="askX" aria-label="닫기">✕</button></div><div class="evb" id="askB"></div></div>
 <button class="askchip" id="askChip"></button>
+<div class="fab" id="fab"></div>
 <button class="nxchip" id="nxChip">다음 손님이세요?<b>담은 상품 비우기</b></button>
+<div id="vidBox" class="vidbox" hidden><div class="vidin"><div class="vidh"><b id="vidTi">사용 영상</b><button id="vidSnd" class="vidsnd">🔊 소리 끄기</button><button id="vidX" aria-label="닫기">✕</button></div><video id="vidV" controls playsinline preload="none"></video><div id="vidCap" class="vidcap"></div><div id="vidGuide" class="vidguide"></div></div></div>
 <div class="asks sps" id="sp"><div class="evh"><div><small style="color:var(--grey)">전자담배 기기</small><b id="spTi">스펙</b></div><button id="spX" aria-label="닫기">✕</button></div><div class="evb" id="spB"></div></div>
 <div class="toast" id="toast"></div>
 <!-- 지금 판과 같은 데이터: 액상(data.js), 지점별 포스 바코드(pos.js), 지점별 기기 재고와 판매가(goods.js) -->
@@ -612,7 +749,7 @@ const pvFit = () => { const P = $('poster'), W = P.clientWidth, H = P.clientHeig
 let pi = 0, drag = null, pMoved = false;
 const pvIdx = (i) => (i + PST.length) % PST.length;
 function pvMake(k) { const id = PID[k], el = document.createElement('div'); el.className = "pv";
-  if (!id) el.innerHTML = `<img class="bg" src="${PST[k]}" alt="">`;
+  if (!id) { el.className = "pv nofx"; el.innerHTML = `<img class="bg" src="${PST[k]}" alt="">`; } /* 11/12 글자 없는 포스터(말론 등)는 위 흰 빛 없이 */
   else { const tx = PTX[id[0]], o = POPT[id] || "c";
     el.className = "pv " + tx.cls + (o.includes("w") ? " dk" : "");
     el.innerHTML = `<img class="bg" src="pst_c_${id}.jpg" alt=""><div class="t ${o.includes("c") ? "c" : ""}">${tx.top}</div><div class="p">${tx.pr}</div>`; }
@@ -674,7 +811,10 @@ const posOf = (n) => POSB[posName(n)];
 // 실재고 (10/27 사장님 "실재고 다 연동"): 운영봇이 매시간 지점별 재고 0 상품명을 menu/stock.json에 올림 → 여기서 읽어 품절 처리 (지금 판과 같은 파일)
 const STOCK_URL = "https://officialvafriend.github.io/vape/menu/stock.json";
 let OUT = new Set(), STOCK_AT = "", STOCK_ALL = {};
-const outOf = (n) => { const k = posName(n); return OUT.has(k) || (!!(window.POS && window.POS[BRANCH]) && !POSB[k]); }; // 포스 자료가 없는 지점은 등록 여부로는 막지 않음 // [상품코드, 바코드, 형식, 바코드 등록 여부, 분류]
+/* 11/13 본점 "메가킥 무니코틴 품절 풀기": 포스 재고 0이어도 매장에 있어 파는 것 (바코드 등록함) */
+const FORCE_IN = { "본점": ["(무) 메가킥 블랙베리", "(무) 메가킥 딸기", "(무) 메가킥 자몽"] };
+const canSell = (n) => !!POSB[posName(n)]; /* 11/13 포스에 있으면 품절이어도 담고 찍을 수 있음 */
+const outOf = (n) => { const k = posName(n); if ((FORCE_IN[BRANCH] || []).includes(k) && POSB[k]) return false; return OUT.has(k) || (!!(window.POS && window.POS[BRANCH]) && !POSB[k]); }; // 포스 자료가 없는 지점은 등록 여부로는 막지 않음 // [상품코드, 바코드, 형식, 바코드 등록 여부, 분류]
 const GDS = (window.GOODS_BY || {})[BRANCH] || window.GOODS || [];
 const won = (n) => n.toLocaleString() + "원";
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
@@ -686,7 +826,9 @@ const DEV_IMG_A = {"말론":{"건메탈":"dev_v000.jpg","블랙":"dev_v001.jpg",
 const devImgs = (m) => { if (DEV_IMG[m]) return DEV_IMG[m]; for (const k of [m, m.replace(/ \S+$/, ""), m.split(" ")[0]]) { const v = DEV_IMG_A[k]; if (v) return typeof v === "string" ? { "": v } : v; } return {}; };
 const devImgOf = (m, opt) => { const o = devImgs(m); return o[opt] || Object.values(o)[0] || ""; };
 // 기기 화면 목록 (10/28 사장님 "판매중인 기기는 많은데 왜 이거밖에"): A그룹 먼저, 그 밖에 이 지점 재고 있는 기기
-const devModels = () => [...new Set([...A_DEV, ...GDS.filter((g) => g.c === "dev" && !OUT.has(g.n)).map((g) => g.model)])];
+/* 11/13 액상덕후: 기기 순서 말론S 1번, 말론 2번 (재고 있을 때) */
+const DEV_FIRST = ["말론S", "말론 기계"];
+const devModels = () => [...new Set([...DEV_FIRST.filter((m) => GDS.some((g) => g.c === "dev" && g.model === m && !OUT.has(g.n))), ...A_DEV, ...GDS.filter((g) => g.c === "dev" && !OUT.has(g.n)).map((g) => g.model)])];
 const A_DEV = ["하복2", "발라맥스프로", "맥스프로 스티그마", "조바"];
 const DEV_IMG = { 하복2: { 실버: "dev_havok2_silver.png", 블랙: "dev_havok2_black.png", 네이비: "dev_havok2_navy.png", 올리브: "dev_havok2_olive.png" },
   발라맥스프로: { 블랙: "dev_v017.jpg", 블루: "dev_v018.jpg", 실버: "dev_v019.jpg", 퍼플: "dev_v020.jpg", 핑크: "dev_v021.jpg" },
@@ -749,7 +891,18 @@ const perkUrl = (k) => k === "clip" ? (CLIP_URL[BRANCH] || CLIP_DEF) : k === "in
 const totalOf = () => { const c = countCart(), e = estimate(c), gp = goodsPlan(), base = e.total + c.other + gp.total, ok = !!(c.dev && e.how && base >= PERK_MIN), off = PERK && ok ? PERK_AMT : 0; return { ...e, total: base - off, perkOff: off, perkOk: ok, c, gp }; };
 function addItem(key, it, d = 1) { const cur = cart.get(key); const q = (cur ? cur.qty : 0) + d; setTimeout(() => { if (typeof drawDspList === "function") { drawDspList(); drawPodView(); } }, 0);
   if (q <= 0) cart.delete(key); else cart.set(key, { ...(cur || it), qty: q }); drawCart(); drawLiq(); drawGoal(); }
-function drawCart() {
+/* ── 판매자 (11/13): 출근자 목록은 staff/today.json(운영봇이 올림), 고른 이름은 그날 이 패드에 기억. 손님이 바뀌어도 그대로 ── */
+let SELLERS = [], SELLER = (() => { try { const o = JSON.parse(localStorage.getItem("vf-seller") || "{}"); return o.d === new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10) && o.b === BRANCH ? o.n : ""; } catch (e) { return ""; } })();
+const sellerSave = () => { try { localStorage.setItem("vf-seller", JSON.stringify({ d: new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10), b: BRANCH, n: SELLER })); } catch (e) {} };
+async function sellerLoad() { try { const j = await (await fetch("https://officialvafriend.github.io/vape/staff/today.json?t=" + Math.floor(Date.now() / 60e3), { cache: "no-store" })).json();
+  const b = (j.br || {})[BRANCH] || {}, now = (b.ins || []).filter((a) => !a.out && a.name && !/^시험/.test(a.name)).map((a) => a.name);
+  const before = SELLERS.join("|"); SELLERS = [...new Set(now)];
+  if (SELLERS.length === 1) { if (SELLER !== SELLERS[0]) { SELLER = SELLERS[0]; sellerSave(); } } else if (SELLER && SELLERS.length && !SELLERS.includes(SELLER)) { SELLER = ""; sellerSave(); } /* 11/13 1인 근무는 고를 필요 없이 그 사람, 퇴근한 사람은 풂 */
+  if (before !== SELLERS.join("|") && !staffOn) drawCart(); } catch (e) {} }
+const sellerBox = () => { if (SELLERS.length === 1) return `<div class="sellr"><span>🙋 판매자</span><b style="font-size:16px">${esc(SELLERS[0])}</b></div>`; const L = [...new Set([...SELLERS, ...(SELLER ? [SELLER] : [])])]; if (!L.length) return "";
+  return `<div class="sellr"><span>🙋 판매자</span><div>${L.map((n) => `<button class="${n === SELLER ? "on" : ""}" data-seller="${esc(n)}">${esc(n)}</button>`).join("")}</div></div>`; };
+setTimeout(sellerLoad, 1500); setInterval(sellerLoad, 5 * 60e3);
+function drawCart() { try { fabDraw(); } catch (e) {} /* 11/20 떠 있는 단추의 손님별 개수 */
   const t = totalOf(), n = [...cart.values()].reduce((a, x) => a + x.qty, 0);
   $('cnt').textContent = n; $('sum').textContent = $('sum2').textContent = won(t.total);
   $('how').textContent = t.how ? "합계 (" + t.how + " 적용)" : "합계";
@@ -757,15 +910,20 @@ function drawCart() {
   // 낱개로 샀을 때 금액 (액상 1병 15,000 / 대량구매는 병 수 × 15,000 / 일회용 10+5는 15개 정가) → 할인 보여 주기
   const unitAll = [...cart.values()].reduce((a, x) => a + (x.k === "bulk" ? x.items.reduce((s, [, , q]) => s + q * 15000, 0) * x.qty : x.k === "dsp15" ? x.items.reduce((s, [, , q, p]) => s + q * p, 0) * x.qty : x.unit * x.qty), 0);
   const off = unitAll - t.total;
-  $('lines').innerHTML = cart.size ? [...cart].map(([key, x]) => `<div class="ln">${x.img ? `<img src="${x.img}" alt="">` : '<i class="noim"></i>'}<span class="n">${esc(x.label)}${x.k === "liq" && x.n ? noTag(x.n) : ""}${x.items ? `<small>${esc(x.items.map(([, l, q]) => l + " " + q).join(", "))}</small>` : ""}</span><span class="qb"><button data-m="${key}">−</button><b>${x.qty}</b><button data-p="${key}">+</button></span><b class="price">${won(x.unit * x.qty)}</b></div>`).join("")
+  $('lines').innerHTML = cart.size ? sellerBox() + [...cart].map(([key, x]) => `<div class="ln">${x.img ? `<img src="${x.img}" alt="">` : '<i class="noim"></i>'}<span class="n">${esc(x.label)}${x.k === "liq" && x.n ? noTag(x.n) : ""}${x.items ? `<small>${esc(x.items.map(([, l, q]) => l + " " + q).join(", "))}</small>` : ""}</span><span class="qb"><button data-m="${key}">−</button><b>${x.qty}</b><button data-p="${key}">+</button></span><b class="price">${won(x.unit * x.qty)}</b></div>`).join("")
       + (off > 0 ? `<div class="sum2"><div class="r"><span>낱개로 샀을 때</span><s>${won(unitAll)}</s></div><div class="r off"><span>${esc(t.how || "묶음, 이벤트")} 할인</span><b>-${won(off)}</b></div><div class="save">총 ${won(off)} 할인 받았어요</div></div>` : "")
-      + memberBox() + benefitBox() + ledgerBox()
-    : '<div style="padding:24px 0;color:var(--grey)">담은 상품이 없어요</div>';
+      + benefitBox() + memberBox() + ledgerBox() /* 11/12 혜택(비슷한 맛)을 회원 칸 위로 */
+    : '<div style="padding:16px 0 4px;color:var(--grey)">담은 상품이 없어요</div>' + (memregOn() ? '<div class="membig">' + memberBox() + (member.type || member.reg ? '<button class="memgo sub" data-memclear="1" style="margin-top:10px">처음으로 (입력한 것 지우기)</button>' : "") + '</div>' : ""); /* 11/12 빈 장바구니에선 회원 칸을 크게 */ /* 11/12 액상덕후: 빈 장바구니에서도 회원조회, 회원가입 + 지우기 */
   setFoot("cart");
 }
 $('lines').onclick = (e) => {
   const ck = e.target.closest('[data-ck]'); if (ck) { member[ck.dataset.ck] = !member[ck.dataset.ck]; if (member.bad === "agree") member.bad = ""; drawCart(); return; }
-  const mo = e.target.closest('[data-memok]'); if (mo) { if (!/^01[016789]\d{7,8}$/.test(member.phone)) { member.bad = "phone"; drawCart(); return toast("휴대폰 번호를 확인해 주세요"); } member.bad = ""; member.okd = true; drawCart(); return; }
+  const hs = e.target.closest('[data-h2skip]'); if (hs) { window.h2After = null; document.body.classList.remove('open'); qzStart(); return; } /* 11/18 등록 없이 문진으로 */
+  const mo = e.target.closest('[data-memok]'); if (mo) { if (h2on() && !/^[가-힣a-zA-Z ]{1,12}$/.test(member.name.trim())) { member.bad = "name"; drawCart(); return toast("성함을 알려 주세요"); } if (!/^01[016789]\d{7,8}$/.test(member.phone) || /^0000/.test(member.phone.slice(3))) { member.bad = "phone"; drawCart(); return toast("휴대폰 번호를 확인해 주세요"); } member.bad = ""; if (memregOn()) { memRegSend(true); return; } member.okd = true; drawCart(); return; } /* 11/12 본점: 포스에서 회원 조회 */
+  const sl = e.target.closest('[data-seller]'); if (sl) { SELLER = SELLER === sl.dataset.seller ? "" : sl.dataset.seller; sellerSave(); drawCart(); return; } /* 11/13 판매자 */
+  const sa = e.target.closest('[data-sima]'); if (sa) { const x = ALL_LQ.find((y) => y.id === sa.dataset.sima); if (x) { addLiqX(x); toast("담았어요"); drawCart(); } return; } /* 11/12 비슷한 맛 담기 */
+  const mc = e.target.closest('[data-memclear]'); if (mc) { Object.assign(member, { type: null, name: "", year: "", phone: "", agree: false, mk: false, sex: "", reg: null, bad: "", okd: false }); drawCart(); return; } /* 11/12 빈 장바구니 회원 칸 초기화 */
+  const mn = e.target.closest('[data-memnew]'); if (mn) { member.type = "new"; member.reg = null; drawCart(); return; } /* 조회에 없던 번호 → 번호 그대로 회원등록 */
   const mg = e.target.closest('[data-memreg]'); if (mg) { memRegSend(); return; }
   const sx = e.target.closest('[data-sex]'); if (sx) { member.sex = sx.dataset.sex; drawCart(); return; }
   const mb = e.target.closest('[data-mem]'); if (mb) { member.type = mb.dataset.mem || null; member.reg = null; drawCart(); return; }
@@ -805,6 +963,18 @@ const podFams = () => [...new Set(GDS.filter((g) => g.c === "pod" && (g.sub || "
 const MYDEV_TOP = ["하복2", "발라리안", "하복", "말론S", "말론", "젤로", "조바", "플러키"];
 const myDevBox = () => { const q = norm(myDevQ), fams = podFams(), hit = q ? fams.filter((f) => norm(f).includes(q) || q.includes(norm(f))) : fams.slice(0, 8);
   return `<div class="nudge md"><b>쓰시는 기기 소모품은 필요 없으세요?</b><span>기기 이름을 넣으면 맞는 팟, 코일을 보여 드려요</span><input id="myDev" placeholder="예: 하복, 발라리안, 말론" value="${esc(myDevQ)}" autocomplete="off"><div class="mdc">${hit.map((f) => `<button data-myd="${esc(f)}">${esc(f)}</button>`).join("") || '<em>맞는 기기가 없어요, 직원에게 물어봐 주세요</em>'}</div></div>`; };
+/* 11/12 액상덕후: "몇 병 더 담으면" 칸 안에 비슷한 맛 추천. 같은 맛 > 같은 계열, A그룹과 이 지점 랭킹 먼저. 품절, 담은 것, 프라임은 뺌 */
+function simLiq(items, k = 3) {
+  const inCart = new Set(cart.keys()), mine = [...cart].filter(([, x]) => x.k === "liq").map(([id]) => ALL_LQ.find((y) => y.id === id)).filter(Boolean); /* 장바구니 칸에는 id가 없고 열쇠가 상품 id */
+  if (!mine.length) return [];
+  const fs = new Set(mine.map((x) => x.f).filter(Boolean)), gs = new Set(mine.map((x) => x.g).filter(Boolean)), aIds = new Set(LQ.map((x) => x.id));
+  const rk = new Map(); try { ((RK && RK.branches && RK.branches[BRANCH] && RK.branches[BRANCH].liq) || []).forEach((r, i) => { const x = rkFind("liq", r[0]); if (x && !rk.has(x.id)) rk.set(x.id, i); }); } catch (e) {}
+  const zeroCart = mine.every((x) => (x.t || []).includes("무니코틴")), isZero = (x) => (x.t || []).includes("무니코틴") || /제로닉|^\(무\)/.test(x.n); /* 11/13 니코틴 손님에게 무니코틴 추천 안 함 */
+  return ALL_LQ.filter((x) => !inCart.has(x.id) && !outOf(x.n) && x.line !== "프라임" && isZero(x) === zeroCart && (fs.has(x.f) || gs.has(x.g)))
+    .map((x) => ({ x, s: (fs.has(x.f) ? 4 : 0) + (gs.has(x.g) ? 2 : 0) + (aIds.has(x.id) ? 2 : 0) + (rk.has(x.id) ? 2 - rk.get(x.id) / 10 : 0) }))
+    .sort((a, b) => b.s - a.s).slice(0, k).map((o) => o.x); }
+function simBox(items) { const L = simLiq(items); if (!L.length) return "";
+  return `<div class="simr"><span>비슷한 맛도 같이 담아 보세요</span><div>${L.map((x) => `<button data-sima="${x.id}"><img src="${imgOf(x)}" alt=""><b>${esc(short(x.n))}</b><small>${esc(x.f || "")}</small><i>+</i></button>`).join("")}</div></div>`; }
 function benefitBox() { /* 11/12 "글이 한 번에 너무 많다": 지금 상황에 맞는 안내 하나만 (각인 넣는 중이면 그 칸은 같이) */
   const t = totalOf(), c = t.c, items = [...cart.values()], n = c.v + c.p, out = [];
   const liqAll = n + c.m + items.filter((x) => x.k === "bulk").reduce((a, x) => a + x.items.reduce((s, [, , q]) => s + q, 0) * x.qty, 0);
@@ -817,7 +987,7 @@ function benefitBox() { /* 11/12 "글이 한 번에 너무 많다": 지금 상�
     const md = (devOpts("말론 기계") || [])[0] || (devOpts("말론S") || [])[0];
     if (n >= 11) one = `<div class="nudge"><b>프리미엄 11병 90,000원 적용 중</b><span>지금 ${n}병 담았어요</span></div>`;
     else if (n < 5 || !md) { const goal = n < 5 ? 5 : 11, more = goal - n, diff = prPrice(n + more) - prPrice(n);
-      one = `<div class="nudge"><b>${diff < 0 ? `${more}병 더 담으면 오히려 ${won(-diff)} 싸져요` : `${more}병 더 담으면 ${goal}병 ${goal === 5 ? "49,500" : "90,000"}원`}</b><div class="bar2"><i style="width:${Math.min(100, n / goal * 100)}%"></i></div></div>`; }
+      one = `<div class="nudge"><b>${diff < 0 ? `${more}병 더 담으면 오히려 ${won(-diff)} 싸져요` : `${more}병 더 담으면 ${goal}병 ${goal === 5 ? "49,500" : "90,000"}원`}</b><div class="bar2"><i style="width:${Math.min(100, n / goal * 100)}%"></i></div>${simBox(items)}</div>`; }
     else { const nm = md.model === "말론 기계" ? "말론" : md.model, withDev = estimate({ ...c, dev: 1, devSum: md.price, noVl: true }).total + c.other;
       one = `<button class="upsell" data-up="1"><span><b>이 맛들로 ${nm} 패키지 만들기</b><small>${nm}를 더하면 총 ${won(withDev)}</small></span><i>→</i></button>`; }
   }
@@ -841,9 +1011,10 @@ const extraLines = () => (engrave !== null ? `<div class="scan" data-n="1" data-
   + (giftBase() >= 100000 ? `<div class="scan" data-n="1" data-free="1" data-code="" data-nm="일회용 증정"><div class="hd"><b>🎁 일회용 기기 1개 증정</b><span>× 1</span></div><div class="s">액상, 팟 10만원 이상, 손님이 고른 일회용을 서비스(0원)로</div></div>` : "");
 // 회원 (지금 판 memberBox와 같은 흐름: 처음이에요 = 이름, 번호, 동의 / 회원이에요 = 번호만)
 const member = { type: null, name: "", year: "", phone: "", agree: false, mk: false, sex: "", reg: null, bad: "", okd: false };
+const h2on = () => document.body.classList.contains("home2"); /* 11/18 첫 화면 새 배치 시험 중인지 (window.h2After = 회원 칸 다음에 갈 곳: "qz" 문진, "hist" 주문내역) */
 /* 11/6 회원등록 시험: 패드 입력을 봇이 포스에 등록. 본점 menu-b 주소에서만 켜짐. 이름, 번호는 공개키로 잠가서 보냄 */
 const MEMREG_KEY = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA9uVKKI1z1Iyh3kGLkFnd/fMrBVT6hzfZTBe5ENYILIcIHSNMUM/vhDVBp4cr8Fm6USOMGrh5GCqPOBsNW0JCXIN6AIWy8QPAMuwn5G/Hasf3C8GXxRjrY+wnFx9PEuSXNb+OEC/kLMl3JuA7vCW0Rz10ilguPYyakwmjPgBqf+Ku9hIxeWgODYMYB9Ue7qdSU2bIs3sKgseehYahaJWHBovBdQaRSogNBPp+zbrjwCAt6LVEQNT+yRjMlzDEuQs0uHmxBPtm0ZW/BzLZUWdf10rHHoKXdDtjx0nby6oeFbpyC2slLUPn3Z2L3FVenhk/Ttp5vyLhBZiOC/ybattxWQIDAQAB", MEMREG_API = "https://api.github.com/repos/officialvafriend/vape/contents/menu-b/memreg.json?ref=main";
-const memregOn = () => BRANCH === "본점"; /* 11/12 본점 정식 주소에서 켬 (전엔 menu-b?memreg=1 시험만) */
+const memregOn = () => ["본점", "동성로", "율하", "수성", "반월당", "상인", "광장코아", "현풍", "동성로2"].includes(BRANCH); /* 11/12 회원등록, 조회는 전 지점 (폰 보내기 QR_SEND_ON은 본점만) */ /* 11/12 본점 정식 주소에서 켬 (전엔 menu-b?memreg=1 시험만) */
 async function memSeal(o) { const raw = Uint8Array.from(atob(MEMREG_KEY), (c) => c.charCodeAt(0)); const k = await crypto.subtle.importKey("spki", raw, { name: "RSA-OAEP", hash: "SHA-256" }, false, ["encrypt"]); const e = await crypto.subtle.encrypt({ name: "RSA-OAEP" }, k, new TextEncoder().encode(JSON.stringify(o))); return btoa(String.fromCharCode(...new Uint8Array(e))); }
 const memRedraw = () => { if (!staffOn) drawCart(); };
 /* 11/12 결과는 슈파베이스 memreg_get으로 1.5초마다 (빠름), 6초에 한 번은 깃허브 파일도 예비로 */
@@ -851,27 +1022,33 @@ async function memPoll(id, n = 0) { if (!member.reg || member.reg.id !== id) ret
   let st = null; try { const r = await fetch(SB_URL + "/rest/v1/rpc/memreg_get", { method: "POST", headers: { apikey: SB_KEY, Authorization: "Bearer " + SB_KEY, "Content-Type": "application/json" }, body: JSON.stringify({ p_id: id }) }); if (r.ok) st = await r.json(); } catch (e) {}
   if (!st && n % 4 === 3) { try { const r = await fetch(MEMREG_API, { cache: "no-store", headers: { Accept: "application/vnd.github.raw+json" } }); if (r.ok) { const row = (await r.json()).find((x) => x.id === id); if (row) st = row.s; } } catch (e) {} }
   if (!member.reg || member.reg.id !== id) return;
-  if (st && st !== "wait") { member.reg.s = st; memRedraw(); return; }
-  if (n >= 80) { member.reg.s = "late"; memRedraw(); return; }
+  if (st && st !== "wait") { member.reg.s = st; memLog(st); memRedraw(); return; }
+  if (n >= 80) { member.reg.s = "late"; memLog("late"); memRedraw(); return; }
   setTimeout(() => memPoll(id, n + 1), 1500); }
-async function memRegSend() {
+/* 11/18 액상덕후 "그렇게 해서 해보자": 패드가 손님에게 보여 준 회원등록, 조회 결과를 패드 기록에 남김 (봇 기록과 대조용). 결과 글자와 걸린 초만, 이름과 번호는 안 남김 */
+function memLog(s) { try { const r = member.reg || {}; ev("mr", s, (r.look ? "조회" : "등록") + " " + (r.t0 ? Math.round((Date.now() - r.t0) / 1000) + "초" : "")); evFlush(); } catch (e) {} }
+async function memRegSend(look) { /* 11/12 look=true: 회원이에요 번호로 포스에서 찾기만 */
   const need = (k, msg) => { member.bad = k; drawCart(); toast(msg); setTimeout(() => { const el = document.querySelector('.mem .bad'); if (el) { el.scrollIntoView({ block: "center" }); if (el.tagName === "INPUT") el.focus(); } }, 60); };
+  if (!look) {
   if (!/^[가-힣a-zA-Z ]{1,12}$/.test(member.name.trim())) return need("name", "성함을 알려 주세요");
-  if (!/^\d{2}$/.test(member.year || "")) return need("year", "몇 년생인지 알려 주세요");
-  if (!/^01[016789]\d{7,8}$/.test(member.phone)) return need("phone", "휴대폰 번호를 확인해 주세요");
-  if (!member.agree) return need("agree", "(필수) 동의를 눌러 주세요"); member.bad = "";
+  if (!/^\d{2}$/.test(member.year || "")) return need("year", "몇 년생인지 알려 주세요"); }
+  if (!/^01[016789]\d{7,8}$/.test(member.phone) || /^0000/.test(member.phone.slice(3))) return need("phone", "휴대폰 번호를 확인해 주세요"); /* 11/18 010-0000-xxxx 는 봇이 안 받는 번호(포스 빈 번호 자리)라 패드에서 먼저 알려 줌. 전엔 보낸 뒤 "등록이 안 됐어요"로만 떴음 */
+  if (!look && !member.agree) return need("agree", "(필수) 동의를 눌러 주세요"); member.bad = "";
   const id = Array.from(crypto.getRandomValues(new Uint8Array(8)), (b) => b.toString(36)).join("").slice(0, 16).padEnd(8, "0");
-  member.reg = { id, s: "send" }; memRedraw();
-  try { const enc = await memSeal({ name: memFull(), phone: member.phone, sex: "", sms: member.mk ? "Y" : "N" }); /* 성별은 안 받음, 포스 기본값(여) */ /* 11/12 (선택) 쿠폰, 혜택 문자 동의 → 포스 문자 수신 Y */
-    const r = await fetch(HOOK, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ content: JSON.stringify({ type: "memreg", branch: BRANCH, pad: PAD_NO, id, enc }), allowed_mentions: { parse: [] }, flags: 4096 }) });
+  member.reg = { id, s: "send", look: !!look, t0: Date.now() }; memRedraw();
+  try { const enc = await memSeal(look ? { name: "", phone: member.phone, sex: "", sms: "N" } : { name: memFull(), phone: member.phone, sex: "", sms: member.mk ? "Y" : "N" }); /* 성별은 안 받음, 포스 기본값(여) */ /* 11/12 (선택) 쿠폰, 혜택 문자 동의 → 포스 문자 수신 Y */
+    const r = await fetch(HOOK, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ content: JSON.stringify({ type: "memreg", branch: BRANCH, pad: PAD_NO, id, enc, ...(look ? { look: 1 } : {}) }), allowed_mentions: { parse: [] }, flags: 4096 }) });
     if (!r.ok) throw new Error("응답 " + r.status); member.reg.s = "wait"; memRedraw(); setTimeout(() => memPoll(id), 1500);
-  } catch (e) { member.reg = null; memRedraw(); toast("보내지 못했어요, 다시 눌러 주세요"); } }
+    if (!look && window.h2After === "qz") { window.h2After = null; if (!document.body.classList.contains('land')) document.body.classList.remove('open'); qzStart(); toast("등록하는 동안 먼저 찾아볼게요"); }
+  } catch (e) { memLog("sendfail"); member.reg = null; memRedraw(); toast("보내지 못했어요, 다시 눌러 주세요"); } }
 const memFull = () => member.name.trim() ? member.name.trim() + (member.year || "") : ""; /* 11/12 성함+년생(예: 클로드98), 동명이인 구분 */
 const MEM_S = { send: "보내는 중이에요", wait: "등록하는 중이에요. 잠깐이면 돼요, 계속 고르셔도 돼요", ok: "회원등록 됐어요!", dup: "이미 회원이세요! 결제할 때 직원에게 말씀해 주세요", err: "등록이 안 됐어요, 직원에게 말씀해 주세요", off: "등록이 안 됐어요, 직원에게 말씀해 주세요", late: "확인이 늦어지고 있어요, 직원에게 말씀해 주세요" };
+const MEM_L = { send: "찾는 중이에요", wait: "포스에서 찾는 중이에요. 계속 고르셔도 돼요", found: "회원 확인됐어요! 결제할 때 이 번호로 찾을게요", none: "이 번호로 된 회원이 없어요", err: "확인이 안 됐어요, 직원에게 번호를 말씀해 주세요", off: "확인이 안 됐어요, 직원에게 번호를 말씀해 주세요", late: "확인이 늦어지고 있어요, 직원에게 번호를 말씀해 주세요" };
 function memberBox() {
   if (!member.type) return `<div class="mem"><div class="t">혹시 처음 오셨나요?</div>
-    <button class="pk2" data-mem="new"><b>처음이에요, 회원등록하고 적립하기!</b><span>오늘 구매부터 적립받을 수 있어요</span></button>
-    <button class="pk2" data-mem="old"><b>회원이에요, 회원정보 입력하기</b><span>휴대폰 번호만 넣어 주세요</span></button></div>`;
+    <button class="pk2" data-mem="new"><b>처음이에요, 회원등록하기</b><span>구매 이력이 남아서 AS 받을 때 편해요</span></button>
+    <button class="pk2" data-mem="old"><b>회원이에요, 번호 넣기</b><span>휴대폰 번호만 넣어 주세요</span></button></div>`;
+  if (member.reg && member.reg.look) { const s = member.reg.s; return `<div class="mem"><div class="t">회원 확인</div><div class="memst ${s === "found" ? "ok" : s === "none" ? "err" : s}">${MEM_L[s] || ""}</div>${s === "none" ? '<button class="memgo" data-memnew="1">처음이에요, 회원등록하기</button><button class="memgo sub" data-mem="old">번호 다시 넣기</button>' : /err|off|late/.test(s) ? '<button class="memgo" data-mem="old">다시 넣기</button>' : ""}${s === "found" && h2on() ? '<div class="mpv">주문내역 보기는 준비 중이에요</div>' : ""}</div>`; }
   if (member.reg) return `<div class="mem"><div class="t">회원등록</div><div class="memst ${member.reg.s}">${MEM_S[member.reg.s] || ""}</div>${/err|off|late/.test(member.reg.s) ? '<button class="memgo" data-mem="new">다시 입력하기</button>' : ""}</div>`;
   const back = `<button data-mem="">다시 고르기</button>`;
   if (member.type === "new") { const bad = (k) => member.bad === k ? " bad" : "", full = memFull();
@@ -880,38 +1057,109 @@ function memberBox() {
     ${memregOn() ? `<div class="mq">몇 년생이세요?</div><div class="myr"><input type="tel" id="memYear" class="${bad("year")}" inputmode="numeric" maxlength="2" placeholder="98" value="${esc(member.year)}"><span>년생</span></div>` : ""}
     <div class="mq">휴대폰 번호</div><input type="tel" id="memPhone" class="${bad("phone")}" inputmode="numeric" placeholder="숫자만" value="${esc(member.phone)}">
     ${memregOn() ? `<div class="mpv" id="memPv">${full ? `<b>${esc(full)}</b> 님으로 가입돼요` : ""}</div>` : ""}
-    <button class="memck${member.agree ? " on" : ""}${bad("agree")}" data-ck="agree"><i></i><span>(필수) 적립에 쓰는 이름, 번호 저장에 동의해요</span></button>
-    ${memregOn() ? `<button class="memck${member.mk ? " on" : ""}" data-ck="mk"><i></i><span>(선택) 쿠폰 문자 받기</span></button><button class="memgo" data-memreg="1">회원 등록하기</button>` : ""}</div>`; }
-  return `<div class="mem"><div class="t">회원정보 입력 ${back}</div><input type="tel" id="memPhone" class="${member.bad === "phone" ? "bad" : ""}" inputmode="numeric" placeholder="가입하신 휴대폰 번호 (숫자만)" value="${esc(member.phone)}"><button class="memgo" data-memok="1">${member.okd ? "확인됐어요" : "확인"}</button>${member.okd ? '<div class="mpv">직원이 포스에서 번호로 적립해 드려요</div>' : ""}</div>`;
+    <button class="memck${member.agree ? " on" : ""}${bad("agree")}" data-ck="agree"><i></i><span>(필수) 이름, 번호 저장에 동의해요</span></button>
+    ${memregOn() ? `<button class="memck${member.mk ? " on" : ""}" data-ck="mk"><i></i><span>(선택) 쿠폰 문자 받기</span></button><button class="memgo" data-memreg="1">${window.h2After === "qz" ? "등록하고 나에게 맞는 전자담배 찾기" : "회원 등록하기"}</button>` : ""}${window.h2After === "qz" ? '<button class="memgo sub" data-h2skip="1">등록 없이 바로 찾기</button>' : ""}</div>`; }
+  return `<div class="mem"><div class="t">${h2on() ? "회원 확인" : "회원정보 입력"} ${back}</div>${h2on() ? `<div class="mq">성함</div><input type="text" id="memName" class="${member.bad === "name" ? "bad" : ""}" placeholder="예: 김민수" value="${esc(member.name)}"><div class="mq">휴대폰 번호</div>` : ""}<input type="tel" id="memPhone" class="${member.bad === "phone" ? "bad" : ""}" inputmode="numeric" placeholder="가입하신 휴대폰 번호 (숫자만)" value="${esc(member.phone)}"><button class="memgo" data-memok="1">${member.okd ? "확인됐어요" : window.h2After === "hist" ? "주문내역 조회하기" : "확인"}</button>${member.okd ? '<div class="mpv">직원이 포스에서 번호로 적립해 드려요</div>' : ""}</div>`;
 }
 $('lines').addEventListener('focusin', (e) => { if (e.target.closest && e.target.closest('.mem') && e.target.tagName === "INPUT") setTimeout(() => e.target.scrollIntoView({ block: "center" }), 350); }); /* 키보드가 회원칸을 가리지 않게 */
 $('lines').addEventListener('input', (e) => { const t = e.target;
   if (t.id === "memName" || t.id === "memYear") { if (t.id === "memYear") t.value = t.value.replace(/\D/g, "").slice(0, 2); member[t.id === "memName" ? "name" : "year"] = t.value; if (member.bad === "name" || member.bad === "year") { member.bad = ""; t.classList.remove("bad"); } const pv = document.getElementById("memPv"); if (pv) pv.innerHTML = memFull() ? `<b>${esc(memFull())}</b> 님으로 가입돼요` : ""; } if (t.id === "memPhone") { t.value = t.value.replace(/\D/g, "").slice(0, 11); member.phone = t.value; member.okd = false; if (member.bad === "phone") { member.bad = ""; t.classList.remove("bad"); } } if (t.id === "memAgree") member.agree = t.checked; if (t.id === "memMk") member.mk = t.checked; });
 $('lines').addEventListener('change', (e) => { if (e.target.id === "memAgree") member.agree = e.target.checked; if (e.target.id === "memMk") member.mk = e.target.checked; });
-const MEM_LINE = { ok: "패드로 등록됨, 포스에서 번호로 회원 조회", dup: "이미 회원, 포스에서 번호로 회원 조회", wait: "패드로 등록 중, 끝나면 포스에서 조회", send: "패드로 등록 중, 끝나면 포스에서 조회", err: "패드 등록 실패, 포스에서 직접 등록", off: "패드 등록 실패, 포스에서 직접 등록", late: "패드 등록 확인 안 됨, 포스에서 번호로 조회" };
-const memLine = () => member.type ? `<div class="memline"><b>${member.reg ? MEM_LINE[member.reg.s] : member.type === "new" ? "신규 회원등록" : "기존 회원 적립"}</b> ${esc([member.type === "new" ? memFull() : member.name, member.phone.replace(/(\d{3})(\d{3,4})(\d{4})/, "$1-$2-$3")].filter(Boolean).join(", ") || "정보 미입력")}${member.type === "new" && !member.agree ? ' <span style="color:var(--red)">(동의 안 함)</span>' : ""}</div>` : `<div class="memline"><b>회원 정보 없음</b> 적립 원하시는지 여쭤보고, 회원이면 포스에서 조회 먼저</div>`;
+const MEM_LINE = { ok: "패드로 등록됨, 포스에서 번호로 회원 조회", dup: "이미 회원, 포스에서 번호로 회원 조회", wait: "패드로 등록 중, 끝나면 포스에서 조회", send: "패드로 등록 중, 끝나면 포스에서 조회", err: "패드 등록 실패, 포스에서 직접 등록", off: "패드 등록 실패, 포스에서 직접 등록", late: "패드 등록 확인 안 됨, 포스에서 번호로 조회", found: "회원 확인됨, 포스에서 번호로 회원 조회", none: "이 번호 회원 없음, 포스에서 확인" }; /* 11/12 회원조회 결과 (없으면 undefined로 떴음) */
+const memLine = () => member.type ? `<div class="memline"><b>${member.reg ? (member.reg.look && /send|wait/.test(member.reg.s) ? "회원 확인 중" : member.reg.look && /err|off|late/.test(member.reg.s) ? "회원 확인 안 됨, 포스에서 번호로 조회" : MEM_LINE[member.reg.s] || "회원 확인 중") : member.type === "new" ? "신규 회원등록" : "기존 회원"}</b><strong>${esc([member.type === "new" ? memFull() : member.name, member.phone.replace(/(\d{3})(\d{3,4})(\d{4})/, "$1-$2-$3")].filter(Boolean).join(", ") || "정보 미입력")}</strong>${member.type === "new" && !member.agree ? ' <span style="color:var(--red)">(동의 안 함)</span>' : ""}</div>` : `<div class="memline nomem"><b>회원 정보 없음</b> 적립 원하시는지 여쭤보고, 회원이면 포스에서 조회 먼저</div>`;
 // 아래 버튼: 담은 상품 → 직원 바코드 / QR → 완료
+/* 11/12 액상덕후 "드래그로 내렸다가 올렸다가": 세로 화면에서 아래 바를 위로 끌면 열림, 장바구니 윗부분(손잡이, 제목)을 아래로 끌면 닫힘 */
+(function () {
+  const sh = document.querySelector('.sheet'), bar = document.querySelector('.cart'), dim = document.querySelector('.dim'); let d = null, eatClick = 0;
+  const land = () => document.body.classList.contains('land');
+  const begin = (e, from) => { if (land() || (e.pointerType === "mouse" && e.button !== 0)) return; d = { y: e.clientY, t: Date.now(), from, dy: 0, moved: false, h: sh.getBoundingClientRect().height || innerHeight * 0.7 }; };
+  bar.addEventListener('pointerdown', (e) => begin(e, "bar"));
+  sh.addEventListener('pointerdown', (e) => { if (e.target.closest('.grab, #shH') || e.clientY - sh.getBoundingClientRect().top < 64) begin(e, "sheet"); });
+  addEventListener('pointermove', (e) => { if (!d) return; d.dy = e.clientY - d.y;
+    if (!d.moved && Math.abs(d.dy) < 8) return;
+    if (!d.moved) { d.moved = true; if (d.from === "bar") drawCart(); sh.style.transition = dim.style.transition = "none"; }
+    const off = d.from === "bar" ? Math.max(0, d.h + Math.min(0, d.dy)) : Math.max(0, d.dy);
+    sh.style.transform = `translate(-50%,${off}px)`; dim.style.opacity = String(Math.max(0, 1 - off / d.h)); dim.style.pointerEvents = "none"; });
+  const end = () => { if (!d) return; const m = d; d = null; if (!m.moved) return;
+    const fast = Math.abs(m.dy) / Math.max(1, Date.now() - m.t) > 0.5, open = m.from === "bar" ? (m.dy < -m.h * 0.2 || (fast && m.dy < 0)) : !(m.dy > m.h * 0.2 || (fast && m.dy > 0));
+    sh.style.transition = dim.style.transition = ""; requestAnimationFrame(() => { sh.style.transform = dim.style.opacity = dim.style.pointerEvents = ""; document.body.classList.toggle('open', open); if (!open) cartViewBack(); });
+    eatClick = Date.now(); };
+  addEventListener('pointerup', end); addEventListener('pointercancel', end);
+  addEventListener('click', (e) => { if (Date.now() - eatClick < 350) { e.stopPropagation(); e.preventDefault(); } }, true); /* 끈 뒤 손 뗄 때 눌림으로 안 치게 */
+})();
+/* 11/12 액상덕후 "이렇게 뜨는 것도 전부 손으로 끌어 내릴 수 있게": 자세히(sp), 패키지(ev), 재고 문의(ask) 창. 윗부분(제목 줄)을 아래로 끌면 닫힘 */
+(function () {
+  const P = [["sp", "spon", () => document.body.classList.remove('spon')], ["ev", "evon", () => closeEv()], ["ask", "askon", () => document.body.classList.remove('askon')]];
+  let d = null, eat = 0;
+  P.forEach(([id, on, close]) => { const el = document.getElementById(id); if (!el) return;
+    el.querySelectorAll('.evh').forEach((h) => h.style.touchAction = "none");
+    el.addEventListener('pointerdown', (e) => { if (!document.body.classList.contains(on) || (e.pointerType === "mouse" && e.button !== 0)) return;
+      if (!e.target.closest('.evh') && e.clientY - el.getBoundingClientRect().top > 70) return;
+      d = { el, close, y: e.clientY, t: Date.now(), dy: 0, moved: false, h: el.getBoundingClientRect().height }; }); });
+  addEventListener('pointermove', (e) => { if (!d) return; d.dy = e.clientY - d.y; if (!d.moved && d.dy < 8) return;
+    if (!d.moved) { d.moved = true; d.el.style.transition = "none"; } d.el.style.transform = `translate(-50%,${Math.max(0, d.dy)}px)`; });
+  const end = () => { if (!d) return; const m = d; d = null; if (!m.moved) return; eat = Date.now();
+    const shut = m.dy > m.h * 0.18 || (m.dy > 30 && m.dy / Math.max(1, Date.now() - m.t) > 0.5);
+    m.el.style.transition = ""; requestAnimationFrame(() => { m.el.style.transform = ""; if (shut) m.close(); }); };
+  addEventListener('pointerup', end); addEventListener('pointercancel', end);
+  addEventListener('click', (e) => { if (Date.now() - eat < 350) { e.stopPropagation(); e.preventDefault(); } }, true);
+})();
 function setFoot(mode) {
   const has = cart.size > 0; $('shClear').hidden = !(mode === "cart" && has);
-  $('shBtns').innerHTML = mode === "cart" ? `<button class="b2" data-f="qr" ${has ? "" : "disabled"}>QR 보기</button><button class="b1" data-f="staff" ${has ? "" : "disabled"}>직원에게 보여주기</button>`
+  const sendOn = ["본점", "동성로", "율하", "수성", "반월당", "상인", "광장코아", "현풍", "동성로2"].includes(BRANCH); /* 11/17 액상덕후 "포스로 보내기가 먼저 보이게" */
+  $('shBtns').innerHTML = mode === "cart" ? (sendOn ? `<button class="rd" data-f="send" ${has ? "" : "disabled"}>포스로 보내기</button><button class="b2" data-f="qr" ${has ? "" : "disabled"}>QR 보기</button>` : `<button class="b1" data-f="qr" ${has ? "" : "disabled"}>QR 보기</button>`) /* 11/12 액상덕후: 직원에게 보여주기 뺌 (QR 화면의 [바코드로 보기]는 남김) */
     : mode === "staff" ? `<button class="b2" data-f="cart">← 수정</button><button class="b2" data-f="qr">QR 보기</button><button class="rd" data-f="done">결제 완료</button>`
     : `<button class="b2" data-f="staff">바코드로 보기</button><button class="rd" data-f="done">결제 완료</button>`;
 }
 $('shBtns').onclick = (e) => { const b = e.target.closest('[data-f]'); if (!b) return; const f = b.dataset.f;
-  if (f === "cart") cartViewBack(); if (f === "staff") staffView(); if (f === "qr") qrView(); if (f === "done") doneSale(); };
+  if (f === "cart") cartViewBack(); if (f === "staff") staffView(); if (f === "qr") qrView(); if (f === "send") { qrView(); const pb = document.querySelector("#lines .posgo"); if (pb) pb.click(); } if (f === "done") doneSale(); };
 function resetSale() { myDevOpen = false; qzPkMore = false; cart.clear(); PERK = null; Object.assign(member, { type: null, name: "", year: "", phone: "", agree: false, mk: false, sex: "", reg: null, bad: "", okd: false }); goalN = 0; engrave = null; scanDone.clear(); qz = { i: 0, ans: {} }; Object.assign(ledger, { name: "", gu: "", etc: "" }); airxGift = "pod"; }
 let shClrT = 0; const shClrOff = () => { clearTimeout(shClrT); $('shClear').classList.remove('arm'); $('shClear').textContent = "비우기"; };
 $('shClear').onclick = () => { const b = $('shClear'); if (!b.classList.contains('arm')) { b.classList.add('arm'); b.textContent = "한 번 더 누르면 비워요"; shClrT = setTimeout(shClrOff, 3000); return; } shClrOff(); resetSale(); document.body.classList.remove('open'); cartViewBack(); drawLiq(); drawGoal(); if (typeof drawDspList === "function") { drawDspList(); drawPodView(); } toast("비웠어요"); };
-function nextCust() { resetSale(); lf = "전체"; mf = "전체"; evQ = ""; myDevQ = ""; dm = "하복2"; pkSel = 10; $('chips').querySelectorAll('button').forEach((x) => x.classList.toggle('on', x.dataset.f === lf)); document.body.classList.remove('open'); cartViewBack(); drawDev(); drawLiq(); drawGoal(); drawDspList(); drawPodView(); }
+function nextCust() { resetSale(); lf = "전체"; mf = "전체"; evQ = ""; myDevQ = ""; dm = devModels()[0] || "하복2"; pkSel = 10; $('chips').querySelectorAll('button').forEach((x) => x.classList.toggle('on', x.dataset.f === lf)); document.body.classList.remove('open'); cartViewBack(); drawDev(); drawLiq(); drawGoal(); drawDspList(); drawPodView(); }
 /* 11/10 다음 손님: 처음이나 로고를 눌렀을 때 담은 상품이 남아 있으면 8초 동안 비우기 버튼을 보여 줌. 안 누르면 그대로 유지 */
 function nxShow() { const c = $('nxChip'); if (!cart.size) return c.classList.remove('on'); c.classList.add('on'); clearTimeout(c._t); c._t = setTimeout(() => c.classList.remove('on'), 8000); }
 $('nxChip').onclick = () => { $('nxChip').classList.remove('on'); nextCust(); toast("비웠어요, 다음 손님 맞이하세요"); };
 function doneSale() { if (!confirm("결제 완료하고 처음 화면으로 갈까요?")) return;
-  nextCust(); go('home'); toast("감사합니다! 처음 화면으로 왔어요"); }
+  nextCust(); const nx = slotDrop(); go('home'); toast(nx ? `결제 완료, ${nx} 장바구니로 왔어요` : "감사합니다! 처음 화면으로 왔어요"); }
+
+/* ── 11/20 액상덕후 "장바구니가 하나라서 동시에 여러 손님 응대를 못 함": 손님별 장바구니 + 손가락으로 옮기는 떠 있는 단추(자리 기억) ── */
+const SLOT_MAX = 5; let slots = [{ no: 1, s: null }], slotI = 0; /* s = 잠깐 넣어 둔 손님 것, 지금 보는 손님은 null */
+const slotSnap = () => ({ cart: [...cart.entries()], PERK, member: { ...member }, goalN, engrave, scan: [...scanDone], qz: JSON.parse(JSON.stringify(qz)), ledger: { ...ledger }, airxGift, myDevOpen, qzPkMore });
+function slotLoad(s) { resetSale(); if (!s) return; s.cart.forEach(([k, v]) => cart.set(k, v)); PERK = s.PERK; Object.assign(member, s.member); goalN = s.goalN; engrave = s.engrave; s.scan.forEach((x) => scanDone.add(x)); qz = s.qz; Object.assign(ledger, s.ledger); airxGift = s.airxGift; myDevOpen = s.myDevOpen; qzPkMore = s.qzPkMore; }
+const slotName = (i) => { const m = i === slotI ? member : slots[i].s.member, nm = (m.name || "").trim(); return nm ? nm + "님" : m.type && /^01\d{8,9}$/.test(m.phone || "") ? m.phone.slice(-4) + "님" : "손님 " + slots[i].no; }; /* 회원 칸에 성함을 넣으면 성함으로, 번호만 있으면 끝 4자리로 */
+const slotEmpty = (s) => !s.cart.length && !s.member.type && !s.member.reg;
+const slotQty = (i) => i === slotI ? [...cart.values()].reduce((a, x) => a + x.qty, 0) : slots[i].s.cart.reduce((a, [, x]) => a + x.qty, 0);
+function slotDraw() { cartViewBack(); drawDev(); drawLiq(); drawGoal(); drawDspList(); drawPodView(); fabDraw(); }
+function slotGo(i) { if (i === slotI || !slots[i]) return; const cur = slotSnap();
+  if (slotEmpty(cur) && slots.length > 1) { slots.splice(slotI, 1); if (i > slotI) i--; } else slots[slotI].s = cur; /* 빈 장바구니는 떠날 때 저절로 없어짐 */
+  slotI = i; slotLoad(slots[i].s); slots[i].s = null; if (member.reg && member.reg.s === "send") memPoll(member.reg.id); slotDraw(); toast(`${slotName(i)} 장바구니예요`); }
+function slotAdd() { if (slotEmpty(slotSnap())) return toast("지금 장바구니가 비어 있어요, 여기에 담으면 돼요"); if (slots.length >= SLOT_MAX) return toast(`장바구니는 ${SLOT_MAX}개까지예요`);
+  let no = 1; while (slots.some((x) => x.no === no)) no++; slots.push({ no, s: null }); slots[slotI].s = slotSnap(); slotI = slots.length - 1; slotLoad(null); slotDraw(); toast(`손님 ${no} 장바구니를 만들었어요`); }
+function slotDrop() { if (slots.length < 2) return 0; slots.splice(slotI, 1); slotI = 0; slotLoad(slots[0].s); slots[0].s = null; if (member.reg && member.reg.s === "send") memPoll(member.reg.id); slotDraw(); return slotName(0); } /* 결제 끝난 손님 것은 없애고 남은 손님으로 */
+function fabDraw() { const f = $('fab'); if (!f) return; const many = slots.length > 1;
+  f.innerHTML = '<div class="fgrab"></div><button data-fb="home">처음</button>' + (many ? slots.map((x, i) => `<button data-fb="go" data-i="${i}" class="${i === slotI ? "on" : ""}"><span>${esc(slotName(i))}</span><i>${slotQty(i)}개</i></button>`).join("") : "") + '<button data-fb="add" class="add">＋ 손님 추가</button>';
+  try { const h = $('shH'); if (!staffOn && /담은 상품$/.test(h.textContent)) h.textContent = many ? `${slotName(slotI)} 담은 상품` : "담은 상품"; } catch (e) {}
+  fabPos(); }
+const FAB_KEY = () => "vf-b-fab-" + (innerWidth > innerHeight ? "land" : "port"); /* 가로, 세로 자리를 따로 기억 */
+function fabPos(px) { const f = $('fab'), w = f.offsetWidth, h = f.offsetHeight, mx = Math.max(1, innerWidth - w - 16), my = Math.max(1, innerHeight - h - 16); let p = px;
+  if (!p) { let sv = null; try { sv = JSON.parse(localStorage.getItem(FAB_KEY()) || "null"); } catch (e) {}
+    p = sv ? { x: sv.x * innerWidth, y: sv.y * innerHeight } :{ x: mx - (document.body.classList.contains('land') ? 380 : 0), y: my - (document.body.classList.contains('land') ? 0 : 96) }; } /* 처음 자리: 오른쪽 아래, 담은 상품 칸은 피해서 */
+  p.x = Math.min(mx, Math.max(8, p.x)); p.y = Math.min(my, Math.max(8, p.y)); f.style.left = p.x + "px"; f.style.top = p.y + "px"; return { x: p.x / innerWidth, y: p.y / innerHeight }; } /* 왼쪽 위 모서리 자리를 화면 비율로 기억 (손님이 늘면 아래로 길어짐) */
+(() => { const f = $('fab'); let d = null, moved = 0;
+  f.addEventListener('pointerdown', (e) => { d = { id: e.pointerId, sx: e.clientX, sy: e.clientY, ox: f.offsetLeft, oy: f.offsetTop, on: false }; });
+  addEventListener('pointermove', (e) => { if (!d || e.pointerId !== d.id) return; const dx = e.clientX - d.sx, dy = e.clientY - d.sy;
+    if (!d.on) { if (Math.hypot(dx, dy) < 10) return; d.on = true; f.classList.add('drag'); try { f.setPointerCapture(d.id); } catch (er) {} }
+    d.fr = fabPos({ x: d.ox + dx, y: d.oy + dy }); });
+  const end = (e) => { if (!d || e.pointerId !== d.id) return; if (d.on) { moved = Date.now(); f.classList.remove('drag'); try { localStorage.setItem(FAB_KEY(), JSON.stringify(d.fr)); } catch (er) {} } d = null; };
+  addEventListener('pointerup', end); addEventListener('pointercancel', end);
+  f.addEventListener('click', (e) => { if (Date.now() - moved < 400) return; const b = e.target.closest('[data-fb]'); if (!b) return; const k = b.dataset.fb; try { ev("s", k, String(slots.length)); } catch (er) {} /* 떠 있는 단추 기록: home 처음, go 손님 바꾸기, add 손님 추가 */
+    if (k === "home") logoHome(); if (k === "go") slotGo(+b.dataset.i); if (k === "add") slotAdd(); });
+  addEventListener('resize', () => fabPos()); addEventListener('input', () => { try { if (slots.length > 1) fabDraw(); } catch (er) {} }); setTimeout(fabDraw, 0); })(); /* 성함을 치는 대로 단추 이름도 바뀜 */
 
 // ── 기기 화면 ──
 const devOpts = (m) => GDS.filter((g) => g.c === "dev" && g.model === m && !OUT.has(g.n));
-let dm = "하복2", dc = null, pkSel = 10; // 10/28 사장님: 10병 먼저 권하기
+let dm = devModels()[0] || "하복2", dc = null, pkSel = 10; // 10/28 사장님: 10병 먼저 권하기
 const optIs = (o) => (o.opt || null) === (dc || null);
 function drawDev() {
   const opts = devOpts(dm); if (!opts.find(optIs)) dc = (opts[0] || {}).opt || null; /* 11/10 색 없는 기기(하복SE, 말론 기계 등)도 담기게 */
@@ -922,12 +1170,12 @@ function drawDev() {
   const price = cur ? cur.price : 0;
   $('devPr').innerHTML = cur ? (pkSel ? `<div class="sub">${pkSel === 10 ? "액상 10병 포함" : "액상 5병 포함"}</div><div class="price" style="font-size:28px">${won(price + (pkSel === 10 ? ADD.pr10 : ADD.pr5))}</div>` : `<div class="sub">기기</div><div class="price" style="font-size:28px">${won(price)}</div>`)
     : `<div class="sub" style="color:var(--red)">${esc(BRANCH)} 재고 없음</div>`;
-  $('thumbs').innerHTML = devModels().map((m) => { const im = devImgOf(m), has = devOpts(m).length;
+  $('thumbs').innerHTML = devModels().slice().sort((a, b) => (devOpts(a).length ? 0 : 1) - (devOpts(b).length ? 0 : 1)).map((m) => { /* 11/13 재고 없는 기기는 뒤로 */ const im = devImgOf(m), has = devOpts(m).length;
     return `<button class="${m === dm ? "on" : ""} ${has ? "" : "off"}" data-m="${m}"><img src="${im}" alt="">${m}${has ? "" : "<small>재고 없음</small>"}</button>`; }).join("");
   $('pk').style.display = cur ? "" : "none";
   $('pk').innerHTML = [[10, "+ 액상 10병", price + ADD.pr10, price + 90000], [5, "+ 액상 5병", price + ADD.pr5, price + 75000], [0, "기기만", price, 0]]
     .map(([k, t, p, was]) => `<button data-k="${k}" class="${pkSel === k ? "on" : ""}"><b>${t}</b><div>${was ? `<s>${won(was)}</s>` : ""}<div class="price">${won(p)}</div></div></button>`).join("");
-  $('devSpec').dataset.spec = dm; $('devSpec').dataset.c = dc || ""; $('devAdd').disabled = !cur; drawPods(); document.querySelector('.hero .ph').style.background = HEX[dc] ? HEX[dc] + '26' : ''; $('devAdd').textContent = cur ? (pkSel ? `${dm} ${dc || ""} 담고 액상 ${pkSel}병 고르기` : `${dm} ${dc || ""} 담기`) : "이 지점 재고 없음";
+  $('devVid').innerHTML = window.vidBtn ? vidBtn(dm) : ""; /* 11/13 플러키 등 사용 영상 버튼은 담기 버튼 바로 위 */ $('devSpec').dataset.spec = dm; $('devSpec').dataset.c = dc || ""; $('devAdd').disabled = !cur; drawPods(); document.querySelector('.hero .ph').style.background = HEX[dc] ? HEX[dc] + '26' : ''; $('devAdd').textContent = cur ? (pkSel ? `${dm} ${dc || ""} 담고 액상 ${pkSel}병 고르기` : `${dm} ${dc || ""} 담기`) : "이 지점 재고 없음";
 }
 $('colors').onclick = (e) => { const b = e.target.closest('button'); if (b) { dc = b.dataset.c; drawDev(); } };
 $('thumbs').onclick = (e) => { const b = e.target.closest('button'); if (b) { dm = b.dataset.m; pkSel = 10; drawDev(); } };
@@ -942,12 +1190,15 @@ let lf = "전체";
 const BR_ETC = "그 외", BR_OF = (x) => /^VF 빌런/.test(x.n) ? "빌런" : /^VF 릭/.test(x.n) ? "릭" : /^베이퍼/.test(x.n) ? "베이퍼" : BR_ETC;
 $('chips').innerHTML = ["전체", "빌런", "릭", "베이퍼", BR_ETC, "폐호흡", "더보기"].map((t) => `<button data-f="${t}" class="${t === lf ? "on" : ""}">${t}</button>`).join("");
 $('chips').onclick = (e) => { const b = e.target.closest('button'); if (!b) return; lf = b.dataset.f; $('chips').querySelectorAll('button').forEach((x) => x.classList.toggle('on', x === b)); drawLiq(); };
+/* 11/13 액상덕후: 품절은 목록 아래로 (검색에는 그대로 나옴) */
+const soldLast = (a, b) => (outOf(a.n) ? 1 : 0) - (outOf(b.n) ? 1 : 0);
 function drawLiq() {
+  if (drawLiq.k !== lf) { drawLiq.k = lf; $('liqGrid').classList.remove('showsold'); } /* 11/13 탭 바꾸면 품절 다시 접기 */
   if (lf === "폐호흡") { // 프리미엄 폐호흡 (지점 포스 '폐호흡액상' 중 30,000원, lung.js), 3병 40,000원
-    const L2 = [...LUNG].sort((a, b) => (LUNG_BEST.findIndex((r) => r.test(a.n)) + 1 || 99) - (LUNG_BEST.findIndex((r) => r.test(b.n)) + 1 || 99));
+    const L2 = [...LUNG].sort((a, b) => soldLast(a, b) || (LUNG_BEST.findIndex((r) => r.test(a.n)) + 1 || 99) - (LUNG_BEST.findIndex((r) => r.test(b.n)) + 1 || 99));
     $('liqGrid').innerHTML = (L2.length ? `<div class="card evbar" style="grid-column:1/-1"><b>프리미엄 폐호흡 3병 40,000원</b><span>1병 30,000원, 3병마다 40,000원, 맛 섞어도 돼요</span></div>` : '<div class="evtip" style="grid-column:1/-1">이 지점 폐호흡 자료가 없어요</div>')
       + L2.map((x) => { const q = (cart.get(x.id) || {}).qty || 0, o = outOf(x.n), b = LUNG_BEST.some((r) => r.test(x.n));
-        return `<div class="it ${q ? "got" : ""} ${o ? "sold" : ""}" ${o ? `data-ask="${esc(x.n)}"` : ""}>${o ? '<span class="badge so">품절, 다른 지점 확인</span>' : b ? '<span class="rib">BEST</span>' : ""}${q ? `<span class="qty">${q}병 담음</span>` : ""}<div class="im" style="background:${tintOf(x)}">${LUNG_IMG[x.n] ? `<img src="${LUNG_IMG[x.n]}" alt="" loading="lazy">` : `<span class="ltile">${esc(x.n.replace(/\s*\(?모드\)?$/, "").slice(0, 5))}</span>`}</div><div class="nm">${esc(x.n.replace(/\s*\(?모드\)?$/, ""))}</div><div class="fl">폐호흡</div><div class="bt"><span class="price">${won(x.price)}</span>${o ? "" : `<button class="add" data-lg="${x.id}">+</button>`}</div></div>`; }).join("");
+        return `<div class="it ${q ? "got" : ""} ${o ? "sold" : ""}" ${o && !canSell(x.n) ? `data-ask="${esc(x.n)}"` : ""}>${o ? (canSell(x.n) ? '<span class="badge so">품절, 담을 수 있어요</span>' : '<span class="badge so">품절, 다른 지점 확인</span>') : b ? '<span class="rib">BEST</span>' : ""}${q ? `<span class="qty">${q}병 담음</span>` : ""}<div class="im" style="background:${tintOf(x)}">${LUNG_IMG[x.n] ? `<img src="${LUNG_IMG[x.n]}" alt="" loading="lazy">` : `<span class="ltile">${esc(x.n.replace(/\s*\(?모드\)?$/, "").slice(0, 5))}</span>`}</div><div class="nm">${esc(x.n.replace(/\s*\(?모드\)?$/, ""))}</div><div class="fl">폐호흡</div><div class="bt"><span class="price">${won(x.price)}</span>${o && !canSell(x.n) ? "" : `<button class="add" data-lg="${x.id}">+</button>`}</div></div>`; }).join("") + soldMore(L2.filter((x) => outOf(x.n)).length);
     return; }
   if (lf === "더보기") { // 11/10 "액상 종류 이거밖에 없어요?" 응대: 메인 추천 밖의 액상 중 이 지점 재고 있는 것
     const L3 = moreLiq();
@@ -956,8 +1207,8 @@ function drawLiq() {
         return `<div class="it ${q ? "got" : ""}">${q ? `<span class="qty">${q}병 담음</span>` : ""}<div class="im" style="background:${tintOf(x)}">${imgH(imgOf(x), x.n)}</div><div class="nm">${esc(short(x.n))}${noTag(x.n)}</div><div class="fl">${esc([x.f, (x.t || []).includes("노멘솔") ? "노멘솔" : ""].filter(Boolean).join(", "))}</div><div class="bt"><span class="price">${won(liqPrice(x))}</span><button class="add" data-m="${x.id}">+</button></div></div>`; }).join("")
         : '<div class="evtip" style="grid-column:1/-1">이 지점에 재고가 있는 다른 액상이 없어요</div>');
     return; }
-  $('liqGrid').innerHTML = LQ.filter((x) => lf === "전체" || BR_OF(x) === lf).map((x) => { const q = (cart.get(x.id) || {}).qty || 0, out = outOf(x.n);
-    return `<div class="it ${q ? "got" : ""} ${out ? "sold" : ""}" ${out ? `data-ask="${esc(x.n)}"` : ""}>${out ? '<span class="badge so">품절, 다른 지점 확인</span>' : tagHtml(x.n)}${q ? `<span class="qty">${q}병 담음</span>` : ""}<div class="im" style="background:${tintOf(x)}">${imgH(imgOf(x), x.n)}</div><div class="nm">${esc(short(x.n))}${noTag(x.n)}</div><div class="fl">${esc([x.f, (x.t || []).includes("노멘솔") ? "노멘솔" : ""].filter(Boolean).join(", "))}</div><div class="bt"><span class="price">15,000원</span>${out ? "" : `<button class="add" data-a="${x.id}">+</button>`}</div></div>`; }).join("") + '<button class="lqmore" data-more="1">찾는 맛이 없으세요?<b>다른 액상 더보기</b></button>';
+  $('liqGrid').innerHTML = LQ.filter((x) => lf === "전체" || BR_OF(x) === lf).sort(soldLast).map((x) => { const q = (cart.get(x.id) || {}).qty || 0, out = outOf(x.n);
+    return `<div class="it ${q ? "got" : ""} ${out ? "sold" : ""}" ${out && !canSell(x.n) ? `data-ask="${esc(x.n)}"` : ""}>${out ? (canSell(x.n) ? '<span class="badge so">품절, 담을 수 있어요</span>' : '<span class="badge so">품절, 다른 지점 확인</span>') : tagHtml(x.n)}${q ? `<span class="qty">${q}병 담음</span>` : ""}<div class="im" style="background:${tintOf(x)}">${imgH(imgOf(x), x.n)}</div><div class="nm">${esc(short(x.n))}${noTag(x.n)}</div><div class="fl">${esc([x.f, (x.t || []).includes("노멘솔") ? "노멘솔" : ""].filter(Boolean).join(", "))}</div><div class="bt"><span class="price">15,000원</span>${out && !canSell(x.n) ? "" : `<button class="add" data-a="${x.id}">+</button>`}</div></div>`; }).join("") + soldMore(LQ.filter((x) => (lf === "전체" || BR_OF(x) === lf) && outOf(x.n)).length) + '<button class="lqmore" data-more="1">찾는 맛이 없으세요?<b>다른 액상 더보기</b></button>';
 }
 let mf = "전체";
 const MORE_TABS = ["전체", "과일", "디저트, 음료", "멘솔, 민트", "시가, 타바코", "무니코틴"];
@@ -975,7 +1226,7 @@ function drawGoal() { const c = countCart(), have = c.v + c.p, g = $('goal');
   g.innerHTML = have >= goalN ? `<b>액상 ${goalN}병 다 골랐어요</b><span>${totalOf().how || "패키지"} 적용, 합계 ${won(totalOf().total)}</span>` : `<b>${esc(d0.model || "기기")} 패키지: 액상 ${have} / ${goalN}병</b><span>${goalN === 5 ? "5병 고르면 " + pkT : "10병 고르면 " + pkT}</span>`; }
 
 // ── 직원 화면: 지금 판 staffView와 같은 순서 (기기 먼저 → 묶음 상품으로 돈 받기 → 낱개 찍기, 묶음에 든 병은 서비스 0원) ──
-const POS_BUNDLE = { pr10: ["입호흡 기기 패키지 75,000원 (10병)", "입호흡 패키지 75,000원 (10병)"], pr5: ["입호흡 패키지 40,000원 (5병)"], vl5: ["빌런,릭,디오 패키지 30,000원 (5병)", "빌런,릭 패키지 30,000원 (5병)"], p11: ["프리미엄 90,000원(11병)"], p5: ["프리미엄 49,500원(5병)"], m10: ["프라임 160,000원(10병)"], m3: ["프라임 50,000원(3병)"] };
+const POS_BUNDLE = { pr10: ["입호흡 기기 패키지 75,000원 (10병)", "입호흡 패키지 75,000원 (10병)"], pr5: ["입호흡 패키지 40,000원 (5병)"], vl5: ["빌런,릭,디오 패키지 30,000원 (5병)", "빌런,릭 패키지 30,000원 (5병)"], p11: ["프리미엄 90,000원(11병)"], p5: ["프리미엄 49,500원(5병)", "프리미엄1[49,500]"] /* 11/18 상인점 포스엔 앞 이름이 없어 5병 묶음이 포스로 안 넘어감 → 액상덕후 "프리미엄1" */, m10: ["프라임 160,000원(10병)"], m3: ["프라임 50,000원(3병)"] };
 const posBundle = (k) => POS_BUNDLE[k].find((n) => posOf(n)) || POS_BUNDLE[k][0];
 function setsOf(n, deals, unit) { const f = [{ c: 0, s: [] }];
   for (let k = 1; k <= n; k++) { let b = { c: f[k - 1].c + unit, s: f[k - 1].s }; for (const [q, p] of deals) if (k >= q && f[k - q].c + p < b.c) b = { c: f[k - q].c + p, s: [...f[k - q].s, q] }; f[k] = b; }
@@ -1048,14 +1299,23 @@ const QR_SEPS = { cr: "\r", crlf: "\r\n", lf: "\n", tab: "\t" };
 let qrSep = (() => { try { return localStorage.getItem("vf-qr-sep") || "cr"; } catch (e) { return "cr"; } })();
 // QR 두 개 (10/27 사장님 "QR로 찍으면 바로 처리"): ① 결제 QR = 기기 + 묶음 + 정가 낱개 → 찍으면 결제 금액이 바로 맞음
 // ② 서비스 QR = 묶음에 든 액상, 이벤트 서비스분 → 찍고 그 줄들만 포스에서 서비스(0원) 처리 (재고 빼기용). 서비스는 결제 QR에 안 섞음(사장님 10/27 지금 판 규칙)
-/* 11/12 공기계 주문 QR: [포스 옆 휴대폰으로 보내기] → 온라인팀 슈파베이스 qr_send (상품 바코드와 이름만, 손님 정보 안 보냄). 공개 키, 표는 잠겨 있고 함수로만 씀 */
+/* 11/12 공기계 주문 QR: [포스 옆 휴대폰으로 보내기] → 온라인팀 슈파베이스 qr_send (상품 바코드와 이름, 동의한 손님은 성함+년생과 번호). 공개 키, 표는 잠겨 있고 함수로만 씀 */
 const SB_URL = "https://bjjlmnkyhedtutogzliq.supabase.co", SB_KEY = "sb_publishable_i8rfcm_zAnwV75joN58FCw_8tHgFUKr";
-const QR_SEND_ON = BRANCH === "본점"; /* 시험 지점 */
+const QR_SEND_ON = ["본점", "동성로", "율하", "수성", "반월당", "상인", "광장코아", "현풍", "동성로2"].includes(BRANCH); /* 11/17 전 지점 (포스 입력 프로그램 지점별 설치) */
 async function qrSend(codes, svc, total, btn) { btn.disabled = true; btn.textContent = "보내는 중...";
   const sum = [...cart.values()].map((x) => (x.label || x.n) + (x.qty > 1 ? " x" + x.qty : "")).join(", ");
-  try { const r = await fetch(SB_URL + "/rest/v1/rpc/qr_send", { method: "POST", headers: { apikey: SB_KEY, Authorization: "Bearer " + SB_KEY, "Content-Type": "application/json" }, body: JSON.stringify({ p_branch: BRANCH, p_codes: codes, p_svc: svc, p_summary: sum, p_total: total }) });
-    if (!r.ok) throw new Error(String(r.status)); btn.textContent = "보냈어요, 포스 옆 휴대폰을 보세요"; toast("포스 옆 휴대폰으로 보냈어요"); }
+  /* 11/12 액상덕후 "주문이 여러 건이면 클로드98 010-1234-1234님의 주문": 회원 칸에 넣은 성함+년생, 번호를 같이 (동의한 것만, 폰에서 [완료]하면 지움) */
+  const okPh = /^01[016789]\d{7,8}$/.test(member.phone), rs = member.reg ? member.reg.s : "";
+  const cust = member.type === "new" && member.agree && okPh && memFull() ? { t: "new", nm: memFull(), ph: member.phone, st: rs, sms: member.mk ? "Y" : "N" } : member.type === "old" && okPh ? { t: "old", ph: member.phone, st: rs } : null;
+  try { const r = await fetch(SB_URL + "/rest/v1/rpc/qr_send", { method: "POST", headers: { apikey: SB_KEY, Authorization: "Bearer " + SB_KEY, "Content-Type": "application/json" }, body: JSON.stringify({ p_branch: BRANCH, p_codes: codes, p_svc: svc, p_summary: sum, p_total: total, p_cust: cust }) });
+    if (!r.ok) throw new Error(String(r.status)); let no = ""; try { no = String(Number(await r.json()) % 1000); } catch (e) {}
+    btn.textContent = no ? `${no}번으로 보냈어요` : "보냈어요"; payNotice(total, no); }
   catch (er) { btn.disabled = false; btn.textContent = "다시 보내기"; toast("못 보냈어요, 인터넷을 확인해 주세요"); } }
+/* 11/16 액상덕후 "고객님에게 결제 금액 안내": 포스로 보낸 뒤 손님에게 크게 결제 금액. 화면 아무 데나 누르면 닫힘 */
+function payNotice(total, no) { let d = document.getElementById("payNote"); if (d) d.remove(); d = document.createElement("div"); d.id = "payNote";
+  d.style.cssText = "position:fixed;inset:0;z-index:90;background:var(--bg,#fff);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:24px;text-align:center;color:var(--ink,#111)";
+  d.innerHTML = `<div style="font-size:30px;font-weight:800">결제하실 금액은</div><div style="font-size:64px;font-weight:900;color:#d81f2a">${won(total)}</div><div style="font-size:24px;font-weight:700">직원이 포스에 넣고 있어요${no ? `<br><span style="font-size:20px;color:var(--grey)">주문 ${no}번</span>` : ""}</div><button style="margin-top:24px;font-size:22px;font-weight:800;padding:18px 48px;border-radius:16px;border:0;background:#222;color:#fff">확인</button>`;
+  d.onclick = () => d.remove(); document.body.append(d); }
 function qrView() {
   staffView(); staffOn = true;
   const codes = [], svcCodes = [], miss = [], svcMiss = [], unreg = [];
@@ -1070,18 +1330,18 @@ function qrView() {
   const chunks = (l) => { const o = []; for (let i = 0; i < l.length; i += QR_MAX) o.push(l.slice(i, i + QR_MAX)); return o; };
   const payQ = chunks(codes), svcQ = chunks(svcCodes);
   const part = (k, n) => n > 1 ? ` ${k + 1}/${n}` : "";
-  $('shH').textContent = "QR로 한 번에 찍기";
-  $('lines').innerHTML = `${orderBox()}<div style="font-size:14.5px;color:var(--grey);margin-bottom:10px">포스 판매 화면에서 스캐너로 위에서부터 차례로 찍으세요. (${esc(BRANCH)} 포스 기준)</div>
+  $('shH').textContent = "QR로 한 번에 찍기"; ev("w", SELLER || "", String(t)); /* 11/13 판매자 기록 (패드 사용기록) */
+  $('lines').innerHTML = `${SELLER ? `<div class="sellq">🙋 판매자 <b>${esc(SELLER)}</b></div>` : `<div class="sellq none">🙋 판매자를 안 골랐어요. 장바구니 맨 위에서 골라 주세요</div>`}${orderBox()}${memLine()}<div style="font-size:14.5px;color:var(--grey);margin:12px 0 10px">포스 판매 화면에서 스캐너로 위에서부터 차례로 찍으세요. (${esc(BRANCH)} 포스 기준)</div>
     ${unreg.length ? `<div class="posw">바코드가 없어서 QR에서 뺐어요. 포스에서 직접 찾아 넣어 주세요: ${unreg.map(esc).join(", ")}</div>` : ""}
     ${payQ.map((l, k) => `${stp(1, "결제 QR 찍기" + part(k, payQ.length), "기기, 묶음 상품, 정가 상품")}<div class="qrbox">${qr(l)}<div style="font-size:16px;font-weight:800;margin-top:8px">${l.length}개 찍힘${k === payQ.length - 1 ? `, 포스 금액 ${won(t)} 확인` : ""}</div></div>`).join("")}
     ${svcQ.map((l, k) => `${stp(2, "서비스 QR 찍기" + part(k, svcQ.length), "찍은 다음 새로 들어온 줄만 포스에서 서비스(0원) 처리해 주세요")}<div class="qrbox svq">${qr(l)}<div style="font-size:16px;font-weight:800;margin-top:8px">서비스 ${l.length}개 (금액 0원으로 처리)</div></div>`).join("")}
     ${miss.length ? `<div class="posw">QR에 안 들어간 것 (직접 찍기): ${miss.map(esc).join(", ")}</div>` : ""}
     ${svcMiss.length ? `<div class="posw">매장에서 고를 서비스분 (진열대에서 골라 찍고 서비스 처리): ${svcMiss.map(esc).join(", ")}</div>` : ""}
     <div class="final" style="margin-top:12px"><span>포스 결제 금액이 이 금액인지 확인</span><b>${won(t)}</b></div>
-    <div style="margin-top:10px;font-size:14px;color:var(--grey)">하나만 찍히면 구분 문자를 바꿔 보세요 <select id="qrSep">${Object.keys(QR_SEPS).map((k) => `<option value="${k}" ${k === qrSep ? "selected" : ""}>${{ cr: "Enter (CR)", crlf: "Enter (CR+LF)", lf: "줄바꿈 (LF)", tab: "Tab" }[k]}</option>`).join("")}</select></div>${memLine()}`;
+    <div style="margin-top:10px;font-size:14px;color:var(--grey)">하나만 찍히면 구분 문자를 바꿔 보세요 <select id="qrSep">${Object.keys(QR_SEPS).map((k) => `<option value="${k}" ${k === qrSep ? "selected" : ""}>${{ cr: "Enter (CR)", crlf: "Enter (CR+LF)", lf: "줄바꿈 (LF)", tab: "Tab" }[k]}</option>`).join("")}</select></div>`; /* 11/18 상인점 "작게 떠서 있는지 몰랐어요": 회원 번호 줄을 맨 아래에서 맨 위로, 크게 */
   $('qrSep').onchange = (e) => { qrSep = e.target.value; try { localStorage.setItem("vf-qr-sep", qrSep); } catch (er) {} qrView(); };
   setFoot("qr");
-  if (QR_SEND_ON) { const sb = document.createElement("button"); sb.className = "cta"; sb.style.marginBottom = "12px"; sb.textContent = "포스 옆 휴대폰으로 보내기"; sb.onclick = () => qrSend(codes, svcCodes, t, sb); $('lines').prepend(sb); }
+  if (QR_SEND_ON) { const sb = document.createElement("button"); sb.className = "cta posgo"; sb.textContent = "포스로 보내기"; sb.onclick = () => qrSend(codes, svcCodes, t, sb); $('lines').prepend(sb); } /* 11/17 액상덕후 "너무 숨겨져 있음": 맨 위, 크게 */
 }
 
 // ── 포스터 누르면 이벤트 구매 화면 (10/27 사장님 "A안처럼 구매 페이지") ──
@@ -1103,8 +1363,10 @@ const DSP_POOL = () => GDS.filter((g) => g.c === "dsp" && /^(팜팜바|모스바
 const DSP_IMG = { 팜팜바: "dsp_farm.png", 모스바: "dsp_moss.png" };
 let EV = null; // { k, need, pick: Map(id → 수), color }
 const pickN = () => [...EV.pick.values()].reduce((a, n) => a + n, 0);
-const MAL = { M: { model: "말론 기계", name: "말론", pod: "말론팟 0.6옴" }, S: { model: "말론S", name: "말론S", pod: "말론S 0.6옴팟" } };
-const malPod = () => GDS.find((g) => g.c === "pod" && g.n === MAL[EV.k].pod && !outOf(g.n));
+/* 11/12 액상덕후: 말론, 말론S 팟은 0.4옴, 0.6옴 둘 다 있고 0.4옴을 많이 팔아야 함(맛 표현이 제일 좋음) → 0.4옴 기본, 0.6옴은 고를 수 있게 */
+const MAL = { M: { model: "말론 기계", name: "말론", pods: { "0.4": "말론팟 0.4옴", "0.6": "말론팟 0.6옴" } }, S: { model: "말론S", name: "말론S", pods: { "0.4": "말론S 0.4옴팟", "0.6": "말론S 0.6옴팟" } } };
+const malPodOf = (k, ohm) => GDS.find((g) => g.c === "pod" && g.n === MAL[k].pods[ohm] && !outOf(g.n));
+const malPod = () => malPodOf(EV.k, EV.ohm || "0.4") || malPodOf(EV.k, EV.ohm === "0.6" ? "0.4" : "0.6");
 function openEv(k, need) { evQ = ""; evMore = false; mf = "전체";
   if (k === "M" || k === "S") { const o = devOpts(MAL[k].model); if (!o.length) return toast(BRANCH + " " + MAL[k].name + " 재고가 없어요");
     const p = MAL_P[pi] && MAL_P[pi][0] === k ? MAL_P[pi] : MAL_P.find((x) => x[0] === k), n = need === 5 ? 5 : 10; EV = { k, need: n, pick: new Map(), color: (o.find((x) => x.opt === p[2]) || o[0]).opt, hero: p[1], pods: 0, podAsk: false, mcol: p[2] }; }
@@ -1155,13 +1417,13 @@ function drawEv() {
     // 다른 프리미엄 액상 검색 (패키지 10병은 프리미엄이면 다 됨)
     const others = [...EV.pick.keys()].filter((id) => !LQ.some((x) => x.id === id)).map((id) => ALL_LQ.find((x) => x.id === id)).filter(Boolean);
     const found = evQ.trim() ? searchItems(evQ).filter((o) => o.t === "liq" && o.x.line === "프리미엄").map((o) => o.x).slice(0, 12) : [];
-    h += `<div class="grid">${LQ.map((x) => evCard(x.id, imgOf(x), short(x.n), x.f || "", 0, outOf(x.n))).join("")}</div>`;
+    h += `<div class="grid">${LQ.slice().sort(soldLast).map((x) => evCard(x.id, imgOf(x), short(x.n), x.f || "", 0, outOf(x.n) && !canSell(x.n))).join("")}</div>`;
     h += `<div class="evsec">다른 프리미엄 액상</div><input class="evq" id="evQ" placeholder="원래 피시던 맛 찾기 (이름, 초성)" value="${esc(evQ)}" autocomplete="off">`;
     /* 11/10 설문 뒤 이 화면에서 지정 액상만 보여 흐름이 끊기던 것: 창을 나가지 않고 더 보기, 고른 개수는 그대로 이어짐 */
     const moreL = evMore ? moreLiq().filter((x) => x.line === "프리미엄") : [], moreIds = new Set(moreL.map((x) => x.id));
     {
     const show = [...new Map([...others, ...found].map((x) => [x.id, x])).values()].filter((x) => !moreIds.has(x.id));
-    h += show.length ? `<div class="grid" style="margin-top:10px">${show.map((x) => evCard(x.id, imgOf(x), short(x.n), [x.br, x.f].filter(Boolean).join(", "), 0, outOf(x.n))).join("")}</div>` : (evQ.trim() ? '<div class="evtip">찾는 프리미엄 액상이 없어요</div>' : "");
+    h += show.length ? `<div class="grid" style="margin-top:10px">${show.map((x) => evCard(x.id, imgOf(x), short(x.n), [x.br, x.f].filter(Boolean).join(", "), 0, outOf(x.n) && !canSell(x.n))).join("")}</div>` : (evQ.trim() ? '<div class="evtip">찾는 프리미엄 액상이 없어요</div>' : "");
     h += evMoreBtn(evMore ? 'data-evm="1">다른 액상 접기' : 'data-evm="1">찾는 맛이 없으세요?<b>더 많은 액상 보러 가기</b>');
     if (evMore) h += `<div class="chips sub" style="margin-top:12px">${MORE_TABS.map((t) => `<button data-emf="${t}" class="${t === mf ? "on" : ""}">${t}</button>`).join("")}</div>` + (moreL.length ? `<div class="grid" style="margin-top:10px">${moreL.map((x) => evCard(x.id, imgOf(x), short(x.n), [x.br, x.f].filter(Boolean).join(", "), 0, false)).join("")}</div>` : '<div class="evtip">이 분류에 재고 있는 액상이 없어요</div>'); }
     $('evGo').textContent = rest ? `${n}병 고르고 담기 (남은 ${rest}병은 매장에서), ${tot}` : `이 구성으로 담기, ${tot}`;
@@ -1173,15 +1435,20 @@ function drawEv() {
     $('evEye').textContent = "베이프렌드 기기패키지"; $('evTi').textContent = `${M.name} + 액상 ${EV.need}병`;
     h += `<div class="card evhero"><img src="${hero}" alt=""><div class="pr"><b class="price">${tot}</b><span style="font-size:14px;color:var(--grey)">${M.name} ${won(d.price)} + 액상 ${EV.need}병 ${won(EV.need === 10 ? ADD.pr10 : ADD.pr5)}${pod && pk ? ` + 팟 ${pk}팩 ${won(podW)}` : ""}</span></div></div>
       <div class="opt2" style="margin-bottom:var(--gap)">${[[10, "액상 10병"], [5, "액상 5병"]].map(([q, t]) => `<button class="${EV.need === q ? "on" : ""}" data-hq="${q}"><b style="font-size:18px">${t}</b><span>${won(setP(q))}</span></button>`).join("")}</div>`;
+    h += vidBtn(M.name); /* 11/13 말론S 사용 영상 */
     h += `<div class="evsec">① 색상</div>` + (o.length > 1 ? `<div class="opt2" style="margin-bottom:var(--gap)">${o.map((x) => `<button class="${x.opt === d.opt ? "on" : ""}" data-ec="${x.opt}"><b style="font-size:18px">${x.opt}</b><span>${won(x.price)}</span></button>`).join("")}</div>` : `<div class="opt2" style="margin-bottom:6px;grid-template-columns:repeat(3,1fr)">${["블랙", "건메탈", "실버"].map((c) => `<button class="${EV.mcol === c ? "on" : ""}" data-mcol="${c}"><b style="font-size:18px">${c}</b></button>`).join("")}</div><div class="evtip">색상별 재고는 직원이 확인해요</div>`); /* 11/12 말론은 포스에 색 구분이 없어서 고른 색만 직원에게 보여 줌 */
-    if (pod) h += `<div class="evsec" id="evPodBox">② ${M.name} 팟 같이 담기</div><div style="font-size:17px;font-weight:800;margin:2px 0 10px">팟은 액상 1병에 1개, 안 바꾸면 누수가 생겨요</div><div class="opt2" style="margin-bottom:10px">${[rec, rec / 2].map((q, i) => `<button class="${pk === q ? "on" : ""}" data-evpk="${q}"><b style="font-size:18px">팟 ${q}팩${i ? "" : " 추천"}</b><span>+${won(pod.price * POD_PER_PACK * q)}</span></button>`).join("")}</div><div class="card" style="padding:14px 16px;display:flex;gap:14px;align-items:center"><div style="flex:1"><b style="font-size:17px">${esc(pod.n)}</b><div style="color:var(--grey);font-size:14px">1팩(${POD_PER_PACK}개) ${won(pod.price * POD_PER_PACK)}${pk ? `, ${pk}팩 ${won(podW)}` : ""}</div></div><div class="pstep"><button data-evpod="-1">-</button><b>${pk}팩</b><button data-evpod="1">+</button></div></div>`;
-    h += pickHead(`③ 액상 ${EV.need}병`) + `<div class="grid">${LQ.map((x) => evCard(x.id, imgOf(x), short(x.n), x.f || "", 0, outOf(x.n))).join("")}</div>`;
+    const p4 = malPodOf(EV.k, "0.4"), p6 = malPodOf(EV.k, "0.6"), ohmNow = pod && pod.n === MAL[EV.k].pods["0.6"] ? "0.6" : "0.4";
+    if (pod) { const on = pk > 0; /* 11/13 신입 시험 "팟 칸 3줄 헷갈림": 큰 버튼 하나, 옴과 수량은 작게 */
+      h += `<div class="evsec" id="evPodBox">② ${M.name} 팟 같이 담기</div><div style="font-size:17px;font-weight:800;margin:2px 0 10px">팟은 액상 1병에 1개, 안 바꾸면 누수가 생겨요</div>`
+      + `<button class="podbig ${on ? "on" : ""}" data-evpk="${on ? pk : rec}"><b>${on ? `✓ ${ohmNow}옴 팟 ${pk}팩 담았어요` : `${ohmNow}옴 팟 ${rec}팩 같이 담기`}</b><span>${on ? "다시 누르면 빼요" : "+" + won(pod.price * POD_PER_PACK * rec) + (ohmNow === "0.4" ? ", 맛 표현이 제일 좋아요" : "")}</span></button>`
+      + `<div class="podmore">${p4 && p6 ? `<button data-evohm="${ohmNow === "0.4" ? "0.6" : "0.4"}">${ohmNow === "0.4" ? "0.6옴으로 바꾸기" : "0.4옴으로 바꾸기"}</button>` : "<span></span>"}<span class="pstep"><button data-evpod="-1">-</button><b>${pk}팩</b><button data-evpod="1">+</button></span></div>`; }
+    h += pickHead(`③ 액상 ${EV.need}병`) + `<div class="grid">${LQ.slice().sort(soldLast).map((x) => evCard(x.id, imgOf(x), short(x.n), x.f || "", 0, outOf(x.n) && !canSell(x.n))).join("")}</div>`;
     const others = [...EV.pick.keys()].filter((id) => !LQ.some((x) => x.id === id)).map((id) => ALL_LQ.find((x) => x.id === id)).filter(Boolean);
     const found = evQ.trim() ? searchItems(evQ).filter((r) => r.t === "liq" && r.x.line === "프리미엄").map((r) => r.x).slice(0, 12) : [];
     const moreL = evMore ? moreLiq().filter((x) => x.line === "프리미엄") : [], moreIds = new Set(moreL.map((x) => x.id));
     const show = [...new Map([...others, ...found].map((x) => [x.id, x])).values()].filter((x) => !moreIds.has(x.id));
     h += `<div class="evsec">다른 프리미엄 액상</div><input class="evq" id="evQ" placeholder="원래 피시던 맛 찾기 (이름, 초성)" value="${esc(evQ)}" autocomplete="off">`;
-    h += show.length ? `<div class="grid" style="margin-top:10px">${show.map((x) => evCard(x.id, imgOf(x), short(x.n), [x.br, x.f].filter(Boolean).join(", "), 0, outOf(x.n))).join("")}</div>` : (evQ.trim() ? '<div class="evtip">찾는 프리미엄 액상이 없어요</div>' : "");
+    h += show.length ? `<div class="grid" style="margin-top:10px">${show.map((x) => evCard(x.id, imgOf(x), short(x.n), [x.br, x.f].filter(Boolean).join(", "), 0, outOf(x.n) && !canSell(x.n))).join("")}</div>` : (evQ.trim() ? '<div class="evtip">찾는 프리미엄 액상이 없어요</div>' : "");
     h += evMoreBtn(evMore ? 'data-evm="1">다른 액상 접기' : 'data-evm="1">찾는 맛이 없으세요?<b>더 많은 액상 보러 가기</b>');
     if (evMore) h += `<div class="chips sub" style="margin-top:12px">${MORE_TABS.map((t) => `<button data-emf="${t}" class="${t === mf ? "on" : ""}">${t}</button>`).join("")}</div>` + (moreL.length ? `<div class="grid" style="margin-top:10px">${moreL.map((x) => evCard(x.id, imgOf(x), short(x.n), [x.br, x.f].filter(Boolean).join(", "), 0, false)).join("")}</div>` : '<div class="evtip">이 분류에 재고 있는 액상이 없어요</div>');
     h += '<div class="evtip" style="margin-top:14px">이벤트에 참여하시면 다음 방문 때 3,000원 할인쿠폰을 드려요</div>';
@@ -1190,13 +1457,13 @@ function drawEv() {
   if (EV.k === "B") {
     $('evEye').textContent = "베이프렌드 대량 특가"; $('evTi').textContent = "액상 대량구매";
     h += `<div class="evsec">① 몇 병?</div><div class="opt2">${[30, 50].map((q) => `<button class="${EV.need === q ? "on" : ""}" data-bq="${q}"><b>${q}병 <span class="price" style="font-size:22px;color:var(--red)">${won(BULK[q])}</span></b><span>병당 ${won(BULK[q] / q)}</span></button>`).join("")}</div>`;
-    h += pickHead("② 맛 고르기") + `<div class="grid">${BULK_POOL.map((x) => evCard(x.id, imgOf(x), short(x.n), x.f || "", 0, outOf(x.n))).join("")}</div>`;
+    h += pickHead("② 맛 고르기") + `<div class="grid">${BULK_POOL.map((x) => evCard(x.id, imgOf(x), short(x.n), x.f || "", 0, outOf(x.n) && !canSell(x.n))).join("")}</div>`;
     $('evGo').textContent = rest ? `${n}병 고르고 담기 (남은 ${rest}병은 매장에서), ${won(BULK[EV.need])}` : `${EV.need}병 담기, ${won(BULK[EV.need])}`;
   }
   if (EV.k === "D") {
     $('evEye').textContent = "베이프렌드 일회용 대량"; $('evTi').textContent = "10개 사면 5개 더";
     h += `<div class="card evhero" style="padding:20px"><div class="pr"><b style="font-size:20px">팜팜바, 모스바 원하는 맛으로 15개</b><span style="display:block;font-size:14px;color:var(--grey);margin-top:6px">15개 중 가장 싼 5개는 서비스(0원), 최대 33% 할인</span></div></div>`;
-    h += pickHead("맛 고르기") + `<div class="grid">${DSP_POOL().map((g) => evCard(g.id, DSP_IMG[g.model] || "", g.n, g.model, g.price, outOf(g.n))).join("")}</div>`;
+    h += pickHead("맛 고르기") + `<div class="grid">${DSP_POOL().map((g) => evCard(g.id, DSP_IMG[g.model] || "", g.n, g.model, g.price, outOf(g.n) && !canSell(g.n))).join("")}</div>`;
     $('evGo').textContent = rest ? `${n}개 고르고 담기 (남은 ${rest}개는 매장에서), 약 ${won(dspTotal(rest))}` : `15개 담기, ${won(dspTotal())}`;
   }
   const qf = document.activeElement && document.activeElement.id === "evQ", pos = qf ? document.activeElement.selectionStart : 0;
@@ -1213,6 +1480,7 @@ $('evB').onclick = (e) => {
   else if (m) { const id = m.dataset.em, v = (EV.pick.get(id) || 0) - 1; v > 0 ? EV.pick.set(id, v) : EV.pick.delete(id); }
   else if (c) EV.color = c.dataset.ec;
   else if (e.target.closest('[data-mcol]')) EV.mcol = e.target.closest('[data-mcol]').dataset.mcol;
+  else if (e.target.closest('[data-evohm]')) EV.ohm = e.target.closest('[data-evohm]').dataset.evohm; /* 11/12 말론 팟 0.4/0.6옴 */
   else if (e.target.closest('[data-evpk]')) { const q = +e.target.closest('[data-evpk]').dataset.evpk * POD_PER_PACK; EV.pods = EV.pods === q ? 0 : q; }
   else if (e.target.closest('[data-evpod]')) EV.pods = Math.max(0, Math.min(20, (EV.pods || 0) + POD_PER_PACK * +e.target.closest('[data-evpod]').dataset.evpod));
   else if (e.target.closest('[data-hq]')) { EV.need = +e.target.closest('[data-hq]').dataset.hq; if (false) for (const id of [...EV.pick.keys()]) { const x = LQ.find((y) => y.id === id); if (!x || !isVL(x)) EV.pick.delete(id); } while (pickN() > EV.need) { const last = [...EV.pick.keys()].pop(); const v = EV.pick.get(last) - 1; v > 0 ? EV.pick.set(last, v) : EV.pick.delete(last); } }
@@ -1268,28 +1536,39 @@ const IDX = [...ALL_LQ.map((x) => ({ x, t: "liq", nm: norm(x.n), all: norm([x.n,
   ...((window.LUNG || {})[BRANCH] || []).map(([n, price], i) => ({ id: "gL" + i, c: "lung", n, price })).map((g) => ({ x: g, t: "lung", nm: norm(g.n), all: norm(g.n + " 폐호흡 모드") })), ...GDS.map((g) => ({ x: g, t: "goods", nm: norm(g.n), all: norm([g.n, { dev: "기기", pod: "팟 코일", dsp: "일회용" }[g.c], g.sub || ""].join(" ")) }))].map((o) => ({ ...o, cho: cho(o.nm) }));
 function searchItems(qs) {
   const q = norm(qs); if (!q) return [];
-  if (/^#?\d{1,3}$/.test(q)) return IDX.filter((o) => o.t === "liq" && noOf(o.x.n) === +q.replace("#", "")); // 11/3: 시연번호로 찾기 ("27" 또는 "#27")
+  const byNo = /^#?\d{1,3}$/.test(q) ? IDX.filter((o) => o.t === "liq" && noOf(o.x.n) === +q.replace("#", "")) : []; /* 11/3 시연번호로 찾기 ("27" 또는 "#27") */
+  if (q.startsWith("#")) return byNo; /* 11/13 숫자만 넣으면 시연번호 + 이름에 그 숫자가 든 상품(시가812 등)도 같이 */
   const onlyCho = /^[ㄱ-ㅎ]+$/.test(q), noNo = !q.includes("노멘솔") && q.includes("멘솔");
+  const toks = String(qs).trim().split(/\s+/).map(norm).filter(Boolean); /* 11/17 포스처럼 "런 청"(빌런 청포도) 조각 검색 */
+  const inOrder = (s0) => { let i = 0; for (const t of toks) { const j = s0.indexOf(t, i); if (j < 0) return false; i = j + t.length; } return true; };
   return IDX.map((o0) => { const o = noNo ? { ...o0, nm: o0.nm.replace(/노멘솔/g, ""), all: o0.all.replace(/노멘솔/g, "") } : o0; let sc = 0;
     if (onlyCho) { if (o.cho.startsWith(q)) sc = 3; else if (o.cho.includes(q)) sc = 2; } else if (o.nm.startsWith(q)) sc = 4; else if (o.nm.includes(q)) sc = 3; else if (o.all.includes(q)) sc = 1;
-    return [sc, o]; }).filter(([sc]) => sc).sort((a, b) => b[0] - a[0]).slice(0, 40).map(([, o]) => o);
+    if (!sc && toks.length > 1 && inOrder(o.nm)) sc = 2;
+    return [sc, o]; }).filter(([sc, o]) => sc && !byNo.includes(o)).concat(byNo.map((o) => [9, o])).sort((a, b) => (outOf(a[1].x.n) ? 1 : 0) - (outOf(b[1].x.n) ? 1 : 0) || b[0] - a[0]).slice(0, 40).map(([, o]) => o); /* 11/13 검색도 품절은 아래로 */
 }
 const liqPrice = (x) => x.line === "프라임" ? 20000 : 15000;
 const addLiqX = (x) => addItem(x.id, { k: "liq", n: x.n, label: short(x.n), img: imgOf(x), unit: liqPrice(x), ...(x.line === "프라임" ? { prime: true } : {}) });
 const POD_IMG = {"아르거스 0.8옴팟":"gp_c78.jpg","AIO 0.3옴":"gp_c201.jpg","닷스틱코일 0.4옴":"gp_c188.jpg","닷스틱코일 1.0옴":"gp_c188.jpg","Q16 경통":"gp_c85.jpg","Q16 프로경통":"gp_c85.jpg","코스모 0.7옴":"gp_c187.jpg","바이퍼 경통":"gp_c429.jpg","제우스맥스 0.14옴코일":"gp_c191.jpg","제우스맥스 트리플 0.2옴 코일":"gp_c191.jpg","제우스맥스 쿼드 0.15옴 코일":"gp_c191.jpg","크로스0.8옴팟":"gp_c41.jpg","베이비0.7옴팟":"gp_c40.jpg","베이비벌크팟":"gp_c40.jpg","럭스Q팟 0.6옴":"gp_c43.jpg","브이메이트v2팟":"gp_c627.jpg","아스몬 0.6옴":"gp_c4.jpg","아스몬0.6옴체결팟":"gp_c4.jpg","아스몬 공팟":"gp_c39.jpg","아스몬 투명케이스":"gp_c257.jpg","젤로0.8옴":"gp_c8.jpg","젤로캡":"gp_c253.jpg","젤로맥스 0.6옴팟":"gp_c6.jpg","젤로드립팁":"gp_c279.jpg","젤로맥스 케이스":"gp_c300.jpg","젤로 크리스탈 0.6옴 팟":"gp_c9.jpg","젤로 울트라팟 0.15옴 팟":"gp_c10.jpg","젤로 울트라팟 0.15옴":"gp_c10.jpg","젤로맥스 0.6옴팟 5ml":"gp_c5.jpg","AX 0.6옴팟":"gp_c522.jpg","썬더Q 0.6옴팟":"gp_c524.jpg","베이비프로0.6옴팟":"gp_c14.jpg","페보 0.6옴팟":"gp_c515.jpg","소울 0.6옴팟":"gp_c36.jpg","소울 드립팁블랙":"gp_c293.jpg","소울 드립팁화이트":"gp_c293.jpg","말론팟 0.6옴":"gp_c0.jpg","말론팟 0.4옴":"gp_c0.jpg","말론 케이스":"gp_c247.jpg","불렛 드립팁":"gp_c248.jpg","에이펙스 팟":"gp_c316.jpg","아르거스 V3 0.7옴팟":"gp_c34.jpg","벨본 0.6옴팟":"gp_c28.jpg","벨본 0.6옴":"gp_c28.jpg","닷 프리즘드립팁":"gp_c236.jpg","마이팟 프로 0.6옴팟":"gp_c32.jpg","플라스크3 공팟":"gp_c541.jpg","GTI 0.2코일":"gp_c195.jpg","썬더유 0.7옴 팟":"gp_c623.jpg","오리즌 0.6옴팟":"gp_c518.jpg","디오x팟":"gp_c69.jpg","하복코일 0.6":"gp_d107.jpg","하복코일 0.25옴":"gp_d107.jpg","하복공팟":"gp_d72.jpg","발라클리어공팟":"gp_d121.jpg","발라맥스공팟":"gp_d81.jpg","발라(맥)0.6옴코일":"gp_d122.jpg","발라코일V2 0.6옴":"gp_d122.jpg","발라코일V2 0.8옴":"gp_d122.jpg","발라코일V2 1.0옴":"gp_d122.jpg","발라맥스프로팟 0.6옴":"gp_d18.jpg","발라맥스 프로공팟":"gp_d18.jpg","발라R 0.6옴팟":"gp_d70.jpg","발라리안 에어 0.6옴팟":"gp_d21.jpg","발라맥스프로케이스":"gp_d25.jpg","아스트로 레드팟":"gp_d44.jpg","아스트로 블랙팟":"gp_d44.jpg","베놈 레드팟":"gp_d44.jpg","베놈 블랙팟":"gp_d44.jpg"}; // 소모품 사진 (도매몰 사진을 GPT로 다듬음, 10/29)
 const gImg = (g) => g.c === "pod" && POD_IMG[g.n] ? POD_IMG[g.n] : g.c === "dev" ? devImgOf(g.model, g.opt) : g.c === "dsp" ? (DSP_IMG[g.model] || "") : g.c === "pod" && g.n.includes("하복2") && g.n.includes("팟") ? "dev_havok2_pod.jpg" : "";
+/* 11/13 액상덕후 "품절 상품은 더보기로 가려줘": 품절은 접어 두고 [품절 상품 N개 보기]로 펼침 (검색, 액상, 폐호흡, 팟 목록) */
+const soldMore = (n, allSold) => allSold ? '<div class="evtip" style="grid-column:1/-1">이 매장엔 지금 품절이에요. [다른 지점 확인]을 눌러 주세요</div>' : n ? `<button class="soldmore" data-soldmore="1">품절 상품 ${n}개 보기</button>` : "";
+document.addEventListener('click', (e) => { const b = e.target.closest('[data-soldmore]'); if (!b) return; e.stopPropagation(); const box = b.parentElement; box.classList.toggle('showsold'); b.textContent = box.classList.contains('showsold') ? "품절 상품 접기" : b.textContent.replace("접기", ""); if (!box.classList.contains('showsold')) { const n = box.querySelectorAll('.sold').length; b.textContent = `품절 상품 ${n}개 보기`; } }, true);
+const srchCartBar = () => { const L = [...cart.values()], n = L.reduce((a, x) => a + x.qty, 0); return `<button class="srcart" data-srcart="1"><span><b>담은 상품 ${n}개</b> ${esc(L.slice(0, 3).map((x) => short(x.label || x.n) + (x.qty > 1 ? " " + x.qty : "")).join(", "))}${L.length > 3 ? " 외" : ""}</span><i>장바구니 보기</i></button>`; };
+document.addEventListener('click', (e) => { if (!e.target.closest('[data-srcart]')) return; e.stopPropagation(); drawCart(); document.body.classList.add('open'); }, true);
 function drawSearch() {
   const q = $('q').value; $('q').parentElement.classList.toggle('on', !!q); document.body.classList.toggle('srchon', !!q.trim());
   if (!q.trim()) return;
   const r = searchItems(q);
-  $('sres').innerHTML = r.length ? r.map((o) => { const x = o.x, liq = o.t === "liq", key = x.id, have = (cart.get(key) || {}).qty || 0, out = outOf(x.n);
+  if (r.length && r.every((o) => outOf(o.x.n))) $('sres').classList.add('showsold'); /* 11/13 전부 품절이면 접지 않음 */
+  $('sres').innerHTML = (cart.size ? `<div class="hzpad">${srchCartBar()}</div>` : "") + (r.length ? `<div class="hzhd">검색 결과 ${r.length}개${r.length > 3 ? ", 옆으로 넘겨 보세요 →" : ""}</div><div class="hzrow">` + r.map((o) => { const x = o.x, liq = o.t === "liq", key = x.id, have = (cart.get(key) || {}).qty || 0, out = outOf(x.n);
     const img = liq ? imgOf(x) : o.t === "lung" ? "" : gImg2(x), price = liq ? liqPrice(x) : x.price;
-    return `<div class="sr ${out ? "sold" : ""}"><div class="im" style="background:${liq ? tintOf(x) : "#f4f4f6"}">${img ? `<img src="${img}" alt="" loading="lazy">` : { dev: "🔋", pod: "🧩", dsp: "🚬" }[x.c] || "💧"}</div><div class="n"><b>${esc(liq ? short(x.n) : x.n)}${liq ? noTag(x.n) : ""}</b><span>${esc(liq ? [x.br, x.line, x.f].filter(Boolean).join(", ") : { dev: "기기", pod: "팟, 코일", dsp: "일회용" }[x.c] || "")}${out ? ", 품절" : ""}</span>${have ? `<span class="q"> 담음 ${have}</span>` : ""}</div><b class="price">${won(price)}</b>${out ? `<button class="askb" data-ask="${esc(x.n)}">다른 지점 확인</button>` : `<button class="add" data-s="${key}" data-t="${o.t}">+</button>`}</div>`; }).join("")
-    : '<div style="padding:40px 0;text-align:center;color:var(--grey);line-height:1.7">찾는 상품이 없어요<br>초성(ㅂㄹ)이나 시연번호 숫자로도 찾을 수 있어요<br><button class="cta" style="max-width:320px;margin-top:14px" onclick="qzStart()">나에게 맞는 전자담배 찾기</button></div>';
+    return `<div class="sr ${out ? "sold" : ""}"${liq ? ` data-lid="${x.id}"` : ""}><div class="im" style="background:${liq ? tintOf(x) : "#f4f4f6"}">${img ? `<img src="${img}" alt="" loading="lazy">` : { dev: "🔋", pod: "🧩", dsp: "🚬" }[x.c] || "💧"}</div><div class="n"><b>${esc(liq ? short(x.n) : x.n)}${liq ? noTag(x.n) : ""}</b><span>${esc(liq ? [x.br, x.line, x.f].filter(Boolean).join(", ") : { dev: "기기", pod: "팟, 코일", dsp: "일회용" }[x.c] || "")}${out ? ", 품절" : ""}</span>${have ? `<span class="q"> 담음 ${have}</span>` : ""}</div><b class="price">${won(price)}</b>${out && !canSell(x.n) ? `<button class="askb" data-ask="${esc(x.n)}">다른 지점 확인</button>` : `<button class="add" data-s="${key}" data-t="${o.t}">+</button>`}</div>`; }).join("") + "</div>"
+    + soldMore(r.filter((o) => outOf(o.x.n)).length, r.every((o) => outOf(o.x.n)))
+    : '<div style="padding:40px 0;text-align:center;color:var(--grey);line-height:1.7">찾는 상품이 없어요<br>초성(ㅂㄹ)이나 시연번호 숫자로도 찾을 수 있어요<br><button class="cta" style="max-width:320px;margin-top:14px" onclick="qzStart()">나에게 맞는 전자담배 찾기</button></div>');
 }
-$('q').addEventListener('input', drawSearch);
+$('q').addEventListener('input', () => { $('sres').classList.remove('showsold'); drawSearch(); });
 $('qx').onclick = (e) => { e.preventDefault(); $('q').value = ""; drawSearch(); drawDspList(); };
-$('sres').onclick = (e) => { const b = e.target.closest('[data-s]'); if (!b) return; const id = b.dataset.s;
+$('sres').onclick = (e) => { const b = e.target.closest('[data-s]'); if (!b) { if (e.target.closest('button')) return; const row = e.target.closest('[data-lid]'); if (row) liqOpen(ALL_LQ.find((y) => y.id === row.dataset.lid)); return; } /* 11/13 검색 결과 줄을 누르면 자세히 (액상) */ const id = b.dataset.s;
   if (b.dataset.t === "liq") { addLiqX(ALL_LQ.find((y) => y.id === id)); }
   else if (b.dataset.t === "lung") addGoods(LUNG.find((y) => y.id === id)); else addGoods(GDS.find((y) => y.id === id));
   toast("담았어요"); drawSearch(); };
@@ -1553,7 +1832,7 @@ function drawDspList() {
 }
 function dspDraw() { const m = dspOpen, all = GDS.filter((g) => g.c === "dsp" && g.model === m && (g.ev || "") === dspEv), info = dInfo(m), g = DSPEV.find((x) => x.ev === dspEv), got = all.reduce((a, x) => a + ((cart.get(x.id) || {}).qty || 0), 0);
   $('spTi').textContent = !dspEv && !/배터리/.test(info.name) ? info.name + " 배터리" : info.name;
-  $('spB').innerHTML = `${info.d ? `<p class="dsub">${esc(info.d)}</p>` : ""}${info.w ? `<div class="evtip">${esc(info.w)}</div>` : ""}<div class="dfl">${all.map((x) => { const q = (cart.get(x.id) || {}).qty || 0, out2 = outOf(x.n), pic = DSPF_IMG[x.n]; return `<button class="dflc ${q ? "on" : ""} ${out2 ? "sold" : ""}" ${out2 ? `data-ask="${esc(x.n)}"` : `data-dg="${x.id}"`}>${pic ? `<img src="${pic}" alt="" loading="lazy">` : ""}<span>${esc(x.opt || x.n.replace(m, "").trim() || x.n)}${out2 ? ", 품절" : ""}</span>${q ? `<b>${q}</b>` : ""}</button>`; }).join("")}</div>${g ? dspNudge(g) : ""}<button class="cta" data-dspx="1" style="margin-top:14px">${got ? `${got}개 담았어요, 닫기` : "닫기"}</button>`; }
+  $('spB').innerHTML = `${info.d ? `<p class="dsub">${esc(info.d)}</p>` : ""}${info.w ? `<div class="evtip">${esc(info.w)}</div>` : ""}<div class="dfl">${all.map((x) => { const q = (cart.get(x.id) || {}).qty || 0, out2 = outOf(x.n), pic = DSPF_IMG[x.n]; return `<button class="dflc ${q ? "on" : ""} ${out2 ? "sold" : ""}" ${out2 && !canSell(x.n) ? `data-ask="${esc(x.n)}"` : `data-dg="${x.id}"`}>${pic ? `<img src="${pic}" alt="" loading="lazy">` : ""}<span>${esc(x.opt || x.n.replace(m, "").trim() || x.n)}${out2 ? ", 품절" : ""}</span>${q ? `<b>${q}</b>` : ""}</button>`; }).join("")}</div>${g ? dspNudge(g) : ""}<button class="cta" data-dspx="1" style="margin-top:14px">${got ? `${got}개 담았어요, 닫기` : "닫기"}</button>`; }
 let dspEv = "";
 const dspPick = (m, ev) => { dspOpen = m; dspEv = ev || ""; const lab = $('spTi').previousElementSibling; if (lab) lab.textContent = "맛 고르기"; dspDraw(); document.body.classList.add('spon'); };
 $('spB').addEventListener('click', (e) => { const t = e.target, a = t.closest('[data-dg]'), x = t.closest('[data-airx]');
@@ -1573,14 +1852,15 @@ $('dspList').onclick = (e) => { const t = e.target;
 let podSub = "팟·코일", podDev = "", podMore = false;
 const podDevOf = (g) => (POD_DEV.find((d) => d.re.test(g.n)) || {}).k || "기타";
 function drawPodView() {
+  if (drawPodView.k !== podSub + podDev) { drawPodView.k = podSub + podDev; $('podList').classList.remove('showsold'); }
   const pods = GDS.filter((g) => g.c === "pod" && (g.sub || "팟·코일") === podSub);
   const rk = (d) => d === "기타" ? 999 : (MYDEV_TOP.indexOf(d) + 1 || 100);
   const devs = [...new Set(pods.map(podDevOf))].sort((a, b) => rk(a) - rk(b) || a.localeCompare(b, "ko")); if (!devs.includes(podDev)) podDev = devs[0] || "";
   const POD_SHOW = 12, shown = podMore || devs.length <= POD_SHOW + 2 ? devs : [...devs.slice(0, POD_SHOW), ...(devs.indexOf(podDev) >= POD_SHOW ? [podDev] : [])];
   $('podSub').innerHTML = ["팟·코일", "케이스·드립팁·기타"].map((t) => `<button data-ps="${t}" class="${t === podSub ? "on" : ""}">${t === "팟·코일" ? "팟, 코일" : "케이스, 기타"}</button>`).join("");
   $('podDev').innerHTML = shown.map((d) => `<button data-pd="${esc(d)}" class="${d === podDev ? "on" : ""}">${esc(d)}</button>`).join("") + (shown.length < devs.length ? `<button data-pdmore="1" class="more">기기 더 보기 +${devs.length - shown.length}</button>` : "");
-  $('podList').innerHTML = pods.filter((g) => podDevOf(g) === podDev).map((g) => { const k = packOf(g), q = (cart.get(g.id) || {}).qty || 0, o = outOf(g.n);
-    return `<div class="sr ${o ? "sold" : ""}"><div class="im">${gImg(g) ? `<img src="${gImg(g)}" alt="" loading="lazy">` : "🧩"}</div><div class="n"><b>${esc(g.n)}</b><span>${won(g.price)} (낱개)${q ? `, <b style="color:var(--red);display:inline">담음 ${q}</b>` : ""}${o ? ", 품절" : ""}</span></div>${o ? `<button class="askb" data-ask="${esc(g.n)}">다른 지점 확인</button>` : (k ? `<button class="pkb" data-pp="${g.id}" data-k="${k}">1팩 ${k}개 ${won(g.price * k)}</button>` : "") + `<button class="pkb ln1" data-pp="${g.id}" data-k="1">낱개</button>`}</div>`; }).join("") || '<div class="evtip">이 지점에 해당 상품이 없어요</div>';
+  $('podList').innerHTML = pods.filter((g) => podDevOf(g) === podDev).sort(soldLast).map((g) => { const k = packOf(g), q = (cart.get(g.id) || {}).qty || 0, o = outOf(g.n);
+    return `<div class="sr ${o ? "sold" : ""}"><div class="im">${gImg(g) ? `<img src="${gImg(g)}" alt="" loading="lazy">` : "🧩"}</div><div class="n"><b>${esc(g.n)}</b><span>${won(g.price)} (낱개)${q ? `, <b style="color:var(--red);display:inline">담음 ${q}</b>` : ""}${o ? ", 품절" : ""}</span></div>${o && !canSell(g.n) ? `<button class="askb" data-ask="${esc(g.n)}">다른 지점 확인</button>` : (k ? `<button class="pkb" data-pp="${g.id}" data-k="${k}">1팩 ${k}개 ${won(g.price * k)}</button>` : "") + `<button class="pkb ln1" data-pp="${g.id}" data-k="1">낱개</button>`}</div>`; }).join("") + soldMore(pods.filter((g) => podDevOf(g) === podDev && outOf(g.n)).length, pods.filter((g) => podDevOf(g) === podDev).every((g) => outOf(g.n))) || '<div class="evtip">이 지점에 해당 상품이 없어요</div>';
 }
 $('podSub').onclick = (e) => { const b = e.target.closest('[data-ps]'); if (b) { podSub = b.dataset.ps; podDev = ""; drawPodView(); } };
 $('podDev').onclick = (e) => { if (e.target.closest('[data-pdmore]')) { podMore = true; return drawPodView(); } const b = e.target.closest('[data-pd]'); if (b) { podDev = b.dataset.pd; drawPodView(); } };
@@ -1702,6 +1982,7 @@ function specOpen(model, color) {
     two = [["가격", cur ? won(cur.price) : "-", "레이저 각인 무료"], ["호흡 방식", DEV_SUB[model] || "입호흡", ""]]; }
   dspOpen = ""; { const lab = $('spTi').previousElementSibling; if (lab) lab.textContent = "전자담배 기기"; } $('spTi').textContent = model;
   $('spB').innerHTML = `<div class="sp-hero" style="background:${HEX[c] ? HEX[c] + "22" : "var(--card)"}"><img src="${img}" alt=""><span>${esc(c || "")}</span></div>
+    ${vidBtn(model)}
     <div class="sp-two">${two.map(([k, v, u]) => `<div><b>${k}</b><strong>${esc(v)}</strong>${u ? `<span>${esc(u)}</span>` : ""}</div>`).join("")}</div>
     ${d && d.desc && model !== "하복2" ? `<div class="sp-desc">${esc(d.desc)}</div>` : ""}
     <div class="sp-grid">${rows.map(([k, v, u]) => `<div><b>${esc(k)}</b><strong>${esc(v)}</strong>${u ? `<span>${esc(u)}</span>` : ""}</div>`).join("")}</div>
@@ -1709,6 +1990,45 @@ function specOpen(model, color) {
   document.body.classList.add('spon');
 }
 $('spX').onclick = () => document.body.classList.remove('spon');
+/* 11/13 액상덕후: 말론S 사용 영상 보기 버튼. 영상이 크니 누를 때만 받아서 재생 */
+var DEV_VID = { "플러키": "vid_plucky.mp4", "말론 기계": "../vid/malone.mp4", "말론": "../vid/malone.mp4", "말론S": "../vid/malone_s.mp4", "하복2": "../vid/havok2.mp4", "발라맥스프로": "../vid/valamaxpro.mp4" }; /* 11/13 기기 사용 설명 영상 4개 (vape/vid/ 공용 폴더) */ /* 11/13 말론S 영상은 뺌(액상덕후 "지워"), 플러키(기기) 사용 영상: 기기 화면 담기 버튼 위 */
+var vidBtn = (m) => DEV_VID[m] ? `<button class="vidgo" data-vid="${esc(m)}"><i>▶</i>${esc(m === "말론 기계" ? "말론" : m)} 사용 영상 보기</button>` : "";
+try { $('devVid').innerHTML = vidBtn(dm); } catch (e) {} /* 처음 그릴 때는 아직 정의 전이라 여기서 한 번 더 */
+/* 11/13 자막: 영상 옆 같은 이름 .json [{s,e,t}] 을 읽어 영상 아래 큰 글씨로 (손님이 눈으로 읽게) */
+let VCAP = [];
+/* 11/13 간단 설명서: 영상 옆 같은 이름 .guide.json [{t,e,h,d}], 누르면 그 부분부터 */
+let VGUIDE = [];
+const vgTime = (t) => Math.floor(t / 60) + ":" + String(Math.floor(t % 60)).padStart(2, "0");
+function vidGuideLoad(src) { VGUIDE = []; $('vidGuide').innerHTML = ""; if (!/\.mp4$/.test(src)) return;
+  fetch(src.replace(/\.mp4$/, ".guide.json") + "?v=1113").then((r) => r.ok ? r.json() : []).then((j) => { VGUIDE = Array.isArray(j) ? j : [];
+    $('vidGuide').innerHTML = VGUIDE.length ? '<div class="vgt">📋 간단 설명서 <small>누르면 그 부분부터 나와요</small></div>' + VGUIDE.map((g, i) => `<button class="vg" data-vg="${i}"><span class="e">${esc(g.e || "")}</span><span class="t"><b>${esc(g.h)}</b><small>${esc(g.d)}</small></span><i>${vgTime(g.t)}</i></button>`).join("") : ""; }).catch(() => {}); }
+$('vidGuide').onclick = (e) => { const b = e.target.closest('[data-vg]'); if (!b) return; const g = VGUIDE[+b.dataset.vg], v = $('vidV'); v.currentTime = g.t; v.play().catch(() => {}); };
+function vidCapLoad(src) { vidGuideLoad(src); VCAP = []; $('vidCap').textContent = ""; if (!/.mp4$/.test(src)) return; fetch(src.replace(/.mp4$/, ".json") + "?v=1113").then((r) => r.ok ? r.json() : []).then((j) => { VCAP = Array.isArray(j) ? j : []; }).catch(() => {}); }
+$('vidV').addEventListener('timeupdate', () => { const t = $('vidV').currentTime, c = VCAP.find((x) => t >= x.s && t <= x.e + 0.4); const el = $('vidCap'); const nt = c ? c.t : ""; if (el.textContent !== nt) el.textContent = nt; let gi = -1; VGUIDE.forEach((g, i) => { if (t >= g.t) gi = i; }); document.querySelectorAll('#vidGuide .vg').forEach((b, i) => b.classList.toggle('on', i === gi)); });
+function vidOpen(m) { const v = $('vidV'); vidCapLoad(DEV_VID[m]); $('vidTi').textContent = (m === "말론 기계" ? "말론" : m) + " 사용 영상"; v.src = DEV_VID[m]; v.muted = false; v.volume = 1; vidSndTxt(); /* 11/13 액상덕후 "소리가 왜 안 나": 소리 켜고 시작, 큰 소리 버튼 */ $('vidBox').hidden = false; v.play().catch(() => {}); }
+function vidSndTxt() { const v = $('vidV'); $('vidSnd').textContent = v.muted ? "🔇 소리 켜기" : "🔊 소리 끄기"; $('vidSnd').classList.toggle('off', v.muted); }
+$('vidSnd').onclick = () => { const v = $('vidV'); v.muted = !v.muted; vidSndTxt(); };
+$('vidV').addEventListener('volumechange', vidSndTxt);
+function vidClose() { const v = $('vidV'); v.pause(); v.removeAttribute('src'); v.load(); $('vidBox').hidden = true; }
+$('vidX').onclick = vidClose; $('vidBox').onclick = (e) => { if (e.target.id === 'vidBox') vidClose(); };
+document.addEventListener('click', (e) => { const b = e.target.closest('[data-vid]'); if (!b) return; e.stopPropagation(); vidOpen(b.dataset.vid); }, true);
+/* 11/12 액상덕후: 랭킹에서 상품을 누르면 자세히. 맛 표현 문장은 TASTE에 액상덕후가 정해 준 것만 (없으면 맛, 계열만) */
+const TASTE = {};
+function liqOpen(x) { if (!x) return; const out = outOf(x.n), q = (cart.get(x.id) || {}).qty || 0, img = imgOf(x), tags = (x.t || []).filter((t) => t !== "일반");
+  dspOpen = ""; { const lab = $('spTi').previousElementSibling; if (lab) lab.textContent = "액상"; } $('spTi').textContent = short(x.n);
+  $('spB').innerHTML = `<div class="sp-hero" style="background:${tintOf(x)}">${img ? `<img src="${img}" alt="">` : ""}<span>${esc(x.f || "")}</span></div>
+    <div class="sp-two"><div><b>맛</b><strong>${esc(x.f || "-")}</strong>${x.g ? `<span>${esc(x.g)}</span>` : ""}</div><div><b>가격</b><strong>${won(liqPrice(x))}</strong><span>${esc([x.line, ...tags].filter(Boolean).join(", "))}</span></div></div>
+    ${TASTE[x.n] ? `<div class="sp-desc" style="font-size:20px;line-height:1.5">${esc(TASTE[x.n])}</div>` : ""}
+    ${out && !canSell(x.n) ? '<div class="sp-desc">이 매장은 품절이에요</div>' : x.line === "프라임" ? `<button class="memgo" data-lqadd="${x.id}" style="height:64px;font-size:20px">${q ? `한 병 더 담기 (지금 ${q}병)` : "담기"}</button>`
+      : `<div class="spev"><div class="spev-t">진행 중인 이벤트</div>${[["5병", "49,500원", "병당 9,900원"], ["10+1 (11병)", "90,000원", "병당 약 8,200원"], ["기기 살 때 액상 10병", "75,000원", "기기값은 따로"]].map(([a, b, c]) => `<div class="spev-r"><b>${a}</b><strong>${b}</strong><span>${c}</span></div>`).join("")}<div class="spev-n">맛 섞어서 골라도 돼요</div></div>
+      <button class="memgo" data-lqev="${x.id}" style="height:68px;font-size:21px">이벤트가로 구매하기</button><button class="memgo sub" data-lqadd="${x.id}" style="height:52px;font-size:17px;background:var(--card);color:var(--ink);border:1.5px solid var(--line)">${q ? `한 병 더 담기 (지금 ${q}병)` : "1병만 담기 15,000원"}</button>`}`; /* 11/13 액상덕후: 자세히 창에 진행 중인 이벤트 + [이벤트가로 구매하기] (가격은 지금 패드 계산 그대로) */
+  document.body.classList.add('spon'); }
+/* 이벤트가로 구매하기: 이 맛 1병 담고 액상 목록으로, 다음 이벤트까지 남은 병 수 안내 */
+document.addEventListener('click', (e) => { const b = e.target.closest('[data-lqev]'); if (!b) return; e.stopPropagation(); const x = ALL_LQ.find((y) => y.id === b.dataset.lqev); if (!x) return;
+  addLiqX(x); document.body.classList.remove('spon', 'srchon'); $('q').value = ""; if (typeof rkDraw === "function") rkDraw();
+  const c = countCart(), n = c.v + c.p, goal = n < 5 ? 5 : n < 11 ? 11 : 0; lf = "전체"; $('chips').querySelectorAll('button').forEach((y) => y.classList.toggle('on', y.dataset.f === lf)); go('liq'); drawLiq();
+  toast(goal ? `${short(x.n)} 담았어요. ${goal - n}병 더 고르면 ${goal === 5 ? "5병 49,500원" : "11병 90,000원"}` : `${short(x.n)} 담았어요. 11병 90,000원 적용 중`); }, true);
+document.addEventListener('click', (e) => { const b = e.target.closest('[data-lqadd]'); if (!b) return; e.stopPropagation(); const x = ALL_LQ.find((y) => y.id === b.dataset.lqadd); if (x) { addLiqX(x); toast("담았어요"); document.body.classList.remove('spon'); if (typeof rkDraw === "function") rkDraw(); if (document.body.classList.contains('srchon')) drawSearch(); } }, true);
 document.addEventListener('click', (e) => { const b = e.target.closest('[data-spec]'); if (!b) return; e.stopPropagation(); specOpen(b.dataset.spec, b.dataset.c); }, true);
 
 // ── 나에게 맞는 전자담배 찾기 (10/27, 28 사장님 "병원 가면 처음에 설문조사 하잖아") ──
@@ -1783,7 +2103,7 @@ function QZ_RULE(A) {
   /* 11/11 액상덕후: 입호흡 추천은 말론, 말론S (발라맥스프로, 하복2 대신). 팟은 미리 안 담고 금액만 같이 보여 줌 */
   const mD = (devOpts("말론 기계") || [])[0], sD = (devOpts("말론S") || [])[0], mp = (n) => { const p = GDS.find((g) => g.c === "pod" && g.n === n && !outOf(g.n)); return p ? p.price * POD_PER_PACK : 0; };
   const MP = (k, d, q, nm, pn) => d ? [[k + q, `${nm} + 액상 ${q}병`, won(d.price + (q === 10 ? ADD.pr10 : ADD.pr5)) + (mp(pn) ? `, 팟 ${q === 10 ? 4 : 2}팩 더하면 ${won(d.price + (q === 10 ? ADD.pr10 : ADD.pr5) + mp(pn) * (q === 10 ? 4 : 2))}` : "")]] : [];
-  const M10 = MP("M", mD, 10, "말론", "말론팟 0.6옴"), M5 = MP("M", mD, 5, "말론", "말론팟 0.6옴"), S10 = MP("S", sD, 10, "말론S", "말론S 0.6옴팟"), S5 = MP("S", sD, 5, "말론S", "말론S 0.6옴팟");
+  const M10 = MP("M", mD, 10, "말론", "말론팟 0.4옴"), M5 = MP("M", mD, 5, "말론", "말론팟 0.4옴"), S10 = MP("S", sD, 10, "말론S", "말론S 0.4옴팟"), S5 = MP("S", sD, 5, "말론S", "말론S 0.4옴팟"); /* 11/12 0.4옴 기준 */
   const malOk = !!(mD || sD);
   const packs = !malOk ? (low ? [["D", "일회용 10+5 패키지", "팜팜바, 모스바 15개, 5개 서비스"], ...vbPack, H10, H5] : mid ? [H10, ...vbPack, H5] : [H10, H5])
     : low ? [["D", "일회용 10+5 패키지", "팜팜바, 모스바 15개, 5개 서비스"], ...S5, ...S10, ...M5] : [...M10, ...S10, ...M5];
@@ -1877,13 +2197,15 @@ function rkDraw() {
     const x = rkFind(rkTab, n), out = x ? outOf(x.n) : false, q = x ? (cart.get(x.id) || {}).qty || 0 : 0;
     const img = !x ? "" : rkTab === "lung" ? (LUNG_IMG[x.n] || "") : rkTab === "dsp" ? gImg2(x) : imgOf(x);
     const label = rkTab === "liq" ? short(n) : rkTab === "lung" ? n.replace(/\s*\(?모드\)?$/, "") : n;
-    return `<div ${dl} class="rkr rkin ${i < 3 ? "top" : ""} ${out ? "sold" : ""}"><i>${i + 1}</i>${mv}<div class="im" style="background:${x ? tintOf(x) : "#f4f4f6"}">${img ? `<img src="${img}" alt="" loading="lazy">` : ""}</div><div class="n"><b>${esc(label)}${x && rkTab === "liq" ? noTag(x.n) : ""}</b><span>${esc(x ? [x.f, x.br].filter(Boolean)[0] || "" : "")}${q ? `, 담음 ${q}` : ""}${out ? ", 품절" : ""}</span></div>${!x ? "" : out ? `<button class="askb" data-ask="${esc(x.n)}">다른 지점 확인</button>` : `<button class="add" data-rka="${x.id}">+</button>`}</div>`; }).join("") || '<div class="evtip">이 분류는 아직 자료가 없어요</div>';
+    return `<div ${dl} class="rkr rkin ${i < 3 ? "top" : ""} ${out ? "sold" : ""}"><i>${i + 1}</i>${mv}<div class="im" style="background:${x ? tintOf(x) : "#f4f4f6"}">${img ? `<img src="${img}" alt="" loading="lazy">` : ""}</div><div class="n"><b>${esc(label)}${x && rkTab === "liq" ? noTag(x.n) : ""}</b><span>${esc(x ? [x.f, x.br].filter(Boolean)[0] || "" : "")}${q ? `, 담음 ${q}` : ""}${out ? ", 품절" : ""}</span></div>${!x ? "" : out && !canSell(x.n) ? `<button class="askb" data-ask="${esc(x.n)}">다른 지점 확인</button>` : `<button class="add" data-rka="${x.id}">+</button>`}</div>`; }).join("") || '<div class="evtip">이 분류는 아직 자료가 없어요</div>';
 }
 $('rkTab').onclick = (e) => { const t = e.target.closest('[data-rk]'); if (t) { rkTab = t.dataset.rk; rkDraw(); } };
 $('rkList').onclick = (e) => { const a = e.target.closest('[data-rka]'), d = e.target.closest('[data-rkdev]'), sq = e.target.closest('[data-rkq]');
   if (sq) { go('home'); $('q').value = sq.dataset.rkq; drawSearch(); $('q').focus(); return; }
   if (a) { const id = a.dataset.rka, x = ALL_LQ.find((y) => y.id === id); if (x) addLiqX(x); else addGoods(GDS.find((y) => y.id === id) || LUNG.find((y) => y.id === id)); toast("담았어요"); rkDraw(); }
-  if (d) { dm = d.dataset.rkdev; pkSel = 10; go('dev'); drawDev(); } };
+  if (d) { dm = d.dataset.rkdev; pkSel = 10; go('dev'); drawDev(); return; }
+  if (a || e.target.closest('button')) return; /* 11/12 줄을 누르면 자세히 (액상) */
+  const row = e.target.closest('.rkr'); if (row && rkTab === "liq") { const id = (row.querySelector('[data-rka]') || {}).dataset; const x = id && ALL_LQ.find((y) => y.id === id.rka); if (x) liqOpen(x); } };
 rkLoad(); setInterval(rkLoad, 30 * 60e3);
 
 // ── 사용 기록 (10/28 사장님 "여기서도 사용 로그"): A안과 같은 형식 → 웹훅 → 운영봇 padEvents → data/패드기록.jsonl ──
@@ -1914,7 +2236,13 @@ async function evFlush() {
   } catch (e) {} finally { evBusy = false; }
 }
 setInterval(evFlush, 60e3);
-document.addEventListener("visibilitychange", () => { if (document.hidden) evFlush(); });
+/* 11/20 액상덕후 "터치 좌표도 확인": 누른 자리를 화면 비율(가로 00~99, 세로 00~99, 네 자리)로 10번씩 묶어 k "t"로 남김. n = 좌표 묶음, x = 화면이름(+는 장바구니 열림)|가로x세로. 무엇을 눌렀는지, 이름, 번호는 안 남김 */
+let tapBuf = "", tapV = "", tapT = 0;
+const tapOut = () => { clearTimeout(tapT); if (tapBuf) ev("t", tapBuf, tapV); tapBuf = ""; };
+addEventListener("pointerdown", (e) => { try { const b = document.body, v = (b.dataset.v || "") + (b.classList.contains("open") ? "+" : "") + "|" + innerWidth + "x" + innerHeight; if (v !== tapV) { tapOut(); tapV = v; }
+  const p = (a, m) => String(Math.min(99, Math.max(0, Math.floor(a / m * 100)))).padStart(2, "0"); tapBuf += p(e.clientX, innerWidth) + p(e.clientY, innerHeight);
+  if (tapBuf.length >= 40) tapOut(); else { clearTimeout(tapT); tapT = setTimeout(tapOut, 15000); } } catch (er) {} }, true);
+document.addEventListener("visibilitychange", () => { if (document.hidden) { tapOut(); evFlush(); } });
 // 기존 함수에 기록만 덧붙임 (동작은 그대로)
 const evWrap = (name, f) => { const o = window[name] || eval(name); const w = function (...a) { const r = o.apply(this, a); try { f(...a); } catch (e) {} return r; }; eval(name + " = w"); };
 evWrap("go", (v) => ev("m", v));
@@ -1964,8 +2292,171 @@ function loadOrder() { for (const t of ORDER_CODE.split("_")) { const [a, q0] = 
   document.body.classList.add('open'); qrView(); }
 if (ORDER_CODE) loadOrder();
 
+/* ── 11/18 첫 화면 새 배치 시험 (?home2=1): 액상, 기기 랭킹 3등(진짜 지점 랭킹 자료, 없으면 칸을 감춤) + 처음/회원 시작 카드 ── */
+if (/[?&]home2=1/.test(location.search) && /scan\.html$/.test(location.pathname)) document.body.classList.add("home2"); /* 11/18 액상덕후 "원래대로 쓰자": 시험 주소(scan.html)에서만 켜짐, 정식 주소에선 안 켜짐 */
+function h2Draw() { if (!h2on()) return; const b = RK && RK.branches && RK.branches[BRANCH]; if (!b) { $('h2rk').innerHTML = ""; return; }
+  const liq = (b.liq || []).map(([n]) => ({ n, x: rkFind("liq", n) })).filter((o) => !(o.x && outOf(o.x.n))).slice(0, 3);
+  const dev = (b.dev || []).slice(0, 3).map(([n]) => { const g = GDS.find((y) => y.c === "dev" && (y.model || y.n).startsWith(n)); return { n, im: devImgOf(n) || (g ? gImg2(g) : "") }; });
+  const row = (i, im, nm) => `<div class="h2row"><i>${i + 1}</i><div class="im">${im ? `<img src="${im}" alt="" loading="lazy">` : ""}</div><b>${esc(nm)}</b></div>`;
+  $('h2rk').innerHTML = (liq.length ? `<button class="h2box" data-h2rk="liq"><div class="hd"><b>액상 랭킹</b><span>전체 보기 ›</span></div>${liq.map((o, i) => row(i, o.x ? imgOf(o.x) : "", short(o.n))).join("")}</button>` : "")
+    + (dev.length ? `<button class="h2box" data-h2rk="dev"><div class="hd"><b>기기 랭킹</b><span>전체 보기 ›</span></div>${dev.map((o, i) => row(i, o.im, o.n)).join("")}</button>` : ""); }
+$('h2rk').onclick = (e) => { const t = e.target.closest('[data-h2rk]'); if (t) { rkTab = t.dataset.h2rk; rkOpen(); } };
+if (h2on()) { rkLoad().then(h2Draw); new MutationObserver(() => { if (document.body.dataset.v === "home") h2Draw(); }).observe(document.body, { attributes: true, attributeFilter: ["data-v"] }); }
+const h2Cart = () => { drawCart(); document.body.classList.add('open'); setTimeout(() => { const el = document.querySelector('#lines .mem'); if (el) el.scrollIntoView({ block: "center" }); }, 120); };
+function h2New() { if (member.reg && !member.reg.look && /ok|dup|wait|send/.test(member.reg.s)) return qzStart(); member.type = "new"; member.reg = null; window.h2After = "qz"; h2Cart(); }
+function h2Old() { if (!(member.reg && member.reg.look && member.reg.s === "found")) { member.type = "old"; member.reg = null; } window.h2After = "hist"; h2Cart(); }
+
+/* ── 11/18 사진으로 담기: 찍으면 AI 가 품목과 개수를 읽고, 직원이 확인 화면에서 고친 뒤 장바구니에 담음.
+   사진, AI 답, 직원이 고친 정답은 슈파베이스(pad-scan 함수)에 모여 다음 사진부터 더 잘 맞힘. AI 열쇠는 함수 안에만 있음 ── */
+const SCAN_URL = "https://bjjlmnkyhedtutogzliq.supabase.co/functions/v1/pad-scan";
+let scanS = null; /* { id, img, rows: [{ label, id, qty, pick, q }] } */
+const scanOv = document.createElement("div"); scanOv.id = "scanOv"; document.body.appendChild(scanOv);
+const scanFind = (id) => { const x = ALL_LQ.find((y) => y.id === id); if (x) return { t: "liq", x }; const g = GDS.find((y) => y.id === id); return g ? { t: "goods", x: g } : null; };
+const scanImg = (f) => !f ? "" : f.t === "liq" ? imgOf(f.x) : gImg2(f.x);
+const scanClose = () => { scanOv.classList.remove("on"); scanS = null; };
+function scanStart() { $('camIn').value = ""; $('camIn').click(); }
+$('camBtn').addEventListener("pointerdown", (e) => e.stopPropagation());
+$('camBtn').addEventListener("click", (e) => { e.stopPropagation(); scanGo(); });
+$('camBtnL').addEventListener("click", (e) => { e.stopPropagation(); scanGo(); }); /* 가로 화면용 */
+$('camIn').addEventListener("click", (e) => e.stopPropagation());
+async function scanShrink(file) { /* 긴 쪽 1280 으로 줄여 JPEG 로 (보내는 시간과 비용 줄이기) */
+  let bm; try { bm = await createImageBitmap(file, { imageOrientation: "from-image" }); } catch (e) { bm = await createImageBitmap(file); }
+  const k = Math.min(1, 1280 / Math.max(bm.width, bm.height)), c = document.createElement("canvas"); c.width = Math.round(bm.width * k); c.height = Math.round(bm.height * k);
+  c.getContext("2d").drawImage(bm, 0, 0, c.width, c.height); return c.toDataURL("image/jpeg", 0.8); }
+function scanWait(img, msg, sub) { scanOv.innerHTML = `<div class="sh"><b>사진으로 담기</b><button data-sc="close">닫기</button></div><div class="sb"><img class="scph" src="${img}" alt=""><div class="scwait">${msg}<small>${sub || ""}</small></div></div>`; scanOv.classList.add("on"); }
+function scanFail(img, msg) { scanOv.innerHTML = `<div class="sh"><b>사진으로 담기</b><button data-sc="close">닫기</button></div><div class="sb">${img ? `<img class="scph" src="${img}" alt="">` : ""}<div class="scwait">${msg}</div></div><div class="sf"><button class="rd" data-sc="again">다시 찍기</button></div>`; scanOv.classList.add("on"); }
+$('camIn').addEventListener("change", async (e) => { const file = e.target.files && e.target.files[0]; if (!file) return;
+  let img = ""; try { img = await scanShrink(file); } catch (er) { return scanFail("", "사진을 열지 못했어요"); }
+  scanWait(img, "사진을 읽고 있어요", "5초쯤 걸려요");
+  try { const cands = [...ALL_LQ.map((x) => ({ id: x.id, n: x.n })), ...GDS.map((g) => ({ id: g.id, n: g.n }))];
+    const r = await fetch(SCAN_URL, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ type: "scan", branch: BRANCH, img: img.split(",")[1], cands }) });
+    const j = await r.json(); if (!j.ok) return scanFail(img, j.error === "limit" ? "오늘은 사진을 너무 많이 찍었어요" : "사진을 읽지 못했어요");
+    scanS = { id: j.scan, img, rows: (j.items || []).map((x) => ({ label: x.label, id: scanFind(x.id) ? x.id : "", qty: x.qty, pick: false, q: "" })) };
+    scanDraw();
+  } catch (er) { scanFail(img, "인터넷을 확인하고 다시 찍어 주세요"); } });
+const scanSame = (id) => { /* 11/18 글자 안 쳐도 같은 브랜드 다른 맛이 바로 뜨게 (AI 는 브랜드는 맞히고 맛만 틀리는 일이 많음) */
+  const f = scanFind(id); if (!f || f.t !== "liq") return []; const w = f.x.n.trim().split(/\s+/); if (w.length < 2) return []; const br = w.slice(0, -1).join(" ") + " ";
+  return ALL_LQ.filter((y) => y.id !== id && y.n.startsWith(br)).slice(0, 40).map((x) => ({ t: "liq", x })); };
+function scanPickList(i) { const r = scanS.rows[i], res = r.q.trim() ? searchItems(r.q).filter((o) => o.t === "liq" || o.t === "goods").slice(0, 12) : scanSame(r.id);
+  return res.length ? res.map((o) => { const im = o.t === "liq" ? imgOf(o.x) : gImg2(o.x); return `<button data-scset="${i}" data-id="${esc(o.x.id)}">${im ? `<img src="${im}" alt="" loading="lazy">` : ""}${esc(o.t === "liq" ? short(o.x.n) : o.x.n)}</button>`; }).join("") : r.q.trim() ? '<span style="font-size:14px;color:var(--grey);padding:8px 0">찾는 상품이 없어요</span>' : ""; }
+function scanDraw() { if (!scanS) return; const rows = scanS.rows, unk = rows.filter((r) => !r.id).length, tot = rows.reduce((a, r) => a + (r.id ? r.qty : 0), 0);
+  scanOv.innerHTML = `<div class="sh"><b>이게 맞나요?</b><button data-sc="close">닫기</button></div><div class="sb"><img class="scph" src="${scanS.img}" alt="">`
+    + (rows.length ? '<div class="schelp">틀린 상품은 눌러서 바꾸고, 맨 아래 빨간 버튼을 눌러 주세요</div>' : '<div class="scwait">상품을 못 찾았어요<small>라벨이 보이게 다시 찍거나, 아래에서 직접 넣어 주세요</small></div>')
+    + rows.map((r, i) => { const f = r.id ? scanFind(r.id) : null, im = scanImg(f), nm = f ? (f.t === "liq" ? short(f.x.n) : f.x.n) : "";
+      return `<div class="scr ${f ? "" : "unk"}"><div class="r1"><button class="who" data-scpick="${i}"><div class="im">${im ? `<img src="${im}" alt="">` : "❓"}</div><div class="n"><b>${f ? esc(nm) : "모르는 상품"}</b><span>${r.label ? "병에 적힌 글자: " + esc(r.label) : ""}</span></div></button><div class="qt"><button data-scq="${i}" data-d="-1">−</button><i>${r.qty}</i><button data-scq="${i}" data-d="1">+</button></div></div>`
+        + `<div class="r2"><button class="ch ${f ? "" : "scgo"}" data-scpick="${i}">${r.pick ? "고르기 닫기" : f ? "다른 상품으로 바꾸기" : "상품 고르기"}</button><button class="dl" data-scdel="${i}">빼기</button></div>`
+        + (r.pick ? `<div class="pick"><input data-scin="${i}" placeholder="상품 이름 (예: 런 청, 초성도 돼요)" value="${esc(r.q)}" autocomplete="off"><div class="pt" id="scpt${i}">${r.q.trim() ? "찾은 상품" : f && scanSame(r.id).length ? "같은 브랜드 다른 맛, 옆으로 밀어 보세요" : ""}</div><div class="ph" id="scph${i}">${scanPickList(i)}</div></div>` : "") + `</div>`; }).join("")
+    + `<button class="scadd" data-sc="add">+ 빠진 상품 넣기</button></div><div class="sf"><button class="b2" data-sc="again">다시 찍기</button><button class="rd" data-sc="ok" ${tot ? "" : "disabled"}>${tot ? (unk ? `모르는 ${unk}개 빼고 ${tot}개 담기` : `${tot}개 장바구니에 담기`) : unk ? "상품을 골라 주세요" : "담을 상품이 없어요"}</button></div>`; }
+scanOv.addEventListener("input", (e) => { const i = e.target.dataset.scin; if (i == null || !scanS) return; scanS.rows[+i].q = e.target.value; const box = document.getElementById("scph" + i); if (box) box.innerHTML = scanPickList(+i); const pt = document.getElementById("scpt" + i); if (pt) pt.textContent = e.target.value.trim() ? "찾은 상품" : ""; });
+scanOv.addEventListener("click", (e) => { const t = e.target.closest("button"); if (!t) return; const d = t.dataset;
+  if (d.sc === "close") return scanClose();
+  if (d.sc === "again") { scanClose(); return scanGo(); }
+  if (!scanS) return;
+  if (d.scq != null) { const r = scanS.rows[+d.scq]; r.qty = Math.max(1, Math.min(99, r.qty + (+d.d))); return scanDraw(); }
+  if (d.scdel != null) { scanS.rows.splice(+d.scdel, 1); return scanDraw(); }
+  if (d.scpick != null) { const r = scanS.rows[+d.scpick]; r.pick = !r.pick; scanDraw(); if (r.pick) { const inp = scanOv.querySelector(`[data-scin="${d.scpick}"]`); if (inp) inp.focus(); } return; }
+  if (d.scset != null) { const r = scanS.rows[+d.scset]; r.id = d.id; r.pick = false; r.q = ""; return scanDraw(); }
+  if (d.sc === "add") { scanS.rows.push({ label: "", id: "", qty: 1, pick: true, q: "" }); scanDraw(); const inp = scanOv.querySelector(`[data-scin="${scanS.rows.length - 1}"]`); if (inp) inp.focus(); return; }
+  if (d.sc === "ok") { const fin = [];
+    for (const r of scanS.rows) { const f = scanFind(r.id); if (!f) continue; fin.push({ label: r.label, id: r.id, n: f.x.n, qty: r.qty });
+      if (f.t === "liq") addItem(f.x.id, { k: "liq", n: f.x.n, label: short(f.x.n), img: imgOf(f.x), unit: liqPrice(f.x), ...(f.x.line === "프라임" ? { prime: true } : {}) }, r.qty); else addGoods(f.x, r.qty); }
+    if (scanS.id) fetch(SCAN_URL, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ type: "final", branch: BRANCH, scan: scanS.id, final: fin }) }).catch(() => {});
+    const n = fin.reduce((a, x) => a + x.qty, 0); scanClose(); drawCart(); document.body.classList.add("open"); toast(`${n}개 담았어요`); } });
+
+/* ── 11/19 스캔 화면 (본점만 시험, 액상덕후 "사진이 아니라 스캔하고 테두리 생기고 갯수 생기고"):
+   카메라를 화면 안에 켜 두고, 화면이 멈추면 알아서 한 장을 보내 읽음. 읽힌 제품에 테두리와 개수를 띄우고, [확인하고 담기]를 누르면 원래 확인 화면으로 이어짐.
+   같은 장면은 다시 안 읽고(비용), 한 번 열어서 15번까지만 자동으로 읽음. 카메라를 못 켜면 예전 사진 방식으로 ── */
+const SCAN_LIVE = BRANCH === "본점" && !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+const scanGo = () => SCAN_LIVE ? liveStart() : scanStart();
+/* 11/19 액상덕후 "정렬하고 사진 찍는 게 더 정확하고 빠르다면 그 방법이 맞는 것 같아":
+   알아서 읽기는 손 떨림 때문에 글자가 반만 읽혀서 뺌. 패드 안 카메라로 보면서 나란히 놓고 [찍기]를 누르면, 찍힌 그 장면 위에 테두리와 개수가 뜸.
+   찍을 땐 카메라의 큰 사진(takePhoto)을 먼저 쓰고, 안 되는 기기에선 화면 장면 4장 중 제일 또렷한 것을 씀 */
+let lv = null;
+const liveOv = document.createElement("div"); liveOv.id = "liveOv"; document.body.appendChild(liveOv);
+liveOv.innerHTML = `<div class="lv"><video playsinline muted autoplay></video><img class="still" alt="" hidden><div class="lyr"></div><div class="st"></div><div class="lvver" style="position:absolute;left:8px;bottom:6px;font-size:12px;color:rgba(255,255,255,.75);z-index:2"></div></div><div class="bar"><div class="lvsum"></div><div class="lvbtn"><button class="b2" data-lv="close">닫기</button><button class="rd" data-lv="shot">찍기</button><button class="rd" data-lv="ok" hidden>확인하고 담기</button></div></div>`;
+const lvV = liveOv.querySelector("video"), lvI = liveOv.querySelector(".still");
+const liveSet = (m) => { liveOv.querySelector(".st").textContent = m; };
+function liveBoxes(items, iw, ih) { const L = liveOv.querySelector(".lyr"); if (!items) { L.innerHTML = ""; return; }
+  const cw = L.clientWidth, ch = L.clientHeight, vw = iw || 1, vh = ih || 1, k = Math.min(cw / vw, ch / vh), ox = (cw - vw * k) / 2, oy = (ch - vh * k) / 2;
+  L.innerHTML = items.map((x) => { const f = scanFind(x.id), nm = f ? (f.t === "liq" ? short(f.x.n) : f.x.n) : "모르는 상품";
+    return (x.boxes || []).map((b, i) => `<div class="bx ${f ? "" : "unk"}" style="left:${ox + b[0] / 1000 * vw * k}px;top:${oy + b[1] / 1000 * vh * k}px;width:${(b[2] - b[0]) / 1000 * vw * k}px;height:${(b[3] - b[1]) / 1000 * vh * k}px">${i ? "" : `<b>${esc(nm)}${x.qty > 1 ? " ×" + x.qty : ""}</b>`}</div>`).join(""); }).join(""); }
+function liveDraw() { if (!lv) return; const r = lv.res, S2 = liveOv.querySelector(".lvsum"), ok = liveOv.querySelector('[data-lv="ok"]'), shot = liveOv.querySelector('[data-lv="shot"]');
+  lvI.hidden = !lv.still; if (lv.still && lvI.src !== lv.still) lvI.src = lv.still;
+  shot.disabled = lv.busy; shot.textContent = lv.busy ? "읽는 중" : lv.still ? "다시 찍기" : "찍기"; shot.className = r ? "b2" : "rd";
+  if (!r) { S2.textContent = ""; ok.hidden = true; liveBoxes(null); return; }
+  const n = r.items.reduce((a, x) => a + x.qty, 0), unk = r.items.filter((x) => !scanFind(x.id)).reduce((a, x) => a + x.qty, 0);
+  S2.textContent = r.items.map((x) => { const f = scanFind(x.id); return (f ? (f.t === "liq" ? short(f.x.n) : f.x.n) : "모르는 상품") + " " + x.qty; }).join(", ");
+  ok.hidden = false; ok.textContent = `${n}개 확인하고 담기` + (unk ? ` (모르는 ${unk}개)` : ""); liveBoxes(r.items, r.w, r.h); }
+async function liveStart() { let stream; try { stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" }, width: { ideal: 1920 }, height: { ideal: 1080 } }, audio: false }); } catch (e) { return scanStart(); } /* 카메라를 못 켜면 예전 사진 방식 */
+  /* 11/19 14:04 본점 패드 사진: 카메라 표시등은 켜졌는데 화면이 검음. 화면이 잘 나오던 13:34 판과 다른 점(2560 요청, 초점 설정 바꾸기)을 모두 원래대로 돌리고, 재생을 직접 시킴 */
+  lv = { stream, busy: false, calls: 0, res: null, still: "" }; lvV.srcObject = stream; liveOv.classList.add("on"); try { const pl = lvV.play(); if (pl && pl.catch) pl.catch(() => {}); } catch (e) {}
+  liveOv.querySelector(".lvver").textContent = "스캔 1119e " + ((stream.getVideoTracks()[0] || {}).label || "").slice(0, 24); setTimeout(() => { if (lv) liveOv.querySelector(".lvver").textContent += " " + lvV.videoWidth + "x" + lvV.videoHeight + (lvV.paused ? " 멈춤" : " 재생"); }, 1500); /* 어느 판인지, 어떤 카메라가 어떤 크기로 켜졌는지 화면 구석에 (원인 볼 때 씀) */ liveSet("라벨이 앞을 보게 나란히 놓고 [찍기]를 눌러 주세요"); liveDraw(); }
+function liveStop() { if (!lv) return; try { lv.stream.getTracks().forEach((t) => t.stop()); } catch (e) {} lvV.srcObject = null; lv = null; lvI.hidden = true; lvI.removeAttribute("src"); liveBoxes(null); liveOv.classList.remove("on"); }
+/* 한 장 잡기: 큰 사진이 되면 그걸로, 안 되면 화면 장면 4장 중 제일 또렷한 것. 긴 쪽 1600 으로 줄여 돌려줌 */
+async function liveGrab() { const out = document.createElement("canvas"), fit = (w, h) => { const k = Math.min(1, 1600 / Math.max(w, h)); out.width = Math.round(w * k); out.height = Math.round(h * k); };
+  let how = "video";
+  /* 11/19 "사진 찍을 때 화면이 검은 화면으로 떠": 카메라의 큰 사진(takePhoto)을 찍는 동안 패드가 미리보기를 끊어 검게 보였음 → 큰 사진은 안 쓰고 화면 장면에서 고름 */
+  fit(lvV.videoWidth, lvV.videoHeight); const cg = out.getContext("2d");
+  const sc = document.createElement("canvas"); sc.width = 160; sc.height = Math.max(1, Math.round(160 * lvV.videoHeight / lvV.videoWidth)); const sg = sc.getContext("2d", { willReadFrequently: true });
+  const sharp = () => { sg.drawImage(lvV, 0, 0, sc.width, sc.height); const d = sg.getImageData(0, 0, sc.width, sc.height).data, w = sc.width; let s = 0; for (let i = 4; i < d.length - 4; i += 4) { if ((i / 4) % w === 0) continue; const a = d[i] + d[i + 1] + d[i + 2], b = d[i - 4] + d[i - 3] + d[i - 2]; s += (a - b) * (a - b); } return s; }; /* 옆 칸과의 밝기 차 제곱 합 = 또렷할수록 큼 */
+  let best = -1; for (let n = 0; n < 4; n++) { const v = sharp(); if (v > best) { best = v; cg.drawImage(lvV, 0, 0, out.width, out.height); } if (n < 3) await new Promise((r) => setTimeout(r, 120)); }
+  return { c: out, how: "video " + lvV.videoWidth + "x" + lvV.videoHeight }; }
+async function liveShot() { const me = lv; if (!me || me.busy) return; if (lvV.readyState < 2 || !lvV.videoWidth) return liveSet("카메라가 아직 준비 중이에요");
+  me.busy = true; me.res = null; me.calls++; liveSet("찍는 중이에요. 그대로 두세요");
+  try { const q = document.createElement("canvas"), qk = Math.min(1, 900 / Math.max(lvV.videoWidth, lvV.videoHeight)); q.width = Math.round(lvV.videoWidth * qk); q.height = Math.round(lvV.videoHeight * qk); q.getContext("2d").drawImage(lvV, 0, 0, q.width, q.height); me.still = q.toDataURL("image/jpeg", 0.7); } catch (e) {} /* 누르자마자 그 장면을 멈춰 보여 줌 (찍혔다는 게 바로 보이게) */
+  liveDraw();
+  try { const g = await liveGrab(); if (lv !== me) return; const img = g.c.toDataURL("image/jpeg", 0.82); me.still = img; liveSet("읽는 중이에요"); liveDraw();
+    try { ev("ls", g.how, String(me.calls)); } catch (e) {} /* 어떤 화질로 찍혔는지 기록 (원인 볼 때 씀) */
+    const cands = [...ALL_LQ.map((x) => ({ id: x.id, n: x.n })), ...GDS.map((x) => ({ id: x.id, n: x.n }))];
+    const r = await fetch(SCAN_URL, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ type: "scan", branch: BRANCH, img: img.split(",")[1], cands }) }), j = await r.json();
+    if (lv !== me) return;
+    if (!j.ok) liveSet(j.error === "limit" ? "오늘은 너무 많이 읽었어요" : "읽지 못했어요. [다시 찍기]를 눌러 주세요");
+    else if (!(j.items || []).length) liveSet("제품이 안 보여요. 라벨이 보이게 놓고 [다시 찍기]를 눌러 주세요");
+    else { me.res = { id: j.scan, img, items: j.items, w: g.c.width, h: g.c.height }; liveSet("읽었어요. 맞으면 빨간 버튼을 눌러 주세요"); }
+  } catch (e) { if (lv === me) liveSet("인터넷을 확인하고 [다시 찍기]를 눌러 주세요"); }
+  finally { me.busy = false; if (lv === me) liveDraw(); } }
+liveOv.addEventListener("click", (e) => { const t = e.target.closest("[data-lv]"); if (!t || !lv) return; const a = t.dataset.lv;
+  if (a === "close") return liveStop();
+  if (a === "shot") { if (lv.still && !lv.busy) { lv.still = ""; lv.res = null; liveSet("라벨이 앞을 보게 나란히 놓고 [찍기]를 눌러 주세요"); return liveDraw(); } return liveShot(); } /* 찍힌 장면이 떠 있으면 먼저 카메라로 돌아감 */
+  if (a === "ok" && lv.res) { const r = lv.res; liveStop(); scanS = { id: r.id, img: r.img, rows: r.items.map((x) => ({ label: x.label, id: scanFind(x.id) ? x.id : "", qty: x.qty, pick: false, q: "" })) }; scanOv.classList.add("on"); scanDraw(); } }); /* 확인 화면을 켜고 그림 */
+
+/* 11/17 액상덕후 "패드도 자동 새로고침": 5분마다 이 화면 파일이 바뀌었는지 보고, 장바구니가 비고 1분 넘게 아무도 안 만질 때만 새로고침 */
+(() => { let base = null, newer = false, lastTouch = Date.now();
+  ["pointerdown", "keydown", "touchstart"].forEach((t) => document.addEventListener(t, () => { lastTouch = Date.now(); }, { capture: true, passive: true }));
+  const hash = (s) => { let h = 5381; for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0; return s.length + ":" + h; };
+  const check = async () => { try { const r = await fetch(location.pathname + "?v=" + Date.now(), { cache: "no-store" }); if (!r.ok) return; const h = hash(await r.text()); if (base === null) base = h; else if (h !== base) newer = true; } catch (e) {} };
+  const calm = () => !cart.size && !document.body.classList.contains("open") && !document.getElementById("payNote") && !scanOv.classList.contains("on") && !liveOv.classList.contains("on") && !(document.getElementById("brp") || {}).classList?.contains("on") && Date.now() - lastTouch > 60000;
+  if (ORDER_CODE) return;
+  check(); setInterval(check, 5 * 60000);
+  setInterval(() => { if (newer && calm()) location.reload(); }, 15000);
+})();
+
 // 오프라인 저장 + 앱 설치 (sw-b.js)
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw-b.js").catch(() => {});
 </script>
+<script>/* 11/17 담기 누르면 사진이 장바구니로 쏙 */
+(() => { const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  document.addEventListener("click", (e) => { const b = e.target.closest(".add"); if (!b || still) return;
+    const card = b.closest(".sr, .it, .card, [data-lid], div"), img = card && card.querySelector("img");
+    const to = document.querySelector(".cart .show") || document.querySelector(".cart"); if (!to) return;
+    const a = (img || b).getBoundingClientRect(), z = to.getBoundingClientRect();
+    const g = document.createElement(img ? "img" : "div");
+    if (img) g.src = img.currentSrc || img.src; else g.textContent = "+";
+    const sz = Math.min(96, Math.max(48, a.width));
+    g.style.cssText = `position:fixed;left:${a.left + a.width / 2 - sz / 2}px;top:${a.top + a.height / 2 - sz / 2}px;width:${sz}px;height:${sz}px;object-fit:contain;border-radius:16px;background:#fff;box-shadow:0 8px 20px rgba(0,0,0,.25);z-index:999;pointer-events:none;will-change:transform,opacity`;
+    document.body.append(g);
+    const dx = z.left + z.width / 2 - (a.left + a.width / 2), dy = z.top + z.height / 2 - (a.top + a.height / 2);
+    const fl = g.animate([{ transform: "translate(0,0) scale(1)", opacity: 1 }, { transform: `translate(${dx * .5}px,${dy * .5 - 80}px) scale(.7)`, opacity: 1, offset: .5 }, { transform: `translate(${dx}px,${dy}px) scale(.18)`, opacity: .3 }], { duration: 520, easing: "cubic-bezier(.5,0,.75,0)" });
+    fl.onfinish = () => { g.remove(); to.animate([{ transform: "scale(1)" }, { transform: "scale(1.12)" }, { transform: "scale(1)" }], { duration: 260, easing: "cubic-bezier(.2,.8,.2,1)" }); };
+  }, true);
+})();
+/* 11/17 가로 줄은 손가락 말고 마우스로도 넘기기 (휠, 끌기) */
+(() => { let d = null, eat = 0;
+  document.addEventListener("wheel", (e) => { const r = e.target.closest(".hzrow"); if (!r || Math.abs(e.deltaX) > Math.abs(e.deltaY)) return; e.preventDefault(); r.scrollLeft += e.deltaY; }, { passive: false });
+  document.addEventListener("pointerdown", (e) => { if (e.pointerType !== "mouse") return; const r = e.target.closest(".hzrow"); if (!r) return; d = { r, x: e.clientX, s: r.scrollLeft, moved: false }; });
+  addEventListener("pointermove", (e) => { if (!d) return; const dx = e.clientX - d.x; if (!d.moved && Math.abs(dx) < 6) return; d.moved = true; d.r.classList.add("drag"); d.r.scrollLeft = d.s - dx; });
+  addEventListener("pointerup", () => { if (d && d.moved) eat = Date.now(); if (d) d.r.classList.remove("drag"); d = null; });
+  addEventListener("click", (e) => { if (Date.now() - eat < 300 && e.target.closest(".hzrow")) { e.stopPropagation(); e.preventDefault(); } }, true);
+})();</script>
 </body>
 </html>
