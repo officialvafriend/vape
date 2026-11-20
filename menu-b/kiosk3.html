@@ -606,11 +606,14 @@ body[data-scr="hello"] .sp2 > .L.mid::after{background-image:url(kiosk3_img/char
 .myg{margin-top:16px}.myg .hero.sm{height:200px!important}.myg.sm{grid-template-columns:repeat(5,1fr)!important;gap:10px!important}.myg.sm .hero.sm{height:120px!important}.myg.sm b{font-size:19px!important}.myg small{font-size:15px;color:var(--g2)}
 .dev3{align-items:center!important;padding:8px 18px 8px 10px!important}.dev3 img{width:76px;height:64px;object-fit:contain;flex:none}.dev3 b{font-size:26px!important}
 .cbox b{text-align:center;line-height:1.15}
+.brg{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.brg button{height:84px;border-radius:var(--r2);background:var(--card);border:3px solid transparent;font-size:26px;font-weight:800;box-shadow:var(--sh)}
+.brg button.on{border-color:var(--ink)}
 </style>
 </head>
 <body>
 <div id="app">
-  <header><span class="logo">VF</span><div class="steps" id="steps"></div><button class="home" id="sayBtn">멘트 켬</button><button class="home" id="sndBtn">소리 켬</button><button class="home" id="homeBtn">처음으로</button></header>
+  <header><span class="logo">VF</span><div class="steps" id="steps"></div><button class="home" id="brBtn">지점</button><button class="home" id="sayBtn">멘트 켬</button><button class="home" id="sndBtn">소리 켬</button><button class="home" id="homeBtn">처음으로</button></header>
   <div id="say3"></div>
   <main id="main"></main>
   <footer id="foot"></footer>
@@ -1045,7 +1048,7 @@ function draw() { if (!D) return; const i = S.path.indexOf(S.step), inPath = i >
   const ln = liqN(), TT = TIER(), hit = (LN < TT.b && ln >= TT.b) ? TT.b : (LN < 5 && ln >= 5) ? 5 : 0; NEWB = ln > LN; LN = ln; const dealHit = DEAL && !LD; LD = DEAL;
   const dsets = (CT.gp || []).filter((x) => x[2] && x[1]).map(([ek, n, [buy, free, label]]) => [ek === "DSP-AIRX" ? (n >= buy ? 1 : 0) : Math.floor(n / (buy + free)), ((ek.split("|")[1] || (ek === "DSP-AIRX" ? "에어릭스" : "")) + " " + label).trim()]), dsum = dsets.reduce((a, x) => a + x[0], 0), dspHit = dsum > LDS ? (dsets.find((x) => x[0]) || [0, ""])[1] : ""; LDS = dsum;
   $('steps').innerHTML = inPath ? S.path.map((p, j) => `<button data-step="${p}" class="${j === i ? "on" : j < i ? "done" : ""}"><i>${j < i ? "✓" : j + 1}</i>${LABEL[p]}</button>`).join("") : `<span class="br">${esc(D.branch)}</span>`;
-  $('homeBtn').style.display = S.step === "start" ? "none" : "";
+  $('homeBtn').style.display = S.step === "start" ? "none" : ""; $('brBtn').style.display = S.step === "start" ? "" : "none"; $('brBtn').textContent = D.branch + " 지점 바꾸기";
   const key = S.step + (S.step === "quiz" ? S.qz.i : S.step === "pick" ? (S.res ? "r" + S.vp : "w") : S.step === "hello" ? (S.mem || {}).s : "");
   const m = $('main'), same = key === lastKey, sc = same ? [...m.querySelectorAll('[data-sc]')].map((e) => e.scrollTop) : [];
   const keep = document.activeElement && document.activeElement.id; m.innerHTML = V[S.step]();
@@ -1125,6 +1128,11 @@ function openNudge(n, T, goal) { S.sp = null; $('sheet').classList.remove('wide'
 function openPodNudge() { S.sp = null; $('sheet').classList.remove('wide');
   $('shb').innerHTML = `${sayIn("_podnudge")}<div class="ndg"><img src="kiosk3_img/char_rec.png" alt=""><h3>팟은 <em>한 팩</em> 챙겨 가실래요?</h3><p>7~8일에 한 번 바꿔 주는 소모품이에요</p></div>`;
   $('shf').innerHTML = `<div class="vf" style="grid-template-columns:1fr 1fr"><button class="add line" data-gonext="1">괜찮아요</button><button class="add" data-closesp="1">팟 골라 볼게요</button></div>`; document.body.classList.add('sp'); }
+/* 지점 고르기 (11/20): 첫 화면 위 "OO 지점 바꾸기". 고르면 그 지점 자료로 다시 엶. 손님을 받는 중에는 안 보임 */
+const BRANCHES = ["본점", "동성로", "율하", "수성", "반월당", "상인", "광장코아", "현풍", "동성로2"];
+function openBranch() { S.sp = null; $('sheet').classList.remove('wide');
+  $('shb').innerHTML = `<h3>어느 지점에서 쓰시나요?</h3><div class="brg">${BRANCHES.map((b) => `<button data-setb="${b}" class="${b === D.branch ? "on" : ""}">${b}</button>`).join("")}</div><p style="font-size:18px;color:var(--g1);margin-top:14px">고르면 그 지점의 재고와 가격으로 다시 열려요</p>`;
+  $('shf').innerHTML = `<button class="add line" data-closesp="1">닫기</button>`; document.body.classList.add('sp'); }
 function openCmp() { S.sp = null; S.cmpOpen = true; $('sheet').classList.add('wide');
   $('shb').innerHTML = `${sayIn("_cmp")}<h3>고민되는 기기 두 개를 눌러 주세요</h3><div class="cmpg">${Object.keys(DSPEC).map((n) => D.dev.find((y) => y.n === n)).filter(Boolean).map((d) => `<button data-cmp="${esc(d.n)}" class="${S.cmp.includes(d.n) ? "on" : ""}"><span class="hero sm">${d.img ? `<img src="${d.img}" alt="">` : ""}</span><b>${esc(d.n)}</b><small>${won(d.price)}</small></button>`).join("")}</div>`;
   $('shf').innerHTML = `<button class="add line" data-closesp="1">닫기</button>`; document.body.classList.add('sp'); }
@@ -1162,6 +1170,8 @@ document.addEventListener('click', (e) => { const t = e.target, c = (s) => t.clo
   if (c('[data-tabx]')) return tabClose();
   if (b = c('[data-tab]')) return tabGo(+b.dataset.tab);
   if (c('[data-tabnew]')) return tabNew();
+  if (c('#brBtn')) return openBranch();
+  if (b = c('[data-setb]')) { try { localStorage.setItem("vf-menu-branch", b.dataset.setb); } catch (er) {} location.href = location.pathname; return; }
   if (c('#sayBtn')) { SAYON = !SAYON; try { localStorage.setItem("vf-kiosk-say", SAYON ? "1" : "0"); } catch (er) {} return draw(); }
   if (c('[data-cmpopen]')) { S.cmp = []; return openCmp(); }
   if (b = c('[data-vswith]')) { S.cmp = [S.sp, b.dataset.vswith]; S.cmpWant = ""; return openVs(); }
