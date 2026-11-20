@@ -651,6 +651,12 @@ body.xmas .plb::after,body.xmas .band::before{content:none}
 body.xmas .bub::before{content:"";position:absolute;right:-18px;top:-26px;width:56px;height:62px;background:url(kiosk3_img/x_cane.png) center / contain no-repeat;transform:rotate(18deg)}
 body.xmas .gbots i.on{filter:none}
 @media (prefers-reduced-motion: reduce){#snow i,#lights i{animation:none}}
+/* 기획전이 네 개라 한 화면에 다 보이게 두 줄 두 칸 (11/20) */
+.plg{grid-template-columns:1fr 1fr;gap:12px!important;margin-top:12px!important}
+.plg button{flex-direction:column;align-items:stretch!important;gap:8px!important;padding:12px 14px 12px!important}
+.plg .pth{width:100%!important;height:92px!important}.plg .pth img{height:80px!important}
+.plg .ptx b{font-size:23px!important;margin:4px 0 0!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.plg .ptx small{font-size:16px!important;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.plg .arr{display:none}
 </style>
 </head>
 <body>
@@ -700,8 +706,8 @@ $('eng').onload = () => { const w = $('eng').contentWindow; E = (code) => w.eval
    6~9병일 때만 한 병 값(15,000)을 100원으로 바꿈. 기기를 같이 사면 기기패키지 값이 따로 있어서 적용 안 함. 11병은 원래 11병 값 그대로 ── */
 const DEAL_ADD = 100;
 let DEAL = false, LD = false;
-const poolIds = () => PLAN_SETS.flatMap((P) => P[3]).map((n) => (D.liq.find((x) => x.n === n) || {}).id).filter(Boolean);
-const setDone = () => PLAN_SETS.some((P) => P[3].every((n) => { const x = D.liq.find((y) => y.n === n); return x && CQ.get(x.id); }));
+const poolIds = () => [...new Set(PLAN_SETS.flatMap((P) => planItems(P).map((x) => x.id)))];
+const setDone = () => PLAN_SETS.some((P) => { const it = planItems(P); return it.length >= 5 && it.every((x) => CQ.get(x.id)); });
 const dealWant = () => { if (!D) return false; const n = liqN(); return !devInCart().length && n >= 6 && n <= 9 && setDone() && poolIds().reduce((a, id) => a + (CQ.get(id) || 0), 0) >= 6; };
 function dealHook() { try { E(`if (!window.__dealHooked) { window.__dealHooked = 1; window.__deal51 = false; estimate = ((o) => function (c) { const e = o(c), n = (c.v || 0) + (c.p || 0); if (window.__deal51 && !c.dev && n >= 6 && n <= 9) { e.total -= ${ONE - DEAL_ADD}; e.how = "5+1 기획전"; } return e; })(estimate);
     staffView = ((o) => function () { const r = o.apply(this, arguments); try { const c = countCart(), n = (c.v || 0) + (c.p || 0); if (window.__deal51 && !c.dev && n >= 6 && n <= 9) { const L = document.getElementById("lines"), nm = Object.keys(POS[BRANCH] || {}).find((k) => k.includes("49,600") && k.includes("6병")), p = nm && posOf(nm), old = posOf(posBundle("p5")), b = old && [...L.querySelectorAll(".scan")].find((el) => el.dataset.code === old[1]);
@@ -820,11 +826,15 @@ const sayIn = (k) => SAYON && SAY[k] ? `<div class="sayin"><i>직원 멘트</i>$
    고른 기준: 11/20 15:38 본점 포스 재고가 많은 (한) 제품.
    얌 알로에 322, 얌 포도 317, 얌멘솔 255, 얌 복숭아 239, 얌 레몬 123 / 아이스샷 229, 트리플라임 148, 레드포카리 121, 와 블루레몬 110, 블루스카이 76.
    재고가 바뀌면 아래 이름만 바꾸면 됨. 품절된 맛은 화면에서 저절로 빠짐 ── */
+/* 11/20 추가: 빌런(과일멘솔), 릭(노멘솔 과일)도 5+1. 이 둘은 이름 목록 대신 "지금 재고 있는 맛 가운데 이 지점에서 많이 나간 순서로 5개"를 그때그때 고름 */
 const PLAN_SETS = [
+  ["villain", "과일멘솔 인기액상 빌런 5+1", "시원한 과일 맛, 가장 많이 찾는 5가지", /^VF 빌런 /],
+  ["lick", "노멘솔 과일 인기액상 릭 5+1", "멘솔 없는 과일 맛, 가장 많이 찾는 5가지", /^VF 릭 /],
   ["yam", "얌 5+1 기획전", "알로에, 포도, 멘솔, 복숭아, 레몬", ["(한) 얌 알로에", "(한) 얌 포도", "(한) 얌멘솔", "(한) 얌 복숭아", "(한) 얌 레몬"]],
   ["cool", "갈증해소 5+1 기획전", "라임, 레몬, 포카리, 시원한 멘솔", ["(한) 아이스샷", "(한) 트리플라임", "(한) 레드포카리", "(한) 와 블루레몬", "(한) 블루스카이"]],
 ];
-const PLANS = () => PLAN_SETS.map(([k, t, sub, names]) => ({ k, t, sub, items: names.map((n) => D.liq.find((x) => x.n === n)).filter((x) => x && !x.out) })).filter((P) => P.items.length);
+const planItems = (P) => { if (Array.isArray(P[3])) return P[3].map((n) => D.liq.find((x) => x.n === n)).filter((x) => x && !x.out); const rk = rankMap("liq"); return D.liq.filter((x) => !x.out && P[3].test(x.n)).sort((a, b) => (rk.get(a.id) || 99) - (rk.get(b.id) || 99) || (a.no || 1e4) - (b.no || 1e4)).slice(0, 5); };
+const PLANS = () => PLAN_SETS.map((P) => ({ k: P[0], t: P[1], sub: P[2], items: planItems(P) })).filter((P) => P.items.length);
 
 /* ── 달 패키지 (3판 11/20, 값과 서비스는 클로드 제안안이고 아직 확정 전. 근거 문서는 따로 있음).
    11/20 액상덕후 "왜 저렇게 쌈?" + "한 달 5병쯤 맞아": 한 달 5병에 딱 맞춰 5병 묶음을 달 수만큼. 5병 49,500 / 10병 99,000 / 15병 148,500 (정식 계산도 같은 값). 팟은 정가. 이득은 서비스 고르기로.
@@ -941,7 +951,7 @@ const V = {
   plan: () => { const L = PLANS(), P = L.find((y) => y.k === S.plan), T = TIER(), rk = rankMap("liq"), d51 = !T.dev, deal = d51 ? `5+1 ${won(T.pa + DEAL_ADD)}` : `5병 ${won(T.pa)}, ${pct(5 * ONE, T.pa)}% 할인`, dsub = d51 ? `5병 ${won(T.pa)} + 1병 ${DEAL_ADD}원` : "";
     if (!P) return split(`<div class="q s">기획전</div><div class="qs" style="margin-top:4px">${d51 ? "5병을 담으면 1병을 100원에 더 드려요" : "5병을 한 번에 담는 구성이에요"}. 하나를 눌러 주세요</div>
       <div class="plg">${L.map((y) => `<button data-plan="${y.k}"><span class="pth">${y.items.slice(0, 5).map((x) => x.img ? `<img src="${x.img}" alt="">` : "").join("")}</span><span class="ptx"><i>${deal}</i><b>${esc(y.t)}</b><small>${esc(y.sub)}</small></span><span class="arr">›</span></button>`).join("")}</div>`, cartPanel(), "shop");
-    const left = P.items.filter((x) => !CQ.get(x.id)), full = !left.length, n = liqN(), pool = poolIds().map((id) => D.liq.find((x) => x.id === id)).filter((x) => x && !x.out);
+    const left = P.items.filter((x) => !CQ.get(x.id)), full = !left.length, n = liqN(), pool = [...P.items, ...poolIds().map((id) => D.liq.find((x) => x.id === id)).filter((x) => x && !x.out && !P.items.includes(x))].slice(0, 10); /* 고르던 기획전 맛을 앞에, 열 개까지만 */
     const head = `<div class="plh"><img src="kiosk3_img/${DEAL ? "char_yay" : "char_rec"}.png" alt=""><div><i>${deal}</i><b>${esc(P.t)}</b><small>${esc(dsub || P.sub)}</small></div>${left.length ? `<button class="add" data-planall="${P.k}">${left.length === P.items.length ? `${P.items.length}병 한 번에 담기` : `남은 ${left.length}병 담기`}</button>` : ""}</div>`;
     /* 5병이 다 차면 바로 아래에 "100원에 1병 더"만 크게 보여 줌. 고르면 5+1 완성 */
     const plus = d51 && full && !DEAL && n === 5 ? `<div class="p1"><b>이제 <em>100원</em>에 1병 더 고르세요</b><div class="p1g">${pool.map((x) => `<button data-add="liq:${x.id}:1"><span style="${x.tint ? "background:" + x.tint : ""}">${x.img ? `<img src="${x.img}" alt="">` : ""}</span>${esc(x.s.replace(/^\(한\)\s*/, ""))}<i>100원</i></button>`).join("")}</div></div>` : "";
