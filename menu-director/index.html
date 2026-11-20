@@ -939,6 +939,57 @@ body{background:#fff;color:#222}
 .kpr{margin-top:6px;font:800 18px var(--kr)}
 .kp small{font-size:12px;color:#8a8a8a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .kfoot{margin:70px 0 40px;padding-top:24px;border-top:1px solid var(--line);font-size:15px;color:#8a8a8a}.kfoot b{color:#222;font-style:italic;font-weight:900}
+/* ---------- 깔끔한 태블릿 메뉴판 ---------- */
+#app:has(.ch){padding:0!important}
+.ch{flex-direction:row;height:100%;background:#fff}
+.cside{flex:none;width:104px;height:100%;background:#b8935f;display:flex;flex-direction:column;overflow-y:auto;scrollbar-width:none}
+.cside::-webkit-scrollbar{display:none}
+.cside button{flex:none;height:84px;border:0;border-bottom:1px solid rgba(255,255,255,.2);background:none;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;font:600 13px var(--kr);transition:background .2s}
+.cside button svg{width:30px;height:30px;fill:none;stroke:#fff;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.cside button.on{background:#8d6a3d}
+.cside button:active{background:#a07d4e}
+.cside .cfill{flex:1;min-height:20px}
+.cside .tl{height:70px;border-bottom:0;border-top:1px solid rgba(255,255,255,.2);font-size:12px}.cside .tl svg{width:24px;height:24px}
+.cmain{flex:1;min-width:0;height:100%;overflow-y:auto;text-align:left;padding:30px 44px 130px;scrollbar-width:thin}
+.chd{display:flex;align-items:flex-start;gap:16px;margin-bottom:34px}
+.chd>div{flex:1;min-width:0;text-align:left}
+.chd h2{font:normal 22px var(--jal);letter-spacing:.06em;color:#222}
+.chd p{margin-top:6px;font-size:15px;color:#9a9a9a}
+.cmem{flex:none;height:42px;padding:0 16px;border:1px solid #ddd;border-radius:21px;background:#fff;font:600 15px var(--kr);color:#444}
+.cmem.on{border-color:#b8935f;color:#8d6a3d}
+.cbrand{flex:none;height:42px;display:flex;align-items:center;font:italic 900 22px var(--kr);color:#b8935f;letter-spacing:-.01em}
+.cgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:30px 22px;padding-bottom:40px}
+.cgrid>:nth-child(5n+2),.cgrid>:nth-child(5n+4){transform:translateY(40px)}
+.ci{border:0;background:none;display:flex;flex-direction:column;align-items:center;text-align:center;gap:4px;color:#333;min-width:0}
+.cim{position:relative;width:100%;max-width:160px;aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;margin-bottom:8px}
+.cim img{width:100%;height:100%;object-fit:contain;mix-blend-mode:multiply;transition:transform .25s}
+.cim.dev img{padding:8px}
+.cim i{font-style:normal;font-size:56px;width:78%;aspect-ratio:1/1;border-radius:50%;background:#f7f3ee;display:flex;align-items:center;justify-content:center}
+.ci:active .cim img{transform:scale(.94)}
+.ci.on .cim{animation:pop .45s}
+.ci.on .cim::after{content:'+1';position:absolute;right:6%;top:2%;padding:2px 9px;border-radius:999px;background:#b8935f;color:#fff;font:800 14px var(--kr);animation:cup .9s forwards}
+@keyframes cup{0%{opacity:0;transform:translateY(8px)}25%{opacity:1;transform:none}100%{opacity:0;transform:translateY(-18px)}}
+.cev{position:absolute;left:4%;bottom:6%;padding:2px 7px;border-radius:6px;background:#c0392b;color:#fff;font:800 12px var(--kr);font-style:normal}
+.ci b{font:500 16px/1.35 var(--kr);color:#333;max-width:100%;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.ci>span:last-child{font:600 14px var(--kr);color:#777}.ci small{font-size:12px;color:#b8935f}
+.cnote{margin:6px 0 26px;padding:14px 18px;border-left:4px solid #b8935f;background:#faf7f2;font-size:16px;color:#555}.cnote b{color:#222}.cnote small{display:block;margin-top:4px;color:#999}
+.cmore{display:block;margin:20px auto 10px;padding:12px 22px;border:1px solid #ddd;border-radius:24px;background:#fff;font:600 16px var(--kr);color:#555}
+.cguide{display:grid;grid-template-columns:repeat(2,1fr);gap:0 40px}
+.cg{display:flex;align-items:center;gap:18px;padding:20px 4px;border:0;border-bottom:1px solid #eee;background:none;text-align:left;color:#222}
+.cg i{flex:none;width:58px;height:58px;border-radius:50%;background:#f7f3ee;font-style:normal;font-size:28px;display:flex;align-items:center;justify-content:center}
+.cg span{flex:1;display:flex;flex-direction:column;gap:4px}.cg b{font:500 20px var(--kr)}.cg small{font-size:14px;color:#999}
+.cg u{text-decoration:none;font-size:26px;color:#ccc}
+.cg:active{background:#faf7f2}
+.cpill{position:fixed;right:28px;bottom:24px;z-index:8;height:58px;padding:0 24px;border:0;border-radius:29px;background:#222;color:#fff;font:600 18px var(--kr);box-shadow:0 10px 26px rgba(0,0,0,.25)}
+.cpill b{color:#e8c48f}.cpill u{text-decoration:none;margin-left:8px;color:#e8c48f}
+.cpill.bump{animation:pop .4s}
+body:not(.land) .cside{width:92px}
+body:not(.land) .cmain{padding:26px 26px 130px}
+body:not(.land) .cgrid{grid-template-columns:repeat(3,1fr)}
+body:not(.land) .cgrid>:nth-child(n){transform:none}
+body:not(.land) .cgrid>:nth-child(3n+2){transform:translateY(36px)}
+body:not(.land) .cguide{grid-template-columns:1fr}
+body:not(.land) .cbrand{display:none}
 /* 세로 화면 */
 body:not(.land) .kwrap{padding:0 24px}
 body:not(.land) .knav{gap:20px}body:not(.land) .knav>button{font-size:20px}
@@ -2185,9 +2236,68 @@ setInterval(function(){ if (document.hidden || state.view!=='home' || Date.now()
 (function(){ var x0=null; document.addEventListener('pointerdown',function(e){ x0=e.target.closest&&e.target.closest('.khero')?e.clientX:null; });
   document.addEventListener('pointerup',function(e){ if(x0==null) return; var dx=e.clientX-x0; x0=null; if(Math.abs(dx)>50){ state.kswT=Date.now(); kSlide(dx<0?1:-1); } }); })();
 
+/* ---------- 11/20 깔끔한 태블릿 메뉴판: 왼쪽 세로 아이콘 메뉴 + 흰 바탕에 상품 사진만 둥둥 (크림 버전은 ?ui=kream) ---------- */
+var UI_KREAM = /[?&]ui=kream/.test(location.search);
+var CI = {
+  menu:'<path d="M4 7h16M4 12h16M4 17h16"/>',
+  mtl:'<path d="M12 3c3 4 6 7.5 6 11a6 6 0 0 1-12 0c0-3.5 3-7 6-11z"/>',
+  dl:'<path d="M7 18h10a4 4 0 0 0 .6-7.95A6 6 0 0 0 6.2 9.6 4.2 4.2 0 0 0 7 18z"/>',
+  dev:'<rect x="8" y="3" width="8" height="18" rx="2.5"/><path d="M11 17h2"/>',
+  pod:'<path d="M9 3h6v4l2 2v10a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V9l2-2z"/><path d="M9 7h6"/>',
+  evt:'<path d="M4 10h16v10H4zM3 7h18v3H3zM12 7v13M12 7C10 3 6 4 8 7M12 7c2-4 6-3 4 0"/>',
+  dsp:'<rect x="3" y="10" width="18" height="4" rx="1"/><path d="M16 10v4M19 7c0-2 2-2 2-4"/>',
+  star:'<path d="M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.6l-5.3 2.8 1.2-6-4.5-4.1 6-.7z"/>',
+  bell:'<path d="M6 16v-5a6 6 0 0 1 12 0v5l2 2H4zM10 20a2 2 0 0 0 4 0"/>',
+  memo:'<path d="M5 4h10l4 4v12H5zM15 4v4h4M9 12h6M9 16h6"/>',
+  help:'<circle cx="12" cy="7" r="3.2"/><path d="M5 21c0-4 3-7 7-7s7 3 7 7"/>'
+};
+function cIc(k){ return '<svg viewBox="0 0 24 24" aria-hidden="true">'+CI[k]+'</svg>'; }
+var CTABS = [['menu','상담'],['mtl','입호흡'],['dl','폐호흡'],['dev','기기'],['pod','코일·팟'],['evt','이벤트'],['dsp','일회용']];
+var CTOOLS = [['star','도장','kgo','stamp'],['bell','예약알림','resv'],['memo','회원메모','memo'],['help','직원 도움','help']];
+function cLiq(x){ var im=kImg(x), sold=RANK[x.n]||0;
+  return '<button class="ci" data-act="cadd" data-id="'+esc(x.id||'')+'"><span class="cim">'+(im?'<img loading="lazy" src="'+esc(im)+'" alt="" onerror="this.outerHTML=\'<i>💧</i>\'">':'<i>💧</i>')+(isE(x)?'<em class="cev">5+1</em>':'')+'</span>'+
+    '<b>'+esc(x.dn||x.n)+'</b><span>'+(PRICE[x.line]?won(PRICE[x.line]):'')+(sold?' · <small>'+sold+'병 팔림</small>':'')+'</span></button>'; }
+function cGood(g, em){ var x=GITEMS()[g.id]||{}, im=x.src||'';
+  return '<button class="ci" data-act="cadd" data-id="'+esc(g.id)+'"><span class="cim">'+(im?'<img loading="lazy" src="'+esc(im)+'" alt="" onerror="this.outerHTML=\'<i>'+em+'</i>\'">':'<i>'+em+'</i>')+(g.ev?'<em class="cev">'+esc(g.ev)+'</em>':'')+'</span>'+
+    '<b>'+esc(x.dn||g.n)+'</b><span>'+won(g.price)+'</span></button>'; }
+function cBody(t){
+  var more=function(txt,act,v){ return '<button class="cmore" data-act="'+act+'"'+(v?' data-v="'+v+'"':'')+'>'+txt+' ›</button>'; };
+  if (t==='menu') {
+    var G=[['👋','처음 오셨나요?','1분이면 나한테 맞는 기기·액상 추천','new'],['🗺️','직접 골라 볼래요','맛이랑 멘솔로 찾기','mtl'],['🙌','직원이 골라 줘요','직원이 바로 와서 추천','staff'],
+      ['🔁','전에 피던 거랑 비슷하게','비슷한 맛 찾기','like'],['🧪','맛 섞어 보기','끌어다 놓고 조합 실험','mix'],['💸','가장 저렴하게 사는 법','패키지로 최대 75,000원 아껴요','cheap'],
+      ['❤️','빨강이 감성 추천','기분 따라 골라 줘요','ftF'],['🖤','까망이 가성비 추천','가격·판매량으로 딱','ftT'],['🚨','기기가 이상해요','탄 맛, 액상 샘, 전원 문제','fix'],['🗂️','전체 보기','액상 · 기기 · 팟 · 일회용 전부','all']];
+    return '<div class="cguide">'+G.map(function(o){ return '<button class="cg" data-act="kgo" data-v="'+o[3]+'"><i>'+o[0]+'</i><span><b>'+o[1]+'</b><small>'+o[2]+'</small></span><u>›</u></button>'; }).join('')+'</div>';
+  }
+  if (t==='mtl') { var L=byRank(LIQ.filter(function(x){return kImg(x)})); return '<div class="cgrid">'+L.slice(0,40).map(cLiq).join('')+'</div>'+more('입호흡 액상 '+LIQ.length+'개 전부 보기','kgo','all'); }
+  if (t==='dl') return '<div class="cgrid">'+byRank(LUNGL).map(cLiq).join('')+'</div>';
+  if (t==='dev') return '<div class="cgrid">'+MODELS.map(function(M,i){ return '<button class="ci" data-act="mpick" data-i="'+i+'"><span class="cim dev">'+(M.img?'<img loading="lazy" src="'+esc(M.img)+'" alt="" onerror="this.outerHTML=\'<i>📱</i>\'">':'<i>📱</i>')+'</span><b>'+esc(M.dn)+'</b><span>'+won(M.price)+'</span></button>'; }).join('')+'</div>';
+  if (t==='pod') { var P=GSRC.filter(function(g){return g.c==='pod'&&g.sub==='팟·코일'}); return more('쓰시는 기기에 맞는 팟 찾기','kgo','pod')+'<div class="cgrid">'+P.slice(0,60).map(function(g){return cGood(g,'🔧')}).join('')+'</div>'; }
+  if (t==='dsp') { var D=GSRC.filter(function(g){return g.c==='dsp'}); return '<div class="cgrid">'+D.slice(0,60).map(function(g){return cGood(g,'🚬')}).join('')+'</div>'+(D.length>60?more('일회용 '+D.length+'개 전부 보기','kgo','all'):''); }
+  if (t==='evt') { var E=byRank(LIQ.filter(isE)), DE=GSRC.filter(function(g){return g.c==='dsp'&&g.ev});
+    return '<div class="cnote"><b>빌런 · 릭 · 제이코리아</b> 5병 사면 1병 더 · 6병 49,600원 <small>(세 브랜드끼리 섞어도 돼요 · 30+1 220,100원 · 50+3 360,300원)</small></div>'+
+      '<div class="cgrid">'+E.map(cLiq).join('')+'</div>'+(DE.length?'<div class="cnote"><b>일회용 이벤트</b> 3+1 · 5+1 · 10+5</div><div class="cgrid">'+DE.slice(0,30).map(function(g){return cGood(g,'🚬')}).join('')+'</div>':''); }
+  return '';
+}
+function cPill(){ var n=cartN(); return n?'<button class="cpill" data-act="kcart">🛍️ 담은 것 <b>'+n+'</b>개 · '+won(cartSum().pay)+' <u>보기 ›</u></button>':''; }
+function cHome(){
+  var t=state.ct||'mtl', T={menu:['상담 메뉴','어떻게 도와드릴까요? 골라 주세요'],mtl:['입호흡 액상 메뉴','이번 주 우리 매장에서 많이 나간 순서 · 누르면 담겨요'],dl:['폐호흡 액상 메뉴','3병 40,000원 · 맛 섞어도 돼요'],
+    dev:['기기 메뉴','누르면 색상 · 액상 패키지 · 팟을 골라 조합해요'],pod:['코일 · 팟 메뉴','누르면 담겨요'],evt:['이벤트','지금 하는 행사 상품이에요'],dsp:['일회용 메뉴','누르면 담겨요']}[t];
+  var M0=state.member, rec=M0?(stampRec(M0.phone)||{stamps:0}):null;
+  return '<div class="pane ch"><nav class="cside">'+
+      CTABS.map(function(o){ return '<button class="'+(o[0]===t?'on':'')+'" data-act="ctab" data-v="'+o[0]+'">'+cIc(o[0])+'<span>'+o[1]+'</span></button>'; }).join('')+
+      '<span class="cfill"></span>'+
+      CTOOLS.map(function(o){ return '<button class="tl" data-act="'+o[2]+'"'+(o[3]?' data-v="'+o[3]+'"':'')+'>'+cIc(o[0])+'<span>'+o[1]+'</span></button>'; }).join('')+
+    '</nav><main class="cmain">'+
+      '<header class="chd"><div><h2>'+T[0]+'</h2><p>'+T[1]+'</p></div>'+
+        '<button class="cmem'+(M0?' on':'')+'" data-act="'+(M0?'stview':'mem-old')+'">'+(M0?'👤 '+esc(maskName(M0.name||rec.name))+' 님 · 🟡 '+(rec.stamps||0):'👤 회원 조회')+'</button>'+
+        '<span class="brand cbrand">VAFRIEND</span></header>'+
+      cBody(t)+
+    '</main><div id="cpillw">'+cPill()+'</div></div>';
+}
+
 function render(){
   var v=state.view, h='';
-  if (v==='home') h = kHome();
+  if (v==='home') h = UI_KREAM ? kHome() : cHome();
   else if (v==='mem') h = ask({title:'회원등록',step:1,total:3,h:'회원이신가요? 🙂',p:'회원이면 구매할 때마다 적립돼요.', opts:[
     {e:'🆕',t:'처음이에요, 회원등록하기',d:'1분이면 끝나요',act:'mem-new'},
     {e:'📱',t:'회원이에요, 번호로 찾기',d:'휴대폰 번호만 넣어 주세요',act:'mem-old'}]});
@@ -2288,6 +2398,8 @@ document.getElementById('app').addEventListener('click',function(e){
   var b=e.target.closest('[data-act]'); if(!b) return;
   var a=b.dataset.act, i=+b.dataset.i;
   function on(next){ b.classList.add('on'); setTimeout(function(){go(next)},150); }
+  if (a==='ctab') { state.ct=b.dataset.v; render(); var cm=document.querySelector('.cmain'); if(cm) cm.scrollTop=0; return; }
+  if (a==='cadd') { cartAdd(b.dataset.id, null); var pw=document.getElementById('cpillw'); if(pw){ pw.innerHTML=cPill(); var pl=pw.firstChild; if(pl) pl.classList.add('bump'); } b.classList.remove('on'); void b.offsetWidth; b.classList.add('on'); return; }
   if (a==='ksl') { kSlide(+b.dataset.d); return; }
   if (a==='kcart') { if (!cartN()) return toast('🛍️ 아직 담은 게 없어요 · 상품을 눌러 담아 보세요'); return go('cart'); }
   if (a==='kadd') { cartAdd(b.dataset.id, null); var kb=document.querySelector('.kcart'); if(kb){ var ki=kb.querySelector('i')||kb.appendChild(document.createElement('i')); ki.textContent=cartN(); kb.classList.remove('bump'); void kb.offsetWidth; kb.classList.add('bump'); } b.classList.add('on'); setTimeout(function(){b.classList.remove('on')},500); return; }
