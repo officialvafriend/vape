@@ -491,9 +491,24 @@ async function tryLogin() {
   BOOTING = false; safeRender();
 }
 async function reload(quiet) {
-  try { const before = D && D.at; RAW = await fetchEnc(); D = await decrypt(RAW, KEY); if (!draft && !$("#dim").classList.contains("on")) render(); if (!quiet) { const hm = String(D.at || "").slice(-5), age = Math.round((Date.now() - Date.parse(`${D.d}T${hm}:00+09:00`)) / 60e3); if (D.at !== before) toast(`새로 불러왔어요 (${hm} 자료)`); else if (age > 45) toast(`${hm} 뒤로 새 자료가 없어요. 더보기 > 사무실에서 봇 상태를 봐 주세요`, 6000); else toast(`아직 새 자료가 없어요, 마지막은 ${hm}. 매출은 30분마다, 보고는 오면 바로 바뀌어요`, 6000); } }
+  try { const before = D && D.at; RAW = await fetchEnc(); D = await decrypt(RAW, KEY); stkApply(); stkLoad(); if (!draft && !$("#dim").classList.contains("on")) render(); if (!quiet) { const hm = String(D.at || "").slice(-5), age = Math.round((Date.now() - Date.parse(`${D.d}T${hm}:00+09:00`)) / 60e3); if (D.at !== before) toast(`새로 불러왔어요 (${hm} 자료)`); else if (age > 45) toast(`${hm} 뒤로 새 자료가 없어요. 더보기 > 사무실에서 봇 상태를 봐 주세요`, 6000); else toast(`아직 새 자료가 없어요, 마지막은 ${hm}. 매출은 30분마다, 보고는 오면 바로 바뀌어요`, 6000); } }
   catch (e) { if (!quiet) toast("불러오지 못했어요"); }
 }
+
+/* 11/20 액상덕후 "왜 관리자웹에 재고보고가 바로 채워지지 않은건지": 큰 자료는 깃허브 페이지 사본이라 5~10분 늦음. 재고보고 표만 운영봇이 중계(보내기 중계와 같은 곳, 관리자 열쇠로 잠김)로 바로 넘긴 걸 1분마다 읽어 지점별로 더 새 보고를 끼워 넣음. 중계가 비면 원래 자료 그대로 */
+const STK_URL = "https://script.google.com/macros/s/AKfycbyQ5TQlIahbUQXr3FenYTGuQgyzgjYInrmZk7GBG7nzFh1a0XQlhYfZKYL0VxDa298uvA/exec"; let STK = null, stkSig = "";
+function stkApply() {
+  if (!D || !STK || !STK.br) return false;
+  const T = D.stockTbl || (D.stockTbl = { items: [], br: {} }); T.items ||= []; T.br ||= {}; let ch = false;
+  for (const n of STK.items || []) if (!T.items.includes(n)) T.items.push(n);
+  for (const [b, r] of Object.entries(STK.br)) { const o = T.br[b]; if (!o || (`${r.d} ${r.t}` >= `${o.d} ${o.t}` && JSON.stringify(r) !== JSON.stringify(o))) { T.br[b] = r; ch = true; } }
+  return ch;
+}
+async function stkLoad() {
+  if (!KEY) return;
+  try { const j = await (await fetch(STK_URL + "?b=_admstock&t=" + Date.now())).json(); if (!j || !j.v || !j.v.ct) return; if (j.v.iv !== stkSig) { STK = await decrypt(j.v, KEY); stkSig = j.v.iv; } if (stkApply() && !draft && !$("#dim").classList.contains("on")) render(); } catch {}
+}
+setInterval(() => KEY && document.visibilityState === "visible" && stkLoad(), 60e3);
 
 // ── 그리기 ──
 const ICON = {
