@@ -624,6 +624,33 @@ body[data-scr="hello"] .sp2 > .L.mid::after{background-image:url(kiosk3_img/char
 .plb u{flex:none;text-decoration:none;font-size:20px;font-weight:800;color:var(--pt)}
 .st3 .big.tall button{min-height:146px!important}.st3 .big.tall b{font-size:42px!important}
 .band{grid-template-columns:repeat(6,1fr)!important}.band button{font-size:23px!important}.band img{width:68px!important;height:68px!important}
+/* ══ 크리스마스 (body.xmas 일 때만) ══ */
+#snow{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:4}
+#snow i{position:absolute;top:-20px;border-radius:50%;background:#fff;box-shadow:0 0 6px rgba(255,255,255,.9),0 1px 2px rgba(150,120,70,.25);animation:snowf linear infinite}
+@keyframes snowf{0%{transform:translate(0,-20px)}50%{transform:translate(26px,420px)}100%{transform:translate(-10px,860px)}}
+#lights{position:absolute;left:0;right:0;top:56px;height:22px;display:flex;justify-content:space-between;padding:0 18px;pointer-events:none;z-index:3;border-top:2px solid rgba(40,90,60,.55);border-radius:50% / 0 0 14px 14px}
+#lights i{width:12px;height:16px;border-radius:50% 50% 50% 50% / 40% 40% 60% 60%;margin-top:1px;animation:tw 1.4s ease-in-out infinite alternate}
+#lights .c0{background:#D81F2A;box-shadow:0 0 10px #D81F2A}#lights .c1{background:#F2C94C;box-shadow:0 0 10px #F2C94C}#lights .c2{background:#2E8B57;box-shadow:0 0 10px #2E8B57}#lights .c3{background:#fff;box-shadow:0 0 10px #fff}
+@keyframes tw{from{opacity:.45}to{opacity:1}}
+body.xmas{--stage:#F1E3C8}
+body.xmas .logo::after{content:"";display:inline-block;width:34px;height:34px;margin-left:6px;vertical-align:-6px;background:url(kiosk3_img/x_bell.png) center / contain no-repeat}
+body.xmas #say3{padding-right:20px}
+body.xmas #say3 > i:first-child{background:#1F6B45}
+body.xmas .stg3::before,body.xmas .rvl::before,body.xmas .sp2:not(.shop) > .L.mid:not(:has(.stg3,.rvl))::before{content:"";position:absolute;left:10px;bottom:6px;width:120px;height:150px;background:url(kiosk3_img/x_tree.png) center bottom / contain no-repeat;pointer-events:none;z-index:1}
+body.xmas .stg3 img,body.xmas .rvh{position:relative;z-index:2}
+body.xmas .sp2:not(.shop) > .L.mid:not(:has(.stg3,.rvl))::after{background-image:url(kiosk3_img/x_char_hi.png)!important}
+body.xmas[data-scr="quiz"] .sp2 > .L.mid::after{background-image:url(kiosk3_img/x_char_wait.png)!important}
+body.xmas[data-scr="phone"] .sp2 > .L.mid::after,body.xmas[data-scr="mname"] .sp2 > .L.mid::after{background-image:url(kiosk3_img/x_char_rec.png)!important}
+body.xmas[data-scr="hello"] .sp2 > .L.mid::after{background-image:url(kiosk3_img/x_char_thx.png)!important}
+body.xmas .cp h4::after{content:"";float:right;width:40px;height:44px;margin:-8px -4px 0 0;background:url(kiosk3_img/x_sock.png) center / contain no-repeat}
+body.xmas footer{position:relative}
+body.xmas footer::before{content:"";position:absolute;left:150px;bottom:0;width:70px;height:84px;background:url(kiosk3_img/x_snowman.png) center bottom / contain no-repeat;pointer-events:none}
+body.xmas .sheet::before{content:"";position:absolute;right:14px;top:-34px;width:84px;height:84px;background:url(kiosk3_img/x_wreath.png) center / contain no-repeat;z-index:2;pointer-events:none}
+body.xmas .sheet{overflow:visible!important}body.xmas .sh-b{border-radius:32px 32px 0 0}body.xmas .sh-f{border-radius:0 0 32px 32px}
+body.xmas .plb::after,body.xmas .band::before{content:none}
+body.xmas .bub::before{content:"";position:absolute;right:-18px;top:-26px;width:56px;height:62px;background:url(kiosk3_img/x_cane.png) center / contain no-repeat;transform:rotate(18deg)}
+body.xmas .gbots i.on{filter:none}
+@media (prefers-reduced-motion: reduce){#snow i,#lights i{animation:none}}
 </style>
 </head>
 <body>
@@ -1227,6 +1254,17 @@ function staff() { if (!CN) return toast("먼저 상품을 담아 주세요"); /
     if (m === "down" && y >= 120) return closeSp();
     if (m === "back" && x >= 110) { tapSnd(); if (open()) return closeSp(); const b = $('prev'); if (b) b.click(); } };
   document.addEventListener('touchend', end, { passive: true }); document.addEventListener('touchcancel', () => { on = false; clear(); }, { passive: true }); })();
+
+/* ── 크리스마스 꾸미기 (11/20 "크리스마스 느낌으로 모든 페이지에"). 12월 25일이 지나면 저절로 꺼짐. 주소에 ?xmas=0 이면 끔, ?xmas=1 이면 켬.
+   캐릭터 그림은 화면에 나올 때 크리스마스 판(x_char_*)으로 바꿔 끼움: 검정은 루돌프 코와 뿔, 빨강은 산타 모자 ── */
+const XMAS = /[?&]xmas=0/.test(location.search) ? false : /[?&]xmas=1/.test(location.search) || new Date() < new Date(new Date().getFullYear(), 11, 26);
+if (XMAS) { document.body.classList.add('xmas');
+  const swap = (root) => root.querySelectorAll && root.querySelectorAll('img[src^="kiosk3_img/char_"]').forEach((im) => { im.src = im.getAttribute('src').replace("kiosk3_img/char_", "kiosk3_img/x_char_"); });
+  new MutationObserver((ms) => ms.forEach((m) => m.addedNodes.forEach((n) => { if (n.nodeType === 1) { if (n.matches && n.matches('img[src^="kiosk3_img/char_"]')) n.src = n.getAttribute('src').replace("kiosk3_img/char_", "kiosk3_img/x_char_"); swap(n); } }))).observe($('app'), { childList: true, subtree: true });
+  /* 눈: 가볍게 28송이, 누르는 데 방해 안 됨 */
+  const sn = document.createElement('div'); sn.id = 'snow'; sn.innerHTML = Array.from({ length: 28 }, (_, i) => `<i style="left:${(i * 37 + 11) % 100}%;width:${6 + (i % 4) * 3}px;height:${6 + (i % 4) * 3}px;animation-duration:${9 + (i % 7) * 2.3}s;animation-delay:-${(i * 1.7) % 14}s;opacity:${.5 + (i % 3) * .2}"></i>`).join(""); $('app').appendChild(sn);
+  /* 전구 줄: 위 줄 아래에 */
+  const lt = document.createElement('div'); lt.id = 'lights'; lt.innerHTML = Array.from({ length: 34 }, (_, i) => `<i class="c${i % 4}" style="animation-delay:${(i % 4) * .35}s"></i>`).join(""); $('app').appendChild(lt); }
 
 /* ── 누르기 ── */
 document.addEventListener('click', (e) => { const t = e.target, c = (s) => t.closest(s);
