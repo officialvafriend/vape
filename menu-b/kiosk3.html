@@ -5,8 +5,11 @@
 <meta name="viewport" id="vp" content="width=1280, user-scalable=no">
 <script>
 /* 폰 가로 화면(패드보다 옆으로 긴 화면)에서도 높이가 800으로 맞게: 화면 비율이 16:10보다 길면 폭을 그만큼 넓게 잡음. 패드에서는 1280 그대로 (11/20) */
-(function () { var fit = function () { var r = window.innerWidth / Math.max(1, window.innerHeight), w = r > 1.62 ? Math.round(800 * r) : 1280; var m = document.getElementById("vp"), c = "width=" + w + ", user-scalable=no"; if (m && m.content !== c) m.content = c; };
-  fit(); window.addEventListener("resize", fit); window.addEventListener("orientationchange", function () { setTimeout(fit, 250); }); })();
+/* 11/20 패드에서 화면이 덜덜 떨림: 폭을 바꾸면 화면 비율이 1픽셀쯤 달라져 다시 폭을 바꾸는 일이 끝없이 되풀이됐음.
+   → 처음 열 때와 화면을 돌릴 때만 맞추고, 패드 비율(주소창 때문에 조금 길어진 것 포함, 1.9 미만)은 1280 그대로 둠. 폰처럼 훨씬 긴 화면만 넓힘 */
+(function () { var m = document.getElementById("vp"), cur = 1280;
+  var fit = function () { var r = window.innerWidth / Math.max(1, window.innerHeight), w = r >= 1.9 ? Math.round(800 * r / 20) * 20 : 1280; if (Math.abs(w - cur) < 60) return; cur = w; m.content = "width=" + w + ", user-scalable=no"; };
+  fit(); window.addEventListener("orientationchange", function () { setTimeout(fit, 400); }); })();
 </script>
 <title>상담패드 키오스크 시제품 3판 (크림, 캐릭터)</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css">
@@ -1212,7 +1215,7 @@ function openPodNudge() { S.sp = null; $('sheet').classList.remove('wide');
 /* 지점 고르기 (11/20): 첫 화면 위 "OO 지점 바꾸기". 고르면 그 지점 자료로 다시 엶. 손님을 받는 중에는 안 보임 */
 const BRANCHES = ["본점", "동성로", "율하", "수성", "반월당", "상인", "광장코아", "현풍", "동성로2"];
 function openBranch() { S.sp = null; $('sheet').classList.remove('wide');
-  $('shb').innerHTML = `<h3>어느 지점에서 쓰시나요?</h3><div class="brg">${BRANCHES.map((b) => `<button data-setb="${b}" class="${b === D.branch ? "on" : ""}">${b}</button>`).join("")}</div><p style="font-size:18px;color:var(--g1);margin-top:14px">고르면 그 지점의 재고와 가격으로 다시 열려요</p>`;
+  $('shb').innerHTML = `<h3>어느 지점에서 쓰시나요?</h3><div class="brg">${BRANCHES.map((b) => `<button data-setb="${b}" class="${b === D.branch ? "on" : ""}">${b}</button>`).join("")}</div><p style="font-size:18px;color:var(--g1);margin-top:14px">고르면 그 지점의 재고와 가격으로 다시 열려요.<br>이 기기의 지금 쓰는 상담패드 지점도 같이 바뀌어요</p>`;
   $('shf').innerHTML = `<button class="add line" data-closesp="1">닫기</button>`; document.body.classList.add('sp'); }
 /* 사진으로 담기 (11/20 "말로 판매했을 때 사진으로 찍어서 인식, 홈 화면에 단추"). 정식 B안의 사진으로 담기를 그대로 엶.
    B안의 카메라 화면, 확인 화면이 뜨는 동안만 B안을 보여 주고, 닫히면 3판으로 돌아와 담긴 것을 확인 화면에 보여 줌 */
