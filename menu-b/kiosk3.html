@@ -598,6 +598,9 @@ body[data-scr="hello"] .sp2 > .L.mid::after{background-image:url(kiosk3_img/char
 .dev3 b{font-size:24px;font-weight:800;color:var(--pt)}.dev3 span{font-size:18px;font-weight:600;color:var(--g1)}
 .dev3.ok{background:var(--pt)}.dev3.ok b,.dev3.ok span{color:#fff}
 .grid.g4{grid-template-columns:repeat(4,1fr);gap:12px}.grid.g4 .cd{padding:12px}.grid.g4 .im{height:130px}.grid.g4 b{font-size:20px}.grid.g4 .pr{font-size:19px;margin:4px 0 8px}.grid.g4 .add,.grid.g4 .stp{height:56px}.grid.g4 .stp button{width:52px}.grid.g4 .evb{display:none}.grid.g4 .f{display:none}
+.myg{margin-top:16px}.myg .hero.sm{height:200px!important}.myg.sm{grid-template-columns:repeat(5,1fr)!important;gap:10px!important}.myg.sm .hero.sm{height:120px!important}.myg.sm b{font-size:19px!important}.myg small{font-size:15px;color:var(--g2)}
+.dev3{align-items:center!important;padding:8px 18px 8px 10px!important}.dev3 img{width:76px;height:64px;object-fit:contain;flex:none}.dev3 b{font-size:26px!important}
+.cbox b{text-align:center;line-height:1.15}
 </style>
 </head>
 <body>
@@ -840,8 +843,12 @@ const V = {
     `<div class="ans">${WAYS.map(([k, t, sub]) => `<button data-way="${k}"><span><b>${t}</b><span>${sub}</span></span></button>`).join("")}</div>`),
   /* 쓰는 기기를 알면 맞는 팟, 코일을 바로 골라 드릴 수 있음. 기기 이름은 B안의 팟 기기 목록(podFams) 그대로 */
   /* 사진은 기기 사진이 있으면 기기, 없으면 그 기기에 끼우는 팟 사진(작게 "팟 사진"이라고 적음), 둘 다 없으면 이름만. 옆으로 넘겨 봄 */
-  mydev: () => `<div class="dvh an"><div><div class="q s">어떤 기기를 쓰세요?</div><div class="qs" style="margin-top:4px">옆으로 넘겨서 찾아 주세요. 맞는 팟, 코일을 바로 보여 드려요</div></div><button class="dk" data-mydev="">잘 모르겠어요</button></div>
-    <div class="dvr an d1" id="dvr">${D.famImg.map(([f, d, p]) => `<button data-mydev="${esc(f)}"><span class="im">${d || p ? `<img src="${d || p}" alt="" loading="lazy">` : "사진 준비 중"}</span><b>${esc(f)}</b><small>${!d && p ? "팟 사진" : ""}</small></button>`).join("")}</div>`,
+  /* 쓰는 기기 고르기: 옆으로 넘기던 것을 세로로 (11/20, 다른 화면과 넘기는 방향을 하나로). 많이 쓰는 4개를 크게, 나머지는 더보기 */
+  mydev: () => { const main = PACK_FAMS(), tile = ([f, d, p2]) => `<button data-mydev="${esc(f)}"><span class="hero sm">${d || p2 ? `<img src="${d || p2}" alt="" loading="lazy">` : ""}</span><b>${esc(f)}</b>${!d && p2 ? `<small>팟 사진</small>` : ""}</button>`;
+    const top = D.famImg.filter(([f]) => main.includes(f)).sort((a, b) => main.indexOf(a[0]) - main.indexOf(b[0])), rest = D.famImg.filter(([f]) => !main.includes(f));
+    return `<div class="full" data-sc="1"><div class="dvh an"><div><div class="q s">어떤 기기를 쓰세요?</div><div class="qs" style="margin-top:4px">맞는 팟, 코일을 바로 보여 드려요</div></div><button class="dk" data-mydev="">잘 모르겠어요</button></div>
+      <div class="cmpg myg an d1">${top.map(tile).join("")}</div>
+      ${S.famOpen ? `<div class="dsec">다른 기기</div><div class="cmpg myg sm">${rest.map(tile).join("")}</div>` : `<button class="txtb" data-famopen="1">다른 기기 더 보기 (${rest.length}개)</button>`}</div>`; },
   /* 3판 (11/20): 기기가 너무 많다는 지적. 잘나가는 4개(말론, 말론S, 발라리안 맥스프로, 하복2)만 크게 보이고, 나머지는 밑줄 글씨 "다른 기기 더 보기"를 눌러야 나옴 */
   dev: () => { const rk = rankMap("dev"), rec = (d) => S.recDev && d.n === S.recDev ? 0 : 1, mine = devInCart(), TOP = ["말론 기계", "말론S", "발라맥스프로", "하복2"];
     const byRk = (a, b) => rec(a) - rec(b) || (rk.get(a.n) || 99) - (rk.get(b.n) || 99);
@@ -876,7 +883,7 @@ const V = {
         <div class="dsec">바로 쓰는 일회용</div><div class="dlg">${ready.map(tile).join("")}</div>
         ${need.length ? `<div class="dsec">배터리에 끼워 쓰는 팟 <small>배터리가 있어야 써요</small></div><div class="dlg">${need.map(tile).join("")}</div>` : ""}`, cartPanel(), "shop"); }
     return split(`<div class="plh"><span class="dim2">${P.img ? `<img src="${P.img}" alt="">` : ""}</span><div>${P.ev ? `<i>${esc(P.ev[2])} 행사</i>` : ""}<b>${esc(P.mn)}</b><small>${esc([P.I.d, P.I.w].filter(Boolean).join(". "))}</small></div><button class="add line" data-dspm="전체">‹ 다른 일회용</button></div>
-      ${P.ev ? `<div class="dev3 ${P.n && P.n % (P.ev[0] + P.ev[1]) === 0 ? "ok" : ""}"><b>${evLine(P)}</b><span>맛은 섞어도 돼요. 지금 ${P.n}개</span></div>` : ""}
+      ${P.ev ? `<div class="dev3 ${P.n && P.n % (P.ev[0] + P.ev[1]) === 0 ? "ok" : ""}"><img src="kiosk3_img/${P.n && P.n % (P.ev[0] + P.ev[1]) === 0 ? "char_yay" : "char_rec"}.png" alt=""><b>${evLine(P)}</b><span>맛은 섞어도 돼요. 지금 ${P.n}개</span></div>` : ""}
       <div class="grid g4">${[...P.items].sort((a, b) => (rk.get(a.id) || 99) - (rk.get(b.id) || 99) || a.n.localeCompare(b.n, "ko")).map((g) => card("dsp", g, { rk: rk.get(g.id), name: g.opt || g.n })).join("")}</div>`, cartPanel(), "shop"); },
   plan: () => { const L = PLANS(), P = L.find((y) => y.k === S.plan), T = TIER(), rk = rankMap("liq"), d51 = !T.dev, deal = d51 ? `5+1 ${won(T.pa + DEAL_ADD)}` : `5병 ${won(T.pa)}, ${pct(5 * ONE, T.pa)}% 할인`, dsub = d51 ? `5병 ${won(T.pa)} + 1병 ${DEAL_ADD}원` : "";
     if (!P) return split(`<div class="q s">기획전</div><div class="qs" style="margin-top:4px">${d51 ? "5병을 담으면 1병을 100원에 더 드려요" : "5병을 한 번에 담는 구성이에요"}. 하나를 눌러 주세요</div>
@@ -1010,10 +1017,10 @@ function qzDone() { S.res = null; go("pick"); setTimeout(() => { try { S.res = J
   const d = D.dev.find((y) => y.n === S.res.dev || y.n.startsWith(S.res.dev) || (S.res.dev || "").startsWith(y.n)); S.recDev = d ? d.n : ""; S.vp = 0;
   if (S.way === "have") { S.recDev = ""; const w = String(S.res.why || "").match(/^.*?요\./); if (w) S.res.why = w[0]; } /* 기기가 있는 분께는 기기 권하는 문장을 빼고 맛 이야기만 */ if (S.step === "pick") draw(); }, 1400); }
 
-let LN = 0, NEWB = false, celeT = 0;
+let LN = 0, NEWB = false, celeT = 0, LDS = 0;
 /* 액상 5병, 11병을 넘는 순간 한 번 축하 (3판 11/20: 객단가 장치. 아낀 금액은 B안 합계 계산 그대로) */
-function cele(k, T) { const save = Math.max(0, (CT.unit || 0) - (CT.total || 0)), el = $('cele'), top = k !== "5+1" && k >= T.b;
-  el.innerHTML = `<div class="cbox"><img src="kiosk3_img/char_yay.png" alt=""><b>${k === "5+1" ? "5+1 완성!" : top ? `${k}병 구성 완성!` : `${k}병 달성!`}</b>${save ? `<span>${won(save)} 할인 됐어요</span>` : ""}</div>${Array.from({ length: 26 }, (_, q) => `<u style="left:${4 + (q * 37) % 92}%;animation-delay:${(q % 7) * .07}s;background:${["#D81F2A", "#1B1A18", "#F2C94C", "#fff"][q % 4]};border-radius:${q % 3 ? "3px" : "50%"}"></u>`).join("")}`;
+function cele(k, T) { const save = Math.max(0, (CT.unit || 0) - (CT.total || 0)), el = $('cele'), top = typeof k === "number" && k >= T.b;
+  el.innerHTML = `<div class="cbox"><img src="kiosk3_img/char_yay.png" alt=""><b>${k === "5+1" ? "5+1 완성!" : typeof k === "string" ? esc(k) : top ? `${k}병 구성 완성!` : `${k}병 달성!`}</b>${save ? `<span>${won(save)} 할인 됐어요</span>` : ""}</div>${Array.from({ length: 26 }, (_, q) => `<u style="left:${4 + (q * 37) % 92}%;animation-delay:${(q % 7) * .07}s;background:${["#D81F2A", "#1B1A18", "#F2C94C", "#fff"][q % 4]};border-radius:${q % 3 ? "3px" : "50%"}"></u>`).join("")}`;
   el.classList.remove('on'); void el.offsetWidth; el.classList.add('on'); blip([[523, 523, 0, .12, .25], [659, 659, .1, .12, .25], [784, 784, .2, .12, .25], [1047, 1047, .3, .3, .28]]);
   clearTimeout(celeT); celeT = setTimeout(() => { el.classList.remove('on'); /* 정한 구성이 다 차면 여기서 끝내고 다음 단계로 (11/20 "딱 완료가 되는 게") */ if (top && S.step === "liq" && !document.body.classList.contains('sp')) { S.nudged = T.b; const nb = $('next'); if (nb) nb.click(); } }, 2400); }
 /* 유지비 화면 숫자 올라가기 (11/20 "애니메이션 넣어서 확실히"). 순서: 표 하루, 한 달, 1년 → 그래프 선 → 아끼는 돈 색 → 결론. 화면에 처음 들어올 때 한 번만 */
@@ -1030,6 +1037,7 @@ function moreHint() { document.querySelectorAll('#main [data-sc]').forEach((el) 
   el.addEventListener('scroll', upd, { passive: true }); upd(); }); }
 function draw() { if (!D) return; const i = S.path.indexOf(S.step), inPath = i >= 0;
   const ln = liqN(), TT = TIER(), hit = (LN < TT.b && ln >= TT.b) ? TT.b : (LN < 5 && ln >= 5) ? 5 : 0; NEWB = ln > LN; LN = ln; const dealHit = DEAL && !LD; LD = DEAL;
+  const dsets = (CT.gp || []).filter((x) => x[2] && x[1]).map(([ek, n, [buy, free, label]]) => [ek === "DSP-AIRX" ? (n >= buy ? 1 : 0) : Math.floor(n / (buy + free)), ((ek.split("|")[1] || (ek === "DSP-AIRX" ? "에어릭스" : "")) + " " + label).trim()]), dsum = dsets.reduce((a, x) => a + x[0], 0), dspHit = dsum > LDS ? (dsets.find((x) => x[0]) || [0, ""])[1] : ""; LDS = dsum;
   $('steps').innerHTML = inPath ? S.path.map((p, j) => `<button data-step="${p}" class="${j === i ? "on" : j < i ? "done" : ""}"><i>${j < i ? "✓" : j + 1}</i>${LABEL[p]}</button>`).join("") : `<span class="br">${esc(D.branch)}</span>`;
   $('homeBtn').style.display = S.step === "start" ? "none" : "";
   const key = S.step + (S.step === "quiz" ? S.qz.i : S.step === "pick" ? (S.res ? "r" + S.vp : "w") : S.step === "hello" ? (S.mem || {}).s : "");
@@ -1048,7 +1056,7 @@ function draw() { if (!D) return; const i = S.path.indexOf(S.step), inPath = i >
   $('foot').innerHTML = `<button class="bk" id="prev">‹ 이전</button><div class="tt">${CN ? `<span>담은 상품 ${CN}개</span><b>${won(CT.total || 0)}</b>` : ""}</div>${nx ? `<button class="nx" id="next">${nx}</button>` : ""}`;
   moreHint();
   if (!same && S.step === "calc") calcAnim();
-  if (keep && $(keep)) $(keep).focus(); if (dealHit) cele("5+1", TT); else if (hit) cele(hit, TT); }
+  if (keep && $(keep)) $(keep).focus(); if (dealHit) cele("5+1", TT); else if (dspHit) cele(dspHit + " 행사 적용!", TT); else if (hit) cele(hit, TT); }
 function go(step) { S.step = step; closeSp(); draw(); }
 /* ── 손님별 탭 (3판 11/20). "손님 여럿 동시 응대": 고르던 화면과 담은 상품을 손님마다 따로 보관하고 눌러서 오감. 최대 3명(개수는 임시).
    담은 상품은 뒤에 연 B안의 장바구니라서, 탭을 바꿀 때 그 내용을 통째로 옮겨 두고 다시 꺼냄. 새로고침하면 사라짐 ── */
@@ -1058,7 +1066,7 @@ const tabName = (T, i) => { const st = i === CUR ? S : T.S, nm = st && ((st.name
 function tabSave() { const T = TABS[CUR]; T.S = S; T.n = CN; try { E(`(window.__tabs = window.__tabs || {})[${T.id}] = { cart: [...cart], member: Object.assign({}, member) }`); } catch (e) {} }
 function tabLoad(i) { CUR = i; const T = TABS[i];
   try { E(`(() => { const s = (window.__tabs || {})[${T.id}]; cart.clear(); Object.assign(member, { type: null, name: "", year: "", phone: "", agree: false, mk: false, reg: null, bad: "", okd: false }); if (s) { for (const [k, v] of s.cart) cart.set(k, v); Object.assign(member, s.member); } drawCart(); })()`); } catch (e) {}
-  S = T.S || S0(); closeSp(); sync(); LN = liqN(); LD = DEAL; lastKey = ""; draw(); }
+  S = T.S || S0(); closeSp(); sync(); LN = liqN(); LD = DEAL; LDS = 1e9; lastKey = ""; draw(); }
 function tabGo(i) { if (i === CUR || !TABS[i]) return; tabSave(); tabLoad(i); }
 function tabNew() { if (TABS.length >= TAB_MAX) return toast(`손님은 ${TAB_MAX}분까지 같이 볼 수 있어요`); tabSave(); TABS.push({ id: ++TABSEQ, S: null, n: 0 }); tabLoad(TABS.length - 1); }
 function tabClose() { if (TABS.length < 2) return; const T = TABS[CUR]; try { E(`cart.clear(); delete (window.__tabs || {})[${T.id}]`); } catch (e) {} TABS.splice(CUR, 1); tabLoad(Math.min(CUR, TABS.length - 1)); }
@@ -1166,7 +1174,7 @@ document.addEventListener('click', (e) => { const t = e.target, c = (s) => t.clo
     if (S.way === "have") return go("mydev");
     if (S.way === "first") { S.qz = { i: 0, ans: {}, list: [] }; try { qzLoad(); } catch (er) { S.path = ["dev", "liq", "pod", "sum"]; return go("dev"); } return go("quiz"); }
     S.path = S.way === "dsp" ? ["dsp", "sum"] : ["dev", "liq", "pod", "sum"]; return go(S.path[0]); }
-  if (b = c('[data-mydev]')) { S.podFam = b.dataset.mydev; S.qz = { i: 0, ans: { now: ["전자담배"] }, list: [] }; try { qzLoad(); } catch (er) { S.path = ["liq", "pod", "sum"]; return go("liq"); } return go("quiz"); }
+  if (b = c('[data-mydev]')) { S.podFam = b.dataset.mydev; S.famOpen = false; S.qz = { i: 0, ans: { now: ["전자담배"] }, list: [] }; try { qzLoad(); } catch (er) { S.path = ["liq", "pod", "sum"]; return go("liq"); } return go("quiz"); }
   if (b = c('[data-who2]')) { S.who = "new"; return draw(); }
   if (b = c('[data-qa]')) { const Q = S.qz.list[S.qz.i], v = b.dataset.qa; if (!Q) return; if (Q.k === "now") { delete S.qz.ans.cig; delete S.qz.ans.heat; }
     if (Q.multi) { const l = S.qz.ans[Q.k] || []; S.qz.ans[Q.k] = l.includes(v) ? l.filter((x) => x !== v) : [...l, v]; return draw(); }
