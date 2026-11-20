@@ -609,6 +609,11 @@ body[data-scr="hello"] .sp2 > .L.mid::after{background-image:url(kiosk3_img/char
 .brg{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 .brg button{height:84px;border-radius:var(--r2);background:var(--card);border:3px solid transparent;font-size:26px;font-weight:800;box-shadow:var(--sh)}
 .brg button.on{border-color:var(--ink)}
+#swp{position:absolute;left:-74px;top:50%;transform:translate(0,-50%);z-index:45;display:flex;align-items:center;height:64px;padding:0 18px 0 22px;border-radius:0 32px 32px 0;background:rgba(27,26,24,.82);color:#fff;font-size:20px;font-weight:800;opacity:0;pointer-events:none;white-space:nowrap}
+#swp.show{opacity:1}#swp.go{background:var(--pt)}
+.st3b{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:14px}.st3b .txtb{margin:0}
+.scanb{display:flex;align-items:center;gap:10px;height:64px;padding:0 24px;border-radius:var(--r2);background:var(--card);border:2px solid var(--ink);font-size:22px;font-weight:800;box-shadow:var(--sh)}
+.scanb i{font-style:normal;font-size:24px}.scanb:active{transform:scale(.97)}
 </style>
 </head>
 <body>
@@ -621,6 +626,7 @@ body[data-scr="hello"] .sp2 > .L.mid::after{background-image:url(kiosk3_img/char
   <div class="sheet" id="sheet"><div class="sh-b" id="shb"></div><div class="sh-f" id="shf"></div></div>
   <div class="toast" id="toast"></div>
   <div id="cele"></div>
+  <div id="swp">‹ 이전</div>
   <iframe id="eng" title="자료"></iframe><button id="back">‹ 고르던 화면으로</button>
   <div class="load" id="load">매장 자료 불러오는 중</div>
 </div>
@@ -819,7 +825,7 @@ const V = {
   start: () => `<div class="st3">${split(`<div class="stg3"><div class="bub an">어서 오세요!<small>베이프렌드 ${esc(D.branch)}</small></div><img src="kiosk3_img/char_hi.png" alt=""></div>`,
     `<div class="qs an" style="margin:0 0 14px">하나를 눌러 주세요</div><div class="big tall"><button class="p" data-who="new"><span class="tx"><b>처음이에요</b><span>몇 가지만 답하면 맞는 걸 찾아 드려요</span></span><span class="arr">›</span></button>
     <button data-who="mem"><span class="tx"><b>회원이에요</b><span>번호와 성함으로 지난 주문을 불러와요</span></span><span class="arr">›</span></button></div>
-    <button class="txtb" data-who="guest">그냥 둘러볼게요</button>`)}
+    <div class="st3b"><button class="txtb" data-who="guest">그냥 둘러볼게요</button><button class="scanb" data-scan="1"><i>📷</i>사진으로 담기</button></div>`)}
     <div class="band an d2">${[["dev", "기기", "ic_dev"], ["liq", "액상", "ic_liq"], ["dsp", "일회용", "ic_dsp"]].map(([k, t, ic]) => `<button data-cat="${k}"><img src="kiosk3_img/${ic}.png" alt="">${t}</button>`).join("")}<button data-plan=""><img src="kiosk3_img/ic_plan.png" alt="">기획전</button><button data-go="pack"><img src="kiosk3_img/ic_gift.png" alt="">달 패키지</button><button data-go="calc"><img src="kiosk3_img/ic_calc.png" alt="">유지비</button><button data-go="coupon"><img src="kiosk3_img/ic_coupon.png" alt="">쿠폰</button></div></div>`,
   phone: () => split(`<div class="q an">휴대폰 번호를<br>눌러 주세요</div><div class="num an d1 ${S.phone ? "" : "e"}">${S.phone ? fmtPhone(S.phone) : "010-0000-0000"}</div>`,
     `<div class="pad an d1">${[1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => `<button data-key="${n}">${n}</button>`).join("")}<button class="s" data-key="del">지우기</button><button data-key="0">0</button><button class="ok" data-key="ok" ${/^01[016789]\d{7,8}$/.test(S.phone) ? "" : "disabled"}>다음</button></div>`),
@@ -1161,6 +1167,18 @@ const BRANCHES = ["본점", "동성로", "율하", "수성", "반월당", "상�
 function openBranch() { S.sp = null; $('sheet').classList.remove('wide');
   $('shb').innerHTML = `<h3>어느 지점에서 쓰시나요?</h3><div class="brg">${BRANCHES.map((b) => `<button data-setb="${b}" class="${b === D.branch ? "on" : ""}">${b}</button>`).join("")}</div><p style="font-size:18px;color:var(--g1);margin-top:14px">고르면 그 지점의 재고와 가격으로 다시 열려요</p>`;
   $('shf').innerHTML = `<button class="add line" data-closesp="1">닫기</button>`; document.body.classList.add('sp'); }
+/* 사진으로 담기 (11/20 "말로 판매했을 때 사진으로 찍어서 인식, 홈 화면에 단추"). 정식 B안의 사진으로 담기를 그대로 엶.
+   B안의 카메라 화면, 확인 화면이 뜨는 동안만 B안을 보여 주고, 닫히면 3판으로 돌아와 담긴 것을 확인 화면에 보여 줌 */
+let scanT = 0;
+function scanOpen() { clearInterval(scanT); const n0 = CN; let seen = false, wait = 0, off = 0;
+  try { E("scanGo()"); } catch (e) { return toast("사진으로 담기를 열지 못했어요"); }
+  scanT = setInterval(() => { let on = false; try { on = !!E(`(document.getElementById("liveOv") && document.getElementById("liveOv").classList.contains("on")) || (document.getElementById("scanOv") && document.getElementById("scanOv").classList.contains("on"))`); } catch (e) {}
+    if (on) { seen = true; off = 0; document.body.classList.add('stf', 'scn'); return; }
+    if (!seen) { if (++wait > 300) clearInterval(scanT); return; } /* 사진을 고르기 전(휴대폰 카메라 앱이 떠 있는 동안)은 기다림, 2분 */
+    if (++off < 3) return; /* 카메라 화면에서 확인 화면으로 넘어가는 잠깐 사이에 닫힌 걸로 보지 않게 */
+    clearInterval(scanT); document.body.classList.remove('stf', 'scn'); sync();
+    if (CN > n0) { if (!S.path.length) { S.who = S.who || "guest"; S.way = "have"; S.path = ["liq", "pod", "sum"]; } toast(`${CN - n0}개 담았어요`); return go("sum"); }
+    draw(); }, 400); }
 function openCmp() { S.sp = null; S.cmpOpen = true; $('sheet').classList.add('wide');
   $('shb').innerHTML = `${sayIn("_cmp")}<h3>고민되는 기기 두 개를 눌러 주세요</h3><div class="cmpg">${Object.keys(DSPEC).map((n) => D.dev.find((y) => y.n === n)).filter(Boolean).map((d) => `<button data-cmp="${esc(d.n)}" class="${S.cmp.includes(d.n) ? "on" : ""}"><span class="hero sm">${d.img ? `<img src="${d.img}" alt="">` : ""}</span><b>${esc(d.n)}</b><small>${won(d.price)}</small></button>`).join("")}</div>`;
   $('shf').innerHTML = `<button class="add line" data-closesp="1">닫기</button>`; document.body.classList.add('sp'); }
@@ -1185,6 +1203,21 @@ function staff() { if (!CN) return toast("먼저 상품을 담아 주세요"); /
   const KQ = "body.kq{background:#F5F5F6}body.kq .app,body.kq .dim,body.kq .camL,body.kq .grab,body.kq #shBtns [data-f=staff],body.kq #fab{display:none!important}body.kq .sheet{top:0!important;bottom:0!important;left:50%!important;right:auto!important;width:760px!important;max-width:none!important;height:100%!important;transform:translateX(-50%)!important;border-radius:0!important;padding-top:18px!important;z-index:40!important;box-shadow:0 0 0 1px rgba(0,0,0,.06)!important}";
   try { E(`if (!document.getElementById('kq')) { const s = document.createElement('style'); s.id = 'kq'; s.textContent = ${J(KQ)}; document.head.appendChild(s); } document.body.classList.add('open', 'kq'); drawCart(); qrView()`); } catch (e) { return toast("직원 화면을 열지 못했어요"); } document.body.classList.add('stf'); }
 
+/* ── 손짓 (11/20 "이전, 취소를 제스처로"): 화면을 오른쪽으로 밀면 이전(창이 떠 있으면 창 닫기), 떠 있는 창을 아래로 끌어내리면 닫기.
+   실수로 넘어가지 않게 "다음"은 손짓으로 안 됨. 위아래로 넘기는 것과 헷갈리지 않게 옆으로 뚜렷하게 밀 때만 ── */
+(function () { let sx = 0, sy = 0, dx = 0, dy = 0, on = false, mode = "";
+  const ind = $('swp'), sh = $('sheet'), open = () => document.body.classList.contains('sp'), canBack = () => open() || (S.step !== "start" && !!$('prev'));
+  const clear = () => { ind.classList.remove('show', 'go'); ind.style.transform = ""; sh.style.transform = ""; sh.style.transition = ""; mode = ""; };
+  document.addEventListener('touchstart', (e) => { on = e.touches.length === 1 && !document.body.classList.contains('stf'); if (!on) return; sx = e.touches[0].clientX; sy = e.touches[0].clientY; dx = dy = 0; mode = ""; }, { passive: true });
+  document.addEventListener('touchmove', (e) => { if (!on) return; dx = e.touches[0].clientX - sx; dy = e.touches[0].clientY - sy;
+    if (!mode) { if (open() && dy > 24 && dy > Math.abs(dx) * 1.5 && e.target.closest('#sheet') && $('shb').scrollTop <= 0) mode = "down"; else if (dx > 24 && dx > Math.abs(dy) * 2 && canBack()) mode = "back"; else if (Math.abs(dx) > 24 || Math.abs(dy) > 24) on = false; }
+    if (mode === "down") { sh.style.transition = "none"; sh.style.transform = `translate(-50%, calc(-50% + ${Math.max(0, Math.min(dy, 320))}px))`; }
+    if (mode === "back") { ind.classList.add('show'); ind.classList.toggle('go', dx >= 110); ind.style.transform = `translate(${Math.min(dx * .45, 60)}px, -50%)`; } }, { passive: true });
+  const end = () => { if (!on) return; on = false; const m = mode, x = dx, y = dy; clear();
+    if (m === "down" && y >= 120) return closeSp();
+    if (m === "back" && x >= 110) { tapSnd(); if (open()) return closeSp(); const b = $('prev'); if (b) b.click(); } };
+  document.addEventListener('touchend', end, { passive: true }); document.addEventListener('touchcancel', () => { on = false; clear(); }, { passive: true }); })();
+
 /* ── 누르기 ── */
 document.addEventListener('click', (e) => { const t = e.target, c = (s) => t.closest(s);
   let b;
@@ -1198,6 +1231,7 @@ document.addEventListener('click', (e) => { const t = e.target, c = (s) => t.clo
   if (c('[data-tabx]')) return tabClose();
   if (b = c('[data-tab]')) return tabGo(+b.dataset.tab);
   if (c('[data-tabnew]')) return tabNew();
+  if (c('[data-scan]')) return scanOpen();
   if (c('#brBtn')) return openBranch();
   if (b = c('[data-setb]')) { try { localStorage.setItem("vf-menu-branch", b.dataset.setb); } catch (er) {} location.href = location.pathname; return; }
   if (c('#sayBtn')) { SAYON = !SAYON; try { localStorage.setItem("vf-kiosk-say", SAYON ? "1" : "0"); } catch (er) {} return draw(); }
@@ -1240,7 +1274,7 @@ document.addEventListener('click', (e) => { const t = e.target, c = (s) => t.clo
   if (t.id === "regGo") return regSend();
   if (t.id === "homeBtn") return reset();
   if (t.id === "sndBtn") { SND = !SND; try { localStorage.setItem("vf-kiosk-snd", SND ? "1" : "0"); speechSynthesis.cancel(); } catch (er) {} return draw(); }
-  if (t.id === "back") { try { E("document.body.classList.remove('open', 'kq')"); } catch (er) {} document.body.classList.remove('stf'); sync(); return draw(); }
+  if (t.id === "back") { clearInterval(scanT); try { E("document.body.classList.remove('open', 'kq'); if (typeof liveStop === 'function') liveStop(); var so = document.getElementById('scanOv'); if (so) so.classList.remove('on')"); } catch (er) {} document.body.classList.remove('stf', 'scn'); sync(); return draw(); }
   if (t.id === "prev" && (S.step === "coupon" || S.step === "calc" || S.step === "pack")) return go("start");
   if (t.id === "prev" && S.step === "revisit") return go("sum");
   if (t.id === "prev" && S.step === "check") return go("revisit");
