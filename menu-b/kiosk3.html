@@ -638,7 +638,8 @@ let S = S0(), D = null, E = null, CQ = new Map(), CI = [], CT = { total: 0 }, CN
 
 /* ── 자료: B안을 뒤에 숨겨 열고 그 자료, 담기, 합계, 회원, 문진 규칙을 그대로 부름 ── */
 /* 지점은 이 패드에 이미 정해진 것을 그대로 씀. 정해진 게 없을 때만 본점으로 (매장 패드의 지점 설정을 바꾸지 않게) */
-try { if (!localStorage.getItem("vf-menu-branch")) localStorage.setItem("vf-menu-branch", new URLSearchParams(location.search).get("b") || "본점"); } catch (e) {}
+/* 11/20: 주소에 ?b=본점 처럼 지점을 적으면 그 지점으로 바꿈 (전에 다른 지점으로 열어 본 기기에서 그 지점이 계속 뜨던 것) */
+try { const pb = new URLSearchParams(location.search).get("b"), OKB = ["본점", "동성로", "율하", "수성", "반월당", "상인", "광장코아", "현풍", "동성로2"]; if (pb && OKB.includes(pb)) localStorage.setItem("vf-menu-branch", pb); else if (!localStorage.getItem("vf-menu-branch")) localStorage.setItem("vf-menu-branch", "본점"); } catch (e) {}
 $('eng').src = LOCAL ? "menu_b.html" : "./index.html"; /* 올린 곳에선 같은 폴더의 정식 B안을 자료로 씀 */
 $('eng').onload = () => { const w = $('eng').contentWindow; E = (code) => w.eval(code);
   const t0 = Date.now(), t = setInterval(() => { let ok = false; try { ok = E("!!RK && !!STOCK_AT") || (E("!!RK") && Date.now() - t0 > 8000); } catch (e) {} if (!ok) return; clearInterval(t); /* 재고 파일까지 읽힌 뒤에 시작 (품절, 다른 지점 재고가 맞게 나오게). 8초 넘으면 그냥 시작 */
