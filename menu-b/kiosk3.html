@@ -2,7 +2,12 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=1280, user-scalable=no">
+<meta name="viewport" id="vp" content="width=1280, user-scalable=no">
+<script>
+/* 폰 가로 화면(패드보다 옆으로 긴 화면)에서도 높이가 800으로 맞게: 화면 비율이 16:10보다 길면 폭을 그만큼 넓게 잡음. 패드에서는 1280 그대로 (11/20) */
+(function () { var fit = function () { var r = window.innerWidth / Math.max(1, window.innerHeight), w = r > 1.62 ? Math.round(800 * r) : 1280; var m = document.getElementById("vp"), c = "width=" + w + ", user-scalable=no"; if (m && m.content !== c) m.content = c; };
+  fit(); window.addEventListener("resize", fit); window.addEventListener("orientationchange", function () { setTimeout(fit, 250); }); })();
+</script>
 <title>상담패드 키오스크 시제품 3판 (크림, 캐릭터)</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css">
 <style>
